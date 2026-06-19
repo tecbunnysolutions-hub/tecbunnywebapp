@@ -16,7 +16,8 @@ function getClientIp(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   const clientIp = getClientIp(request);
-  if (!rateLimit(clientIp, 'setup_initial_admins_ip', { limit: 3, windowMs: 15 * 60 * 1000 })) {
+  const ipRl = await rateLimit(`setup_admins_ip:${clientIp}`, 3, 15 * 60 * 1000);
+  if (!ipRl.allowed) {
     return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
   }
 

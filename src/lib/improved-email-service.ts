@@ -50,6 +50,9 @@ class ImprovedEmailService {
           // Hardened: Always reject unauthorized certificates to prevent MitM attacks
           rejectUnauthorized: true
         },
+        connectionTimeout: 5000,
+        greetingTimeout: 5000,
+        socketTimeout: 10000,
         pool: true,
         maxConnections: 5,
         maxMessages: 100,
@@ -73,6 +76,9 @@ class ImprovedEmailService {
           // Hardened: Always reject unauthorized certificates to prevent MitM attacks
           rejectUnauthorized: true
         },
+        connectionTimeout: 5000,
+        greetingTimeout: 5000,
+        socketTimeout: 10000,
       });
     }
 

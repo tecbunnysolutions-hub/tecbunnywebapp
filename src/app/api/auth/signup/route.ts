@@ -49,14 +49,21 @@ export async function POST(request: NextRequest) {
     const normalizedEmail = typeof email === 'string' ? email.trim().toLowerCase() : '';
     const normalizedMobile = typeof _mobile === 'string' ? _mobile.replace(/\D/g, '') : '';
 
-    if (!rateLimit(clientIp, 'auth_signup_ip', SIGNUP_IP_LIMIT)) {
+    const ipRl = await rateLimit(`signup_ip:${clientIp}`, SIGNUP_IP_LIMIT.limit, SIGNUP_IP_LIMIT.windowMs);
+    if (!ipRl.allowed) {
       return NextResponse.json({ error: 'Too many signup attempts. Please try again later.' }, { status: 429 });
     }
-    if (normalizedEmail && !rateLimit(`email:${normalizedEmail}`, 'auth_signup_identifier', SIGNUP_IDENTIFIER_LIMIT)) {
-      return NextResponse.json({ error: 'Too many signup attempts for this email. Please try again later.' }, { status: 429 });
+    if (normalizedEmail) {
+      const emailRl = await rateLimit(`signup_email:${normalizedEmail}`, SIGNUP_IDENTIFIER_LIMIT.limit, SIGNUP_IDENTIFIER_LIMIT.windowMs);
+      if (!emailRl.allowed) {
+        return NextResponse.json({ error: 'Too many signup attempts for this email. Please try again later.' }, { status: 429 });
+      }
     }
-    if (normalizedMobile && !rateLimit(`mobile:${normalizedMobile}`, 'auth_signup_identifier', SIGNUP_IDENTIFIER_LIMIT)) {
-      return NextResponse.json({ error: 'Too many signup attempts for this mobile number. Please try again later.' }, { status: 429 });
+    if (normalizedMobile) {
+      const mobileRl = await rateLimit(`signup_mobile:${normalizedMobile}`, SIGNUP_IDENTIFIER_LIMIT.limit, SIGNUP_IDENTIFIER_LIMIT.windowMs);
+      if (!mobileRl.allowed) {
+        return NextResponse.json({ error: 'Too many signup attempts for this mobile number. Please try again later.' }, { status: 429 });
+      }
     }
 
     const supabaseAdmin = getSupabaseAdmin();

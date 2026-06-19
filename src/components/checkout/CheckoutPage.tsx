@@ -12,6 +12,7 @@ import { useOrder } from '../../context/OrderProvider';
 import { usePaymentMethods } from '../../hooks/use-payment-methods';
 import { logger } from '@/lib/logger';
 import { Button } from '@/components/ui/button';
+import { calculateCartTotals } from '@/lib/order-utils';
 import { LoginDialog } from '@/components/auth/LoginDialog';
 import { Badge } from '../ui/badge';
 import type { OrderStatus, OrderType } from '@/lib/types';
@@ -320,30 +321,7 @@ export default function CheckoutPage() {
   };
 
   const fallbackTotals = React.useMemo(() => {
-    if (!cartItems.length) {
-      return { subtotal: 0, gstAmount: 0, total: 0 };
-    }
-
-    const subtotalValue = cartItems.reduce((totalValue, item) => {
-      const price = item.price;
-      const gstRate = item.gstRate || 18;
-      const basePrice = price / (1 + (gstRate / 100));
-      return totalValue + basePrice * item.quantity;
-    }, 0);
-
-    const gstAmountValue = cartItems.reduce((totalValue, item) => {
-      const price = item.price;
-      const gstRate = item.gstRate || 18;
-      const basePrice = price / (1 + (gstRate / 100));
-      const gst = basePrice * (gstRate / 100);
-      return totalValue + gst * item.quantity;
-    }, 0);
-
-    return {
-      subtotal: Math.round(subtotalValue * 100) / 100,
-      gstAmount: Math.round(gstAmountValue * 100) / 100,
-      total: Math.round((subtotalValue + gstAmountValue) * 100) / 100,
-    };
+    return calculateCartTotals(cartItems);
   }, [cartItems]);
 
   const {
@@ -528,6 +506,7 @@ export default function CheckoutPage() {
             order = data.order;
           } else {
             logger.error('API order creation failed', { error: data.error, orderData });
+            setOrderError(data.error?.message || data.error || 'Failed to create order. Please try again.');
           }
         } catch (apiError) {
           logger.error('API request failed', { error: apiError, orderData });

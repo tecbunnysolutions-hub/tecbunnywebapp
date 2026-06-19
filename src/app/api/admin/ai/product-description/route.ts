@@ -38,9 +38,9 @@ export async function POST(request: NextRequest) {
 
     const systemPrompt = await getSystemPrompt('product_description');
     const prompt = systemPrompt
-      .replace('{tone}', tone || 'professional, friendly')
-      .replace('{length}', length || '120-180 words')
-      .replace('{productData}', JSON.stringify({
+      .replace('{tone}', () => tone || 'professional, friendly')
+      .replace('{length}', () => length || '120-180 words')
+      .replace('{productData}', () => JSON.stringify({
         title: product.title,
         category: product.category,
         product_type: product.product_type,

@@ -74,14 +74,21 @@ export async function POST(request: NextRequest) {
 
     const ip = getClientIp(request);
 
-    if (!rateLimit(ip, 'auth_send_otp_ip', SEND_OTP_IP_LIMIT)) {
+    const ipRl = await rateLimit(`otp_ip:${ip}`, SEND_OTP_IP_LIMIT.limit, SEND_OTP_IP_LIMIT.windowMs);
+    if (!ipRl.allowed) {
       return apiError('RATE_LIMITED', { overrideMessage: 'Too many OTP requests. Please try again later.', correlationId });
     }
-    if (normalizedEmail && !rateLimit(`email:${normalizedEmail}`, 'auth_send_otp_identifier', SEND_OTP_IDENTIFIER_LIMIT)) {
-      return apiError('RATE_LIMITED', { overrideMessage: 'Too many OTP requests for this email. Please try again later.', correlationId });
+    if (normalizedEmail) {
+      const emailRl = await rateLimit(`otp_email:${normalizedEmail}`, SEND_OTP_IDENTIFIER_LIMIT.limit, SEND_OTP_IDENTIFIER_LIMIT.windowMs);
+      if (!emailRl.allowed) {
+        return apiError('RATE_LIMITED', { overrideMessage: 'Too many OTP requests for this email. Please try again later.', correlationId });
+      }
     }
-    if (normalizedMobile && !rateLimit(`mobile:${normalizedMobile}`, 'auth_send_otp_identifier', SEND_OTP_IDENTIFIER_LIMIT)) {
-      return apiError('RATE_LIMITED', { overrideMessage: 'Too many OTP requests for this mobile number. Please try again later.', correlationId });
+    if (normalizedMobile) {
+      const mobileRl = await rateLimit(`otp_mobile:${normalizedMobile}`, SEND_OTP_IDENTIFIER_LIMIT.limit, SEND_OTP_IDENTIFIER_LIMIT.windowMs);
+      if (!mobileRl.allowed) {
+        return apiError('RATE_LIMITED', { overrideMessage: 'Too many OTP requests for this mobile number. Please try again later.', correlationId });
+      }
     }
 
     // CAPTCHA verification (conditional if configured)

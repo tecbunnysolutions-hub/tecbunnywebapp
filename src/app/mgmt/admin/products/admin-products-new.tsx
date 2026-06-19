@@ -311,9 +311,34 @@ export default function AdminProductsPage() {
     }));
   };
 
+  const handleDiscardPrices = (productId: string) => {
+    setEditedPrices(prev => {
+      const newState = { ...prev };
+      delete newState[productId];
+      return newState;
+    });
+  };
+
   const handleSavePrices = async (productId: string) => {
     const edited = editedPrices[productId];
     if (!edited) return;
+
+    if (edited.price < 0 || edited.mrp < 0) {
+      toast({
+        title: 'Validation Error',
+        description: 'Pricing amounts cannot be negative.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    if (edited.price > edited.mrp) {
+      toast({
+        title: 'Validation Error',
+        description: 'Sale price cannot exceed the Maximum Retail Price (MRP).',
+        variant: 'destructive',
+      });
+      return;
+    }
 
     setSavingProductId(productId);
     try {
@@ -343,201 +368,411 @@ export default function AdminProductsPage() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
+    <div className="container mx-auto py-6 px-4 sm:px-6 lg:px-8 max-w-7xl space-y-6">
+      <input
+        type="file"
+        accept=".csv"
+        ref={fileInputRef}
+        onChange={handleCSVImport}
+        className="hidden"
+      />
+
+      {/* Header and Toolbar actions: wraps on mobile and stack columns */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center border-b border-border/40 pb-5">
         <div>
           <h2 className="text-2xl font-bold tracking-tight">Products</h2>
-          <p className="text-muted-foreground">
+          <p className="text-muted-foreground text-sm">
             Manage your product inventory, pricing, and details.
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-col gap-3 w-full sm:w-auto sm:flex-row sm:items-center">
           {isSuperadmin && (
             <>
-              <input
-                type="file"
-                accept=".csv"
-                ref={fileInputRef}
-                onChange={handleCSVImport}
-                className="hidden"
-              />
-              <Button
-                variant="outline"
-                onClick={downloadSampleCSV}
-              >
-                <Download className="mr-2 h-4 w-4" />
-                Download Sample
-              </Button>
-              <Button
-                variant="outline"
-                disabled={importing}
-                onClick={() => fileInputRef.current?.click()}
-              >
-                {importing ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : (
-                  <Upload className="mr-2 h-4 w-4" />
-                )}
-                Import CSV
-              </Button>
-              <Button
-                variant="outline"
-                onClick={exportToCSV}
-                disabled={products.length === 0}
-              >
-                <Download className="mr-2 h-4 w-4" />
-                Export CSV
-              </Button>
+              {/* CSV Operations Dropdown for Mobile (prevents button squishing & text overflow) */}
+              <div className="block sm:hidden w-full">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" className="w-full h-11 justify-between text-sm font-medium border-border/60">
+                      <span className="flex items-center gap-2">
+                        {importing ? (
+                          <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                        ) : (
+                          <Upload className="h-4 w-4 text-muted-foreground" />
+                        )}
+                        {importing ? 'Importing CSV...' : 'CSV Operations'}
+                      </span>
+                      <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-[calc(100vw-32px)]">
+                    <DropdownMenuLabel>Data Actions</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={downloadSampleCSV} className="h-11 cursor-pointer">
+                      <Download className="mr-2 h-4 w-4 text-muted-foreground" />
+                      Download Sample CSV
+                    </DropdownMenuItem>
+                    <DropdownMenuItem 
+                      onClick={() => fileInputRef.current?.click()} 
+                      disabled={importing}
+                      className="h-11 cursor-pointer"
+                    >
+                      <Upload className="mr-2 h-4 w-4 text-muted-foreground" />
+                      Import CSV
+                    </DropdownMenuItem>
+                    <DropdownMenuItem 
+                      onClick={exportToCSV} 
+                      disabled={products.length === 0}
+                      className="h-11 cursor-pointer"
+                    >
+                      <Download className="mr-2 h-4 w-4 text-muted-foreground" />
+                      Export CSV
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+
+              {/* Desktop CSV Actions */}
+              <div className="hidden sm:flex sm:items-center gap-2">
+                <Button
+                  variant="outline"
+                  onClick={downloadSampleCSV}
+                  className="h-9 text-xs flex items-center justify-center"
+                >
+                  <Download className="mr-1.5 h-3.5 w-3.5 flex-shrink-0" />
+                  <span className="truncate">Sample</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  disabled={importing}
+                  onClick={() => fileInputRef.current?.click()}
+                  className="h-9 text-xs flex items-center justify-center"
+                >
+                  {importing ? (
+                    <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin flex-shrink-0" />
+                  ) : (
+                    <Upload className="mr-1.5 h-3.5 w-3.5 flex-shrink-0" />
+                  )}
+                  <span className="truncate">Import</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={exportToCSV}
+                  disabled={products.length === 0}
+                  className="h-9 text-xs flex items-center justify-center"
+                >
+                  <Download className="mr-1.5 h-3.5 w-3.5 flex-shrink-0" />
+                  <span className="truncate">Export</span>
+                </Button>
+              </div>
             </>
           )}
-          <Button onClick={() => setCreateDialogOpen(true)}>
-            <Plus className="mr-2 h-4 w-4" />
+          <Button 
+            onClick={() => setCreateDialogOpen(true)}
+            className="w-full sm:w-auto h-11 sm:h-9 text-sm font-semibold flex items-center justify-center bg-primary text-white hover:bg-primary/95"
+          >
+            <Plus className="mr-1.5 h-4 w-4" />
             Add Product
           </Button>
         </div>
       </div>
 
-      <Card>
-        <CardHeader>
+      <Card className="border-border bg-card/40 backdrop-blur-sm shadow-sm overflow-hidden">
+        <CardHeader className="p-4 sm:p-6">
           <CardTitle>All Products</CardTitle>
           <CardDescription>
             A list of all products available on the platform.
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-4 sm:p-6 pt-0">
           {loading ? (
-            <div className="space-y-4 w-full min-h-[350px]">
-              <div className="flex items-center space-x-4 border-b border-white/5 pb-4">
-                <div className="h-4 bg-slate-800 rounded animate-pulse w-1/4" />
-                <div className="h-4 bg-slate-800 rounded animate-pulse w-1/6" />
-                <div className="h-4 bg-slate-800 rounded animate-pulse w-1/12" />
-                <div className="h-4 bg-slate-800 rounded animate-pulse w-1/12" />
-                <div className="h-4 bg-slate-800 rounded animate-pulse w-1/12" />
-                <div className="h-4 bg-slate-800 rounded animate-pulse w-1/12" />
-                <div className="h-4 bg-slate-800 rounded animate-pulse w-1/12 ml-auto" />
-              </div>
-              {Array.from({ length: 5 }).map((_, i) => (
-                <div key={i} className="flex items-center space-x-4 py-3 border-b border-white/5">
-                  <div className="flex items-center gap-2 w-1/4">
-                    <div className="w-8 h-8 rounded bg-slate-800 animate-pulse" />
-                    <div className="h-4 bg-slate-800 rounded animate-pulse w-3/4" />
-                  </div>
-                  <div className="h-6 bg-slate-800 rounded animate-pulse w-1/6" />
-                  <div className="h-8 bg-slate-800 rounded animate-pulse w-28" />
-                  <div className="h-8 bg-slate-800 rounded animate-pulse w-28" />
-                  <div className="h-4 bg-slate-800 rounded animate-pulse w-1/12" />
-                  <div className="h-6 bg-slate-800 rounded animate-pulse w-16" />
-                  <div className="h-8 bg-slate-800 rounded animate-pulse w-10 ml-auto" />
+            <div className="w-full min-h-[350px]">
+              {/* Desktop Skeleton Loader (Hidden on Mobile) */}
+              <div className="hidden md:block space-y-4">
+                <div className="flex items-center space-x-4 border-b border-border pb-4">
+                  <div className="h-4 bg-muted rounded animate-pulse w-1/4" />
+                  <div className="h-4 bg-muted rounded animate-pulse w-1/6" />
+                  <div className="h-4 bg-muted rounded animate-pulse w-1/12" />
+                  <div className="h-4 bg-muted rounded animate-pulse w-1/12" />
+                  <div className="h-4 bg-muted rounded animate-pulse w-1/12" />
+                  <div className="h-4 bg-muted rounded animate-pulse w-1/12" />
+                  <div className="h-4 bg-muted rounded animate-pulse w-1/12 ml-auto" />
                 </div>
-              ))}
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <div key={i} className="flex items-center space-x-4 py-3 border-b border-border">
+                    <div className="flex items-center gap-2 w-1/4">
+                      <div className="w-8 h-8 rounded bg-muted animate-pulse" />
+                      <div className="h-4 bg-muted rounded animate-pulse w-3/4" />
+                    </div>
+                    <div className="h-6 bg-muted rounded animate-pulse w-1/6" />
+                    <div className="h-8 bg-muted rounded animate-pulse w-28" />
+                    <div className="h-8 bg-muted rounded animate-pulse w-28" />
+                    <div className="h-4 bg-muted rounded animate-pulse w-1/12" />
+                    <div className="h-6 bg-muted rounded animate-pulse w-16" />
+                    <div className="h-8 bg-muted rounded animate-pulse w-10 ml-auto" />
+                  </div>
+                ))}
+              </div>
+
+              {/* Mobile Skeleton Loader (Hidden on Desktop) */}
+              <div className="space-y-4 md:hidden">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <div key={i} className="rounded-xl border border-border p-4 space-y-4 bg-card animate-pulse">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded bg-muted" />
+                      <div className="flex-1 space-y-2">
+                        <div className="h-4 bg-muted rounded w-3/4" />
+                        <div className="h-3 bg-muted rounded w-1/4" />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4 pt-2 border-t">
+                      <div className="h-11 bg-muted rounded" />
+                      <div className="h-11 bg-muted rounded" />
+                    </div>
+                    <div className="flex justify-between items-center pt-2 border-t">
+                      <div className="h-4 bg-muted rounded w-1/4" />
+                      <div className="h-6 bg-muted rounded w-16" />
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           ) : products.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
+            <div className="text-center py-12 text-muted-foreground text-sm">
               No products found. Click "Add Product" to create one.
             </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Title</TableHead>
-                  <TableHead>Category</TableHead>
-                  <TableHead>MRP</TableHead>
-                  <TableHead>Sale Price</TableHead>
-                  <TableHead>Stock</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+            <>
+              {/* Desktop Table View (Hidden on Mobile) */}
+              <div className="hidden md:block overflow-x-auto w-full">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Title</TableHead>
+                      <TableHead>Category</TableHead>
+                      <TableHead>MRP</TableHead>
+                      <TableHead>Sale Price</TableHead>
+                      <TableHead>Stock</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {products.map((product) => (
+                      <TableRow key={product.id}>
+                        <TableCell className="font-medium">
+                          <div className="flex items-center gap-2">
+                            {getProductDisplayImage(product) ? (
+                              <img src={getProductDisplayImage(product)!} alt={product.title} className="w-8 h-8 rounded object-cover" />
+                            ) : (
+                              <div className="w-8 h-8 rounded bg-muted flex items-center justify-center text-[10px] font-semibold text-muted-foreground">
+                                No Image
+                              </div>
+                            )}
+                            <span className="truncate max-w-[200px]">{product.title || product.name}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline">{product.category}</Badge>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex flex-col gap-1 w-28">
+                            <Input
+                              type="number"
+                              placeholder="MRP"
+                              className="h-8 text-sm"
+                              value={editedPrices[product.id]?.mrp ?? product.mrp ?? 0}
+                              disabled={savingProductId === product.id}
+                              onChange={(e) => handlePriceChange(product.id, 'mrp', parseFloat(e.target.value) || 0)}
+                            />
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex flex-col gap-1 w-28">
+                            <Input
+                              type="number"
+                              placeholder="Sale Price"
+                              className="h-8 text-sm"
+                              value={editedPrices[product.id]?.price ?? product.price ?? 0}
+                              disabled={savingProductId === product.id}
+                              onChange={(e) => handlePriceChange(product.id, 'price', parseFloat(e.target.value) || 0)}
+                            />
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          {product.stock_quantity ?? 'N/A'}
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant={product.status === 'active' ? 'default' : 'secondary'}>
+                            {product.status || 'Active'}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex gap-2 justify-end items-center">
+                            {editedPrices[product.id] && (
+                              <div className="flex items-center gap-1.5">
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  className="h-8 text-xs text-muted-foreground hover:text-foreground"
+                                  onClick={() => handleDiscardPrices(product.id)}
+                                  disabled={savingProductId === product.id}
+                                >
+                                  Cancel
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="default"
+                                  className="h-8 text-xs"
+                                  onClick={() => handleSavePrices(product.id)}
+                                  disabled={savingProductId === product.id}
+                                >
+                                  {savingProductId === product.id ? (
+                                    <>
+                                      <Loader2 className="mr-1 h-3 w-3 animate-spin" />
+                                      Saving
+                                    </>
+                                  ) : 'Save'}
+                                </Button>
+                              </div>
+                            )}
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" className="h-8 w-8 p-0">
+                                  <span className="sr-only">Open menu</span>
+                                  <MoreHorizontal className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                <DropdownMenuItem onClick={() => handleEditClick(product)}>
+                                  <Pencil className="mr-2 h-4 w-4" />
+                                  Edit
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem 
+                                  onClick={() => handleDeleteClick(product)}
+                                  className="text-red-600 focus:text-red-600"
+                                >
+                                  <Trash2 className="mr-2 h-4 w-4" />
+                                  Delete
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+
+              {/* Mobile Card Grid View (Hidden on Desktop) */}
+              <div className="grid grid-cols-1 gap-4 md:hidden">
                 {products.map((product) => (
-                  <TableRow key={product.id}>
-                    <TableCell className="font-medium">
-                        <div className="flex items-center gap-2">
-                             {getProductDisplayImage(product) ? (
-                                <img src={getProductDisplayImage(product)!} alt={product.title} className="w-8 h-8 rounded object-cover" />
-                             ) : (
-                                <div className="w-8 h-8 rounded bg-muted flex items-center justify-center text-[10px] font-semibold text-muted-foreground">
-                                    No Image
-                                </div>
-                             )}
-                             <span>{product.title || product.name}</span>
+                  <div 
+                    key={product.id} 
+                    className="rounded-xl border border-border/80 p-4 space-y-4 bg-card/60 text-card-foreground shadow-sm hover:border-border transition-all"
+                  >
+                    <div className="flex items-center gap-3">
+                      {getProductDisplayImage(product) ? (
+                        <img src={getProductDisplayImage(product)!} alt={product.title} className="w-12 h-12 rounded-lg object-cover flex-shrink-0" />
+                      ) : (
+                        <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center text-[10px] font-semibold text-muted-foreground flex-shrink-0">
+                          No Image
                         </div>
-                    </TableCell>
-                    <TableCell>
-                        <Badge variant="outline">{product.category}</Badge>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-col gap-1 w-28">
-                        <Input
-                          type="number"
-                          placeholder="MRP"
-                          className="h-8 text-sm"
-                          value={editedPrices[product.id]?.mrp ?? product.mrp ?? 0}
-                          onChange={(e) => handlePriceChange(product.id, 'mrp', parseFloat(e.target.value) || 0)}
-                        />
+                      )}
+                      <div className="min-w-0 flex-1">
+                        <h3 className="font-bold text-sm text-foreground truncate">{product.title || product.name}</h3>
+                        <p className="text-[11px] text-muted-foreground mt-0.5">{product.category}</p>
                       </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-col gap-1 w-28">
-                        <Input
-                          type="number"
-                          placeholder="Sale Price"
-                          className="h-8 text-sm"
-                          value={editedPrices[product.id]?.price ?? product.price ?? 0}
-                          onChange={(e) => handlePriceChange(product.id, 'price', parseFloat(e.target.value) || 0)}
-                        />
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                        {product.stock_quantity ?? 'N/A'}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={product.status === 'active' ? 'default' : 'secondary'}>
-                        {product.status || 'Active'}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex gap-2 justify-end">
-                        {editedPrices[product.id] && (
-                          <Button
-                            size="sm"
-                            variant="default"
-                            className="h-8 text-xs"
-                            onClick={() => handleSavePrices(product.id)}
-                            disabled={savingProductId === product.id}
-                          >
-                            {savingProductId === product.id ? 'Saving...' : 'Save'}
-                          </Button>
-                        )}
+                      <div className="flex-shrink-0">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="h-8 w-8 p-0">
-                              <span className="sr-only">Open menu</span>
+                            <Button variant="ghost" className="h-11 w-11 p-0 rounded-full border border-border/65">
                               <MoreHorizontal className="h-4 w-4" />
+                              <span className="sr-only">Actions</span>
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                             <DropdownMenuLabel>Actions</DropdownMenuLabel>
                             <DropdownMenuItem onClick={() => handleEditClick(product)}>
-                              <Pencil className="mr-2 h-4 w-4" />
-                              Edit
+                              <Pencil className="mr-2 h-4 w-4" /> Edit
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem 
-                              onClick={() => handleDeleteClick(product)}
-                              className="text-red-600 focus:text-red-600"
-                            >
-                              <Trash2 className="mr-2 h-4 w-4" />
-                              Delete
+                            <DropdownMenuItem onClick={() => handleDeleteClick(product)} className="text-red-600 focus:text-red-600">
+                              <Trash2 className="mr-2 h-4 w-4" /> Delete
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </div>
-                    </TableCell>
-                  </TableRow>
+                    </div>
+
+                    {/* Pricing Grid with 44px Hardened Touch Targets */}
+                    <div className="grid grid-cols-2 gap-4 pt-2 border-t border-border/40">
+                      <div className="flex flex-col gap-1.5">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">MRP</span>
+                        <Input
+                          type="number"
+                          placeholder="MRP"
+                          className="h-11 text-sm bg-muted/10 border border-border"
+                          value={editedPrices[product.id]?.mrp ?? product.mrp ?? 0}
+                          disabled={savingProductId === product.id}
+                          onChange={(e) => handlePriceChange(product.id, 'mrp', parseFloat(e.target.value) || 0)}
+                        />
+                      </div>
+                      <div className="flex flex-col gap-1.5">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Sale Price</span>
+                        <Input
+                          type="number"
+                          placeholder="Sale Price"
+                          className="h-11 text-sm bg-muted/10 border border-border"
+                          value={editedPrices[product.id]?.price ?? product.price ?? 0}
+                          disabled={savingProductId === product.id}
+                          onChange={(e) => handlePriceChange(product.id, 'price', parseFloat(e.target.value) || 0)}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Save / Cancel buttons if edited - Prevents CLS by displaying cleanly in dedicated block */}
+                    {editedPrices[product.id] && (
+                      <div className="flex gap-2 w-full pt-2 border-t border-border/40">
+                        <Button
+                          variant="outline"
+                          className="flex-1 h-11 text-sm"
+                          onClick={() => handleDiscardPrices(product.id)}
+                          disabled={savingProductId === product.id}
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          className="flex-1 h-11 text-sm bg-primary text-white hover:bg-primary/95"
+                          onClick={() => handleSavePrices(product.id)}
+                          disabled={savingProductId === product.id}
+                        >
+                          {savingProductId === product.id ? (
+                            <span className="flex items-center gap-1 justify-center">
+                              <Loader2 className="h-4 w-4 animate-spin" /> Saving...
+                            </span>
+                          ) : 'Save'}
+                        </Button>
+                      </div>
+                    )}
+
+                    {/* Stock status footer */}
+                    <div className="flex justify-between items-center pt-2 border-t border-border/40 text-xs">
+                      <div className="text-muted-foreground">
+                        Stock: <span className="font-semibold text-foreground">{product.stock_quantity ?? 'N/A'}</span>
+                      </div>
+                      <div>
+                        <Badge variant={product.status === 'active' ? 'default' : 'secondary'}>
+                          {product.status || 'Active'}
+                        </Badge>
+                      </div>
+                    </div>
+                  </div>
                 ))}
-              </TableBody>
-            </Table>
+              </div>
+            </>
           )}
         </CardContent>
       </Card>
@@ -567,10 +802,10 @@ export default function AdminProductsPage() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel className="h-11 sm:h-9">Cancel</AlertDialogCancel>
             <AlertDialogAction 
                 onClick={handleDeleteProduct}
-                className="bg-red-600 focus:ring-red-600 hover:bg-red-700"
+                className="h-11 sm:h-9 bg-red-600 focus:ring-red-600 hover:bg-red-700 text-white"
             >
               Delete
             </AlertDialogAction>

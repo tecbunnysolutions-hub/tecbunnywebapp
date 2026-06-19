@@ -145,6 +145,44 @@ const cartReminderSchema = z.object({
   cartLink: z.string().url(),
 });
 
+async function fetchWithTimeoutAndRetry(
+  url: string,
+  options: RequestInit,
+  timeoutMs = 8000,
+  maxAttempts = 3
+): Promise<Response> {
+  let lastError: any;
+  let delay = 1000;
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    const controller = new AbortController();
+    const id = setTimeout(() => controller.abort(), timeoutMs);
+
+    try {
+      const response = await fetch(url, {
+        ...options,
+        signal: controller.signal,
+      });
+      clearTimeout(id);
+      return response;
+    } catch (err: any) {
+      clearTimeout(id);
+      lastError = err;
+      
+      const isTimeout = err.name === 'AbortError';
+      logger.warn(`WhatsApp dispatch attempt ${attempt} failed: ${isTimeout ? 'Timeout' : err.message}`);
+      
+      if (attempt < maxAttempts) {
+        const jitter = Math.random() * 200;
+        await new Promise((resolve) => setTimeout(resolve, delay + jitter));
+        delay *= 2;
+      }
+    }
+  }
+
+  throw lastError || new Error(`Failed to fetch after ${maxAttempts} attempts`);
+}
+
 // WhatsApp Business API service for TecBunny
 export class WhatsAppService {
   private baseUrl: string;
@@ -253,7 +291,7 @@ export class WhatsAppService {
         };
       }
 
-      const response = await fetch(url, {
+      const response = await fetchWithTimeoutAndRetry(url, {
         method: 'POST',
         headers,
         body: JSON.stringify(payload)

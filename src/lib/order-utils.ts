@@ -71,3 +71,32 @@ export function formatOrderId(orderId: string): string {
 export function getOrderDisplayText(orderId: string): string {
   return `Order #${formatOrderNumber(orderId)}`;
 }
+
+export interface BaseCartItem {
+  price: number;
+  quantity: number;
+  gstRate?: number;
+}
+
+export function calculateCartTotals(items: BaseCartItem[]) {
+  const subtotal = items.reduce((acc, item) => {
+    const price = item.price;
+    const gstRate = typeof item.gstRate === 'number' ? item.gstRate : 18;
+    const basePrice = price / (1 + (gstRate / 100));
+    return acc + basePrice * item.quantity;
+  }, 0);
+
+  const gstAmount = items.reduce((acc, item) => {
+    const price = item.price;
+    const gstRate = typeof item.gstRate === 'number' ? item.gstRate : 18;
+    const basePrice = price / (1 + (gstRate / 100));
+    const gst = basePrice * (gstRate / 100);
+    return acc + gst * item.quantity;
+  }, 0);
+
+  return {
+    subtotal: Math.round(subtotal * 100) / 100,
+    gstAmount: Math.round(gstAmount * 100) / 100,
+    total: Math.round((subtotal + gstAmount) * 100) / 100,
+  };
+}

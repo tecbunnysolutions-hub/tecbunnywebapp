@@ -36,7 +36,8 @@ export async function POST(request: NextRequest) {
   const correlationId = request.headers.get('x-correlation-id');
   try {
     const clientIp = getClientIp(request);
-    if (!rateLimit(clientIp, 'auth_verify_otp_ip', VERIFY_OTP_IP_LIMIT)) {
+    const ipRl = await rateLimit(`verify_ip:${clientIp}`, VERIFY_OTP_IP_LIMIT.limit, VERIFY_OTP_IP_LIMIT.windowMs);
+    if (!ipRl.allowed) {
       return apiError('RATE_LIMITED', { overrideMessage: 'Too many OTP verification attempts. Please try again later.', correlationId });
     }
 
@@ -61,8 +62,11 @@ export async function POST(request: NextRequest) {
   const normalizedMobile = mobile ? String(mobile).replace(/\D/g, '') : undefined;
 
   const identifierRateKey = normalizedEmail ? `email:${normalizedEmail}` : normalizedMobile ? `mobile:${normalizedMobile}` : undefined;
-  if (identifierRateKey && !rateLimit(identifierRateKey, 'auth_verify_otp_identifier', VERIFY_OTP_IDENTIFIER_LIMIT)) {
-    return apiError('RATE_LIMITED', { overrideMessage: 'Too many OTP verification attempts for this account. Please try again later.', correlationId });
+  if (identifierRateKey) {
+    const idRl = await rateLimit(`verify_id:${identifierRateKey}`, VERIFY_OTP_IDENTIFIER_LIMIT.limit, VERIFY_OTP_IDENTIFIER_LIMIT.windowMs);
+    if (!idRl.allowed) {
+      return apiError('RATE_LIMITED', { overrideMessage: 'Too many OTP verification attempts for this account. Please try again later.', correlationId });
+    }
   }
 
   // Debug: log non-sensitive request shape in development for easier tracing.

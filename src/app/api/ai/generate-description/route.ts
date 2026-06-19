@@ -62,14 +62,14 @@ async function buildSystemPrompt(input: z.infer<typeof requestSchema>): Promise<
 
   const systemPrompt = await getSystemPrompt('generate_description');
   return systemPrompt
-    .replace(/{title}/g, title)
-    .replace(/{category}/g, category)
-    .replace(/{brand}/g, brand || 'N/A')
-    .replace(/{model_number}/g, model_number || 'N/A')
-    .replace(/{featureBlock}/g, featureBlock)
-    .replace(/{hsnNote}/g, hsnNote)
-    .replace(/{accent_color}/g, accent_color || '#d9534f')
-    .replace(/{hsnSummaryNote}/g, hsnSummaryNote);
+    .replace(/{title}/g, () => title)
+    .replace(/{category}/g, () => category)
+    .replace(/{brand}/g, () => brand || 'N/A')
+    .replace(/{model_number}/g, () => model_number || 'N/A')
+    .replace(/{featureBlock}/g, () => featureBlock)
+    .replace(/{hsnNote}/g, () => hsnNote)
+    .replace(/{accent_color}/g, () => accent_color || '#d9534f')
+    .replace(/{hsnSummaryNote}/g, () => hsnSummaryNote);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

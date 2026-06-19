@@ -72,8 +72,8 @@ async function buildIngestionPrompt(rawInput: string, imageBase64?: string): Pro
 
   const systemPrompt = await getSystemPrompt('ai_add');
   return systemPrompt
-    .replace('{imageNote}', imageNote)
-    .replace('{rawInput}', rawInput);
+    .replace('{imageNote}', () => imageNote)
+    .replace('{rawInput}', () => rawInput);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

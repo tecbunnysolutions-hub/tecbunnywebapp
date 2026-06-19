@@ -118,20 +118,32 @@ export async function GET(request: NextRequest) {
         );
       }
 
-      // Get order items separately for each order
-      const ordersWithItems = await Promise.all(
-        (orders || []).map(async (order) => {
-          const { data: items } = await supabase
-            .from('order_items')
-            .select('*')
-            .eq('order_id', order.id);
-          
-          return {
-            ...order,
-            order_items: items || []
-          };
-        })
-      );
+      // Optimize order items query: fetch in bulk using a single query with .in() filter to avoid N+1 query problem
+      const orderIds = (orders || []).map(o => o.id);
+      const orderItemsMap: Record<string, any[]> = {};
+      
+      if (orderIds.length > 0) {
+        const { data: allItems, error: itemsError } = await supabase
+          .from('order_items')
+          .select('*')
+          .in('order_id', orderIds);
+        
+        if (!itemsError && allItems) {
+          allItems.forEach((item: any) => {
+            if (!orderItemsMap[item.order_id]) {
+              orderItemsMap[item.order_id] = [];
+            }
+            orderItemsMap[item.order_id].push(item);
+          });
+        } else if (itemsError) {
+          logger.error('walk-in-orders.bulk_items_lookup_failed', { error: itemsError });
+        }
+      }
+
+      const ordersWithItems = (orders || []).map((order) => ({
+        ...order,
+        order_items: orderItemsMap[order.id] || []
+      }));
 
       return NextResponse.json({ orders: ordersWithItems });
     }

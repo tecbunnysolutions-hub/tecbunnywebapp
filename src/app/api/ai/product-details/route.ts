@@ -242,7 +242,7 @@ export async function POST(request: NextRequest) {
 
     const systemPrompt = await getSystemPrompt('product_details');
     const prompt = systemPrompt
-      .replace('{schema}', JSON.stringify({
+      .replace('{schema}', () => JSON.stringify({
         title: 'string | null',
         vendor: 'string | null',
         brand: 'string | null',
@@ -264,15 +264,15 @@ export async function POST(request: NextRequest) {
         imageUrl: 'string | null',
         productUrl: 'string | null',
       }, null, 2))
-      .replace('{existingData}', JSON.stringify(existingData || {}, null, 2))
-      .replace('{pageMetadata}', JSON.stringify({
+      .replace('{existingData}', () => JSON.stringify(existingData || {}, null, 2))
+      .replace('{pageMetadata}', () => JSON.stringify({
         productUrl,
         title: pageContext.title,
         ogTitle: pageContext.ogTitle,
         description: pageContext.description,
         imageUrl: pageContext.imageUrl,
       }, null, 2))
-      .replace('{bodyText}', pageContext.bodyText);
+      .replace('{bodyText}', () => pageContext.bodyText);
 
     const rawResponse = await generateGeminiText({
       prompt,

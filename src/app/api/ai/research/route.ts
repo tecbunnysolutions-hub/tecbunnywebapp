@@ -6,6 +6,8 @@ import { generateGeminiText } from '@/lib/ai/gemini-service';
 import { getProductDisplayImage } from '@/lib/image-utils';
 import { getRedis } from '@/lib/redis';
 import { getSystemPrompt } from '@/lib/ai/prompts';
+import { rateLimit } from '@/lib/rate-limit';
+import { logger } from '@/lib/logger';
 
 const MAX_SOURCES = 3;
 const MAX_SOURCE_CHARS = 3500;
@@ -86,7 +88,7 @@ async function fetchSearchUrls(query: string): Promise<string[]> {
 }
 
 async function fetchReadableContent(url: string): Promise<string> {
-  const readerUrl = `https://r.jina.ai/http://${url}`;
+  const readerUrl = `https://r.jina.ai/${url}`;
   const response = await fetchWithTimeout(readerUrl, { headers: { 'User-Agent': 'Mozilla/5.0' } });
   if (!response.ok) return '';
   const text = await response.text();
@@ -95,6 +97,13 @@ async function fetchReadableContent(url: string): Promise<string> {
 
 export async function POST(request: NextRequest) {
   try {
+    const rateLimitKey = `ai:research:${request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'anon'}`;
+    const limitCheck = await rateLimit(rateLimitKey, 10, 60000);
+    if (!limitCheck.allowed) {
+      logger.warn('ai_research_rate_limited', { rateLimitKey });
+      return NextResponse.json({ error: 'Rate limit exceeded. Please wait a minute.' }, { status: 429 });
+    }
+
     const body = await request.json();
     const query = typeof body?.query === 'string' ? body.query.trim() : '';
     const urls = Array.isArray(body?.urls) ? body.urls : [];
@@ -183,9 +192,9 @@ export async function POST(request: NextRequest) {
 
     const systemPrompt = await getSystemPrompt('research');
     const prompt = systemPrompt
-      .replace('{query}', query)
-      .replace('{productContext}', productContext || 'No internal product data available for this query.')
-      .replace('{sourceContext}', sourceContext || 'No external sources were available. Rely on product information provided.');
+      .replace('{query}', () => query)
+      .replace('{productContext}', () => productContext || 'No internal product data available for this query.')
+      .replace('{sourceContext}', () => sourceContext || 'No external sources were available. Rely on product information provided.');
 
     let rawResponse = await generateGeminiText({
       prompt,

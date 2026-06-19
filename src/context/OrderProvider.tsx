@@ -9,7 +9,7 @@ import { useCart } from '@/lib/hooks';
 import { useAuth } from '@/lib/hooks';
 import { logger } from '@/lib/logger';
 import { deserializeOrder, normalizeOrderStatus } from '@/lib/orders/normalizers';
-import { formatOrderNumber } from '@/lib/order-utils';
+import { formatOrderNumber, calculateCartTotals } from '@/lib/order-utils';
 
 interface OrderContextType {
   orders: Order[];
@@ -137,22 +137,7 @@ export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       const hydratedCartItems = await hydrateCartItemsWithProductData(cartItems);
 
       // Calculate totals
-      const subtotal = hydratedCartItems.reduce((total, item) => {
-        const price = item.price;
-        const gstRate = item.gstRate || 18; // Default 18% GST
-        const basePrice = price / (1 + (gstRate / 100));
-        return total + basePrice * item.quantity;
-      }, 0);
-
-      const gstAmount = hydratedCartItems.reduce((total, item) => {
-        const price = item.price;
-        const gstRate = item.gstRate || 18;
-        const basePrice = price / (1 + (gstRate / 100));
-        const gst = basePrice * (gstRate / 100);
-        return total + gst * item.quantity;
-      }, 0);
-
-      const total = subtotal + gstAmount;
+      const { subtotal, gstAmount, total } = calculateCartTotals(hydratedCartItems);
 
       // Convert cart items to order items
       const orderItems: OrderItem[] = hydratedCartItems.map(item => ({

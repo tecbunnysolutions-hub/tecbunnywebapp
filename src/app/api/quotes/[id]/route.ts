@@ -1,6 +1,8 @@
 import { createClient } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
 import { buildPdf, loadCompanyInfo } from '@/lib/pdf-generator';
+import { createClient as createServerClient } from '@/lib/supabase/server';
+import { requireAdmin } from '@/lib/admin-auth';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co',
@@ -12,6 +14,35 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     const { id } = await params;
 
     const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+
+    if (!isUuid) {
+      const supabaseAuth = await createServerClient();
+      const { data: { user } } = await supabaseAuth.auth.getUser();
+
+      if (!user) {
+        return NextResponse.json(
+          { error: 'Authentication required to view quotes by sequential identifier' },
+          { status: 401 }
+        );
+      }
+
+      // Check if user is admin/staff
+      const { isAdmin } = await requireAdmin(user, supabaseAuth);
+
+      if (!isAdmin) {
+        // Enforce owner check
+        const { data: quoteCheck } = await supabase
+          .from('quotes')
+          .select('user_id')
+          .eq('quote_number', id)
+          .maybeSingle();
+
+        if (!quoteCheck || quoteCheck.user_id !== user.id) {
+          return NextResponse.json({ error: 'Access denied' }, { status: 403 });
+        }
+      }
+    }
+
     let query = supabase.from('quotes').select('*');
     if (isUuid) {
       query = query.eq('id', id);

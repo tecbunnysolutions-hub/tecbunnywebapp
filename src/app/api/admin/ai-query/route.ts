@@ -293,8 +293,8 @@ export async function POST(request: NextRequest) {
     try {
       const systemPrompt = await getSystemPrompt('ai_query');
       const prompt = systemPrompt
-        .replace('{rawQuery}', rawQuery)
-        .replace('{contextData}', JSON.stringify(contextData, null, 2));
+        .replace('{rawQuery}', () => rawQuery)
+        .replace('{contextData}', () => JSON.stringify(contextData, null, 2));
       const answer = await withTimeout(
         generateGeminiText({ prompt, temperature: 0.3, maxOutputTokens: 350 }),
         AI_RESPONSE_TIMEOUT_MS,

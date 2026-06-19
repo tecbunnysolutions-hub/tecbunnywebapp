@@ -230,24 +230,46 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to fetch users' }, { status: 500 });
     }
 
-    const authUsers = await Promise.all(
-      (profiles || []).map(async (profile: any) => {
-        try {
-          const { data, error: userError } = await getSupabaseAdmin().auth.admin.getUserById(profile.id);
-          if (userError || !data?.user) {
-            logger.warn('users.auth_lookup_failed', { userId: profile.id, error: userError });
-            return null;
-          }
-          return data.user;
-        } catch (authLookupError) {
-          logger.error('users.auth_lookup_exception', { userId: profile.id, error: authLookupError });
-          return null;
-        }
-      })
-    );
+    const profileIds = (profiles || []).map((p: any) => p.id);
+    const authUsersMap: Record<string, any> = {};
 
-    const combinedUsers = (profiles || []).map((profile: any, index: number) => {
-      const authUser = authUsers[index];
+    if (profileIds.length > 0) {
+      try {
+        const { data: authSummary, error: summaryError } = await getSupabaseAdmin()
+          .from('auth_users_summary')
+          .select('*')
+          .in('id', profileIds);
+
+        if (!summaryError && authSummary) {
+          authSummary.forEach((u: any) => {
+            authUsersMap[u.id] = u;
+          });
+        } else {
+          logger.warn('users.auth_summary_view_failed_falling_back', { error: summaryError });
+          // Fallback to individual calls if the view is not yet deployed or fails
+          const authUsers = await Promise.all(
+            profileIds.map(async (id) => {
+              try {
+                const { data, error: userError } = await getSupabaseAdmin().auth.admin.getUserById(id);
+                return userError || !data?.user ? null : data.user;
+              } catch {
+                return null;
+              }
+            })
+          );
+          profileIds.forEach((id, idx) => {
+            if (authUsers[idx]) {
+              authUsersMap[id] = authUsers[idx];
+            }
+          });
+        }
+      } catch (err) {
+        logger.error('users.auth_summary_exception_falling_back', { error: err });
+      }
+    }
+
+    const combinedUsers = (profiles || []).map((profile: any) => {
+      const authUser = authUsersMap[profile.id];
       return {
         id: profile.id,
         email: authUser?.email ?? profile.email ?? null,

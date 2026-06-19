@@ -6,6 +6,7 @@ import { AuthContext } from '../context/AuthProvider';
 import { useWishlistStore } from '../store/wishlistStore';
 import { useCartStore } from '../store/cartStore';
 import { useAnalytics } from '../hooks/use-analytics';
+import { calculateCartTotals } from './order-utils';
 
 export const useWishlist = () => {
   const { wishlistItems, toggleWishlist, isInWishlist, wishlistCount, setWishlistOwner } = useWishlistStore();
@@ -127,15 +128,11 @@ export const useCart = () => {
   }, [storeRefreshPricing, user]);
 
   // Compute legacy values
+  const cartTotals = useMemo(() => calculateCartTotals(cartItems), [cartItems]);
   const cartCount = useMemo(() => cartItems.reduce((count, item) => count + item.quantity, 0), [cartItems]);
-  const cartTotal = useMemo(() => cartItems.reduce((total, item) => total + item.price * item.quantity, 0), [cartItems]);
-  const cartSubtotal = useMemo(() => cartItems.reduce((total, item) => {
-    const price = item.price;
-    const gstRate = typeof item.gstRate === 'number' ? item.gstRate : 18;
-    const basePrice = price / (1 + (gstRate / 100));
-    return total + basePrice * item.quantity;
-  }, 0), [cartItems]);
-  const cartGst = cartTotal - cartSubtotal;
+  const cartTotal = cartTotals.total;
+  const cartSubtotal = cartTotals.subtotal;
+  const cartGst = cartTotals.gstAmount;
 
   return {
     cartItems,
