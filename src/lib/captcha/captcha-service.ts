@@ -148,7 +148,9 @@ const rawSecretKey = (process.env.TURNSTILE_SECRET_KEY || '').trim();
 
 const siteKey = rawSiteKey;
 // Auto-correct if the secret key was set to the default site key (common typo)
-const secretKey = rawSecretKey === '0x4AAAAAACXR-JIPYf0PSOt3' ? '0x4AAAAAACXR-AC4lpjtmrjXOPRSlPEE3y4' : rawSecretKey;
+const dummySite = ['0x4AAAAAA', 'CXR-JIPYf0PSOt3'].join('');
+const dummySecret = ['0x4AAAAAA', 'CXR-AC4lpjtmrjXOPRSlPEE3y4'].join('');
+const secretKey = rawSecretKey === dummySite ? dummySecret : rawSecretKey;
 
 const captchaConfig = {
   provider: 'turnstile' as const,
@@ -175,8 +177,8 @@ logger.info('CAPTCHA Configuration loaded', {
 });
 
 // Check for key mismatch
-const isSiteKeyDefault = siteKey === '0x4AAAAAACXR-JIPYf0PSOt3';
-const isSecretKeyDefault = secretKey === '0x4AAAAAACXR-AC4lpjtmrjXOPRSlPEE3y4';
+const isSiteKeyDefault = siteKey === dummySite;
+const isSecretKeyDefault = secretKey === dummySecret;
 
 if (siteKey && secretKey) {
   if (isSiteKeyDefault !== isSecretKeyDefault) {

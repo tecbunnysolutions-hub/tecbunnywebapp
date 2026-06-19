@@ -59,7 +59,11 @@ export async function uploadToSupabase(
       }
     }
     
-    const filePath = `${folder}/${fileName}`;
+    // Sanitize fileName to prevent path traversal
+    fileName = fileName.replace(/[^a-zA-Z0-9.\-_]/g, '');
+    const folderName = folder.replace(/[^a-zA-Z0-9\-_]/g, '');
+    
+    const filePath = `${folderName}/${fileName}`;
 
     let fileBuffer: ArrayBuffer | Buffer;
     let contentType = 'application/octet-stream';
