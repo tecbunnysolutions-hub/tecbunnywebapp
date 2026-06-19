@@ -80,8 +80,8 @@ export function ProductDetailPage({ productId, initialProduct, sourceContext }: 
       const rawPrice = typeof p.price === 'number' ? p.price : Number(p.price) || 0;
       const rawMrp = typeof p.mrp === 'number' ? p.mrp : Number(p.mrp) || (rawPrice * 1.2);
       
-      const priceNum = Math.round(rawPrice * (1 + gstRate / 100));
-      const mrpNum = Math.round(rawMrp * (1 + gstRate / 100));
+      const priceNum = rawPrice;
+      const mrpNum = rawMrp;
 
       return {
         ...p,
@@ -280,8 +280,8 @@ export function ProductDetailPage({ productId, initialProduct, sourceContext }: 
         const rawPrice = typeof data.price === 'number' ? data.price : Number(data.price) || 0;
         const rawMrp = typeof data.mrp === 'number' ? data.mrp : Number(data.mrp) || (rawPrice * 1.2);
         
-        const priceNum = Math.round(rawPrice * (1 + gstRate / 100));
-        const mrpNum = Math.round(rawMrp * (1 + gstRate / 100));
+        const priceNum = rawPrice;
+        const mrpNum = rawMrp;
 
         setProduct({
           ...data,

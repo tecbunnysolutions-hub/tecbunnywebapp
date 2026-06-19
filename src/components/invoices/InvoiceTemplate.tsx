@@ -186,7 +186,8 @@ export function InvoiceTemplate({ order, settings, autoPrint }: InvoiceTemplateP
                                     const gstRate = item.gstRate || 0;
                                     const basePrice = item.price / (1 + (gstRate / 100));
                                     const taxableValue = basePrice * item.quantity;
-                                    const taxAmount = (item.price * item.quantity) - taxableValue;
+                                    const taxAmount = taxableValue * (gstRate / 100);
+                                    const totalWithTax = taxableValue + taxAmount;
                                     const splitRate = gstRate / 2;
                                     const splitTax = taxAmount / 2;
                                     return (
@@ -210,7 +211,7 @@ export function InvoiceTemplate({ order, settings, autoPrint }: InvoiceTemplateP
                                                         <TableCell className="text-right">₹{money(taxAmount)}</TableCell>
                                                     </>
                                                 )}
-                                                <TableCell className="text-right font-medium">₹{money(item.price * item.quantity)}</TableCell>
+                                                <TableCell className="text-right font-medium">₹{money(totalWithTax)}</TableCell>
                                             </TableRow>
                                             {item.serialNumbers && item.serialNumbers.length > 0 && (
                                                 <TableRow className="bg-muted/50">
@@ -255,12 +256,6 @@ export function InvoiceTemplate({ order, settings, autoPrint }: InvoiceTemplateP
                                     <div className="flex justify-between">
                                         <span>Shipping Charges</span>
                                         <span>₹{order.shipping_amount.toFixed(2)}</span>
-                                    </div>
-                                )}
-                                {order.discount_amount != null && order.discount_amount > 0 && (
-                                    <div className="flex justify-between text-green-600 font-semibold">
-                                        <span>Discount</span>
-                                        <span>-₹{order.discount_amount.toFixed(2)}</span>
                                     </div>
                                 )}
                                 <Separator />

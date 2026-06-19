@@ -894,8 +894,8 @@ export default function HomePage() {
                 const rawPrice = Number(product.price ?? product.mrp ?? 0);
                 const rawMrp = Number(product.mrp ?? rawPrice);
                 
-                const price = Math.round(rawPrice * (1 + gstRate / 100));
-                const oldPrice = Math.round(rawMrp * (1 + gstRate / 100));
+                const price = rawPrice;
+                const oldPrice = rawMrp;
                 const imageUrl = getProductDisplayImage(product) || '';
                 const resolvedProduct: Product = {
                   ...product,

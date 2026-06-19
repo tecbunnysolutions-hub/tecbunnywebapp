@@ -189,12 +189,9 @@ export class CheckoutEngine {
         const itemDiscountInclusive = distributedDiscounts[index];
         const itemNetInclusive = Math.max(0, itemGrossInclusive - itemDiscountInclusive);
 
-        // Compute forward: base net exclusive, then GST as the remainder to match net inclusive exactly
-        const itemNetInclusivePaise = toPaise(itemNetInclusive);
-        const itemNetExclusivePaise = toPaise(itemNetInclusive / (1 + (gstRate / 100)));
-        const itemGstPaise = itemNetInclusivePaise - itemNetExclusivePaise;
-        const itemNetExclusive = fromPaise(itemNetExclusivePaise);
-        const itemGst = fromPaise(itemGstPaise);
+        // Compute backward: extract base from inclusive net
+        const itemNetExclusive = roundMoney(itemNetInclusive / (1 + (gstRate / 100)));
+        const itemGst = roundMoney(itemNetInclusive - itemNetExclusive);
 
         finalSubtotal += itemNetExclusive;
         gstAmount += itemGst;
@@ -204,8 +201,8 @@ export class CheckoutEngine {
           product_id: item.id,
           quantity: item.quantity,
           unit_price: item.price,
-          total_price: itemGrossInclusive,
-          discount_amount: itemDiscountInclusive,
+          total_price: itemNetExclusive, // Price before tax after discount
+          discount_amount: itemDiscountExclusive,
           pricing_info: pInfo.pricing_info
         };
       });

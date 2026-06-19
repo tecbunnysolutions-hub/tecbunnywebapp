@@ -299,8 +299,8 @@ function normalizeRawProduct(p: any): Product {
   }
 
   const gstRate = resolvedGst ?? 18;
-  const priceNum = Math.round(rawPrice * (1 + gstRate / 100));
-  const mrpNum = Math.round(rawMrp * (1 + gstRate / 100));
+  const priceNum = rawPrice;
+  const mrpNum = rawMrp;
 
   const resolvedHsn = typeof rawHsn === 'string' && rawHsn.trim().length > 0
     ? rawHsn.trim()
