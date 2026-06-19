@@ -8,6 +8,7 @@ import { logger } from '@/lib/logger';
 import { getProductDisplayImage } from '@/lib/image-utils';
 import { filterPubliclyVisibleProducts, isPubliclyVisibleProduct } from '@/lib/product-visibility';
 import { classifyProductTax, TaxClassificationError, type ProductTaxClassification } from '@/lib/ai/tax-classification';
+import { processAndUploadExternalImage } from '@/lib/image-processor';
 
 const HANDLE_MAX_LENGTH = 60;
 const PUBLIC_PRODUCTS_CACHE_CONTROL = 'public, s-maxage=300, stale-while-revalidate=900';
@@ -661,7 +662,7 @@ export async function POST(request: NextRequest) {
     } = body;
 
     // Normalize images to an array of URL strings (supports legacy object shape {url})
-    const normalizedImages = [
+    let normalizedImages = [
       ...(Array.isArray(images)
         ? images.map((img: any) => typeof img === 'string' ? img : img?.url).filter(Boolean)
         : []),
@@ -692,6 +693,13 @@ export async function POST(request: NextRequest) {
       : authClient;
     const user = session.user;
     const auditUserId = getUuidAuditUserId(user.id);
+
+    // Process external images
+    if (normalizedImages.length > 0) {
+      normalizedImages = await Promise.all(
+        normalizedImages.map(img => processAndUploadExternalImage(img, supabase))
+      );
+    }
 
     // Create product; now that handle is available, prefer upsert on handle (or closest alias), with safe fallback
     let product: any = null;

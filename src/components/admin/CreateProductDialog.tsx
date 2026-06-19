@@ -6,6 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 
 import { Sparkles, Loader2 } from 'lucide-react';
+import { SingleImageUploader } from './SingleImageUploader';
 
 import {
   Dialog,
@@ -42,7 +43,7 @@ const productSchema = z.object({
   price: z.coerce.number().min(0, 'Price must be positive'),
   category: z.string().min(1, 'Category is required'),
   brand: z.string().optional(),
-  image: z.string().url('Must be a valid URL'),
+  image: z.union([z.string().url('Must be a valid URL'), z.literal('')]).optional(),
   stock_quantity: z.coerce.number().min(0).optional(),
   status: z.enum(['active', 'archived', 'draft']).default('active'),
 });
@@ -425,13 +426,28 @@ export function CreateProductDialog({ open, onOpenChange, onProductCreated }: Cr
               name="image"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Image URL</FormLabel>
+                  <FormLabel>Product Image</FormLabel>
                   <FormControl>
-                    <Input placeholder="https://..." {...field} />
+                    <div className="space-y-2">
+                      <SingleImageUploader
+                        value={field.value || ''}
+                        onChange={field.onChange}
+                        type="product"
+                      />
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-muted-foreground whitespace-nowrap">Or paste URL:</span>
+                        <Input 
+                          placeholder="https://..." 
+                          {...field} 
+                          value={field.value || ''} 
+                          className="h-8 text-xs bg-slate-950/80 text-slate-100 border-white/10"
+                        />
+                      </div>
+                    </div>
                   </FormControl>
                   <FormMessage />
                   <FormDescription>
-                    Provide a direct link to the product image.
+                    Upload an image or paste a direct image URL.
                   </FormDescription>
                 </FormItem>
               )}

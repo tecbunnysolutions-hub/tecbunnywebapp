@@ -6,6 +6,7 @@ import { logger } from '@/lib/logger';
 import { getProductDisplayImage } from '@/lib/image-utils';
 import { isPubliclyVisibleProduct } from '@/lib/product-visibility';
 import { classifyProductTax, TaxClassificationError } from '@/lib/ai/tax-classification';
+import { processAndUploadExternalImage } from '@/lib/image-processor';
 
 const ADMIN_ROLES = new Set(['admin', 'manager', 'superadmin']);
 
@@ -110,6 +111,24 @@ export async function PATCH(
           { status: 422 }
         );
       }
+    }
+
+    if (updateData.image && typeof updateData.image === 'string') {
+      updateData.image = await processAndUploadExternalImage(updateData.image, supabase);
+    }
+    
+    if (updateData.images && Array.isArray(updateData.images)) {
+      updateData.images = await Promise.all(
+        updateData.images.map(async (img: any) => {
+          if (typeof img === 'string') {
+            return await processAndUploadExternalImage(img, supabase);
+          }
+          if (img && typeof img === 'object' && img.url) {
+            img.url = await processAndUploadExternalImage(img.url, supabase);
+          }
+          return img;
+        })
+      );
     }
 
     const mergedProductForTax = { ...existingProduct, ...updateData };

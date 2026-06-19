@@ -471,12 +471,29 @@ export default function NewProductPage() {
                           <div>
                             <Label className="text-sm font-medium">Main Product Image</Label>
                             {imagePreview && (
-                              <div className="mb-4">
-                                <img 
-                                  src={imagePreview} 
-                                  alt="Product preview" 
-                                  className="w-full h-48 object-cover rounded-lg border"
-                                />
+                              <div className="mb-4 flex items-center gap-4">
+                                <div className="relative group w-32 h-32 rounded-lg border overflow-hidden shrink-0">
+                                  <img 
+                                    src={imagePreview} 
+                                    alt="Product preview" 
+                                    className="w-full h-full object-cover"
+                                  />
+                                  <button
+                                    type="button"
+                                    onClick={() => setImagePreview('')}
+                                    className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-xs font-medium transition-opacity"
+                                  >
+                                    Remove
+                                  </button>
+                                </div>
+                                <Button
+                                  type="button"
+                                  variant="destructive"
+                                  size="sm"
+                                  onClick={() => setImagePreview('')}
+                                >
+                                  Remove Image
+                                </Button>
                               </div>
                             )}
                             <Input

@@ -11,7 +11,7 @@ export const SingleImageUploader = ({
 }: { 
   value: string; 
   onChange: (newValue: string) => void;
-  type: 'logo' | 'favicon' | 'general';
+  type: 'logo' | 'favicon' | 'general' | 'product';
 }) => {
   const [uploading, setUploading] = React.useState(false);
   const { toast } = useToast();
@@ -68,9 +68,18 @@ export const SingleImageUploader = ({
 
   return (
     <div className="flex items-center gap-4 mt-2">
-      <div className="w-16 h-16 rounded border bg-slate-950 flex items-center justify-center overflow-hidden shrink-0">
+      <div className="relative w-16 h-16 rounded border bg-slate-950 flex items-center justify-center overflow-hidden shrink-0 group">
         {value ? (
-          <img src={value} alt="Preview" className="w-full h-full object-contain" />
+          <>
+            <img src={value} alt="Preview" className="w-full h-full object-contain" />
+            <button
+              type="button"
+              onClick={() => onChange('')}
+              className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-[10px] font-medium transition-opacity"
+            >
+              Remove
+            </button>
+          </>
         ) : (
           <span className="text-xs text-muted-foreground font-mono">None</span>
         )}
@@ -87,6 +96,15 @@ export const SingleImageUploader = ({
           }}
         />
         {uploading && <span className="text-[10px] text-amber-400 animate-pulse">Uploading...</span>}
+        {value && !uploading && (
+          <button
+            type="button"
+            onClick={() => onChange('')}
+            className="text-[10px] text-red-400 hover:text-red-300 hover:underline text-left self-start mt-0.5"
+          >
+            Remove image
+          </button>
+        )}
       </div>
     </div>
   );

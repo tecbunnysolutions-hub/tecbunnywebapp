@@ -414,11 +414,18 @@ export default function EditProductPage() {
                               <Label className="text-sm">Main Product Image</Label>
                               <div className="flex items-center gap-4">
                                 {imagePreview && (
-                                  <div className="relative w-32 h-32 border rounded-lg overflow-hidden">
+                                  <div className="relative group w-32 h-32 border rounded-lg overflow-hidden shrink-0">
                                     <img src={imagePreview} alt="Product preview" className="w-full h-full object-cover" />
+                                    <button
+                                      type="button"
+                                      onClick={() => setImagePreview('')}
+                                      className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-xs font-medium transition-opacity"
+                                    >
+                                      Remove
+                                    </button>
                                   </div>
                                 )}
-                                <div className="flex-1">
+                                <div className="flex-1 space-y-2">
                                   <Input
                                     type="file"
                                     accept="image/*"
@@ -430,9 +437,22 @@ export default function EditProductPage() {
                                     }}
                                     disabled={uploading}
                                   />
-                                  <p className="text-sm text-muted-foreground mt-1">
-                                    Upload a product image (JPG, PNG, WebP)
-                                  </p>
+                                  <div className="flex items-center gap-2">
+                                    <p className="text-sm text-muted-foreground">
+                                      Upload a product image (JPG, PNG, WebP)
+                                    </p>
+                                    {imagePreview && (
+                                      <Button
+                                        type="button"
+                                        variant="destructive"
+                                        size="sm"
+                                        onClick={() => setImagePreview('')}
+                                        className="h-7 text-xs px-2"
+                                      >
+                                        Remove Image
+                                      </Button>
+                                    )}
+                                  </div>
                                 </div>
                               </div>
                             </div>
