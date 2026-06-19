@@ -2804,4 +2804,6 @@ WHERE table_name = 'products' AND table_schema = 'public';
 
 GRANT SELECT ON public.products_columns_view TO anon, authenticated, service_role;
 
+
+
 COMMIT;
