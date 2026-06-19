@@ -764,8 +764,9 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
                       {/* Footer Actions */}
                       <div className="mt-6 flex items-center justify-between pt-4 border-t border-border/60">
                         <div className="flex flex-col">
-                          <span className="text-xl font-black tracking-tight text-foreground font-tech">
+                          <span className="text-xl font-black tracking-tight text-foreground font-tech flex items-baseline gap-1.5">
                             ₹{(offerPrice ?? basePrice).toLocaleString('en-IN')}
+                            <span className="text-[10px] font-normal text-muted-foreground uppercase tracking-wide">Inc. GST</span>
                           </span>
                           {offerPrice && (
                             <span className="text-xs text-muted-foreground line-through font-light mt-0.5">
