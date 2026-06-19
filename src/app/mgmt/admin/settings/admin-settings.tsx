@@ -1081,6 +1081,46 @@ function SiteSettingsPageContent() {
                   />
                 </CardContent>
               </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Product Configuration</CardTitle>
+                  <CardDescription>
+                    Configure the categories and brands available when adding or editing products. Separate items by commas.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <FormField
+                    control={form.control}
+                    name="productCategories"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Product Categories</FormLabel>
+                        <FormControl>
+                          <Textarea placeholder="CCTV, Computers, Accessories, ..." {...field} />
+                        </FormControl>
+                        <FormDescription>Comma-separated list of product categories.</FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="partnerBrands"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Product Brands / Vendors</FormLabel>
+                        <FormControl>
+                          <Textarea placeholder="CP PLUS, HIKVISION, DAHUA, ..." {...field} />
+                        </FormControl>
+                        <FormDescription>Comma-separated list of brands and vendors.</FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </CardContent>
+              </Card>
             </TabsContent>
 
             <div className="flex justify-end">

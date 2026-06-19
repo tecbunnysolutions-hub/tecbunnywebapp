@@ -56,21 +56,13 @@ interface CreateProductDialogProps {
   onProductCreated: () => void;
 }
 
-const CATEGORIES = [
-  'CCTV',
-  'Computers',
-  'Accessories',
-  'Services',
-  'Security',
-  'Networking',
-  'Smart Home',
-  'Software',
-];
+
 
 export function CreateProductDialog({ open, onOpenChange, onProductCreated }: CreateProductDialogProps) {
   const { toast } = useToast();
   const [isGenerating, setIsGenerating] = React.useState(false);
   const [productBrands, setProductBrands] = React.useState<string[]>([]);
+  const [productCategories, setProductCategories] = React.useState<string[]>([]);
 
   React.useEffect(() => {
     let isMounted = true;
@@ -102,6 +94,22 @@ export function CreateProductDialog({ open, onOpenChange, onProductCreated }: Cr
         }
       } catch (err) {
         console.error('Failed to fetch brands:', err);
+      }
+
+      try {
+        const res = await fetch('/api/settings?key=productCategories');
+        if (res.ok) {
+          const data = await res.json();
+          const categoriesStr = data?.value;
+          if (categoriesStr && typeof categoriesStr === 'string' && isMounted) {
+            const list = categoriesStr.split(',').map(c => c.trim()).filter(Boolean);
+            if (list.length > 0) {
+              setProductCategories(list);
+            }
+          }
+        }
+      } catch (err) {
+        console.error('Failed to fetch categories:', err);
       }
     };
     if (open) {
@@ -287,20 +295,26 @@ export function CreateProductDialog({ open, onOpenChange, onProductCreated }: Cr
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Category</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    {productCategories.length > 0 ? (
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select category" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {productCategories.map((category) => (
+                            <SelectItem key={category} value={category}>
+                              {category}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    ) : (
                       <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select category" />
-                        </SelectTrigger>
+                        <Input placeholder="e.g. CCTV" {...field} />
                       </FormControl>
-                      <SelectContent>
-                        {CATEGORIES.map((category) => (
-                          <SelectItem key={category} value={category}>
-                            {category}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    )}
                     <FormMessage />
                   </FormItem>
                 )}
