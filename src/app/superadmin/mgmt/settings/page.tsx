@@ -68,6 +68,7 @@ const sections: SettingSection[] = [
     href: '/superadmin/mgmt/products',
     fields: [
       { key: 'product_low_stock_threshold', label: 'Low stock threshold', description: 'Default threshold for low-stock warnings.', type: 'number' },
+      { key: 'productCategories', label: 'Product Categories', description: 'Comma-separated list of product categories available when adding or editing products.', type: 'textarea' },
     ],
   },
   {

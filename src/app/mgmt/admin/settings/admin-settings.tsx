@@ -43,7 +43,7 @@ const settingsSchema = z.object({
   logoUrl: z.string().optional(),
   faviconUrl: z.string().optional(),
   partnerBrands: z.string().optional(),
-  productCategories: z.string().optional(),
+  // productCategories: z.string().optional(),
   
   // Color Scheme
   primaryColor: z.string().regex(/^#[0-9A-F]{6}$/i, "Must be a valid hex color"),
@@ -116,7 +116,7 @@ const createDefaultSettings = (): SettingsFormValues => ({
   logoUrl: '',
   faviconUrl: '',
   partnerBrands: 'CP PLUS, HIKVISION, DAHUA, UBIQUITI, CISCO, TP-LINK',
-  productCategories: 'CCTV, Computers, Accessories, Services, Security, Networking, Smart Home, Software',
+  // productCategories: 'CCTV, Computers, Accessories, Services, Security, Networking, Smart Home, Software',
   primaryColor: '#3b82f6',
   secondaryColor: '#64748b',
   accentColor: '#f59e0b',
@@ -279,7 +279,7 @@ function SiteSettingsPageContent() {
         logoUrl: getString('logoUrl', defaults.logoUrl ?? ''),
         faviconUrl: getString('faviconUrl', defaults.faviconUrl ?? ''),
         partnerBrands: getString('partnerBrands', defaults.partnerBrands ?? ''),
-        productCategories: getString('productCategories', defaults.productCategories ?? ''),
+        // productCategories: getString('productCategories', defaults.productCategories ?? ''),
         primaryColor: getString('primaryColor', defaults.primaryColor),
         secondaryColor: getString('secondaryColor', defaults.secondaryColor),
         accentColor: getString('accentColor', defaults.accentColor),
@@ -1090,20 +1090,6 @@ function SiteSettingsPageContent() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                  <FormField
-                    control={form.control}
-                    name="productCategories"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Product Categories</FormLabel>
-                        <FormControl>
-                          <Textarea placeholder="CCTV, Computers, Accessories, ..." {...field} />
-                        </FormControl>
-                        <FormDescription>Comma-separated list of product categories.</FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
 
                   <FormField
                     control={form.control}
