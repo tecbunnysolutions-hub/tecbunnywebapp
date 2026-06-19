@@ -15,6 +15,7 @@ import {DeferredFloatingAIAssistant} from '@/components/layout/DeferredFloatingA
 import {DeferredRuntimeServices} from '@/components/layout/DeferredRuntimeServices';
 
 import { BlitzAuditBanner } from '@/components/ui/BlitzAuditBanner';
+import { Analytics } from '@vercel/analytics/react';
 
 const googleSiteVerification = process.env.GOOGLE_SITE_VERIFICATION;
 const xHandle = process.env.NEXT_PUBLIC_X_HANDLE;
@@ -313,7 +314,7 @@ export default function RootLayout({
               <DeferredFloatingAIAssistant />
               <BlitzAuditBanner />
               <DeferredRuntimeServices gaId={gaId} metaPixelId={metaPixelId} />
-
+              <Analytics />
             </OrderProvider>
           </AppProvider>
         </ThemeProvider>
