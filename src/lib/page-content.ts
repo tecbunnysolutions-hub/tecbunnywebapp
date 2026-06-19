@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server';
+import { createSupabaseClient } from '@/lib/supabase-server';
 import { logger } from '@/lib/logger';
 
 export interface PageContent {
@@ -23,7 +23,7 @@ const PAGE_CONTENT_SELECTS = [
 
 export async function getPageContentServer(pageKey: string): Promise<PageContent | null> {
   try {
-    const supabase = await createClient();
+    const supabase = createSupabaseClient();
     
     // Try modern and legacy schemas dynamically
     const attempts = [

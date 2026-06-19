@@ -26,7 +26,7 @@ function getSiteOrigin() {
 async function fetchJsonArray(pathname: string, dataKey = 'data') {
   try {
     const response = await fetch(`${getSiteOrigin()}${pathname}`, {
-      cache: 'no-store',
+      next: { revalidate: 300 },
       headers: { Accept: 'application/json' },
     });
 
