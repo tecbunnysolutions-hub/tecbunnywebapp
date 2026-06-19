@@ -201,7 +201,6 @@ export function EditProductDialog({ open, onOpenChange, product, onProductUpdate
           description: values.description,
           price: values.price,
           category: values.category,
-          vendor: values.brand,
           brand: values.brand,
           image: values.image,
           images: values.image ? [values.image] : [],

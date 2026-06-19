@@ -202,7 +202,7 @@ export class CheckoutEngine {
           quantity: item.quantity,
           unit_price: item.price,
           total_price: itemNetExclusive, // Price before tax after discount
-          discount_amount: itemDiscountExclusive,
+          discount_amount: itemDiscountInclusive,
           pricing_info: pInfo.pricing_info
         };
       });
