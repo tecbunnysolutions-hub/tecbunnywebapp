@@ -173,6 +173,7 @@ function applyAutoOffersToProducts(products: Product[], offers: AutoOffer[]): Pr
 function getSimplifiedDescription(desc: string | undefined | null): string {
   if (!desc) return 'Premium hardware optimized for reliable performance.';
   const clean = desc
+    .replace(/<\/?[^>]+(>|$)/g, '')
     .replace(/[#*`_\[\]()]/g, '')
     .replace(/\s+/g, ' ')
     .trim();
