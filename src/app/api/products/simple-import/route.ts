@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
     // Parse CSV headers
     const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
     const requiredHeaders = [
-      'Handle ID', 'Type', 'Title', 'Brand', 'Description', 
+      'Type', 'Title', 'Brand', 'Description', 
       'Product Detail', 'Image Link', 'Warranty Details', 
       'Stock Status', 'Status'
     ];
@@ -58,7 +58,16 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
-    const hasProductId = headers.includes('Product ID');
+    // Helper for handle slugification
+    const slugify = (val: string) => {
+      return val
+        .toLowerCase()
+        .normalize('NFKD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '')
+        .slice(0, 60);
+    };
 
     // Parse data rows
     const productGroups: { [key: string]: { main: any | null; variants: any[] } } = {};
@@ -73,30 +82,34 @@ export async function POST(request: NextRequest) {
       });
 
       // Skip empty rows
-      if (!row['Handle ID'] || !row['Title']) continue;
+      if (!row['Title']) continue;
+
+      // Auto-generate handle if missing
+      const handleVal = (row['Handle ID'] || slugify(row['Title'])).trim().toLowerCase();
+      if (!handleVal) continue;
 
       const product = {
-        handle_id: row['Handle ID'],
-        type: row['Type'].toLowerCase(),
+        handle: handleVal,
+        type: (row['Type'] || 'product').toLowerCase(),
         title: row['Title'],
         brand: row['Brand'] || '',
         description: row['Description'] || '',
         product_detail: row['Product Detail'] || '',
         image_url: row['Image Link'] || '',
         warranty_details: row['Warranty Details'] || '',
-        in_stock: row['Stock Status'].toLowerCase() === 'in stock',
-        status: row['Status'].toLowerCase() === 'active' ? 'active' : 'inactive'
+        in_stock: (row['Stock Status'] || '').toLowerCase() === 'in stock',
+        status: (row['Status'] || '').toLowerCase() === 'active' ? 'active' : 'inactive'
       };
 
-      // Group by handle_id
-      if (!productGroups[product.handle_id]) {
-        productGroups[product.handle_id] = { main: null, variants: [] };
+      // Group by handle
+      if (!productGroups[product.handle]) {
+        productGroups[product.handle] = { main: null, variants: [] };
       }
 
       if (product.type === 'product') {
-        productGroups[product.handle_id].main = product;
+        productGroups[product.handle].main = product;
       } else if (product.type === 'variant') {
-        productGroups[product.handle_id].variants.push(product);
+        productGroups[product.handle].variants.push(product);
       }
     }
 
@@ -118,9 +131,9 @@ export async function POST(request: NextRequest) {
         const { error: insertError } = await supabase
           .from('products')
           .upsert({
-            handle_id: handleId,
-            handle: handleId.toLowerCase(),
+            handle: handleId,
             title: mainProduct.title,
+            name: mainProduct.title, // satisfy NOT NULL name constraint
             description: mainProduct.description,
             brand: mainProduct.brand,
             product_detail: mainProduct.product_detail,
@@ -128,9 +141,11 @@ export async function POST(request: NextRequest) {
             warranty_details: mainProduct.warranty_details,
             in_stock: mainProduct.in_stock,
             status: mainProduct.status,
-            entry_type: mainProduct.type
+            entry_type: mainProduct.type,
+            price: 0, // default placeholder to satisfy constraint
+            mrp: 0
           }, {
-            onConflict: 'handle_id'
+            onConflict: 'handle'
           });
 
         if (insertError) {
@@ -145,9 +160,9 @@ export async function POST(request: NextRequest) {
           const { error: variantError } = await supabase
             .from('products')
             .upsert({
-              handle_id: `${handleId}-variant-${variantIndex}`,
-              handle: `${handleId.toLowerCase()}-variant-${variantIndex}`,
+              handle: `${handleId}-variant-${variantIndex}`,
               title: variant.title,
+              name: variant.title, // satisfy NOT NULL name constraint
               description: variant.description,
               brand: variant.brand,
               product_detail: variant.product_detail,
@@ -155,9 +170,11 @@ export async function POST(request: NextRequest) {
               warranty_details: variant.warranty_details,
               in_stock: variant.in_stock,
               status: variant.status,
-              entry_type: variant.type
+              entry_type: variant.type,
+              price: 0,
+              mrp: 0
             }, {
-              onConflict: 'handle_id'
+              onConflict: 'handle'
             });
 
           if (variantError) {
@@ -179,7 +196,7 @@ export async function POST(request: NextRequest) {
         successCount,
         errorCount,
         totalGroups: Object.keys(productGroups).length,
-        errors: errors.slice(0, 10) // Limit error messages
+        errors: errors.slice(0, 10)
       }
     });
 
