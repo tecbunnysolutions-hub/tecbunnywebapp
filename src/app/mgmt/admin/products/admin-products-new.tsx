@@ -84,8 +84,11 @@ export default function AdminProductsPage() {
       }
 
       toast({
-        title: 'Success',
-        description: data.message || 'CSV imported successfully',
+        title: data.details?.errorCount > 0 ? 'Import completed with errors' : 'Success',
+        description: data.details?.errorCount > 0 
+          ? `${data.message}\nErrors:\n${data.details.errors.slice(0, 5).join('\n')}`
+          : (data.message || 'CSV imported successfully'),
+        variant: data.details?.errorCount > 0 ? 'destructive' : 'default',
       });
       fetchProducts();
     } catch (error: any) {

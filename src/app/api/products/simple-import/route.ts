@@ -88,17 +88,25 @@ export async function POST(request: NextRequest) {
       const handleVal = (row['Handle ID'] || slugify(row['Title'])).trim().toLowerCase();
       if (!handleVal) continue;
 
+      const priceVal = parseFloat(row['Sale Price'] || row['Price'] || '0');
+      const mrpVal = parseFloat(row['MRP'] || '0');
+      const categoryVal = row['Category'] || '';
+
       const product = {
         handle: handleVal,
         type: (row['Type'] || 'product').toLowerCase(),
         title: row['Title'],
         brand: row['Brand'] || '',
         description: row['Description'] || '',
-        product_detail: row['Product Detail'] || '',
-        image_url: row['Image Link'] || '',
-        warranty_details: row['Warranty Details'] || '',
-        in_stock: (row['Stock Status'] || '').toLowerCase() === 'in stock',
-        status: (row['Status'] || '').toLowerCase() === 'active' ? 'active' : 'inactive'
+        short_description: row['Product Detail'] || '',
+        image: row['Image Link'] || '',
+        images: row['Image Link'] ? [row['Image Link']] : [],
+        warranty: row['Warranty Details'] || '',
+        stock_status: (row['Stock Status'] || '').toLowerCase() === 'in stock' ? 'in_stock' : 'out_of_stock',
+        status: (row['Status'] || '').toLowerCase() === 'active' ? 'active' : 'draft',
+        price: isNaN(priceVal) ? 0 : priceVal,
+        mrp: isNaN(mrpVal) ? 0 : mrpVal,
+        category: categoryVal
       };
 
       // Group by handle
@@ -136,14 +144,15 @@ export async function POST(request: NextRequest) {
             name: mainProduct.title, // satisfy NOT NULL name constraint
             description: mainProduct.description,
             brand: mainProduct.brand,
-            product_detail: mainProduct.product_detail,
-            image_url: mainProduct.image_url,
-            warranty_details: mainProduct.warranty_details,
-            in_stock: mainProduct.in_stock,
+            short_description: mainProduct.short_description,
+            image: mainProduct.image,
+            images: mainProduct.images,
+            warranty: mainProduct.warranty,
+            stock_status: mainProduct.stock_status,
             status: mainProduct.status,
-            entry_type: mainProduct.type,
-            price: 0, // default placeholder to satisfy constraint
-            mrp: 0
+            price: mainProduct.price,
+            mrp: mainProduct.mrp,
+            category: mainProduct.category
           }, {
             onConflict: 'handle'
           });
@@ -165,14 +174,15 @@ export async function POST(request: NextRequest) {
               name: variant.title, // satisfy NOT NULL name constraint
               description: variant.description,
               brand: variant.brand,
-              product_detail: variant.product_detail,
-              image_url: variant.image_url,
-              warranty_details: variant.warranty_details,
-              in_stock: variant.in_stock,
+              short_description: variant.short_description,
+              image: variant.image,
+              images: variant.images,
+              warranty: variant.warranty,
+              stock_status: variant.stock_status,
               status: variant.status,
-              entry_type: variant.type,
-              price: 0,
-              mrp: 0
+              price: variant.price,
+              mrp: variant.mrp,
+              category: variant.category
             }, {
               onConflict: 'handle'
             });
@@ -181,6 +191,7 @@ export async function POST(request: NextRequest) {
             errors.push(`Error inserting variant for ${handleId}: ${variantError.message}`);
           }
         }
+
 
         successCount++;
       } catch (error) {
