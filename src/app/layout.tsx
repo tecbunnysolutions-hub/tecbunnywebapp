@@ -1,7 +1,7 @@
 import type {Metadata, Viewport} from 'next';
 
 const BRAND_LOGO_URL = 'https://fbcsagupcxheyiusjfak.supabase.co/storage/v1/object/public/TecBunny%20Solution/TECBUNNY_SOLUTIONS_PVT_LTD-removebg-preview.png';
-import { Inter } from 'next/font/google';
+import { Outfit } from 'next/font/google';
 import { Suspense } from 'react';
 
 import './globals.css';
@@ -272,7 +272,7 @@ const structuredData = {
 
 const serializeJsonLd = (data: unknown) => JSON.stringify(data).replace(/</g, '\\u003c');
 
-const inter = Inter({
+const outfit = Outfit({
   subsets: ['latin'],
   display: 'swap',
   variable: '--font-body',
@@ -298,7 +298,7 @@ export default function RootLayout({
             dangerouslySetInnerHTML={{ __html: serializeJsonLd(structuredData) }}
           />
       </head>
-      <body className={`${inter.variable} font-body antialiased`}>
+      <body className={`${outfit.variable} font-body antialiased`}>
         <ThemeProvider>
           <AppProvider>
             <OrderProvider>

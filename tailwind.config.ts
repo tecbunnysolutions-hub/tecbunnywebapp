@@ -13,7 +13,7 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['var(--font-body)', 'Inter', 'sans-serif'],
+        sans: ['var(--font-body)', 'Outfit', 'sans-serif'],
         tech: ['var(--font-body)', 'sans-serif'],
         body: ['var(--font-body)', 'sans-serif'],
         headline: ['var(--font-body)', 'sans-serif'],
