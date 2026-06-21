@@ -113,6 +113,8 @@ export interface User {
     business_address?: string;
     credit_limit?: number;
     b2b_category?: B2BCategory;
+    // Dynamic RBAC
+    permissions?: string[];
 }
 
 export interface CustomerDiscount {

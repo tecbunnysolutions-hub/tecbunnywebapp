@@ -74,6 +74,7 @@ export interface ServerAuthState {
   supabase: SupabaseClient;
   session: Session | null;
   role: UserRole;
+  permissions: string[];
 }
 
 export async function getServerAuthState(): Promise<ServerAuthState> {
@@ -83,7 +84,7 @@ export async function getServerAuthState(): Promise<ServerAuthState> {
   const { data: { user }, error } = await supabase.auth.getUser();
 
   if (error || !user) {
-    return { supabase, session: null, role: DEFAULT_ROLE };
+    return { supabase, session: null, role: DEFAULT_ROLE, permissions: [] };
   }
 
   // Reconstruct a minimal session-like object for compatibility
@@ -93,14 +94,18 @@ export async function getServerAuthState(): Promise<ServerAuthState> {
   // Security: app_metadata is server-controlled (set by admin/service role only).
   // It is the authoritative source of truth for roles.
   // user_metadata is user-editable and must NOT be trusted for role assignment.
-  const metadataRole = extractRoleFromMetadata(user.app_metadata as Record<string, unknown> | undefined);
+  const appMetadata = user.app_metadata as Record<string, unknown> | undefined;
+  const metadataRole = extractRoleFromMetadata(appMetadata);
+  
+  // Extract dynamically injected permissions from custom claims trigger
+  const permissions = Array.isArray(appMetadata?.permissions) ? (appMetadata?.permissions as string[]) : [];
 
   // DB profile role is the fallback when app_metadata has no role set.
   // We do NOT use pickHighestRole() as that could allow a stale DB value to override
   // a deliberately set app_metadata role. Prefer app_metadata first, DB second.
   const resolvedRole: UserRole = metadataRole ?? (await fetchProfileRole(supabase, user.id)) ?? DEFAULT_ROLE;
 
-  return { supabase, session, role: resolvedRole };
+  return { supabase, session, role: resolvedRole, permissions };
 }
 
 export const roleMatches = (role: UserRole, options: RoleCheckOptions): boolean => {
@@ -124,7 +129,7 @@ export const roleMatches = (role: UserRole, options: RoleCheckOptions): boolean 
 };
 
 export async function requireApiRole(options: RoleCheckOptions = {}) {
-  const { supabase, session, role } = await getServerAuthState();
+  const { supabase, session, role, permissions } = await getServerAuthState();
 
   if (!session) {
     return { error: NextResponse.json({ error: 'Unauthorized' }, { status: 401 }) } as const;
@@ -134,5 +139,30 @@ export async function requireApiRole(options: RoleCheckOptions = {}) {
     return { error: NextResponse.json({ error: 'Forbidden' }, { status: 403 }) } as const;
   }
 
-  return { supabase, session, role } as const;
+  return { supabase, session, role, permissions } as const;
+}
+
+// New utility to evaluate specific permissions
+export async function hasServerPermission(requiredPermission: string): Promise<boolean> {
+  const { permissions, role } = await getServerAuthState();
+  
+  if (role === 'superadmin') return true;
+
+  const [reqResource, reqAction] = requiredPermission.split(':');
+  
+  return permissions.some(p => {
+    if (p === requiredPermission) return true;
+    const [resource, action] = p.split(':');
+    return resource === reqResource && (action === '*' || action === 'all');
+  });
+}
+
+// Guard for Route Handlers and Server Actions
+export async function requirePermission(requiredPermission: string) {
+  const isAllowed = await hasServerPermission(requiredPermission);
+  if (!isAllowed) {
+    return { error: NextResponse.json({ error: 'Forbidden: Insufficient permissions' }, { status: 403 }) } as const;
+  }
+  
+  return { success: true } as const;
 }

@@ -169,7 +169,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       emailVerified: Boolean(supabaseUser.email_confirmed_at),
       email_confirmed_at: supabaseUser.email_confirmed_at ?? null,
       first_login_whatsapp_sent: false,
-      first_login_notified_at: null
+      first_login_notified_at: null,
+      permissions: Array.isArray(supabaseUser.app_metadata?.permissions) ? supabaseUser.app_metadata.permissions as string[] : []
     };
   }, []);
 
@@ -288,7 +289,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               name: supabaseUser.user_metadata?.name || supabaseUser.email?.split('@')[0] || 'User',
               email: supabaseUser.email || '',
               mobile: supabaseUser.user_metadata?.mobile || '',
-              role: resolvedRole
+              role: resolvedRole,
+              permissions: Array.isArray(supabaseUser.app_metadata?.permissions) ? supabaseUser.app_metadata.permissions as string[] : []
             };
             
             const { data: insertedProfile, error: insertError } = await supabase
@@ -318,6 +320,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                   ...lastChanceProfile,
                   email: supabaseUser.email || lastChanceProfile.email || '',
                   role: appMetadataRole ?? parseRole(lastChanceProfile.role) ?? 'customer',
+                  permissions: Array.isArray(supabaseUser.app_metadata?.permissions) ? supabaseUser.app_metadata.permissions as string[] : [],
                   emailVerified: Boolean(supabaseUser.email_confirmed_at || lastChanceProfile.email_confirmed_at),
                   email_confirmed_at: supabaseUser.email_confirmed_at ?? lastChanceProfile.email_confirmed_at
                 } as User;
@@ -353,6 +356,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           ...profile, 
           email: supabaseUser.email || profile.email || '',
           role: userRole,
+          permissions: Array.isArray(supabaseUser.app_metadata?.permissions) ? supabaseUser.app_metadata.permissions as string[] : [],
           emailVerified: Boolean(supabaseUser.email_confirmed_at || profile.email_confirmed_at),
           email_confirmed_at: supabaseUser.email_confirmed_at ?? profile.email_confirmed_at,
           first_login_whatsapp_sent: Boolean(profile.first_login_whatsapp_sent),

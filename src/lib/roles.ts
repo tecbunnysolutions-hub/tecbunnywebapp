@@ -1,6 +1,10 @@
 // Canonical role & permission definitions
+/**
+ * @deprecated The static ROLE_HIERARCHY and EFFECTIVE_PERMISSIONS are being deprecated in favor of 
+ * the new dynamic database-driven RBAC system. Please transition to using `hasServerPermission` 
+ * (server) or `usePermissions` (client) for granular permission checks instead of hardcoded levels.
+ */
 // Central source of truth to avoid duplication across server/client.
-
 export const ROLE_HIERARCHY = {
   customer: 1,
   'sales-external': 2,
