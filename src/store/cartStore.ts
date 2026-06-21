@@ -577,10 +577,15 @@ export const useCartStore = create<CartState>((set, get) => ({
     if (userId === 'superadmin-root-id') return;
 
     try {
-      set({ isMergingAccountCart: true });
       const guestCartRaw = typeof window !== 'undefined' ? readStorageWithLegacyFallback('cart', null) : null;
       const guestItems: CartItem[] = guestCartRaw ? JSON.parse(guestCartRaw) : [];
-      const inMemoryItems = get().cartItems || [];
+      
+      // If no guest items, there is nothing to merge
+      if (guestItems.length === 0) {
+        return;
+      }
+
+      set({ isMergingAccountCart: true });
       
       const user = { id: userId };
       const userCartKey = getStorageKey('cart', user);
@@ -606,7 +611,6 @@ export const useCartStore = create<CartState>((set, get) => ({
 
       userItems.forEach(addItemToMerge);
       guestItems.forEach(addItemToMerge);
-      inMemoryItems.forEach(addItemToMerge);
 
       const mergedItems = Array.from(mergedMap.values());
 
