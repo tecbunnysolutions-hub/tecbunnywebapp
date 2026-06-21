@@ -1057,10 +1057,6 @@ export default function CheckoutPage() {
                       </span>
                     )}
                   </button>
-
-                  <p className="mt-4 text-[10px] text-muted-foreground text-center leading-normal">
-                    By placing this order, you agree to our Terms & Conditions.
-                  </p>
                 </div>
               </div>
             </div>

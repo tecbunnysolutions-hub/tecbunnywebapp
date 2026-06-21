@@ -103,11 +103,14 @@ export function CheckoutWizard() {
                  </div>
                  <Input className="h-14 pl-12 rounded-xl bg-gray-50" placeholder="Your Address" defaultValue={state.payload?.address} onChange={(e) => dispatch({ type: "UPDATE_PAYLOAD", data: { address: e.target.value }})} />
               </div>
-              <div className="relative">
-                 <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none text-gray-400">
-                   <CreditCard className="w-5 h-5" />
+              <div className="bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-xl p-4 flex items-start gap-3">
+                 <Lock className="w-5 h-5 text-emerald-600 mt-0.5 flex-shrink-0" />
+                 <div>
+                   <p className="font-semibold text-sm">Secure Payment Gateway</p>
+                   <p className="text-xs text-emerald-600/80 mt-1">
+                     Your payment will be processed securely via our PCI-DSS compliant partner. We do not store or transmit your card details.
+                   </p>
                  </div>
-                 <Input className="h-14 pl-12 rounded-xl bg-gray-50" placeholder="Card number" />
               </div>
             </div>
 

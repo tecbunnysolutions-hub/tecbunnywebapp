@@ -32,6 +32,7 @@ export default function SignUpPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+  const [privacyAccepted, setPrivacyAccepted] = useState(false);
   const [dispatchedChannel, setDispatchedChannel] = useState<'email' | 'whatsapp' | null>(null);
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const turnstileSiteKey = process.env.NODE_ENV === 'production' ? process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY : undefined;
@@ -78,6 +79,10 @@ export default function SignUpPage() {
   const emailValid = !!formData.email.trim() && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email);
 
   const validateForm = () => {
+    if (!privacyAccepted) {
+      setError('You must agree to the Terms of Service and Privacy Policy');
+      return false;
+    }
     if (!formData.name.trim()) {
       setError('Name is required');
       return false;
@@ -459,6 +464,22 @@ export default function SignUpPage() {
               )}
 
               <div className="md:col-span-2 flex flex-col gap-4">
+                <div className="flex items-start gap-3 rounded-lg border border-border bg-muted/30 p-3">
+                  <input
+                    id="privacy-consent"
+                    type="checkbox"
+                    checked={privacyAccepted}
+                    onChange={(event) => setPrivacyAccepted(event.target.checked)}
+                    className="mt-0.5 h-4 w-4 rounded border-border bg-background text-primary focus:ring-primary/20 cursor-pointer"
+                  />
+                  <label htmlFor="privacy-consent" className="text-[11px] text-muted-foreground leading-snug cursor-pointer">
+                    I have read and agree to the{' '}
+                    <Link href="/info/policies/privacy" className="text-primary hover:underline">Privacy Policy</Link>
+                    {' '}and{' '}
+                    <Link href="/info/policies/terms" className="text-primary hover:underline">Terms of Service</Link>.
+                  </label>
+                </div>
+
                 <button
                   type="submit"
                   className="group relative w-full py-3 bg-primary hover:bg-primary/90 text-primary-foreground font-bold tracking-wide rounded-lg transition-colors flex items-center justify-center gap-3 shadow-[0_0_20px_rgba(37,99,235,0.3)] hover:shadow-[0_0_30px_rgba(37,99,235,0.5)] overflow-hidden cursor-pointer"
