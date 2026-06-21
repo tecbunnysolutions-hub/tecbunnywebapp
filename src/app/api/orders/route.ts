@@ -413,6 +413,18 @@ logger.info('order_create_attempt', { userId: effectiveUserId });
 
   } catch (error) {
     const correlationId = request.headers.get('x-correlation-id') || null;
+    const isValidationError = error instanceof Error && (
+      error.message.includes('stock') || 
+      error.message.includes('invalid') || 
+      error.message.includes('available') ||
+      error.message.includes('Product')
+    );
+
+    if (isValidationError) {
+      logger.warn('order_api_validation_error', { error: error.message });
+      return apiError('VALIDATION_ERROR', { correlationId, overrideMessage: error.message });
+    }
+
     logger.error('order_api_uncaught', { error: error instanceof Error ? error.message : 'unknown' });
     return apiError('INTERNAL_ERROR', { correlationId, details: { error: error instanceof Error ? error.message : 'Unknown error' } });
   }
