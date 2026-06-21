@@ -301,7 +301,7 @@ export function OTPVerificationContent() {
               password: signupData.password,
               name: signupData.name,
               mobile: signupData.mobile,
-              otpId,
+              otpId: verifyResult.otpId || otpId,
               otpVerified: true
             }),
           });

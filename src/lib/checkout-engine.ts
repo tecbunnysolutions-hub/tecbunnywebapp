@@ -78,7 +78,7 @@ export class CheckoutEngine {
       const supabase = await pricingService['getSupabaseClient']();
       const { data: dbProducts, error: dbError } = await supabase
         .from('products')
-        .select('id, title, price, mrp, status, is_deleted, gstRate, gst_rate, offer_price, stock_quantity')
+        .select('id, title, price, mrp, status, is_deleted, gst_rate, offer_price, stock_quantity')
         .in('id', productIds);
       
       if (dbError || !dbProducts) {
@@ -107,7 +107,7 @@ export class CheckoutEngine {
             price: dbProduct.price,
             mrp: dbProduct.mrp,
             offer_price: dbProduct.offer_price,
-            gstRate: dbProduct.gstRate ?? dbProduct.gst_rate ?? 18
+            gstRate: dbProduct.gst_rate ?? 18
           } as unknown as Product,
           quantity: item.quantity
         };
@@ -182,7 +182,7 @@ export class CheckoutEngine {
       const itemPricesWithTaxes = pricedItems.map((item, index) => {
         const pInfo = pricingResult.item_prices[index];
         const dbProd = dbProductMap.get(item.id);
-        const gstRateRaw = dbProd?.gstRate ?? dbProd?.gst_rate ?? 18;
+        const gstRateRaw = dbProd?.gst_rate ?? 18;
         const gstRate = typeof gstRateRaw === 'number' ? gstRateRaw : parseFloat(gstRateRaw) || 18;
 
         const itemGrossInclusive = roundMoney(item.price * item.quantity);

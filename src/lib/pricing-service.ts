@@ -213,7 +213,7 @@ export class PricingService {
     const supabase = await this.getSupabaseClient();
     const { data: dbProducts } = await supabase
       .from('products')
-      .select('id, price, mrp, status, is_deleted, gstRate, gst_rate, offer_price')
+      .select('id, price, mrp, status, is_deleted, gst_rate, offer_price')
       .in('id', productIds);
       
     const dbProductMap = new Map(dbProducts?.map(p => [p.id, p]) || []);
@@ -231,7 +231,7 @@ export class PricingService {
         price: dbProduct.price,
         mrp: dbProduct.mrp,
         offer_price: dbProduct.offer_price,
-        gstRate: dbProduct.gstRate ?? dbProduct.gst_rate ?? 18
+        gstRate: dbProduct.gst_rate ?? 18
       };
 
       const priceInfo = await this.getProductPrice(

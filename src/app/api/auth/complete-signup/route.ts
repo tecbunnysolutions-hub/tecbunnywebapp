@@ -5,8 +5,8 @@ import { logger } from '@/lib/logger';
 import { sendWelcomeNotification } from '@/lib/whatsapp-service';
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.local';
-const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || 'placeholder-service-role-key';
-const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-anon-key';
+const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY || 'placeholder-service-role-key';
+const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || 'placeholder-anon-key';
 const PASSWORD_POLICY_MESSAGE = 'Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number and one special character';
 
 function isStrongPassword(value: unknown): value is string {
@@ -28,7 +28,7 @@ const supabaseAdmin = createClient(
 
 export async function POST(request: NextRequest) {
   try {
-    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !(process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY)) {
       logger.error('complete_signup.configuration_missing');
       return NextResponse.json(
         { error: 'Service configuration error. Please contact support.' },
@@ -242,7 +242,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create session for immediate login
-    if (!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+    if (!(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY)) {
       logger.error('complete_signup.anon_key_missing');
       return NextResponse.json({
         message: 'Account created successfully! Please contact support to complete sign-in.',
