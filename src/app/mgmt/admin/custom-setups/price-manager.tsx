@@ -753,15 +753,18 @@ export default function AdminCustomSetupManager() {
       const defaultQuantities: Record<string, string> = {};
       const baseFees: Record<string, string> = {};
 
-      summary?.systems.forEach((system) => {
+      summary?.systems?.forEach((system) => {
+        if (!system) return;
         if (system.baseFee !== null && system.baseFee !== undefined) {
           baseFees[system.id] = system.baseFee.toString();
         }
-        system.components.forEach((component) => {
+        system.components?.forEach((component) => {
+          if (!component) return;
           if (component.defaultQuantity !== null && component.defaultQuantity !== undefined) {
             defaultQuantities[component.id] = component.defaultQuantity.toString();
           }
-          component.options.forEach((option) => {
+          component.options?.forEach((option) => {
+            if (!option) return;
             optionDraft[option.id] = option.unitPrice !== null && option.unitPrice !== undefined
               ? option.unitPrice.toString()
               : '';
@@ -942,7 +945,7 @@ export default function AdminCustomSetupManager() {
     totalMrp += baseFee;
     totalSale += Math.min(baseFeeSale, baseFee);
 
-    system.components.forEach((component) => {
+    system?.components?.forEach((component) => {
       const selectedOptionId = component.defaultOption?.id
         ?? component.options.find((option) => option.isDefault)?.id
         ?? component.options[0]?.id;
@@ -1273,7 +1276,7 @@ export default function AdminCustomSetupManager() {
                       </CardHeader>
                       <CardContent>
                         <div className="space-y-6">
-                          {system.components.map((component) => (
+                          {system?.components?.map((component) => (
                             <div key={component.id} className="rounded-lg border border-border bg-card p-4 shadow-sm">
                               <div className="flex flex-wrap items-start justify-between gap-4">
                                 <div>

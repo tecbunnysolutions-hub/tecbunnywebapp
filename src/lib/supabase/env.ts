@@ -139,7 +139,7 @@ export function requireSupabasePublicEnv() {
 
 export function resolveSupabaseServiceEnv(): ServiceSupabaseEnv {
   const url = trimEnv(SUPABASE_URL_ENV);
-  const serviceKey = trimEnv(SECRET_KEY_ENV) || trimEnv(LEGACY_SERVICE_KEY_ENV);
+  const serviceKey = trimEnv(LEGACY_SERVICE_KEY_ENV) || trimEnv(SECRET_KEY_ENV);
 
   if (isPlaceholder(url)) {
     throw new Error(`[supabase] ${SUPABASE_URL_ENV} is required for service clients.`);

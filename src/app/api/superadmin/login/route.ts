@@ -4,6 +4,8 @@ import { logger } from '@/lib/logger';
 import { rateLimit } from '@/lib/rate-limit';
 import { createSuperadminSessionToken, SUPERADMIN_SESSION_TTL_SECONDS } from '@/lib/auth/superadmin-session';
 
+const textEncoder = new TextEncoder();
+
 function getClientIp(request: Request) {
   const headers = request.headers;
   return headers.get('cf-connecting-ip')?.trim()
@@ -12,11 +14,25 @@ function getClientIp(request: Request) {
     || 'unknown';
 }
 
+function constantTimeStringEquals(left: string, right: string) {
+  const leftBytes = textEncoder.encode(left);
+  const rightBytes = textEncoder.encode(right);
+  const maxLength = Math.max(leftBytes.length, rightBytes.length);
+  let diff = leftBytes.length ^ rightBytes.length;
+
+  for (let index = 0; index < maxLength; index += 1) {
+    diff |= (leftBytes[index] ?? 0) ^ (rightBytes[index] ?? 0);
+  }
+
+  return diff === 0;
+}
+
 export async function POST(request: Request) {
   try {
     const { userId, email, password, captchaToken } = await request.json();
     const ip = getClientIp(request);
     const submittedUserId = String(userId ?? email ?? '').trim();
+    const submittedPassword = String(password ?? '');
 
     const ipRl = await rateLimit(`ip:${ip}`, 5, 15 * 60 * 1000);
     if (!ipRl.allowed) {
@@ -50,7 +66,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Superadmin credentials are not configured on server.' }, { status: 500 });
     }
 
-    if (submittedUserId !== correctUserId.trim() || password !== correctPassword) {
+    if (
+      !constantTimeStringEquals(submittedUserId, correctUserId.trim()) ||
+      !constantTimeStringEquals(submittedPassword, correctPassword)
+    ) {
       logger.warn('superadmin_login.failed_attempt', { userId: submittedUserId, ip });
       return NextResponse.json({ error: 'Invalid superadmin credentials.' }, { status: 401 });
     }
