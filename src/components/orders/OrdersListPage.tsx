@@ -6,7 +6,7 @@ import { Package, Search, Calendar, MapPin, CreditCard, Eye } from 'lucide-react
 
 import { formatOrderNumber } from '@/lib/order-utils';
 
-import { ORDER_STATUS_FLOW, SERVICE_ORDER_STATUS_FLOW } from '@/lib/data';
+import { getOrderStatusFlow, getServiceOrderStatusFlow } from '@/lib/data';
 
 import { useAuth } from '@/lib/hooks';
 import { useRouter } from 'next/navigation';
@@ -27,6 +27,13 @@ export default function OrdersListPage() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [loading, setLoading] = useState(true);
   const [cancellingOrderId, setCancellingOrderId] = useState<string | null>(null);
+  const [statusOptions, setStatusOptions] = useState<string[]>([]);
+
+  useEffect(() => {
+    Promise.all([getOrderStatusFlow(), getServiceOrderStatusFlow()]).then(([orderStatusFlow, serviceOrderStatusFlow]) => {
+      setStatusOptions(Array.from(new Set([...orderStatusFlow, ...serviceOrderStatusFlow])));
+    }).catch(console.error);
+  }, []);
 
   useEffect(() => {
     if (authLoading) return;
@@ -119,7 +126,6 @@ export default function OrdersListPage() {
     }
   };
 
-  const statusOptions = Array.from(new Set([...ORDER_STATUS_FLOW, ...SERVICE_ORDER_STATUS_FLOW]));
 
   const handleCancelOrder = async (orderId: string) => {
     if (cancellingOrderId) return;

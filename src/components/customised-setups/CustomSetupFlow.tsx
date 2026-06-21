@@ -62,7 +62,34 @@ import {
 
 export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupFlowProps) {
   const isTech = variant === 'tech';
-  const pricingCatalog = useMemo(() => buildPricingCatalog(blueprint), [blueprint]);
+  const [pricingCatalog, setPricingCatalog] = useState<{
+    analog: AnalogPricing;
+    ip: IpPricing;
+    hddOptions: PriceEntry[];
+    monitorOptions: PriceEntry[];
+    rackOptions: PriceEntry[];
+    conduitOptions: PriceEntry[];
+    wallMountAddon: PriceEntry;
+    spikeGuardOption: PriceEntry;
+    monitorOption: PriceEntry;
+    installationOption: PriceEntry;
+  }>({
+    analog: FALLBACK_ANALOG_PRICING,
+    ip: FALLBACK_IP_PRICING,
+    hddOptions: FALLBACK_HDD_OPTIONS,
+    monitorOptions: FALLBACK_MONITOR_OPTIONS,
+    rackOptions: FALLBACK_RACK_OPTIONS,
+    conduitOptions: FALLBACK_CONDUIT_PIPE_OPTIONS,
+    wallMountAddon: FALLBACK_WALL_MOUNT_ADDON,
+    spikeGuardOption: FALLBACK_SPIKE_GUARD_OPTION,
+    monitorOption: FALLBACK_MONITOR_OPTION,
+    installationOption: FALLBACK_INSTALLATION_OPTION,
+  });
+
+  useEffect(() => {
+    buildPricingCatalog(blueprint).then(setPricingCatalog).catch(console.error);
+  }, [blueprint]);
+
   const analogPricing = pricingCatalog.analog;
   const ipPricing = pricingCatalog.ip;
   const hddOptions = pricingCatalog.hddOptions;
@@ -206,13 +233,13 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
 
   useEffect(() => {
     setAnalogSelections((previous) => {
-      const resolvedDvrId = analogPricing.dvr.some((entry) => entry.id === previous.dvrId)
+      const resolvedDvrId = analogPricing.dvr.some((entry: CapacityPriceEntry) => entry.id === previous.dvrId)
         ? previous.dvrId
         : analogPricing.dvr[0]?.id ?? FALLBACK_ANALOG_PRICING.dvr[0].id;
-      const resolvedSmpsId = analogPricing.smps.some((entry) => entry.id === previous.smpsId)
+      const resolvedSmpsId = analogPricing.smps.some((entry: CapacityPriceEntry) => entry.id === previous.smpsId)
         ? previous.smpsId
         : analogPricing.smps[0]?.id ?? FALLBACK_ANALOG_PRICING.smps[0].id;
-      const resolvedCableId = analogPricing.cable.some((entry) => entry.id === previous.cableId)
+      const resolvedCableId = analogPricing.cable.some((entry: CablePriceEntry) => entry.id === previous.cableId)
         ? previous.cableId
         : analogPricing.cable[0]?.id ?? FALLBACK_ANALOG_PRICING.cable[0].id;
 
@@ -226,13 +253,13 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
 
   useEffect(() => {
     setIpSelections((previous) => {
-      const resolvedNvrId = ipPricing.nvr.some((entry) => entry.id === previous.nvrId)
+      const resolvedNvrId = ipPricing.nvr.some((entry: CapacityPriceEntry) => entry.id === previous.nvrId)
         ? previous.nvrId
         : ipPricing.nvr[0]?.id ?? FALLBACK_IP_PRICING.nvr[0].id;
-      const resolvedPoeId = ipPricing.poe.some((entry) => entry.id === previous.poeId)
+      const resolvedPoeId = ipPricing.poe.some((entry: CapacityPriceEntry) => entry.id === previous.poeId)
         ? previous.poeId
         : ipPricing.poe[0]?.id ?? FALLBACK_IP_PRICING.poe[0].id;
-      const resolvedCableId = ipPricing.cable.some((entry) => entry.id === previous.cableId)
+      const resolvedCableId = ipPricing.cable.some((entry: CablePriceEntry) => entry.id === previous.cableId)
         ? previous.cableId
         : ipPricing.cable[0]?.id ?? FALLBACK_IP_PRICING.cable[0].id;
 
@@ -246,7 +273,7 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
 
   useEffect(() => {
     setHddId((previous) => {
-      if (selectableHddOptions.some((entry) => entry.id === previous)) {
+      if (selectableHddOptions.some((entry: PriceEntry) => entry.id === previous)) {
         return previous;
       }
       return selectableHddOptions[0]?.id ?? FALLBACK_HDD_OPTIONS[0].id;
@@ -267,14 +294,14 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
   useEffect(() => {
     const recommendedDvrCapacity = recommendedAnalogDvrCapacity(cameraCount);
     const recommendedDvr = pickCapacityOption(analogPricing.dvr, recommendedDvrCapacity);
-    const currentDvr = analogPricing.dvr.find((entry) => entry.id === analogSelections.dvrId);
+    const currentDvr = analogPricing.dvr.find((entry: CapacityPriceEntry) => entry.id === analogSelections.dvrId);
     if (!currentDvr || currentDvr.capacity < recommendedDvrCapacity) {
       setAnalogSelections((previous) => ({ ...previous, dvrId: recommendedDvr.id }));
     }
 
     const recommendedSmpsCapacity = recommendedAnalogSmpsCapacity(cameraCount);
     const recommendedSmps = pickCapacityOption(analogPricing.smps, recommendedSmpsCapacity);
-    const currentSmps = analogPricing.smps.find((entry) => entry.id === analogSelections.smpsId);
+    const currentSmps = analogPricing.smps.find((entry: CapacityPriceEntry) => entry.id === analogSelections.smpsId);
     if (!currentSmps || currentSmps.capacity < recommendedSmpsCapacity) {
       setAnalogSelections((previous) => ({ ...previous, smpsId: recommendedSmps.id }));
     }
@@ -283,14 +310,14 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
   useEffect(() => {
     const recommendedNvrCapacity = recommendedIpCapacity(cameraCount);
     const recommendedNvr = pickCapacityOption(ipPricing.nvr, recommendedNvrCapacity);
-    const currentNvr = ipPricing.nvr.find((entry) => entry.id === ipSelections.nvrId);
+    const currentNvr = ipPricing.nvr.find((entry: CapacityPriceEntry) => entry.id === ipSelections.nvrId);
     if (!currentNvr || currentNvr.capacity < recommendedNvrCapacity) {
       setIpSelections((previous) => ({ ...previous, nvrId: recommendedNvr.id }));
     }
 
     const recommendedPoeCapacity = recommendedIpCapacity(cameraCount);
     const recommendedPoe = pickCapacityOption(ipPricing.poe, recommendedPoeCapacity);
-    const currentPoe = ipPricing.poe.find((entry) => entry.id === ipSelections.poeId);
+    const currentPoe = ipPricing.poe.find((entry: CapacityPriceEntry) => entry.id === ipSelections.poeId);
     if (!currentPoe || currentPoe.capacity < recommendedPoeCapacity) {
       setIpSelections((previous) => ({ ...previous, poeId: recommendedPoe.id }));
     }
@@ -317,7 +344,7 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
 
   const inlineQuoteSummary = useMemo(() => {
     const systemLabel = system === 'analog' ? 'Analog DVR' : 'IP NVR';
-    const hddLabel = selectableHddOptions.find((entry) => entry.id === hddId)?.label ?? 'Surveillance HDD';
+    const hddLabel = selectableHddOptions.find((entry: PriceEntry) => entry.id === hddId)?.label ?? 'Surveillance HDD';
     const itSystemsLabel = itSystemCount > 0 ? `${itSystemCount} IT system${itSystemCount > 1 ? 's' : ''}` : 'No IT systems';
     const extras: string[] = [];
     if (monitorIncluded) extras.push('monitor');
@@ -657,7 +684,7 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
     setQuoteDownloading(true);
     try {
       const systemLabel = system === 'analog' ? 'Analog DVR' : 'IP NVR';
-      const hddLabel = selectableHddOptions.find((entry) => entry.id === hddId)?.label ?? 'Surveillance HDD';
+      const hddLabel = selectableHddOptions.find((entry: PriceEntry) => entry.id === hddId)?.label ?? 'Surveillance HDD';
       
       const biddedTotals = {
         ...totals.overall,
@@ -922,7 +949,7 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
                 <SelectValue placeholder="Select DVR" />
               </SelectTrigger>
               <SelectContent className={selectContentClassName}>
-                {analogPricing.dvr.map((option) => {
+                {analogPricing.dvr.map((option: CapacityPriceEntry) => {
                   const isRecommended = option.capacity === recommendedDvrCapacity;
                   const isDisabled = option.capacity < recommendedDvrCapacity;
                   return (
@@ -951,7 +978,7 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
                 <SelectValue placeholder="Select SMPS" />
               </SelectTrigger>
               <SelectContent className={selectContentClassName}>
-                {analogPricing.smps.map((option) => {
+                {analogPricing.smps.map((option: CapacityPriceEntry) => {
                   const quantity = calculateQuantity(cameraCount, option.capacity);
                   const totalSale = option.sale * quantity;
                   const isRecommended = option.capacity === recommendedSmpsCapacity;
@@ -1043,7 +1070,7 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
                 <SelectValue placeholder="Select cable" />
               </SelectTrigger>
                  <SelectContent className={selectContentClassName}>
-                {analogPricing.cable.map((option) => {
+                {analogPricing.cable.map((option: CablePriceEntry) => {
                   const quantity = calculateCableQuantity(cameraCount, option);
                   const totalSale = option.salePerUnit * quantity;
                   return (
@@ -1084,7 +1111,7 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
                 <SelectValue placeholder="Select NVR" />
               </SelectTrigger>
               <SelectContent className={selectContentClassName}>
-                {ipPricing.nvr.map((option) => {
+                {ipPricing.nvr.map((option: CapacityPriceEntry) => {
                   const isRecommended = option.capacity === recommendedCapacity;
                   const isDisabled = option.capacity < recommendedCapacity;
                   return (
@@ -1110,7 +1137,7 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
                 <SelectValue placeholder="Select PoE switch" />
               </SelectTrigger>
               <SelectContent className={selectContentClassName}>
-                {ipPricing.poe.map((option) => {
+                {ipPricing.poe.map((option: CapacityPriceEntry) => {
                   const quantity = calculateQuantity(cameraCount, option.capacity);
                   const totalSale = option.sale * quantity;
                   const isRecommended = option.capacity === recommendedCapacity;
@@ -1199,7 +1226,7 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
                 <SelectValue placeholder="Select cable" />
               </SelectTrigger>
               <SelectContent className={selectContentClassName}>
-                {ipPricing.cable.map((option) => {
+                {ipPricing.cable.map((option: CablePriceEntry) => {
                   const quantity = calculateCableQuantity(cameraCount, option);
                   const totalSale = option.salePerUnit * quantity;
                   return (
@@ -1298,7 +1325,7 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
                 <SelectValue placeholder="Select drive capacity" />
               </SelectTrigger>
               <SelectContent className={selectContentClassName}>
-                {selectableHddOptions.map((option) => (
+                {selectableHddOptions.map((option: PriceEntry) => (
                   <SelectItem key={option.id} value={option.id} className={selectItemClassName}>
                     <div className="flex flex-col">
                       <span>{option.label}</span>
@@ -1338,7 +1365,7 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
                       <SelectValue placeholder="Select monitor size" />
                     </SelectTrigger>
                     <SelectContent className={selectContentClassName}>
-                      {FALLBACK_MONITOR_OPTIONS.map((option) => {
+                      {pricingCatalog.monitorOptions?.map((option: PriceEntry) => {
                         const resolved = resolveAccessoryPrice(option.id, option.mrp ?? 0, option.sale, accessoryPricing);
                         return (
                           <SelectItem key={option.id} value={option.id} className={selectItemClassName}>
@@ -1391,7 +1418,7 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
                     <SelectItem value="none" className={selectItemClassName}>
                       <span>None (Skip Rack)</span>
                     </SelectItem>
-                    {FALLBACK_RACK_OPTIONS.map((option) => {
+                    {pricingCatalog.rackOptions?.map((option: PriceEntry) => {
                       const resolved = resolveAccessoryPrice(option.id, option.mrp ?? 0, option.sale, accessoryPricing);
                       return (
                         <SelectItem key={option.id} value={option.id} className={selectItemClassName}>
@@ -1419,7 +1446,7 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
                     <SelectItem value="none" className={selectItemClassName}>
                       <span>None (Skip Conduit)</span>
                     </SelectItem>
-                    {FALLBACK_CONDUIT_PIPE_OPTIONS.map((option) => {
+                    {pricingCatalog.conduitOptions?.map((option: PriceEntry) => {
                       const resolved = resolveAccessoryPrice(option.id, option.mrp ?? 0, option.sale, accessoryPricing);
                       return (
                         <SelectItem key={option.id} value={option.id} className={selectItemClassName}>

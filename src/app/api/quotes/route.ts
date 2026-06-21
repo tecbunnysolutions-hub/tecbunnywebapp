@@ -85,7 +85,7 @@ export async function POST(req: NextRequest) {
     let finalSelections = selections;
     if (customSetupConfig) {
       const blueprint = await getCustomSetupBlueprintSummary(DEFAULT_CUSTOM_SETUP_TEMPLATE_SLUG);
-      const pricingCatalog = buildPricingCatalog(blueprint);
+      const pricingCatalog = await buildPricingCatalog(blueprint);
 
       // Fetch accessory pricing overrides from settings
       let overrides = null;

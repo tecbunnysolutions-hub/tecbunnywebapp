@@ -1,173 +1,120 @@
-/**
- * Data utilities and constants for the application
- * This file contains commonly used data structures and constants
- */
-
 import type { CategoryGstRates } from './utils';
 import type { UserRole, CustomerCategory } from './types';
+import { 
+  getGstRatesFromDb, 
+  getRolePermissionsFromDb, 
+  getCustomerCategoriesFromDb,
+  getAppSettings 
+} from './config-db';
 
-// GST Rates by Category
-export const GST_RATES: CategoryGstRates = {
-  Electronics: 18,
-  Accessories: 18,
-  Books: 5,
-  Clothing: 12,
-  Food: 5,
-  Health: 12,
-  Home: 18,
-  Sports: 18,
-  Software: 18,
-  Services: 18,
-  Gaming: 18,
-  Furniture: 18,
-  Automotive: 28,
-} as const;
+/**
+ * Fetch GST Rates dynamically
+ */
+export async function getGstRates(): Promise<CategoryGstRates> {
+  const rates = await getGstRatesFromDb();
+  return rates as CategoryGstRates;
+}
 
-// User Role Permissions
-export const ROLE_PERMISSIONS = {
-  customer: {
-    canViewProducts: true,
-    canPlaceOrders: true,
-    canViewOwnOrders: true,
-    canManageProfile: true,
-  },
-  sales: {
-    canViewProducts: true,
-    canManageOrders: true,
-    canViewCustomers: true,
-    canProcessPayments: true,
-  },
-  'sales-staff': {
-    canViewProducts: true,
-    canManageOrders: true,
-    canViewCustomers: true,
-    canProcessPayments: true,
-  },
-  'sales-external': {
-    canViewProducts: true,
-    canManageOrders: true,
-    canViewCustomers: true,
-    canProcessPayments: true,
-  },
-  manager: {
-    canViewProducts: true,
-    canManageOrders: true,
-    canViewCustomers: true,
-    canProcessPayments: true,
-    canManageInventory: true,
-    canViewReports: true,
-  },
-  accounts: {
-    canViewOrders: true,
-    canManageInvoices: true,
-    canViewReports: true,
-    canManageExpenses: true,
-  },
-  admin: {
-    canManageEverything: true,
-  },
-  superadmin: {
-    canManageEverything: true,
-  },
-  service_engineer: {
-    canViewProducts: true,
-    canManageOrders: true,
-    canViewCustomers: true,
-    canManageInventory: true,
-    canViewReports: true,
-  },
-} as const;
+/**
+ * Fetch Role Permissions dynamically
+ */
+export async function getRolePermissions() {
+  return getRolePermissionsFromDb();
+}
 
-// Customer Categories and Benefits
-export const CUSTOMER_CATEGORIES: Record<CustomerCategory, { 
-  name: string; 
-  defaultDiscount: number; 
+/**
+ * Fetch Customer Categories dynamically
+ */
+export async function getCustomerCategories(): Promise<Record<string, {
+  name: string;
+  defaultDiscount: number;
   benefits: string[];
-}> = {
-  Normal: {
-    name: 'Normal Customer',
-    defaultDiscount: 0,
-    benefits: ['Standard pricing', 'Basic support'],
-  },
-  Standard: {
-    name: 'Standard Customer', 
-    defaultDiscount: 5,
-    benefits: ['5% discount on all products', 'Priority support', 'Extended warranty'],
-  },
-  Premium: {
-    name: 'Premium Customer',
-    defaultDiscount: 10,
-    benefits: ['10% discount on all products', 'VIP support', 'Free installation', 'Extended warranty'],
-  },
-} as const;
+}>> {
+  const data = await getCustomerCategoriesFromDb();
+  const cats: Record<string, any> = {};
+  data.forEach((row) => {
+    cats[row.name] = {
+      name: row.name,
+      defaultDiscount: Number(row.discount_percentage),
+      benefits: row.benefits ? (typeof row.benefits === 'string' ? JSON.parse(row.benefits) : row.benefits) : [],
+    };
+  });
+  return cats;
+}
 
-// Common validation patterns
-export const VALIDATION_PATTERNS = {
-  email: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-  mobile: /^[6-9]\d{9}$/,
-  gstin: /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/,
-  pan: /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/,
-  pincode: /^[1-9][0-9]{5}$/,
-} as const;
+/**
+ * Fetch Validation Patterns
+ */
+export async function getValidationPatterns() {
+  const settings = await getAppSettings();
+  return settings.VALIDATION_PATTERNS || {
+    email: "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$",
+    mobile: "^[6-9]\\d{9}$",
+    gstin: "^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$",
+    pan: "^[A-Z]{5}[0-9]{4}[A-Z]{1}$",
+    pincode: "^[1-9][0-9]{5}$",
+  };
+}
 
-// Order status flow
-export const ORDER_STATUS_FLOW = [
-  'Pending',
-  'Awaiting Payment',
-  'Payment Failed',
-  'Payment Confirmed', 
-  'Confirmed',
-  'Processing',
-  'Ready to Ship',
-  'Shipped',
-  'Ready for Pickup',
-  'Completed',
-  'Delivered'
-] as const;
+/**
+ * Fetch Order status flow
+ */
+export async function getOrderStatusFlow() {
+  const settings = await getAppSettings();
+  return settings.ORDER_STATUS_FLOW || [
+    'Pending', 'Awaiting Payment', 'Payment Failed', 'Payment Confirmed', 
+    'Confirmed', 'Processing', 'Ready to Ship', 'Shipped', 
+    'Ready for Pickup', 'Completed', 'Delivered'
+  ];
+}
 
-// Service/repair setup lifecycle
-export const SERVICE_ORDER_STATUS_FLOW = [
-  'Pending',
-  'Awaiting Payment',
-  'Visit Scheduled',
-  'Visit Completed',
-  'Diagnosis Done',
-  'Quote Sent',
-  'Awaiting Customer Approval',
-  'Approved',
-  'Parts Ordered',
-  'Work In Progress',
-  'Quality Check',
-  'Ready for Pickup',
-  'Ready for Delivery',
-  'Delivered/Picked Up',
-  'Completed',
-  'Warranty/Support Active'
-] as const;
+/**
+ * Fetch Service/repair setup lifecycle
+ */
+export async function getServiceOrderStatusFlow() {
+  const settings = await getAppSettings();
+  return settings.SERVICE_ORDER_STATUS_FLOW || [
+    'Pending', 'Awaiting Payment', 'Visit Scheduled', 'Visit Completed',
+    'Diagnosis Done', 'Quote Sent', 'Awaiting Customer Approval', 'Approved',
+    'Parts Ordered', 'Work In Progress', 'Quality Check', 'Ready for Pickup',
+    'Ready for Delivery', 'Delivered/Picked Up', 'Completed', 'Warranty/Support Active'
+  ];
+}
 
-// Error messages
-export const ERROR_MESSAGES = {
-  INVALID_EMAIL: 'Please enter a valid email address',
-  INVALID_MOBILE: 'Please enter a valid 10-digit mobile number',
-  INVALID_GSTIN: 'Please enter a valid GSTIN',
-  REQUIRED_FIELD: 'This field is required',
-  NETWORK_ERROR: 'Network error. Please try again.',
-  UNAUTHORIZED: 'You are not authorized to perform this action',
-  SERVER_ERROR: 'Server error. Please try again later.',
-} as const;
+/**
+ * Fetch Error messages
+ */
+export async function getErrorMessages() {
+  const settings = await getAppSettings();
+  return settings.ERROR_MESSAGES || {
+    INVALID_EMAIL: 'Please enter a valid email address',
+    INVALID_MOBILE: 'Please enter a valid 10-digit mobile number',
+    INVALID_GSTIN: 'Please enter a valid GSTIN',
+    REQUIRED_FIELD: 'This field is required',
+    NETWORK_ERROR: 'Network error. Please try again.',
+    UNAUTHORIZED: 'You are not authorized to perform this action',
+    SERVER_ERROR: 'Server error. Please try again later.',
+  };
+}
 
 /**
  * Check if user has permission for a specific action
+ * Note: Now asynchronous because roles are in DB
  */
-export function hasPermission(role: UserRole, permission: string): boolean {
-  const rolePerms = ROLE_PERMISSIONS[role];
+export async function hasPermission(role: UserRole, permission: string): Promise<boolean> {
+  const rolePermsAll = await getRolePermissionsFromDb();
+  const rolePerms = rolePermsAll[role];
+  if (!rolePerms) return false;
   if ('canManageEverything' in rolePerms) return true;
-  return permission in rolePerms && rolePerms[permission as keyof typeof rolePerms];
+  return permission in rolePerms && rolePerms[permission];
 }
 
 /**
  * Get customer category benefits
+ * Note: Now asynchronous
  */
-export function getCustomerBenefits(category: CustomerCategory) {
-  return CUSTOMER_CATEGORIES[category];
+export async function getCustomerBenefits(category: CustomerCategory) {
+  const cats = await getCustomerCategories();
+  return cats[category] || null;
 }
+

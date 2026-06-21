@@ -39,16 +39,15 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
     });
   }
 
-  const title = cleanMetadataTitle(product.title || product.name || product.sku, 'Premium Product');
+  const title = await cleanMetadataTitle(product.title || product.name || product.sku);
 
   // 3. HEADLESS SEO META-PROPAGATION
   // Programmatically parse technical specs for optimized meta-density
   const specs = product.specifications ? Object.entries(product.specifications as Record<string, string>)
     .map(([k, v]) => `${k}: ${v}`).join(', ') : '';
 
-  const plainDesc = cleanMetadataDescription(
-    `${product.seo_description || product.description || product.details} Technical Specs: ${specs}`,
-    `Buy ${title} at TecBunny. Professional hardware with guaranteed SLA and stock availability.`,
+  const plainDesc = await cleanMetadataDescription(
+    `${product.seo_description || product.description || product.details} Technical Specs: ${specs}`
   );
 
   return createPageMetadata({
@@ -81,7 +80,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
   }
 
   const siteUrl = 'https://www.tecbunny.com';
-  const productTitle = cleanMetadataTitle(product.title || product.name || product.sku, 'Premium Product');
+  const productTitle = await cleanMetadataTitle(product.title || product.name || product.sku);
   const productCategory = stripHtmlToPlainText(product.category, 80);
   const productDescription = stripHtmlToPlainText(product.description || product.details, 500) ||
     `Quality ${productCategory || 'technology'} hardware available at TecBunny.`;

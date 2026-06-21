@@ -62,13 +62,11 @@ export class PricingService {
 
     // Apply category-based discounts for B2C
     if (context.customer_category) {
-      const categoryDiscounts: Record<string, number> = {
-        'Normal': 0,
-        'Standard': 5,
-        'Premium': 10
-      };
+      const { getCustomerCategories } = await import('./data');
+      const categories = await getCustomerCategories();
+      const category = categories[context.customer_category as string];
       
-      discountPercentage = Number(categoryDiscounts[context.customer_category as string]) || 0;
+      discountPercentage = category?.defaultDiscount || 0;
       finalPrice = basePrice * (1 - discountPercentage / 100);
     }
 
@@ -125,13 +123,11 @@ export class PricingService {
       }
     } else {
       // Fallback to category-based B2B discounts
-      const b2bDiscounts: Record<string, number> = {
-        'Bronze': 8,    // 8% discount for Bronze B2B
-        'Silver': 12,   // 12% discount for Silver B2B
-        'Gold': 15      // 15% discount for Gold B2B
-      };
+      const { getCustomerCategories } = await import('./data');
+      const categories = await getCustomerCategories();
+      const category = categories[context.customer_category as string];
       
-      const discountPercentage = Number(b2bDiscounts[context.customer_category as string]) || 5;
+      const discountPercentage = category?.defaultDiscount || 5;
       b2bPrice = basePrice * (1 - discountPercentage / 100);
       finalPrice = b2bPrice;
     }

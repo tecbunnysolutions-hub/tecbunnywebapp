@@ -18,25 +18,31 @@ export type CameraPriceMatrix = {
   dualLight: PriceEntry;
 };
 
-export type CablePriceEntry = {
+export interface CablePriceEntry {
   id: string;
   label: string;
   coverageMeters: number;
   mrpPerUnit: number;
   salePerUnit: number;
-};
+}
 
 export interface AnalogPricing {
   dvr: CapacityPriceEntry[];
   smps: CapacityPriceEntry[];
-  camera: Record<'2.4mp' | '5mp', CameraPriceMatrix>;
+  camera: {
+    '2.4mp': CameraPriceMatrix;
+    '5mp': CameraPriceMatrix;
+  };
   cable: CablePriceEntry[];
 }
 
 export interface IpPricing {
   nvr: CapacityPriceEntry[];
   poe: CapacityPriceEntry[];
-  camera: Record<'2mp' | '4mp', CameraPriceMatrix>;
+  camera: {
+    '2mp': CameraPriceMatrix;
+    '4mp': CameraPriceMatrix;
+  };
   cable: CablePriceEntry[];
 }
 
@@ -184,6 +190,44 @@ export const FALLBACK_INSTALLATION_OPTION: PriceEntry = {
   mrp: 4500,
   sale: 4500,
 };
+
+import { getCustomSetupConstantsFromDb, getCustomSetupInventoryFromDb } from './config-db';
+
+async function getFallbackPricing() {
+  const inventory = await getCustomSetupInventoryFromDb();
+  const getItems = (category: string) => inventory.filter(i => i.category === category).map(i => ({
+    id: i.id, label: i.label, capacity: i.capacity || 1, mrp: i.mrp ? Number(i.mrp) : null, sale: Number(i.sale), coverageMeters: i.capacity || 100, mrpPerUnit: i.mrp ? Number(i.mrp) : 0, salePerUnit: Number(i.sale)
+  }));
+  const getItem = (id: string) => getItems('accessory').find(i => i.id === id) || { id, label: 'Unknown', mrp: 0, sale: 0 };
+  
+  return {
+    analog: {
+      dvr: getItems('analog_dvr'),
+      smps: getItems('analog_smps'),
+      camera: {
+        '2.4mp': { standard: getItem('analog-2.4-standard'), dualLight: getItem('analog-2.4-dual') },
+        '5mp': { standard: getItem('analog-5-standard'), dualLight: getItem('analog-5-dual') }
+      },
+      cable: getItems('analog_cable')
+    } as AnalogPricing,
+    ip: {
+      nvr: getItems('ip_nvr'),
+      poe: getItems('ip_poe'),
+      camera: {
+        '2mp': { standard: getItem('ip-2-standard'), dualLight: getItem('ip-2-dual') },
+        '4mp': { standard: getItem('ip-4-standard'), dualLight: getItem('ip-4-dual') }
+      },
+      cable: getItems('ip_cable')
+    } as IpPricing,
+    hddOptions: getItems('hdd'),
+    monitorOptions: getItems('monitor'),
+    rackOptions: getItems('rack'),
+    conduitOptions: getItems('conduit'),
+    installationOption: getItems('installation')[0] || getItem('installation'),
+    wallMountAddon: getItem('wall-mount-addon'),
+    spikeGuardOption: getItem('spike-guard')
+  };
+}
 
 const SALE_PRICE_METADATA_KEYS = ['sale_price', 'salePrice', 'offer_price', 'offerPrice', 'discounted_price', 'discountedPrice'];
 
@@ -493,20 +537,32 @@ export function pickFirstOption(component: CustomSetupBlueprintComponentSummary 
   } satisfies PriceEntry;
 }
 
-export function buildPricingCatalog(blueprint: CustomSetupBlueprintSummary | null): {
+export async function buildPricingCatalog(blueprint: CustomSetupBlueprintSummary | null): Promise<{
   analog: AnalogPricing;
   ip: IpPricing;
   hddOptions: PriceEntry[];
+  monitorOptions: PriceEntry[];
+  rackOptions: PriceEntry[];
+  conduitOptions: PriceEntry[];
+  wallMountAddon: PriceEntry;
+  spikeGuardOption: PriceEntry;
   monitorOption: PriceEntry;
   installationOption: PriceEntry;
-} {
+}> {
+  const fallbacks = await getFallbackPricing();
+
   if (!blueprint) {
     return {
-      analog: FALLBACK_ANALOG_PRICING,
-      ip: FALLBACK_IP_PRICING,
-      hddOptions: FALLBACK_HDD_OPTIONS,
-      monitorOption: FALLBACK_MONITOR_OPTION,
-      installationOption: FALLBACK_INSTALLATION_OPTION,
+      analog: fallbacks.analog,
+      ip: fallbacks.ip,
+      hddOptions: fallbacks.hddOptions,
+      monitorOptions: fallbacks.monitorOptions,
+      rackOptions: fallbacks.rackOptions,
+      conduitOptions: fallbacks.conduitOptions,
+      wallMountAddon: fallbacks.wallMountAddon,
+      spikeGuardOption: fallbacks.spikeGuardOption,
+      monitorOption: fallbacks.monitorOptions[0] || { id: 'mon', label: 'Monitor', mrp: 0, sale: 0 },
+      installationOption: fallbacks.installationOption,
     };
   }
 
@@ -516,54 +572,54 @@ export function buildPricingCatalog(blueprint: CustomSetupBlueprintSummary | nul
   const analogPricing: AnalogPricing = {
     dvr: buildCapacityEntries(
       analogSystem?.components.find((component) => component.slug === 'dvr-recorder'),
-      FALLBACK_ANALOG_PRICING.dvr
+      fallbacks.analog.dvr
     ),
     smps: buildCapacityEntries(
       analogSystem?.components.find((component) => component.slug === 'smps-power'),
-      FALLBACK_ANALOG_PRICING.smps
+      fallbacks.analog.smps
     ),
     camera: {
       '2.4mp': buildCameraMatrix(
         analogSystem?.components.find((component) => component.slug === 'analog-camera'),
         '2.4mp',
-        FALLBACK_ANALOG_PRICING.camera['2.4mp']
+        fallbacks.analog.camera['2.4mp']
       ),
       '5mp': buildCameraMatrix(
         analogSystem?.components.find((component) => component.slug === 'analog-camera'),
         '5mp',
-        FALLBACK_ANALOG_PRICING.camera['5mp']
+        fallbacks.analog.camera['5mp']
       ),
     },
     cable: buildCableEntries(
       analogSystem?.components.find((component) => component.slug === 'coaxial-cable'),
-      FALLBACK_ANALOG_PRICING.cable
+      fallbacks.analog.cable
     ),
   } satisfies AnalogPricing;
 
   const ipPricing: IpPricing = {
     nvr: buildCapacityEntries(
       ipSystem?.components.find((component) => component.slug === 'nvr-recorder'),
-      FALLBACK_IP_PRICING.nvr
+      fallbacks.ip.nvr
     ),
     poe: buildCapacityEntries(
       ipSystem?.components.find((component) => component.slug === 'poe-switch'),
-      FALLBACK_IP_PRICING.poe
+      fallbacks.ip.poe
     ),
     camera: {
       '2mp': buildCameraMatrix(
         ipSystem?.components.find((component) => component.slug === 'ip-camera'),
         '2mp',
-        FALLBACK_IP_PRICING.camera['2mp']
+        fallbacks.ip.camera['2mp']
       ),
       '4mp': buildCameraMatrix(
         ipSystem?.components.find((component) => component.slug === 'ip-camera'),
         '4mp',
-        FALLBACK_IP_PRICING.camera['4mp']
+        fallbacks.ip.camera['4mp']
       ),
     },
     cable: buildCableEntries(
       ipSystem?.components.find((component) => component.slug === 'cat6-cable'),
-      FALLBACK_IP_PRICING.cable
+      fallbacks.ip.cable
     ),
   } satisfies IpPricing;
 
@@ -572,7 +628,7 @@ export function buildPricingCatalog(blueprint: CustomSetupBlueprintSummary | nul
       analogSystem?.components.find((component) => component.slug === 'dvr-storage'),
       ipSystem?.components.find((component) => component.slug === 'nvr-storage'),
     ],
-    FALLBACK_HDD_OPTIONS
+    fallbacks.hddOptions
   );
 
   const monitorComponent =
@@ -583,13 +639,18 @@ export function buildPricingCatalog(blueprint: CustomSetupBlueprintSummary | nul
     analogSystem?.components.find((component) => component.slug === 'installation-service') ??
     ipSystem?.components.find((component) => component.slug === 'installation-service');
 
-  const monitorOption = pickFirstOption(monitorComponent) ?? FALLBACK_MONITOR_OPTION;
-  const installationOption = pickFirstOption(installationComponent) ?? FALLBACK_INSTALLATION_OPTION;
+  const monitorOption = pickFirstOption(monitorComponent) ?? (fallbacks.monitorOptions[0] || { id: 'mon', label: 'Monitor', mrp: 0, sale: 0 });
+  const installationOption = pickFirstOption(installationComponent) ?? fallbacks.installationOption;
 
   return {
     analog: analogPricing,
     ip: ipPricing,
     hddOptions,
+    monitorOptions: fallbacks.monitorOptions,
+    rackOptions: fallbacks.rackOptions,
+    conduitOptions: fallbacks.conduitOptions,
+    wallMountAddon: fallbacks.wallMountAddon,
+    spikeGuardOption: fallbacks.spikeGuardOption,
     monitorOption,
     installationOption,
   };
@@ -804,7 +865,7 @@ export interface CalculateTotalsInput {
   conduitMeters?: number;
   installationIncluded: boolean;
   automationEnabled?: boolean;
-  pricingCatalog: ReturnType<typeof buildPricingCatalog>;
+  pricingCatalog: Awaited<ReturnType<typeof buildPricingCatalog>>;
   accessoryPricingOverrides?: Record<string, { mrp: number; sale: number }> | null;
 }
 
@@ -844,8 +905,8 @@ export function calculateTotals({
 }: CalculateTotalsInput): Totals {
   const analogPricing = pricingCatalog.analog;
   const ipPricing = pricingCatalog.ip;
-  const selectableHddOptions = pricingCatalog.hddOptions.length ? pricingCatalog.hddOptions : FALLBACK_HDD_OPTIONS;
-  const monitorOption = FALLBACK_MONITOR_OPTIONS.find((entry) => entry.id === monitorId) ?? FALLBACK_MONITOR_OPTIONS[0];
+  const selectableHddOptions = pricingCatalog.hddOptions.length ? pricingCatalog.hddOptions : [{ id: 'hdd', label: 'HDD', mrp: 0, sale: 0 }];
+  const monitorOption = pricingCatalog.monitorOptions?.find((entry) => entry.id === monitorId) ?? pricingCatalog.monitorOptions?.[0] ?? { id: 'mon', label: 'Monitor', mrp: 0, sale: 0 };
   const installationOption = pricingCatalog.installationOption;
 
   const systemSummary = system === 'analog'
@@ -870,8 +931,8 @@ export function calculateTotals({
   // Resolve Wall Mount Addon
   const resolvedWallMountPrice = resolveAccessoryPrice(
     'wall-mount-addon',
-    FALLBACK_WALL_MOUNT_ADDON.mrp ?? 0,
-    FALLBACK_WALL_MOUNT_ADDON.sale,
+    pricingCatalog.wallMountAddon.mrp ?? 0,
+    pricingCatalog.wallMountAddon.sale,
     accessoryPricingOverrides
   );
   const wallMountMrp = (monitorIncluded && wallMountIncluded) ? resolvedWallMountPrice.mrp : 0;
@@ -880,8 +941,8 @@ export function calculateTotals({
   // Resolve Spike Guard
   const resolvedSpikeGuardPrice = resolveAccessoryPrice(
     'spike-guard',
-    FALLBACK_SPIKE_GUARD_OPTION.mrp ?? 0,
-    FALLBACK_SPIKE_GUARD_OPTION.sale,
+    pricingCatalog.spikeGuardOption.mrp ?? 0,
+    pricingCatalog.spikeGuardOption.sale,
     accessoryPricingOverrides
   );
   const spikeGuardMrp = spikeGuardIncluded ? resolvedSpikeGuardPrice.mrp : 0;
@@ -892,7 +953,7 @@ export function calculateTotals({
   let rackSale = 0;
   let rackLabel = 'None';
   if (rackId) {
-    const rackOption = FALLBACK_RACK_OPTIONS.find((entry) => entry.id === rackId);
+    const rackOption = pricingCatalog.rackOptions?.find((entry) => entry.id === rackId);
     if (rackOption) {
       const resolvedRackPrice = resolveAccessoryPrice(
         rackOption.id,
@@ -911,7 +972,7 @@ export function calculateTotals({
   let conduitSale = 0;
   let conduitLabel = 'None';
   if (conduitPipeId && conduitMeters > 0) {
-    const conduitOption = FALLBACK_CONDUIT_PIPE_OPTIONS.find((entry) => entry.id === conduitPipeId);
+    const conduitOption = pricingCatalog.conduitOptions?.find((entry) => entry.id === conduitPipeId);
     if (conduitOption) {
       const resolvedConduitPrice = resolveAccessoryPrice(
         conduitOption.id,

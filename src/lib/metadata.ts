@@ -1,10 +1,6 @@
 import type { Metadata } from 'next';
 import { stripHtmlToPlainText } from './strings';
-
-const siteUrl = 'https://www.tecbunny.com';
-const defaultOgImage = 'https://fbcsagupcxheyiusjfak.supabase.co/storage/v1/object/public/TecBunny%20Solution/TECBUNNY_SOLUTIONS_PVT_LTD-removebg-preview.png';
-const xHandle = process.env.NEXT_PUBLIC_X_HANDLE;
-const defaultDescription = 'TecBunny Solutions provides technology services, custom setups, and technical support.';
+import { getAppSettings } from './config-db';
 
 interface PageMetaInput {
   title: string;
@@ -16,7 +12,10 @@ interface PageMetaInput {
   twitter?: Metadata['twitter'];
 }
 
-export function cleanMetadataTitle(value: string | null | undefined, fallback = 'TecBunny | CCTV, IT Services & Home Automation in Goa'): string {
+export async function cleanMetadataTitle(value: string | null | undefined): Promise<string> {
+  const settings = await getAppSettings();
+  const fallback = settings.fallbackTitle || 'TecBunny | CCTV, IT Services & Home Automation in Goa';
+  
   let title = stripHtmlToPlainText(value).trim();
   if (!title || title.toLowerCase() === 'null' || title.toLowerCase() === 'undefined') {
     title = fallback;
@@ -42,10 +41,12 @@ export function cleanMetadataTitle(value: string | null | undefined, fallback = 
   return title;
 }
 
-export function cleanMetadataDescription(
-  value: string | null | undefined,
-  fallback = 'TecBunny Solutions provides premium CCTV installation, IT services, AMC support, and home automation in Goa and Maharashtra. Secure your space now.',
-): string {
+export async function cleanMetadataDescription(
+  value: string | null | undefined
+): Promise<string> {
+  const settings = await getAppSettings();
+  const fallback = settings.defaultDescription || 'TecBunny Solutions provides premium CCTV installation, IT services, AMC support, and home automation in Goa and Maharashtra. Secure your space now.';
+
   let description = stripHtmlToPlainText(value).trim();
   if (!description || description.toLowerCase() === 'null' || description.toLowerCase() === 'undefined') {
     description = fallback;
@@ -60,27 +61,34 @@ export function cleanMetadataDescription(
   return description;
 }
 
-export function createPageMetadata({
+export async function createPageMetadata({
   title,
   description,
   path,
-  image = defaultOgImage,
+  image,
   keywords = [],
   openGraph,
   twitter,
-}: PageMetaInput): Metadata {
-  const activeImage = (image === '/brand.png' || image.endsWith('/brand.png')) ? defaultOgImage : image;
+}: PageMetaInput): Promise<Metadata> {
+  const settings = await getAppSettings();
+  const siteUrl = settings.siteUrl || 'https://www.tecbunny.com';
+  const defaultOgImage = settings.defaultOgImage || 'https://fbcsagupcxheyiusjfak.supabase.co/storage/v1/object/public/TecBunny%20Solution/TECBUNNY_SOLUTIONS_PVT_LTD-removebg-preview.png';
+  const xHandle = process.env.NEXT_PUBLIC_X_HANDLE;
+
+  const actualImage = image || defaultOgImage;
+  const activeImage = (actualImage === '/brand.png' || actualImage.endsWith('/brand.png')) ? defaultOgImage : actualImage;
   const resolvedImage = activeImage.startsWith('http') ? activeImage : `${siteUrl}${activeImage}`;
+  
   const rawCanonical = path.startsWith('http') ? path : `${siteUrl}${path}`;
   const urlObj = new URL(rawCanonical);
-  let canonicalPath = urlObj.pathname.toLowerCase().replace(/\/+/g, '/');
+  let canonicalPath = urlObj.pathname.toLowerCase().replace(new RegExp('/+', 'g'), '/');
   if (canonicalPath.endsWith('/') && canonicalPath !== '/') {
     canonicalPath = canonicalPath.slice(0, -1);
   }
   const canonical = `${siteUrl}${canonicalPath}`;
 
-  const safeTitle = cleanMetadataTitle(title);
-  const safeDescription = cleanMetadataDescription(description);
+  const safeTitle = await cleanMetadataTitle(title);
+  const safeDescription = await cleanMetadataDescription(description);
 
   return {
     title: safeTitle,
