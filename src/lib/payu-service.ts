@@ -39,20 +39,16 @@ import { verifyPaymentHash } from './crypto-utils';
 
 export const sanitizeHashValue = (val: string | number | undefined | null): string => {
   if (val === undefined || val === null) return '';
-  return String(val).replace(/\|/g, '').trim().replace(/\s+/g, ' ');
+  // Avoid replacing inner spaces or characters as PayU calculates hash on EXACT values
+  return String(val).trim();
 };
 
 function normaliseValue(value: string | number | null | undefined): string {
   if (value == null) {
     return '';
   }
-  // Normalize numeric strings to 2 decimal places for cryptographic consistency
-  if (typeof value === 'number') {
-    return value.toFixed(2);
-  }
-  if (typeof value === 'string' && !isNaN(parseFloat(value)) && isFinite(value as any)) {
-    return parseFloat(value).toFixed(2);
-  }
+  // Simply return the string representation without modifying decimals
+  // as PayU uses the exact string from the payload to generate the hash
   return sanitizeHashValue(value);
 }
 
@@ -154,14 +150,11 @@ export function verifyPayuHash(config: PayuConfig, response: Record<string, stri
   const udfValuesForward = collectUdfValues(response);
   const udfValuesReversed = [...udfValuesForward].reverse();
 
-  const placeholderSegments = ['', '', '', '', '', ''];
-
   const additionalCharges = normaliseValue(response.additionalCharges || (response as Record<string, string | undefined>)['additional_charges']);
 
   const baseSequence = [
     config.merchantSalt,
     normaliseValue(response.status),
-    ...placeholderSegments,
     ...udfValuesReversed,
     normaliseValue(response.email),
     normaliseValue(response.firstname),
