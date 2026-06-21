@@ -9,10 +9,10 @@ import { useAuth } from '@/lib/hooks';
 import { logger } from '@/lib/logger';
 
 export default function ProfilePage() {
-  const { supabase, loading: authLoading } = useAuth();
+  const { supabase, loading: authLoading, user: authUser } = useAuth();
   const router = useRouter();
   const [loading, setLoading] = React.useState(true);
-  const [user, setUser] = React.useState<SupabaseUser | null>(null);
+  const [user, setUser] = React.useState<any>(null);
   const [profile, setProfile] = React.useState<any>(null);
   const [salesAgentData, setSalesAgentData] = React.useState<any>(null);
   const [orders, setOrders] = React.useState<any[]>([]);
@@ -25,53 +25,52 @@ export default function ProfilePage() {
 
     const loadProfile = async () => {
       try {
-        const { data: { user: supaUser } } = await supabase.auth.getUser();
-        if (!supaUser) {
+        if (!authUser) {
           router.replace('/auth/signin');
           return;
         }
 
         if (cancelled) return;
-        setUser(supaUser);
+        setUser(authUser);
 
         const { data: profileData } = await supabase
           .from('profiles')
           .select('*')
-          .eq('id', supaUser.id)
+          .eq('id', authUser.id)
           .maybeSingle();
 
         const { data: salesAgent } = await supabase
           .from('sales_agents')
           .select('*')
-          .eq('user_id', supaUser.id)
+          .eq('user_id', authUser.id)
           .maybeSingle();
 
         const { data: recentOrders } = await supabase
           .from('orders')
           .select('id, status, total, total_amount, created_at, type')
-          .eq('customer_id', supaUser.id)
+          .eq('customer_id', authUser.id)
           .order('created_at', { ascending: false })
           .limit(3);
 
         const { data: recentTickets } = await supabase
           .from('service_tickets')
           .select('id, issue_description, status, priority, created_at')
-          .eq('customer_id', supaUser.id)
+          .eq('customer_id', authUser.id)
           .order('created_at', { ascending: false })
           .limit(5);
 
         const { data: quoteData } = await supabase
           .from('quotes')
           .select('*')
-          .eq('user_id', supaUser.id)
+          .eq('user_id', authUser.id)
           .order('created_at', { ascending: false });
 
         const fallbackProfile = profileData ?? {
-          id: supaUser.id,
-          name: supaUser.user_metadata?.name ?? supaUser.email?.split('@')[0] ?? 'User',
-          email: supaUser.email,
-          mobile: supaUser.user_metadata?.mobile ?? '',
-          role: (supaUser.app_metadata?.role as string) ?? 'customer'
+          id: authUser.id,
+          name: authUser.name || authUser.email?.split('@')[0] || 'User',
+          email: authUser.email,
+          mobile: authUser.mobile || '',
+          role: authUser.role || 'customer'
         };
 
         if (cancelled) return;
@@ -91,33 +90,10 @@ export default function ProfilePage() {
 
     loadProfile();
 
-    const timer = setTimeout(() => {
-      if (!cancelled) {
-        setLoading(false);
-        const supaUser = user || supabase.auth.getUser().then(({ data }) => data.user).catch(() => null);
-        if (supaUser && !profile) {
-          // Promise resolution or immediate fallback
-          Promise.resolve(supaUser).then((resolvedUser) => {
-            if (resolvedUser && !profile && !cancelled) {
-              setUser(resolvedUser);
-              setProfile({
-                id: resolvedUser.id,
-                name: resolvedUser.user_metadata?.name ?? resolvedUser.email?.split('@')[0] ?? 'User',
-                email: resolvedUser.email,
-                mobile: resolvedUser.user_metadata?.mobile ?? '',
-                role: (resolvedUser.app_metadata?.role as string) ?? 'customer'
-              });
-            }
-          });
-        }
-      }
-    }, 5000);
-
     return () => {
       cancelled = true;
-      clearTimeout(timer);
     };
-  }, [authLoading, supabase, router, user, profile]);
+  }, [authLoading, supabase, router, authUser]);
 
   if (loading || !user || !profile) {
     return (
