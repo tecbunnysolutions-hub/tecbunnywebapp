@@ -328,17 +328,18 @@ logger.info('order_create_attempt', { userId: effectiveUserId });
       .filter(Boolean);
 
     if (adminEmailList.length > 0) {
-      try {
-        const sent = await emailHelpers.sendAdminOrderNotification(adminEmailList, fullOrder);
-        if (!sent) {
-          logger.warn('order_admin_email_partial_failure', { orderId: createdOrder.id, adminEmailCount: adminEmailList.length });
-        }
-      } catch (adminEmailError) {
-        logger.warn('order_admin_email_failure', { 
-          orderId: createdOrder.id, 
-          error: adminEmailError instanceof Error ? adminEmailError.message : 'unknown' 
+      emailHelpers.sendAdminOrderNotification(adminEmailList, fullOrder)
+        .then(sent => {
+          if (!sent) {
+            logger.warn('order_admin_email_partial_failure', { orderId: createdOrder.id, adminEmailCount: adminEmailList.length });
+          }
+        })
+        .catch(adminEmailError => {
+          logger.warn('order_admin_email_failure', { 
+            orderId: createdOrder.id, 
+            error: adminEmailError instanceof Error ? adminEmailError.message : 'unknown' 
+          });
         });
-      }
     }
 
     // Send WhatsApp notifications concurrently
@@ -407,9 +408,10 @@ logger.info('order_create_attempt', { userId: effectiveUserId });
           );
         }
 
-        // Execute all notifications concurrently. Since we catch errors in each promise individually
-        // and we have a 2.5 second timeout on each request, this will take at most 2.5 seconds total.
-        await Promise.allSettled(notifications);
+        // Execute all notifications concurrently in the background.
+        Promise.allSettled(notifications).catch(e => {
+          logger.warn('whatsapp_background_error', { error: e });
+        });
       }
     } catch (whatsappError) {
       logger.warn('order_whatsapp_concurrency_failure', { 
