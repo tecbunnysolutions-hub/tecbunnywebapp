@@ -89,6 +89,16 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(result);
   } catch (error) {
     logger.error('Error in /api/checkout/calculate', { error });
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    const message = error instanceof Error ? error.message : 'Internal Server Error';
+    const isValidationError = error instanceof Error && (
+      error.message.includes('stock') || 
+      error.message.includes('invalid') || 
+      error.message.includes('available') ||
+      error.message.includes('Product')
+    );
+    return NextResponse.json(
+      { error: message }, 
+      { status: isValidationError ? 400 : 500 }
+    );
   }
 }
