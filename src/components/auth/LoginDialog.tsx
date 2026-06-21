@@ -50,7 +50,7 @@ export function LoginDialog({ children }: { children: React.ReactNode }) {
   const [failedAttempts, setFailedAttempts] = React.useState(0);
   const [lockoutUntil, setLockoutUntil] = React.useState<number | null>(null);
   const [captchaToken, setCaptchaToken] = React.useState<string | null>(null);
-  const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY?.trim();
+  const turnstileSiteKey = process.env.NODE_ENV === 'production' ? process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY?.trim() : undefined;
 
   
   const Turnstile = React.useMemo(

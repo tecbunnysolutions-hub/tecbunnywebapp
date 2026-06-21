@@ -36,7 +36,7 @@ function StaffSignInForm() {
   const [showTwoFactor, setShowTwoFactor] = useState(false);
   const [twoFactorUser, setTwoFactorUser] = useState<any>(null);
 
-  const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+  const turnstileSiteKey = process.env.NODE_ENV === 'production' ? process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY : undefined;
   const Turnstile = useMemo(
     () =>
       NextDynamic(() => import('react-turnstile').then(m => m.default), {
