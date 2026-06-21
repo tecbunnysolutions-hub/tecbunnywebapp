@@ -295,7 +295,7 @@ export class WhatsAppService {
         method: 'POST',
         headers,
         body: JSON.stringify(payload)
-      });
+      }, 2500, 1);
 
       const result = await response.json();
       

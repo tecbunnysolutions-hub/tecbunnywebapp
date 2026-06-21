@@ -341,7 +341,7 @@ logger.info('order_create_attempt', { userId: effectiveUserId });
       }
     }
 
-    // Send WhatsApp notifications
+    // Send WhatsApp notifications concurrently
     try {
       const customerPhone = orderItemsData.customer_phone;
       
@@ -350,18 +350,21 @@ logger.info('order_create_attempt', { userId: effectiveUserId });
         const cleanPhone = customerPhone.replace(/[^\d+]/g, '');
         const formattedPhone = cleanPhone.startsWith('+') ? cleanPhone : `+91${cleanPhone}`;
 
-        // Send order confirmation to customer
-        await sendOrderNotification(formattedPhone, {
-          orderNumber: createdOrder.id.toString(),
-          customerName: orderData.customer_name
-        });
+        const notifications: Promise<any>[] = [];
 
-        logger.info('order_whatsapp_customer_sent', { 
-          orderId: createdOrder.id, 
-          phone: formattedPhone 
-        });
+        // 1. Customer Order Confirmation
+        notifications.push(
+          sendOrderNotification(formattedPhone, {
+            orderNumber: createdOrder.id.toString(),
+            customerName: orderData.customer_name
+          }).then(() => {
+            logger.info('order_whatsapp_customer_sent', { orderId: createdOrder.id, phone: formattedPhone });
+          }).catch(err => {
+            logger.warn('order_whatsapp_customer_failed', { orderId: createdOrder.id, error: err.message });
+          })
+        );
 
-        // Notify admin about new order
+        // 2. Notify admin about new order
         const adminPhone = process.env.ADMIN_WHATSAPP_NUMBER;
         if (adminPhone) {
           const itemsList = (orderItemsData.cart_items || [])
@@ -378,15 +381,16 @@ logger.info('order_create_attempt', { userId: effectiveUserId });
             `🔗 View: ${siteUrl}/mgmt/admin/orders/${createdOrder.id}\n` +
             `⏰ Time: ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}`;
 
-          await sendWhatsAppNotification(adminPhone, adminMessage);
-
-          logger.info('order_whatsapp_admin_sent', { 
-            orderId: createdOrder.id, 
-            adminPhone 
-          });
+          notifications.push(
+            sendWhatsAppNotification(adminPhone, adminMessage).then(() => {
+              logger.info('order_whatsapp_admin_sent', { orderId: createdOrder.id, adminPhone });
+            }).catch(err => {
+              logger.warn('order_whatsapp_admin_failed', { orderId: createdOrder.id, error: err.message });
+            })
+          );
         }
 
-        // Notify manager if different from admin
+        // 3. Notify manager if different from admin
         const managerPhone = process.env.MANAGER_WHATSAPP_NUMBER;
         if (managerPhone && managerPhone !== adminPhone) {
           const managerMessage = `📋 Order #${createdOrder.id}\n` +
@@ -394,16 +398,21 @@ logger.info('order_create_attempt', { userId: effectiveUserId });
             `💰 ₹${fullOrder.total}\n` +
             `⏰ ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}`;
 
-          await sendWhatsAppNotification(managerPhone, managerMessage);
-
-          logger.info('order_whatsapp_manager_sent', { 
-            orderId: createdOrder.id, 
-            managerPhone 
-          });
+          notifications.push(
+            sendWhatsAppNotification(managerPhone, managerMessage).then(() => {
+              logger.info('order_whatsapp_manager_sent', { orderId: createdOrder.id, managerPhone });
+            }).catch(err => {
+              logger.warn('order_whatsapp_manager_failed', { orderId: createdOrder.id, error: err.message });
+            })
+          );
         }
+
+        // Execute all notifications concurrently. Since we catch errors in each promise individually
+        // and we have a 2.5 second timeout on each request, this will take at most 2.5 seconds total.
+        await Promise.allSettled(notifications);
       }
     } catch (whatsappError) {
-      logger.warn('order_whatsapp_failure', { 
+      logger.warn('order_whatsapp_concurrency_failure', { 
         orderId: createdOrder.id, 
         error: whatsappError instanceof Error ? whatsappError.message : 'unknown' 
       });
