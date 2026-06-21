@@ -574,7 +574,7 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
                   Hardware & Gear
                 </span>
               </h1>
-              <p className="max-w-xl text-sm sm:text-base leading-relaxed text-zinc-400 font-light mt-2">
+              <p className="max-w-xl text-base leading-relaxed text-zinc-300 font-light mt-2">
                 {searchQuery 
                   ? `Found results matching "${searchQuery}"` 
                   : 'Enterprise-grade equipment and components curated for professional security and IT infrastructure.'
@@ -597,7 +597,7 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
                   <span>⏎</span>
                 </div>
               </div>
-              <p className="mt-2.5 text-[10px] font-mono text-muted-foreground/60 tracking-wider uppercase">{resolvedResultsLabel}</p>
+              <p className="mt-2.5 text-xs font-mono text-muted-foreground/60 tracking-wider uppercase">{resolvedResultsLabel}</p>
             </form>
           </div>
 
@@ -613,7 +613,7 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
                   type="button"
                   onClick={() => updateUrlParams({ category: '' })}
                   className={cn(
-                    'reveal-item rounded-lg px-4 py-2 text-xs font-semibold uppercase tracking-wider transition-all duration-300 border whitespace-nowrap',
+                    'reveal-item rounded-lg px-4 py-2 text-sm font-semibold uppercase tracking-wider transition-all duration-300 border whitespace-nowrap',
                     !categoryFilter
                       ? 'bg-primary/15 text-primary border-primary/40 shadow-[0_0_15px_rgba(59,130,246,0.15)]'
                       : 'bg-muted/50 text-muted-foreground border-border hover:text-foreground hover:bg-muted/80 hover:border-border/80',
@@ -628,7 +628,7 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
                     type="button"
                     onClick={() => updateUrlParams({ category })}
                     className={cn(
-                      'reveal-item rounded-lg px-4 py-2 text-xs font-semibold uppercase tracking-wider transition-all duration-300 border whitespace-nowrap',
+                      'reveal-item rounded-lg px-4 py-2 text-sm font-semibold uppercase tracking-wider transition-all duration-300 border whitespace-nowrap',
                       categoryFilter === category
                         ? 'bg-primary/15 text-primary border-primary/40 shadow-[0_0_15px_rgba(59,130,246,0.15)]'
                         : 'bg-muted/50 text-muted-foreground border-border hover:text-foreground hover:bg-muted/80 hover:border-border/80',
@@ -643,7 +643,7 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
                     type="button"
                     onClick={clearFilters}
                     className={cn(
-                      'reveal-item rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-destructive transition-all duration-300 hover:bg-destructive/20 hover:text-destructive-foreground',
+                      'reveal-item rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-2 text-sm font-semibold uppercase tracking-wider text-destructive transition-all duration-300 hover:bg-destructive/20 hover:text-destructive-foreground',
                       revealDelayClass(120)
                     )}
                   >
@@ -654,11 +654,11 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
 
               {/* Sort Dropdown */}
               <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
-                <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider">Sort by</span>
+                <span className="text-xs font-mono text-muted-foreground uppercase tracking-wider">Sort by</span>
                 <select
                   value={sortOption}
                   onChange={(e) => updateUrlParams({ sort: e.target.value })}
-                  className="bg-background text-foreground border border-border rounded-lg px-3 py-1.5 focus:outline-none focus:border-primary/50 hover:bg-muted transition-all duration-300 font-mono cursor-pointer text-xs"
+                  className="bg-background text-foreground border border-border rounded-lg px-3 py-1.5 focus:outline-none focus:border-primary/50 hover:bg-muted transition-all duration-300 font-mono cursor-pointer text-sm"
                 >
                   <option value="popularity">Popularity</option>
                   <option value="newest">New Arrivals</option>
@@ -732,7 +732,7 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
                           />
                           {/* Discount Badge */}
                           {product.discount_percentage && product.discount_percentage > 0 ? (
-                            <div className="absolute left-3 top-3 rounded-full bg-primary/15 border border-primary/30 px-2.5 py-0.5 text-[9px] font-mono font-bold text-primary tracking-wider uppercase shadow-sm animate-fade-in">
+                            <div className="absolute left-3 top-3 rounded-full bg-primary/15 border border-primary/30 px-3 py-1 text-xs font-mono font-bold text-primary tracking-wider uppercase shadow-sm animate-fade-in">
                               -{product.discount_percentage}% OFF
                             </div>
                           ) : null}
@@ -741,11 +741,11 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
                         {/* Text Content */}
                         <div className="space-y-2">
                           <div className="flex items-center justify-between gap-2">
-                            <span className="text-[9px] font-mono uppercase tracking-wider text-muted-foreground/80">
+                            <span className="text-xs font-mono uppercase tracking-wider text-muted-foreground/80">
                               {product.brand || product.category || 'Hardware'}
                             </span>
                             {product.rating > 0 && (
-                              <div className="flex items-center gap-0.5 text-[10px] font-mono text-muted-foreground">
+                              <div className="flex items-center gap-0.5 text-xs font-mono text-muted-foreground">
                                 <span className="text-amber-500">★</span>
                                 <span>{product.rating.toFixed(1)}</span>
                               </div>
@@ -756,7 +756,7 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
                             {displayName}
                           </h3>
                           
-                          <p className="text-xs font-light text-muted-foreground line-clamp-2 leading-relaxed">
+                          <p className="text-sm font-light text-muted-foreground line-clamp-2 leading-relaxed">
                             {simpleDesc}
                           </p>
                         </div>
@@ -767,10 +767,10 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
                         <div className="flex flex-col">
                           <span className="text-xl font-black tracking-tight text-foreground font-tech flex items-baseline gap-1.5">
                             ₹{(offerPrice ?? basePrice).toLocaleString('en-IN')}
-                            <span className="text-[10px] font-normal text-muted-foreground uppercase tracking-wide">Inc. GST</span>
+                            <span className="text-xs font-normal text-muted-foreground uppercase tracking-wide">Inc. GST</span>
                           </span>
                           {offerPrice && (
-                            <span className="text-xs text-muted-foreground line-through font-light mt-0.5">
+                            <span className="text-sm text-muted-foreground line-through font-light mt-0.5">
                               ₹{basePrice.toLocaleString('en-IN')}
                             </span>
                           )}

@@ -436,7 +436,7 @@ export default function AdminProductsPage() {
                 <Button
                   variant="outline"
                   onClick={downloadSampleCSV}
-                  className="h-9 text-xs flex items-center justify-center"
+                  className="h-9 text-sm flex items-center justify-center"
                 >
                   <Download className="mr-1.5 h-3.5 w-3.5 flex-shrink-0" />
                   <span className="truncate">Sample</span>
@@ -445,7 +445,7 @@ export default function AdminProductsPage() {
                   variant="outline"
                   disabled={importing}
                   onClick={() => fileInputRef.current?.click()}
-                  className="h-9 text-xs flex items-center justify-center"
+                  className="h-9 text-sm flex items-center justify-center"
                 >
                   {importing ? (
                     <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin flex-shrink-0" />
@@ -458,7 +458,7 @@ export default function AdminProductsPage() {
                   variant="outline"
                   onClick={exportToCSV}
                   disabled={products.length === 0}
-                  className="h-9 text-xs flex items-center justify-center"
+                  className="h-9 text-sm flex items-center justify-center"
                 >
                   <Download className="mr-1.5 h-3.5 w-3.5 flex-shrink-0" />
                   <span className="truncate">Export</span>
@@ -564,7 +564,7 @@ export default function AdminProductsPage() {
                             {getProductDisplayImage(product) ? (
                               <img src={getProductDisplayImage(product)!} alt={product.title} className="w-8 h-8 rounded object-cover" />
                             ) : (
-                              <div className="w-8 h-8 rounded bg-muted flex items-center justify-center text-[10px] font-semibold text-muted-foreground">
+                              <div className="w-8 h-8 rounded bg-muted flex items-center justify-center text-xs font-semibold text-muted-foreground">
                                 No Image
                               </div>
                             )}
@@ -613,7 +613,7 @@ export default function AdminProductsPage() {
                                 <Button
                                   size="sm"
                                   variant="ghost"
-                                  className="h-8 text-xs text-muted-foreground hover:text-foreground"
+                                  className="h-8 text-sm text-muted-foreground hover:text-foreground"
                                   onClick={() => handleDiscardPrices(product.id)}
                                   disabled={savingProductId === product.id}
                                 >
@@ -622,7 +622,7 @@ export default function AdminProductsPage() {
                                 <Button
                                   size="sm"
                                   variant="default"
-                                  className="h-8 text-xs"
+                                  className="h-8 text-sm"
                                   onClick={() => handleSavePrices(product.id)}
                                   disabled={savingProductId === product.id}
                                 >
@@ -677,13 +677,13 @@ export default function AdminProductsPage() {
                       {getProductDisplayImage(product) ? (
                         <img src={getProductDisplayImage(product)!} alt={product.title} className="w-12 h-12 rounded-lg object-cover flex-shrink-0" />
                       ) : (
-                        <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center text-[10px] font-semibold text-muted-foreground flex-shrink-0">
+                        <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center text-xs font-semibold text-muted-foreground flex-shrink-0">
                           No Image
                         </div>
                       )}
                       <div className="min-w-0 flex-1">
-                        <h3 className="font-bold text-sm text-foreground truncate">{product.title || product.name}</h3>
-                        <p className="text-[11px] text-muted-foreground mt-0.5">{product.category}</p>
+                        <h3 className="font-bold text-base text-foreground truncate">{product.title || product.name}</h3>
+                        <p className="text-xs text-muted-foreground mt-0.5">{product.category}</p>
                       </div>
                       <div className="flex-shrink-0">
                         <DropdownMenu>
@@ -708,24 +708,24 @@ export default function AdminProductsPage() {
                     </div>
 
                     {/* Pricing Grid with 44px Hardened Touch Targets */}
-                    <div className="grid grid-cols-2 gap-4 pt-2 border-t border-border/40">
+                     <div className="grid grid-cols-2 gap-4 pt-2 border-t border-border/40">
                       <div className="flex flex-col gap-1.5">
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">MRP</span>
+                        <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">MRP</span>
                         <Input
                           type="number"
                           placeholder="MRP"
-                          className="h-11 text-sm bg-muted/10 border border-border"
+                          className="h-11 text-base bg-muted/10 border border-border"
                           value={editedPrices[product.id]?.mrp ?? product.mrp ?? 0}
                           disabled={savingProductId === product.id}
                           onChange={(e) => handlePriceChange(product.id, 'mrp', parseFloat(e.target.value) || 0)}
                         />
                       </div>
                       <div className="flex flex-col gap-1.5">
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Sale Price</span>
+                        <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Sale Price</span>
                         <Input
                           type="number"
                           placeholder="Sale Price"
-                          className="h-11 text-sm bg-muted/10 border border-border"
+                          className="h-11 text-base bg-muted/10 border border-border"
                           value={editedPrices[product.id]?.price ?? product.price ?? 0}
                           disabled={savingProductId === product.id}
                           onChange={(e) => handlePriceChange(product.id, 'price', parseFloat(e.target.value) || 0)}
@@ -759,7 +759,7 @@ export default function AdminProductsPage() {
                     )}
 
                     {/* Stock status footer */}
-                    <div className="flex justify-between items-center pt-2 border-t border-border/40 text-xs">
+                    <div className="flex justify-between items-center pt-2 border-t border-border/40 text-sm">
                       <div className="text-muted-foreground">
                         Stock: <span className="font-semibold text-foreground">{product.stock_quantity ?? 'N/A'}</span>
                       </div>

@@ -160,7 +160,7 @@ export default function SmartInfrastructurePage() {
       <section className="relative pt-24 pb-16 md:pt-32 md:pb-24 border-b border-zinc-900">
         <div className="container mx-auto px-6 max-w-screen-2xl">
           <div className="flex flex-col items-center text-center space-y-6 max-w-4xl mx-auto">
-            <div className="inline-flex items-center gap-2 rounded-full border border-blue-500/20 bg-blue-500/5 px-4.5 py-1.5 text-xs font-semibold text-blue-400">
+            <div className="inline-flex items-center gap-2 rounded-full border border-blue-500/20 bg-blue-500/5 px-4.5 py-1.5 text-sm font-semibold text-blue-400">
               <Sparkles size={14} className="animate-pulse" />
               <span>Enterprise Technology Integration</span>
             </div>
@@ -192,9 +192,9 @@ export default function SmartInfrastructurePage() {
       <section className="py-16 md:py-24">
         <div className="container mx-auto px-6 max-w-screen-2xl">
           <div className="max-w-2xl mb-16">
-            <span className="text-xs uppercase tracking-[0.45em] text-blue-500 font-bold">Services</span>
+            <span className="text-sm uppercase tracking-[0.45em] text-blue-500 font-bold">Services</span>
             <h2 className="mt-3 text-3xl sm:text-4xl font-bold text-white font-tech tracking-tight">Our Core Enterprise Services</h2>
-            <p className="mt-4 text-zinc-400 text-sm sm:text-base font-light">
+            <p className="mt-4 text-zinc-300 text-base font-light">
               Sophisticated tech deployments engineered to operate flawlessly, optimize energy cost, and stand out in the luxury property market.
             </p>
           </div>
@@ -216,15 +216,15 @@ export default function SmartInfrastructurePage() {
                         <Icon size={22} className="text-zinc-200" />
                       </div>
                       <h3 className="text-xl font-bold text-white font-tech mb-2">{service.title}</h3>
-                      <p className="text-zinc-400 text-sm font-light mb-8 leading-relaxed max-w-md">{service.subtitle}</p>
+                      <p className="text-zinc-300 text-base font-light mb-8 leading-relaxed max-w-md">{service.subtitle}</p>
                       
                       <div className="space-y-6 border-t border-zinc-900 pt-6">
                         {service.points.map((pt, pIdx) => (
                           <div key={pIdx} className="flex gap-4">
                             <CheckCircle2 size={18} className="text-blue-500 shrink-0 mt-0.5" />
                             <div className="space-y-1">
-                              <h4 className="text-sm font-bold text-white tracking-wide">{pt.label}</h4>
-                              <p className="text-xs text-zinc-500 font-light leading-relaxed">{pt.desc}</p>
+                              <h4 className="text-base font-bold text-white tracking-wide">{pt.label}</h4>
+                              <p className="text-sm text-zinc-400 font-light leading-relaxed">{pt.desc}</p>
                             </div>
                           </div>
                         ))}
@@ -244,17 +244,17 @@ export default function SmartInfrastructurePage() {
           <div className="grid gap-12 lg:grid-cols-12 lg:items-center">
             {/* Left promo panel */}
             <div className="lg:col-span-5 space-y-6">
-              <span className="text-xs uppercase tracking-[0.45em] text-blue-500 font-bold">Why Partner With Us</span>
+              <span className="text-sm uppercase tracking-[0.45em] text-blue-500 font-bold">Why Partner With Us</span>
               <h2 className="text-3xl sm:text-4xl font-bold text-white font-tech leading-tight">
                 Designed for Luxury. <br />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-zinc-200 to-zinc-500">
                   Built for Performance.
                 </span>
               </h2>
-              <blockquote className="border-l-2 border-blue-500 pl-4 py-1.5 italic text-zinc-400 font-light text-base leading-relaxed">
+              <blockquote className="border-l-2 border-blue-500 pl-4 py-1.5 italic text-zinc-300 font-light text-base leading-relaxed">
                 &ldquo;Technology shouldn&apos;t be an afterthought in luxury hospitality—it should be the foundation.&rdquo;
               </blockquote>
-              <p className="text-zinc-400 text-sm font-light leading-relaxed">
+              <p className="text-zinc-300 text-base font-light leading-relaxed">
                 We bridge the gap between architectural layout requirements and technical implementation, ensuring every wire, camera, access point, and automation controller works in harmony.
               </p>
               <div className="pt-2">
@@ -273,7 +273,7 @@ export default function SmartInfrastructurePage() {
                   </div>
                   <div className="space-y-1.5">
                     <h3 className="text-base font-bold text-white font-tech">{adv.title}</h3>
-                    <p className="text-xs text-zinc-400 leading-relaxed font-light">{adv.desc}</p>
+                    <p className="text-sm text-zinc-300 leading-relaxed font-light">{adv.desc}</p>
                   </div>
                 </div>
               ))}
@@ -286,9 +286,9 @@ export default function SmartInfrastructurePage() {
       <section id="lead-form-section" className="py-16 md:py-24 border-b border-zinc-900 bg-zinc-950/20">
         <div className="container mx-auto px-6 max-w-screen-2xl">
           <div className="text-center max-w-3xl mx-auto mb-12">
-            <span className="text-xs uppercase tracking-[0.45em] text-blue-500 font-bold">Proposal Intake</span>
+            <span className="text-sm uppercase tracking-[0.45em] text-blue-500 font-bold">Proposal Intake</span>
             <h2 className="mt-3 text-3xl sm:text-4xl font-bold text-white font-tech tracking-tight">Request Infrastructure Proposal</h2>
-            <p className="mt-4 text-zinc-400 text-sm sm:text-base font-light">
+            <p className="mt-4 text-zinc-300 text-base font-light">
               Submit details using the input columns below. Leads are routed directly to the Root Console.
             </p>
           </div>
