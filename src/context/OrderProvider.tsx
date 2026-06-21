@@ -311,7 +311,14 @@ export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         .order('created_at', { ascending: false });
 
       if (customerId) {
-        query = query.eq('customer_id', customerId);
+        if (user && (user.email || user.mobile)) {
+          const conditions = [`customer_id.eq.${customerId}`];
+          if (user.email) conditions.push(`customer_email.eq.${user.email}`);
+          if (user.mobile) conditions.push(`customer_phone.eq.${user.mobile}`);
+          query = query.or(conditions.join(','));
+        } else {
+          query = query.eq('customer_id', customerId);
+        }
       }
 
       const { data, error } = await query;
