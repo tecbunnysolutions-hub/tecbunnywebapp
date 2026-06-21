@@ -77,6 +77,7 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<AuthResponse>;
+  loginWithOAuth: (provider: 'google' | 'github') => Promise<void>;
   logout: (options?: { redirectTo?: string; silent?: boolean }) => Promise<void>;
   signup: (details: SignupDetails) => Promise<AuthResponse>;
   resendConfirmation: (email: string) => Promise<AuthResponse>;
@@ -870,6 +871,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const loginWithOAuth = async (provider: 'google' | 'github') => {
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: typeof window !== 'undefined' ? `${window.location.origin}/api/auth/callback` : undefined
+        }
+      });
+      if (error) {
+        logger.error(`OAuth login error (${provider})`, { error });
+      }
+    } catch (err) {
+      logger.error(`Unexpected OAuth login error (${provider})`, { error: err });
+    }
+  };
+
   const updateUser = useCallback((updatedUser: User) => {
     setUser(updatedUser);
   }, []);
@@ -879,6 +896,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       user,
       loading,
       login,
+      loginWithOAuth,
       logout,
       signup,
       resendConfirmation,
