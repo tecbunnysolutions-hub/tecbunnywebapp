@@ -227,14 +227,14 @@ export default function ContactPage() {
       <div className="mx-auto max-w-7xl px-4 pb-20 pt-20 sm:px-6 lg:px-8 sm:pt-28">
         <div className="text-center">
           <h1 className="text-4xl font-semibold sm:text-5xl lg:text-6xl tech-heading">
-            {content?.content?.hero?.title || 'Contact TecBunny'}{' '}
+            {content?.content?.hero?.title || 'Summon the'}{' '}
             <span className="text-primary">
-              Support.
+              Engineers.
             </span>
           </h1>
           <p className="mx-auto mt-4 max-w-2xl text-base text-muted-foreground sm:text-lg">
             {content?.content?.hero?.description ||
-              'Ready to secure your premises? Our team in Parcem, Goa is on standby for site visits, repairs, and consultations.'}
+              'No automated runarounds. Speak directly with the architects who will build, secure, and maintain your infrastructure.'}
           </p>
         </div>
 
@@ -330,8 +330,8 @@ export default function ContactPage() {
             <div className="relative">
               <div className="absolute -inset-1 rounded-2xl bg-primary/5 blur-xl" />
               <div className="relative bento-card p-8">
-                <h3 className="text-2xl font-semibold tech-heading">Send Request</h3>
-                <p className="mt-2 text-sm text-muted-foreground">We&apos;ll respond within 24 hours. Use this form for quotes, demos, and site-survey requests.</p>
+                <h3 className="text-2xl font-semibold tech-heading">Initiate Contact</h3>
+                <p className="mt-2 text-sm text-muted-foreground">Drop your details below. We'll analyze your requirements and reach out within 24 hours.</p>
                 <Form {...form}>
                   <form onSubmit={form.handleSubmit(onSubmit)} className="mt-6 space-y-6">
                     <div className="grid gap-4 md:grid-cols-2">
@@ -470,7 +470,7 @@ export default function ContactPage() {
                     />
 
                     <Button type="submit" className="w-full bg-primary hover:bg-primary/95 text-white transition-colors font-medium" disabled={isSubmitting}>
-                      {isSubmitting ? 'Sending...' : <span className="flex items-center gap-2">Submit Request <Send className="h-4 w-4" /></span>}
+                      {isSubmitting ? 'Transmitting...' : <span className="flex items-center gap-2">Send Dispatch <Send className="h-4 w-4" /></span>}
                     </Button>
                   </form>
                 </Form>

@@ -566,10 +566,10 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
             <div className={cn('reveal-item flex flex-col items-center gap-4', revealDelayClass(0))}>
               <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-semibold text-primary">
                 <Sparkles size={14} className="animate-pulse" />
-                Product Catalog
+                Equipment Manifest
               </div>
               <h1 className="text-4xl font-black tracking-tight text-white sm:text-6xl md:text-7xl uppercase leading-none">
-                Professional <br className="sm:hidden" />
+                Enterprise-Grade <br className="sm:hidden" />
                 <span className="bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-500 bg-clip-text text-transparent">
                   Hardware & Gear
                 </span>
@@ -577,7 +577,7 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
               <p className="max-w-xl text-base leading-relaxed text-zinc-300 font-light mt-2">
                 {searchQuery 
                   ? `Found results matching "${searchQuery}"` 
-                  : 'Enterprise-grade equipment and components curated for professional security and IT infrastructure.'
+                  : 'High-performance infrastructure and components, engineered for maximum reliability.'
                 }
               </p>
             </div>

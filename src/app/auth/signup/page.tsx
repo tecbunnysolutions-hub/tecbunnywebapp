@@ -259,7 +259,7 @@ export default function SignUpPage() {
           <div className="mx-auto w-12 h-12 bg-emerald-500/10 rounded-full flex items-center justify-center mb-4">
             <CheckCircle className="h-6 w-6 text-emerald-500" />
           </div>
-          <h2 className="text-2xl font-bold tech-heading">Account Created!</h2>
+          <h2 className="text-2xl font-bold tech-heading">Identity Verified.</h2>
           <p className="mt-2 text-sm tech-body">
             {dispatchedChannel
               ? `Verification code sent via ${getChannelLabel(dispatchedChannel)}.`
@@ -283,8 +283,8 @@ export default function SignUpPage() {
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-muted border border-border mb-6 shadow-lg shadow-primary/10">
             <User className="h-8 w-8 text-primary" />
           </div>
-          <h1 className="text-3xl font-bold tech-heading tracking-wide">NEW NODE ENTRY</h1>
-          <p className="tech-body text-sm mt-2">Initialize your identity to join the secured network.</p>
+          <h1 className="text-3xl font-bold tech-heading tracking-wide">CREATE YOUR SECURE IDENTITY</h1>
+          <p className="tech-body text-sm mt-2">Join the network. Get access to enterprise-grade infrastructure.</p>
         </div>
 
         <div className="signup-card rounded-2xl p-8 border border-border bg-card">
@@ -486,14 +486,14 @@ export default function SignUpPage() {
                   disabled={isLoading}
                 >
                   <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent group-hover:translate-x-full transition-transform duration-700" />
-                  {isLoading ? 'Creating Account...' : 'Initialize'}
+                  {isLoading ? 'Creating Account...' : 'Activate Profile'}
                 </button>
 
                 <div className="text-center">
                   <p className="text-sm text-muted-foreground">
                     Already have an account?{' '}
                     <Link href="/auth/signin" className="font-medium text-primary hover:underline">
-                      Access Existing Node
+                      Sign In Now
                     </Link>
                   </p>
                 </div>

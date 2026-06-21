@@ -309,8 +309,8 @@ function SignInForm() {
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-muted border border-border mb-6 shadow-lg shadow-primary/10">
             <Lock className="h-8 w-8 text-primary" />
           </div>
-          <h1 className="text-3xl font-bold tech-heading tracking-wide">SECURE ACCESS</h1>
-          <p className="tech-body text-sm mt-2">Identify yourself to proceed to the console.</p>
+          <h1 className="text-3xl font-bold tech-heading tracking-wide">SYSTEM ACCESS</h1>
+          <p className="tech-body text-sm mt-2">Sign in to manage your deployments and infrastructure.</p>
         </div>
 
         <div className="login-card rounded-2xl p-8 border border-border bg-card">
@@ -377,7 +377,7 @@ function SignInForm() {
                     onClick={(e) => { e.preventDefault(); window.location.href = '/auth/forgot-password'; }}
                     className="text-primary hover:underline transition-colors"
                   >
-                    Lost Key?
+                    Recover Access
                   </a>
                 </div>
 
@@ -429,7 +429,7 @@ function SignInForm() {
                   ) : isLockedOut ? (
                     `Locked (${lockoutTimeRemaining}s)`
                   ) : (
-                    'Authenticate'
+                    'Secure Login'
                   )}
                 </button>
               </form>
@@ -447,7 +447,7 @@ function SignInForm() {
                   onClick={() => window.location.href = '/auth/signup'}
                   className="text-primary font-semibold hover:underline cursor-pointer"
                 >
-                  Initialize Account
+                  Create Account
                 </button>
               </p>
             </>

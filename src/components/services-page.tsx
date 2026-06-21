@@ -383,10 +383,10 @@ export default function ServicesPage({ services, hasServiceLoadError = false }: 
             <span>Platform Services</span>
           </div>
           <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl lg:text-6xl font-tech leading-tight tech-heading">
-            Expert Tech <span className="bg-gradient-to-r from-blue-400 via-indigo-200 to-white bg-clip-text text-transparent">Deployment</span>
+            Zero-Downtime <span className="bg-gradient-to-r from-blue-400 via-indigo-200 to-white bg-clip-text text-transparent">Infrastructure</span>
           </h1>
           <p className="text-lg font-light leading-relaxed tech-body">
-            From smart security perimeters to comprehensive AMC support, customize your service package dynamically or purchase transparent installation credits directly.
+            Stop worrying about your technology. From impenetrable security perimeters to rapid-response AMC, we deploy systems that simply never fail.
           </p>
           {canManageServices && (
             <div className="mt-6 flex justify-center">
@@ -408,9 +408,9 @@ export default function ServicesPage({ services, hasServiceLoadError = false }: 
               <span className="text-[10px] font-bold uppercase tracking-wider bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-full px-2.5 py-0.5">
                 Hospitality & Construction
               </span>
-              <h3 className="text-xl font-bold font-tech tech-heading">Next-Gen Smart Infrastructure</h3>
+              <h3 className="text-xl font-bold font-tech tech-heading">Bulletproof Security Ecosystems</h3>
               <p className="text-xs leading-relaxed max-w-sm tech-body">
-                Enterprise technology integration for luxury resorts, hotels, and modern builders. CCTV projects, RFID locks, and complete automation.
+                Flawless enterprise integration for luxury resorts and large-scale builders. Complete control, zero blind spots.
               </p>
             </div>
             <div className="mt-8">
@@ -418,7 +418,7 @@ export default function ServicesPage({ services, hasServiceLoadError = false }: 
                 href="/services/smart-infrastructure"
                 className="inline-flex items-center justify-center rounded-xl bg-blue-600 hover:bg-blue-550 text-white px-6 py-3 text-xs font-bold uppercase tracking-wider transition-colors shadow-lg shadow-blue-500/10"
               >
-                Explore Enterprise Projects
+                Scale Your Operations
               </Link>
             </div>
           </div>
@@ -429,9 +429,9 @@ export default function ServicesPage({ services, hasServiceLoadError = false }: 
               <span className="text-[10px] font-bold uppercase tracking-wider bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 rounded-full px-2.5 py-0.5">
                 Web Development
               </span>
-              <h3 className="text-xl font-bold font-tech tech-heading">Bespoke Web Solutions</h3>
+              <h3 className="text-xl font-bold font-tech tech-heading">Digital Ecosystems That Convert</h3>
               <p className="text-xs leading-relaxed max-w-sm tech-body">
-                Custom e-commerce platforms, custom admin panels, landing pages, and WhatsApp integration systems.
+                We don't build basic websites. We engineer high-performance platforms, automated workflows, and aggressive e-commerce engines.
               </p>
             </div>
             <div className="mt-8">
@@ -439,7 +439,7 @@ export default function ServicesPage({ services, hasServiceLoadError = false }: 
                 href="/webdev"
                 className="inline-flex items-center justify-center rounded-xl bg-indigo-600 hover:bg-indigo-550 text-white px-6 py-3 text-xs font-bold uppercase tracking-wider transition-colors shadow-lg shadow-indigo-500/10"
               >
-                View Web Services
+                Accelerate Your Growth
               </Link>
             </div>
           </div>
@@ -450,15 +450,15 @@ export default function ServicesPage({ services, hasServiceLoadError = false }: 
           {(!services || services.length === 0) && !hasServiceLoadError && (
             <div className="bento-card p-12 text-center shadow-sm">
               <Wrench className="h-10 w-10 text-zinc-500 mx-auto mb-4" />
-              <h2 className="text-lg font-bold font-tech tech-heading">Services catalog updating</h2>
+              <h2 className="text-lg font-bold font-tech tech-heading">Recompiling the Arsenal</h2>
               <p className="mx-auto mt-2 max-w-md text-sm font-light tech-body">
-                Our database listings are undergoing synchronization. Please connect with our support desk for direct reservations.
+                We are currently deploying new service packages. Contact our engineers directly to map out your infrastructure.
               </p>
               <Link
                 href="/contact?subject=sales&intent=service_quote"
                 className="mt-6 inline-flex items-center justify-center rounded-lg bg-blue-600 hover:bg-blue-500 text-white px-5 py-2.5 text-xs font-bold uppercase tracking-wider transition-colors shadow-sm"
               >
-                Connect Support
+                Summon an Engineer
               </Link>
             </div>
           )}
@@ -548,16 +548,16 @@ export default function ServicesPage({ services, hasServiceLoadError = false }: 
         <section className="reveal-section rounded-2xl border border-zinc-850 p-6 sm:p-8 shadow-sm bento-card" data-reveal-id="services-pricing">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div>
-              <h2 className="text-xl font-bold font-tech tech-heading">Direct Purchase Rates & Plans</h2>
+              <h2 className="text-xl font-bold font-tech tech-heading">Transparent Power. No Hidden Fees.</h2>
               <p className="text-xs mt-1 font-light tech-body">
-                Indicator credit rates for structured automation and maintenance services across Goa.
+                Aggressive pricing on world-class automation and proactive maintenance.
               </p>
             </div>
             <Link
               href="/contact?subject=sales&intent=service_quote"
               className="inline-flex items-center justify-center rounded-lg border border-zinc-800 bg-zinc-900/30 hover:bg-white/10 hover:border-zinc-700 px-4 py-2.5 text-xs font-bold uppercase tracking-wider transition-colors shadow-sm"
             >
-              Request Custom Quote
+              Engineer My Custom Quote
             </Link>
           </div>
 

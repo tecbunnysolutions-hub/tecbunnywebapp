@@ -14,13 +14,13 @@ export default function AboutPage() {
             Est. 2025 • Goa
           </div>
           <h1 className="mt-6 text-4xl font-semibold sm:text-5xl lg:text-6xl tech-heading">
-            Architects of{' '}
+            We Engineer{' '}
             <span className="bg-gradient-to-r from-primary to-blue-400 bg-clip-text text-transparent">
-              Safety.
+              Peace of Mind.
             </span>
           </h1>
           <p className="mx-auto mt-4 max-w-2xl text-base text-muted-foreground sm:text-lg">
-            Tecbunny Solutions Private Limited is Goa&apos;s premier IT and automation provider. We bridge the gap between complex technology and everyday peace of mind.
+            We are Goa&apos;s most aggressive technology integrator. We strip away the complexity of high-end IT and surveillance, delivering flawless execution and radical transparency.
           </p>
         </div>
       </section>
@@ -31,9 +31,14 @@ export default function AboutPage() {
             <div className="absolute -inset-4 rounded-2xl bg-gradient-to-r from-primary/40 to-primary/10 opacity-20 blur-2xl" />
             <div className="relative bento-card p-8">
               <h3 className="text-2xl font-semibold tech-heading">Our Mission</h3>
-              <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-                To transform homes and businesses in Goa into smart, secure sanctuaries. We believe high-tech security shouldn&apos;t be a luxury—it should be an accessible standard. By combining aggressive pricing with expert local support, we remove the barriers to entry for modern surveillance and automation.
-              </p>
+              <div className="mt-4 text-sm leading-relaxed text-muted-foreground space-y-4">
+                <p>We believe enterprise-grade security shouldn&apos;t be a luxury. It should be the standard. Our mission is simple:</p>
+                <ul className="list-disc pl-5 space-y-2">
+                  <li><strong className="text-foreground">Democratize Technology:</strong> Bring top-tier surveillance and IT to local businesses.</li>
+                  <li><strong className="text-foreground">Kill the Markup:</strong> Deliver radical pricing through direct vendor partnerships.</li>
+                  <li><strong className="text-foreground">Never Go Dark:</strong> Provide relentless, Goa-based support that keeps your systems online 24/7.</li>
+                </ul>
+              </div>
               <div className="mt-6 flex gap-4">
                 <div className="rounded-lg border border-border bg-muted/40 px-4 py-3 text-center">
                   <span className="block text-xl font-semibold text-foreground">120+</span>
@@ -78,7 +83,7 @@ export default function AboutPage() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <span className="text-xs font-semibold uppercase tracking-[0.3em] text-primary">Leadership</span>
-            <h2 className="mt-3 text-3xl font-semibold sm:text-4xl tech-heading">Meet the Founders</h2>
+            <h2 className="mt-3 text-3xl font-semibold sm:text-4xl tech-heading">The Architects Behind the Code</h2>
           </div>
           <div className="mt-12 grid gap-6 md:grid-cols-2">
             <div className="bento-card p-6">
@@ -96,7 +101,7 @@ export default function AboutPage() {
                 </div>
               </div>
               <p className="mt-6 border-t border-border pt-6 text-sm text-muted-foreground italic">
-                “Security isn&apos;t just about cameras; it&apos;s about the confidence to live freely.”
+                “We don&apos;t sell hardware. We sell the absolute certainty that your business is safe when you lock the doors.”
               </p>
             </div>
 

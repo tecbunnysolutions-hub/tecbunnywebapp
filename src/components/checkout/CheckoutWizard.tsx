@@ -62,7 +62,7 @@ export function CheckoutWizard() {
         
         {state.step === 'CONFIG' && (
           <div className="p-8 animate-in fade-in slide-in-from-right-4 duration-300">
-            <h2 className="text-2xl font-bold mb-6">What time works best?</h2>
+            <h2 className="text-2xl font-bold mb-6">Lock in your deployment window.</h2>
             <div className="grid grid-cols-2 gap-4 mb-8">
               <label className="border-2 border-indigo-500 bg-indigo-50/30 p-4 rounded-xl cursor-pointer flex flex-col items-center justify-center text-center">
                 <input type="radio" name="time" className="sr-only" defaultChecked onChange={() => dispatch({ type: "UPDATE_PAYLOAD", data: { plan: "Morning" } })}/>
@@ -78,7 +78,7 @@ export function CheckoutWizard() {
               </label>
             </div>
             <Button className="w-full h-14 rounded-xl text-lg" onClick={() => dispatch({ type: "TRANSITION", to: "IDENTITY" })}>
-              Continue to Details
+              Confirm Window
             </Button>
           </div>
         )}
@@ -94,7 +94,7 @@ export function CheckoutWizard() {
 
         {(state.step === 'PAYMENT' || state.step === 'PROCESSING' || state.step === 'ERROR') && (
           <div className="p-8 animate-in fade-in slide-in-from-right-4 duration-300">
-            <h2 className="text-2xl font-bold mb-6">Almost done. Secure your slot.</h2>
+            <h2 className="text-2xl font-bold mb-6">Final step. Secure your deployment.</h2>
             
             <div className="space-y-4 mb-8">
               <div className="relative">
@@ -123,10 +123,10 @@ export function CheckoutWizard() {
               >
                 {state.isLocked ? (
                   <span className="flex items-center gap-2">
-                    <Lock className="w-4 h-4 animate-pulse" /> We are confirming your slot...
+                    <Lock className="w-4 h-4 animate-pulse" /> Locking your deployment...
                   </span>
                 ) : (
-                  "Book Now • $99"
+                  "Secure My Slot • $99"
                 )}
               </Button>
             </div>
@@ -138,9 +138,9 @@ export function CheckoutWizard() {
             <div className="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6">
               <Check className="w-10 h-10" />
             </div>
-            <h2 className="text-3xl font-bold text-gray-900">You're all booked!</h2>
-            <p className="text-gray-500 mt-2 mb-8">We've sent the details to {state.payload?.email || "your email"}</p>
-            <Button className="h-12 rounded-xl px-8">Track my order</Button>
+            <h2 className="text-3xl font-bold text-gray-900">Deployment Locked.</h2>
+            <p className="text-gray-500 mt-2 mb-8">Confirmation and next steps sent to {state.payload?.email || "your email"}</p>
+            <Button className="h-12 rounded-xl px-8">Track Deployment</Button>
           </div>
         )}
 

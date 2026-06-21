@@ -563,10 +563,10 @@ export default function CheckoutPage() {
           <div className="mx-auto w-16 h-16 rounded-full bg-muted/30 flex items-center justify-center mb-4 border border-border">
             <ShoppingCart className="h-8 w-8 text-muted-foreground" />
           </div>
-          <h2 className="text-2xl font-bold tech-heading mb-2">Your Cart is Empty</h2>
-          <p className="text-muted-foreground mb-6">Add some products to your cart before checkout.</p>
+          <h2 className="text-2xl font-bold tech-heading mb-2">Your Setup is Empty</h2>
+          <p className="text-muted-foreground mb-6">Design your infrastructure or add hardware before finalizing your deployment.</p>
           <Button onClick={() => window.location.href = '/products'} className="bg-primary text-white hover:bg-primary/90 font-semibold font-medium">
-            Continue Shopping
+            Build My Setup
           </Button>
         </div>
       </div>
@@ -581,8 +581,8 @@ export default function CheckoutPage() {
         <div className="max-w-6xl mx-auto px-6 relative z-10">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
             <div>
-              <h1 className="text-3xl font-bold tracking-tight text-foreground font-sans tech-heading">Checkout</h1>
-              <p className="text-sm text-muted-foreground mt-1">Review your details and complete your purchase.</p>
+              <h1 className="text-3xl font-bold tracking-tight text-foreground font-sans tech-heading">Finalize Deployment</h1>
+              <p className="text-sm text-muted-foreground mt-1">Review your architecture details and lock in your installation.</p>
             </div>
             <button
               type="button"
@@ -614,7 +614,7 @@ export default function CheckoutPage() {
               <div className="bento-card p-8 space-y-6">
                 <div className="flex items-center gap-3 pb-2 border-b border-border">
                   <User className="h-4 w-4 text-muted-foreground" />
-                  <h2 className="text-sm font-bold text-foreground uppercase tracking-wider font-sans tech-heading">Contact & Billing</h2>
+                  <h2 className="text-sm font-bold text-foreground uppercase tracking-wider font-sans tech-heading">Operational Contact</h2>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="flex flex-col gap-1.5">
@@ -690,7 +690,7 @@ export default function CheckoutPage() {
                 <div className="flex items-center gap-3 pb-2 border-b border-border">
                   <MapPin className="h-4 w-4 text-muted-foreground" />
                   <h2 className="text-sm font-bold text-foreground uppercase tracking-wider font-sans tech-heading">
-                    {hasServiceItem ? 'Installation / Service Address' : (!!quote ? 'Delivery & Installation' : 'Delivery Address')}
+                    {hasServiceItem ? 'Deployment Coordinates' : (!!quote ? 'Site Installation Coordinates' : 'Delivery Coordinates')}
                   </h2>
                 </div>
                 <div className="space-y-6">
@@ -818,7 +818,7 @@ export default function CheckoutPage() {
               <div className="bento-card p-8 space-y-6">
                 <div className="flex items-center gap-3 pb-2 border-b border-border">
                   <Wallet className="h-4 w-4 text-muted-foreground" />
-                  <h2 className="text-sm font-bold text-foreground uppercase tracking-wider font-sans tech-heading">Payment Method</h2>
+                  <h2 className="text-sm font-bold text-foreground uppercase tracking-wider font-sans tech-heading">Secure Transaction</h2>
                 </div>
                 <div className="space-y-4">
                   {paymentLoading && (
@@ -1053,7 +1053,7 @@ export default function CheckoutPage() {
                       </span>
                     ) : (
                       <span className="flex items-center gap-2">
-                        Confirm Purchase <CheckCircle className="h-4 w-4" />
+                        Initialize Deployment <CheckCircle className="h-4 w-4" />
                       </span>
                     )}
                   </button>
