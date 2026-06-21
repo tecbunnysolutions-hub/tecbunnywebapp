@@ -195,6 +195,15 @@ export const captchaService = new CaptchaService(captchaConfig);
 
 // Export convenience functions
 export async function verifyCaptcha(response: string | null, remoteIp?: string): Promise<CaptchaVerificationResult> {
+  // Bypass CAPTCHA in local development
+  if (process.env.NODE_ENV !== 'production') {
+    logger.info('Bypassing CAPTCHA verification in local development mode');
+    return {
+      success: true,
+      hostname: 'localhost'
+    };
+  }
+
   // If CAPTCHA is not configured, return success: false (Strict mode, don't bypass anything!)
   if (!captchaConfig.siteKey || !captchaConfig.secretKey) {
     return {
