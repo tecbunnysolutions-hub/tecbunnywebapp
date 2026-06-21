@@ -181,14 +181,19 @@ export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       const { data: { session: currentSession } } = await supabase.auth.getSession();
       const accessToken = currentSession?.access_token;
 
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 15000);
+
       const response = await fetch('/api/orders', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           ...(accessToken ? { 'Authorization': `Bearer ${accessToken}` } : {})
         },
-        body: JSON.stringify(orderPayload)
+        body: JSON.stringify(orderPayload),
+        signal: controller.signal
       });
+      clearTimeout(timeoutId);
 
       const result = await response.json().catch(() => null);
 

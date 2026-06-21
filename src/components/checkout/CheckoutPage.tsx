@@ -492,13 +492,18 @@ export default function CheckoutPage() {
       // If OrderProvider fails, try API endpoint as fallback
       if (!order) {
         try {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 15000);
+
           const response = await fetch('/api/orders', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
             },
             body: JSON.stringify(orderData),
+            signal: controller.signal
           });
+          clearTimeout(timeoutId);
 
           const data = await response.json();
           
