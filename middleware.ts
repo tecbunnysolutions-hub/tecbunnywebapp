@@ -231,8 +231,8 @@ export async function middleware(request: NextRequest) {
         res.headers.set('X-Robots-Tag', 'noindex, nofollow');
       }
 
-      // Add Clear-Site-Data on explicit logout to clean up client-side residue
-      if (lowerPath.endsWith('/logout')) {
+      // Add Clear-Site-Data only on intentional logout mutations.
+      if (request.method === 'POST' && lowerPath.endsWith('/logout')) {
         res.headers.set('Clear-Site-Data', '"cache", "cookies", "storage"');
       }
 
@@ -365,11 +365,18 @@ export async function middleware(request: NextRequest) {
     // Superadmin boundary validation
     if (checkPathPrefix(pathname, '/superadmin') || checkPathPrefix(pathname, '/api/superadmin')) {
       const isLoginRoute = pathname === '/superadmin/login' || pathname === '/api/superadmin/login';
-      if (!isLoginRoute && !isSuperadmin) {
+      const isLogoutRoute = pathname === '/api/superadmin/logout';
+      if (!isLoginRoute && !isLogoutRoute && !isSuperadmin) {
         if (pathname.startsWith('/api/')) {
-          return finalizeResponse(NextResponse.json({ error: 'Not Found' }, { status: 404 }));
+          return finalizeResponse(NextResponse.json(
+            { error: 'Unauthorized', message: 'Superadmin session is missing or expired.' },
+            { status: 401 }
+          ));
         }
-        return finalizeResponse(new NextResponse('Not Found', { status: 404, headers: { 'Content-Type': 'text/plain' } }));
+        const loginUrl = new URL('/superadmin/login', request.url);
+        loginUrl.searchParams.set('error', 'session_expired');
+        loginUrl.searchParams.set('next', `${pathname}${request.nextUrl.search}`);
+        return finalizeResponse(NextResponse.redirect(loginUrl));
       }
     }
 

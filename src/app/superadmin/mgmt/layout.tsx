@@ -13,7 +13,7 @@ export default async function SuperadminLayout({ children }: { children: React.R
   const isSuperadmin = Boolean(await verifySuperadminSessionToken(superadminCookie));
 
   if (!isSuperadmin) {
-    redirect('/superadmin/login');
+    redirect('/superadmin/login?error=session_expired');
   }
 
   return (

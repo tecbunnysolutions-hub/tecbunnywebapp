@@ -4,8 +4,6 @@ import { useState, useEffect, Suspense, useMemo } from 'react';
 import NextDynamic from 'next/dynamic';
 import { useSearchParams } from 'next/navigation';
 import { User, Lock, Eye, EyeOff, AlertCircle, ShieldAlert, Terminal } from 'lucide-react';
-import { createClient } from '@/lib/supabase/client';
-import { normalizeRole } from '@/lib/roles';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
@@ -29,7 +27,22 @@ function SuperadminSignInForm() {
 
   const searchParams = useSearchParams();
   const { toast } = useToast();
-  const supabase = createClient();
+
+  useEffect(() => {
+    const authError = searchParams.get('error');
+    const status = searchParams.get('status');
+
+    if (authError === 'session_expired') {
+      setError('Your superadmin session expired. Please sign in again.');
+    } else if (authError === 'logout_requires_post') {
+      setError('Please use the sign out button to end a superadmin session.');
+    } else if (status === 'signed_out') {
+      toast({
+        title: 'Signed out',
+        description: 'Your superadmin session has been closed.',
+      });
+    }
+  }, [searchParams, toast]);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
