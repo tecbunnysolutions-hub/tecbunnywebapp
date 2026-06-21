@@ -350,10 +350,9 @@ export async function middleware(request: NextRequest) {
         }
       } catch (e) {
         console.error('Middleware Supabase Error:', e);
-        return finalizeResponse(NextResponse.json(
-          { error: 'Service Unavailable', message: 'Authentication infrastructure is temporarily unavailable.' },
-          { status: 503 }
-        ));
+        // Do not return 503. Just assume unauthenticated.
+        user = null;
+        userRole = null;
       }
     }
 

@@ -23,6 +23,7 @@ function SignInForm() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isRedirecting, setIsRedirecting] = useState(false);
   const [error, setError] = useState('');
   const [failedAttempts, setFailedAttempts] = useState(0);
   const [lockoutUntil, setLockoutUntil] = useState<number | null>(null);
@@ -126,7 +127,10 @@ function SignInForm() {
           break;
       }
 
-      router.push(redirectUrl);
+      setIsRedirecting(true);
+      setTimeout(() => {
+        router.push(redirectUrl);
+      }, 100);
     } catch (err) {
       console.error('2FA verification error:', err);
       setError('An unexpected error occurred during 2FA verification.');
@@ -197,7 +201,10 @@ function SignInForm() {
         break;
     }
 
-    router.push(redirectUrl);
+    setIsRedirecting(true);
+    setTimeout(() => {
+      router.push(redirectUrl);
+    }, 100);
   };
 
   // ─── Shared sign-in error handler ──────────────────────────────────────────
@@ -406,10 +413,15 @@ function SignInForm() {
                 <button
                   type="submit"
                   className="group relative w-full py-3 bg-primary hover:bg-primary/90 text-primary-foreground font-bold tracking-wide rounded-lg transition-colors flex items-center justify-center gap-3 shadow-[0_0_20px_rgba(37,99,235,0.3)] hover:shadow-[0_0_30px_rgba(37,99,235,0.5)] overflow-hidden cursor-pointer"
-                  disabled={isLoading || !identifier || !password || isLockedOut}
+                  disabled={isLoading || isRedirecting || !identifier || !password || isLockedOut}
                 >
                   <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent group-hover:translate-x-full transition-transform duration-700" />
-                  {isLoading ? (
+                  {isRedirecting ? (
+                    <>
+                      <span className="animate-spin h-4 w-4 border-2 border-current border-t-transparent rounded-full" />
+                      Redirecting...
+                    </>
+                  ) : isLoading ? (
                     <>
                       <span className="animate-spin h-4 w-4 border-2 border-current border-t-transparent rounded-full" />
                       Signing in...
