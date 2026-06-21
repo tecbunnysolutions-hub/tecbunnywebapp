@@ -78,10 +78,7 @@ async function verifySignedUserRole(cookieValue: string, userId: string, secret:
 // Safe Base64 encoding supporting Unicode characters (prevents btoa crashes)
 function safeBase64Encode(str: string): string {
   const bytes = textEncoder.encode(str);
-  let binary = '';
-  for (let i = 0; i < bytes.byteLength; i++) {
-    binary += String.fromCharCode(bytes[i]);
-  }
+  const binary = Array.from(bytes).map(byte => String.fromCharCode(byte)).join('');
   return btoa(binary);
 }
 
@@ -279,6 +276,14 @@ export async function middleware(request: NextRequest) {
                 return request.cookies.getAll();
               },
               setAll(cookiesToSet) {
+                // Ensure request cookies are updated so downstream Server Components see the refreshed token
+                cookiesToSet.forEach(({ name, value }) => {
+                  request.cookies.set(name, value);
+                });
+                
+                // Re-initialize response with updated request to prevent desync
+                response = NextResponse.next({ request: { headers: requestHeaders } });
+                
                 cookiesToSet.forEach(({ name, value, options }) => {
                   response.cookies.set(name, value, {
                     ...options,
@@ -419,13 +424,7 @@ export async function middleware(request: NextRequest) {
       // Role path segregation & folder group checks
       if (checkPathPrefix(pathname, '/mgmt/admin')) {
         if (userRole !== 'admin') {
-          const resRedirect = NextResponse.redirect(new URL('/', request.url));
-          request.cookies.getAll().forEach(cookie => {
-            if (cookie.name.startsWith('sb-') && cookie.name.endsWith('-auth-token')) {
-              resRedirect.cookies.delete(cookie.name);
-            }
-          });
-          return finalizeResponse(resRedirect);
+          return finalizeResponse(NextResponse.redirect(new URL('/mgmt/dashboard', request.url)));
         }
 
         const allowedAdminPaths = [
@@ -441,42 +440,18 @@ export async function middleware(request: NextRequest) {
         ];
         const isAllowed = allowedAdminPaths.some(p => pathname === p || pathname.startsWith(p + '/'));
         if (!isAllowed) {
-          const resRedirect = NextResponse.redirect(new URL('/', request.url));
-          request.cookies.getAll().forEach(cookie => {
-            if (cookie.name.startsWith('sb-') && cookie.name.endsWith('-auth-token')) {
-              resRedirect.cookies.delete(cookie.name);
-            }
-          });
-          return finalizeResponse(resRedirect);
+          return finalizeResponse(NextResponse.redirect(new URL('/mgmt/dashboard', request.url)));
         }
       }
 
       if (checkPathPrefix(pathname, '/mgmt/manager') && userRole !== 'manager') {
-        const resRedirect = NextResponse.redirect(new URL('/', request.url));
-        request.cookies.getAll().forEach(cookie => {
-          if (cookie.name.startsWith('sb-') && cookie.name.endsWith('-auth-token')) {
-            resRedirect.cookies.delete(cookie.name);
-          }
-        });
-        return finalizeResponse(resRedirect);
+        return finalizeResponse(NextResponse.redirect(new URL('/mgmt/dashboard', request.url)));
       }
       if (checkPathPrefix(pathname, '/mgmt/sales-staff') && userRole !== 'sales-staff' && userRole !== 'sales') {
-        const resRedirect = NextResponse.redirect(new URL('/', request.url));
-        request.cookies.getAll().forEach(cookie => {
-          if (cookie.name.startsWith('sb-') && cookie.name.endsWith('-auth-token')) {
-            resRedirect.cookies.delete(cookie.name);
-          }
-        });
-        return finalizeResponse(resRedirect);
+        return finalizeResponse(NextResponse.redirect(new URL('/mgmt/dashboard', request.url)));
       }
       if (checkPathPrefix(pathname, '/mgmt/sales-external') && userRole !== 'sales-external') {
-        const resRedirect = NextResponse.redirect(new URL('/', request.url));
-        request.cookies.getAll().forEach(cookie => {
-          if (cookie.name.startsWith('sb-') && cookie.name.endsWith('-auth-token')) {
-            resRedirect.cookies.delete(cookie.name);
-          }
-        });
-        return finalizeResponse(resRedirect);
+        return finalizeResponse(NextResponse.redirect(new URL('/mgmt/dashboard', request.url)));
       }
       if (
         checkPathPrefix(pathname, '/mgmt/sales') &&

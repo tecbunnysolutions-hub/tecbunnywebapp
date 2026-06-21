@@ -31,24 +31,12 @@ export default function AdminLayoutClient({ children }: AdminLayoutClientProps) 
     }
   }, [loading, user, router]);
 
-  React.useEffect(() => {
-    if (!loading) return;
-    let cancelled = false;
-    const t = setTimeout(async () => {
-      if (cancelled) return;
-      try {
-        await supabase.auth.getSession();
-      } catch {
-        // Provider subscription remains the source of truth.
-      }
-    }, 2000);
-    return () => {
-      cancelled = true;
-      clearTimeout(t);
-    };
-  }, [loading, supabase]);
-
   const authorized = !!user && isAtLeast(user.role || 'customer', 'admin');
+
+  if (redirectRef.current) {
+    // Prevent rendering protected content before redirect completes
+    return null;
+  }
 
   return (
     <UnifiedPanelShell
