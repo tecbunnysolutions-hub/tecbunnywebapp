@@ -23,9 +23,22 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { createPageMetadata } from '@/lib/metadata';
 import { InfrastructureLeadForm } from '@/components/InfrastructureLeadForm';
 
-export async function generateMetadata(): Promise<Metadata> {
-  return createPageMetadata({});
-}
+export const metadata: Metadata = createPageMetadata({
+  title: 'Next-Gen Smart Infrastructure for Hotels & Builders | TecBunny',
+  description: 'Enterprise-grade technology integration for hotels, resorts, and modern real estate builders. CCTV, RFID access, smart automation, and IT networking.',
+  keywords: [
+    'smart infrastructure', 
+    'hotel automation', 
+    'CCTV projects', 
+    'RFID hotel locks', 
+    'hospitality IT infrastructure', 
+    'GRMS system', 
+    'structured cabling', 
+    'TecBunny'
+  ],
+  path: '/services/smart-infrastructure',
+  image: '/brand.png',
+});
 
 export default function SmartInfrastructurePage() {
   const services = [

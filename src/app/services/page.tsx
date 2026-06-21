@@ -10,9 +10,13 @@ import { stripHtmlToPlainText } from '@/lib/strings';
 import type { Service } from '@/lib/types';
 
 // Static metadata for better SEO and performance
-export async function generateMetadata(): Promise<Metadata> {
-  return createPageMetadata({});
-}
+export const metadata: Metadata = createPageMetadata({
+  title: 'Professional Technology Services | TecBunny Solutions',
+  description: 'TecBunny Solutions offers professional technology services and custom solutions tailored to your needs.',
+  keywords: ['technology services', 'IT support', 'custom solutions', 'professional services', 'technical support', 'TecBunny'],
+  path: '/services',
+  image: BRAND_LOGO_URL,
+});
 
 export const revalidate = 300;
 

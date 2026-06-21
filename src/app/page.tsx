@@ -11,9 +11,22 @@ export const dynamic = 'force-dynamic';
 import { headers } from 'next/headers';
 
 // Homepage metadata for SEO
-export async function generateMetadata(): Promise<Metadata> {
-  return createPageMetadata({});
-}
+export const metadata: Metadata = createPageMetadata({
+  title: 'TecBunny | Tech Services, CCTV & AMC Solutions',
+  description:
+    'TecBunny Solutions engineered premium IT services, CCTV installation, AMC support, home automation, and custom hardware setups in Goa and Maharashtra.',
+  keywords: [
+    'tech services',
+    'custom setup',
+    'technology support',
+    'hardware solutions',
+    'technical services',
+    'IT support',
+    'TecBunny',
+  ],
+  path: '/',
+  image: '/brand.png',
+});
 
 function HomePageSkeleton() {
   return (

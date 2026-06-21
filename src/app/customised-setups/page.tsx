@@ -13,9 +13,12 @@ import { getCustomSetupBlueprintSummary } from '@/lib/custom-setup-service';
 
 import { createPageMetadata } from '@/lib/metadata';
 
-export async function generateMetadata(): Promise<Metadata> {
-  return createPageMetadata({});
-}
+export const metadata: Metadata = createPageMetadata({
+  title: 'Custom Surveillance Setups & Estimator | TecBunny',
+  description: 'Design and estimate custom CCTV deployment, smart home automation, and networking bundles tailored for your premises in Goa.',
+  path: '/customised-setups',
+  keywords: ['surveillance setups', 'CCTV estimator', 'home security configurations', 'Goa security systems'],
+});
 
 // export const dynamic = 'force-dynamic';
 export const revalidate = 0; // Force no caching

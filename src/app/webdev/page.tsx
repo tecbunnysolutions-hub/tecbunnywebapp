@@ -14,9 +14,13 @@ import {
 import { Button } from '@/components/ui/button';
 import { createPageMetadata } from '@/lib/metadata';
 
-export async function generateMetadata(): Promise<Metadata> {
-  return createPageMetadata({});
-}
+export const metadata: Metadata = createPageMetadata({
+  title: 'Web Development Services in Goa & Maharashtra',
+  description: 'Custom business websites, e-commerce storefronts, admin dashboards, and WhatsApp-integrated web development for companies in Goa and Maharashtra.',
+  keywords: ['web development Goa', 'website design Goa', 'business website Maharashtra', 'ecommerce website Goa', 'custom web app TecBunny'],
+  path: '/webdev',
+  image: '/brand.png',
+});
 
 export default function WebDevPage() {
   const features = [
