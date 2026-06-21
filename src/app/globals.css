@@ -473,6 +473,23 @@
     text-wrap: balance;
   }
   
+  /* Hardware Acceleration for 60fps UIs */
+  .gpu-accelerate {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    perspective: 1000px;
+    will-change: transform, opacity;
+  }
+  
+  /* Hide scrollbars for cleaner UI but keep functionality */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
   /* Custom shadows */
   .shadow-custom-sm {
     box-shadow: var(--shadow-sm);

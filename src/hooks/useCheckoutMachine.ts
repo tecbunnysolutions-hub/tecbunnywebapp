@@ -1,62 +1,48 @@
-import { useReducer } from "react";
+import { useReducer, useCallback } from "react";
 
-export type CheckoutStep = 1 | 2 | 3 | 4; // 4 is success state
+export type CheckoutStep = 'CONFIG' | 'IDENTITY' | 'PAYMENT' | 'PROCESSING' | 'SUCCESS' | 'ERROR';
 
 export interface CheckoutState {
   step: CheckoutStep;
-  data: {
-    serviceId?: string;
-    plan?: string;
-    date?: string;
-    email?: string;
-    address?: string;
-  };
-  isLocking: boolean; // Prevents double submission
-  error: string | null;
+  payload: Record<string, any>;
+  idempotencyKey: string | null;
+  isLocked: boolean; // Structural block against double-clicks
+  errorMessage: string | null;
 }
 
-type CheckoutAction =
-  | { type: "SET_DATA"; payload: Partial<CheckoutState["data"]> }
-  | { type: "NEXT_STEP" }
-  | { type: "PREV_STEP" }
-  | { type: "SUBMIT_START" }
-  | { type: "SUBMIT_SUCCESS" }
-  | { type: "SUBMIT_ERROR"; payload: string }
-  | { type: "RESET_ERROR" };
+export type CheckoutAction =
+  | { type: "UPDATE_PAYLOAD"; data: Record<string, any> }
+  | { type: "TRANSITION"; to: CheckoutStep }
+  | { type: "START_PROCESSING" }
+  | { type: "FAIL"; message: string };
 
 const initialState: CheckoutState = {
-  step: 1,
-  data: {},
-  isLocking: false,
-  error: null,
+  step: 'CONFIG',
+  payload: {},
+  idempotencyKey: null,
+  isLocked: false,
+  errorMessage: null,
 };
 
 function checkoutReducer(state: CheckoutState, action: CheckoutAction): CheckoutState {
   switch (action.type) {
-    case "SET_DATA":
-      return { ...state, data: { ...state.data, ...action.payload }, error: null };
-    
-    case "NEXT_STEP":
-      // Validations can be placed here to prevent navigating without data
-      if (state.step === 1 && !state.data.plan) {
-         return { ...state, error: "Please select a plan before continuing." };
-      }
-      return { ...state, step: Math.min(state.step + 1, 4) as CheckoutStep, error: null };
+    case "UPDATE_PAYLOAD":
+      return { ...state, payload: { ...state.payload, ...action.data } };
       
-    case "PREV_STEP":
-      return { ...state, step: Math.max(state.step - 1, 1) as CheckoutStep, error: null };
+    case "TRANSITION":
+      return { ...state, step: action.to, errorMessage: null };
       
-    case "SUBMIT_START":
-      return { ...state, isLocking: true, error: null };
+    case "START_PROCESSING":
+      // Generate explicit idempotency key right before network boundary to prevent duplicate billing
+      return { 
+        ...state, 
+        step: 'PROCESSING', 
+        isLocked: true, 
+        idempotencyKey: state.idempotencyKey || crypto.randomUUID() 
+      };
       
-    case "SUBMIT_SUCCESS":
-      return { ...state, isLocking: false, step: 4 };
-      
-    case "SUBMIT_ERROR":
-      return { ...state, isLocking: false, error: action.payload };
-      
-    case "RESET_ERROR":
-      return { ...state, error: null };
+    case "FAIL":
+      return { ...state, step: 'ERROR', isLocked: false, errorMessage: action.message };
       
     default:
       return state;
@@ -65,5 +51,15 @@ function checkoutReducer(state: CheckoutState, action: CheckoutAction): Checkout
 
 export function useCheckoutMachine() {
   const [state, dispatch] = useReducer(checkoutReducer, initialState);
-  return { state, dispatch };
+
+  // Safe dispatcher that ignores inputs when locked
+  const safeDispatch = useCallback((action: CheckoutAction) => {
+    if (state.isLocked && action.type !== "FAIL") {
+      // Shield against concurrent execution or double clicks
+      return; 
+    }
+    dispatch(action);
+  }, [state.isLocked]);
+
+  return { state, dispatch: safeDispatch };
 }

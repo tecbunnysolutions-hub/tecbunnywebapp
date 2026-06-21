@@ -30,6 +30,7 @@ const nextConfig = {
   ...(isStaticExport ? { output: 'export' } : {}),
   experimental: {
     optimizeCss: true,
+    reactCompiler: true,
   },
   serverExternalPackages: ['pdfkit'],
   poweredByHeader: false,

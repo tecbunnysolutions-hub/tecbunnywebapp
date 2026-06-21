@@ -1,62 +1,88 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { checkoutSchema } from "@/lib/validation";
-import { z } from "zod";
+import { createClient } from "@/lib/supabase/client";
+import { Mail, CheckCircle2 } from "lucide-react";
+import { mapHumanError } from "@/lib/errorMapper";
 
-export function InstantIdentity({ onIdentified }: { onIdentified: (email: string) => void }) {
+interface InstantIdentityProps {
+  onSuccess?: () => void;
+}
+
+export function InstantIdentity({ onSuccess }: InstantIdentityProps) {
   const [email, setEmail] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [status, setStatus] = useState<'IDLE' | 'SENDING' | 'SENT' | 'ERROR'>('IDLE');
+  const [errorMessage, setErrorMessage] = useState("");
+  const supabase = createClient();
 
-  const handleContinue = async (e: React.FormEvent) => {
+  const handleMagicLink = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
+    if (!email.includes('@')) return;
     
-    try {
-      // Human-first validation via Zod
-      checkoutSchema.pick({ email: true }).parse({ email });
-      
-      setIsLoading(true);
-      // Simulate background magic link send & identity resolution
-      setTimeout(() => {
-        setIsLoading(false);
-        onIdentified(email);
-      }, 1200);
-
-    } catch (err) {
-      if (err instanceof z.ZodError) {
-        const zodErr = err as z.ZodError;
-        setError(zodErr.issues[0].message);
+    setStatus('SENDING');
+    setErrorMessage("");
+    
+    // Send magic link. By redirecting back to the current checkout/verification URL,
+    // the frontend state (if stored securely in sessionStorage or via URL params) is preserved.
+    // This allows the guest user to convert to a verified user without losing their cart payload.
+    const { error } = await supabase.auth.signInWithOtp({
+      email,
+      options: {
+        emailRedirectTo: `${window.location.origin}/checkout/verify`,
       }
+    });
+
+    if (error) {
+      setErrorMessage(mapHumanError(error.status || 500));
+      setStatus('ERROR');
+    } else {
+      setStatus('SENT');
+      if (onSuccess) onSuccess();
     }
   };
+
+  if (status === 'SENT') {
+    return (
+      <div className="w-full max-w-md mx-auto p-8 text-center bg-green-50/50 border border-green-100 rounded-3xl animate-in zoom-in-95">
+        <CheckCircle2 className="w-12 h-12 text-green-500 mx-auto mb-4" />
+        <h3 className="text-xl font-bold text-green-900 mb-2">Check your inbox!</h3>
+        <p className="text-green-700">
+          We sent a secure magic link to <strong>{email}</strong>. Click it to seamlessly log in and complete your order without needing a password.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full max-w-md mx-auto p-8 bg-white rounded-3xl shadow-sm border border-gray-100 text-center animate-in fade-in zoom-in-95 duration-300">
       <h2 className="text-2xl font-bold text-gray-900">Where should we send your receipt?</h2>
       <p className="text-gray-500 mt-2 mb-6">Drop your email below and we'll save your progress instantly.</p>
       
-      <form onSubmit={handleContinue} className="space-y-4 text-left">
-        <div>
-          <Input 
-            type="email" 
-            placeholder="name@example.com" 
-            className={`h-14 rounded-xl bg-gray-50/50 transition-all text-lg ${error ? "border-red-500 focus-visible:ring-red-500" : "border-gray-200 focus:bg-white"}`}
+      <form onSubmit={handleMagicLink} className="space-y-4 text-left">
+        <div className="relative">
+          <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <input 
+            type="email"
+            required
+            placeholder="name@example.com"
+            className={`w-full h-14 pl-12 pr-4 bg-gray-50/50 border rounded-xl text-lg transition-all outline-none focus:bg-white ${
+              status === 'ERROR' ? "border-red-500 focus:ring-2 focus:ring-red-500" : "border-gray-200 focus:ring-2 focus:ring-blue-500"
+            }`}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
-          {error && <p className="text-red-500 text-sm mt-2 animate-in slide-in-from-top-1">{error}</p>}
         </div>
         
-        <Button 
+        {status === 'ERROR' && (
+          <p className="text-sm text-red-500 animate-in slide-in-from-top-1">{errorMessage}</p>
+        )}
+
+        <button 
           type="submit"
-          className="w-full rounded-xl h-14 text-lg font-bold bg-gray-900 text-white hover:bg-gray-800 transition-all duration-300"
-          disabled={isLoading}
+          disabled={status === 'SENDING'}
+          className="w-full rounded-xl h-14 text-lg font-bold bg-gray-900 text-white hover:bg-gray-800 transition-all duration-300 active:scale-95 disabled:opacity-50 flex items-center justify-center"
         >
-          {isLoading ? (
+          {status === 'SENDING' ? (
             <span className="flex items-center gap-2">
               <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
               Securing connection...
@@ -64,7 +90,7 @@ export function InstantIdentity({ onIdentified }: { onIdentified: (email: string
           ) : (
             "Continue Securely"
           )}
-        </Button>
+        </button>
       </form>
     </div>
   );
