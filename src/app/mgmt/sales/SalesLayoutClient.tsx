@@ -3,9 +3,8 @@
 import * as React from 'react';
 import { useRouter } from 'next/navigation';
 
+import { UnifiedPanelShell } from '@/components/mgmt/UnifiedPanelShell';
 import { useAuth } from '@/lib/hooks';
-import { SalesSidebar } from '@/components/sales/SalesSidebar';
-import { Toaster } from '@/components/ui/toaster';
 
 const SALES_ROLES = new Set(['sales', 'service_engineer']);
 
@@ -14,35 +13,31 @@ interface SalesLayoutClientProps {
 }
 
 export default function SalesLayoutClient({ children }: SalesLayoutClientProps) {
-  const { user, loading } = useAuth();
+  const { user, loading, logout } = useAuth();
   const router = useRouter();
-  const [navReady, setNavReady] = React.useState(false);
 
   React.useEffect(() => {
-    if (!loading) {
-      if (!user || !SALES_ROLES.has(user.role)) {
-        router.replace('/staff/login?denied=1');
-        return;
-      }
-      setTimeout(() => setNavReady(true), 0);
+    if (loading) return;
+    if (!user || !SALES_ROLES.has(user.role)) {
+      router.replace('/staff/login?denied=1');
     }
   }, [user, loading, router]);
 
-  if (loading || !user || !SALES_ROLES.has(user.role)) {
-    return (
-      <div className="flex h-screen items-center justify-center">
-        <p>Loading...</p>
-      </div>
-    );
-  }
+  const role = user?.role === 'service_engineer' ? 'service_engineer' : 'sales';
+  const authorized = !!user && SALES_ROLES.has(user.role);
 
   return (
-    <div className={`flex w-full flex-col items-start bg-muted/40 sm:flex-row${!navReady ? ' pointer-events-none select-none opacity-80' : ''}${!navReady ? ' transition-opacity' : ''}`}>
-      <div className={!navReady ? 'animate-pulse' : undefined}>
-        <SalesSidebar />
-      </div>
-      <main className="w-full flex-1 p-4 pt-16 sm:p-6 sm:pt-6">{children}</main>
-      <Toaster />
-    </div>
+    <UnifiedPanelShell
+      role={role}
+      user={user}
+      loading={loading}
+      authorized={authorized}
+      mainId="sales-main"
+      workspaceLabel="Sales Workspace"
+      statusLabel="Retail operations online"
+      onLogout={logout}
+    >
+      {children}
+    </UnifiedPanelShell>
   );
 }

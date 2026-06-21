@@ -298,7 +298,7 @@ export function Header() {
               <div className="flex items-center gap-2">
                 <Link
                   href="/auth/signin"
-                  className="rounded-full border border-zinc-700 bg-zinc-900/60 px-5 py-2.5 text-sm font-bold text-zinc-300 transition-all duration-200 hover:border-zinc-500 hover:bg-zinc-850 hover:text-white shadow-sm"
+                  className="rounded-full border border-zinc-700 bg-zinc-900/60 px-5 py-2.5 text-sm font-bold text-zinc-300 transition-all duration-200 hover:border-zinc-500 hover:bg-zinc-800 hover:text-white shadow-sm"
                 >
                   Login
                 </Link>
@@ -427,7 +427,7 @@ export function Header() {
                   <button
                     type="button"
                     onClick={() => setMobileSubmenuOpen((current) => (current === item.name ? null : item.name))}
-                    className={`flex min-h-[36px] w-full items-center justify-between rounded-lg px-3 py-1.5 text-xs transition-colors ${
+                    className={`flex min-h-11 w-full items-center justify-between rounded-lg px-3 py-2 text-sm transition-colors ${
                       mobileSubmenuOpen === item.name
                         ? 'text-white font-bold bg-zinc-900'
                         : 'text-zinc-400 hover:bg-zinc-900 hover:text-white'
@@ -450,7 +450,7 @@ export function Header() {
                       <Link
                         href={item.href}
                         onClick={() => setMobileMenuOpen(false)}
-                        className="flex min-h-[36px] items-center justify-between rounded-lg px-3 py-1.5 text-xs text-zinc-400 transition-colors hover:bg-zinc-900 hover:text-white"
+                        className="flex min-h-11 items-center justify-between rounded-lg px-3 py-2 text-sm text-zinc-400 transition-colors hover:bg-zinc-900 hover:text-white"
                       >
                         All {item.name}
                         <ChevronRight size={12} className="text-zinc-600" />
@@ -461,7 +461,7 @@ export function Header() {
                         key={child.name}
                         href={child.href}
                         onClick={() => setMobileMenuOpen(false)}
-                        className="flex min-h-[36px] items-center justify-between rounded-lg px-3 py-1.5 text-xs text-zinc-400 transition-colors hover:bg-zinc-900 hover:text-white"
+                        className="flex min-h-11 items-center justify-between rounded-lg px-3 py-2 text-sm text-zinc-400 transition-colors hover:bg-zinc-900 hover:text-white"
                       >
                         {child.name}
                         <ChevronRight size={12} className="text-zinc-600" />
@@ -473,7 +473,7 @@ export function Header() {
                 <Link
                   href={item.href}
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`flex min-h-[36px] items-center justify-between rounded-lg px-3 py-1.5 text-xs transition-colors ${
+                  className={`flex min-h-11 items-center justify-between rounded-lg px-3 py-2 text-sm transition-colors ${
                     isActive(item.href)
                       ? 'text-white font-bold bg-zinc-900'
                       : 'text-zinc-400 hover:bg-zinc-900 hover:text-white'
@@ -489,7 +489,7 @@ export function Header() {
             <Link
               href={dashboardHref}
               onClick={() => setMobileMenuOpen(false)}
-              className="flex min-h-[36px] items-center justify-between rounded-lg px-3 py-1.5 text-xs text-zinc-400 hover:bg-zinc-900 hover:text-white transition-colors"
+              className="flex min-h-11 items-center justify-between rounded-lg px-3 py-2 text-sm text-zinc-400 hover:bg-zinc-900 hover:text-white transition-colors"
             >
               Dashboard
               <ChevronRight size={14} className="text-zinc-500" />
@@ -498,7 +498,7 @@ export function Header() {
           <Link
             href="/cart"
             onClick={() => setMobileMenuOpen(false)}
-            className="flex min-h-[36px] items-center justify-between rounded-lg px-3 py-1.5 text-xs text-zinc-400 hover:bg-zinc-900 hover:text-white transition-colors"
+            className="flex min-h-11 items-center justify-between rounded-lg px-3 py-2 text-sm text-zinc-400 hover:bg-zinc-900 hover:text-white transition-colors"
           >
             Cart
             <ChevronRight size={14} className="text-zinc-500" />
@@ -513,7 +513,7 @@ export function Header() {
               <Link
                 href="/auth/signin"
                 onClick={() => setMobileMenuOpen(false)}
-                className="flex min-h-[36px] items-center justify-between rounded-lg border border-zinc-800 bg-zinc-900 px-3 py-1.5 text-xs text-zinc-350 hover:bg-zinc-850 hover:text-white transition-colors"
+                className="flex min-h-11 items-center justify-between rounded-lg border border-zinc-800 bg-zinc-900 px-3 py-2 text-sm text-zinc-300 hover:bg-zinc-800 hover:text-white transition-colors"
               >
                 Login
                 <ChevronRight size={14} className="text-zinc-500" />
@@ -521,7 +521,7 @@ export function Header() {
               <Link
                 href="/auth/signup"
                 onClick={() => setMobileMenuOpen(false)}
-                className="flex min-h-[36px] items-center justify-between rounded-lg border border-blue-500/20 bg-blue-600 px-3 py-1.5 text-xs text-white hover:bg-blue-550 transition-colors"
+                className="flex min-h-11 items-center justify-between rounded-lg border border-blue-500/20 bg-blue-600 px-3 py-2 text-sm text-white hover:bg-blue-500 transition-colors"
               >
                 Signup
                 <ChevronRight size={14} className="text-white" />
@@ -532,7 +532,7 @@ export function Header() {
               <Link
                 href="/profile"
                 onClick={() => setMobileMenuOpen(false)}
-                className="flex min-h-[36px] items-center justify-between rounded-lg px-3 py-1.5 text-xs text-zinc-400 hover:bg-zinc-900 hover:text-white transition-colors"
+                className="flex min-h-11 items-center justify-between rounded-lg px-3 py-2 text-sm text-zinc-400 hover:bg-zinc-900 hover:text-white transition-colors"
               >
                 Profile
                 <ChevronRight size={14} className="text-zinc-500" />
@@ -541,7 +541,7 @@ export function Header() {
                 <Link
                   href={accountHref}
                   onClick={() => setMobileMenuOpen(false)}
-                  className="flex min-h-[36px] items-center justify-between rounded-lg px-3 py-1.5 text-xs text-zinc-400 hover:bg-zinc-900 hover:text-white transition-colors"
+                  className="flex min-h-11 items-center justify-between rounded-lg px-3 py-2 text-sm text-zinc-400 hover:bg-zinc-900 hover:text-white transition-colors"
                 >
                   Account
                   <ChevronRight size={14} className="text-zinc-500" />
@@ -551,7 +551,7 @@ export function Header() {
                 <Link
                   href="/mgmt/admin"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="flex min-h-[36px] items-center justify-between rounded-lg px-3 py-1.5 text-xs text-zinc-400 hover:bg-zinc-900 hover:text-white transition-colors"
+                  className="flex min-h-11 items-center justify-between rounded-lg px-3 py-2 text-sm text-zinc-400 hover:bg-zinc-900 hover:text-white transition-colors"
                 >
                   Admin Panel
                   <ChevronRight size={14} className="text-zinc-500" />
@@ -563,7 +563,7 @@ export function Header() {
                   setMobileMenuOpen(false);
                   await handleLogout();
                 }}
-                className="flex w-full items-center justify-between rounded-lg border border-zinc-800 bg-zinc-900 px-3 py-1.5 text-xs text-zinc-350 hover:bg-zinc-850 hover:text-white transition-colors"
+                className="flex min-h-11 w-full items-center justify-between rounded-lg border border-zinc-800 bg-zinc-900 px-3 py-2 text-sm text-zinc-300 hover:bg-zinc-800 hover:text-white transition-colors"
               >
                 Logout
                 <ChevronRight size={14} className="text-zinc-500" />

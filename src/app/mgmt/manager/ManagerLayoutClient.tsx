@@ -3,16 +3,15 @@
 import * as React from 'react';
 import { useRouter } from 'next/navigation';
 
+import { UnifiedPanelShell } from '@/components/mgmt/UnifiedPanelShell';
 import { useAuth } from '@/lib/hooks';
-import { ManagerSidebar } from '@/components/manager/ManagerSidebar';
-import { Toaster } from '@/components/ui/toaster';
 
 interface ManagerLayoutClientProps {
   children: React.ReactNode;
 }
 
 export default function ManagerLayoutClient({ children }: ManagerLayoutClientProps) {
-  const { user, loading } = useAuth();
+  const { user, loading, logout } = useAuth();
   const router = useRouter();
   const redirectRef = React.useRef(false);
 
@@ -24,49 +23,26 @@ export default function ManagerLayoutClient({ children }: ManagerLayoutClientPro
       router.replace('/staff/login');
       return;
     }
-    const userRole = (user as any)?.role || 'customer';
-    if (userRole !== 'manager') {
+    if (user.role !== 'manager') {
       redirectRef.current = true;
       router.replace('/staff/login?denied=1');
     }
   }, [loading, user, router]);
 
-  const userRole = (user as any)?.role || 'customer';
-  const authorized = !!user && userRole === 'manager';
+  const authorized = !!user && user.role === 'manager';
 
   return (
-    <div
-      className="manager-shell flex min-h-screen w-full flex-col items-start bg-background text-foreground sm:flex-row"
-      data-auth-state={authorized ? 'authorized' : (loading ? 'checking' : 'redirecting')}
+    <UnifiedPanelShell
+      role="manager"
+      user={user}
+      loading={loading}
+      authorized={authorized}
+      mainId="manager-main"
+      workspaceLabel="Manager Workspace"
+      statusLabel="Team operations online"
+      onLogout={logout}
     >
-      <a
-        href="#manager-main"
-        className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 rounded border border-border bg-card px-3 py-1 text-sm text-foreground z-50"
-      >
-        Skip to main content
-      </a>
-      <div>
-        <ManagerSidebar />
-      </div>
-      <main
-        id="manager-main"
-        className="relative w-full flex-1 p-4 pt-16 focus:outline-none sm:p-6 sm:pt-6"
-        tabIndex={-1}
-        data-sidebar-ready={authorized || undefined}
-        aria-label="Manager main content"
-        aria-busy={loading && !authorized}
-      >
-        {children}
-        {loading && !authorized && (
-          <div className="absolute inset-0 flex items-center justify-center bg-background/50 backdrop-blur-sm" aria-live="polite">
-            <div className="flex items-center gap-3 rounded-md border border-border bg-card px-4 py-2 shadow-sm">
-              <div className="h-5 w-5 animate-spin rounded-full border-b-2 border-primary" />
-              <span className="text-sm text-muted-foreground">Checking access…</span>
-            </div>
-          </div>
-        )}
-      </main>
-      <Toaster />
-    </div>
+      {children}
+    </UnifiedPanelShell>
   );
 }

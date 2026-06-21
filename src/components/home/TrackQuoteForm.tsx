@@ -35,7 +35,7 @@ export function TrackQuoteForm() {
   };
 
   return (
-    <div className="relative rounded-2xl border border-zinc-800 bg-[#09090B]/60 p-6 sm:p-8 backdrop-blur-md shadow-2xl">
+    <div className="tb-panel relative p-6 sm:p-8">
       <div className="absolute top-0 right-0 p-3 text-[10px] font-mono text-zinc-500">tecbunny_negotiation_v2.0</div>
       <h3 className="text-lg font-bold text-white font-tech tracking-wider uppercase mb-2 flex items-center gap-2">
         <span className="h-2 w-2 rounded-full bg-blue-500 animate-pulse" />
@@ -59,7 +59,7 @@ export function TrackQuoteForm() {
               setQuoteNumberInput(e.target.value);
               setLookupError('');
             }}
-            className="w-full bg-[#09090B] border border-zinc-800 rounded-xl px-4 py-3 text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition-colors"
+            className="min-h-11 w-full rounded-lg border border-zinc-800 bg-zinc-950 px-4 py-3 text-base text-white placeholder:text-zinc-500 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500/40"
             disabled={lookupLoading || isPending}
           />
         </div>
@@ -67,7 +67,7 @@ export function TrackQuoteForm() {
         <button
           type="submit"
           disabled={lookupLoading || isPending || !quoteNumberInput.trim()}
-          className="w-full bg-blue-600 text-white font-bold text-sm py-3 rounded-xl hover:bg-blue-500 disabled:opacity-50 transition duration-200 flex items-center justify-center gap-2 shadow-sm"
+          className="tb-button-primary w-full disabled:opacity-50"
         >
           {lookupLoading || isPending ? 'Validating ID...' : 'Check Status & Pay'}
           <ArrowRight size={14} />

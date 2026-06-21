@@ -67,7 +67,7 @@ export function HeroVisuals() {
 
   return (
     <div className="reveal-section is-revealed relative hidden lg:block animate-scale-in" data-reveal-id="hero-visual" id="hero-visual" onMouseMove={handleTiltMove} onMouseLeave={handleTiltLeave} style={{ animationDuration: '1s', animationDelay: '0.2s', animationFillMode: 'backwards' }}>
-      <div ref={tiltRef} className="hero-status-panel tilt-card relative z-10 rounded-2xl border border-zinc-800 bg-[#0F172A]/80 p-8 shadow-[0_0_50px_-12px_rgba(59,130,246,0.25)] backdrop-blur-3xl overflow-hidden group">
+      <div ref={tiltRef} className="hero-status-panel tilt-card tb-panel group relative z-10 overflow-hidden p-8">
         <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
         <div className="mb-6 flex items-center gap-2 border-b border-zinc-800/80 pb-5 relative z-10">
           <div className="h-3 w-3 rounded-full bg-rose-500/80"></div>
@@ -90,8 +90,8 @@ export function HeroVisuals() {
           ))}
         </div>
         <div className="my-6 h-px bg-gradient-to-r from-transparent via-zinc-700 to-transparent relative z-10"></div>
-        <div className="flex items-center gap-4 bg-zinc-900/50 p-4 rounded-xl border border-zinc-800/50 relative z-10 transition-transform duration-300 group-hover:scale-[1.02]">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-500/20 border border-blue-500/30 shadow-[0_0_15px_rgba(59,130,246,0.3)]">
+        <div className="relative z-10 flex items-center gap-4 rounded-lg border border-zinc-800/50 bg-zinc-900/50 p-4 transition-transform duration-300 group-hover:scale-[1.02]">
+          <div className="tb-icon-tile border-blue-500/30 bg-blue-500/20 text-blue-400">
             <ShieldCheck size={24} className="text-blue-400" />
           </div>
           <div>
@@ -100,7 +100,6 @@ export function HeroVisuals() {
           </div>
         </div>
       </div>
-      <div className="absolute -inset-6 -z-10 rounded-3xl bg-blue-500/10 blur-2xl animate-pulse" style={{ animationDuration: '4s' }}></div>
     </div>
   );
 }
