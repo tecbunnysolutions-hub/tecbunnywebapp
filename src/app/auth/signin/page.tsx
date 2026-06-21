@@ -2,7 +2,7 @@
 
 import { useState, useEffect, Suspense, useMemo } from 'react';
 import NextDynamic from 'next/dynamic';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 
 import { Lock, Eye, EyeOff, CheckCircle, AlertCircle, Phone } from 'lucide-react';
 
@@ -37,6 +37,7 @@ function SignInForm() {
   );
 
   const searchParams = useSearchParams();
+  const router = useRouter();
   const { toast } = useToast();
   const supabase = createClient();
 
@@ -125,7 +126,7 @@ function SignInForm() {
           break;
       }
 
-      window.location.href = redirectUrl;
+      router.push(redirectUrl);
     } catch (err) {
       console.error('2FA verification error:', err);
       setError('An unexpected error occurred during 2FA verification.');
@@ -196,7 +197,7 @@ function SignInForm() {
         break;
     }
 
-    window.location.href = redirectUrl;
+    router.push(redirectUrl);
   };
 
   // ─── Shared sign-in error handler ──────────────────────────────────────────
