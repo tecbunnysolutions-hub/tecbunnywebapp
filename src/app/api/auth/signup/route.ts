@@ -7,7 +7,7 @@ import { rateLimit } from '@/lib/rate-limit';
 import { OTPManager, type OTPChannel } from '@/lib/otp-manager';
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY;
 const isSupabaseConfigured = Boolean(SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY);
 const SIGNUP_IP_LIMIT = { limit: 5, windowMs: 15 * 60 * 1000 };
 const SIGNUP_IDENTIFIER_LIMIT = { limit: 3, windowMs: 30 * 60 * 1000 };
