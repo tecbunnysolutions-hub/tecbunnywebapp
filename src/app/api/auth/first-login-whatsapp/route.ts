@@ -16,15 +16,22 @@ function getSupabaseAdmin() {
   });
 }
 
+// Defensive timeout wrapper for external API calls to prevent hanging routes
+const withTimeout = <T>(promise: Promise<T>, ms: number = 5000): Promise<T> => {
+  return Promise.race([
+    promise,
+    new Promise<never>((_, reject) => 
+      setTimeout(() => reject(new Error(`Timeout after ${ms}ms`)), ms)
+    )
+  ]);
+};
+
 export async function POST(request: NextRequest) {
   try {
     if (!isSupabaseConfigured) {
       logger.error('first_login_whatsapp.supabase_config_missing');
       return NextResponse.json(
-        {
-          success: false,
-          error: 'Supabase configuration missing. Please set NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY.'
-        },
+        { success: false, error: 'Supabase configuration missing.' },
         { status: 503 }
       );
     }
@@ -77,10 +84,27 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    const notifiedAt = new Date().toISOString();
+
+    // ATOMIC LOCK: We attempt to update the flag. If it's already true (from a concurrent request), this will match 0 rows.
+    const { data: lockData, error: lockError } = await supabaseAdmin
+      .from('profiles')
+      .update({ first_login_whatsapp_sent: true, first_login_notified_at: notifiedAt })
+      .match({ id: userId, first_login_whatsapp_sent: false })
+      .select('id')
+      .single();
+
+    if (lockError || !lockData) {
+      logger.info('first_login_whatsapp.concurrent_request_blocked', { userId });
+      return NextResponse.json({ success: false, alreadySent: true, error: 'Concurrent request blocked' });
+    }
+
     const targetPhone = (phone || profile.mobile || '').trim();
 
     if (!targetPhone) {
       logger.warn('first_login_whatsapp.missing_phone', { userId });
+      // Rollback the lock if we cannot proceed
+      await supabaseAdmin.from('profiles').update({ first_login_whatsapp_sent: false, first_login_notified_at: null }).eq('id', userId);
       return NextResponse.json({ success: false, error: 'No valid phone number available' }, { status: 400 });
     }
 
@@ -88,7 +112,8 @@ export async function POST(request: NextRequest) {
 
     let sendResult: { success: boolean; error?: string; messageId?: string } = { success: false };
     try {
-      const result = await sendWelcomeNotification(targetPhone, { customerName });
+      // BLOCKING I/O DEFENSE: Max 5 seconds allowed for WhatsApp API
+      const result = await withTimeout(sendWelcomeNotification(targetPhone, { customerName }), 5000);
       sendResult = { success: true, messageId: result?.messages?.[0]?.id || 'delivered' };
     } catch (err: any) {
       logger.warn('first_login_whatsapp.template_failed_attempting_fallback', { error: err.message });
@@ -99,7 +124,7 @@ export async function POST(request: NextRequest) {
       ].filter(Boolean).join(' ');
 
       try {
-        const textResult = await sendWhatsAppNotification(targetPhone, textFallback);
+        const textResult = await withTimeout(sendWhatsAppNotification(targetPhone, textFallback), 5000);
         sendResult = { success: true, messageId: textResult?.messages?.[0]?.id || 'delivered' };
       } catch (fallbackErr: any) {
         sendResult = { success: false, error: fallbackErr.message };
@@ -113,48 +138,26 @@ export async function POST(request: NextRequest) {
         error: sendResult.error
       });
 
+      // Rollback the lock so we can retry later
+      await supabaseAdmin.from('profiles').update({ first_login_whatsapp_sent: false, first_login_notified_at: null }).eq('id', userId);
+
       return NextResponse.json({
         success: false,
         error: sendResult.error || 'Failed to send WhatsApp message',
         messageId: sendResult.messageId ?? null
-      });
+      }, { status: 502 });
     }
-
-    const notifiedAt = new Date().toISOString();
-    const { data: updatedProfile, error: updateError } = await supabaseAdmin
-      .from('profiles')
-      .update({ first_login_whatsapp_sent: true, first_login_notified_at: notifiedAt })
-      .eq('id', userId)
-      .select()
-      .single();
-
-    if (updateError) {
-      logger.error('first_login_whatsapp.update_failed', {
-        userId,
-        error: updateError,
-        messageId: sendResult.messageId
-      });
-
-      return NextResponse.json({
-        success: true,
-        warning: 'Message sent but failed to update profile flag',
-        sentAt: notifiedAt,
-        messageId: sendResult.messageId
-      });
-    }
-
-    const sentAt = updatedProfile?.first_login_notified_at ?? notifiedAt;
 
     logger.info('first_login_whatsapp.sent', {
       userId,
       phone: targetPhone,
       messageId: sendResult.messageId,
-      sentAt
+      sentAt: notifiedAt
     });
 
     return NextResponse.json({
       success: true,
-      sentAt,
+      sentAt: notifiedAt,
       messageId: sendResult.messageId
     });
   } catch (error) {

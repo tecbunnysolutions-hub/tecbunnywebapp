@@ -90,6 +90,7 @@ export const AuthContext = createContext<AuthContextType | undefined>(undefined)
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const userRef = useRef<User | null>(null);
+  const cartSyncLockRef = useRef<boolean>(false);
   useEffect(() => {
     userRef.current = user;
   }, [user]);
@@ -112,6 +113,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [loading]);
 
   const syncGuestCartToUser = useCallback(async (userId: string, abortSignal?: AbortSignal) => {
+    if (cartSyncLockRef.current) return;
+    cartSyncLockRef.current = true;
     try {
       const { useCartStore } = await import('@/store/cartStore');
       if (abortSignal?.aborted) return;
@@ -119,6 +122,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (err) {
       if (err instanceof Error && err.name === 'AbortError') return;
       logger.error('Failed to sync guest cart on auth event', { error: err });
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('CART_SYNC_FAILED', { detail: { userId } }));
+      }
+    } finally {
+      cartSyncLockRef.current = false;
     }
   }, [supabase]);
 
@@ -624,37 +632,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     sessionManager.clearSessionTracking();
     await clearSessionScopedClientState();
 
-    try {
-      const response = await fetch('/api/auth/signout', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error('Server signout failed');
-      }
-    } catch (error) {
-      logger.error('Server signout error', { error });
-    }
+    const logoutTasks: Promise<any>[] = [
+      fetch('/api/auth/signout', { method: 'POST', headers: { 'Content-Type': 'application/json' } }).catch(err => {
+        logger.error('Server signout error', { error: err });
+      }),
+      supabase.auth.signOut().then(({ error }) => {
+        if (error) logger.error('Client signout error', { error });
+      }).catch(err => {
+        logger.error('Supabase signout failure', { error: err });
+      })
+    ];
 
     // Call superadmin logout route if superadmin
     if (user?.role === 'superadmin') {
-      try {
-        await fetch('/api/superadmin/logout', { method: 'POST' });
-      } catch (err) {
+      logoutTasks.push(fetch('/api/superadmin/logout', { method: 'POST' }).catch(err => {
         logger.error('Superadmin logout error', { error: err });
-      }
+      }));
     }
 
     try {
-      const { error } = await supabase.auth.signOut();
-      if (error) {
-        logger.error('Client signout error', { error });
-      }
+      await Promise.allSettled(logoutTasks);
     } catch (error) {
-      logger.error('Supabase signout failure', { error });
+      logger.error('Parallel signout error', { error });
     }
 
     setUser(null);
