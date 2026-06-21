@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
 
     const { data: profile, error: profileError } = await supabaseAdmin
       .from('profiles')
-      .select('id, name, mobile, first_login_whatsapp_sent, first_login_notified_at')
+      .select('*')
       .eq('id', userId)
       .single();
 
@@ -125,7 +125,7 @@ export async function POST(request: NextRequest) {
       .from('profiles')
       .update({ first_login_whatsapp_sent: true, first_login_notified_at: notifiedAt })
       .eq('id', userId)
-      .select('first_login_notified_at')
+      .select()
       .single();
 
     if (updateError) {

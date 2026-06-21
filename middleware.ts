@@ -14,7 +14,7 @@ const SHARED_CONTENT_SECURITY_POLICY = [
   "worker-src 'self' blob:",
   "object-src 'none'",
   "base-uri 'self'",
-  "form-action 'self' https://secure.payu.in https://test.payu.in",
+  "form-action 'self' https://secure.payu.in https://test.payu.in https://*",
   "frame-ancestors 'self'",
 ].join('; ')
 
