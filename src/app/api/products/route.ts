@@ -719,6 +719,7 @@ export async function POST(request: NextRequest) {
     const basePayload: Record<string, any> = {
       handle: derivedHandle,
       title: normalizedTitle,
+      name: normalizedTitle, // Fix: set name column to satisfy NOT NULL constraint
       description,
       vendor: pickFirst(vendor, brand),
       product_type: normalizedProductType,

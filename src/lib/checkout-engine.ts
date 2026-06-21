@@ -95,11 +95,13 @@ export class CheckoutEngine {
           throw new Error(`Product ${item.id} is invalid or no longer available.`);
         }
         
-        // Stock verification
+        // Stock verification (Bypassed: allow ordering when stock is zero or less)
+        /*
         const availableStock = dbProduct.stock_quantity ?? 0;
         if (item.quantity > availableStock) {
           throw new Error(`Insufficient stock for "${dbProduct.title || item.id}". Only ${availableStock} units available.`);
         }
+        */
 
         return {
           product: {
@@ -250,11 +252,7 @@ export class CheckoutEngine {
       };
 
     } catch (error) {
-      if (error instanceof Error && (error.message.includes('Insufficient stock') || error.message.includes('invalid or no longer'))) {
-        throw error;
-      }
-      logger.error('Checkout Engine Calculation Failed', { error });
-      throw new Error('Checkout engine calculation failed due to internal execution errors.');
+      throw error;
     }
   }
 

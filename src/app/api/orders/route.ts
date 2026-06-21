@@ -205,7 +205,8 @@ logger.info('order_create_attempt', { userId: effectiveUserId });
 
     if (!rpcResult || !rpcResult.success || !rpcResult.order) {
       logger.error('order_create_rpc_invalid_response', { rpcResult, userId: effectiveUserId });
-      return apiError('INTERNAL_ERROR', { correlationId, overrideMessage: 'Invalid response from allocation engine.' });
+      const errorMsg = rpcResult?.error || 'Invalid response from allocation engine.';
+      return apiError('INTERNAL_ERROR', { correlationId, overrideMessage: errorMsg });
     }
 
     const createdOrder = rpcResult.order;

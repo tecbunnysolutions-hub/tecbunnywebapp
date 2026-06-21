@@ -1,4 +1,3 @@
-'use client';
 
 import type { CartItem, CustomerCategory, AutoOffer, Coupon } from '@/lib/types';
 import { createClient } from '@/lib/supabase/client';

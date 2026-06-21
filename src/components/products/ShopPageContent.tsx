@@ -675,9 +675,9 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
         {/* Product Grid Area */}
         <div className="reveal-section is-revealed mt-16" data-reveal-id="products-grid">
           {loading ? (
-            <div className="grid gap-6 grid-cols-[repeat(auto-fit,minmax(250px,1fr))] min-h-[400px]">
+            <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 min-h-[400px]">
               {Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} className="flex h-full flex-col rounded-2xl border border-border bg-card/20 p-6">
+                <div key={i} className="flex h-full w-full max-w-[320px] mx-auto sm:mx-0 flex-col rounded-2xl border border-border bg-card/20 p-6">
                   <Skeleton className="mb-6 aspect-square w-full rounded-xl bg-muted/60 animate-pulse" />
                   <div className="space-y-2">
                     <Skeleton className="h-3 w-1/4 bg-muted/60 rounded animate-pulse" />
@@ -694,7 +694,7 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
               ))}
             </div>
           ) : filteredProducts.length > 0 ? (
-            <div className="grid gap-6 grid-cols-[repeat(auto-fit,minmax(250px,1fr))]">
+            <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
               {filteredProducts.map((product, index) => {
                 const displayName = product.title || product.name || 'Product';
                 const imageUrl = getProductDisplayImage(product, {
@@ -720,7 +720,7 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
                 return (
                   <ProductTileErrorBoundary key={product.id || index} productId={product.id}>
                     <div
-                      className="relative flex h-full flex-col justify-between p-6 rounded-2xl border border-border/80 bg-card/40 backdrop-blur-sm shadow-[0_4px_20px_-1px_rgba(0,0,0,0.3)] transition-all duration-500 hover:-translate-y-1.5 hover:border-primary/50 hover:shadow-[0_0_30px_-5px_rgba(var(--primary),0.15)] group"
+                      className="relative flex h-full w-full max-w-[320px] mx-auto sm:mx-0 flex-col justify-between p-6 rounded-2xl border border-border/80 bg-card/40 backdrop-blur-sm shadow-[0_4px_20px_-1px_rgba(0,0,0,0.3)] transition-all duration-500 hover:-translate-y-1.5 hover:border-primary/50 hover:shadow-[0_0_30px_-5px_rgba(var(--primary),0.15)] group"
                     >
                       <Link href={`/products/${product.id}`} className="block flex-grow">
                         {/* Image Frame */}

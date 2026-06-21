@@ -63,9 +63,9 @@ function ProductsPageSkeleton() {
             </div>
             <div className="w-full max-w-lg h-11 bg-zinc-900/40 border border-zinc-800 rounded-xl animate-pulse" />
           </div>
-          <div className="mt-16 grid gap-6 grid-cols-[repeat(auto-fit,minmax(250px,1fr))]">
+          <div className="mt-16 grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
             {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-              <div key={i} className="flex h-full flex-col rounded-2xl border border-zinc-900 bg-zinc-950/40 p-6 animate-pulse">
+              <div key={i} className="flex h-full w-full max-w-[320px] mx-auto sm:mx-0 flex-col rounded-2xl border border-zinc-900 bg-zinc-950/40 p-6 animate-pulse">
                 <div className="aspect-square w-full rounded-xl bg-zinc-900/60 mb-6" />
                 <div className="space-y-2">
                   <div className="h-3 w-1/4 bg-zinc-900/60 rounded" />

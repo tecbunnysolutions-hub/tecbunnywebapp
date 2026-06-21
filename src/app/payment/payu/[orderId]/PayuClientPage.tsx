@@ -184,6 +184,13 @@ function PayuPaymentContent() {
     }
   };
 
+  // Automatically initiate PayU checkout when order is loaded
+  useEffect(() => {
+    if (order && !payuData && !processing && !error && !submitted) {
+      void initiatePayuPayment();
+    }
+  }, [order, payuData, processing, error, submitted]);
+
   useEffect(() => {
     if (!payuData || !formRef.current) {
       return;

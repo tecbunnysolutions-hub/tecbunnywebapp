@@ -57,7 +57,7 @@ export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
     const { data, error } = await supabase
       .from('products')
-      .select('id, hsn_code, gst_rate, gst_percentage')
+      .select('id, hsn_code, gst_rate')
       .in('id', ids);
 
     if (error || !data) {

@@ -167,7 +167,9 @@ export async function middleware(request: NextRequest) {
         isSameOrigin = false;
       }
 
-      if (!isSameOrigin) {
+      const isCsrfExempt = checkPathPrefix(pathname, '/api/payment/payu/callback') || checkPathPrefix(pathname, '/api/webhooks');
+
+      if (!isCsrfExempt && !isSameOrigin) {
         console.warn('CSRF Blocked Request:', { pathname, correlationId, origin, referer });
         return new NextResponse(
           JSON.stringify({ error: 'Forbidden', message: 'CSRF validation failed.' }),
