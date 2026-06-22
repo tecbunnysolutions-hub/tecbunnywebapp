@@ -3,15 +3,28 @@ import { NextRequest, NextResponse } from 'next/server';
 import { buildPdf, loadCompanyInfo } from '@/lib/pdf-generator';
 import { createClient as createServerClient } from '@/lib/supabase/server';
 import { requireAdmin } from '@/lib/admin-auth';
+import { requireSupabaseServiceEnv } from '@/lib/supabase/env';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co',
-  process.env.SUPABASE_SERVICE_ROLE_KEY || 'placeholder-key'
-);
+let supabaseAdmin: any = null;
+
+function getSupabaseAdmin(): any {
+  if (!supabaseAdmin) {
+    const { url, serviceKey } = requireSupabaseServiceEnv();
+    supabaseAdmin = createClient(url, serviceKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false,
+      },
+    });
+  }
+
+  return supabaseAdmin;
+}
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
+    const supabase = getSupabaseAdmin();
 
     const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
 

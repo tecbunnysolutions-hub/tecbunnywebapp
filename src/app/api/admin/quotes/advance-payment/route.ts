@@ -2,13 +2,14 @@ import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
 import { logger } from '@/lib/logger';
 import { sendWhatsAppNotification } from '@/lib/whatsapp-service';
+import { requireSupabaseServiceEnv } from '@/lib/supabase/env';
+import { createQuoteActionToken, verifyQuoteActionToken } from '@/lib/quotes/action-token';
 
 let supabaseInstance: any = null;
 function getSupabase(): any {
   if (!supabaseInstance) {
-    const url = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co';
-    const key = process.env.SUPABASE_SERVICE_ROLE_KEY || 'placeholder-key';
-    supabaseInstance = createClient(url, key);
+    const { url, serviceKey } = requireSupabaseServiceEnv();
+    supabaseInstance = createClient(url, serviceKey);
   }
   return supabaseInstance;
 }
@@ -133,9 +134,12 @@ export async function POST(req: Request) {
         const formattedPhone = customerPhone.replace(/[^\d]/g, '');
         const phoneWithCode = formattedPhone.startsWith('91') ? formattedPhone : `91${formattedPhone}`;
         
+        const advanceToken = createQuoteActionToken(quote_id, 'advance_payment');
+        const paymentUrl = `${process.env.NEXT_PUBLIC_APP_URL}/quotes/${quote_id}/advance-payment?token=${encodeURIComponent(advanceToken)}`;
+
         await sendWhatsAppNotification(
           phoneWithCode, 
-          `🚨 *ADVANCE PAYMENT REQUEST*\n\nCustomer: ${quote.customer_name}\nAdvance Amount: ₹${advance_amount.toLocaleString('en-IN')}\nTotal Quote: ₹${total_amount.toLocaleString('en-IN')}\nPayment Method: ${payment_method === 'payu' ? 'Online (PayU)' : 'Wire Transfer'}\n\nPlease confirm and proceed with payment: ${process.env.NEXT_PUBLIC_APP_URL}/quotes/${quote_id}/advance-payment`
+          `🚨 *ADVANCE PAYMENT REQUEST*\n\nCustomer: ${quote.customer_name}\nAdvance Amount: ₹${advance_amount.toLocaleString('en-IN')}\nTotal Quote: ₹${total_amount.toLocaleString('en-IN')}\nPayment Method: ${payment_method === 'payu' ? 'Online (PayU)' : 'Wire Transfer'}\n\nPlease confirm and proceed with payment: ${paymentUrl}`
         );
       }
     } catch (whatsappError: any) {
@@ -168,6 +172,7 @@ export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
     const quoteId = searchParams.get('quote_id');
+    const actionToken = searchParams.get('token');
 
     if (!quoteId) {
       return NextResponse.json(
@@ -181,6 +186,13 @@ export async function GET(req: Request) {
     if (!isUuid) {
       const { data: q } = await getSupabase().from('quotes').select('id').eq('quote_number', quoteId).single();
       if (q) realQuoteId = q.id;
+    }
+
+    if (!verifyQuoteActionToken(actionToken, realQuoteId, ['advance_payment'])) {
+      return NextResponse.json(
+        { success: false, error: 'Secure payment action link is missing or expired' },
+        { status: 403 }
+      );
     }
 
     const { data: advancePayment, error } = await getSupabase()

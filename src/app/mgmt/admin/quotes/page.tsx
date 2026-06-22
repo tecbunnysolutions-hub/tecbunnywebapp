@@ -234,11 +234,12 @@ export default function AdminQuotesPage() {
                           variant="ghost" 
                           size="sm" 
                           onClick={() => {
-                            const url = `${window.location.origin}/quotes/${quote.quote_number || quote.id}`;
+                            const token = quote.secure_quote_token;
+                            const url = `${window.location.origin}/quotes/${quote.quote_number || quote.id}${token ? `?token=${encodeURIComponent(token)}` : ''}`;
                             navigator.clipboard.writeText(url);
                             toast({
                               title: 'Copied!',
-                              description: 'Public link copied to clipboard.'
+                              description: 'Secure customer quote link copied to clipboard.'
                             });
                           }}
                           className="text-primary hover:bg-primary/10 hover:text-primary/80"
@@ -250,7 +251,8 @@ export default function AdminQuotesPage() {
                           variant="ghost" 
                           size="sm" 
                           onClick={() => {
-                            window.open(`/quotes/${quote.quote_number || quote.id}`, '_blank');
+                            const token = quote.secure_quote_token;
+                            window.open(`/quotes/${quote.quote_number || quote.id}${token ? `?token=${encodeURIComponent(token)}` : ''}`, '_blank');
                           }}
                           className="text-muted-foreground hover:bg-muted hover:text-foreground"
                           title="Open Public Link"

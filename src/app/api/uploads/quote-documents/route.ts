@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { uploadToSupabase } from '@/lib/supabase-storage';
 import { logger } from '@/lib/logger';
 import { createServiceClient } from '@/lib/supabase/server';
+import { verifyQuoteActionToken } from '@/lib/quotes/action-token';
 
 export const runtime = 'nodejs';
 
@@ -11,6 +12,7 @@ export async function POST(request: NextRequest) {
     const file = formData.get('file') as File | null;
     const quoteId = formData.get('quote_id') as string | null;
     const type = formData.get('type') as string | null;
+    const actionToken = formData.get('action_token');
 
     if (!file || !quoteId) {
       return NextResponse.json({ error: 'Missing file or quote_id' }, { status: 400 });
@@ -29,15 +31,18 @@ export async function POST(request: NextRequest) {
 
     // Validate quote_id exists in the database
     const supabase = createServiceClient();
-    const { data: quote, error: quoteError } = await supabase
-      .from('quotes')
-      .select('id')
-      .eq('id', quoteId)
-      .single();
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(quoteId);
+    let quoteQuery = supabase.from('quotes').select('id');
+    quoteQuery = isUuid ? quoteQuery.eq('id', quoteId) : quoteQuery.eq('quote_number', quoteId);
+    const { data: quote, error: quoteError } = await quoteQuery.single();
 
     if (quoteError || !quote) {
       logger.warn('quote_upload.quote_not_found', { quoteId });
       return NextResponse.json({ error: 'Invalid quote ID' }, { status: 404 });
+    }
+
+    if (!verifyQuoteActionToken(actionToken, quote.id, ['advance_payment'])) {
+      return NextResponse.json({ error: 'Secure upload link is missing or expired' }, { status: 403 });
     }
 
     // Upload to Supabase Storage in folder 'quote-documents'

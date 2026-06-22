@@ -1,11 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { rateLimit } from '@/lib/rate-limit';
+import { requireSupabaseServiceEnv } from '@/lib/supabase/env';
 
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.local';
-const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || 'placeholder-service-role-key';
+let supabaseAdmin: any = null;
 
-const getSupabaseAdmin = () => createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, { auth: { autoRefreshToken: false, persistSession: false } });
+const getSupabaseAdmin = (): any => {
+  if (!supabaseAdmin) {
+    const { url, serviceKey } = requireSupabaseServiceEnv();
+    supabaseAdmin = createClient(url, serviceKey, { auth: { autoRefreshToken: false, persistSession: false } });
+  }
+
+  return supabaseAdmin;
+};
 
 function getClientIp(request: NextRequest) {
   return request.headers.get('cf-connecting-ip')?.trim()
@@ -28,13 +35,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
-    return NextResponse.json({ error: 'Service configuration error. Please contact support.' }, { status: 503 });
-  }
-
   try {
+    const supabase = getSupabaseAdmin();
     // Edge Environment Protection: Block setup if any admin already exists
-    const { data: existingAdmins, error: adminCheckError } = await getSupabaseAdmin()
+    const { data: existingAdmins, error: adminCheckError } = await supabase
       .from('profiles')
       .select('id')
       .in('role', ['admin'])
@@ -73,7 +77,7 @@ export async function POST(request: NextRequest) {
       const { email, password, name, mobile, role } = userData;
 
       // Check if user already exists
-      const { data: existingProfile } = await getSupabaseAdmin()
+      const { data: existingProfile } = await supabase
         .from('profiles')
         .select('id, email, role')
         .eq('email', email)
@@ -84,7 +88,7 @@ export async function POST(request: NextRequest) {
       if (existingProfile?.id) {
         // Update existing user
         userId = existingProfile.id;
-        await getSupabaseAdmin().auth.admin.updateUserById(userId, {
+        await supabase.auth.admin.updateUserById(userId, {
           password,
           email_confirm: true,
           app_metadata: { role },
@@ -92,7 +96,7 @@ export async function POST(request: NextRequest) {
         });
 
         // Update profile
-        await getSupabaseAdmin()
+        await supabase
           .from('profiles')
           .update({
             name,
@@ -104,7 +108,7 @@ export async function POST(request: NextRequest) {
           .eq('id', userId);
       } else {
         // Create new user
-        const { data: created, error: createErr } = await getSupabaseAdmin().auth.admin.createUser({
+        const { data: created, error: createErr } = await supabase.auth.admin.createUser({
           email,
           password,
           email_confirm: true,
@@ -120,7 +124,7 @@ export async function POST(request: NextRequest) {
         userId = created.user.id;
 
         // Create profile
-        await getSupabaseAdmin()
+        await supabase
           .from('profiles')
           .upsert({
             id: userId,
@@ -144,6 +148,9 @@ export async function POST(request: NextRequest) {
 
   } catch (e) {
     const msg = e instanceof Error ? e.message : 'Unknown error';
+    if (msg.startsWith('[supabase]')) {
+      return NextResponse.json({ error: 'Service configuration error. Please contact support.' }, { status: 503 });
+    }
     return NextResponse.json({ error: msg }, { status: 500 });
   }
 }

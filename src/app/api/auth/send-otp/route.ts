@@ -6,18 +6,26 @@ import { logger } from '@/lib/logger';
 import { apiError, apiSuccess } from '@/lib/errors';
 import { verifyCaptcha } from '@/lib/captcha/captcha-service';
 import { rateLimit } from '@/lib/rate-limit';
+import { requireSupabaseServiceEnv } from '@/lib/supabase/env';
 
 const SEND_OTP_IP_LIMIT = { limit: 5, windowMs: 15 * 60 * 1000 };
 const SEND_OTP_IDENTIFIER_LIMIT = { limit: 3, windowMs: 15 * 60 * 1000 };
 
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co';
-const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || 'service-role-placeholder';
-const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
-  auth: {
-    autoRefreshToken: false,
-    persistSession: false
+let supabaseAdmin: any = null;
+
+function getSupabaseAdmin(): any {
+  if (!supabaseAdmin) {
+    const { url, serviceKey } = requireSupabaseServiceEnv();
+    supabaseAdmin = createClient(url, serviceKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      }
+    });
   }
-});
+
+  return supabaseAdmin;
+}
 
 function getClientIp(request: NextRequest) {
   return request.headers.get('cf-connecting-ip')?.trim()
@@ -50,7 +58,21 @@ export async function POST(request: NextRequest) {
     // Guard against staff accounts using the public client portal
     const searchVal = normalizedEmail || normalizedMobile;
     if (searchVal) {
-      let query = supabaseAdmin.from('profiles').select('role');
+      let supabaseAdminClient: any;
+      try {
+        supabaseAdminClient = getSupabaseAdmin();
+      } catch (configError) {
+        logger.error('send_otp.supabase_config_missing', {
+          correlationId,
+          error: configError instanceof Error ? configError.message : configError,
+        });
+        return apiError('SERVER_ERROR', {
+          overrideMessage: 'Service configuration error. Please contact support.',
+          correlationId,
+        });
+      }
+
+      let query = supabaseAdminClient.from('profiles').select('role');
       if (normalizedEmail) {
         query = query.eq('email', normalizedEmail);
       } else {

@@ -1,8 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { requireSupabaseServiceEnv } from '@/lib/supabase/env';
 
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co';
-const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || 'placeholder-service-role-key';
+let supabaseAdmin: any = null;
+
+function getSupabaseAdmin(): any {
+  if (!supabaseAdmin) {
+    const { url, serviceKey } = requireSupabaseServiceEnv();
+    supabaseAdmin = createClient(url, serviceKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      }
+    });
+  }
+
+  return supabaseAdmin;
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,14 +28,7 @@ export async function POST(request: NextRequest) {
     const normalizedMobile = String(mobile).replace(/\D/g, '');
     const phone = normalizedMobile.length === 10 ? `91${normalizedMobile}` : normalizedMobile;
 
-    const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false
-      }
-    });
-
-    const { data: profile, error } = await supabaseAdmin
+    const { data: profile, error } = await getSupabaseAdmin()
       .from('profiles')
       .select('email')
       .eq('mobile', phone)

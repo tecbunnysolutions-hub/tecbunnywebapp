@@ -3,12 +3,19 @@ import { createClient } from '@supabase/supabase-js';
 import { z } from 'zod';
 
 import { logger } from '@/lib/logger';
+import { requireSupabaseServiceEnv } from '@/lib/supabase/env';
 
 
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.local';
-const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || 'placeholder-service-role-key';
+let supabaseAdmin: any = null;
 
-const getSupabaseAdmin = () => createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, { auth: { autoRefreshToken: false, persistSession: false } });
+const getSupabaseAdmin = (): any => {
+  if (!supabaseAdmin) {
+    const { url, serviceKey } = requireSupabaseServiceEnv();
+    supabaseAdmin = createClient(url, serviceKey, { auth: { autoRefreshToken: false, persistSession: false } });
+  }
+
+  return supabaseAdmin;
+};
 
 function isAuthorized(req: NextRequest) {
   const token = req.headers.get('x-admin-token');
@@ -25,11 +32,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
-    return NextResponse.json({ error: 'Service configuration error. Please contact support.' }, { status: 503 });
-  }
-
   try {
+    const supabase = getSupabaseAdmin();
     const parsed = roleMutationSchema.safeParse(await request.json());
 
     if (!parsed.success) {
@@ -42,7 +46,7 @@ export async function POST(request: NextRequest) {
     const { userId, action } = parsed.data;
 
     // 1) Verify user exists in profiles
-    const { data: profile, error: profileError } = await getSupabaseAdmin()
+    const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('id, role')
       .eq('id', userId)
@@ -54,7 +58,7 @@ export async function POST(request: NextRequest) {
 
     const newRole = action === 'promote' ? 'admin' : 'customer';
 
-    const { data: authUserData, error: authUserError } = await getSupabaseAdmin().auth.admin.getUserById(userId);
+    const { data: authUserData, error: authUserError } = await supabase.auth.admin.getUserById(userId);
     if (authUserError) {
       logger.error('admin_role_change_auth_user_fetch_failed', {
         userId,
@@ -64,7 +68,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 2) Update profile role
-    const { error: updateError } = await getSupabaseAdmin()
+    const { error: updateError } = await supabase
       .from('profiles')
       .update({ 
         role: newRole,
@@ -77,7 +81,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Log the role alteration to security audit log
-    await getSupabaseAdmin()
+    await supabase
       .from('security_audit_log')
       .insert({
         event_type: 'role_alteration',
@@ -92,7 +96,7 @@ export async function POST(request: NextRequest) {
       });
     
     // 3) Keep server-controlled auth app metadata in sync.
-    const { error: authUpdateError } = await getSupabaseAdmin().auth.admin.updateUserById(userId, {
+    const { error: authUpdateError } = await supabase.auth.admin.updateUserById(userId, {
       app_metadata: {
         ...(authUserData.user?.app_metadata ?? {}),
         role: newRole,
@@ -100,7 +104,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (authUpdateError) {
-      await getSupabaseAdmin()
+      await supabase
         .from('profiles')
         .update({
           role: profile.role,
@@ -132,6 +136,10 @@ export async function POST(request: NextRequest) {
     });
   } catch (e) {
     const msg = e instanceof Error ? e.message : 'Unknown error';
+    if (msg.startsWith('[supabase]')) {
+      logger.error('admin_manage_role.supabase_config_missing', { error: msg });
+      return NextResponse.json({ error: 'Service configuration error. Please contact support.' }, { status: 503 });
+    }
     return NextResponse.json({ error: msg }, { status: 500 });
   }
 }

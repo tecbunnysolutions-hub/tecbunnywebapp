@@ -3,10 +3,8 @@ import { createClient } from '@supabase/supabase-js';
 
 import { logger } from '@/lib/logger';
 import { sendWelcomeNotification } from '@/lib/whatsapp-service';
+import { requireSupabasePublicEnv, requireSupabaseServiceEnv } from '@/lib/supabase/env';
 
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.local';
-const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY || 'placeholder-service-role-key';
-const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || 'placeholder-anon-key';
 const PASSWORD_POLICY_MESSAGE = 'Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number and one special character';
 
 function isStrongPassword(value: unknown): value is string {
@@ -14,21 +12,42 @@ function isStrongPassword(value: unknown): value is string {
   return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(value);
 }
 
-// Use admin client for user operations
-const supabaseAdmin = createClient(
-  SUPABASE_URL,
-  SUPABASE_SERVICE_ROLE_KEY,
-  {
+let supabaseAdmin: any = null;
+
+function getSupabaseAdmin(): any {
+  if (!supabaseAdmin) {
+    const { url, serviceKey } = requireSupabaseServiceEnv();
+    supabaseAdmin = createClient(url, serviceKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      }
+    });
+  }
+
+  return supabaseAdmin;
+}
+
+function getSupabasePublicClient() {
+  const { url, publicKey } = requireSupabasePublicEnv();
+  return createClient(
+    url,
+    publicKey,
+    {
     auth: {
       autoRefreshToken: false,
       persistSession: false
     }
-  }
-);
+    }
+  );
+}
 
 export async function POST(request: NextRequest) {
   try {
-    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !(process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY)) {
+    let supabaseAdminClient: any;
+    try {
+      supabaseAdminClient = getSupabaseAdmin();
+    } catch (configError) {
       logger.error('complete_signup.configuration_missing');
       return NextResponse.json(
         { error: 'Service configuration error. Please contact support.' },
@@ -69,7 +88,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Query OTP verification database record to establish session legitimacy
-    const { data: otpRecord, error: otpError } = await supabaseAdmin
+    const { data: otpRecord, error: otpError } = await supabaseAdminClient
       .from('otp_verifications')
       .select('*')
       .eq('id', otpId)
@@ -123,7 +142,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Atomically consume the verified OTP record to prevent concurrent replay.
-    const { data: consumedOtpRecord, error: consumeOtpError } = await supabaseAdmin
+    const { data: consumedOtpRecord, error: consumeOtpError } = await supabaseAdminClient
       .from('otp_verifications')
       .delete()
       .eq('id', otpId)
@@ -154,7 +173,7 @@ export async function POST(request: NextRequest) {
     if (normalizedMobile) orFilters.push(`mobile.eq.${normalizedMobile}`);
 
     if (orFilters.length > 0) {
-      const { data: existingProfiles } = await supabaseAdmin
+      const { data: existingProfiles } = await supabaseAdminClient
         .from('profiles')
         .select('id')
         .or(orFilters.join(','))
@@ -183,7 +202,7 @@ export async function POST(request: NextRequest) {
       }
     };
 
-    const { data: userData, error: createError } = await supabaseAdmin.auth.admin.createUser(userPayload);
+    const { data: userData, error: createError } = await supabaseAdminClient.auth.admin.createUser(userPayload);
 
     if (createError) {
       logger.error('complete_signup.create_user_failed', { error: createError, email });
@@ -226,7 +245,7 @@ export async function POST(request: NextRequest) {
         profilePayload.phone = normalizedMobile;
       }
 
-      const { error: profileError } = await supabaseAdmin
+      const { error: profileError } = await supabaseAdminClient
         .from('profiles')
         .upsert(profilePayload, { onConflict: 'id' });
 
@@ -242,18 +261,16 @@ export async function POST(request: NextRequest) {
     }
 
     // Create session for immediate login
-    if (!(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY)) {
+    let regularSupabase: any;
+    try {
+      regularSupabase = getSupabasePublicClient();
+    } catch (configError) {
       logger.error('complete_signup.anon_key_missing');
       return NextResponse.json({
         message: 'Account created successfully! Please contact support to complete sign-in.',
         requiresSignIn: true
       }, { status: 503 });
     }
-
-    const regularSupabase = createClient(
-      SUPABASE_URL,
-      SUPABASE_ANON_KEY
-    );
 
     const signInPayload: Record<string, string> = { password };
     if (email) {

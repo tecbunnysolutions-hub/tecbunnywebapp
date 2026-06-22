@@ -1,20 +1,34 @@
 import { createClient } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
+import { requireSupabaseServiceEnv } from '@/lib/supabase/env';
+import { verifyQuoteActionToken } from '@/lib/quotes/action-token';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co',
-  process.env.SUPABASE_SERVICE_ROLE_KEY || 'placeholder-key'
-);
+let supabaseAdmin: any = null;
+
+function getSupabaseAdmin(): any {
+  if (!supabaseAdmin) {
+    const { url, serviceKey } = requireSupabaseServiceEnv();
+    supabaseAdmin = createClient(url, serviceKey);
+  }
+
+  return supabaseAdmin;
+}
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
+    const supabase = getSupabaseAdmin();
+    const body = await req.json().catch(() => ({}));
 
     const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
     let realId = id;
     if (!isUuid) {
       const { data: q } = await supabase.from('quotes').select('id').eq('quote_number', id).single();
       if (q) realId = q.id;
+    }
+
+    if (!verifyQuoteActionToken(body.actionToken, realId, ['quote_customer'])) {
+      return NextResponse.json({ error: 'Secure quote action link is missing or expired' }, { status: 403 });
     }
 
     // Update quote status to 'rejected' (customer rejected counter-offer)

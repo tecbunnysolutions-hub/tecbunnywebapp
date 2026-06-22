@@ -5,12 +5,7 @@ import { OTPManager } from '@/lib/otp-manager';
 import { logger } from '@/lib/logger';
 import { apiError, apiSuccess } from '@/lib/errors';
 import { rateLimit } from '@/lib/rate-limit';
-
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co';
-const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY || 'service-role-placeholder';
-const isSupabaseConfigured = Boolean(
-  process.env.NEXT_PUBLIC_SUPABASE_URL && (process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY)
-);
+import { requireSupabaseServiceEnv } from '@/lib/supabase/env';
 
 const otpService = new OTPManager();
 const VERIFY_OTP_IP_LIMIT = { limit: 15, windowMs: 15 * 60 * 1000 };
@@ -23,8 +18,9 @@ function getClientIp(request: NextRequest) {
     || 'unknown';
 }
 
-function getSupabaseAdmin() {
-  return createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+function getSupabaseAdmin(): any {
+  const { url, serviceKey } = requireSupabaseServiceEnv();
+  return createClient(url, serviceKey, {
     auth: {
       autoRefreshToken: false,
       persistSession: false
@@ -41,15 +37,20 @@ export async function POST(request: NextRequest) {
       return apiError('RATE_LIMITED', { overrideMessage: 'Too many OTP verification attempts. Please try again later.', correlationId });
     }
 
-    if (!isSupabaseConfigured) {
-      logger.error('verify_otp.supabase_config_missing', { correlationId });
+    let supabaseAdmin: ReturnType<typeof getSupabaseAdmin>;
+    try {
+      supabaseAdmin = getSupabaseAdmin();
+    } catch (configError) {
+      logger.error('verify_otp.supabase_config_missing', {
+        correlationId,
+        error: configError instanceof Error ? configError.message : configError,
+      });
       return apiError('SERVER_ERROR', {
         overrideMessage: 'Supabase configuration missing. Please contact support.',
         correlationId
       });
     }
 
-    const supabaseAdmin = getSupabaseAdmin();
     let body: any;
     try {
       body = await request.json();

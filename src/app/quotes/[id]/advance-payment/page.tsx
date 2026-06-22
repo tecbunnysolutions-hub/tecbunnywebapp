@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -14,7 +14,9 @@ import { format } from 'date-fns';
 export default function AdvancePaymentPage() {
   const params = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const quoteId = params.id as string;
+  const actionToken = searchParams.get('token') || '';
   const { toast } = useToast();
   
   const [advancePayment, setAdvancePayment] = useState<any>(null);
@@ -31,7 +33,7 @@ export default function AdvancePaymentPage() {
     
     Promise.all([
       fetch(`/api/quotes/${quoteId}`).then(r => r.ok ? r.json() : Promise.reject('Quote not found')),
-      fetch(`/api/admin/quotes/advance-payment?quote_id=${quoteId}`).then(r => r.ok ? r.json() : { data: null })
+      fetch(`/api/admin/quotes/advance-payment?quote_id=${quoteId}&token=${encodeURIComponent(actionToken)}`).then(r => r.ok ? r.json() : { data: null })
     ])
       .then(([quoteData, advanceData]) => {
         setQuote(quoteData);
@@ -49,7 +51,7 @@ export default function AdvancePaymentPage() {
         });
         setLoading(false);
       });
-  }, [quoteId, toast]);
+  }, [quoteId, actionToken, toast]);
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -97,6 +99,7 @@ export default function AdvancePaymentPage() {
         formData.append('file', quotationFile);
         formData.append('quote_id', quoteId);
         formData.append('type', 'final_quotation');
+        formData.append('action_token', actionToken);
 
         const uploadRes = await fetch('/api/uploads/quote-documents', {
           method: 'POST',
@@ -121,6 +124,7 @@ export default function AdvancePaymentPage() {
           final_quotation_url: quotationUrl,
           customer_notes: customerNotes,
           agree_to_terms: true,
+          actionToken,
         }),
       });
 
@@ -142,6 +146,7 @@ export default function AdvancePaymentPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           advance_payment_id: advancePayment.id,
+          actionToken,
         }),
       });
 

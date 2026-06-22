@@ -2,14 +2,23 @@ import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
 import { logger } from '@/lib/logger';
 import crypto from 'crypto';
+import { requireSupabaseServiceEnv } from '@/lib/supabase/env';
+import { verifyQuoteActionToken } from '@/lib/quotes/action-token';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co',
-  process.env.SUPABASE_SERVICE_ROLE_KEY || 'placeholder-key'
-);
+let supabaseAdmin: any = null;
+
+function getSupabaseAdmin(): any {
+  if (!supabaseAdmin) {
+    const { url, serviceKey } = requireSupabaseServiceEnv();
+    supabaseAdmin = createClient(url, serviceKey);
+  }
+
+  return supabaseAdmin;
+}
 
 interface PaymentLinkPayload {
   advance_payment_id: string;
+  actionToken?: string;
 }
 
 function generatePayUHash(params: Record<string, string | number>): string {
@@ -22,16 +31,32 @@ function generatePayUHash(params: Record<string, string | number>): string {
   return crypto.createHash('sha512').update(hashString).digest('hex');
 }
 
-export async function POST(req: Request) {
+export async function POST(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
+    const { id } = await params;
+    const supabase = getSupabaseAdmin();
     const payload: PaymentLinkPayload = await req.json();
-    const { advance_payment_id } = payload;
+    const { advance_payment_id, actionToken } = payload;
 
     if (!advance_payment_id) {
       return NextResponse.json(
         { success: false, error: 'advance_payment_id required' },
         { status: 400 }
       );
+    }
+
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+    let routeQuoteId = id;
+    if (!isUuid) {
+      const { data: quoteByNumber } = await supabase
+        .from('quotes')
+        .select('id')
+        .eq('quote_number', id)
+        .maybeSingle();
+      routeQuoteId = quoteByNumber?.id || id;
     }
 
     // Fetch advance payment request
@@ -45,6 +70,20 @@ export async function POST(req: Request) {
       return NextResponse.json(
         { success: false, error: 'Advance payment request not found' },
         { status: 404 }
+      );
+    }
+
+    if (advancePayment.quote_id !== routeQuoteId) {
+      return NextResponse.json(
+        { success: false, error: 'Advance payment request does not match quote' },
+        { status: 403 }
+      );
+    }
+
+    if (!verifyQuoteActionToken(actionToken, advancePayment.quote_id, ['advance_payment'])) {
+      return NextResponse.json(
+        { success: false, error: 'Secure payment action link is missing or expired' },
+        { status: 403 }
       );
     }
 

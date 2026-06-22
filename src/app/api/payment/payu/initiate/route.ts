@@ -9,15 +9,19 @@ import { createClient as createServerClient } from '@/lib/supabase/server';
 import { apiError, apiSuccess } from '@/lib/errors';
 import { logger } from '@/lib/logger';
 import { resolveSiteUrl } from '@/lib/site-url';
+import { requireSupabaseServiceEnv } from '@/lib/supabase/env';
 import { generatePayuHash, getPayuPaymentUrl, normalisePayuEnvironment, type PayuConfig, type PayuRequestPayload, type PayuEnvironment } from '@/lib/payu-service';
 
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.local';
-const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || 'placeholder-service-role-key';
+let supabaseAdmin: any = null;
 
-const supabase = createClient(
-  SUPABASE_URL,
-  SUPABASE_SERVICE_ROLE_KEY
-);
+function getSupabaseAdmin(): any {
+  if (!supabaseAdmin) {
+    const { url, serviceKey } = requireSupabaseServiceEnv();
+    supabaseAdmin = createClient(url, serviceKey);
+  }
+
+  return supabaseAdmin;
+}
 
 const LIMIT = 5;
 const WINDOW_MS = 60 * 1000;
@@ -51,12 +55,7 @@ export async function POST(request: NextRequest) {
   const correlationId = request.headers.get('x-correlation-id') || crypto.randomUUID();
 
   try {
-    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
-      return apiError('SERVICE_UNAVAILABLE', {
-        correlationId,
-        overrideMessage: 'Service configuration error. Please contact support.',
-      });
-    }
+    const supabase = getSupabaseAdmin();
 
     const { orderId } = await request.json().catch(() => ({}));
 
@@ -107,10 +106,10 @@ export async function POST(request: NextRequest) {
         .select('key, value')
         .in('key', ['payu_merchant_key', 'payu_merchant_salt', 'payu_environment', 'payu_enabled']);
       if (dbSettings) {
-        dbMerchantKey = dbSettings.find(s => s.key === 'payu_merchant_key')?.value || '';
-        dbMerchantSalt = dbSettings.find(s => s.key === 'payu_merchant_salt')?.value || '';
-        dbEnvironment = dbSettings.find(s => s.key === 'payu_environment')?.value || '';
-        dbEnabled = dbSettings.find(s => s.key === 'payu_enabled')?.value || 'true';
+        dbMerchantKey = dbSettings.find((s: any) => s.key === 'payu_merchant_key')?.value || '';
+        dbMerchantSalt = dbSettings.find((s: any) => s.key === 'payu_merchant_salt')?.value || '';
+        dbEnvironment = dbSettings.find((s: any) => s.key === 'payu_environment')?.value || '';
+        dbEnabled = dbSettings.find((s: any) => s.key === 'payu_enabled')?.value || 'true';
       }
     } catch (err) {
       logger.error('Failed to load PayU settings from DB', { error: err, correlationId });

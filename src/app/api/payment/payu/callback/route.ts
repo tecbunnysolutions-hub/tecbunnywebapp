@@ -6,15 +6,19 @@ import { createClient } from '@supabase/supabase-js';
 import { apiError } from '@/lib/errors';
 import { logger } from '@/lib/logger';
 import { resolveSiteUrl } from '@/lib/site-url';
+import { requireSupabaseServiceEnv } from '@/lib/supabase/env';
 import { normalisePayuEnvironment, verifyPayuHash, type PayuConfig, type PayuEnvironment } from '@/lib/payu-service';
 
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.local';
-const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || 'placeholder-service-role-key';
+let supabaseAdmin: any = null;
 
-const supabase = createClient(
-  SUPABASE_URL,
-  SUPABASE_SERVICE_ROLE_KEY
-);
+function getSupabaseAdmin(): any {
+  if (!supabaseAdmin) {
+    const { url, serviceKey } = requireSupabaseServiceEnv();
+    supabaseAdmin = createClient(url, serviceKey);
+  }
+
+  return supabaseAdmin;
+}
 
 // Simple in-memory cache for settings to reduce DB load on high-frequency callbacks
 const SETTINGS_CACHE: Record<string, { value: string, expiry: number }> = {};
@@ -53,12 +57,7 @@ export async function POST(request: NextRequest) {
   const siteUrl = resolveSiteUrl(request.headers.get('host') || undefined);
 
   try {
-    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
-      return apiError('SERVICE_UNAVAILABLE', {
-        correlationId,
-        overrideMessage: 'Service configuration error. Please contact support.',
-      });
-    }
+    const supabase = getSupabaseAdmin();
 
     const formData = await request.formData();
     const payload: Record<string, string> = {};
@@ -85,10 +84,10 @@ export async function POST(request: NextRequest) {
           .select('key, value')
           .in('key', ['payu_merchant_key', 'payu_merchant_salt', 'payu_environment', 'payu_enabled']);
         if (dbSettings) {
-          const k = dbSettings.find(s => s.key === 'payu_merchant_key')?.value || '';
-          const s = dbSettings.find(s => s.key === 'payu_merchant_salt')?.value || '';
-          const e = dbSettings.find(s => s.key === 'payu_environment')?.value || '';
-          const en = dbSettings.find(s => s.key === 'payu_enabled')?.value || 'true';
+          const k = dbSettings.find((s: any) => s.key === 'payu_merchant_key')?.value || '';
+          const s = dbSettings.find((s: any) => s.key === 'payu_merchant_salt')?.value || '';
+          const e = dbSettings.find((s: any) => s.key === 'payu_environment')?.value || '';
+          const en = dbSettings.find((s: any) => s.key === 'payu_enabled')?.value || 'true';
           
           if (k) setCachedSetting('payu_merchant_key', k);
           if (s) setCachedSetting('payu_merchant_salt', s);
@@ -291,7 +290,7 @@ export async function POST(request: NextRequest) {
         }
 
         // High-Velocity Recovery Logic
-        await triggerPaymentRecovery(orderId, payload, new URL(siteUrl));
+        await triggerPaymentRecovery(supabase, orderId, payload, new URL(siteUrl));
       }
     }
 
@@ -338,7 +337,7 @@ export async function POST(request: NextRequest) {
 /**
  * Initiates high-velocity payment recovery record and dispatch
  */
-async function triggerPaymentRecovery(orderId: string, payload: any, siteUrl: URL) {
+async function triggerPaymentRecovery(supabase: any, orderId: string, payload: any, siteUrl: URL) {
   try {
     const { data: order } = await supabase
       .from('orders')

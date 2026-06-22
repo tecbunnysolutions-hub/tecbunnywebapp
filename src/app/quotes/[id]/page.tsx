@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useSearchParams } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -20,7 +20,9 @@ import {
 
 export default function QuoteDetailPage() {
   const params = useParams();
+  const searchParams = useSearchParams();
   const quoteId = params.id as string;
+  const actionToken = searchParams.get('token') || '';
   const { toast } = useToast();
   const { user, supabase } = useAuth();
   
@@ -86,7 +88,8 @@ export default function QuoteDetailPage() {
     try {
       const res = await fetch(`/api/quotes/${quoteId}/accept-counter`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ actionToken })
       });
 
       if (!res.ok) throw new Error('Failed to accept');
@@ -201,7 +204,8 @@ export default function QuoteDetailPage() {
       // Automatically accept the counter-offer now that they are logged in
       const acceptRes = await fetch(`/api/quotes/${quoteId}/accept-counter`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ actionToken })
       });
       if (!acceptRes.ok) throw new Error('Failed to confirm quote acceptance');
 
@@ -225,7 +229,8 @@ export default function QuoteDetailPage() {
     try {
       const res = await fetch(`/api/quotes/${quoteId}/reject-counter`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ actionToken })
       });
 
       if (!res.ok) throw new Error('Failed to reject');
@@ -277,6 +282,7 @@ export default function QuoteDetailPage() {
   const counterPrice = quote.counter_price;
   const savings = originalPrice - (counterPrice || bidPrice || originalPrice);
   const savingsPercent = originalPrice > 0 ? ((savings / originalPrice) * 100).toFixed(1) : 0;
+  const hasSecureActionToken = Boolean(actionToken);
 
   return (
     <div className="min-h-screen bg-background p-4">
@@ -392,10 +398,16 @@ export default function QuoteDetailPage() {
                 </div>
               )}
 
+              {!hasSecureActionToken && (
+                <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-sm text-amber-700 dark:text-amber-200">
+                  This quote can be viewed here, but accepting or declining requires the secure customer action link sent by Tecbunny.
+                </div>
+              )}
+
               <div className="flex gap-3">
                 <Button 
                   onClick={handleRejectCounter}
-                  disabled={responding}
+                  disabled={responding || !hasSecureActionToken}
                   variant="outline"
                   className="flex-1 border-border text-foreground hover:bg-muted"
                 >
@@ -404,7 +416,7 @@ export default function QuoteDetailPage() {
                 </Button>
                 <Button 
                   onClick={handleAcceptCounter}
-                  disabled={responding}
+                  disabled={responding || !hasSecureActionToken}
                   className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground"
                 >
                   {responding ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Check className="h-4 w-4 mr-2" />}
