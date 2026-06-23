@@ -914,6 +914,23 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
     router.push('/checkout');
   };
 
+  const handleBookSiteInspection = () => {
+    if (quoteDownloading) return;
+    const systemLabel = system === 'analog' ? 'Analog DVR' : 'IP NVR';
+    
+    addToCart({
+      id: `service-cctv-inspection-${Math.random().toString(36).substring(2,9)}`,
+      name: `Site Inspection: Custom CCTV Setup (${cameraCount} Cameras)`,
+      price: 999,
+      mrp: 999,
+      image: 'https://fbcsagupcxheyiusjfak.supabase.co/storage/v1/object/public/TecBunny%20Solution/cctv-bundle.jpg',
+      product_type: 'service',
+      description: `Site Inspection before confirming order. Rs. 999/- will be adjusted on the final bill if the order is confirmed. If canceled (e.g., due to pricing mismatch), this amount is treated as the visiting charge and will not be refunded. Please ensure you have finalized the quote before booking.`
+    }, 1);
+    
+    router.push('/checkout');
+  };
+
   const handleSubmitBid = async (): Promise<void> => {
     if (!bidForm.name || !bidForm.phone || !bidForm.price) {
       toast({ variant: 'destructive', title: 'Missing fields', description: 'Name, phone, and bid price are required.' });
@@ -1574,7 +1591,7 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
             <p className={cn("text-sm mb-4 max-w-lg", isTech ? "text-emerald-100/70" : "text-emerald-50")}>{activeOffer.description}</p>
             <div className="inline-flex items-center bg-black/20 rounded-full px-4 py-1.5 text-sm font-semibold backdrop-blur-sm border border-white/10">
               <span className="animate-pulse mr-2 w-2 h-2 rounded-full bg-red-400"></span>
-              Offer Expires: {new Date(activeOffer.endDate).toLocaleDateString()}
+              Offer Expires in {Math.max(0, Math.ceil((new Date(activeOffer.endDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)))} days
             </div>
           </div>
         </div>
@@ -1589,7 +1606,10 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
           <div className="space-y-2">
             <p className={cn('flex items-center justify-between text-sm font-bold', isTech ? 'text-slate-200' : 'text-foreground')}>
               <span>1. {system === 'analog' ? 'Analog' : 'IP'} {cameraCount} Channel Complete Setup</span>
-              <span>{formatCurrency(totals.system.sale)} sale</span>
+              <span className="flex flex-col items-end sm:flex-row sm:items-center gap-1 sm:gap-3">
+                <span className="text-xs text-muted-foreground line-through decoration-red-500/50">MRP: {formatCurrency(totals.system.mrp)}</span>
+                <span className="text-emerald-600 dark:text-emerald-400">Sale: {formatCurrency(totals.system.sale)}</span>
+              </span>
             </p>
             <ul className={cn('space-y-1 text-sm pl-4 leading-relaxed', isTech ? 'text-slate-400' : 'text-muted-foreground')}>
               {totals.system.breakdown.map((line) => (
@@ -1601,12 +1621,18 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
           <div className={cn('grid gap-3 text-sm font-bold', isTech ? 'text-slate-300' : 'text-foreground')}>
             <div className="flex items-center justify-between">
               <span>2. {totals.hdd.label}</span>
-              <span>{formatCurrency(totals.hdd.sale)} sale</span>
+              <span className="flex flex-col items-end sm:flex-row sm:items-center gap-1 sm:gap-3">
+                <span className="text-xs text-muted-foreground line-through decoration-red-500/50">MRP: {formatCurrency(totals.hdd.mrp)}</span>
+                <span className="text-emerald-600 dark:text-emerald-400">Sale: {formatCurrency(totals.hdd.sale)}</span>
+              </span>
             </div>
             <div className="flex items-center justify-between">
               <span>3. Monitor ({totals.monitor.included ? totals.monitor.label : 'Not included'})</span>
               {totals.monitor.included ? (
-                <span>{formatCurrency(totals.monitor.sale)} sale</span>
+                <span className="flex flex-col items-end sm:flex-row sm:items-center gap-1 sm:gap-3">
+                  <span className="text-xs text-muted-foreground line-through decoration-red-500/50">MRP: {formatCurrency(totals.monitor.mrp)}</span>
+                  <span className="text-emerald-600 dark:text-emerald-400">Sale: {formatCurrency(totals.monitor.sale)}</span>
+                </span>
               ) : (
                 <Badge variant="outline" className={isTech ? 'border-white/20 text-slate-300' : undefined}>Not included</Badge>
               )}
@@ -1614,15 +1640,19 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
             {(totals.wallMount.included || totals.spikeGuard.included || totals.rack.selected || totals.conduit.selected) && (
               <div className="flex items-center justify-between">
                 <span>4. Accessories & Hardware</span>
-                <span>
-                  {formatCurrency(totals.wallMount.sale + totals.spikeGuard.sale + totals.rack.sale + totals.conduit.sale)} sale
+                <span className="flex flex-col items-end sm:flex-row sm:items-center gap-1 sm:gap-3">
+                  <span className="text-xs text-muted-foreground line-through decoration-red-500/50">MRP: {formatCurrency(totals.wallMount.mrp + totals.spikeGuard.mrp + totals.rack.mrp + totals.conduit.mrp)}</span>
+                  <span className="text-emerald-600 dark:text-emerald-400">Sale: {formatCurrency(totals.wallMount.sale + totals.spikeGuard.sale + totals.rack.sale + totals.conduit.sale)}</span>
                 </span>
               </div>
             )}
             <div className="flex items-center justify-between">
               <span>5. Installation & Cable Setup</span>
               {totals.installation.included ? (
-                <span>{formatCurrency(totals.installation.sale)} sale</span>
+                <span className="flex flex-col items-end sm:flex-row sm:items-center gap-1 sm:gap-3">
+                  <span className="text-xs text-muted-foreground line-through decoration-red-500/50">MRP: {formatCurrency(totals.installation.mrp)}</span>
+                  <span className="text-emerald-600 dark:text-emerald-400">Sale: {formatCurrency(totals.installation.sale)}</span>
+                </span>
               ) : (
                 <Badge variant="outline" className={isTech ? 'border-white/20 text-slate-300' : undefined}>Not included</Badge>
               )}
@@ -1931,6 +1961,17 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
                   >
                     Negotiate Price
                   </Button>
+                  <Button 
+                    onClick={handleBookSiteInspection} 
+                    variant="secondary"
+                    className="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold uppercase tracking-wider border border-slate-600"
+                  >
+                    Book Site Inspection (₹999)
+                  </Button>
+                  <div className="text-[10px] text-muted-foreground text-center mt-1 leading-tight space-y-1">
+                    <p className="font-semibold text-amber-500/80">⚠️ Ensure to generate quote and negotiate before booking site visit.</p>
+                    <p>* ₹999/- will be adjusted on your bill if order is confirmed. The ₹999 is treated as the Visiting Charge; cancellation due to high prices will NOT be refunded.</p>
+                  </div>
                 </div>
               </div>
             </div>

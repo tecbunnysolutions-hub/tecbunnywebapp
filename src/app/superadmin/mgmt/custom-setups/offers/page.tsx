@@ -1,5 +1,5 @@
 import { Metadata } from 'next';
-import CustomSetupOffersManager from '@/components/admin/CustomSetupOffersManager';
+import CustomSetupOffersManager from '@/components/superadmin/CustomSetupOffersManager';
 
 export const metadata: Metadata = {
   title: 'Custom Setup Offers | Superadmin',

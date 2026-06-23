@@ -87,6 +87,14 @@ function buildLegacySummary(rows: LegacyInventoryRow[]): CustomSetupBlueprintSum
     buildLegacyComponent(rows, 'ip_poe', 'poe-switch', 'PoE Switch', null),
     buildLegacyComponent(rows, 'ip_cable', 'cat6-cable', 'LAN Cable', 'total_cable_length_m'),
   ].filter((component) => component.optionCount > 0);
+  const accessoriesComponents = [
+    buildLegacyComponent(rows, 'hdd', 'hdd-storage', 'Hard Drive Storage', null),
+    buildLegacyComponent(rows, 'monitor', 'monitor-display', 'Display Monitor', null),
+    buildLegacyComponent(rows, 'rack', 'network-rack', 'Network Rack', null),
+    buildLegacyComponent(rows, 'conduit', 'conduit-pipe', 'Conduit Pipe', null),
+    buildLegacyComponent(rows, 'accessory', 'hardware-accessories', 'General Accessories', null),
+    buildLegacyComponent(rows, 'installation', 'installation-fee', 'Installation Charges', null),
+  ].filter((component) => component.optionCount > 0);
 
   return {
     id: 'legacy-cctv-camera-full-setup',
@@ -146,6 +154,17 @@ function buildLegacySummary(rows: LegacyInventoryRow[]): CustomSetupBlueprintSum
         pricingFormula: null,
         metadata: null,
         components: ipComponents,
+      },
+      {
+        id: 'legacy-accessories-system',
+        slug: 'accessories-hardware',
+        name: 'Accessories & Upgrades',
+        description: null,
+        isDefault: false,
+        baseFee: null,
+        pricingFormula: null,
+        metadata: null,
+        components: accessoriesComponents,
       },
     ].filter((system) => system.components.length > 0),
   };
