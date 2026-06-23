@@ -1,5 +1,3 @@
-import DOMPurify from 'dompurify';
-
 const ALLOWED_TAGS = new Set([
   'a', 'b', 'strong', 'i', 'em', 'u', 'ul', 'ol', 'li', 'p', 'br',
   'span', 'div', 'section', 'article', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
@@ -7,6 +5,22 @@ const ALLOWED_TAGS = new Set([
 ]);
 
 const ALLOWED_ATTR = new Set(['class', 'title', 'href', 'target', 'rel']);
+
+function decodeAttributeValue(value: string): string {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
+  }
+}
+
+function escapeAttributeValue(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
 
 function serverSanitize(html: string): string {
   // 1. Remove comments
@@ -53,7 +67,7 @@ function serverSanitize(html: string): string {
 
       // Sanitize URL attributes (like href) to prevent javascript: or data: protocols
       if (attrName === 'href') {
-        const decodedValue = decodeURIComponent(attrValue).replace(/\s+/g, '').toLowerCase();
+        const decodedValue = decodeAttributeValue(attrValue).replace(/\s+/g, '').toLowerCase();
         if (
           decodedValue.startsWith('javascript:') ||
           decodedValue.startsWith('data:') ||
@@ -63,7 +77,7 @@ function serverSanitize(html: string): string {
         }
       }
 
-      resolvedAttrs.push(`${attrName}="${attrValue.replace(/"/g, '&quot;')}"`);
+      resolvedAttrs.push(`${attrName}="${escapeAttributeValue(attrValue)}"`);
     }
 
     // Special logic for target="_blank" adding rel="noopener noreferrer"
@@ -81,23 +95,7 @@ function serverSanitize(html: string): string {
 export function sanitizeHtml(input: string): string {
   if (typeof input !== 'string' || !input.trim()) return '';
 
-  if (typeof window === 'undefined') {
-    return serverSanitize(input);
-  }
-
-  const purify = typeof DOMPurify.sanitize === 'function' 
-    ? DOMPurify 
-    : (DOMPurify as any).default || DOMPurify;
-
-  if (typeof purify.sanitize !== 'function') {
-    return serverSanitize(input);
-  }
-
-  return purify.sanitize(input, {
-    ALLOWED_TAGS: Array.from(ALLOWED_TAGS),
-    ALLOWED_ATTR: Array.from(ALLOWED_ATTR),
-    ADD_ATTR: ['target'],
-  });
+  return serverSanitize(input);
 }
 
 export default sanitizeHtml;

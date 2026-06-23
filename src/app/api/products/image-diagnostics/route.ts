@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { createClient } from '@/lib/supabase/server';
 import { isValidImageUrl } from '@/lib/image-utils';
 import { logger } from '@/lib/logger';
+import { AdminAuthError, requireAdminContext } from '@/lib/auth/admin-guard';
 
 /**
  * Diagnostic endpoint to check product image status
@@ -10,7 +10,7 @@ import { logger } from '@/lib/logger';
  */
 export async function GET(_request: NextRequest) {
   try {
-    const supabase = await createClient();
+    const { serviceSupabase: supabase } = await requireAdminContext();
     
     // Fetch products with image fields
     const { data: products, error } = await supabase
@@ -114,6 +114,9 @@ export async function GET(_request: NextRequest) {
     });
 
   } catch (error: any) {
+    if (error instanceof AdminAuthError) {
+      return NextResponse.json({ error: error.message }, { status: error.status });
+    }
     logger.error('image_diagnostics_error', { error: error?.message });
     return NextResponse.json(
       { error: 'Diagnostic check failed', details: error?.message },

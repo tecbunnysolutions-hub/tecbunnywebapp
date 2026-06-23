@@ -130,15 +130,35 @@ export async function middleware(request: NextRequest) {
     ];
 
     let isPublicApiRoute = publicApiRoutes.some(route =>
-      checkPathPrefix(pathname, route.path) &&
+      (pathname.toLowerCase() === route.path.toLowerCase()) &&
       (!route.methods || route.methods.includes(request.method))
     );
 
     const quoteUuidRegex = /^\/api\/quotes\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})(\/(accept-counter|reject-counter|advance-payment\/confirm|advance-payment\/generate-link))?$/i;
     const isPublicQuoteRoute = quoteUuidRegex.test(pathname);
     const isPublicAdminAdvancePayment = pathname === '/api/admin/quotes/advance-payment' && request.method === 'GET';
+    const productSubroute = pathname.match(/^\/api\/products\/([^/]+)$/i)?.[1]?.toLowerCase();
+    const protectedProductSubroutes = new Set([
+      'bulk-edit',
+      'cleanup',
+      'cleanup-images',
+      'export',
+      'fix-images',
+      'image-diagnostics',
+      'import',
+      'manual-import',
+      'simple-import',
+      'template',
+    ]);
+    const isPublicProductDetailRoute =
+      request.method === 'GET' &&
+      typeof productSubroute === 'string' &&
+      !protectedProductSubroutes.has(productSubroute);
+    const isPublicProductRecommendationRoute =
+      request.method === 'GET' &&
+      pathname.toLowerCase() === '/api/products/recommendations';
 
-    if (isPublicQuoteRoute || isPublicAdminAdvancePayment) {
+    if (isPublicQuoteRoute || isPublicAdminAdvancePayment || isPublicProductDetailRoute || isPublicProductRecommendationRoute) {
       isPublicApiRoute = true;
     }
 

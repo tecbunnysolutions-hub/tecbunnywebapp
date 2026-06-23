@@ -4,8 +4,8 @@ import { z } from 'zod';
 import { createServiceClient, createClient as createServerClient, isSupabaseServiceConfigured } from '@/lib/supabase/server';
 import { rateLimit } from '@/lib/rate-limit';
 import { logger } from '@/lib/logger';
-import { isAdmin, isSuperadminSession } from '@/lib/permissions';
 import { verifySuperadminSessionToken } from '@/lib/auth/superadmin-session';
+import { AdminAuthError, requireAdminContext } from '@/lib/auth/admin-guard';
 import type { ContactMessage, ContactMessageStatus } from '@/lib/types';
 
 const CONTACT_RATE_LIMIT = {
@@ -35,6 +35,13 @@ const statusFilterSchema = z.object({
     .pipe(z.number().min(1).max(200))
     .optional(),
 });
+
+function isMissingRelationError(error: unknown) {
+  const candidate = error as { code?: string; message?: string } | null | undefined;
+  return candidate?.code === '42P01' ||
+    candidate?.code === 'PGRST205' ||
+    candidate?.message?.toLowerCase().includes('contact_messages') === true;
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -92,19 +99,7 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    const supabase = await createServerClient();
-    const { data: auth } = await supabase.auth.getUser();
-
-    const isSuperadmin = await isSuperadminSession();
-
-    if (!auth?.user && !isSuperadmin) {
-      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
-    }
-
-    const isUserAdmin = auth.user ? await isAdmin(auth.user) : false;
-    if (!isSuperadmin && !isUserAdmin) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-    }
+    const { serviceSupabase } = await requireAdminContext();
 
     const url = new URL(request.url);
     const params = Object.fromEntries(url.searchParams.entries());
@@ -114,7 +109,6 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid query parameters' }, { status: 400 });
     }
 
-    const serviceSupabase = isSupabaseServiceConfigured ? createServiceClient() : supabase;
     let query = serviceSupabase
       .from('contact_messages')
       .select('*')
@@ -133,12 +127,19 @@ export async function GET(request: NextRequest) {
     const { data, error } = await query;
 
     if (error) {
+      if (isMissingRelationError(error)) {
+        logger.warn('contact_message_table_missing');
+        return NextResponse.json({ data: [] });
+      }
       logger.error('contact_message_list_failed', { error: error.message });
       return NextResponse.json({ error: 'Failed to load messages' }, { status: 500 });
     }
 
     return NextResponse.json({ data: (data ?? []) as ContactMessage[] });
   } catch (error) {
+    if (error instanceof AdminAuthError) {
+      return NextResponse.json({ error: error.message }, { status: error.status });
+    }
     logger.error('contact_message_get_unexpected', {
       error: error instanceof Error ? error.message : String(error),
     });

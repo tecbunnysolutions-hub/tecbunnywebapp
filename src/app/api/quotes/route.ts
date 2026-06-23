@@ -25,6 +25,8 @@ async function sendEmailWithAttachment(to: string, subject: string, html: string
     port: parseInt(process.env.SMTP_PORT || '587'),
     secure: process.env.SMTP_SECURE === 'true',
     auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
+    disableFileAccess: true,
+    disableUrlAccess: true,
   });
 
   await transporter.sendMail({
@@ -39,6 +41,8 @@ async function sendEmailWithAttachment(to: string, subject: string, html: string
         contentType: 'application/pdf',
       },
     ],
+    disableFileAccess: true,
+    disableUrlAccess: true,
   });
   return { success: true };
 }

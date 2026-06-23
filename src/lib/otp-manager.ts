@@ -175,6 +175,8 @@ export class OTPManager {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASS,
       },
+      disableFileAccess: true,
+      disableUrlAccess: true,
     });
   }
 
@@ -212,7 +214,9 @@ export class OTPManager {
             <p style="color: #475569; font-size: 16px;">Your verification code is: <strong style="font-size: 24px; color: #4f46e5; letter-spacing: 2px;">${code}</strong></p>
             <p style="color: #94a3b8; font-size: 14px; margin-top: 24px;">This code is valid for 5 minutes. If you did not request this, please ignore this email.</p>
           </div>
-        `
+        `,
+        disableFileAccess: true,
+        disableUrlAccess: true,
       };
       const result = await this.emailTransporter.sendMail(mailOptions);
       if (!result.messageId) throw new Error('Email send failed');

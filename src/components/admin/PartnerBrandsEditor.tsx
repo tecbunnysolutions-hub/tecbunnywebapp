@@ -1,9 +1,10 @@
 'use client';
 
 import * as React from 'react';
-import { Trash, Plus } from 'lucide-react';
+import { Trash, Plus, Upload } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 
 export const parsePartnerBrands = (raw: string | undefined): Array<{ name: string; logoUrl: string }> => {
@@ -38,14 +39,9 @@ export const PartnerBrandsEditor = ({
   onChange: (newValue: string) => void;
 }) => {
   const brands = React.useMemo(() => parsePartnerBrands(value), [value]);
-  const [uploadingIndex, setUploadingIndex] = React.useState<number | null>(null);
+  const [newBrandName, setNewBrandName] = React.useState('');
+  const [isUploadingBrand, setIsUploadingBrand] = React.useState(false);
   const { toast } = useToast();
-
-  const handleNameChange = (index: number, name: string) => {
-    const updated = [...brands];
-    updated[index] = { ...updated[index], name };
-    onChange(JSON.stringify(updated));
-  };
 
   const uploadBrandFile = async (file: File): Promise<string> => {
     try {
@@ -89,85 +85,108 @@ export const PartnerBrandsEditor = ({
     }
   };
 
-  const handleFileChange = async (index: number, file: File) => {
-    setUploadingIndex(index);
-    try {
-      const url = await uploadBrandFile(file);
-      const updated = [...brands];
-      updated[index] = { ...updated[index], logoUrl: url };
-      onChange(JSON.stringify(updated));
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setUploadingIndex(null);
-    }
-  };
-
   const handleDelete = (index: number) => {
     const updated = brands.filter((_, i) => i !== index);
     onChange(JSON.stringify(updated));
   };
 
-  const handleAdd = () => {
-    const updated = [...brands, { name: '', logoUrl: '' }];
+  const handleAdd = async () => {
+    if (!newBrandName.trim()) return;
+
+    const fileInput = document.getElementById('new-brand-logo') as HTMLInputElement;
+    const file = fileInput?.files?.[0];
+    let logoUrl = '';
+    
+    if (file) {
+      setIsUploadingBrand(true);
+      try {
+        logoUrl = await uploadBrandFile(file);
+      } catch (e) {
+        setIsUploadingBrand(false);
+        return; // Stop if upload failed
+      }
+      setIsUploadingBrand(false);
+    }
+    
+    const updated = [...brands, { name: newBrandName.trim(), logoUrl }];
     onChange(JSON.stringify(updated));
+    setNewBrandName('');
+    if (fileInput) fileInput.value = '';
   };
 
   return (
-    <div className="space-y-4">
-      <div className="space-y-3">
-        {brands.map((brand: any, index: number) => (
-          <div key={index} className="flex flex-col md:flex-row items-start md:items-center gap-4 p-4 rounded-lg border bg-slate-900/50">
-            {/* Logo Preview and Upload */}
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded border bg-slate-950 flex items-center justify-center overflow-hidden shrink-0">
+    <div className="space-y-6 mt-4">
+      {/* Grid of existing brands */}
+      {brands.length > 0 ? (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+          {brands.map((brand, idx) => (
+            <div key={idx} className="relative group border border-border rounded-lg p-4 flex flex-col items-center justify-center gap-3 bg-zinc-50 dark:bg-zinc-900/50 hover:border-primary/50 transition-colors">
+              <Button 
+                type="button"
+                variant="destructive" 
+                size="icon" 
+                className="absolute -top-2 -right-2 h-6 w-6 rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"
+                onClick={() => handleDelete(idx)}
+              >
+                <Trash className="h-3 w-3" />
+              </Button>
+              <div className="h-12 w-full flex items-center justify-center">
                 {brand.logoUrl ? (
-                  <img src={brand.logoUrl} alt={brand.name || "Brand logo"} className="w-full h-full object-contain" />
+                  <img src={brand.logoUrl} alt={brand.name} className="max-h-full max-w-full object-contain" />
                 ) : (
-                  <span className="text-xs text-muted-foreground font-mono">No Logo</span>
+                  <div className="text-muted-foreground font-semibold text-xs uppercase tracking-wider">No Logo</div>
                 )}
               </div>
-              <div className="flex flex-col gap-1">
-                <Input
-                  type="file"
-                  accept="image/*"
-                  className="max-w-[200px] text-xs h-8 py-1 px-2"
-                  disabled={uploadingIndex !== null}
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) handleFileChange(index, file);
-                  }}
-                />
-                {uploadingIndex === index && <span className="text-[10px] text-amber-400 animate-pulse">Uploading...</span>}
-              </div>
+              <span className="text-xs font-semibold text-center truncate w-full text-foreground">{brand.name}</span>
             </div>
-
-            {/* Brand Name Input */}
-            <div className="flex-1 w-full">
-              <Input
-                placeholder="Brand Name (e.g. CP PLUS)"
-                value={brand.name}
-                onChange={(e) => handleNameChange(index, e.target.value)}
-              />
-            </div>
-
-            {/* Delete button */}
-            <Button
-              type="button"
-              variant="destructive"
-              size="icon"
-              className="h-9 w-9 shrink-0"
-              onClick={() => handleDelete(index)}
-            >
-              <Trash className="h-4 w-4" />
-            </Button>
+          ))}
+        </div>
+      ) : (
+        <div className="p-8 text-center border rounded-lg border-dashed text-sm text-muted-foreground bg-muted/20">
+          No partner brands configured.
+        </div>
+      )}
+      
+      {/* Add New Brand Section */}
+      <div className="rounded-lg border border-border bg-card p-4 space-y-4 shadow-sm">
+        <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
+          <Plus className="h-4 w-4 text-primary" /> Add New Brand
+        </h4>
+        <div className="flex flex-col sm:flex-row items-end gap-4">
+          <div className="space-y-2 flex-1 w-full">
+            <Label htmlFor="brand-name" className="text-xs font-medium text-muted-foreground">Brand Name</Label>
+            <Input 
+              id="brand-name" 
+              placeholder="e.g. DAHUA" 
+              value={newBrandName} 
+              onChange={e => setNewBrandName(e.target.value)} 
+              className="bg-background"
+            />
           </div>
-        ))}
+          <div className="space-y-2 flex-1 w-full">
+            <Label htmlFor="new-brand-logo" className="text-xs font-medium text-muted-foreground">Brand Logo (Optional)</Label>
+            <Input 
+              id="new-brand-logo" 
+              type="file" 
+              accept="image/*"
+              disabled={isUploadingBrand}
+              className="bg-background cursor-pointer file:cursor-pointer file:text-primary file:font-semibold"
+            />
+          </div>
+          <Button 
+            type="button"
+            disabled={isUploadingBrand || !newBrandName.trim()}
+            onClick={handleAdd}
+            className="w-full sm:w-auto min-w-[120px]"
+          >
+            {isUploadingBrand ? (
+              <span className="flex items-center gap-2 animate-pulse">Uploading...</span>
+            ) : (
+              <span className="flex items-center gap-2"><Upload className="h-4 w-4" /> Add Brand</span>
+            )}
+          </Button>
+        </div>
       </div>
-
-      <Button type="button" variant="outline" onClick={handleAdd} className="w-full flex items-center justify-center gap-2">
-        <Plus className="h-4 w-4" /> Add Product Brand
-      </Button>
     </div>
   );
 };

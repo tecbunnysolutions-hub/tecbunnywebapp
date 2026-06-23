@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { createClient } from '@/lib/supabase/server';
+import { AdminAuthError, requireAdminContext } from '@/lib/auth/admin-guard';
 
 // Force dynamic rendering for this route
 // export const dynamic = 'force-dynamic';
 
 export async function GET(_request: NextRequest) {
   try {
-    const supabase = await createClient();
+    const { serviceSupabase: supabase } = await requireAdminContext();
 
     // Fetch all products
     const { data: products, error } = await supabase
@@ -68,6 +68,9 @@ export async function GET(_request: NextRequest) {
       },
     });
   } catch (error) {
+    if (error instanceof AdminAuthError) {
+      return NextResponse.json({ message: error.message }, { status: error.status });
+    }
     console.error('Export error:', error);
     return NextResponse.json(
       { message: 'Internal server error' },

@@ -53,6 +53,8 @@ class ImprovedEmailService {
         connectionTimeout: 5000,
         greetingTimeout: 5000,
         socketTimeout: 10000,
+        disableFileAccess: true,
+        disableUrlAccess: true,
         pool: true,
         maxConnections: 5,
         maxMessages: 100,
@@ -79,6 +81,8 @@ class ImprovedEmailService {
         connectionTimeout: 5000,
         greetingTimeout: 5000,
         socketTimeout: 10000,
+        disableFileAccess: true,
+        disableUrlAccess: true,
       });
     }
 
@@ -185,6 +189,8 @@ class ImprovedEmailService {
         text: options.text || options.html.replace(/<[^>]*>/g, ''),
         replyTo: replyToAddress,
         headers: useAlignedFrom && smtpUser ? { Sender: smtpUser } : undefined,
+        disableFileAccess: true,
+        disableUrlAccess: true,
       };
 
       logger.info('Sending email', {

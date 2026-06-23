@@ -3,9 +3,9 @@
 
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
-import DOMPurify from 'dompurify';
 
 import { logger } from '@/lib/logger';
+import sanitizeHtml from '@/lib/sanitize-html';
 
 import { useToast } from '../hooks/use-toast';
 
@@ -27,11 +27,7 @@ interface Offer {
   terms_and_conditions?: string;
 }
 
-const sanitizeTerms = (raw: string) =>
-  DOMPurify.sanitize(raw, {
-    USE_PROFILES: { html: true },
-    ADD_ATTR: ['target', 'rel'],
-  });
+const sanitizeTerms = (raw: string) => sanitizeHtml(raw);
 
 const getReadableTextColor = (hex?: string) => {
   if (!hex) return '#ffffff';

@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 import { ProductImportRow } from '@/lib/types/products';
 import { logger } from '@/lib/logger';
 import sanitizeHtml from '@/lib/sanitize-html';
+import { AdminAuthError, requireAdminContext } from '@/lib/auth/admin-guard';
 
 async function ensureProductColumns(supabase: any) {
   try {
@@ -74,6 +75,7 @@ interface ImportResult {
 // Export products as CSV template
 export async function GET(request: NextRequest) {
   try {
+    await requireAdminContext();
     const { searchParams } = new URL(request.url);
     const template_only = searchParams.get('template_only') === 'true';
 
@@ -216,6 +218,9 @@ del123,Mouse M16 White,Gaming mouse with RGB lighting,Dell,Electronics,"gaming,m
     });
 
   } catch (error) {
+    if (error instanceof AdminAuthError) {
+      return NextResponse.json({ error: error.message }, { status: error.status });
+    }
     logger.error('Export API error:', { error });
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
@@ -224,6 +229,7 @@ del123,Mouse M16 White,Gaming mouse with RGB lighting,Dell,Electronics,"gaming,m
 // Import products from CSV
 export async function POST(request: NextRequest) {
   try {
+    const { serviceSupabase: supabase, user } = await requireAdminContext();
     const formData = await request.formData();
     const file = formData.get('file') as File;
     
@@ -304,14 +310,6 @@ export async function POST(request: NextRequest) {
     
     logger.debug('Parsed headers:', { headers });
     
-    const supabase = await createClient();
-
-    // Check authentication
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
-    }
-
     const results: ImportResult = {
       success: 0,
       errors: [],
@@ -873,6 +871,9 @@ export async function POST(request: NextRequest) {
       }
     });
   } catch (error) {
+    if (error instanceof AdminAuthError) {
+      return NextResponse.json({ error: error.message }, { status: error.status });
+    }
     logger.error('Import API error:', { error });
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }

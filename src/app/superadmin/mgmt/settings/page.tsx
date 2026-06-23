@@ -240,6 +240,40 @@ const legacyTabSections: Record<string, string> = {
 
 type SettingsMap = Record<string, string>;
 
+const SETTING_DEFAULTS: SettingsMap = {
+  siteName: 'TecBunny - Your Tech Store',
+  siteDescription: 'Discover the latest technology with reliable products, installation support, and service workflows.',
+  phone: '+91 96041 36010',
+  support_email: 'support@tecbunny.com',
+  site_branding: 'TecBunny',
+  logoUrl: '/logo.png',
+  faviconUrl: '/favicon.ico',
+  tagline: 'Solutions Pvt Ltd',
+  partnerBrands: 'CP PLUS, HIKVISION, DAHUA, UBIQUITI, CISCO, TP-LINK',
+  default_gst_rate: '18.00',
+  whatsapp_template_string: 'https://wa.me/919604136010',
+};
+
+function stringifySettingValue(value: unknown, fallback = '') {
+  if (value === undefined || value === null || value === '') {
+    return fallback;
+  }
+
+  if (typeof value === 'string') {
+    return value;
+  }
+
+  if (typeof value === 'number' || typeof value === 'boolean') {
+    return String(value);
+  }
+
+  try {
+    return JSON.stringify(value);
+  } catch {
+    return fallback;
+  }
+}
+
 export default function SuperadminSettingsPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -301,7 +335,7 @@ export default function SuperadminSettingsPage() {
         const nextValues: SettingsMap = {};
         allFields.forEach((field) => {
           const raw = data?.[field.key];
-          nextValues[field.key] = raw === undefined || raw === null ? '' : String(raw);
+          nextValues[field.key] = stringifySettingValue(raw, SETTING_DEFAULTS[field.key] ?? '');
         });
         setValues(nextValues);
       } catch (error) {

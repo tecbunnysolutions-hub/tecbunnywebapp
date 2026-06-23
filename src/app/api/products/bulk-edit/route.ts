@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { createServiceClient , isSupabaseServiceConfigured , createClient } from '@/lib/supabase/server';
+import { createServiceClient } from '@/lib/supabase/server';
 import { logger } from '@/lib/logger';
+import { AdminAuthError, requireAdminContext } from '@/lib/auth/admin-guard';
 
 // Helper function to properly escape CSV values
 function escapeCsvValue(value: any): string {
@@ -72,6 +73,7 @@ async function fetchProductColumns(supabase: ReturnType<typeof createServiceClie
 // Export products to CSV for bulk editing
 export async function GET(request: NextRequest) {
   try {
+    const { serviceSupabase } = await requireAdminContext();
     const { searchParams } = new URL(request.url);
     const templateOnly = searchParams.get('template') === 'true';
 
@@ -169,7 +171,7 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    const supabase = isSupabaseServiceConfigured ? createServiceClient() : await createClient();
+    const supabase = serviceSupabase;
     const columns = await fetchProductColumns(supabase);
 
     let query = supabase.from('products').select('*');
@@ -266,6 +268,9 @@ export async function GET(request: NextRequest) {
     });
 
   } catch (error) {
+    if (error instanceof AdminAuthError) {
+      return NextResponse.json({ error: error.message }, { status: error.status });
+    }
     logger.error('products.bulk_edit.export_error', { error });
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
@@ -274,6 +279,7 @@ export async function GET(request: NextRequest) {
 // Import products from CSV (bulk edit without duplicates)
 export async function POST(request: NextRequest) {
   try {
+    const { serviceSupabase: supabase } = await requireAdminContext();
     const formData = await request.formData();
     const file = formData.get('file') as File;
     
@@ -304,8 +310,6 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
-  const supabase = isSupabaseServiceConfigured ? createServiceClient() : await createClient();
-    
     let updated = 0;
     let created = 0;
     const errors: string[] = [];
@@ -412,6 +416,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(result);
 
   } catch (error) {
+    if (error instanceof AdminAuthError) {
+      return NextResponse.json({ error: error.message }, { status: error.status });
+    }
     logger.error('products.bulk_edit.import_error', { error });
     return NextResponse.json({ 
       error: 'Failed to process bulk edit', 

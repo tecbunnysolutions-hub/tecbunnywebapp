@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -90,7 +90,7 @@ export default function FaqsManagement() {
     },
   });
 
-  const fetchFaqs = async () => {
+  const fetchFaqs = useCallback(async () => {
     setIsLoading(true);
     try {
       const res = await fetch('/api/admin/faqs');
@@ -113,11 +113,11 @@ export default function FaqsManagement() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [toast]);
 
   useEffect(() => {
     fetchFaqs();
-  }, []);
+  }, [fetchFaqs]);
 
   const handleOpenDialog = (faq?: FAQ) => {
     if (faq) {

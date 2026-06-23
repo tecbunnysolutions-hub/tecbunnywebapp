@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceClient, isSupabaseServiceConfigured } from '@/lib/supabase/server';
 import { logger } from '@/lib/logger';
+import { AdminAuthError, requireAdminContext } from '@/lib/auth/admin-guard';
 
 export async function POST(request: NextRequest) {
   try {
+    await requireAdminContext();
     if (!isSupabaseServiceConfigured) {
       logger.error('simple_import.supabase_configuration_missing');
       return NextResponse.json({ error: 'Service configuration error. Please contact support.' }, { status: 503 });
@@ -212,6 +214,9 @@ export async function POST(request: NextRequest) {
     });
 
   } catch (error) {
+    if (error instanceof AdminAuthError) {
+      return NextResponse.json({ error: error.message }, { status: error.status });
+    }
     logger.error('CSV import error:', { error });
     return NextResponse.json({
       error: `Import failed: ${  (error as Error).message}`

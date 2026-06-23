@@ -33,9 +33,16 @@ async function fetchJsonArray(pathname: string, dataKey = 'data') {
     });
 
     if (!response.ok) {
+      const body = await response.json().catch(() => null);
+      const errorMessage = typeof body?.error === 'string' ? body.error.toLowerCase() : '';
+      if (pathname.startsWith('/api/auto-offers') && errorMessage.includes('auto_offers')) {
+        return [];
+      }
+
       logger.warn('products.page.initial_fetch_failed', {
         pathname,
         status: response.status,
+        error: body?.error ?? null,
       });
       return [];
     }

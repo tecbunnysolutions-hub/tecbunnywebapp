@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { buildCustomSetupBlueprintSummary } from '@/lib/custom-setup-service';
+import { buildCustomSetupBlueprintSummary, type CustomSetupBlueprintSummary } from '@/lib/custom-setup-service';
 import { AdminAuthError, requireAdminContext } from '@/lib/auth/admin-guard';
 import { logger } from '@/lib/logger';
 import { getRedis } from '@/lib/redis';
@@ -8,6 +8,165 @@ import { DEFAULT_CUSTOM_SETUP_TEMPLATE_SLUG } from '@/lib/custom-setup.constants
 
 // export const dynamic = 'force-dynamic';
 export const revalidate = 0;
+
+type LegacyInventoryRow = {
+  id: string;
+  category: string;
+  label: string;
+  capacity: number | null;
+  mrp: number | null;
+  sale: number | null;
+  metadata?: Record<string, unknown> | null;
+};
+
+function isMissingCustomSetupRelation(error: unknown) {
+  const candidate = error as { code?: string; message?: string } | null | undefined;
+  const message = candidate?.message?.toLowerCase() ?? '';
+  return candidate?.code === '42P01' ||
+    candidate?.code === 'PGRST205' ||
+    message.includes('custom_setup_templates') ||
+    message.includes('custom_setup_systems') ||
+    message.includes('custom_setup_components');
+}
+
+function buildLegacyOptions(rows: LegacyInventoryRow[], category: string) {
+  return rows
+    .filter((row) => row.category === category)
+    .map((row, index) => ({
+      id: row.id,
+      label: row.label,
+      value: row.id,
+      unitPrice: row.mrp ?? row.sale ?? 0,
+      metadata: {
+        ...(row.metadata ?? {}),
+        sale_price: row.sale ?? row.mrp ?? 0,
+        capacity: row.capacity,
+      },
+      isDefault: index === 0,
+    }));
+}
+
+function buildLegacyComponent(
+  rows: LegacyInventoryRow[],
+  category: string,
+  slug: string,
+  name: string,
+  quantityVariable: string | null,
+) {
+  const options = buildLegacyOptions(rows, category);
+  return {
+    id: `legacy-${slug}`,
+    slug,
+    name,
+    description: null,
+    isRequired: true,
+    optionCount: options.length,
+    pricingMode: 'per_unit',
+    pricingFormula: null,
+    quantityVariable,
+    metadata: null,
+    defaultQuantity: 1,
+    defaultOption: options[0] ?? null,
+    options,
+    basePrice: null,
+    unitPrice: null,
+  };
+}
+
+function buildLegacySummary(rows: LegacyInventoryRow[]): CustomSetupBlueprintSummary {
+  const analogComponents = [
+    buildLegacyComponent(rows, 'analog_dvr', 'analog-dvr', 'DVR', null),
+    buildLegacyComponent(rows, 'analog_camera', 'analog-camera', 'Analog Camera', 'camera_count'),
+    buildLegacyComponent(rows, 'analog_smps', 'smps-power', 'SMPS Power Supply', null),
+    buildLegacyComponent(rows, 'analog_cable', 'coaxial-cable', 'Coaxial Cable', 'total_cable_length_m'),
+  ].filter((component) => component.optionCount > 0);
+
+  const ipComponents = [
+    buildLegacyComponent(rows, 'ip_nvr', 'ip-nvr', 'NVR', null),
+    buildLegacyComponent(rows, 'ip_camera', 'ip-camera', 'IP Camera', 'camera_count'),
+    buildLegacyComponent(rows, 'ip_poe', 'poe-switch', 'PoE Switch', null),
+    buildLegacyComponent(rows, 'ip_cable', 'cat6-cable', 'LAN Cable', 'total_cable_length_m'),
+  ].filter((component) => component.optionCount > 0);
+
+  return {
+    id: 'legacy-cctv-camera-full-setup',
+    slug: DEFAULT_CUSTOM_SETUP_TEMPLATE_SLUG,
+    name: 'CCTV Camera Full Setup',
+    description: 'Compatibility template generated from legacy setup inventory.',
+    heroCopy: null,
+    category: 'Surveillance',
+    basePrice: null,
+    currency: 'INR',
+    metadata: { source: 'legacy_custom_setup_inventory' },
+    variables: [
+      {
+        key: 'camera_count',
+        label: 'Camera count',
+        description: null,
+        inputType: 'number',
+        minValue: 1,
+        maxValue: 64,
+        stepValue: 1,
+        defaultValue: 4,
+        defaultDisplay: '4',
+        metadata: null,
+      },
+      {
+        key: 'total_cable_length_m',
+        label: 'Cable length',
+        description: null,
+        inputType: 'number',
+        minValue: 100,
+        maxValue: 5000,
+        stepValue: 100,
+        defaultValue: 100,
+        defaultDisplay: '100',
+        metadata: null,
+      },
+    ],
+    systems: [
+      {
+        id: 'legacy-analog-system',
+        slug: 'analog-cctv',
+        name: 'Analog CCTV',
+        description: null,
+        isDefault: true,
+        baseFee: null,
+        pricingFormula: null,
+        metadata: null,
+        components: analogComponents,
+      },
+      {
+        id: 'legacy-ip-system',
+        slug: 'ip-cctv',
+        name: 'IP CCTV',
+        description: null,
+        isDefault: false,
+        baseFee: null,
+        pricingFormula: null,
+        metadata: null,
+        components: ipComponents,
+      },
+    ].filter((system) => system.components.length > 0),
+  };
+}
+
+async function fetchLegacyInventorySummary(serviceSupabase: Awaited<ReturnType<typeof requireAdminContext>>['serviceSupabase']) {
+  const { data, error } = await serviceSupabase
+    .from('custom_setup_inventory')
+    .select('id, category, label, capacity, mrp, sale, metadata')
+    .eq('is_active', true);
+
+  if (error) {
+    logger.error('admin_custom_setups.legacy_inventory_failed', {
+      error: error.message,
+      code: error.code,
+    });
+    throw error;
+  }
+
+  return buildLegacySummary((data ?? []) as LegacyInventoryRow[]);
+}
 
 async function fetchTemplateWithDetails(serviceSupabase: Awaited<ReturnType<typeof requireAdminContext>>['serviceSupabase'], slug: string) {
   const { data, error } = await serviceSupabase
@@ -105,13 +264,52 @@ export async function GET(request: NextRequest) {
           error: error.message,
           code: error.code,
         });
+        if (isMissingCustomSetupRelation(error)) {
+          const summary = await fetchLegacyInventorySummary(serviceSupabase);
+          return NextResponse.json({
+            success: true,
+            data: [{
+              id: summary.id,
+              slug: summary.slug,
+              name: summary.name,
+              category: summary.category,
+              is_active: true,
+              base_price: summary.basePrice,
+              currency: summary.currency,
+            }],
+          });
+        }
         throw error;
       }
 
       return NextResponse.json({ success: true, data });
     }
 
-    const template = await fetchTemplateWithDetails(serviceSupabase, slug);
+    let template;
+    try {
+      template = await fetchTemplateWithDetails(serviceSupabase, slug);
+    } catch (error) {
+      if (isMissingCustomSetupRelation(error)) {
+        const summary = await fetchLegacyInventorySummary(serviceSupabase);
+        if (slug !== summary.slug) {
+          return NextResponse.json({ error: 'Template not found' }, { status: 404 });
+        }
+        return NextResponse.json({
+          success: true,
+          data: {
+            template: {
+              id: summary.id,
+              slug: summary.slug,
+              name: summary.name,
+              currency: summary.currency,
+              systems: summary.systems,
+            },
+            summary,
+          },
+        });
+      }
+      throw error;
+    }
 
     if (!template) {
       return NextResponse.json(
@@ -228,6 +426,38 @@ export async function PATCH(request: NextRequest) {
           .eq('id', update.id);
 
         if (error) {
+          if (isMissingCustomSetupRelation(error)) {
+            const salePrice = update.metadata && typeof update.metadata === 'object'
+              ? sanitizeNumber((update.metadata as Record<string, unknown>).sale_price)
+              : undefined;
+            const legacyUpdate: Record<string, unknown> = {
+              ...(unitPrice !== undefined ? { mrp: unitPrice } : {}),
+              ...(salePrice !== undefined ? { sale: salePrice } : {}),
+              ...(update.metadata !== undefined ? { metadata: update.metadata } : {}),
+            };
+
+            if (Object.keys(legacyUpdate).length === 0) {
+              applied.push({ target: 'option', id: update.id });
+              continue;
+            }
+
+            const { error: legacyError } = await serviceSupabase
+              .from('custom_setup_inventory')
+              .update(legacyUpdate)
+              .eq('id', update.id);
+
+            if (legacyError) {
+              logger.error('admin_custom_setups.update_legacy_option_failed', {
+                id: update.id,
+                error: legacyError.message,
+                code: legacyError.code,
+              });
+              throw legacyError;
+            }
+
+            applied.push({ target: 'legacy-option', id: update.id });
+            continue;
+          }
           logger.error('admin_custom_setups.update_option_failed', {
             id: update.id,
             error: error.message,

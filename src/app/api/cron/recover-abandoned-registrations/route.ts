@@ -12,6 +12,9 @@ export async function GET(request: NextRequest) {
   if (process.env.CRON_SECRET && authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
     return new Response('Unauthorized', { status: 401 });
   }
+  if (!process.env.CRON_SECRET && process.env.NODE_ENV === 'production') {
+    return NextResponse.json({ error: 'Cron secret is not configured' }, { status: 503 });
+  }
 
   try {
     const supabase = createServiceClient();

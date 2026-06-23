@@ -19,6 +19,13 @@ function getSupabaseAdmin() {
   return createAdminClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 }
 
+function isMissingAutoOffersRelation(error: unknown) {
+  const candidate = error as { code?: string; message?: string } | null | undefined;
+  return candidate?.code === '42P01'
+    || candidate?.code === 'PGRST205'
+    || candidate?.message?.toLowerCase().includes('auto_offers') === true;
+}
+
 async function requireRole() {
   if (!isPublicConfigured) {
     logger.error('auto-offers.require-role.missing_supabase_config');
@@ -68,6 +75,10 @@ export async function GET(request: NextRequest) {
         .single();
 
       if (error) {
+        if (isMissingAutoOffersRelation(error)) {
+          logger.warn('auto-offers.get.missing_relation', { id });
+          return NextResponse.json({ error: 'Auto offer not found' }, { status: 404 });
+        }
         return NextResponse.json({ error: error.message }, { status: 404 });
       }
 
@@ -86,6 +97,10 @@ export async function GET(request: NextRequest) {
     const { data, error } = await query;
       
       if (error) {
+        if (isMissingAutoOffersRelation(error)) {
+          logger.warn('auto-offers.get.missing_relation');
+          return NextResponse.json([]);
+        }
         return NextResponse.json({ error: error.message }, { status: 500 });
       }
       

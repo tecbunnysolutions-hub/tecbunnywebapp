@@ -83,7 +83,7 @@ export class CheckoutEngine {
       
       if (dbError || !dbProducts) {
         logger.error('Failed to fetch pricing and stock metadata from database', { dbError });
-        throw new Error('Verification of product prices failed. Please try again.');
+        throw new Error('Checkout engine calculation failed due to internal execution errors.');
       }
 
       const dbProductMap = new Map(dbProducts.map(p => [p.id, p]));
@@ -95,13 +95,10 @@ export class CheckoutEngine {
           throw new Error(`Product ${item.id} is invalid or no longer available.`);
         }
         
-        // Stock verification (Bypassed: allow ordering when stock is zero or less)
-        /*
         const availableStock = dbProduct.stock_quantity ?? 0;
         if (item.quantity > availableStock) {
           throw new Error(`Insufficient stock for "${dbProduct.title || item.id}". Only ${availableStock} units available.`);
         }
-        */
 
         return {
           product: {

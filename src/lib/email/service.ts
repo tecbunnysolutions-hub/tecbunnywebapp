@@ -77,7 +77,9 @@ export class EmailService {
         rejectUnauthorized: process.env.NODE_ENV === 'production'
           ? true
           : process.env.SMTP_TLS_REJECT_UNAUTHORIZED !== 'false'
-      }
+      },
+      disableFileAccess: true,
+      disableUrlAccess: true
     });
   }
 
@@ -126,7 +128,9 @@ export class EmailService {
         subject: template.subject,
         text: template.text,
         html: template.html,
-        priority: options?.priority || 'normal'
+        priority: options?.priority || 'normal',
+        disableFileAccess: true,
+        disableUrlAccess: true
       };
 
       const result = await this.transporter.sendMail(mailOptions);
@@ -174,7 +178,9 @@ export class EmailService {
         subject,
         text: text || html.replace(/<[^>]*>/g, ''), // Strip HTML if no text provided
         html,
-        attachments: options?.attachments
+        attachments: options?.attachments,
+        disableFileAccess: true,
+        disableUrlAccess: true
       };
 
       const result = await this.transporter.sendMail(mailOptions);

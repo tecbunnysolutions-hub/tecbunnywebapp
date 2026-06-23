@@ -15,7 +15,10 @@ export async function GET(request: NextRequest) {
   // Simple auth check for cron (in production use a secret header)
   const authHeader = request.headers.get('authorization');
   if (process.env.CRON_SECRET && authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-    // return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+  if (!process.env.CRON_SECRET && process.env.NODE_ENV === 'production') {
+    return NextResponse.json({ error: 'Cron secret is not configured' }, { status: 503 });
   }
 
   try {
@@ -95,6 +98,6 @@ export async function GET(request: NextRequest) {
 
   } catch (error: any) {
     logger.error('service_retention_cron_failed', { error: error.message });
-    return NextResponse.json({ error: 'Internal server error', details: error.message }, { status: 500 });
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

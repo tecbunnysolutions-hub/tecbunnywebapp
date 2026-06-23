@@ -5,8 +5,6 @@ import * as React from 'react';
 
 import { Printer } from 'lucide-react';
 
-import DOMPurify from 'dompurify';
-
 import type { Order } from '@/lib/types';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -15,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/ui/logo';
 import { formatInvoiceDate, formatOrderNumber } from '@/lib/order-utils';
 import { formatPlaceOfSupply, resolveIndianStateFromText, resolveIndianStateInfo, TECBUNNY_REGISTERED_STATE } from '@/lib/indian-tax';
+import sanitizeHtml from '@/lib/sanitize-html';
 
 export interface CompanySettings {
     name: string;
@@ -89,7 +88,7 @@ export function InvoiceTemplate({ order, settings, autoPrint }: InvoiceTemplateP
             printWindow.document.write('<script src="https://cdn.tailwindcss.com"></script>');
             printWindow.document.write('<style> body { -webkit-print-color-adjust: exact; font-family: sans-serif; } @page { size: A4; margin: 0; } </style>');
             printWindow.document.write('</head><body class="p-8">');
-            const sanitizedHtml = DOMPurify.sanitize(printContent.innerHTML, { USE_PROFILES: { html: true } });
+            const sanitizedHtml = sanitizeHtml(printContent.innerHTML);
             printWindow.document.write(sanitizedHtml);
             printWindow.document.write('</body></html>');
             printWindow.document.close();
