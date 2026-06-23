@@ -19,6 +19,7 @@ export interface RateLimitOptions {
 // In-memory state
 const stores: Record<string, Map<string, Bucket>> = {}
 const memoryBuckets = new Map<string, number[]>()
+const requireRedisRateLimit = process.env.REQUIRE_REDIS_RATE_LIMIT === 'true'
 
 // Periodic memory cleanup to prevent memory leaks in long-running processes
 if (typeof global !== 'undefined') {
@@ -77,7 +78,9 @@ export function rateLimit(
 
     if (process.env.NODE_ENV === 'production' && !redis) {
       logger.error('rate_limit_sync_no_redis_production', { key, bucketName })
-      return false
+      if (requireRedisRateLimit) {
+        return false
+      }
     }
 
     if (!stores[bucketName]) stores[bucketName] = new Map()
@@ -141,7 +144,9 @@ export function rateLimit(
       // memory fallback for async variant (Warning: not shared across serverless instances)
       if (process.env.NODE_ENV === 'production' && !redis) {
         logger.error('rate_limit_no_redis_production', { key })
-        return { allowed: false, remaining: 0, reset: now + windowMs }
+        if (requireRedisRateLimit) {
+          return { allowed: false, remaining: 0, reset: now + windowMs }
+        }
       }
       const arr = memoryBuckets.get(key) || []
       const kept = arr.filter(ts => ts > windowStart)

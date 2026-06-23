@@ -20,8 +20,6 @@ const productionEnvSchema = z.object({
   SUPERADMIN_SESSION_SECRET: z.string().min(32),
   NEXT_PUBLIC_TURNSTILE_SITE_KEY: z.string().min(1),
   TURNSTILE_SECRET_KEY: z.string().min(1),
-  REDIS_URL: z.string().url(),
-  CRON_SECRET: z.string().min(32),
 });
 
 // Validate the current environment
