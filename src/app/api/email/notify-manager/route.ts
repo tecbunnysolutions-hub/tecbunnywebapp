@@ -66,7 +66,7 @@ async function resolveManagerRecipients(): Promise<string[]> {
     .filter((s) => s.length > 0);
 }
 
-async function isAuthorized(request: NextRequest): Promise<{ ok: boolean; role: 'internal' | 'admin' | 'manager' | null }> {
+async function isAuthorized(request: NextRequest): Promise<{ ok: boolean; role: 'internal' | 'superadmin' | 'admin' | 'manager' | null }> {
   const internalKey = request.headers.get('x-internal-api-key');
   if (internalKey && process.env.INTERNAL_API_KEY && internalKey === process.env.INTERNAL_API_KEY) {
   return { ok: true, role: 'internal' };
@@ -88,7 +88,7 @@ async function isAuthorized(request: NextRequest): Promise<{ ok: boolean; role: 
 
   const role = (profile?.role as any) || 'customer';
   const allowed = isAtLeast(role, 'manager');
-  return { ok: !!allowed, role: allowed ? (role === 'admin' ? 'admin' : 'manager') : null };
+  return { ok: !!allowed, role: allowed ? role : null };
 }
 
 export async function POST(request: NextRequest) {
@@ -120,7 +120,7 @@ export async function POST(request: NextRequest) {
 
     // Resolve recipients: prefer settings/env; allow explicit `to` only for admin/manager/internal
     let recipients: string[] = [];
-  if (auth.role === 'internal' || auth.role === 'admin' || auth.role === 'manager') {
+  if (auth.role === 'internal' || auth.role === 'superadmin' || auth.role === 'admin' || auth.role === 'manager') {
       const explicit = parsed.data.to
         ? (Array.isArray(parsed.data.to) ? parsed.data.to : [parsed.data.to])
         : [];

@@ -459,6 +459,8 @@ export default function CheckoutPage() {
         customerInfo.gstin ? `GSTIN: ${customerInfo.gstin}` : ''
       ].filter(Boolean).join(' | ');
 
+      const idempotencyKey = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+      
       const orderData = {
         customer_name: customerInfo.name,
         customer_email: customerInfo.email,
@@ -484,39 +486,11 @@ export default function CheckoutPage() {
         coupon_code: appliedCoupon?.code || undefined,
         items: orderItems,
         part_payment_amount: isPartPayment ? Number(partPaymentAmount) : null,
-        quote_id: quote?.id || null
+        quote_id: quote?.id || null,
+        idempotency_key: idempotencyKey
       };
 
-      let order = await createOrder(orderData);
-      
-      // If OrderProvider fails, try API endpoint as fallback
-      if (!order) {
-        try {
-          const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 15000);
-
-          const response = await fetch('/api/orders', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(orderData),
-            signal: controller.signal
-          });
-          clearTimeout(timeoutId);
-
-          const data = await response.json();
-          
-          if (response.ok && data.success) {
-            order = data.order;
-          } else {
-            logger.error('API order creation failed', { error: data.error, orderData });
-            setOrderError(data.error?.message || data.error || 'Failed to create order. Please try again.');
-          }
-        } catch (apiError) {
-          logger.error('API request failed', { error: apiError, orderData });
-        }
-      }
+      const order = await createOrder(orderData);
       
       if (order) {
         // Handle different payment methods

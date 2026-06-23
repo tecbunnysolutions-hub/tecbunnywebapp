@@ -266,12 +266,12 @@ export function Footer() {
                     setSubscribeMessage(null);
                   }
                 }}
-                className="bg-[#1E293B] border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 w-full placeholder-slate-500 transition-all shadow-inner"
+                className="bg-[#1E293B] border border-slate-700 rounded-xl px-4 py-2.5 min-h-[48px] text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 w-full placeholder-slate-500 transition-all shadow-inner"
               />
               <button
                 type="submit"
                 disabled={subscribeStatus === 'loading'}
-                className="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-sm font-bold rounded-xl transition-all hover:scale-105 hover:shadow-[0_0_15px_rgba(37,99,235,0.4)] disabled:opacity-40"
+                className="px-5 py-2.5 min-h-[48px] bg-blue-600 hover:bg-blue-500 text-white text-sm font-bold rounded-xl transition-all hover:scale-105 hover:shadow-[0_0_15px_rgba(37,99,235,0.4)] disabled:opacity-40"
               >
                 {subscribeStatus === 'loading' ? '...' : 'Subscribe'}
               </button>
@@ -303,7 +303,7 @@ export function Footer() {
                   href={socialLinks[key]}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="p-2 rounded-lg bg-slate-800 text-slate-400 hover:bg-blue-600 hover:text-white hover:scale-110 transition-all shadow-sm hover:shadow-[0_0_15px_rgba(37,99,235,0.4)]"
+                  className="p-2 min-h-[48px] min-w-[48px] flex items-center justify-center rounded-lg bg-slate-800 text-slate-400 hover:bg-blue-600 hover:text-white hover:scale-110 transition-all shadow-sm hover:shadow-[0_0_15px_rgba(37,99,235,0.4)]"
                   onClick={() => handleSocialClick(label)}
                 >
                   <Icon className="h-5 w-5" />

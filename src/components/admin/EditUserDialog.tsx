@@ -163,6 +163,7 @@ export function EditUserDialog({ isOpen, onClose, user, onUserUpdated }: EditUse
   const getRoleIcon = (role: UserRole) => {
     switch (role) {
       case 'admin':
+      case 'superadmin':
         return <Shield className="h-4 w-4" />;
       case 'manager':
         return <Settings className="h-4 w-4" />;
@@ -330,6 +331,12 @@ export function EditUserDialog({ isOpen, onClose, user, onUserUpdated }: EditUse
                             Admin
                           </div>
                         </SelectItem>
+                        <SelectItem value="superadmin">
+                          <div className="flex items-center gap-2">
+                            <Shield className="h-4 w-4 text-purple-500" />
+                            Super Admin
+                          </div>
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -373,6 +380,14 @@ export function EditUserDialog({ isOpen, onClose, user, onUserUpdated }: EditUse
                           <div>• Manage all users and roles</div>
                           <div>• System configuration</div>
                           <div>• Product catalog management</div>
+                        </>
+                      )}
+                      {formData.role === 'superadmin' && (
+                        <>
+                          <div>• God mode access</div>
+                          <div>• Manage system configurations</div>
+                          <div>• Delete users</div>
+                          <div>• Override all settings</div>
                         </>
                       )}
                     </div>

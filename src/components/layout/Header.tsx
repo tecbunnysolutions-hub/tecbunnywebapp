@@ -315,7 +315,7 @@ export function Header() {
                   <DropdownMenuTrigger asChild>
                     <button
                       type="button"
-                      className="flex h-11 w-11 items-center justify-center rounded-full border border-zinc-700 bg-zinc-900/60 text-zinc-300 transition-all duration-200 hover:border-zinc-500 hover:text-white shadow-sm"
+                      className="flex h-12 w-12 items-center justify-center rounded-full border border-zinc-700 bg-zinc-900/60 text-zinc-300 transition-all duration-200 hover:border-zinc-500 hover:text-white shadow-sm"
                       aria-label="Open profile menu"
                     >
                       <User size={20} />
@@ -356,7 +356,7 @@ export function Header() {
             <CartSheet>
               <button
                 type="button"
-                className="relative flex h-11 w-11 items-center justify-center rounded-full border border-zinc-700 bg-zinc-900/60 text-zinc-300 transition-all duration-200 hover:border-zinc-500 hover:text-white shadow-sm"
+                className="relative flex h-12 w-12 items-center justify-center rounded-full border border-zinc-700 bg-zinc-900/60 text-zinc-300 transition-all duration-200 hover:border-zinc-500 hover:text-white shadow-sm"
                 aria-label="Open cart"
               >
                 <ShoppingCart size={20} />
@@ -383,7 +383,7 @@ export function Header() {
             <CartSheet>
               <button
                 type="button"
-                className="relative flex h-11 w-11 items-center justify-center rounded-xl border border-zinc-700 bg-zinc-900/60 text-zinc-300 hover:text-white transition-colors shadow-sm"
+                className="relative flex h-12 w-12 items-center justify-center rounded-xl border border-zinc-700 bg-zinc-900/60 text-zinc-300 hover:text-white transition-colors shadow-sm"
                 aria-label="Open cart"
               >
                 <ShoppingCart size={20} />
@@ -395,7 +395,7 @@ export function Header() {
               </button>
             </CartSheet>
             <button
-              className="flex h-11 w-11 items-center justify-center rounded-xl border border-zinc-700 p-1.5 text-zinc-300 hover:text-white hover:bg-zinc-900/60 transition-colors shadow-sm"
+              className="flex h-12 w-12 items-center justify-center rounded-xl border border-zinc-700 p-1.5 text-zinc-300 hover:text-white hover:bg-zinc-900/60 transition-colors shadow-sm"
               onClick={() =>
                 setMobileMenuOpen((open) => {
                   const next = !open;
@@ -427,7 +427,7 @@ export function Header() {
                   <button
                     type="button"
                     onClick={() => setMobileSubmenuOpen((current) => (current === item.name ? null : item.name))}
-                    className={`flex min-h-11 w-full items-center justify-between rounded-lg px-3 py-2 text-sm transition-colors ${
+                    className={`flex min-h-[48px] w-full items-center justify-between rounded-lg px-3 py-2 text-sm transition-colors ${
                       mobileSubmenuOpen === item.name
                         ? 'text-white font-bold bg-zinc-900'
                         : 'text-zinc-400 hover:bg-zinc-900 hover:text-white'
@@ -450,7 +450,7 @@ export function Header() {
                       <Link
                         href={item.href}
                         onClick={() => setMobileMenuOpen(false)}
-                        className="flex min-h-11 items-center justify-between rounded-lg px-3 py-2 text-sm text-zinc-400 transition-colors hover:bg-zinc-900 hover:text-white"
+                        className="flex min-h-[48px] items-center justify-between rounded-lg px-3 py-2 text-sm text-zinc-400 transition-colors hover:bg-zinc-900 hover:text-white"
                       >
                         All {item.name}
                         <ChevronRight size={12} className="text-zinc-600" />
@@ -461,7 +461,7 @@ export function Header() {
                         key={child.name}
                         href={child.href}
                         onClick={() => setMobileMenuOpen(false)}
-                        className="flex min-h-11 items-center justify-between rounded-lg px-3 py-2 text-sm text-zinc-400 transition-colors hover:bg-zinc-900 hover:text-white"
+                        className="flex min-h-[48px] items-center justify-between rounded-lg px-3 py-2 text-sm text-zinc-400 transition-colors hover:bg-zinc-900 hover:text-white"
                       >
                         {child.name}
                         <ChevronRight size={12} className="text-zinc-600" />
@@ -473,7 +473,7 @@ export function Header() {
                 <Link
                   href={item.href}
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`flex min-h-11 items-center justify-between rounded-lg px-3 py-2 text-sm transition-colors ${
+                  className={`flex min-h-[48px] items-center justify-between rounded-lg px-3 py-2 text-sm transition-colors ${
                     isActive(item.href)
                       ? 'text-white font-bold bg-zinc-900'
                       : 'text-zinc-400 hover:bg-zinc-900 hover:text-white'
@@ -489,7 +489,7 @@ export function Header() {
             <Link
               href={dashboardHref}
               onClick={() => setMobileMenuOpen(false)}
-              className="flex min-h-11 items-center justify-between rounded-lg px-3 py-2 text-sm text-zinc-400 hover:bg-zinc-900 hover:text-white transition-colors"
+              className="flex min-h-[48px] items-center justify-between rounded-lg px-3 py-2 text-sm text-zinc-400 hover:bg-zinc-900 hover:text-white transition-colors"
             >
               Dashboard
               <ChevronRight size={14} className="text-zinc-500" />
@@ -498,7 +498,7 @@ export function Header() {
           <Link
             href="/cart"
             onClick={() => setMobileMenuOpen(false)}
-            className="flex min-h-11 items-center justify-between rounded-lg px-3 py-2 text-sm text-zinc-400 hover:bg-zinc-900 hover:text-white transition-colors"
+            className="flex min-h-[48px] items-center justify-between rounded-lg px-3 py-2 text-sm text-zinc-400 hover:bg-zinc-900 hover:text-white transition-colors"
           >
             Cart
             <ChevronRight size={14} className="text-zinc-500" />
@@ -513,7 +513,7 @@ export function Header() {
               <Link
                 href="/auth/signin"
                 onClick={() => setMobileMenuOpen(false)}
-                className="flex min-h-11 items-center justify-between rounded-lg border border-zinc-800 bg-zinc-900 px-3 py-2 text-sm text-zinc-300 hover:bg-zinc-800 hover:text-white transition-colors"
+                className="flex min-h-[48px] items-center justify-between rounded-lg border border-zinc-800 bg-zinc-900 px-3 py-2 text-sm text-zinc-300 hover:bg-zinc-800 hover:text-white transition-colors"
               >
                 Login
                 <ChevronRight size={14} className="text-zinc-500" />
@@ -521,7 +521,7 @@ export function Header() {
               <Link
                 href="/auth/signup"
                 onClick={() => setMobileMenuOpen(false)}
-                className="flex min-h-11 items-center justify-between rounded-lg border border-blue-500/20 bg-blue-600 px-3 py-2 text-sm text-white hover:bg-blue-500 transition-colors"
+                className="flex min-h-[48px] items-center justify-between rounded-lg border border-blue-500/20 bg-blue-600 px-3 py-2 text-sm text-white hover:bg-blue-500 transition-colors"
               >
                 Signup
                 <ChevronRight size={14} className="text-white" />
@@ -532,7 +532,7 @@ export function Header() {
               <Link
                 href="/profile"
                 onClick={() => setMobileMenuOpen(false)}
-                className="flex min-h-11 items-center justify-between rounded-lg px-3 py-2 text-sm text-zinc-400 hover:bg-zinc-900 hover:text-white transition-colors"
+                className="flex min-h-[48px] items-center justify-between rounded-lg px-3 py-2 text-sm text-zinc-400 hover:bg-zinc-900 hover:text-white transition-colors"
               >
                 Profile
                 <ChevronRight size={14} className="text-zinc-500" />
@@ -541,7 +541,7 @@ export function Header() {
                 <Link
                   href={accountHref}
                   onClick={() => setMobileMenuOpen(false)}
-                  className="flex min-h-11 items-center justify-between rounded-lg px-3 py-2 text-sm text-zinc-400 hover:bg-zinc-900 hover:text-white transition-colors"
+                  className="flex min-h-[48px] items-center justify-between rounded-lg px-3 py-2 text-sm text-zinc-400 hover:bg-zinc-900 hover:text-white transition-colors"
                 >
                   Account
                   <ChevronRight size={14} className="text-zinc-500" />
@@ -551,7 +551,7 @@ export function Header() {
                 <Link
                   href="/mgmt/admin"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="flex min-h-11 items-center justify-between rounded-lg px-3 py-2 text-sm text-zinc-400 hover:bg-zinc-900 hover:text-white transition-colors"
+                  className="flex min-h-[48px] items-center justify-between rounded-lg px-3 py-2 text-sm text-zinc-400 hover:bg-zinc-900 hover:text-white transition-colors"
                 >
                   Admin Panel
                   <ChevronRight size={14} className="text-zinc-500" />
@@ -563,7 +563,7 @@ export function Header() {
                   setMobileMenuOpen(false);
                   await handleLogout();
                 }}
-                className="flex min-h-11 w-full items-center justify-between rounded-lg border border-zinc-800 bg-zinc-900 px-3 py-2 text-sm text-zinc-300 hover:bg-zinc-800 hover:text-white transition-colors"
+                className="flex min-h-[48px] w-full items-center justify-between rounded-lg border border-zinc-800 bg-zinc-900 px-3 py-2 text-sm text-zinc-300 hover:bg-zinc-800 hover:text-white transition-colors"
               >
                 Logout
                 <ChevronRight size={14} className="text-zinc-500" />

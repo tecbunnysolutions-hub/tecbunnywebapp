@@ -117,7 +117,6 @@ export default function FaqsManagement() {
 
   useEffect(() => {
     fetchFaqs();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleOpenDialog = (faq?: FAQ) => {

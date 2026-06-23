@@ -298,12 +298,12 @@ export default function RootLayout({
             dangerouslySetInnerHTML={{ __html: serializeJsonLd(structuredData) }}
           />
       </head>
-      <body className={`${outfit.variable} font-body antialiased`}>
+      <body className={`${outfit.variable} font-body antialiased overflow-x-hidden w-full`}>
         <ThemeProvider>
           <AppProvider>
             <OrderProvider>
               <TechShell>
-                <div className="site-shell flex min-h-screen flex-col bg-background text-foreground">
+                <div className="site-shell flex min-h-[100dvh] flex-col bg-background text-foreground w-full">
                   <Suspense fallback={<div className="h-16 border-b" />}>
                     <Header />
                   </Suspense>

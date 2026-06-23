@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 import { verifySuperadminSessionToken } from '@/lib/auth/superadmin-session'
 import { requireSupabasePublicEnv } from '@/lib/supabase/env'
+import { isAtLeast } from '@/lib/roles'
 
 const SHARED_CONTENT_SECURITY_POLICY = [
   "default-src 'self'",
@@ -394,13 +395,13 @@ export async function middleware(request: NextRequest) {
         ));
       }
 
-      if (checkPathPrefix(pathname, '/api/admin') && !isPublicApiRoute && userRole !== 'admin' && !isSuperadmin) {
+      if (checkPathPrefix(pathname, '/api/admin') && !isPublicApiRoute && !isAtLeast(userRole as any, 'admin') && !isSuperadmin) {
         return finalizeResponse(NextResponse.json({ error: 'Not Found' }, { status: 404 }));
       }
-      if (checkPathPrefix(pathname, '/api/manager') && userRole !== 'manager' && !isSuperadmin) {
+      if (checkPathPrefix(pathname, '/api/manager') && !isAtLeast(userRole as any, 'manager') && !isSuperadmin) {
         return finalizeResponse(NextResponse.json({ error: 'Not Found' }, { status: 404 }));
       }
-      if (checkPathPrefix(pathname, '/api/sales-staff') && userRole !== 'sales-staff' && userRole !== 'sales' && !isSuperadmin) {
+      if (checkPathPrefix(pathname, '/api/sales-staff') && !isAtLeast(userRole as any, 'sales') && !isSuperadmin) {
         return finalizeResponse(NextResponse.json({ error: 'Not Found' }, { status: 404 }));
       }
       if (checkPathPrefix(pathname, '/api/sales-external') && userRole !== 'sales-external' && !isSuperadmin) {

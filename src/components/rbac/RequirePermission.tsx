@@ -21,8 +21,14 @@ export function RequirePermission({
   const { hasPermission, loading } = usePermissions();
 
   if (loading) {
-    // Optionally return a spinner or just null while auth state is resolving
-    return null; 
+    return (
+      <div className="flex items-center justify-center min-h-[50vh] w-full text-muted-foreground animate-pulse">
+        <div className="flex flex-col items-center gap-4">
+          <div className="h-8 w-8 rounded-full border-4 border-primary/30 border-t-primary animate-spin" />
+          <p className="text-sm font-medium">Verifying Permissions...</p>
+        </div>
+      </div>
+    );
   }
 
   if (!hasPermission(permission)) {

@@ -174,7 +174,8 @@ export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         payment_status: orderData.payment_status || null,
         discount_amount: Math.round(((orderData.discount_amount || 0) as number) * 100) / 100,
         shipping_amount: Math.round(((orderData.shipping_amount || 0) as number) * 100) / 100,
-        agent_id: orderData.agent_id || null
+        agent_id: orderData.agent_id || null,
+        idempotency_key: (orderData as any).idempotency_key || null
       };
 
       // Get session token for Authorization header — more reliable than cookie-only auth

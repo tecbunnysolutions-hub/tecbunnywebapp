@@ -125,7 +125,7 @@ export default function UserAnalyticsPage() {
         <div>
           <h1 className="text-2xl font-bold">{profile.full_name || 'Unknown User'}</h1>
           <p className="text-muted-foreground">{profile.email}</p>
-          <Badge variant={profile.role === 'admin' ? 'destructive' : 'secondary'} className="mt-1">
+          <Badge variant={['admin', 'superadmin'].includes(profile.role) ? 'destructive' : 'secondary'} className="mt-1">
             {profile.role || 'Customer'}
           </Badge>
         </div>
