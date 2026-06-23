@@ -36,9 +36,9 @@ function base64UrlDecode(value: string) {
 }
 
 function getSessionSecret() {
-  const secret = process.env.SUPERADMIN_SESSION_SECRET;
+  const secret = process.env.SUPERADMIN_SESSION_SECRET || process.env.SESSION_SECRET;
   if (!secret) {
-    logger.error('SUPERADMIN_SESSION_SECRET is not configured. Superadmin session operations will fail.');
+    logger.error('SUPERADMIN_SESSION_SECRET or SESSION_SECRET is not configured. Superadmin session operations will fail.');
     return null;
   }
   return secret;

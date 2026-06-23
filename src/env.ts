@@ -11,18 +11,24 @@ const envSchema = z.object({
   NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().optional(),
   SUPABASE_SECRET_KEY: z.string().optional(),
   SUPABASE_SERVICE_ROLE_KEY: z.string().optional(),
+  SESSION_SECRET: z.string().optional(),
 });
 
 const productionEnvSchema = z.object({
-  NEXT_PUBLIC_SUPABASE_URL: z.string().url(),
-  NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: z.string().min(1),
-  SUPABASE_SERVICE_ROLE_KEY: z.string().min(1),
-  SUPERADMIN_SESSION_SECRET: z.string().min(32),
-});
-
-const productionBrowserEnvSchema = z.object({
-  NEXT_PUBLIC_SUPABASE_URL: z.string().url(),
-  NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: z.string().min(1),
+  NEXT_PUBLIC_SUPABASE_URL: z.string().url().optional(),
+  NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: z.string().min(1).optional(),
+  NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().min(1).optional(),
+  SUPABASE_SERVICE_ROLE_KEY: z.string().min(1).optional(),
+  SUPERADMIN_SESSION_SECRET: z.string().min(32).optional(),
+  SESSION_SECRET: z.string().min(32).optional(),
+}).superRefine((value, context) => {
+  if (!value.SUPERADMIN_SESSION_SECRET && !value.SESSION_SECRET) {
+    context.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'SUPERADMIN_SESSION_SECRET or SESSION_SECRET is required in production.',
+      path: ['SUPERADMIN_SESSION_SECRET'],
+    });
+  }
 });
 
 const productionOptionalSecuritySchema = z.object({
@@ -52,6 +58,7 @@ const _env = envSchema.safeParse({
   NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
   SUPABASE_SECRET_KEY: process.env.SUPABASE_SECRET_KEY,
   SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY,
+  SESSION_SECRET: process.env.SESSION_SECRET,
 });
 
 if (!_env.success) {
@@ -59,21 +66,16 @@ if (!_env.success) {
   throw new Error('Invalid environment variables');
 }
 
-if (process.env.NODE_ENV === 'production') {
-  const productionEnv = isServerRuntime
-    ? productionEnvSchema.safeParse(process.env)
-    : productionBrowserEnvSchema.safeParse(process.env);
-
+if (process.env.NODE_ENV === 'production' && isServerRuntime) {
+  const productionEnv = productionEnvSchema.safeParse(process.env);
   if (!productionEnv.success) {
     console.error('Missing or invalid production environment variables:', productionEnv.error.format());
     throw new Error('Invalid production environment variables');
   }
 
-  if (isServerRuntime) {
-    const optionalSecurityEnv = productionOptionalSecuritySchema.safeParse(process.env);
-    if (!optionalSecurityEnv.success) {
-      console.warn('Optional production security environment is incomplete:', optionalSecurityEnv.error.format());
-    }
+  const optionalSecurityEnv = productionOptionalSecuritySchema.safeParse(process.env);
+  if (!optionalSecurityEnv.success) {
+    console.warn('Optional production security environment is incomplete:', optionalSecurityEnv.error.format());
   }
 }
 

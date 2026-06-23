@@ -89,7 +89,7 @@ export function resolveSupabasePublicEnv(): PublicSupabaseEnv {
   const url = trimEnv(SUPABASE_URL_ENV);
   const publishableKey = trimEnv(PUBLISHABLE_KEY_ENV);
   const anonKey = trimEnv(LEGACY_ANON_KEY_ENV);
-  const publicKey = runtimeEnv === 'production' ? publishableKey : publishableKey || anonKey;
+  const publicKey = publishableKey || anonKey;
   const keySource = isPublishableKey(publicKey) ? 'publishable' : 'anon';
 
   if (isPlaceholder(url)) {
@@ -99,10 +99,7 @@ export function resolveSupabasePublicEnv(): PublicSupabaseEnv {
   assertValidSupabaseUrl(url);
 
   if (isPlaceholder(publicKey)) {
-    const required = runtimeEnv === 'production'
-      ? PUBLISHABLE_KEY_ENV
-      : `${PUBLISHABLE_KEY_ENV} or ${LEGACY_ANON_KEY_ENV}`;
-    throw new Error(`[supabase] Missing public Supabase key. Expected ${required}.`);
+    throw new Error(`[supabase] Missing public Supabase key. Expected ${PUBLISHABLE_KEY_ENV} or ${LEGACY_ANON_KEY_ENV}.`);
   }
 
   if (isSecretKey(publicKey) || isLegacyServiceRoleKey(publicKey)) {
@@ -111,8 +108,8 @@ export function resolveSupabasePublicEnv(): PublicSupabaseEnv {
     );
   }
 
-  if (runtimeEnv === 'production' && !isPublishableKey(publicKey)) {
-    throw new Error(`[supabase] Production must use ${PUBLISHABLE_KEY_ENV} with an sb_publishable_ key.`);
+  if (runtimeEnv === 'production' && !isPublishableKey(publicKey) && !isLegacyAnonKey(publicKey)) {
+    throw new Error(`[supabase] Production public key must be ${PUBLISHABLE_KEY_ENV} or legacy ${LEGACY_ANON_KEY_ENV}.`);
   }
 
   if (runtimeEnv !== 'production' && !isPublishableKey(publicKey) && !isLegacyAnonKey(publicKey)) {
