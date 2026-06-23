@@ -25,6 +25,8 @@ export interface CustomSetupFlowProps {
   variant?: 'default' | 'tech';
 }
 
+import { createClient } from '@/lib/supabase/client';
+
 import {
   type SetupSystem,
   type PriceEntry,
@@ -34,6 +36,7 @@ import {
   type AnalogPricing,
   type IpPricing,
   type Totals,
+  type ActiveOffer,
   type AnalogSelections,
   type IpSelections,
   FALLBACK_ANALOG_PRICING,
@@ -145,6 +148,7 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
   const [bidForm, setBidForm] = useState({ name: '', email: '', phone: '', address: '', price: '' });
   const [isDownloadModalOpen, setIsDownloadModalOpen] = useState(false);
   const [anonForm, setAnonForm] = useState({ name: '', phone: '', address: '', email: '' });
+  const [activeOffer, setActiveOffer] = useState<ActiveOffer | null>(null);
   const router = useRouter();
   const { toast } = useToast();
   const { user, loading: authLoading } = useAuth();
@@ -152,6 +156,36 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
 
   // CRO: Dynamic lead capture trigger
   useLeadCaptureTrigger(45000);
+
+  useEffect(() => {
+    const fetchActiveOffer = async () => {
+      try {
+        const supabase = createClient();
+        const { data, error } = await supabase
+          .from('custom_setup_offers')
+          .select('*')
+          .eq('is_active', true)
+          .lte('start_date', new Date().toISOString())
+          .gte('end_date', new Date().toISOString())
+          .limit(1)
+          .single();
+        
+        if (data && !error) {
+          setActiveOffer({
+            id: data.id,
+            title: data.title,
+            description: data.description,
+            offerType: data.offer_type,
+            offerValue: data.offer_value,
+            endDate: data.end_date,
+          });
+        }
+      } catch (err) {
+        console.error('Failed to fetch offers:', err);
+      }
+    };
+    fetchActiveOffer();
+  }, []);
 
   useEffect(() => {
     const normalized = Number.isFinite(cameraCount) ? Math.min(32, Math.max(1, Math.round(cameraCount))) : 4;
@@ -365,6 +399,7 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
       automationEnabled: false,
       pricingCatalog,
       accessoryPricingOverrides: accessoryPricing,
+      activeOffer,
     });
   }, [
     system,
@@ -383,6 +418,7 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
     installationIncluded,
     pricingCatalog,
     accessoryPricing,
+    activeOffer,
   ]);
 
   const inlineQuoteSummary = useMemo(() => {
@@ -1528,6 +1564,22 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
         </CardContent>
       </Card>
 
+      {activeOffer && (
+        <div className={cn("mb-6 rounded-xl overflow-hidden text-white shadow-xl", isTech ? "bg-gradient-to-r from-emerald-500/20 to-teal-600/20 border border-emerald-500/30" : "bg-gradient-to-r from-emerald-500 to-teal-600 shadow-emerald-500/20")}>
+          <div className="p-4 sm:p-6 relative">
+            <div className="absolute top-0 right-0 p-4 opacity-20">
+              <Sparkles className="w-16 h-16" />
+            </div>
+            <h3 className={cn("text-xl font-bold mb-1", isTech && "text-emerald-400")}>{activeOffer.title}</h3>
+            <p className={cn("text-sm mb-4 max-w-lg", isTech ? "text-emerald-100/70" : "text-emerald-50")}>{activeOffer.description}</p>
+            <div className="inline-flex items-center bg-black/20 rounded-full px-4 py-1.5 text-sm font-semibold backdrop-blur-sm border border-white/10">
+              <span className="animate-pulse mr-2 w-2 h-2 rounded-full bg-red-400"></span>
+              Offer Expires: {new Date(activeOffer.endDate).toLocaleDateString()}
+            </div>
+          </div>
+        </div>
+      )}
+
       <Card className="border-primary/30 bg-primary/5">
         <CardHeader className={cardHeaderClassName}>
           <CardTitle className={isTech ? 'text-white' : undefined}>Total investment preview</CardTitle>
@@ -1575,16 +1627,20 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
                 <Badge variant="outline" className={isTech ? 'border-white/20 text-slate-300' : undefined}>Not included</Badge>
               )}
             </div>
-            {totals.installation.included && totals.installationLabor.breakdown && totals.installationLabor.breakdown.length > 0 && (
-              <ul className={cn('space-y-1 text-sm pl-4 leading-relaxed font-normal', isTech ? 'text-slate-400' : 'text-muted-foreground')}>
-                {totals.installationLabor.breakdown.map((line, idx) => (
-                  <li key={idx}>- {line}</li>
-                ))}
-              </ul>
-            )}
+
           </div>
 
-          {totals.installation.included && (
+          {totals.appliedOffer && (
+            <div className={cn("flex flex-col sm:flex-row sm:items-center justify-between font-extrabold mt-4 p-3 rounded-md border", isTech ? "bg-emerald-950/30 text-emerald-400 border-emerald-900/50" : "bg-emerald-50 text-emerald-700 border-emerald-200")}>
+              <div className="flex items-center gap-2 mb-1 sm:mb-0">
+                <Sparkles className="w-4 h-4" />
+                <span>Special Offer Applied: {totals.appliedOffer.title}</span>
+              </div>
+              <span className="text-right">- {formatCurrency(totals.appliedOffer.savings)}</span>
+            </div>
+          )}
+
+          {totals.installation.included && !totals.appliedOffer && (
             <div className="pt-2">
               <FreeInstallationOfferBanner 
                 installationPrice={totals.installation.sale} 
@@ -1595,6 +1651,12 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
           )}
 
           <div className={cn('rounded-lg p-4 text-sm shadow-inner', isTech ? 'bg-white/5 text-slate-200' : 'bg-white/70')}>
+            {totals.appliedOffer && (
+              <p className={cn('flex items-center justify-between text-sm mb-1', isTech ? 'text-slate-400 line-through' : 'text-slate-500 line-through')}>
+                <span>Original Total</span>
+                <span>{formatCurrency(totals.appliedOffer.originalSale)}</span>
+              </p>
+            )}
             <p className={cn('flex items-center justify-between text-base font-semibold', isTech ? 'text-white' : 'text-slate-900')}>
               <span>Sale Total</span>
               <span>{formatCurrency(totals.overall.sale)}</span>

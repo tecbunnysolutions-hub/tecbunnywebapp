@@ -195,15 +195,17 @@ async function getFallbackPricing() {
     mrpPerUnit: i.mrp ? Number(i.mrp) : 0,
     salePerUnit: Number(i.sale)
   }));
-  const getItem = (id: string) => getItems('accessory').find(i => i.id === id) || { id, label: 'Unknown', mrp: 0, sale: 0 };
+  const getAccessory = (id: string) => getItems('accessory').find(i => i.id === id) || { id, label: 'Unknown', mrp: 0, sale: 0 };
+  const getAnalogCamera = (id: string) => getItems('analog_camera').find(i => i.id === id) || { id, label: 'Unknown', mrp: 0, sale: 0 };
+  const getIpCamera = (id: string) => getItems('ip_camera').find(i => i.id === id) || { id, label: 'Unknown', mrp: 0, sale: 0 };
   
   return {
     analog: {
       dvr: getItems('analog_dvr').filter((entry) => [4, 8, 16].includes(entry.capacity)),
       smps: getItems('analog_smps').filter((entry) => [4, 8, 16].includes(entry.capacity)),
       camera: {
-        '2.4mp': { standard: getItem('analog-2.4-standard'), dualLight: getItem('analog-2.4-dual') },
-        '5mp': { standard: getItem('analog-5-standard'), dualLight: getItem('analog-5-dual') }
+        '2.4mp': { standard: getAnalogCamera('analog-2.4-standard'), dualLight: getAnalogCamera('analog-2.4-dual') },
+        '5mp': { standard: getAnalogCamera('analog-5-standard'), dualLight: getAnalogCamera('analog-5-dual') }
       },
       cable: getItems('analog_cable')
     } as AnalogPricing,
@@ -211,8 +213,8 @@ async function getFallbackPricing() {
       nvr: getItems('ip_nvr').filter((entry) => [8, 16, 32].includes(entry.capacity)),
       poe: getItems('ip_poe').filter((entry) => [4, 8, 16, 32].includes(entry.capacity)),
       camera: {
-        '2mp': { standard: getItem('ip-2-standard'), dualLight: getItem('ip-2-dual') },
-        '5mp': { standard: getItem('ip-5-standard'), dualLight: getItem('ip-5-dual') }
+        '2mp': { standard: getIpCamera('ip-2-standard'), dualLight: getIpCamera('ip-2-dual') },
+        '5mp': { standard: getIpCamera('ip-4-standard'), dualLight: getIpCamera('ip-4-dual') }
       },
       cable: getItems('ip_cable')
     } as IpPricing,
@@ -220,9 +222,9 @@ async function getFallbackPricing() {
     monitorOptions: getItems('monitor'),
     rackOptions: getItems('rack'),
     conduitOptions: getItems('conduit'),
-    installationOption: getItems('installation')[0] || getItem('installation'),
-    wallMountAddon: getItem('wall-mount-addon'),
-    spikeGuardOption: getItem('spike-guard')
+    installationOption: getItems('installation')[0] || getAccessory('installation'),
+    wallMountAddon: getAccessory('wall-mount-addon'),
+    spikeGuardOption: getAccessory('spike-guard')
   };
 }
 
@@ -827,6 +829,15 @@ export interface IpSelections {
   dualLight: boolean;
 }
 
+export interface ActiveOffer {
+  id: string;
+  title: string;
+  description: string;
+  offerType: 'PERCENTAGE_DISCOUNT' | 'FREE_INSTALLATION' | 'FREE_ACCESSORY';
+  offerValue: string;
+  endDate: string;
+}
+
 export interface Totals {
   system: { mrp: number; sale: number; breakdown: string[] };
   hdd: { mrp: number; sale: number; label: string };
@@ -838,6 +849,12 @@ export interface Totals {
   installation: { mrp: number; sale: number; included: boolean };
   installationLabor: { sale: number; breakdown: string[] };
   overall: { mrp: number; sale: number; discountAmount: number; discountPercent: number };
+  appliedOffer?: {
+    title: string;
+    originalSale: number;
+    discountedSale: number;
+    savings: number;
+  } | null;
 }
 
 export function buildAnalogSystemSummary(cameraCount: number, selections: AnalogSelections, pricing: AnalogPricing, cableUnits?: number): {
@@ -929,6 +946,7 @@ export interface CalculateTotalsInput {
   automationEnabled?: boolean;
   pricingCatalog: Awaited<ReturnType<typeof buildPricingCatalog>>;
   accessoryPricingOverrides?: Record<string, { mrp: number; sale: number }> | null;
+  activeOffer?: ActiveOffer | null;
 }
 
 export function resolveAccessoryPrice(
@@ -966,6 +984,7 @@ export function calculateTotals({
   automationEnabled = false,
   pricingCatalog,
   accessoryPricingOverrides = null,
+  activeOffer = null,
 }: CalculateTotalsInput): Totals {
   const analogPricing = pricingCatalog.analog;
   const ipPricing = pricingCatalog.ip;
@@ -1072,8 +1091,59 @@ export function calculateTotals({
     
   const equipmentSale = roundUpToThousandMinusOne(rawEquipmentSale);
 
+  let finalInstallationSale = installationSale;
+  
+  let appliedOfferResult: Totals['appliedOffer'] = null;
+  
+  if (activeOffer) {
+    if (activeOffer.offerType === 'FREE_INSTALLATION') {
+      appliedOfferResult = {
+        title: activeOffer.title,
+        originalSale: finalInstallationSale,
+        discountedSale: 0,
+        savings: finalInstallationSale,
+      };
+      finalInstallationSale = 0;
+    }
+    // We will process FREE_ACCESSORY below if it matches
+  }
+
   const overallMrp = roundUpToThousandMinusOne(equipmentMrp + installationMrp);
-  const overallSale = roundUpToThousandMinusOne(equipmentSale + installationSale);
+  let overallSale = roundUpToThousandMinusOne(equipmentSale + finalInstallationSale);
+  
+  if (activeOffer && activeOffer.offerType === 'PERCENTAGE_DISCOUNT') {
+    const percentage = parseFloat(activeOffer.offerValue);
+    if (!isNaN(percentage) && percentage > 0 && percentage <= 100) {
+      const discount = Math.round((overallSale * percentage) / 100);
+      appliedOfferResult = {
+        title: activeOffer.title,
+        originalSale: overallSale,
+        discountedSale: overallSale - discount,
+        savings: discount,
+      };
+      overallSale = overallSale - discount;
+    }
+  }
+
+  // Handle FREE_ACCESSORY
+  if (activeOffer && activeOffer.offerType === 'FREE_ACCESSORY') {
+    let savings = 0;
+    if (activeOffer.offerValue === hddId) savings = resolvedHddPrice.sale;
+    else if (activeOffer.offerValue === monitorId && monitorIncluded) savings = monitorSale;
+    else if (activeOffer.offerValue === 'wall-mount-addon' && wallMountIncluded) savings = wallMountSale;
+    else if (activeOffer.offerValue === 'spike-guard' && spikeGuardIncluded) savings = spikeGuardSale;
+    else if (rackId && activeOffer.offerValue === rackId) savings = rackSale;
+
+    if (savings > 0) {
+      appliedOfferResult = {
+        title: activeOffer.title,
+        originalSale: overallSale,
+        discountedSale: overallSale - savings,
+        savings: savings,
+      };
+      overallSale = overallSale - savings;
+    }
+  }
   
   const validatedMrp = Math.max(overallMrp, overallSale);
   const validatedSale = Math.min(overallSale, validatedMrp);
@@ -1089,7 +1159,7 @@ export function calculateTotals({
     spikeGuard: { mrp: spikeGuardMrp, sale: spikeGuardSale, included: spikeGuardIncluded },
     rack: { mrp: rackMrp, sale: rackSale, selected: !!rackId, label: rackLabel },
     conduit: { mrp: conduitMrp, sale: conduitSale, selected: !!conduitPipeId && conduitMeters > 0, label: conduitLabel, meters: conduitMeters },
-    installation: { mrp: installationMrp, sale: installationSale, included: installationIncluded },
+    installation: { mrp: installationMrp, sale: finalInstallationSale, included: installationIncluded },
     installationLabor: { sale: installationLaborCharges.sale, breakdown: installationLaborCharges.breakdown },
     overall: {
       mrp: validatedMrp,
@@ -1097,5 +1167,6 @@ export function calculateTotals({
       discountAmount,
       discountPercent,
     },
+    appliedOffer: appliedOfferResult,
   };
 }
