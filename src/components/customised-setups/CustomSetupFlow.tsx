@@ -199,10 +199,14 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
   const cardHeaderClassName = isTech ? 'text-foreground font-semibold' : undefined;
   const cardDescriptionClassName = isTech ? 'text-muted-foreground' : undefined;
   const inputClassName = isTech ? 'bg-muted/10 border-border text-foreground placeholder:text-muted-foreground' : undefined;
-  const selectTriggerClassName = isTech ? 'bg-muted/10 border-border text-foreground' : undefined;
-  const selectContentClassName = isTech ? 'bg-popover text-popover-foreground border-border' : undefined;
-  const selectItemClassName = isTech ? 'text-foreground focus:bg-primary/10 focus:text-primary' : undefined;
-  const selectMutedClassName = isTech ? 'text-slate-400' : 'text-muted-foreground';
+  const selectTriggerClassName = isTech ? 'border-slate-700 bg-slate-950/95 text-slate-50' : undefined;
+  const selectContentClassName = isTech
+    ? 'z-[80] border-slate-700 bg-slate-950 text-slate-50 shadow-2xl shadow-black/70'
+    : undefined;
+  const selectItemClassName = isTech
+    ? 'min-h-12 items-start py-2.5 text-slate-50 focus:bg-cyan-500/15 focus:text-cyan-100 data-[highlighted]:bg-cyan-500/15 data-[highlighted]:text-cyan-100'
+    : undefined;
+  const selectMutedClassName = isTech ? 'text-slate-300' : 'text-muted-foreground';
 
   // Handle camera count input changes
   const handleCameraCountChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -954,7 +958,7 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
                   const isDisabled = option.capacity < recommendedDvrCapacity;
                   return (
                     <SelectItem key={option.id} value={option.id} disabled={isDisabled} className={selectItemClassName}>
-                      <div className="flex flex-col">
+                      <div className="flex w-full flex-col gap-0.5 leading-normal">
                         <span>{option.label}</span>
                         <span className={cn('text-xs', selectMutedClassName)}>
                           Supports up to {option.capacity} cameras · {formatCurrency(option.sale)} sale
@@ -985,7 +989,7 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
                   const isDisabled = option.capacity < recommendedSmpsCapacity;
                   return (
                     <SelectItem key={option.id} value={option.id} disabled={isDisabled} className={selectItemClassName}>
-                      <div className="flex flex-col">
+                      <div className="flex w-full flex-col gap-0.5 leading-normal">
                         <span>{option.label}</span>
                         <span className={cn('text-xs', selectMutedClassName)}>
                           {quantity} unit{quantity > 1 ? 's' : ''} for {cameraCount} cameras · {formatCurrency(totalSale)} sale
@@ -1075,7 +1079,7 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
                   const totalSale = option.salePerUnit * quantity;
                   return (
                     <SelectItem key={option.id} value={option.id} className={selectItemClassName}>
-                      <div className="flex flex-col">
+                      <div className="flex w-full flex-col gap-0.5 leading-normal">
                         <span>{option.label}</span>
                         <span className={cn('text-xs', selectMutedClassName)}>
                           100 m coverage per unit · Est. {quantity} unit{quantity > 1 ? 's' : ''} · {formatCurrency(totalSale)} sale
@@ -1116,7 +1120,7 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
                   const isDisabled = option.capacity < recommendedCapacity;
                   return (
                     <SelectItem key={option.id} value={option.id} disabled={isDisabled} className={selectItemClassName}>
-                      <div className="flex flex-col">
+                      <div className="flex w-full flex-col gap-0.5 leading-normal">
                         <span>{option.label}</span>
                         <span className={cn('text-xs', selectMutedClassName)}>
                           Supports {option.capacity} cameras · {formatCurrency(option.sale)} sale
@@ -1144,7 +1148,7 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
                   const isDisabled = option.capacity < recommendedCapacity;
                   return (
                     <SelectItem key={option.id} value={option.id} disabled={isDisabled} className={selectItemClassName}>
-                      <div className="flex flex-col">
+                      <div className="flex w-full flex-col gap-0.5 leading-normal">
                         <span>{option.label}</span>
                         <span className={cn('text-xs', selectMutedClassName)}>
                           {quantity} unit{quantity > 1 ? 's' : ''} · {formatCurrency(totalSale)} sale
@@ -1231,7 +1235,7 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
                   const totalSale = option.salePerUnit * quantity;
                   return (
                     <SelectItem key={option.id} value={option.id} className={selectItemClassName}>
-                      <div className="flex flex-col">
+                      <div className="flex w-full flex-col gap-0.5 leading-normal">
                         <span>{option.label}</span>
                         <span className={cn('text-xs', selectMutedClassName)}>
                           100 m coverage per unit · Est. {quantity} unit{quantity > 1 ? 's' : ''} · {formatCurrency(totalSale)} sale
@@ -1327,7 +1331,7 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
               <SelectContent className={selectContentClassName}>
                 {selectableHddOptions.map((option: PriceEntry) => (
                   <SelectItem key={option.id} value={option.id} className={selectItemClassName}>
-                    <div className="flex flex-col">
+                    <div className="flex w-full flex-col gap-0.5 leading-normal">
                       <span>{option.label}</span>
                       <span className={cn('text-xs', selectMutedClassName)}>
                         {option.mrp ? `${formatCurrency(option.mrp)} MRP · ` : ''}{formatCurrency(option.sale)} sale
@@ -1369,7 +1373,7 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
                         const resolved = resolveAccessoryPrice(option.id, option.mrp ?? 0, option.sale, accessoryPricing);
                         return (
                           <SelectItem key={option.id} value={option.id} className={selectItemClassName}>
-                            <div className="flex flex-col">
+                            <div className="flex w-full flex-col gap-0.5 leading-normal">
                               <span>{option.label}</span>
                               <span className={cn('text-xs', selectMutedClassName)}>
                                 {resolved.mrp ? `${formatCurrency(resolved.mrp)} MRP · ` : ''}{formatCurrency(resolved.sale)} sale
@@ -1422,7 +1426,7 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
                       const resolved = resolveAccessoryPrice(option.id, option.mrp ?? 0, option.sale, accessoryPricing);
                       return (
                         <SelectItem key={option.id} value={option.id} className={selectItemClassName}>
-                          <div className="flex flex-col">
+                          <div className="flex w-full flex-col gap-0.5 leading-normal">
                             <span>{option.label}</span>
                             <span className={cn('text-xs', selectMutedClassName)}>
                               {resolved.mrp ? `${formatCurrency(resolved.mrp)} MRP · ` : ''}{formatCurrency(resolved.sale)} sale
