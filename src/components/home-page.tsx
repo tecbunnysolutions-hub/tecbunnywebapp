@@ -283,7 +283,7 @@ export default function HomePage({
             <p className="text-center text-xs font-semibold uppercase tracking-[0.35em] text-zinc-500 mb-6">
               Authorized Product Brands
             </p>
-            <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-6 md:gap-x-16 opacity-65">
+            <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-6 md:gap-x-16">
               {initialPartnerBrands.map((brand) => (
                 <span key={brand.name} className="flex items-center justify-center transition-all hover:scale-105 duration-200">
                   {brand.logoUrl ? (
