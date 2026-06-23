@@ -20,9 +20,6 @@ import { useToast } from '../../../../hooks/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { createClient } from '@/lib/supabase/client';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { Trash } from 'lucide-react';
 
 interface ProductSelectorProps {
   title: string;
@@ -101,9 +98,6 @@ export default function HomepageSettingsPage() {
   const [newArrivalProductIds, setNewArrivalProductIds] = React.useState<Set<string>>(new Set());
   const [trendingProductIds, setTrendingProductIds] = React.useState<Set<string>>(new Set());
   const [dealProductIds, setDealProductIds] = React.useState<Set<string>>(new Set());
-  const [partnerBrands, setPartnerBrands] = React.useState<Array<{ name: string; logoUrl: string }>>([]);
-  const [newBrandName, setNewBrandName] = React.useState('');
-  const [isUploadingBrand, setIsUploadingBrand] = React.useState(false);
   const [previewOpen, setPreviewOpen] = React.useState(false);
   const [previewData, setPreviewData] = React.useState<{ featured: Product[]; newArrivals: Product[]; trending: Product[]; deals: Product[] } | null>(null);
 
@@ -186,19 +180,6 @@ export default function HomepageSettingsPage() {
         setNewArrivalProductIds(loadIds('newArrivalProductIds'));
         setTrendingProductIds(loadIds('trendingProductIds'));
         setDealProductIds(loadIds('dealProductIds'));
-
-        const pbRaw = settingsMap.get('partnerBrands');
-        if (pbRaw) {
-          if (pbRaw.startsWith('[')) {
-            try {
-              setPartnerBrands(JSON.parse(pbRaw));
-            } catch (e) {
-              setPartnerBrands([]);
-            }
-          } else {
-            setPartnerBrands(pbRaw.split(',').map((b: string) => ({ name: b.trim(), logoUrl: '' })).filter((b: {name: string}) => b.name.length > 0));
-          }
-        }
       } catch (error) {
         toast({
           variant: 'destructive',
@@ -244,7 +225,6 @@ export default function HomepageSettingsPage() {
         { key: 'newArrivalProductIds', value: JSON.stringify(Array.from(newArrivalProductIds)) },
         { key: 'trendingProductIds', value: JSON.stringify(Array.from(trendingProductIds)) },
         { key: 'dealProductIds', value: JSON.stringify(Array.from(dealProductIds)) },
-        { key: 'partnerBrands', value: JSON.stringify(partnerBrands) },
       ];
       for (const p of payloads) {
         const res = await fetch(`/api/settings`, {
@@ -267,47 +247,6 @@ export default function HomepageSettingsPage() {
         title: 'Error Saving Settings',
         description: e.message || 'Unknown error',
       });
-    }
-  };
-
-  const uploadBrandFile = async (file: File): Promise<string> => {
-    try {
-      if (!file.type.startsWith('image/')) {
-        throw new Error('Please select a valid image file');
-      }
-      if (file.size > 4 * 1024 * 1024) {
-        throw new Error('File size must be less than 4MB');
-      }
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('type', 'brand');
-      
-      const response = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData,
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: 'Upload failed' }));
-        const errMsg = typeof errorData.error === 'object' && errorData.error?.message
-          ? errorData.error.message
-          : (typeof errorData.error === 'string' ? errorData.error : `Upload failed: ${response.statusText}`);
-        throw new Error(errMsg);
-      }
-      
-      const data = await response.json();
-      const imageUrl = data.secure_url || data.url;
-      if (!imageUrl) {
-        throw new Error('Invalid response from upload service');
-      }
-      return imageUrl;
-    } catch (error) {
-      toast({
-        variant: 'destructive',
-        title: 'Upload failed',
-        description: error instanceof Error ? error.message : 'Unknown error',
-      });
-      throw error;
     }
   };
 
@@ -454,86 +393,6 @@ export default function HomepageSettingsPage() {
           onAutoFillPreview={() => previewAutoFill()}
           maxSelection={MAX_SELECTION}
         />
-      </div>
-
-      <div className="grid grid-cols-1 gap-8 mt-8">
-        <Card>
-          <CardHeader>
-            <CardTitle>Authorized Partner Brands</CardTitle>
-            <CardDescription>Manage the brands displayed in the logo strip on the homepage.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-              {partnerBrands.map((brand, idx) => (
-                <div key={idx} className="relative group border rounded-lg p-4 flex flex-col items-center justify-center gap-2 bg-zinc-50 dark:bg-zinc-900/50">
-                  <Button 
-                    variant="destructive" 
-                    size="icon" 
-                    className="absolute -top-2 -right-2 h-6 w-6 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                    onClick={() => setPartnerBrands(prev => prev.filter((_, i) => i !== idx))}
-                  >
-                    <Trash className="h-3 w-3" />
-                  </Button>
-                  {brand.logoUrl ? (
-                    <img src={brand.logoUrl} alt={brand.name} className="h-12 w-auto object-contain max-w-full" />
-                  ) : (
-                    <div className="h-12 flex items-center justify-center text-muted-foreground font-semibold text-sm">No Logo</div>
-                  )}
-                  <span className="text-xs font-medium text-center truncate w-full">{brand.name}</span>
-                </div>
-              ))}
-            </div>
-            
-            <div className="border-t pt-6">
-              <h4 className="text-sm font-semibold mb-4">Add New Brand</h4>
-              <div className="flex flex-col sm:flex-row items-end gap-4 max-w-3xl">
-                <div className="space-y-2 flex-1 w-full">
-                  <Label htmlFor="brand-name">Brand Name</Label>
-                  <Input 
-                    id="brand-name" 
-                    placeholder="e.g. DAHUA" 
-                    value={newBrandName} 
-                    onChange={e => setNewBrandName(e.target.value)} 
-                  />
-                </div>
-                <div className="space-y-2 flex-1 w-full">
-                  <Label htmlFor="brand-logo">Brand Logo (Optional)</Label>
-                  <Input 
-                    id="brand-logo" 
-                    type="file" 
-                    accept="image/*"
-                    disabled={isUploadingBrand}
-                  />
-                </div>
-                <Button 
-                  disabled={isUploadingBrand || !newBrandName.trim()}
-                  onClick={async () => {
-                    const fileInput = document.getElementById('brand-logo') as HTMLInputElement;
-                    const file = fileInput?.files?.[0];
-                    let logoUrl = '';
-                    
-                    if (file) {
-                      setIsUploadingBrand(true);
-                      try {
-                        logoUrl = await uploadBrandFile(file);
-                      } catch (e) {
-                        setIsUploadingBrand(false);
-                        return;
-                      }
-                      setIsUploadingBrand(false);
-                    }
-                    
-                    setPartnerBrands(prev => [...prev, { name: newBrandName.trim(), logoUrl }]);
-                    setNewBrandName('');
-                    if (fileInput) fileInput.value = '';
-                  }}
-                >
-                  {isUploadingBrand ? 'Uploading...' : 'Add Brand'}
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
       </div>
 
       {/* Preview Modal */}
