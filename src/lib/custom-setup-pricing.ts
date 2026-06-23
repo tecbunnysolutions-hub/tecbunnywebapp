@@ -107,10 +107,9 @@ export const FALLBACK_IP_PRICING: IpPricing = {
 };
 
 export const FALLBACK_HDD_OPTIONS: PriceEntry[] = [
-  { id: 'hdd-new-1tb', label: 'New 1TB', mrp: 12999, sale: 9999 },
-  { id: 'hdd-new-2tb', label: 'New 2TB', mrp: 16899, sale: 12999 },
-  { id: 'hdd-refurb-500gb', label: 'Refurbished 500GB', mrp: 7799, sale: 5999 },
-  { id: 'hdd-refurb-1tb', label: 'Refurbished 1TB', mrp: 10399, sale: 7999 },
+  { id: 'hdd-surveillance-500gb', label: '500 GB Surveillance HDD', mrp: 3499, sale: 2699 },
+  { id: 'hdd-surveillance-1tb', label: '1 TB Surveillance HDD', mrp: 4499, sale: 3399 },
+  { id: 'hdd-surveillance-2tb', label: '2 TB Surveillance HDD', mrp: 5999, sale: 4699 },
 ];
 
 export const FALLBACK_MONITOR_OPTION: PriceEntry = {
@@ -218,7 +217,7 @@ async function getFallbackPricing() {
       },
       cable: getItems('ip_cable')
     } as IpPricing,
-    hddOptions: getItems('hdd'),
+    hddOptions: getItems('hdd').filter(i => !/new|refurbished/i.test(i.label)),
     monitorOptions: getItems('monitor'),
     rackOptions: getItems('rack'),
     conduitOptions: getItems('conduit'),
