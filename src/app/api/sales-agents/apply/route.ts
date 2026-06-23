@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { nanoid } from 'nanoid';
 
 import { createClient } from '@/lib/supabase/server';
+import { logger } from '@/lib/logger';
 
 // export const dynamic = 'force-dynamic';
 
@@ -58,7 +59,7 @@ export async function POST(_: Request) {
     return NextResponse.json({ message: 'Application submitted successfully. You will be notified upon review.' }, { status: 201 });
 
   } catch (error: any) {
-    console.error('Error in sales agent application:', error);
-    return NextResponse.json({ error: 'An unexpected error occurred.', details: error.message }, { status: 500 });
+    logger.error('sales_agent_application.unhandled', { error: error instanceof Error ? error.message : error });
+    return NextResponse.json({ error: 'An unexpected error occurred.' }, { status: 500 });
   }
 }

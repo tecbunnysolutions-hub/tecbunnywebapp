@@ -73,6 +73,13 @@ export function rateLimit(
   if (typeof a === 'string' && typeof b === 'object' && b !== null) {
     const bucketName = a
     const opts = b as RateLimitOptions
+    const redis = getRedis()
+
+    if (process.env.NODE_ENV === 'production' && !redis) {
+      logger.error('rate_limit_sync_no_redis_production', { key, bucketName })
+      return false
+    }
+
     if (!stores[bucketName]) stores[bucketName] = new Map()
     const store = stores[bucketName]
     const now = Date.now()
@@ -134,6 +141,7 @@ export function rateLimit(
       // memory fallback for async variant (Warning: not shared across serverless instances)
       if (process.env.NODE_ENV === 'production' && !redis) {
         logger.error('rate_limit_no_redis_production', { key })
+        return { allowed: false, remaining: 0, reset: now + windowMs }
       }
       const arr = memoryBuckets.get(key) || []
       const kept = arr.filter(ts => ts > windowStart)

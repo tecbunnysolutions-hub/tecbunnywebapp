@@ -120,8 +120,7 @@ export async function POST(req: Request) {
   } catch (error) {
     logger.error('Bid submission failed', { error });
     return NextResponse.json({ 
-      error: 'Failed to submit bid', 
-      details: error instanceof Error ? error.message : String(error)
+      error: 'Failed to submit bid',
     }, { status: 500 });
   }
 }

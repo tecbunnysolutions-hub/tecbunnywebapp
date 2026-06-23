@@ -1,17 +1,28 @@
 import { NextResponse } from 'next/server';
+import { z } from 'zod';
 import { WhatsAppService } from '@/lib/whatsapp-service';
-import { createServerClient } from '@/lib/supabase/server';
+import { AdminAuthError, requireAdminContext } from '@/lib/auth/admin-guard';
+import { logger } from '@/lib/logger';
+
+const BlitzPayloadSchema = z.object({
+  localArea: z.string().trim().min(1).max(80).default('North Goa'),
+  targetLeads: z.array(z.object({
+    phone: z.string().trim().regex(/^\+?\d{10,15}$/),
+    name: z.string().trim().min(1).max(120),
+    id: z.string().trim().min(1).max(120),
+  })).min(1).max(50),
+});
 
 export async function POST(req: Request) {
   try {
-    const { targetLeads, localArea = "North Goa" } = await req.json();
-    const supabase = await createServerClient();
-    
-    // Auth Check
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session?.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const { serviceSupabase: supabase } = await requireAdminContext();
+    const parsed = BlitzPayloadSchema.safeParse(await req.json());
+
+    if (!parsed.success) {
+      return NextResponse.json({ error: 'Invalid broadcast payload' }, { status: 400 });
     }
+
+    const { targetLeads, localArea } = parsed.data;
 
     const whatsappService = new WhatsAppService();
 
@@ -34,15 +45,24 @@ export async function POST(req: Request) {
     const successCount = results.filter(r => r === true).length;
 
     // Log the blitz action for analytics
-    await supabase.from('marketing_campaigns').insert({
+    const { error: campaignError } = await supabase.from('marketing_campaigns').insert({
       campaign_name: `24HR_BLITZ_${localArea.toUpperCase().replace(/\s+/g, '_')}`,
       leads_targeted: targetLeads.length,
       success_count: successCount,
       executed_at: new Date().toISOString(),
     });
 
+    if (campaignError) {
+      logger.error('marketing_blitz.log_failed', { error: campaignError.message });
+    }
+
     return NextResponse.json({ success: true, message: `Blast deployed to ${successCount} local leads in ${localArea}.` });
   } catch (error) {
+    if (error instanceof AdminAuthError) {
+      return NextResponse.json({ error: error.message }, { status: error.status });
+    }
+
+    logger.error('marketing_blitz.unhandled', { error: error instanceof Error ? error.message : error });
     return NextResponse.json({ error: 'Broadcast cascade failed' }, { status: 500 });
   }
 }

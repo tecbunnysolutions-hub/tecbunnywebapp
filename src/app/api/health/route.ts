@@ -12,9 +12,29 @@ interface HealthCheck {
   details?: any;
 }
 
-export async function GET(_request: NextRequest) {
+function canShowDetailedHealth(request: NextRequest) {
+  if (process.env.NODE_ENV !== 'production') {
+    return true;
+  }
+
+  const expected = process.env.INTERNAL_API_KEY || process.env.INTERNAL_API_TOKEN || process.env.CRON_SECRET;
+  const provided = request.headers.get('x-internal-api-key') || request.headers.get('x-internal-api-token');
+  return Boolean(expected && provided && provided === expected);
+}
+
+function publicCheck(check: HealthCheck): HealthCheck {
+  return {
+    service: check.service,
+    status: check.status,
+    message: check.status === 'healthy' ? 'OK' : check.status === 'degraded' ? 'Degraded' : 'Unavailable',
+    responseTime: check.responseTime,
+  };
+}
+
+export async function GET(request: NextRequest) {
   const checks: HealthCheck[] = [];
   const startTime = Date.now();
+  const detailed = canShowDetailedHealth(request);
 
   try {
     // 1. Environment Variables Check
@@ -163,8 +183,8 @@ export async function GET(_request: NextRequest) {
       totalResponseTime,
       version: '1.0.0',
       environment: process.env.NODE_ENV || 'development',
-      features: featureStatus,
-      checks
+      ...(detailed ? { features: featureStatus } : {}),
+      checks: detailed ? checks : checks.map(publicCheck)
     };
 
     logger.info('Health check completed', {
@@ -188,7 +208,7 @@ export async function GET(_request: NextRequest) {
       timestamp: new Date().toISOString(),
       totalResponseTime: Date.now() - startTime,
       error: 'Health check system failure',
-      message: error instanceof Error ? error.message : 'Unknown error'
+      ...(detailed ? { message: error instanceof Error ? error.message : 'Unknown error' } : {})
     }, { status: 503 });
   }
 }

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 
 import { createClient } from '@/lib/supabase/server'
+import { logger } from '@/lib/logger'
 
 // export const dynamic = 'force-dynamic'
 
@@ -19,7 +20,8 @@ export async function POST() {
     .maybeSingle()
 
   if (fetchErr && !String(fetchErr.message || '').includes('No rows')) {
-    return NextResponse.json({ error: 'Failed to check existing application', details: fetchErr.message }, { status: 500 })
+    logger.error('agents_apply.lookup_failed', { error: fetchErr.message })
+    return NextResponse.json({ error: 'Failed to check existing application' }, { status: 500 })
   }
 
   if (existing) {
@@ -41,7 +43,8 @@ export async function POST() {
     .single()
 
   if (insertErr) {
-    return NextResponse.json({ error: 'Failed to submit application', details: insertErr.message }, { status: 400 })
+    logger.warn('agents_apply.insert_failed', { error: insertErr.message })
+    return NextResponse.json({ error: 'Failed to submit application' }, { status: 400 })
   }
 
   return NextResponse.json({ success: true, agent: created })

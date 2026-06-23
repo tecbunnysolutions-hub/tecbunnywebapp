@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { AdminAuthError, requireAdminContext } from '@/lib/auth/admin-guard';
+import { logger } from '@/lib/logger';
 
 export async function POST(request: NextRequest) {
   try {
+    await requireAdminContext();
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -16,9 +19,9 @@ export async function POST(request: NextRequest) {
         .rpc('check_customer_promotions');
 
       if (error) {
-        console.error('Error checking promotions:', error);
+        logger.error('customer_promotions.check_all_failed', { error: error.message });
         return NextResponse.json(
-          { error: 'Failed to check customer promotions', details: error.message },
+          { error: 'Failed to check customer promotions' },
           { status: 500 }
         );
       }
@@ -39,8 +42,9 @@ export async function POST(request: NextRequest) {
         .order('created_at', { ascending: false });
 
       if (ordersError) {
+        logger.error('customer_promotions.orders_fetch_failed', { error: ordersError.message });
         return NextResponse.json(
-          { error: 'Failed to fetch customer orders', details: ordersError.message },
+          { error: 'Failed to fetch customer orders' },
           { status: 500 }
         );
       }
@@ -53,8 +57,9 @@ export async function POST(request: NextRequest) {
         .single();
 
       if (customerError) {
+        logger.error('customer_promotions.customer_fetch_failed', { error: customerError.message });
         return NextResponse.json(
-          { error: 'Failed to fetch customer info', details: customerError.message },
+          { error: 'Failed to fetch customer info' },
           { status: 500 }
         );
       }
@@ -163,8 +168,9 @@ export async function POST(request: NextRequest) {
         .eq('id', customerId);
 
       if (updateError) {
+        logger.error('customer_promotions.apply_failed', { error: updateError.message });
         return NextResponse.json(
-          { error: 'Failed to apply promotion', details: updateError.message },
+          { error: 'Failed to apply promotion' },
           { status: 500 }
         );
       }
@@ -185,7 +191,7 @@ export async function POST(request: NextRequest) {
         });
 
       if (recordError) {
-        console.error('Failed to record promotion:', recordError);
+        logger.error('customer_promotions.record_failed', { error: recordError.message });
       }
 
       return NextResponse.json({
@@ -204,8 +210,9 @@ export async function POST(request: NextRequest) {
         .single();
 
       if (error) {
+        logger.error('customer_promotions.settings_fetch_failed', { error: error.message });
         return NextResponse.json(
-          { error: 'Failed to fetch settings', details: error.message },
+          { error: 'Failed to fetch settings' },
           { status: 500 }
         );
       }
@@ -226,8 +233,9 @@ export async function POST(request: NextRequest) {
         });
 
       if (error) {
+        logger.error('customer_promotions.settings_update_failed', { error: error.message });
         return NextResponse.json(
-          { error: 'Failed to update settings', details: error.message },
+          { error: 'Failed to update settings' },
           { status: 500 }
         );
       }
@@ -247,8 +255,9 @@ export async function POST(request: NextRequest) {
         .limit(100);
 
       if (statsError) {
+        logger.error('customer_promotions.stats_fetch_failed', { error: statsError.message });
         return NextResponse.json(
-          { error: 'Failed to fetch statistics', details: statsError.message },
+          { error: 'Failed to fetch statistics' },
           { status: 500 }
         );
       }
@@ -261,8 +270,9 @@ export async function POST(request: NextRequest) {
         .eq('is_active', true);
 
       if (categoryError) {
+        logger.error('customer_promotions.category_fetch_failed', { error: categoryError.message });
         return NextResponse.json(
-          { error: 'Failed to fetch category stats', details: categoryError.message },
+          { error: 'Failed to fetch category stats' },
           { status: 500 }
         );
       }
@@ -303,9 +313,13 @@ export async function POST(request: NextRequest) {
     );
 
   } catch (error) {
-    console.error('Customer promotions API error:', error);
+    if (error instanceof AdminAuthError) {
+      return NextResponse.json({ error: error.message }, { status: error.status });
+    }
+
+    logger.error('customer_promotions.post_unhandled', { error: error instanceof Error ? error.message : error });
     return NextResponse.json(
-      { error: 'Internal server error', details: error instanceof Error ? error.message : 'Unknown error' },
+      { error: 'Internal server error' },
       { status: 500 }
     );
   }
@@ -313,6 +327,7 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
+    await requireAdminContext();
     const { searchParams } = new URL(request.url);
     const action = searchParams.get('action');
 
@@ -350,9 +365,13 @@ export async function GET(request: NextRequest) {
     );
 
   } catch (error) {
-    console.error('Customer promotions API GET error:', error);
+    if (error instanceof AdminAuthError) {
+      return NextResponse.json({ error: error.message }, { status: error.status });
+    }
+
+    logger.error('customer_promotions.get_unhandled', { error: error instanceof Error ? error.message : error });
     return NextResponse.json(
-      { error: 'Internal server error', details: error instanceof Error ? error.message : 'Unknown error' },
+      { error: 'Internal server error' },
       { status: 500 }
     );
   }

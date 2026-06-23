@@ -15,7 +15,7 @@ const BroadcastPayloadSchema = z.object({
   campaignName: z.string().min(1, "Campaign Name is required"),
   channelType: z.enum(['whatsapp', 'email']),
   template: z.string().min(1, "Message template is required"),
-  contacts: z.array(ContactRowSchema).min(1, "At least one contact is required")
+  contacts: z.array(ContactRowSchema).min(1, "At least one contact is required").max(200, "At most 200 contacts can be processed per batch")
 });
 
 function enforceIndianFormatting(phone: string): string {

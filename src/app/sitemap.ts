@@ -3,6 +3,8 @@ import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import { filterPubliclyVisibleProducts } from '@/lib/product-visibility';
 import { isSupabasePublicConfigured, requireSupabasePublicEnv } from '@/lib/supabase/env';
 
+export const revalidate = 3600;
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = 'https://www.tecbunny.com';
   const now = new Date();
@@ -21,7 +23,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       
       const { data: products } = await supabase
         .from('products')
-        .select('*')
+        .select('id, updated_at, status, is_deleted, visibility, sales_channel, available_online, is_service_only')
         .eq('status', 'active')
         .eq('is_deleted', false);
 

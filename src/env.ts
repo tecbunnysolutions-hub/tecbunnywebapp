@@ -13,6 +13,17 @@ const envSchema = z.object({
   SUPABASE_SERVICE_ROLE_KEY: z.string().optional(),
 });
 
+const productionEnvSchema = z.object({
+  NEXT_PUBLIC_SUPABASE_URL: z.string().url(),
+  NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: z.string().min(1),
+  SUPABASE_SERVICE_ROLE_KEY: z.string().min(1),
+  SUPERADMIN_SESSION_SECRET: z.string().min(32),
+  NEXT_PUBLIC_TURNSTILE_SITE_KEY: z.string().min(1),
+  TURNSTILE_SECRET_KEY: z.string().min(1),
+  REDIS_URL: z.string().url(),
+  CRON_SECRET: z.string().min(32),
+});
+
 // Validate the current environment
 const _env = envSchema.safeParse({
   NEXT_PUBLIC_TURNSTILE_SITE_KEY: process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY,
@@ -27,6 +38,14 @@ const _env = envSchema.safeParse({
 if (!_env.success) {
   console.error('❌ Invalid environment variables:', _env.error.format());
   throw new Error('Invalid environment variables');
+}
+
+if (process.env.NODE_ENV === 'production') {
+  const productionEnv = productionEnvSchema.safeParse(process.env);
+  if (!productionEnv.success) {
+    console.error('Missing or invalid production environment variables:', productionEnv.error.format());
+    throw new Error('Invalid production environment variables');
+  }
 }
 
 export const env = _env.data;

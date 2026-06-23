@@ -6,7 +6,7 @@ import { isAtLeast } from '@/lib/roles'
 
 const SHARED_CONTENT_SECURITY_POLICY = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com https://cs.iubenda.com https://cdn.iubenda.com https://static.cloudflareinsights.com https://www.googletagmanager.com https://www.google-analytics.com https://va.vercel-scripts.com https://connect.facebook.net",
+  "script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com https://cs.iubenda.com https://cdn.iubenda.com https://static.cloudflareinsights.com https://www.googletagmanager.com https://www.google-analytics.com https://va.vercel-scripts.com https://connect.facebook.net",
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "font-src 'self' data: https://fonts.gstatic.com",
   "img-src 'self' data: blob: https:",
@@ -15,8 +15,8 @@ const SHARED_CONTENT_SECURITY_POLICY = [
   "worker-src 'self' blob:",
   "object-src 'none'",
   "base-uri 'self'",
-  "form-action 'self' https://secure.payu.in https://test.payu.in https://*",
-  "frame-ancestors 'self'",
+  "form-action 'self' https://secure.payu.in https://test.payu.in",
+  "frame-ancestors 'none'",
 ].join('; ')
 
 // Global Cache for HMAC key used in Role Cache Signing (prevents GC thrashing)
@@ -90,6 +90,16 @@ function checkPathPrefix(pathname: string, prefix: string): boolean {
   return path === pref || path.startsWith(pref + '/');
 }
 
+function isInternalApiRequest(request: NextRequest, pathname: string): boolean {
+  if (!checkPathPrefix(pathname, '/api/free-installation-slots')) {
+    return false;
+  }
+
+  const expected = process.env.INTERNAL_API_KEY || process.env.INTERNAL_API_TOKEN || process.env.CRON_SECRET;
+  const provided = request.headers.get('x-internal-api-key') || request.headers.get('x-internal-api-token');
+  return Boolean(expected && provided && provided === expected);
+}
+
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   const requestHeaders = new Headers(request.headers);
@@ -99,15 +109,16 @@ export async function middleware(request: NextRequest) {
   let response = NextResponse.next({ request: { headers: requestHeaders } });
 
   try {
+    const isInternalApiCall = isInternalApiRequest(request, pathname);
     const secret = process.env.SUPERADMIN_SESSION_SECRET;
     if (!secret) {
       console.warn('CRITICAL WARNING: SUPERADMIN_SESSION_SECRET is missing. Role caching will be disabled.');
     }
 
     // Define public API routes that don't require authentication
-    const publicApiRoutes: Array<{ path: string; methods?: string[] }> = [
-      { path: '/api/auth' },
-      { path: '/api/health' },
+    const publicApiRoutes: Array<{ path: string; methods?: string[]; prefix?: boolean }> = [
+      { path: '/api/auth', prefix: true },
+      { path: '/api/health', prefix: true },
       { path: '/api/superadmin/login' },
       { path: '/api/settings', methods: ['GET'] },
       { path: '/api/metadata', methods: ['GET'] },
@@ -117,11 +128,11 @@ export async function middleware(request: NextRequest) {
       { path: '/api/coupons', methods: ['GET'] },
       { path: '/api/products', methods: ['GET'] },
       { path: '/api/checkout/calculate', methods: ['POST'] },
-      { path: '/api/analytics' },
-      { path: '/api/captcha' },
+      { path: '/api/analytics/track', methods: ['POST'] },
+      { path: '/api/captcha', prefix: true },
       { path: '/api/payment/payu/callback', methods: ['POST'] },
       { path: '/api/contact-messages', methods: ['POST'] },
-      { path: '/api/free-installation-slots' },
+      { path: '/api/free-installation-slots', methods: ['GET'] },
       { path: '/api/promotions/claim-viral', methods: ['POST'] },
       { path: '/api/promotions/free-installation-claim', methods: ['POST'] },
       { path: '/api/warranty/activate', methods: ['POST'] },
@@ -129,10 +140,16 @@ export async function middleware(request: NextRequest) {
       { path: '/api/uploads/quote-documents', methods: ['POST'] },
     ];
 
-    let isPublicApiRoute = publicApiRoutes.some(route =>
-      (pathname.toLowerCase() === route.path.toLowerCase()) &&
-      (!route.methods || route.methods.includes(request.method))
-    );
+    let isPublicApiRoute = publicApiRoutes.some(route => {
+      const routePath = route.path.toLowerCase();
+      const currentPath = pathname.toLowerCase();
+      const methodAllowed = !route.methods || route.methods.includes(request.method);
+      const pathAllowed = route.prefix
+        ? currentPath === routePath || currentPath.startsWith(`${routePath}/`)
+        : currentPath === routePath;
+
+      return methodAllowed && pathAllowed;
+    });
 
     const quoteUuidRegex = /^\/api\/quotes\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})(\/(accept-counter|reject-counter|advance-payment\/confirm|advance-payment\/generate-link))?$/i;
     const isPublicQuoteRoute = quoteUuidRegex.test(pathname);
@@ -185,7 +202,10 @@ export async function middleware(request: NextRequest) {
         isSameOrigin = false;
       }
 
-      const isCsrfExempt = checkPathPrefix(pathname, '/api/payment/payu/callback') || checkPathPrefix(pathname, '/api/webhooks');
+      const isCsrfExempt =
+        isInternalApiCall ||
+        checkPathPrefix(pathname, '/api/payment/payu/callback') ||
+        checkPathPrefix(pathname, '/api/webhooks');
 
       if (!isCsrfExempt && !isSameOrigin) {
         console.warn('CSRF Blocked Request:', { pathname, correlationId, origin, referer });
@@ -408,6 +428,10 @@ export async function middleware(request: NextRequest) {
 
     // API Route Guards for each Role Tier
     if (checkPathPrefix(pathname, '/api')) {
+      if (isInternalApiCall) {
+        return finalizeResponse(response);
+      }
+
       if (!isPublicApiRoute && !user && !isSuperadmin) {
         return finalizeResponse(NextResponse.json(
           { error: 'Unauthorized', message: 'Authentication required for this endpoint' },

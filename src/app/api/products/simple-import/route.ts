@@ -219,7 +219,7 @@ export async function POST(request: NextRequest) {
     }
     logger.error('CSV import error:', { error });
     return NextResponse.json({
-      error: `Import failed: ${  (error as Error).message}`
+      error: 'Import failed'
     }, { status: 500 });
   }
 }

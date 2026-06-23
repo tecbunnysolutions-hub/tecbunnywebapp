@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/server'
 // export const dynamic = 'force-dynamic'
 
 function quickLoginEnabled() {
-  return process.env.QUICK_LOGIN_ENABLED === 'true'
+  return process.env.NODE_ENV !== 'production' && process.env.QUICK_LOGIN_ENABLED === 'true'
 }
 
 export async function POST(request: Request) {

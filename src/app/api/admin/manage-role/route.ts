@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import crypto from 'crypto';
 import { createClient } from '@supabase/supabase-js';
 import { z } from 'zod';
 
@@ -19,7 +20,14 @@ const getSupabaseAdmin = (): any => {
 
 function isAuthorized(req: NextRequest) {
   const token = req.headers.get('x-admin-token');
-  return !!token && token === process.env.ADMIN_MAINT_TOKEN;
+  const expected = process.env.ADMIN_MAINT_TOKEN;
+  if (!token || !expected || expected.length < 32) {
+    return false;
+  }
+
+  const tokenBuffer = Buffer.from(token);
+  const expectedBuffer = Buffer.from(expected);
+  return tokenBuffer.length === expectedBuffer.length && crypto.timingSafeEqual(tokenBuffer, expectedBuffer);
 }
 
 const roleMutationSchema = z.object({
@@ -140,7 +148,8 @@ export async function POST(request: NextRequest) {
       logger.error('admin_manage_role.supabase_config_missing', { error: msg });
       return NextResponse.json({ error: 'Service configuration error. Please contact support.' }, { status: 503 });
     }
-    return NextResponse.json({ error: msg }, { status: 500 });
+    logger.error('admin_manage_role.unhandled', { error: msg });
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 

@@ -17,7 +17,7 @@ export async function DELETE(_request: NextRequest) {
     if (selectError) {
       logger.error('products_cleanup_select_error', { error: selectError.message, code: selectError.code });
       return NextResponse.json(
-        { error: 'Failed to load cleanup candidates', details: selectError.message },
+        { error: 'Failed to load cleanup candidates' },
         { status: 500 }
       );
     }
@@ -41,7 +41,7 @@ export async function DELETE(_request: NextRequest) {
     if (error) {
       logger.error('products_cleanup_delete_error', { error: error.message, code: error.code });
       return NextResponse.json(
-        { error: 'Failed to delete products', details: error.message },
+        { error: 'Failed to delete products' },
         { status: 500 }
       );
     }
@@ -65,7 +65,7 @@ export async function DELETE(_request: NextRequest) {
 
     logger.error('products_cleanup_unhandled', { error });
     return NextResponse.json(
-      { error: 'Cleanup failed', details: error instanceof Error ? error.message : 'Unknown error' },
+      { error: 'Cleanup failed' },
       { status: 500 }
     );
   }

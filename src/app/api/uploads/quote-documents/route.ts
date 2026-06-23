@@ -6,6 +6,23 @@ import { verifyQuoteActionToken } from '@/lib/quotes/action-token';
 
 export const runtime = 'nodejs';
 
+async function hasValidFileSignature(file: File) {
+  const head = new Uint8Array(await file.slice(0, 16).arrayBuffer());
+  const isPdf = head[0] === 0x25 && head[1] === 0x50 && head[2] === 0x44 && head[3] === 0x46;
+  const isJpeg = head[0] === 0xff && head[1] === 0xd8 && head[2] === 0xff;
+  const isPng =
+    head[0] === 0x89 &&
+    head[1] === 0x50 &&
+    head[2] === 0x4e &&
+    head[3] === 0x47 &&
+    head[4] === 0x0d &&
+    head[5] === 0x0a &&
+    head[6] === 0x1a &&
+    head[7] === 0x0a;
+
+  return isPdf || isJpeg || isPng;
+}
+
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
@@ -27,6 +44,10 @@ export async function POST(request: NextRequest) {
     const allowedMimeTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg'];
     if (!allowedMimeTypes.includes(file.type)) {
       return NextResponse.json({ error: 'Unsupported file type. Please upload PDF, JPEG, or PNG.' }, { status: 400 });
+    }
+
+    if (!(await hasValidFileSignature(file))) {
+      return NextResponse.json({ error: 'Invalid file signature. Please upload a valid PDF, JPEG, or PNG.' }, { status: 400 });
     }
 
     // Validate quote_id exists in the database
@@ -65,7 +86,6 @@ export async function POST(request: NextRequest) {
     logger.error('quote_document_upload.failed', { error });
     return NextResponse.json({
       error: 'Failed to upload document',
-      details: error instanceof Error ? error.message : String(error)
     }, { status: 500 });
   }
 }

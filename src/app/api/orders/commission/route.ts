@@ -1,16 +1,16 @@
 import { NextResponse } from 'next/server';
 
-import { createClient } from '@/lib/supabase/server';
 import { enhancedCommissionService } from '@/lib/enhanced-commission-service';
+import { AdminAuthError, requireAdminContext } from '@/lib/auth/admin-guard';
+import { logger } from '@/lib/logger';
 
 // export const dynamic = 'force-dynamic';
 
 // POST /api/orders/commission
 // Calculates and awards commission when an order is completed
 export async function POST(request: Request) {
-  const supabase = await createClient();
-
   try {
+    const { serviceSupabase: supabase } = await requireAdminContext();
     const { orderId } = await request.json();
 
     if (!orderId) {
@@ -73,10 +73,14 @@ export async function POST(request: Request) {
     });
 
   } catch (error: any) {
-    console.error('Error in commission calculation:', error);
+    if (error instanceof AdminAuthError) {
+      return NextResponse.json({ error: error.message }, { status: error.status });
+    }
+
+    logger.error('orders_commission.unhandled', { error: error instanceof Error ? error.message : error });
     if (error.name === 'SyntaxError') {
       return NextResponse.json({ error: 'Invalid JSON in request body.' }, { status: 400 });
     }
-    return NextResponse.json({ error: 'An unexpected error occurred.', details: error.message }, { status: 500 });
+    return NextResponse.json({ error: 'An unexpected error occurred.' }, { status: 500 });
   }
 }

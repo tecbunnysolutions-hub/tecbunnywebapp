@@ -1,5 +1,14 @@
 import { createClient } from '@supabase/supabase-js';
+import { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+import { logger } from '@/lib/logger';
+
+function isAuthorizedInternalRequest(request: NextRequest) {
+  const expected = process.env.INTERNAL_API_KEY || process.env.INTERNAL_API_TOKEN || process.env.CRON_SECRET;
+  const provided = request.headers.get('x-internal-api-key') || request.headers.get('x-internal-api-token');
+
+  return Boolean(expected && provided && provided === expected);
+}
 
 function getSupabase() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -45,15 +54,19 @@ export async function GET() {
       totalSlots: data.total_slots,
     });
   } catch (error: any) {
-    console.error('Error fetching free installation slots:', error);
+    logger.error('free_installation_slots.fetch_failed', { error: error instanceof Error ? error.message : error });
     return NextResponse.json(
-      { success: false, error: error.message },
+      { success: false, error: 'Failed to fetch free installation slots' },
       { status: 500 }
     );
   }
 }
 
-export async function POST() {
+export async function POST(request: NextRequest) {
+  if (!isAuthorizedInternalRequest(request)) {
+    return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+  }
+
   try {
     const supabase = getSupabase();
     const currentMonth = new Date();
@@ -122,9 +135,9 @@ export async function POST() {
       );
     }
   } catch (error: any) {
-    console.error('Error decrementing free installation slots:', error);
+    logger.error('free_installation_slots.decrement_failed', { error: error instanceof Error ? error.message : error });
     return NextResponse.json(
-      { success: false, error: error.message },
+      { success: false, error: 'Failed to update free installation slots' },
       { status: 500 }
     );
   }

@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const bypassRateLimit = process.env.OTP_RATE_LIMIT_BYPASS === 'true';
+    const bypassRateLimit = process.env.NODE_ENV !== 'production' && process.env.OTP_RATE_LIMIT_BYPASS === 'true';
 
     if (!bypassRateLimit) {
       // Rate limiting check

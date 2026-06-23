@@ -4,7 +4,7 @@ import path from 'path';
 
 import { NextRequest, NextResponse } from 'next/server';
 
-import { createClient } from '@/lib/supabase/client';
+import { AdminAuthError, requireAdminContext } from '@/lib/auth/admin-guard';
 import { logger } from '@/lib/logger';
 
 // Parse CSV function
@@ -37,7 +37,7 @@ function parseCSVLine(line: string): string[] {
 
 export async function POST(_request: NextRequest) {
   try {
-    const supabase = createClient();
+    const { serviceSupabase: supabase } = await requireAdminContext();
     
     // Read CSV file
     const csvPath = path.join(process.cwd(), 'import.csv');
@@ -162,12 +162,15 @@ export async function POST(_request: NextRequest) {
     });
 
   } catch (error) {
+    if (error instanceof AdminAuthError) {
+      return NextResponse.json({ error: error.message }, { status: error.status });
+    }
+
     logger.error('products_manual_import_error', { error });
     return NextResponse.json(
       { 
         success: false, 
-        error: 'Import failed', 
-        details: error instanceof Error ? error.message : 'Unknown error'
+        error: 'Import failed'
       },
       { status: 500 }
     );

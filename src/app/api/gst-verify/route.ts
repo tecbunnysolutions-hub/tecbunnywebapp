@@ -1,9 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { resolveIndianStateInfo } from '@/lib/indian-tax';
+import { rateLimit } from '@/lib/rate-limit';
+import { logger } from '@/lib/logger';
+
+const GST_VERIFY_RATE_LIMIT = { limit: 20, windowMs: 15 * 60 * 1000 };
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const gstin = searchParams.get('gstin');
+  const ip =
+    request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+    request.headers.get('x-real-ip')?.trim() ||
+    'anonymous';
+
+  if (!rateLimit(ip, 'gst_verify', GST_VERIFY_RATE_LIMIT)) {
+    return NextResponse.json({ success: false, error: 'Too many requests. Please try again later.' }, { status: 429 });
+  }
 
   if (!gstin || gstin.length !== 15) {
     return NextResponse.json({ success: false, error: 'Invalid GSTIN length' }, { status: 400 });
@@ -54,14 +66,21 @@ export async function GET(request: NextRequest) {
           }
         });
       } else {
-        console.error('NIC API Error:', data);
+        logger.warn('gst_verify.nic_error', { status: response.status, data });
       }
     } catch (error) {
-      console.error('Error fetching from NIC API:', error);
+      logger.warn('gst_verify.nic_fetch_failed', { error: error instanceof Error ? error.message : error });
     }
   }
 
-  // Mock successful response if API credentials are not set or API fails
+  if (process.env.NODE_ENV === 'production') {
+    return NextResponse.json(
+      { success: false, error: 'GST verification is temporarily unavailable.' },
+      { status: 503 }
+    );
+  }
+
+  // Local development fallback if API credentials are not set or API fails.
   return NextResponse.json({
     success: true,
     data: {

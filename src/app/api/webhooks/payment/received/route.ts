@@ -214,7 +214,10 @@ async function processPaymentReceived(supabase: any, data: any, source: string) 
         try {
           const slotResponse = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/free-installation-slots`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+              'Content-Type': 'application/json',
+              'x-internal-api-key': process.env.INTERNAL_API_KEY || process.env.INTERNAL_API_TOKEN || process.env.CRON_SECRET || '',
+            },
           });
 
           const slotData = await slotResponse.json();
