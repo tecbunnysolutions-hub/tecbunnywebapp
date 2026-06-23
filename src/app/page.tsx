@@ -70,7 +70,7 @@ export default async function Page() {
     // Parallel server-side fetching
     const [productsRes, brandsRes] = await Promise.all([
       fetch(`${baseUrl}/api/products?status=active&limit=12`, { cache: 'no-store' }).catch(() => null),
-      fetch(`${baseUrl}/api/settings?key=partnerBrands`, { next: { revalidate: 3600 } }).catch(() => null)
+      fetch(`${baseUrl}/api/settings?key=partnerBrands`, { cache: 'no-store' }).catch(() => null)
     ]);
 
     if (productsRes?.ok) {
