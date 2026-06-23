@@ -18,8 +18,22 @@ const productionEnvSchema = z.object({
   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: z.string().min(1),
   SUPABASE_SERVICE_ROLE_KEY: z.string().min(1),
   SUPERADMIN_SESSION_SECRET: z.string().min(32),
-  NEXT_PUBLIC_TURNSTILE_SITE_KEY: z.string().min(1),
-  TURNSTILE_SECRET_KEY: z.string().min(1),
+});
+
+const productionOptionalSecuritySchema = z.object({
+  NEXT_PUBLIC_TURNSTILE_SITE_KEY: z.string().min(1).optional(),
+  TURNSTILE_SECRET_KEY: z.string().min(1).optional(),
+}).superRefine((value, context) => {
+  const hasSiteKey = Boolean(value.NEXT_PUBLIC_TURNSTILE_SITE_KEY);
+  const hasSecretKey = Boolean(value.TURNSTILE_SECRET_KEY);
+
+  if (hasSiteKey !== hasSecretKey) {
+    context.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'Turnstile requires both NEXT_PUBLIC_TURNSTILE_SITE_KEY and TURNSTILE_SECRET_KEY when enabled.',
+      path: hasSiteKey ? ['TURNSTILE_SECRET_KEY'] : ['NEXT_PUBLIC_TURNSTILE_SITE_KEY'],
+    });
+  }
 });
 
 // Validate the current environment
@@ -43,6 +57,11 @@ if (process.env.NODE_ENV === 'production') {
   if (!productionEnv.success) {
     console.error('Missing or invalid production environment variables:', productionEnv.error.format());
     throw new Error('Invalid production environment variables');
+  }
+
+  const optionalSecurityEnv = productionOptionalSecuritySchema.safeParse(process.env);
+  if (!optionalSecurityEnv.success) {
+    console.warn('Optional production security environment is incomplete:', optionalSecurityEnv.error.format());
   }
 }
 
