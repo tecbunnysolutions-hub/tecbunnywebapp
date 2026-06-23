@@ -7,11 +7,34 @@ import { cn } from '@/lib/utils';
 
 interface RegionalTrustBannerProps {
   className?: string;
+  partnerBrands?: Array<{ name: string; logoUrl?: string }>;
 }
 
-export const RegionalTrustBanner = ({ className }: RegionalTrustBannerProps) => {
+const formatBrandList = (brands: Array<{ name: string; logoUrl?: string }> | undefined) => {
+  const names = (brands ?? [])
+    .map((brand) => brand.name.trim())
+    .filter(Boolean)
+    .slice(0, 3);
+
+  if (names.length === 0) {
+    return 'trusted technology brands';
+  }
+
+  if (names.length === 1) {
+    return names[0];
+  }
+
+  if (names.length === 2) {
+    return `${names[0]} and ${names[1]}`;
+  }
+
+  return `${names[0]}, ${names[1]}, and ${names[2]}`;
+};
+
+export const RegionalTrustBanner = ({ className, partnerBrands }: RegionalTrustBannerProps) => {
   const [isVisible, setIsVisible] = useState(false);
   const pathname = usePathname();
+  const brandList = formatBrandList(partnerBrands);
 
   useEffect(() => {
     setIsVisible(true);
@@ -35,7 +58,7 @@ export const RegionalTrustBanner = ({ className }: RegionalTrustBannerProps) => 
             <ShieldCheck className="h-5 w-5" />
           </div>
           <p className="text-sm font-medium text-slate-300">
-            Authorized partner for CP PLUS, Hikvision, and Dahua installations across Goa and Maharashtra.
+            Authorized partner for {brandList} installations across Goa and Maharashtra.
           </p>
         </div>
         

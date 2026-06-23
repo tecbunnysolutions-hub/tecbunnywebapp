@@ -62,6 +62,15 @@ function toBoolean(value: unknown): boolean {
   return false;
 }
 
+function isMissingOffersRelation(error: unknown) {
+  const candidate = error as { code?: string; message?: string } | null | undefined;
+  const message = candidate?.message?.toLowerCase() ?? '';
+  return candidate?.code === '42P01'
+    || candidate?.code === 'PGRST205'
+    || message.includes('offers')
+    || message.includes('offer_usage');
+}
+
 function inferDiscountType(row: Record<string, any>): string {
   const fromLegacyType = typeof row.type === 'string' ? row.type.toLowerCase() : '';
   if (row.discount_percentage !== undefined && row.discount_percentage !== null) return 'percentage';
@@ -292,6 +301,9 @@ export async function GET(request: NextRequest) {
           message: legacyResult.error.message,
           details: legacyResult.error.details
         });
+        if (isMissingOffersRelation(legacyResult.error)) {
+          return NextResponse.json({ offers: [], count: 0 });
+        }
         return NextResponse.json({ error: 'Failed to fetch offers' }, { status: 500 });
       }
 
@@ -388,6 +400,9 @@ export async function POST(request: NextRequest) {
 
     if (insertError) {
       console.error('Error creating offer:', insertError);
+      if (isMissingOffersRelation(insertError)) {
+        return NextResponse.json({ error: 'Offers storage is not migrated yet' }, { status: 503 });
+      }
       return NextResponse.json({ error: 'Failed to create offer' }, { status: 500 });
     }
 
@@ -431,6 +446,9 @@ export async function PUT(request: NextRequest) {
 
     if (existingOfferError) {
       logger.error('offers.update.fetch_failed', { code: existingOfferError.code, message: existingOfferError.message, id });
+      if (isMissingOffersRelation(existingOfferError)) {
+        return NextResponse.json({ error: 'Offers storage is not migrated yet' }, { status: 503 });
+      }
       return NextResponse.json({ error: 'Offer not found' }, { status: 404 });
     }
 
@@ -484,6 +502,9 @@ export async function PUT(request: NextRequest) {
 
     if (updateError) {
       console.error('Error updating offer:', updateError);
+      if (isMissingOffersRelation(updateError)) {
+        return NextResponse.json({ error: 'Offers storage is not migrated yet' }, { status: 503 });
+      }
       return NextResponse.json({ error: 'Failed to update offer' }, { status: 500 });
     }
 
@@ -540,6 +561,9 @@ export async function DELETE(request: NextRequest) {
 
       if (deactivateError) {
         console.error('Error deactivating offer:', deactivateError);
+        if (isMissingOffersRelation(deactivateError)) {
+          return NextResponse.json({ error: 'Offers storage is not migrated yet' }, { status: 503 });
+        }
         return NextResponse.json({ error: 'Failed to deactivate offer' }, { status: 500 });
       }
 
@@ -556,6 +580,9 @@ export async function DELETE(request: NextRequest) {
 
     if (deleteError) {
       console.error('Error deleting offer:', deleteError);
+      if (isMissingOffersRelation(deleteError)) {
+        return NextResponse.json({ error: 'Offers storage is not migrated yet' }, { status: 503 });
+      }
       return NextResponse.json({ error: 'Failed to delete offer' }, { status: 500 });
     }
 

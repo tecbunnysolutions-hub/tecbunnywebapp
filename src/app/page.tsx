@@ -57,6 +57,39 @@ function HomePageSkeleton() {
   );
 }
 
+function parsePartnerBrands(value: unknown) {
+  if (Array.isArray(value)) {
+    return value
+      .map((item: any) => ({
+        name: typeof item === 'object' && item?.name ? String(item.name).trim() : '',
+        logoUrl: typeof item === 'object' && item?.logoUrl ? String(item.logoUrl).trim() : '',
+      }))
+      .filter((brand) => brand.name.length > 0);
+  }
+
+  if (typeof value !== 'string') {
+    return undefined;
+  }
+
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return undefined;
+  }
+
+  if (trimmed.startsWith('[')) {
+    try {
+      return parsePartnerBrands(JSON.parse(trimmed));
+    } catch {
+      return undefined;
+    }
+  }
+
+  return trimmed
+    .split(',')
+    .map((name) => ({ name: name.trim(), logoUrl: '' }))
+    .filter((brand) => brand.name.length > 0);
+}
+
 export default async function Page() {
   let initialProducts = undefined;
   let initialPartnerBrands = undefined;
@@ -90,26 +123,7 @@ export default async function Page() {
 
     if (brandsRes?.ok) {
       const payload = await brandsRes.json();
-      const brandsStr = payload?.value;
-      if (brandsStr && typeof brandsStr === 'string') {
-        const trimmed = brandsStr.trim();
-        if (trimmed.startsWith('[')) {
-          try {
-            const parsed = JSON.parse(trimmed);
-            if (Array.isArray(parsed)) {
-              initialPartnerBrands = parsed.map((item: any) => ({
-                name: typeof item === 'object' && item?.name ? String(item.name) : '',
-                logoUrl: typeof item === 'object' && item?.logoUrl ? String(item.logoUrl) : '',
-              }));
-            }
-          } catch (e) {}
-        } else {
-          initialPartnerBrands = trimmed
-            .split(',')
-            .map((b: string) => ({ name: b.trim(), logoUrl: '' }))
-            .filter((b: { name: string; logoUrl: string }) => b.name.length > 0);
-        }
-      }
+      initialPartnerBrands = parsePartnerBrands(payload?.value);
     }
   } catch (error) {
     console.error('Error prefetching data for homepage:', error);

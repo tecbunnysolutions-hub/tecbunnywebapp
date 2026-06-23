@@ -124,18 +124,13 @@ const PLAN_TIERS = [
 
 export default function HomePage({
   initialProducts = [],
-  initialPartnerBrands = [
-    { name: 'CP PLUS', logoUrl: '' },
-    { name: 'HIKVISION', logoUrl: '' },
-    { name: 'DAHUA', logoUrl: '' },
-    { name: 'UBIQUITI', logoUrl: '' },
-    { name: 'CISCO', logoUrl: '' },
-    { name: 'TP-LINK', logoUrl: '' },
-  ],
+  initialPartnerBrands = [],
 }: {
   initialProducts?: DbProduct[];
   initialPartnerBrands?: Array<{ name: string; logoUrl: string }>;
 }) {
+  const hasPartnerBrands = initialPartnerBrands.length > 0;
+
   return (
     <div className="tb-page relative overflow-hidden selection:bg-blue-500/20 selection:text-white">
       <BehavioralCouponPopup />
@@ -277,36 +272,40 @@ export default function HomePage({
       </div>
 
       {/* 4. REAL-TIME REGIONAL SOCIAL PROOF */}
-      <RegionalTrustBanner />
+      {hasPartnerBrands ? (
+        <RegionalTrustBanner partnerBrands={initialPartnerBrands} />
+      ) : null}
 
       {/* Partner Brands Strip */}
-      <section className="border-y border-zinc-800 bg-zinc-950/60 py-8 sm:py-10" style={{ contentVisibility: 'auto', containIntrinsicSize: '200px' }}>
-        <div className="tb-container">
-          <p className="text-center text-xs font-semibold uppercase tracking-[0.35em] text-zinc-500 mb-6">
-            Authorized Product Brands
-          </p>
-          <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-6 md:gap-x-16 opacity-65">
-            {initialPartnerBrands.map((brand) => (
-              <span key={brand.name} className="flex items-center justify-center transition-all hover:scale-105 duration-200">
-                {brand.logoUrl ? (
-                  <OptimizedImage
-                    src={brand.logoUrl}
-                    alt={brand.name}
-                    width={120}
-                    height={40}
-                    className="h-8 md:h-10 w-auto object-contain filter brightness-75 contrast-125 hover:brightness-100 transition-all duration-200"
-                    transformation={{ quality: 80 }}
-                  />
-                ) : (
-                  <span className="text-sm font-bold tracking-widest text-zinc-400 font-tech hover:text-blue-500 transition-colors">
-                    {brand.name}
-                  </span>
-                )}
-              </span>
-            ))}
+      {hasPartnerBrands ? (
+        <section className="border-y border-zinc-800 bg-zinc-950/60 py-8 sm:py-10" style={{ contentVisibility: 'auto', containIntrinsicSize: '200px' }}>
+          <div className="tb-container">
+            <p className="text-center text-xs font-semibold uppercase tracking-[0.35em] text-zinc-500 mb-6">
+              Authorized Product Brands
+            </p>
+            <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-6 md:gap-x-16 opacity-65">
+              {initialPartnerBrands.map((brand) => (
+                <span key={brand.name} className="flex items-center justify-center transition-all hover:scale-105 duration-200">
+                  {brand.logoUrl ? (
+                    <OptimizedImage
+                      src={brand.logoUrl}
+                      alt={brand.name}
+                      width={120}
+                      height={40}
+                      className="h-8 md:h-10 w-auto object-contain filter brightness-75 contrast-125 hover:brightness-100 transition-all duration-200"
+                      transformation={{ quality: 80 }}
+                    />
+                  ) : (
+                    <span className="text-sm font-bold tracking-widest text-zinc-400 font-tech hover:text-blue-500 transition-colors">
+                      {brand.name}
+                    </span>
+                  )}
+                </span>
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      ) : null}
 
       <section className="tb-section reveal-section is-revealed" data-reveal-id="pillars" style={{ contentVisibility: 'auto', containIntrinsicSize: '600px' }}>
         <div className="tb-container">

@@ -115,7 +115,7 @@ const createDefaultSettings = (): SettingsFormValues => ({
   tagline: 'Your Tech Store',
   logoUrl: '',
   faviconUrl: '',
-  partnerBrands: 'CP PLUS, HIKVISION, DAHUA, UBIQUITI, CISCO, TP-LINK',
+  partnerBrands: '',
   // productCategories: 'CCTV, Computers, Accessories, Services, Security, Networking, Smart Home, Software',
   primaryColor: '#3b82f6',
   secondaryColor: '#64748b',
@@ -1098,7 +1098,7 @@ function SiteSettingsPageContent() {
                       <FormItem>
                         <FormLabel>Product Brands / Vendors</FormLabel>
                         <FormControl>
-                          <Textarea placeholder="CP PLUS, HIKVISION, DAHUA, ..." {...field} />
+                          <Textarea placeholder="Add product brands in Brand Settings" {...field} />
                         </FormControl>
                         <FormDescription>Comma-separated list of brands and vendors.</FormDescription>
                         <FormMessage />

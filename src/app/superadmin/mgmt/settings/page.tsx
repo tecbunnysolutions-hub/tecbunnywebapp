@@ -249,7 +249,7 @@ const SETTING_DEFAULTS: SettingsMap = {
   logoUrl: '/logo.png',
   faviconUrl: '/favicon.ico',
   tagline: 'Solutions Pvt Ltd',
-  partnerBrands: 'CP PLUS, HIKVISION, DAHUA, UBIQUITI, CISCO, TP-LINK',
+  partnerBrands: '',
   default_gst_rate: '18.00',
   whatsapp_template_string: 'https://wa.me/919604136010',
 };

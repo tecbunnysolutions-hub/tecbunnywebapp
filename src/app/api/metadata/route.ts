@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { createServiceClient, isSupabaseServiceConfigured, createClient } from '@/lib/supabase/server';
 
 const BRAND_LOGO_URL = '/logo.png';
+const DEFAULT_PARTNER_BRANDS = '';
 
 export async function GET() {
   try {
@@ -41,7 +42,7 @@ export async function GET() {
       description: settingsMap.get('siteDescription') || 'Discover the latest technology with beautiful design and exceptional user experience.',
       logoUrl,
       faviconUrl: settingsMap.get('faviconUrl') || '/favicon.ico',
-      partnerBrands: settingsMap.get('partnerBrands') || 'CP PLUS, HIKVISION, DAHUA, UBIQUITI, CISCO, TP-LINK',
+      partnerBrands: settingsMap.get('partnerBrands') || DEFAULT_PARTNER_BRANDS,
     };
     
     return NextResponse.json(metadata);
@@ -55,7 +56,7 @@ export async function GET() {
       description: 'Discover the latest technology with beautiful design and exceptional user experience.',
       logoUrl: BRAND_LOGO_URL,
       faviconUrl: '/favicon.ico',
-      partnerBrands: 'CP PLUS, HIKVISION, DAHUA, UBIQUITI, CISCO, TP-LINK',
+      partnerBrands: DEFAULT_PARTNER_BRANDS,
     });
   }
 }

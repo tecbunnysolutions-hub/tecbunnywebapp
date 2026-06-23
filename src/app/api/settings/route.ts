@@ -19,14 +19,14 @@ const PUBLIC_DEFAULTS: Record<string, unknown> = {
   payment_phonepe_public: null,
   payment_razorpay_public: null,
   feature_flags_public: {},
-  partnerBrands: 'CP PLUS, HIKVISION, DAHUA, UBIQUITI, CISCO, TP-LINK',
+  partnerBrands: '',
   phone: '+91 96041 36010',
   support_email: 'support@tecbunny.com',
   whatsapp_template_string: 'https://wa.me/919604136010',
   facebook_pixel_id: '1234567890',
   default_gst_rate: '18.00',
 };
-const PUBLIC_SETTINGS_CACHE_CONTROL = 'public, s-maxage=300, stale-while-revalidate=1800';
+const PUBLIC_SETTINGS_CACHE_CONTROL = 'no-store, max-age=0';
 const PUBLIC_SETTINGS_SELECT = 'key,value,description,updated_at';
 
 function getSupabaseAdmin() {
