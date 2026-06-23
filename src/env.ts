@@ -20,6 +20,11 @@ const productionEnvSchema = z.object({
   SUPERADMIN_SESSION_SECRET: z.string().min(32),
 });
 
+const productionBrowserEnvSchema = z.object({
+  NEXT_PUBLIC_SUPABASE_URL: z.string().url(),
+  NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: z.string().min(1),
+});
+
 const productionOptionalSecuritySchema = z.object({
   NEXT_PUBLIC_TURNSTILE_SITE_KEY: z.string().min(1).optional(),
   TURNSTILE_SECRET_KEY: z.string().min(1).optional(),
@@ -35,6 +40,8 @@ const productionOptionalSecuritySchema = z.object({
     });
   }
 });
+
+const isServerRuntime = typeof window === 'undefined';
 
 // Validate the current environment
 const _env = envSchema.safeParse({
@@ -53,15 +60,20 @@ if (!_env.success) {
 }
 
 if (process.env.NODE_ENV === 'production') {
-  const productionEnv = productionEnvSchema.safeParse(process.env);
+  const productionEnv = isServerRuntime
+    ? productionEnvSchema.safeParse(process.env)
+    : productionBrowserEnvSchema.safeParse(process.env);
+
   if (!productionEnv.success) {
     console.error('Missing or invalid production environment variables:', productionEnv.error.format());
     throw new Error('Invalid production environment variables');
   }
 
-  const optionalSecurityEnv = productionOptionalSecuritySchema.safeParse(process.env);
-  if (!optionalSecurityEnv.success) {
-    console.warn('Optional production security environment is incomplete:', optionalSecurityEnv.error.format());
+  if (isServerRuntime) {
+    const optionalSecurityEnv = productionOptionalSecuritySchema.safeParse(process.env);
+    if (!optionalSecurityEnv.success) {
+      console.warn('Optional production security environment is incomplete:', optionalSecurityEnv.error.format());
+    }
   }
 }
 
