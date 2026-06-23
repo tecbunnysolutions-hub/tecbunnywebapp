@@ -110,6 +110,7 @@ export async function POST(req: NextRequest) {
       const {
         system,
         cameraCount,
+        cableUnits = 1,
         itSystemCount = 0,
         analogSelections,
         ipSelections,
@@ -128,6 +129,7 @@ export async function POST(req: NextRequest) {
       const totals = calculateTotals({
         system,
         cameraCount,
+        cableUnits,
         analogSelections,
         ipSelections,
         hddId,

@@ -108,7 +108,6 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
 
   const [system, setSystem] = useState<SetupSystem>('analog');
   const [premiseType, setPremiseType] = useState<'Residential' | 'Commercial' | 'Industrial'>('Residential');
-  const [itSystemCount, setItSystemCount] = useState<number>(1);
   const [automationEnabled, setAutomationEnabled] = useState<boolean>(true);
   const [alarmEnabled, setAlarmEnabled] = useState<boolean>(false);
   const [cameraCount, setCameraCount] = useState<number>(4);
@@ -127,11 +126,13 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
     resolution: '2mp',
     dualLight: false,
   });
+  const [poeType, setPoeType] = useState<'normal' | 'giga'>('normal');
   const [hddId, setHddId] = useState<string>(
     selectableHddOptions[1]?.id ?? selectableHddOptions[0]?.id ?? FALLBACK_HDD_OPTIONS[0].id
   );
   const [monitorIncluded, setMonitorIncluded] = useState<boolean>(false);
   const [monitorId, setMonitorId] = useState<string>(FALLBACK_MONITOR_OPTIONS[0]?.id ?? 'monitor-19');
+  const [monitorStand, setMonitorStand] = useState<'none' | 'static' | 'movable'>('none');
   const [wallMountIncluded, setWallMountIncluded] = useState<boolean>(false);
   const [spikeGuardIncluded, setSpikeGuardIncluded] = useState<boolean>(false);
   const [accessoryPricing, setAccessoryPricing] = useState<Record<string, { mrp: number; sale: number }> | null>(null);
@@ -172,13 +173,7 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
     setCameraCountInput(normalized.toString());
   };
 
-  const handleItRangeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const normalized = Math.min(20, Math.max(0, Number.parseInt(event.target.value, 10)));
-    setItSystemCount(normalized);
-  };
-
   const cameraCountLabel = cameraCount <= 0 ? 'None' : `${cameraCount} Camera${cameraCount > 1 ? 's' : ''}`;
-  const itSystemLabel = itSystemCount <= 0 ? 'None' : `${itSystemCount} System${itSystemCount > 1 ? 's' : ''}`;
   const recommendationLines = useMemo(() => {
     if (cameraCount <= 0) {
       return ['> No Surveillance Selected'];
@@ -255,6 +250,28 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
     });
   }, [analogPricing]);
 
+  // Helper for advanced picking
+  const pickAnalogDvrOption = (options: CapacityPriceEntry[], capacity: number, resolution: string) => {
+    const sorted = [...options].sort((a, b) => a.capacity - b.capacity);
+    const filtered = sorted.filter(entry => {
+      const is5mp = entry.id.includes('5mp') || entry.label.toLowerCase().includes('5mp');
+      if (resolution === '5mp') return is5mp;
+      if (is5mp && capacity < 16) return false;
+      return true;
+    });
+    return filtered.find((entry) => entry.capacity >= capacity) ?? filtered[filtered.length - 1] ?? sorted[sorted.length - 1];
+  };
+
+  const pickIpPoeOption = (options: CapacityPriceEntry[], capacity: number, poeType: string) => {
+    const sorted = [...options].sort((a, b) => a.capacity - b.capacity);
+    const filtered = sorted.filter(entry => {
+      const isGiga = entry.id.includes('giga') || entry.label.toLowerCase().includes('giga');
+      if (poeType === 'giga') return isGiga;
+      return !isGiga;
+    });
+    return filtered.find((entry) => entry.capacity >= capacity) ?? filtered[filtered.length - 1] ?? sorted[sorted.length - 1];
+  };
+
   useEffect(() => {
     setIpSelections((previous) => {
       const resolvedNvrId = ipPricing.nvr.some((entry: CapacityPriceEntry) => entry.id === previous.nvrId)
@@ -297,9 +314,11 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
 
   useEffect(() => {
     const recommendedDvrCapacity = recommendedAnalogDvrCapacity(cameraCount);
-    const recommendedDvr = pickCapacityOption(analogPricing.dvr, recommendedDvrCapacity);
+    const recommendedDvr = pickAnalogDvrOption(analogPricing.dvr, recommendedDvrCapacity, analogSelections.resolution);
     const currentDvr = analogPricing.dvr.find((entry: CapacityPriceEntry) => entry.id === analogSelections.dvrId);
-    if (!currentDvr || currentDvr.capacity < recommendedDvrCapacity) {
+    
+    // If current DVR has less capacity than required, or if resolution mandates a change
+    if (!currentDvr || currentDvr.capacity < recommendedDvrCapacity || (analogSelections.resolution === '5mp' && !(currentDvr.id.includes('5mp') || currentDvr.label.toLowerCase().includes('5mp')))) {
       setAnalogSelections((previous) => ({ ...previous, dvrId: recommendedDvr.id }));
     }
 
@@ -309,7 +328,7 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
     if (!currentSmps || currentSmps.capacity < recommendedSmpsCapacity) {
       setAnalogSelections((previous) => ({ ...previous, smpsId: recommendedSmps.id }));
     }
-  }, [analogPricing, analogSelections.dvrId, analogSelections.smpsId, cameraCount]);
+  }, [analogPricing, analogSelections.dvrId, analogSelections.smpsId, analogSelections.resolution, cameraCount]);
 
   useEffect(() => {
     const recommendedNvrCapacity = recommendedIpCapacity(cameraCount);
@@ -320,14 +339,34 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
     }
 
     const recommendedPoeCapacity = recommendedIpCapacity(cameraCount);
-    const recommendedPoe = pickCapacityOption(ipPricing.poe, recommendedPoeCapacity);
+    const recommendedPoe = pickIpPoeOption(ipPricing.poe, recommendedPoeCapacity, poeType);
     const currentPoe = ipPricing.poe.find((entry: CapacityPriceEntry) => entry.id === ipSelections.poeId);
     if (!currentPoe || currentPoe.capacity < recommendedPoeCapacity) {
       setIpSelections((previous) => ({ ...previous, poeId: recommendedPoe.id }));
     }
-  }, [cameraCount, ipPricing, ipSelections.nvrId, ipSelections.poeId]);
+  }, [cameraCount, ipPricing, ipSelections.nvrId, ipSelections.poeId, poeType]);
 
-  const totals: Totals = useMemo(() => calculateTotals({
+  const totals = useMemo(() => {
+    return calculateTotals({
+      system,
+      cameraCount,
+      analogSelections,
+      ipSelections,
+      hddId,
+      monitorIncluded,
+      monitorId,
+      monitorStand,
+      wallMountIncluded,
+      spikeGuardIncluded,
+      rackId,
+      conduitPipeId,
+      conduitMeters,
+      installationIncluded,
+      automationEnabled: false,
+      pricingCatalog,
+      accessoryPricingOverrides: accessoryPricing,
+    });
+  }, [
     system,
     cameraCount,
     analogSelections,
@@ -335,27 +374,24 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
     hddId,
     monitorIncluded,
     monitorId,
+    monitorStand,
     wallMountIncluded,
     spikeGuardIncluded,
     rackId,
     conduitPipeId,
     conduitMeters,
     installationIncluded,
-    automationEnabled,
     pricingCatalog,
-    accessoryPricingOverrides: accessoryPricing,
-  }), [analogPricing, analogSelections, automationEnabled, cameraCount, calculateTotals, hddId, installationIncluded, installationOption, monitorIncluded, monitorOption, ipPricing, ipSelections, pricingCatalog, selectableHddOptions, system, monitorId, wallMountIncluded, spikeGuardIncluded, rackId, conduitPipeId, conduitMeters, accessoryPricing]);
+    accessoryPricing,
+  ]);
 
   const inlineQuoteSummary = useMemo(() => {
-    const systemLabel = system === 'analog' ? 'Analog DVR' : 'IP NVR';
-    const hddLabel = selectableHddOptions.find((entry: PriceEntry) => entry.id === hddId)?.label ?? 'Surveillance HDD';
-    const itSystemsLabel = itSystemCount > 0 ? `${itSystemCount} IT system${itSystemCount > 1 ? 's' : ''}` : 'No IT systems';
-    const extras: string[] = [];
-    if (monitorIncluded) extras.push('monitor');
-    if (installationIncluded) extras.push('installation');
-    const extrasLabel = extras.length ? ` | Add-ons: ${extras.join(', ')}` : '';
-    return `${systemLabel} | ${cameraCount} cameras | ${itSystemsLabel} | HDD: ${hddLabel}${extrasLabel} | Sale total ${formatCurrency(totals.overall.sale)}`;
-  }, [cameraCount, hddId, installationIncluded, itSystemCount, monitorIncluded, selectableHddOptions, system, totals.overall.sale]);
+    const systemLabel = system === 'analog' ? 'Analog (DVR)' : 'IP (NVR)';
+    const hddLabel = pricingCatalog.hddOptions.find(o => o.id === hddId)?.label || 'No HDD';
+    const extrasLabel = (monitorIncluded || installationIncluded) ? ' + Extras' : '';
+    
+    return `${systemLabel} | ${cameraCount} cameras | HDD: ${hddLabel}${extrasLabel} | Sale total ${formatCurrency(totals.overall.sale)}`;
+  }, [cameraCount, hddId, installationIncluded, monitorIncluded, selectableHddOptions, system, totals.overall.sale]);
 
   const handleInlineQuoteDownload = async () => {
     if (!user) {
@@ -436,18 +472,11 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
         });
       }
 
-      if (itSystemCount > 0) {
-        items.push({
-          description: `IT Systems (${itSystemCount} ${itSystemCount > 1 ? 'Systems' : 'System'})`,
-          mrp: 0,
-          sale: 0,
-        });
-      }
+
 
       const customSetupConfig = {
         system,
         cameraCount,
-        itSystemCount,
         analogSelections,
         ipSelections,
         hddId,
@@ -587,18 +616,11 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
         });
       }
 
-      if (itSystemCount > 0) {
-        items.push({
-          description: `IT Systems (${itSystemCount} ${itSystemCount > 1 ? 'Systems' : 'System'})`,
-          mrp: 0,
-          sale: 0,
-        });
-      }
+
 
       const customSetupConfig = {
         system,
         cameraCount,
-        itSystemCount,
         analogSelections,
         ipSelections,
         hddId,
@@ -766,18 +788,11 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
         });
       }
 
-      if (itSystemCount > 0) {
-        items.push({
-          description: `IT Systems (${itSystemCount} ${itSystemCount > 1 ? 'Systems' : 'System'})`,
-          mrp: 0,
-          sale: 0,
-        });
-      }
+
 
       const customSetupConfig = {
         system,
         cameraCount,
-        itSystemCount,
         analogSelections,
         ipSelections,
         hddId,
@@ -886,7 +901,6 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
       const customSetupConfig = {
         system,
         cameraCount,
-        itSystemCount,
         analogSelections,
         ipSelections,
         hddId,
@@ -1162,6 +1176,29 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
               </SelectContent>
             </Select>
           </div>
+          <div className="space-y-2 md:col-span-2">
+            <Label>PoE Switch Type</Label>
+            <RadioGroup
+              value={poeType}
+              onValueChange={(value: 'normal' | 'giga') => setPoeType(value)}
+              className="grid gap-2 sm:grid-cols-2"
+            >
+              <Label className={cn('flex cursor-pointer items-center justify-between rounded-md border p-3', isTech && 'border-border bg-muted/40 text-foreground', poeType === 'normal' && (isTech ? 'border-primary bg-primary/10' : 'border-primary'))}>
+                <div>
+                  <span className="block font-medium">10/100 Mbps (Standard)</span>
+                  <span className={cn('text-xs', isTech ? 'text-muted-foreground' : 'text-muted-foreground')}>Sufficient for most IP cameras</span>
+                </div>
+                <RadioGroupItem value="normal" aria-label="Standard PoE" />
+              </Label>
+              <Label className={cn('flex cursor-pointer items-center justify-between rounded-md border p-3', isTech && 'border-border bg-muted/40 text-foreground', poeType === 'giga' && (isTech ? 'border-primary bg-primary/10' : 'border-primary'))}>
+                <div>
+                  <span className="block font-medium">Gigabit PoE</span>
+                  <span className={cn('text-xs', isTech ? 'text-muted-foreground' : 'text-muted-foreground')}>Higher bandwidth for high-res cameras</span>
+                </div>
+                <RadioGroupItem value="giga" aria-label="Gigabit PoE" />
+              </Label>
+            </RadioGroup>
+          </div>
         </CardContent>
       </Card>
 
@@ -1176,7 +1213,7 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
               <Label>Camera Resolution</Label>
               <RadioGroup
                 value={ipSelections.resolution}
-                onValueChange={(value: '2mp' | '4mp') => setIpSelections((previous) => ({ ...previous, resolution: value }))}
+                onValueChange={(value: '2mp' | '5mp') => setIpSelections((previous) => ({ ...previous, resolution: value }))}
                 className="grid gap-2"
               >
                 <Label className={cn('flex cursor-pointer items-center justify-between rounded-md border p-3', isTech && 'border-border bg-muted/40 text-foreground', ipSelections.resolution === '2mp' && (isTech ? 'border-primary bg-primary/10' : 'border-primary'))}
@@ -1187,13 +1224,13 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
                   </div>
                   <RadioGroupItem value="2mp" id="ip-res-2" aria-label="Select 2 MP IP camera resolution" />
                 </Label>
-                <Label className={cn('flex cursor-pointer items-center justify-between rounded-md border p-3', isTech && 'border-border bg-muted/40 text-foreground', ipSelections.resolution === '4mp' && (isTech ? 'border-primary bg-primary/10' : 'border-primary'))}
-                  htmlFor="ip-res-4">
+                <Label className={cn('flex cursor-pointer items-center justify-between rounded-md border p-3', isTech && 'border-border bg-muted/40 text-foreground', ipSelections.resolution === '5mp' && (isTech ? 'border-primary bg-primary/10' : 'border-primary'))}
+                  htmlFor="ip-res-5">
                   <div>
-                    <span className="block font-medium">4 MP</span>
-                    <span className={cn('text-xs', isTech ? 'text-muted-foreground' : 'text-muted-foreground')}>Sharper detail for analytics</span>
+                    <span className="block font-medium">5 MP</span>
+                    <span className={cn('text-xs', isTech ? 'text-slate-400' : 'text-muted-foreground')}>Higher detail for wider coverage</span>
                   </div>
-                  <RadioGroupItem value="4mp" id="ip-res-4" aria-label="Select 4 MP IP camera resolution" />
+                  <RadioGroupItem value="5mp" id="ip-res-5" aria-label="Select 5 MP IP camera resolution" />
                 </Label>
               </RadioGroup>
             </div>
@@ -1298,19 +1335,6 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
             />
             <p className={cn('text-xs', isTech ? 'text-slate-400' : 'text-muted-foreground')}>Supported range: 1 to 32 cameras.</p>
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="it-system-count">Number of IT systems</Label>
-            <Input
-              id="it-system-count"
-              type="number"
-              min={0}
-              max={20}
-              value={itSystemCount}
-              onChange={handleItRangeChange}
-              className={inputClassName}
-            />
-            <p className={cn('text-xs', isTech ? 'text-slate-400' : 'text-muted-foreground')}>IT systems are tracked separately from CCTV camera count.</p>
-          </div>
         </CardContent>
       </Card>
 
@@ -1387,16 +1411,37 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
                 </div>
               )}
 
-              {/* Wall Mount Add-on */}
+              {/* Monitor Stand Selection */}
               {monitorIncluded && (
-                <div className={cn('flex items-start gap-3 rounded-md border p-3', isTech && 'border-white/10 bg-white/5')}>
-                  <Checkbox id="wall-mount" checked={wallMountIncluded} onCheckedChange={(checked) => setWallMountIncluded(Boolean(checked))} />
-                  <div>
-                    <Label htmlFor="wall-mount" className="text-sm font-semibold">Wall Mount Installation</Label>
-                    <p className={cn('text-xs', isTech ? 'text-slate-400' : 'text-muted-foreground')}>
-                      +{formatCurrency(resolveAccessoryPrice('wall-mount-addon', FALLBACK_WALL_MOUNT_ADDON.mrp ?? 0, FALLBACK_WALL_MOUNT_ADDON.sale, accessoryPricing).sale)}
-                    </p>
-                  </div>
+                <div className="space-y-2 mt-4">
+                  <Label>Monitor Stand</Label>
+                  <RadioGroup
+                    value={monitorStand}
+                    onValueChange={(value: 'none' | 'static' | 'movable') => setMonitorStand(value)}
+                    className="grid gap-2"
+                  >
+                    <Label className={cn('flex cursor-pointer items-center justify-between rounded-md border p-3', isTech && 'border-border bg-muted/40 text-foreground', monitorStand === 'none' && (isTech ? 'border-primary bg-primary/10' : 'border-primary'))}>
+                      <div>
+                        <span className="block font-medium">Included Table Stand</span>
+                        <span className={cn('text-xs', isTech ? 'text-muted-foreground' : 'text-muted-foreground')}>Default</span>
+                      </div>
+                      <RadioGroupItem value="none" />
+                    </Label>
+                    <Label className={cn('flex cursor-pointer items-center justify-between rounded-md border p-3', isTech && 'border-border bg-muted/40 text-foreground', monitorStand === 'static' && (isTech ? 'border-primary bg-primary/10' : 'border-primary'))}>
+                      <div>
+                        <span className="block font-medium">Static Wall Mount</span>
+                        <span className={cn('text-xs', isTech ? 'text-muted-foreground' : 'text-muted-foreground')}>+₹399 hardware, +₹299 installation</span>
+                      </div>
+                      <RadioGroupItem value="static" />
+                    </Label>
+                    <Label className={cn('flex cursor-pointer items-center justify-between rounded-md border p-3', isTech && 'border-border bg-muted/40 text-foreground', monitorStand === 'movable' && (isTech ? 'border-primary bg-primary/10' : 'border-primary'))}>
+                      <div>
+                        <span className="block font-medium">Movable Wall Mount</span>
+                        <span className={cn('text-xs', isTech ? 'text-muted-foreground' : 'text-muted-foreground')}>+₹799 hardware, +₹299 installation</span>
+                      </div>
+                      <RadioGroupItem value="movable" />
+                    </Label>
+                  </RadioGroup>
                 </div>
               )}
 
@@ -1490,87 +1535,52 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <p className={cn('flex items-center justify-between text-sm font-medium', isTech && 'text-slate-200')}>
-              <span>System (recorder, power, cameras, cabling)</span>
-              <span>{formatCurrency(totals.system.sale)} sale{totals.system.mrp ? ` · ${formatCurrency(totals.system.mrp)} MRP` : ''}</span>
+            <p className={cn('flex items-center justify-between text-sm font-bold', isTech ? 'text-slate-200' : 'text-foreground')}>
+              <span>1. {system === 'analog' ? 'Analog' : 'IP'} {cameraCount} Channel Complete Setup</span>
+              <span>{formatCurrency(totals.system.sale)} sale</span>
             </p>
-            <ul className={cn('space-y-1 text-xs', isTech ? 'text-slate-400' : 'text-muted-foreground')}>
+            <ul className={cn('space-y-1 text-sm pl-4 leading-relaxed', isTech ? 'text-slate-400' : 'text-muted-foreground')}>
               {totals.system.breakdown.map((line) => (
-                <li key={line}>{line}</li>
+                <li key={line}>- {line}</li>
               ))}
             </ul>
           </div>
 
-          <div className={cn('grid gap-3 text-sm', isTech && 'text-slate-300')}>
+          <div className={cn('grid gap-3 text-sm font-bold', isTech ? 'text-slate-300' : 'text-foreground')}>
             <div className="flex items-center justify-between">
-              <span>{totals.hdd.label}</span>
-              <span>
-                {formatCurrency(totals.hdd.sale)} sale{totals.hdd.mrp ? ` · ${formatCurrency(totals.hdd.mrp)} MRP` : ''}
-              </span>
+              <span>2. {totals.hdd.label}</span>
+              <span>{formatCurrency(totals.hdd.sale)} sale</span>
             </div>
             <div className="flex items-center justify-between">
-              <span>Monitor</span>
+              <span>3. Monitor ({totals.monitor.included ? totals.monitor.label : 'Not included'})</span>
               {totals.monitor.included ? (
-                <span>
-                  {formatCurrency(totals.monitor.sale)} sale{totals.monitor.mrp ? ` · ${formatCurrency(totals.monitor.mrp)} MRP` : ''}
-                </span>
+                <span>{formatCurrency(totals.monitor.sale)} sale</span>
               ) : (
                 <Badge variant="outline" className={isTech ? 'border-white/20 text-slate-300' : undefined}>Not included</Badge>
               )}
             </div>
-            {totals.wallMount.included && (
+            {(totals.wallMount.included || totals.spikeGuard.included || totals.rack.selected || totals.conduit.selected) && (
               <div className="flex items-center justify-between">
-                <span>Wall Mount</span>
+                <span>4. Accessories & Hardware</span>
                 <span>
-                  {formatCurrency(totals.wallMount.sale)} sale{totals.wallMount.mrp ? ` · ${formatCurrency(totals.wallMount.mrp)} MRP` : ''}
-                </span>
-              </div>
-            )}
-            {totals.spikeGuard.included && (
-              <div className="flex items-center justify-between">
-                <span>Spike Guard</span>
-                <span>
-                  {formatCurrency(totals.spikeGuard.sale)} sale{totals.spikeGuard.mrp ? ` · ${formatCurrency(totals.spikeGuard.mrp)} MRP` : ''}
-                </span>
-              </div>
-            )}
-            {totals.rack.selected && (
-              <div className="flex items-center justify-between">
-                <span>{totals.rack.label}</span>
-                <span>
-                  {formatCurrency(totals.rack.sale)} sale{totals.rack.mrp ? ` · ${formatCurrency(totals.rack.mrp)} MRP` : ''}
-                </span>
-              </div>
-            )}
-            {totals.conduit.selected && (
-              <div className="flex items-center justify-between">
-                <span>{totals.conduit.label} ({totals.conduit.meters}m)</span>
-                <span>
-                  {formatCurrency(totals.conduit.sale)} sale{totals.conduit.mrp ? ` · ${formatCurrency(totals.conduit.mrp)} MRP` : ''}
+                  {formatCurrency(totals.wallMount.sale + totals.spikeGuard.sale + totals.rack.sale + totals.conduit.sale)} sale
                 </span>
               </div>
             )}
             <div className="flex items-center justify-between">
-              <span>Installation</span>
+              <span>5. Installation & Cable Setup</span>
               {totals.installation.included ? (
-                <span>
-                  {formatCurrency(totals.installation.sale)} sale{totals.installation.mrp ? ` · ${formatCurrency(totals.installation.mrp)} MRP` : ' · No MRP'}
-                </span>
+                <span>{formatCurrency(totals.installation.sale)} sale</span>
               ) : (
                 <Badge variant="outline" className={isTech ? 'border-white/20 text-slate-300' : undefined}>Not included</Badge>
               )}
             </div>
             {totals.installation.included && totals.installationLabor.breakdown && totals.installationLabor.breakdown.length > 0 && (
-              <>
-                <div className={cn('flex items-center justify-between text-xs mt-1', isTech ? 'text-slate-400' : 'text-slate-500')}>
-                  <span>Installation Labor Breakdown:</span>
-                </div>
+              <ul className={cn('space-y-1 text-sm pl-4 leading-relaxed font-normal', isTech ? 'text-slate-400' : 'text-muted-foreground')}>
                 {totals.installationLabor.breakdown.map((line, idx) => (
-                  <div key={idx} className={cn('flex items-center justify-between text-xs pl-4', isTech ? 'text-slate-500' : 'text-slate-600')}>
-                    <span>{line}</span>
-                  </div>
+                  <li key={idx}>- {line}</li>
                 ))}
-              </>
+              </ul>
             )}
           </div>
 
@@ -1811,10 +1821,6 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">CCTV Setup</span>
                   <span className="text-primary font-semibold text-right">{cameraCountLabel}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">IT Systems</span>
-                  <span className="text-violet-500 font-semibold text-right">{itSystemLabel}</span>
                 </div>
                 {automationEnabled && (
                   <div className="flex justify-between">

@@ -11,6 +11,7 @@ export interface PriceEntry {
 
 export type CapacityPriceEntry = PriceEntry & {
   capacity: number;
+  variant?: string;
 };
 
 export type CameraPriceMatrix = {
@@ -41,96 +42,96 @@ export interface IpPricing {
   poe: CapacityPriceEntry[];
   camera: {
     '2mp': CameraPriceMatrix;
-    '4mp': CameraPriceMatrix;
+    '5mp': CameraPriceMatrix;
   };
   cable: CablePriceEntry[];
 }
 
 export const FALLBACK_ANALOG_PRICING: AnalogPricing = {
   dvr: [
-    { id: 'dvr-4-2mp', label: '4 Channel DVR (2MP Model)', capacity: 4, mrp: 5199, sale: 2499 },
-    { id: 'dvr-4-5mp', label: '4 Channel DVR (5MP Model)', capacity: 4, mrp: 5799, sale: 2799 },
-    { id: 'dvr-8', label: '8 Channel DVR', capacity: 8, mrp: 6699, sale: 3799 },
-    { id: 'dvr-16', label: '16 Channel DVR', capacity: 16, mrp: 19999, sale: 6999 },
-    { id: 'dvr-32', label: '32 Channel DVR', capacity: 32, mrp: 32999, sale: 13999 },
+    { id: 'dvr-4', label: '4-Ch Analog (2.4MP Max)', capacity: 4, mrp: 5199, sale: 3999 },
+    { id: 'dvr-8', label: '8-Ch Analog (2.4MP Max)', capacity: 8, mrp: 7799, sale: 5999 },
+    { id: 'dvr-4-5mp', label: '4-Ch 5MP Analog', capacity: 4, mrp: 6499, sale: 4999 },
+    { id: 'dvr-8-5mp', label: '8-Ch 5MP Analog', capacity: 8, mrp: 10399, sale: 7999 },
+    { id: 'dvr-16-5mp', label: '16-Ch 5MP Analog', capacity: 16, mrp: 15599, sale: 11999 },
   ],
   smps: [
-    { id: 'smps-4', label: '4 Channel SMPS (5A)', capacity: 4, mrp: 1999, sale: 1249 },
-    { id: 'smps-8', label: '8 Channel SMPS (10A)', capacity: 8, mrp: 2699, sale: 1699 },
-    { id: 'smps-16', label: '16 Channel SMPS (20A)', capacity: 16, mrp: 3999, sale: 2599 },
+    { id: 'smps-8', label: '8-Channel SMPS (DVR Only)', capacity: 8, mrp: 1949, sale: 1499 },
+    { id: 'smps-16', label: '16-Channel SMPS (DVR Only)', capacity: 16, mrp: 2859, sale: 2199 },
   ],
   camera: {
     '2.4mp': {
-      standard: { id: 'analog-2.4-standard', label: '2.4 MP Standard', mrp: 1899, sale: 1299 },
-      dualLight: { id: 'analog-2.4-dual', label: '2.4 MP Dual-light', mrp: 2199, sale: 1499 },
+      standard: { id: 'analog-2.4-standard', label: '2.4MP Normal', mrp: 2209, sale: 1699 },
+      dualLight: { id: 'analog-2.4-dual', label: '2.4MP Dual Light', mrp: 2599, sale: 1999 },
     },
     '5mp': {
-      standard: { id: 'analog-5-standard', label: '5 MP Standard', mrp: 2499, sale: 1799 },
-      dualLight: { id: 'analog-5-dual', label: '5 MP Dual-light', mrp: 2899, sale: 2149 },
+      standard: { id: 'analog-5-standard', label: '5MP Normal', mrp: 3509, sale: 2699 },
+      dualLight: { id: 'analog-5-dual', label: '5MP Dual Light', mrp: 3899, sale: 2999 },
     },
   },
   cable: [
-    { id: 'cable-coaxial-100m', label: 'CCTV Coaxial Cable (100m Roll)', coverageMeters: 100, mrpPerUnit: 3199, salePerUnit: 2499 },
+    { id: 'cable-coaxial-100m', label: 'CCTV 3+1 Cable (DVR Only)', coverageMeters: 100, mrpPerUnit: 1300, salePerUnit: 1000 },
   ],
 };
 
 export const FALLBACK_IP_PRICING: IpPricing = {
   nvr: [
-    { id: 'nvr-8', label: '8 Channel NVR', capacity: 8, mrp: 8999, sale: 5499 },
-    { id: 'nvr-16', label: '16 Channel NVR', capacity: 16, mrp: 12999, sale: 7899 },
-    { id: 'nvr-32', label: '32 Channel NVR', capacity: 32, mrp: 18999, sale: 11499 },
+    { id: 'nvr-8', label: '8-Channel NVR (IP)', capacity: 8, mrp: 9099, sale: 6999 },
+    { id: 'nvr-16', label: '16-Channel NVR (IP)', capacity: 16, mrp: 12999, sale: 9999 },
+    { id: 'nvr-32', label: '32-Channel NVR (IP)', capacity: 32, mrp: 23399, sale: 17999 },
   ],
   poe: [
-    { id: 'poe-8', label: '8 Port PoE Switch', capacity: 8, mrp: 4999, sale: 3199 },
-    { id: 'poe-16', label: '16 Port PoE Switch', capacity: 16, mrp: 6999, sale: 4499 },
-    { id: 'poe-32', label: '32 Port PoE Switch', capacity: 32, mrp: 10999, sale: 6999 },
+    { id: 'poe-4-normal', label: '4-Port POE Switch (Normal)', capacity: 4, variant: 'normal', mrp: 3899, sale: 2999 },
+    { id: 'poe-8-normal', label: '8-Port POE Switch (Normal)', capacity: 8, variant: 'normal', mrp: 6499, sale: 4999 },
+    { id: 'poe-16-normal', label: '16-Port POE Switch (Normal)', capacity: 16, variant: 'normal', mrp: 18199, sale: 13999 },
+    { id: 'poe-24-normal', label: '24-Port POE Switch (Normal)', capacity: 24, variant: 'normal', mrp: 19499, sale: 14999 },
+    { id: 'poe-4-giga', label: '4-Port POE Switch (GIGA)', capacity: 4, variant: 'giga', mrp: 6499, sale: 4999 },
+    { id: 'poe-8-giga', label: '8-Port POE Switch (GIGA)', capacity: 8, variant: 'giga', mrp: 7799, sale: 5999 },
+    { id: 'poe-16-giga', label: '16-Port POE Switch (GIGA)', capacity: 16, variant: 'giga', mrp: 20799, sale: 15999 },
+    { id: 'poe-24-giga', label: '24-Port POE Switch (GIGA)', capacity: 24, variant: 'giga', mrp: 24699, sale: 18999 },
   ],
   camera: {
     '2mp': {
-      standard: { id: 'ip-2-standard', label: '2 MP Standard', mrp: 3299, sale: 2399 },
-      dualLight: { id: 'ip-2-dual', label: '2 MP Dual-light', mrp: 3699, sale: 2699 },
+      standard: { id: 'ip-2-standard', label: '2MP Normal', mrp: 4939, sale: 3799 },
+      dualLight: { id: 'ip-2-dual', label: '2MP Dual Light', mrp: 5199, sale: 3999 },
     },
-    '4mp': {
-      standard: { id: 'ip-4-standard', label: '4 MP Standard', mrp: 4199, sale: 2999 },
-      dualLight: { id: 'ip-4-dual', label: '4 MP Dual-light', mrp: 4899, sale: 3699 },
+    '5mp': {
+      standard: { id: 'ip-4-standard', label: '4MP Normal', mrp: 6109, sale: 4699 },
+      dualLight: { id: 'ip-4-dual', label: '4MP Dual Light', mrp: 6499, sale: 4999 },
     },
   },
   cable: [
-    { id: 'cable-lan-100m', label: 'LAN Cable (100m Box)', coverageMeters: 100, mrpPerUnit: 3399, salePerUnit: 2699 },
+    { id: 'cable-lan-cat5', label: 'LAN Cat5 Cable (100m)', coverageMeters: 100, mrpPerUnit: 1950, salePerUnit: 1500 },
+    { id: 'cable-lan-cat6', label: 'LAN Cat6 Cable (100m)', coverageMeters: 100, mrpPerUnit: 5200, salePerUnit: 4000 },
   ],
 };
 
 export const FALLBACK_HDD_OPTIONS: PriceEntry[] = [
-  { id: 'hdd-500', label: '500 GB Surveillance HDD', mrp: 3499, sale: 2699 },
-  { id: 'hdd-1tb', label: '1 TB Surveillance HDD', mrp: 4499, sale: 3399 },
-  { id: 'hdd-2tb', label: '2 TB Surveillance HDD', mrp: 5999, sale: 4699 },
+  { id: 'hdd-new-1tb', label: 'New 1TB', mrp: 12999, sale: 9999 },
+  { id: 'hdd-new-2tb', label: 'New 2TB', mrp: 16899, sale: 12999 },
+  { id: 'hdd-refurb-500gb', label: 'Refurbished 500GB', mrp: 7799, sale: 5999 },
+  { id: 'hdd-refurb-1tb', label: 'Refurbished 1TB', mrp: 10399, sale: 7999 },
 ];
 
 export const FALLBACK_MONITOR_OPTION: PriceEntry = {
   id: 'monitor-19',
-  label: '19" Surveillance Monitor',
-  mrp: 9999,
-  sale: 7499,
+  label: '19-inch LED Monitor',
+  mrp: 7799,
+  sale: 5999,
 };
 
 export const FALLBACK_MONITOR_OPTIONS: PriceEntry[] = [
   {
     id: 'monitor-19',
-    label: '19" Surveillance Monitor',
-    mrp: 9999,
-    sale: 7499,
+    label: '19-inch LED Monitor',
+    mrp: 7799,
+    sale: 5999,
   },
   {
-    id: 'monitor-21',
-    label: '21" Surveillance Monitor',
-    mrp: 12999,
-    sale: 9999,
-  },
-  {
-    id: 'monitor-24',
-    label: '24" Surveillance Monitor',
-    mrp: 15999,
-    sale: 11999,
+    id: 'monitor-22',
+    label: '22-inch LED Monitor',
+    mrp: 10399,
+    sale: 7999,
   },
 ];
 
@@ -151,36 +152,24 @@ export const FALLBACK_SPIKE_GUARD_OPTION: PriceEntry = {
 export const FALLBACK_RACK_OPTIONS: PriceEntry[] = [
   {
     id: 'rack-2u',
-    label: 'Rack Cabinet - 2U',
-    mrp: 4999,
-    sale: 3299,
+    label: '2U Wall Mount Rack',
+    mrp: 1689,
+    sale: 1299,
   },
   {
     id: 'rack-3u',
-    label: 'Rack Cabinet - 3U',
-    mrp: 5999,
-    sale: 3999,
-  },
-  {
-    id: 'rack-4u',
-    label: 'Rack Cabinet - 4U',
-    mrp: 6999,
-    sale: 4599,
+    label: '3U Wall Mount Rack',
+    mrp: 3899,
+    sale: 2999,
   },
 ];
 
 export const FALLBACK_CONDUIT_PIPE_OPTIONS: PriceEntry[] = [
   {
-    id: 'conduit-open',
-    label: 'Open Conduit Pipe (₹10/mtr)',
-    mrp: 10,
-    sale: 10,
-  },
-  {
-    id: 'conduit-concealed',
-    label: 'Concealed Conduit Pipe (₹4/mtr)',
-    mrp: 4,
-    sale: 4,
+    id: 'conduit-pipe',
+    label: 'Conduit Pipe',
+    mrp: 15,
+    sale: 15,
   },
 ];
 
@@ -196,14 +185,22 @@ import { getCustomSetupConstantsFromDb, getCustomSetupInventoryFromDb } from './
 async function getFallbackPricing() {
   const inventory = await getCustomSetupInventoryFromDb();
   const getItems = (category: string) => inventory.filter(i => i.category === category).map(i => ({
-    id: i.id, label: i.label, capacity: i.capacity || 1, mrp: i.mrp ? Number(i.mrp) : null, sale: Number(i.sale), coverageMeters: i.capacity || 100, mrpPerUnit: i.mrp ? Number(i.mrp) : 0, salePerUnit: Number(i.sale)
+    id: i.id,
+    label: i.label,
+    capacity: i.capacity || 1,
+    variant: /giga/i.test(i.label) ? 'giga' : (/normal/i.test(i.label) ? 'normal' : undefined),
+    mrp: i.mrp ? Number(i.mrp) : null,
+    sale: Number(i.sale),
+    coverageMeters: i.capacity || 100,
+    mrpPerUnit: i.mrp ? Number(i.mrp) : 0,
+    salePerUnit: Number(i.sale)
   }));
   const getItem = (id: string) => getItems('accessory').find(i => i.id === id) || { id, label: 'Unknown', mrp: 0, sale: 0 };
   
   return {
     analog: {
-      dvr: getItems('analog_dvr'),
-      smps: getItems('analog_smps'),
+      dvr: getItems('analog_dvr').filter((entry) => [4, 8, 16].includes(entry.capacity)),
+      smps: getItems('analog_smps').filter((entry) => [4, 8, 16].includes(entry.capacity)),
       camera: {
         '2.4mp': { standard: getItem('analog-2.4-standard'), dualLight: getItem('analog-2.4-dual') },
         '5mp': { standard: getItem('analog-5-standard'), dualLight: getItem('analog-5-dual') }
@@ -211,11 +208,11 @@ async function getFallbackPricing() {
       cable: getItems('analog_cable')
     } as AnalogPricing,
     ip: {
-      nvr: getItems('ip_nvr'),
-      poe: getItems('ip_poe'),
+      nvr: getItems('ip_nvr').filter((entry) => [8, 16, 32].includes(entry.capacity)),
+      poe: getItems('ip_poe').filter((entry) => [4, 8, 16, 32].includes(entry.capacity)),
       camera: {
         '2mp': { standard: getItem('ip-2-standard'), dualLight: getItem('ip-2-dual') },
-        '4mp': { standard: getItem('ip-4-standard'), dualLight: getItem('ip-4-dual') }
+        '5mp': { standard: getItem('ip-5-standard'), dualLight: getItem('ip-5-dual') }
       },
       cable: getItems('ip_cable')
     } as IpPricing,
@@ -230,6 +227,13 @@ async function getFallbackPricing() {
 }
 
 const SALE_PRICE_METADATA_KEYS = ['sale_price', 'salePrice', 'offer_price', 'offerPrice', 'discounted_price', 'discountedPrice'];
+
+function findComponentBySlug(
+  system: CustomSetupBlueprintSummary['systems'][number] | undefined,
+  slugs: string[]
+): CustomSetupBlueprintComponentSummary | undefined {
+  return system?.components.find((component) => slugs.includes(component.slug));
+}
 
 export function readNumericMetadata(meta: Record<string, unknown> | null | undefined, key: string): number | null {
   if (!meta || typeof meta !== 'object') {
@@ -333,6 +337,23 @@ export function normalizeCapacity(
   return fallbackCapacity;
 }
 
+function normalizeVariant(option: CustomSetupBlueprintComponentSummary['options'][number] | undefined): string | undefined {
+  const metadataVariant = option?.metadata && typeof option.metadata === 'object'
+    ? (option.metadata as Record<string, unknown>).variant
+    : undefined;
+  if (typeof metadataVariant === 'string' && metadataVariant.trim()) {
+    return metadataVariant.trim().toLowerCase();
+  }
+  const label = option?.label?.toLowerCase() ?? '';
+  if (label.includes('giga') || label.includes('gigabit')) {
+    return 'giga';
+  }
+  if (label.includes('normal')) {
+    return 'normal';
+  }
+  return undefined;
+}
+
 export function normalizeMegapixels(
   option: CustomSetupBlueprintComponentSummary['options'][number] | undefined,
   fallback: number
@@ -380,6 +401,7 @@ export function buildCapacityEntries(
       id: option.id,
       label: option.label || fallbackEntry?.label || component.name,
       capacity,
+      variant: normalizeVariant(option) ?? fallbackEntry?.variant,
       mrp,
       sale,
     });
@@ -434,7 +456,7 @@ export function buildCableEntries(
 
 export function buildCameraMatrix(
   component: CustomSetupBlueprintComponentSummary | undefined,
-  resolutionKey: '2.4mp' | '5mp' | '2mp' | '4mp',
+  resolutionKey: '2.4mp' | '5mp' | '2mp',
   fallback: CameraPriceMatrix
 ): CameraPriceMatrix {
   if (!component) {
@@ -566,59 +588,59 @@ export async function buildPricingCatalog(blueprint: CustomSetupBlueprintSummary
     };
   }
 
-  const analogSystem = blueprint.systems.find((system) => system.slug === 'dvr-system');
-  const ipSystem = blueprint.systems.find((system) => system.slug === 'nvr-system');
+  const analogSystem = blueprint.systems.find((system) => ['dvr-system', 'analog-cctv'].includes(system.slug));
+  const ipSystem = blueprint.systems.find((system) => ['nvr-system', 'ip-cctv'].includes(system.slug));
 
   const analogPricing: AnalogPricing = {
     dvr: buildCapacityEntries(
-      analogSystem?.components.find((component) => component.slug === 'dvr-recorder'),
+      findComponentBySlug(analogSystem, ['dvr-recorder', 'analog-dvr']),
       fallbacks.analog.dvr
     ),
     smps: buildCapacityEntries(
-      analogSystem?.components.find((component) => component.slug === 'smps-power'),
+      findComponentBySlug(analogSystem, ['smps-power', 'analog-smps']),
       fallbacks.analog.smps
     ),
     camera: {
       '2.4mp': buildCameraMatrix(
-        analogSystem?.components.find((component) => component.slug === 'analog-camera'),
+        findComponentBySlug(analogSystem, ['analog-camera']),
         '2.4mp',
         fallbacks.analog.camera['2.4mp']
       ),
       '5mp': buildCameraMatrix(
-        analogSystem?.components.find((component) => component.slug === 'analog-camera'),
+        findComponentBySlug(analogSystem, ['analog-camera']),
         '5mp',
         fallbacks.analog.camera['5mp']
       ),
     },
     cable: buildCableEntries(
-      analogSystem?.components.find((component) => component.slug === 'coaxial-cable'),
+      findComponentBySlug(analogSystem, ['coaxial-cable']),
       fallbacks.analog.cable
     ),
   } satisfies AnalogPricing;
 
   const ipPricing: IpPricing = {
     nvr: buildCapacityEntries(
-      ipSystem?.components.find((component) => component.slug === 'nvr-recorder'),
+      findComponentBySlug(ipSystem, ['nvr-recorder', 'ip-nvr']),
       fallbacks.ip.nvr
     ),
     poe: buildCapacityEntries(
-      ipSystem?.components.find((component) => component.slug === 'poe-switch'),
+      findComponentBySlug(ipSystem, ['poe-switch', 'ip-poe']),
       fallbacks.ip.poe
     ),
     camera: {
       '2mp': buildCameraMatrix(
-        ipSystem?.components.find((component) => component.slug === 'ip-camera'),
+        findComponentBySlug(ipSystem, ['ip-camera']),
         '2mp',
         fallbacks.ip.camera['2mp']
       ),
-      '4mp': buildCameraMatrix(
-        ipSystem?.components.find((component) => component.slug === 'ip-camera'),
-        '4mp',
-        fallbacks.ip.camera['4mp']
+      '5mp': buildCameraMatrix(
+        findComponentBySlug(ipSystem, ['ip-camera']),
+        '5mp',
+        fallbacks.ip.camera['5mp']
       ),
     },
     cable: buildCableEntries(
-      ipSystem?.components.find((component) => component.slug === 'cat6-cable'),
+      findComponentBySlug(ipSystem, ['cat6-cable']),
       fallbacks.ip.cable
     ),
   } satisfies IpPricing;
@@ -669,18 +691,25 @@ export function calculateQuantity(cameraCount: number, capacity: number): number
 }
 
 const AVERAGE_RUN_METERS_PER_CAMERA = 25;
-const INSTALLATION_LABOR_PER_CAMERA = 299;
-const INSTALLATION_SETUP_CONFIGURATION_COST = 1000;
-const INSTALLATION_LABOR_PER_METER_CABLE = 2;
+const CABLE_METERS_PER_UNIT = 100;
+const DVR_BASE_SETUP_FEE = 1000;
+const NVR_BASE_SETUP_FEE = 2000;
+const INSTALLATION_SETUP_CONFIGURATION_COST = DVR_BASE_SETUP_FEE;
+const INSTALLATION_LABOR_PER_CAMERA = 250;
+const INSTALLATION_LABOR_PER_METER_CABLE = 5;
 
-export function calculateCableQuantity(cameraCount: number, cable: CablePriceEntry): number {
+export function calculateCableQuantity(cameraCount: number, cable: CablePriceEntry, cableUnits?: number): number {
+  if (typeof cableUnits === 'number' && Number.isFinite(cableUnits)) {
+    return Math.max(1, Math.round(cableUnits));
+  }
+
   const totalRun = Math.max(1, cameraCount) * AVERAGE_RUN_METERS_PER_CAMERA;
   const coverage = Math.max(1, cable.coverageMeters);
   return Math.max(1, Math.ceil(totalRun / coverage));
 }
 
-export function calculateCableMetersForLabor(cameraCount: number): number {
-  return cameraCount > 0 ? cameraCount * AVERAGE_RUN_METERS_PER_CAMERA : 0;
+export function calculateCableMetersFromUnits(cableUnits: number): number {
+  return Math.max(1, Math.round(cableUnits)) * CABLE_METERS_PER_UNIT;
 }
 
 export function roundUpToThousandMinusOne(value: number): number {
@@ -690,22 +719,40 @@ export function roundUpToThousandMinusOne(value: number): number {
   return Math.max(0, Math.ceil(value / 1000) * 1000 - 1);
 }
 
-export function calculateInstallationLaborCharges(cameraCount: number): {
+export function calculateInstallationCharges(
+  system: SetupSystem, 
+  cameraCount: number, 
+  cableUnits: number,
+  monitorStand: 'none' | 'static' | 'movable' = 'none',
+  rackIncluded: boolean = false
+): {
   sale: number;
   breakdown: string[];
 } {
   const cameraCountClamped = Math.max(0, cameraCount);
+  const cableMeters = calculateCableMetersFromUnits(cableUnits);
+  const baseSetupCost = system === 'analog' ? DVR_BASE_SETUP_FEE : NVR_BASE_SETUP_FEE;
   const cameraLaborCost = cameraCountClamped * INSTALLATION_LABOR_PER_CAMERA;
-  const cableMeters = calculateCableMetersForLabor(cameraCountClamped);
   const cableLaborCost = cableMeters * INSTALLATION_LABOR_PER_METER_CABLE;
-  const setupConfigCost = cameraCountClamped > 0 ? INSTALLATION_SETUP_CONFIGURATION_COST : 0;
-  const rawTotal = cameraLaborCost + cableLaborCost + setupConfigCost;
+  
+  let accessoryInstallCost = 0;
+  if (monitorStand === 'static' || monitorStand === 'movable') {
+    accessoryInstallCost += 299;
+  }
+  if (rackIncluded) {
+    accessoryInstallCost += 299;
+  }
+
+  const rawTotal = cameraCountClamped > 0 ? baseSetupCost + cameraLaborCost + cableLaborCost + accessoryInstallCost : 0;
 
   const breakdown: string[] = [];
   if (cameraCountClamped > 0) {
     breakdown.push(`${cameraCountClamped} camera installation @ ₹${INSTALLATION_LABOR_PER_CAMERA}/unit`);
     breakdown.push(`${cableMeters} m cable laying @ ₹${INSTALLATION_LABOR_PER_METER_CABLE}/m`);
-    breakdown.push(`Setup & configuration: ₹${INSTALLATION_SETUP_CONFIGURATION_COST}`);
+    breakdown.push(`Base Setup & configuration: ₹${baseSetupCost}`);
+    if (accessoryInstallCost > 0) {
+      breakdown.push(`Accessory Installation: ₹${accessoryInstallCost}`);
+    }
   }
 
   return {
@@ -724,7 +771,7 @@ export function recommendedAnalogDvrCapacity(cameraCount: number): number {
   if (cameraCount <= 16) {
     return 16;
   }
-  return 32;
+  return 16;
 }
 
 export function recommendedAnalogSmpsCapacity(cameraCount: number): number {
@@ -738,6 +785,19 @@ export function recommendedAnalogSmpsCapacity(cameraCount: number): number {
 }
 
 export function recommendedIpCapacity(cameraCount: number): number {
+  if (cameraCount <= 8) {
+    return 8;
+  }
+  if (cameraCount <= 16) {
+    return 16;
+  }
+  return 32;
+}
+
+export function recommendedPoePortCapacity(cameraCount: number): number {
+  if (cameraCount <= 4) {
+    return 4;
+  }
   if (cameraCount <= 8) {
     return 8;
   }
@@ -763,7 +823,7 @@ export interface IpSelections {
   nvrId: string;
   poeId: string;
   cableId: string;
-  resolution: '2mp' | '4mp';
+  resolution: '2mp' | '5mp';
   dualLight: boolean;
 }
 
@@ -780,7 +840,7 @@ export interface Totals {
   overall: { mrp: number; sale: number; discountAmount: number; discountPercent: number };
 }
 
-export function buildAnalogSystemSummary(cameraCount: number, selections: AnalogSelections, pricing: AnalogPricing): {
+export function buildAnalogSystemSummary(cameraCount: number, selections: AnalogSelections, pricing: AnalogPricing, cableUnits?: number): {
   mrp: number;
   sale: number;
   breakdown: string[];
@@ -792,7 +852,7 @@ export function buildAnalogSystemSummary(cameraCount: number, selections: Analog
   const cameraPricing = selections.dualLight ? cameraMatrix.dualLight : cameraMatrix.standard;
 
   const smpsQuantity = calculateQuantity(cameraCount, smps.capacity);
-  const cableQuantity = calculateCableQuantity(cameraCount, cable);
+  const cableQuantity = calculateCableQuantity(cameraCount, cable, cableUnits);
 
   const mrp =
     (dvr.mrp ?? 0) +
@@ -815,7 +875,7 @@ export function buildAnalogSystemSummary(cameraCount: number, selections: Analog
   return { mrp, sale, breakdown };
 }
 
-export function buildIpSystemSummary(cameraCount: number, selections: IpSelections, pricing: IpPricing): {
+export function buildIpSystemSummary(cameraCount: number, selections: IpSelections, pricing: IpPricing, cableUnits?: number): {
   mrp: number;
   sale: number;
   breakdown: string[];
@@ -827,7 +887,7 @@ export function buildIpSystemSummary(cameraCount: number, selections: IpSelectio
   const cameraPricing = selections.dualLight ? cameraMatrix.dualLight : cameraMatrix.standard;
 
   const poeQuantity = calculateQuantity(cameraCount, poe.capacity);
-  const cableQuantity = calculateCableQuantity(cameraCount, cable);
+  const cableQuantity = calculateCableQuantity(cameraCount, cable, cableUnits);
 
   const mrp =
     (nvr.mrp ?? 0) +
@@ -853,11 +913,13 @@ export function buildIpSystemSummary(cameraCount: number, selections: IpSelectio
 export interface CalculateTotalsInput {
   system: SetupSystem;
   cameraCount: number;
+  cableUnits?: number;
   analogSelections: AnalogSelections;
   ipSelections: IpSelections;
   hddId: string;
   monitorIncluded: boolean;
   monitorId?: string;
+  monitorStand?: 'none' | 'static' | 'movable';
   wallMountIncluded?: boolean;
   spikeGuardIncluded?: boolean;
   rackId?: string | null;
@@ -888,11 +950,13 @@ export function resolveAccessoryPrice(
 export function calculateTotals({
   system,
   cameraCount,
+  cableUnits = 1,
   analogSelections,
   ipSelections,
   hddId,
   monitorIncluded,
   monitorId = 'monitor-19',
+  monitorStand = 'none',
   wallMountIncluded = false,
   spikeGuardIncluded = false,
   rackId = null,
@@ -907,13 +971,11 @@ export function calculateTotals({
   const ipPricing = pricingCatalog.ip;
   const selectableHddOptions = pricingCatalog.hddOptions.length ? pricingCatalog.hddOptions : [{ id: 'hdd', label: 'HDD', mrp: 0, sale: 0 }];
   const monitorOption = pricingCatalog.monitorOptions?.find((entry) => entry.id === monitorId) ?? pricingCatalog.monitorOptions?.[0] ?? { id: 'mon', label: 'Monitor', mrp: 0, sale: 0 };
-  const installationOption = pricingCatalog.installationOption;
-
   const systemSummary = system === 'analog'
-    ? buildAnalogSystemSummary(cameraCount, analogSelections, analogPricing)
-    : buildIpSystemSummary(cameraCount, ipSelections, ipPricing);
+    ? buildAnalogSystemSummary(cameraCount, analogSelections, analogPricing, cableUnits)
+    : buildIpSystemSummary(cameraCount, ipSelections, ipPricing, cableUnits);
 
-  const installationLaborCharges = installationIncluded ? calculateInstallationLaborCharges(cameraCount) : { sale: 0, breakdown: [] };
+  const installationLaborCharges = installationIncluded ? calculateInstallationCharges(system, cameraCount, cableUnits, monitorStand, !!rackId) : { sale: 0, breakdown: [] };
 
   // Resolve HDD
   const hdd = selectableHddOptions.find((entry) => entry.id === hddId) ?? selectableHddOptions[0];
@@ -921,8 +983,12 @@ export function calculateTotals({
 
   // Resolve Monitor
   const resolvedMonitorPrice = resolveAccessoryPrice(monitorOption.id, monitorOption.mrp ?? 0, monitorOption.sale, accessoryPricingOverrides);
-  const monitorMrp = monitorIncluded ? resolvedMonitorPrice.mrp : 0;
-  const monitorSale = monitorIncluded ? resolvedMonitorPrice.sale : 0;
+  let monitorStandCost = 0;
+  if (monitorStand === 'static') monitorStandCost = 399;
+  if (monitorStand === 'movable') monitorStandCost = 799;
+
+  const monitorMrp = monitorIncluded ? resolvedMonitorPrice.mrp + monitorStandCost : 0;
+  const monitorSale = monitorIncluded ? resolvedMonitorPrice.sale + monitorStandCost : 0;
 
   // Resolve Installation (using dynamic installation labor charges)
   const installationMrp = installationLaborCharges.sale;
@@ -986,29 +1052,32 @@ export function calculateTotals({
     }
   }
 
-  const overallMrp =
+  const equipmentMrp =
     systemSummary.mrp +
     resolvedHddPrice.mrp +
     monitorMrp +
-    installationMrp +
     wallMountMrp +
     spikeGuardMrp +
     rackMrp +
     conduitMrp;
 
-  const overallSale =
+  const rawEquipmentSale =
     systemSummary.sale +
     resolvedHddPrice.sale +
     monitorSale +
-    installationSale +
     wallMountSale +
     spikeGuardSale +
     rackSale +
     conduitSale;
+    
+  const equipmentSale = roundUpToThousandMinusOne(rawEquipmentSale);
+
+  const overallMrp = roundUpToThousandMinusOne(equipmentMrp + installationMrp);
+  const overallSale = roundUpToThousandMinusOne(equipmentSale + installationSale);
   
   const validatedMrp = Math.max(overallMrp, overallSale);
   const validatedSale = Math.min(overallSale, validatedMrp);
-  
+
   const discountAmount = Math.max(0, Math.round(validatedMrp - validatedSale));
   const discountPercent = validatedMrp > 0 ? (discountAmount / validatedMrp) * 100 : 0;
 
@@ -1021,7 +1090,7 @@ export function calculateTotals({
     rack: { mrp: rackMrp, sale: rackSale, selected: !!rackId, label: rackLabel },
     conduit: { mrp: conduitMrp, sale: conduitSale, selected: !!conduitPipeId && conduitMeters > 0, label: conduitLabel, meters: conduitMeters },
     installation: { mrp: installationMrp, sale: installationSale, included: installationIncluded },
-    installationLabor: { sale: 0, breakdown: installationLaborCharges.breakdown },
+    installationLabor: { sale: installationLaborCharges.sale, breakdown: installationLaborCharges.breakdown },
     overall: {
       mrp: validatedMrp,
       sale: validatedSale,
