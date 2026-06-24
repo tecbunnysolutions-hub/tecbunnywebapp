@@ -12,7 +12,7 @@ interface Body {
 
 // POST /api/admin/roles/set
 export async function POST(req: Request) {
-  const ctx = await requireRole('admin'); // admin baseline
+  const ctx = await requireRole('superadmin');
   if ('error' in ctx) {
     return NextResponse.json({ error: ctx.error }, { status: ctx.status });
   }
@@ -34,11 +34,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Self role change not permitted' }, { status: 400 });
     }
 
-    const privilegedRoles = new Set<UserRole>(['admin', 'superadmin']);
-    const targetPrivilegedRole = privilegedRoles.has(newRole);
-    const actorIsSuperadmin = ctx.role === 'superadmin';
-    if (targetPrivilegedRole && !actorIsSuperadmin) {
-      return NextResponse.json({ error: 'Only superadmin can grant privileged roles' }, { status: 403 });
+    if (newRole === 'superadmin') {
+      return NextResponse.json({ error: 'The root Superadmin role is not assignable' }, { status: 403 });
     }
 
     const supabase = isSupabaseServiceConfigured ? createServiceClient() : await createClient();
@@ -47,8 +44,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Target user profile not found' }, { status: 404 });
     }
     const previousRole = normalizeRole(targetProfile.role);
-    if (previousRole && privilegedRoles.has(previousRole) && !actorIsSuperadmin) {
-      return NextResponse.json({ error: 'Only superadmin can modify privileged users' }, { status: 403 });
+    if (previousRole === 'superadmin') {
+      return NextResponse.json({ error: 'The root Superadmin role cannot be modified' }, { status: 403 });
     }
 
     // Update profiles.role via RPC for audit (preferred) else fallback

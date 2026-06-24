@@ -378,9 +378,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid or non-assignable role' }, { status: 400 });
     }
 
-    // Reject requests if a non-superadmin tries to create an account with a role other than 'customer'
-    if (role !== 'superadmin' && requestedRole !== 'customer') {
-      return NextResponse.json({ error: 'Forbidden: Admins can only create customer profiles' }, { status: 403 });
+    // Role selection is a Superadmin-only capability. Other operators may
+    // create customers, but cannot submit any role field.
+    if (role !== 'superadmin' && body.role !== undefined) {
+      return NextResponse.json({ error: 'Forbidden: Only Superadmin can assign roles' }, { status: 403 });
     }
 
     // Auto-generate a strong password if not provided using CSPRNG
@@ -540,13 +541,12 @@ export async function PUT(request: NextRequest) {
     }
 
     if (role !== 'superadmin') {
+      if (updates.role !== undefined) {
+        return NextResponse.json({ error: 'Forbidden: Only Superadmin can change roles and permissions' }, { status: 403 });
+      }
       // Reject if non-superadmin attempts to update a non-customer profile
       if (targetProfile.role !== 'customer') {
         return NextResponse.json({ error: 'Forbidden: Admins cannot update non-customer profiles' }, { status: 403 });
-      }
-      // Reject if non-superadmin attempts to change a user's role to something other than 'customer'
-      if (requestedRole && requestedRole !== 'customer') {
-        return NextResponse.json({ error: 'Forbidden: Admins cannot change profile role to non-customer' }, { status: 403 });
       }
     }
 

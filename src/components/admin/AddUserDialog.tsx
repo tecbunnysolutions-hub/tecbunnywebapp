@@ -96,7 +96,7 @@ export function AddUserDialog({ onUserAdded, canManageStaffRoles = false }: AddU
           email: values.email,
           name: values.name,
           mobile: values.mobile,
-          role: values.role,
+          ...(canManageStaffRoles ? { role: values.role } : {}),
           password: values.password, // optional; server will generate if missing
         }),
       });
@@ -187,42 +187,46 @@ export function AddUserDialog({ onUserAdded, canManageStaffRoles = false }: AddU
               )}
             />
             
-            <FormField
-              control={form.control}
-              name="role"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Role</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a role" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {availableRoles.map((role) => (
-                        <SelectItem key={role} value={role}>
-                          {ROLE_DISPLAY_NAME[role]}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            {canManageStaffRoles && (
+              <>
+                <FormField
+                  control={form.control}
+                  name="role"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Role</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select a role" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {availableRoles.map((role) => (
+                            <SelectItem key={role} value={role}>
+                              {ROLE_DISPLAY_NAME[role]}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-            <div className="rounded-lg border bg-muted/30 p-3">
-              <p className="text-sm font-medium">{ROLE_DISPLAY_NAME[selectedRole]}</p>
-              <p className="mt-1 text-xs text-muted-foreground">{ROLE_DESCRIPTION[selectedRole]}</p>
-              <div className="mt-3 flex flex-wrap gap-1.5">
-                {effectivePermissions.map((permission) => (
-                  <span key={permission} className="rounded border bg-background px-2 py-1 font-mono text-[11px]">
-                    {permission}
-                  </span>
-                ))}
-              </div>
-            </div>
+                <div className="rounded-lg border bg-muted/30 p-3">
+                  <p className="text-sm font-medium">{ROLE_DISPLAY_NAME[selectedRole]}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">{ROLE_DESCRIPTION[selectedRole]}</p>
+                  <div className="mt-3 flex flex-wrap gap-1.5">
+                    {effectivePermissions.map((permission) => (
+                      <span key={permission} className="rounded border bg-background px-2 py-1 font-mono text-[11px]">
+                        {permission}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
             
             <FormField
               control={form.control}

@@ -125,7 +125,7 @@ export function EditUserDialog({ isOpen, onClose, user, onUserUpdated, canManage
           updates: {
             name: formData.name,
             mobile: formData.mobile,
-            role: formData.role,
+            ...(canManageStaffRoles ? { role: formData.role } : {}),
             customerCategory: formData.role === 'customer' ? formData.customerCategory : undefined,
             isActive: formData.isActive,
             address: formData.address || undefined,
@@ -224,15 +224,17 @@ export function EditUserDialog({ isOpen, onClose, user, onUserUpdated, canManage
             Edit User - {user?.name}
           </DialogTitle>
           <DialogDescription>
-            Manage user information, roles, and customer categories. Discounts are managed separately.
+            {canManageStaffRoles
+              ? 'Manage user information, staff roles, inherited permissions, and customer categories.'
+              : 'Manage customer information and customer categories.'}
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <Tabs defaultValue="basic" className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className={`grid w-full ${canManageStaffRoles ? 'grid-cols-3' : 'grid-cols-2'}`}>
               <TabsTrigger value="basic">Basic Info</TabsTrigger>
-              <TabsTrigger value="permissions">Role & Permissions</TabsTrigger>
+              {canManageStaffRoles && <TabsTrigger value="permissions">Role & Permissions</TabsTrigger>}
               <TabsTrigger value="customer">Customer Settings</TabsTrigger>
             </TabsList>
 
@@ -311,7 +313,7 @@ export function EditUserDialog({ isOpen, onClose, user, onUserUpdated, canManage
               </Card>
             </TabsContent>
 
-            <TabsContent value="permissions" className="space-y-4">
+            {canManageStaffRoles && <TabsContent value="permissions" className="space-y-4">
               <Card>
                 <CardHeader>
                   <CardTitle className="text-lg">Role & Permissions</CardTitle>
@@ -405,7 +407,7 @@ export function EditUserDialog({ isOpen, onClose, user, onUserUpdated, canManage
                   </div>
                 </CardContent>
               </Card>
-            </TabsContent>
+            </TabsContent>}
 
             <TabsContent value="customer" className="space-y-4">
               <Card>

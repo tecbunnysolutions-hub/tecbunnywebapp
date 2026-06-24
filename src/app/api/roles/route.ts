@@ -17,15 +17,11 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    if (role !== 'superadmin' && role !== 'admin') {
+    if (role !== 'superadmin') {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const availableRoles = role === 'superadmin'
-      ? USER_ASSIGNABLE_ROLES
-      : (['customer'] as const);
-
-    const roles = availableRoles.map((roleName) => ({
+    const roles = USER_ASSIGNABLE_ROLES.map((roleName) => ({
       id: roleName,
       name: ROLE_DISPLAY_NAME[roleName],
       description: ROLE_DESCRIPTION[roleName],
