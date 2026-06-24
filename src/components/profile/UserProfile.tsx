@@ -195,7 +195,7 @@ export default function UserProfile({ user, profile, salesAgentData, orders, ser
 
           <div className="px-6 mt-8 mb-2 text-xs font-bold text-muted-foreground uppercase tracking-widest font-tech">Account</div>
           <Link href="/services" className="w-full text-left nav-item flex items-center gap-3 px-6 py-3 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all">
-            <Users className="h-4 w-4" /> Billing & AMC
+            <Users className="h-4 w-4" /> Billing
           </Link>
           <Link href="/profile" className="w-full text-left nav-item flex items-center gap-3 px-6 py-3 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all">
             <Edit className="h-4 w-4" /> Profile Settings
@@ -269,33 +269,7 @@ export default function UserProfile({ user, profile, salesAgentData, orders, ser
                 </div>
               </div>
 
-              <div className="bento-card p-6 flex flex-col items-center justify-center relative">
-                <h3 className="text-sm font-bold text-muted-foreground absolute top-6 left-6">AMC Status</h3>
-                <div className="relative w-32 h-32 mt-4">
-                  <svg className="w-full h-full" viewBox="0 0 100 100">
-                    <circle className="text-muted/40 stroke-current" strokeWidth="8" cx="50" cy="50" r="40" fill="transparent"></circle>
-                    <circle
-                      className="text-primary stroke-current"
-                      strokeWidth="8"
-                      strokeLinecap="round"
-                      cx="50"
-                      cy="50"
-                      r="40"
-                      fill="transparent"
-                      strokeDasharray="251.2"
-                      strokeDashoffset={amcDashOffset}
-                      style={{ transform: 'rotate(-90deg)', transformOrigin: '50% 50%', transition: 'stroke-dashoffset 0.35s' }}
-                    ></circle>
-                  </svg>
-                  <div className="absolute top-0 left-0 w-full h-full flex flex-col items-center justify-center">
-                    <span className="text-2xl font-bold font-tech text-foreground">{amcDaysLeft ?? '—'}</span>
-                    <span className="text-[10px] text-muted-foreground uppercase">{amcDaysLeft !== null ? 'Days Left' : 'No AMC'}</span>
-                  </div>
-                </div>
-                <Link href="/services" className="mt-4 text-xs text-primary hover:underline font-medium">
-                  {amcDaysLeft !== null ? 'Renew Plan' : 'Add Plan'}
-                </Link>
-              </div>
+              
             </div>
 
             <div>

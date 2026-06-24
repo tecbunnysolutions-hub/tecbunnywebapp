@@ -137,7 +137,7 @@ export default function OffersPage() {
               </span>
             </h1>
             <p className="mx-auto mt-4 max-w-2xl text-base text-muted-foreground sm:text-lg">
-              Exclusive bundles and seasonal discounts on hardware and AMC packages. Engineered for affordability in Goa.
+              Exclusive bundles and seasonal discounts on hardware and AMC support. Engineered for affordability in Goa.
             </p>
           </div>
         </div>

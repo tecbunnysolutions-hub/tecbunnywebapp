@@ -98,30 +98,6 @@ const FEATURE_PILLARS = [
   },
 ];
 
-const PLAN_TIERS = [
-  {
-    name: 'Essentials',
-    summary: 'Foundational coverage for smaller footprints.',
-    priceLabel: 'From ₹4,999/month',
-    highlight: false,
-    items: ['Routine health checks', 'Remote assistance window', 'Lifecycle planning'],
-  },
-  {
-    name: 'Growth',
-    summary: 'Balanced coverage for multi-site needs.',
-    priceLabel: 'From ₹14,999/month',
-    highlight: true,
-    items: ['Priority response lane', 'Quarterly optimization', 'Dedicated escalation path'],
-  },
-  {
-    name: 'Enterprise',
-    summary: 'High-availability operations at scale.',
-    priceLabel: 'From ₹24,999/month',
-    highlight: false,
-    items: ['Always-on monitoring', 'On-site engineering', 'Strategic roadmap reviews'],
-  },
-];
-
 export default function HomePage({
   initialProducts = [],
   initialPartnerBrands = [],
@@ -362,60 +338,6 @@ export default function HomePage({
             </div>
           </div>
 
-          <div className={cn('space-y-6 reveal-item', revealDelayClass(80))}>
-            <div>
-              <span className="tb-kicker">Plans</span>
-              <h2 className="mt-3 text-3xl font-semibold text-white sm:text-4xl">Uptime is not optional.</h2>
-              <p className="tb-lede mt-4 text-sm sm:text-base">
-                Choose the level of coverage that matches your footprint. Upgrade as your infrastructure grows.
-              </p>
-            </div>
-            <div className="grid gap-4">
-              {PLAN_TIERS.map((plan, index) => (
-                <div
-                  key={plan.name}
-                  className={cn(
-                    'reveal-item rounded-lg border px-6 py-5 transition-transform duration-300 hover:-translate-y-1 flex flex-col justify-between',
-                    plan.highlight
-                      ? 'border-blue-500/30 bg-blue-500/5 shadow-sm'
-                      : 'border-zinc-800 bg-zinc-950/70',
-                    revealDelayClass(140 + index * 90)
-                  )}
-                >
-                  <div>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h3 className="text-lg font-semibold text-white">{plan.name}</h3>
-                        <p className="text-xs uppercase tracking-[0.3em] text-zinc-400">{plan.summary}</p>
-                      </div>
-                      <span className="text-xs font-semibold text-blue-400">{plan.priceLabel}</span>
-                    </div>
-                    <div className="mt-4 grid gap-2 text-sm text-zinc-300">
-                      {plan.items.map((item) => (
-                        <div key={item} className="flex items-center gap-2">
-                          <CheckCircle2 size={14} className="text-zinc-400" />
-                          {item}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="mt-6 pt-4 border-t border-zinc-800">
-                    <Link
-                      href={`/contact?subject=sales&service=amc_service&intent=amc_quote&message=I%20am%20interested%20in%20the%20${plan.name}%20plan.%20Please%20contact%20me.`}
-                      className={cn(
-                        "inline-flex min-h-11 w-full items-center justify-center rounded-lg border px-4 py-2 text-xs font-semibold uppercase tracking-wider transition-colors",
-                        plan.highlight
-                          ? "border-blue-600 bg-blue-600 text-white hover:bg-blue-500"
-                          : "border-zinc-800 bg-zinc-900/50 text-white hover:bg-zinc-800"
-                      )}
-                    >
-                      {plan.highlight ? "Secure My Operations" : "Lock In Coverage"}
-                    </Link>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
         </div>
       </section>
 
@@ -516,7 +438,7 @@ export default function HomePage({
               Our security architectures are built with enterprise-grade equipment from CP Plus, Hikvision, and Dahua, offering high-definition IP cameras, smart perimeter security, and secure local or cloud NVR systems. We customize camera placement and coverage to ensure complete visual security and 24/7 reliability.
             </p>
             <p>
-              For IT infrastructure, our engineers design high-performance wired and wireless networks, structured cabling layouts, and server setups to ensure zero-bottleneck operations. Backed by our proactive Annual Maintenance Contracts (AMC) and on-site support guarantees, we keep your business systems secure and running smoothly at all times.
+              For IT infrastructure, our engineers design high-performance wired and wireless networks, structured cabling layouts, and server setups to ensure zero-bottleneck operations. We also offer proactive Annual Maintenance Contracts (AMC) for IT, CCTV, and RFID Lock Systems, keeping your business systems secure and running smoothly at all times.
             </p>
           </div>
         </div>

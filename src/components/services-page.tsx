@@ -67,39 +67,14 @@ interface TermSubSection {
   bullets: string[];
 }
 
-interface AmcTerm {
-  title: string;
-  description?: string;
-  bullets?: string[];
-  sections?: TermSubSection[];
-}
-
 const servicePricing: ServicePricingCategory[] = [
   {
     category: 'CCTV & AMC Services',
     blurb: 'Professional installation and ongoing maintenance plans for cameras, NVRs, and access systems.',
     plans: [
-      {
-        name: 'Home AMC',
-        summary: 'For homes with 4–8 cameras and one PC.',
-        tiers: [
-          { label: 'Home AMC — Annual', price: 'from ₹3,499/yr', detail: '2 preventive visits · Unlimited breakdown calls (labour & travel) · On-site within 48 hrs · Parts up to ₹2,000/yr', amount: 3499 }
-        ]
-      },
-      {
-        name: 'Business AMC',
-        summary: 'For shops, restaurants and offices up to 16 cameras.',
-        tiers: [
-          { label: 'Business AMC — Annual', price: 'from ₹8,999/yr', detail: '4 preventive visits + quarterly report · On-site within 24 hrs · Priority lane · Parts up to ₹6,000/yr', amount: 8999 }
-        ]
-      },
-      {
-        name: 'Enterprise AMC',
-        summary: 'For hotels, multi-site operations and large offices.',
-        tiers: [
-          { label: 'Enterprise AMC — Annual', price: 'from ₹29,999/yr', detail: 'Always-on monitoring · Named on-site engineer · Quarterly strategic reviews · Custom SLA & parts pool', amount: 29999 }
-        ]
-      },
+      
+      
+      
       {
         name: 'CCTV New Installation',
         summary: 'Supply, cable, configure and commission CP PLUS / Hikvision camera systems.',
@@ -160,73 +135,6 @@ const companyInfo = {
   ceo: 'SHUBHAM SAKHARAM BHISAJI',
   website: 'https://www.tecbunny.com'
 };
-
-const amcTerms: AmcTerm[] = [
-  {
-    title: 'Scope of Service & Inclusions',
-    description: 'Limited comprehensive coverage for the specific CCTV and PC equipment documented in each contract annexure.',
-    bullets: [
-      'Preventive Maintenance visits for cleaning, diagnostics, and health checks.',
-      'Unlimited breakdown support with labor and travel charges included.',
-      'PC software assistance for OS corruption, malware removal, and third-party installation issues.',
-      'Limited parts replacement benefit up to the value/claim caps defined in the selected plan.',
-      'Applies only to the cameras, DVR/NVR, SMPS, and PCs listed in the annexure.'
-    ]
-  },
-  {
-    title: 'Prerequisites for Contract Initiation',
-    bullets: [
-      'All equipment must be documented and in fully working condition on the activation date.',
-      'Non-working items must be repaired at standard rates before activation or remain excluded for the contract term.'
-    ]
-  },
-  {
-    title: 'Financial and Replacement Terms',
-    bullets: [
-      'Limited Parts Coverage (LPC) is capped by both a value limit and claim count per plan.',
-      'After the limit is reached, labor stays free but replacement parts are billed to the customer.',
-      'Hard disk replacements are excluded from LPC; only labor is covered for HDD swaps.'
-    ]
-  },
-  {
-    title: 'Exclusions (Not Covered)',
-    bullets: [
-      'Physical damage from misuse, tampering, fire, flood, lightning, or pest infestation.',
-      'Electrical faults caused by voltage fluctuations, surges, or improper earthing.',
-      'Any data loss for CCTV footage or PC data; backups remain the customer’s responsibility.',
-      'Repairs performed by unauthorized personnel void coverage for the affected item.',
-      'Consumables such as batteries, extensive cabling, or media beyond normal wear.',
-      'External works including relocation, civil modifications, or specialized access equipment.'
-    ]
-  },
-  {
-    title: 'Service Level Agreement (SLA) & Termination',
-    sections: [
-      {
-        title: 'Response Time',
-        bullets: [
-          'Home AMC calls receive on-site response within 48 business hours.',
-          'Business and Enterprise AMC calls receive on-site response within 24 business hours.'
-        ]
-      },
-      {
-        title: 'Contract Duration & Termination',
-        bullets: [
-          'Contracts run for 12 non-transferable months.',
-          'Either party may terminate with a 30-day written notice.',
-          'No refunds are issued for the unexpired period.'
-        ]
-      },
-      {
-        title: 'Financial Settlement',
-        bullets: [
-          'If LPC benefits were used before termination, the parts value is deducted from any settlement.',
-          'Final settlement, if applicable, is processed within 30 days of the official termination date.'
-        ]
-      }
-    ]
-  }
-];
 
 export interface ServicesPageProps {
   services: Service[];
@@ -386,7 +294,7 @@ export default function ServicesPage({ services, hasServiceLoadError = false }: 
             Zero-Downtime <span className="bg-gradient-to-r from-blue-400 via-indigo-200 to-white bg-clip-text text-transparent">Infrastructure</span>
           </h1>
           <p className="text-lg font-light leading-relaxed tech-body">
-            Stop worrying about your technology. From impenetrable security perimeters to rapid-response AMC, we deploy systems that simply never fail.
+            Stop worrying about your technology. From impenetrable security perimeters to custom IT solutions, we deploy systems that simply never fail. We also offer proactive Annual Maintenance Contracts (AMC) for IT, CCTV, and RFID Lock Systems.
           </p>
           {canManageServices && (
             <div className="mt-6 flex justify-center">

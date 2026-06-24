@@ -561,14 +561,6 @@ export function ProductDetailPage({ productId, initialProduct, sourceContext }: 
                   <Button
                     variant="outline"
                     className="flex-1 h-12 border border-border bg-muted/20 hover:bg-muted/40 hover:border-border/80 text-muted-foreground hover:text-foreground rounded-xl transition-all duration-300 cursor-pointer"
-                    onClick={() => trackEvent('amc_inquiry', { productId: product.id, productName: displayName })}
-                  >
-                    <Shield className="mr-2 h-4 w-4 text-primary" />
-                    Request AMC Quote
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="flex-1 h-12 border border-border bg-muted/20 hover:bg-muted/40 hover:border-border/80 text-muted-foreground hover:text-foreground rounded-xl transition-all duration-300 cursor-pointer"
                     onClick={() => trackEvent('installation_inquiry', { productId: product.id, productName: displayName })}
                   >
                     <Truck className="mr-2 h-4 w-4 text-primary" />

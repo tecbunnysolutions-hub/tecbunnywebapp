@@ -43,7 +43,7 @@ const contactFaqJsonLd = {
       name: 'What does AMC cover?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'AMC plans include maintenance, software updates, lens cleaning, and priority breakdown support. Hardware replacement costs are separate unless covered by warranty or the selected plan.',
+        text: 'Our AMC service includes proactive maintenance, software updates, lens cleaning, and priority breakdown support. Hardware replacement costs are separate unless covered by warranty.',
       },
     },
   ],
