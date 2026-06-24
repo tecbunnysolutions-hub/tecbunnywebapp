@@ -186,7 +186,7 @@ export default function PaymentSettingsConsole() {
             {/* Gateway environment */}
             <div className="space-y-1.5">
               <label className="text-xs text-zinc-400 block">Gateway Environment Mode</label>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <button
                   type="button"
                   onClick={() => setEnvironment('test')}

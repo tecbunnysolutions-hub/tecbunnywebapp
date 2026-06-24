@@ -508,7 +508,7 @@ function ServiceFormDialog({ open, onOpenChange, service, onSuccess }: ServiceFo
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-zinc-950 border-zinc-800 text-zinc-100">
+      <DialogContent className="max-h-[90dvh] w-[calc(100vw-1rem)] max-w-2xl overflow-y-auto border-zinc-800 bg-zinc-950 p-4 text-zinc-100 sm:w-full sm:p-6">
         <DialogHeader>
           <DialogTitle className="text-white">{service ? 'Configure Service' : 'Add New Service'}</DialogTitle>
           <DialogDescription className="text-zinc-400">

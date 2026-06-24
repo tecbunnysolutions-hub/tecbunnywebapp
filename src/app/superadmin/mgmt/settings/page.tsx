@@ -413,7 +413,7 @@ export default function SuperadminSettingsPage() {
       </header>
 
       <Tabs value={activeGroup} onValueChange={setActiveGroup} className="space-y-5">
-        <TabsList className="grid w-full max-w-xl grid-cols-3 bg-muted">
+        <TabsList className="flex w-full max-w-full justify-start overflow-x-auto bg-muted p-1 sm:grid sm:max-w-xl sm:grid-cols-3">
           {sectionGroups.map((group) => (
             <TabsTrigger key={group.id} value={group.id}>
               {group.label}

@@ -137,18 +137,18 @@ export default async function SuperadminDashboard() {
   ];
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 sm:space-y-8">
       {/* Header Info */}
       <div>
-        <h2 className="text-3xl font-extrabold text-white tracking-tight">System Administration</h2>
-        <p className="text-zinc-400 text-sm mt-1">Configure parameters, inspect user tables, and mutate core orchestration variables.</p>
+        <h1 className="text-2xl font-extrabold tracking-tight text-white sm:text-3xl">System Administration</h1>
+        <p className="mt-1 max-w-3xl text-sm leading-6 text-zinc-400">Configure protected system parameters, inspect governance data, and manage core orchestration controls.</p>
       </div>
 
       {/* Grid Layout: Stats & Logs */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-6">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-            <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-5 shadow-lg">
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-3 lg:gap-6">
+        <div className="space-y-5 lg:col-span-2 lg:space-y-6">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4 lg:gap-6">
+            <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 shadow-lg sm:p-5">
               <div className="flex items-center justify-between mb-3 text-zinc-400">
                 <span className="text-xs uppercase tracking-wider font-semibold">Total Users</span>
                 <Users className="h-5 w-5 text-primary" />
@@ -156,7 +156,7 @@ export default async function SuperadminDashboard() {
               <span className="text-3xl font-bold text-white font-mono">{userCount}</span>
             </div>
 
-            <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-5 shadow-lg">
+            <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 shadow-lg sm:p-5">
               <div className="flex items-center justify-between mb-3 text-zinc-400">
                 <span className="text-xs uppercase tracking-wider font-semibold">Privileged Accounts</span>
                 <UserCheck className="h-5 w-5 text-primary" />
@@ -164,7 +164,7 @@ export default async function SuperadminDashboard() {
               <span className="text-3xl font-bold text-white font-mono">{adminCount}</span>
             </div>
 
-            <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-5 shadow-lg">
+            <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 shadow-lg sm:p-5">
               <div className="flex items-center justify-between mb-3 text-zinc-400">
                 <span className="text-xs uppercase tracking-wider font-semibold">Security Core</span>
                 <Key className="h-5 w-5 text-primary" />
@@ -177,7 +177,7 @@ export default async function SuperadminDashboard() {
         </div>
 
         {/* Audit Log Panel */}
-        <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-5 shadow-lg row-span-2 h-fit">
+        <div className="row-span-2 h-fit rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 shadow-lg sm:p-5">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-sm font-bold text-white tracking-wide flex items-center gap-2">
               <ClipboardList className="h-4.5 w-4.5 text-primary" />
@@ -208,11 +208,11 @@ export default async function SuperadminDashboard() {
         {/* 14 Management Blocks Grid */}
         <div className="lg:col-span-2">
           <h3 className="text-lg font-bold text-white mb-4">Management Consoles</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
             {managementBlocks.map((block) => {
               const IconComponent = block.icon;
               return (
-                <div key={block.title} className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-5 flex flex-col justify-between hover:border-primary/30 transition-all group shadow-md">
+                <article key={block.title} className="group flex min-h-52 flex-col justify-between rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 shadow-md transition-all hover:border-primary/30 sm:p-5">
                   <div>
                     <div className="w-10 h-10 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center mb-4">
                       <IconComponent className="h-5 w-5 text-primary group-hover:text-primary transition-colors" />
@@ -228,7 +228,7 @@ export default async function SuperadminDashboard() {
                   >
                     Open Console <ArrowRight className="h-3 w-3 group-hover:translate-x-1 transition-transform" />
                   </Link>
-                </div>
+                </article>
               );
             })}
           </div>
