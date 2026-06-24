@@ -1,7 +1,5 @@
-'use client';
-
-import AdminContactMessages from '@/app/mgmt/admin/contact-messages/admin-contact-messages';
+import InquiryPipeline from './inquiry-pipeline';
 
 export default function LeadsPage() {
-  return <AdminContactMessages />;
+  return <InquiryPipeline />;
 }

@@ -19,11 +19,21 @@ const createMessageSchema = z.object({
   phone: z.string().min(6).max(32).optional().or(z.literal('').transform(() => undefined)),
   subject: z.string().min(2).max(160).optional().or(z.literal('').transform(() => undefined)),
   message: z.string().min(10).max(5000),
+  company_name: z.string().max(160).optional().or(z.literal('').transform(() => undefined)),
+  origin_path: z.string().max(240).optional(),
+  form_identifier: z.string().max(100).optional(),
+  utm_source: z.string().max(160).optional(),
+  utm_medium: z.string().max(160).optional(),
+  utm_campaign: z.string().max(160).optional(),
 });
 
 const statusFilterSchema = z.object({
   status: z
-    .union([z.enum(['New', 'In Progress', 'Resolved']), z.literal('all'), z.literal('ALL')])
+    .union([
+      z.enum(['New', 'Assigned', 'Contacted', 'In Progress', 'Resolved', 'Closed', 'Rejected']),
+      z.literal('all'),
+      z.literal('ALL'),
+    ])
     .optional()
     .transform(value => {
       if (!value) return undefined;
@@ -41,6 +51,49 @@ function isMissingRelationError(error: unknown) {
   return candidate?.code === '42P01' ||
     candidate?.code === 'PGRST205' ||
     candidate?.message?.toLowerCase().includes('contact_messages') === true;
+}
+
+function classifyInquiry(input: {
+  originPath?: string;
+  formIdentifier?: string;
+  subject?: string;
+}) {
+  const originPath = input.originPath?.split('?')[0]?.trim() || '';
+  const formIdentifier = input.formIdentifier?.trim().toLowerCase() || '';
+  const subject = input.subject?.trim().toLowerCase() || '';
+
+  if (originPath === '/webdev' || formIdentifier === 'web_development_contact' || subject.includes('web development')) {
+    return {
+      category: 'Sales' as const,
+      originKey: 'web_development',
+      originPath: '/webdev',
+    };
+  }
+
+  if (
+    originPath === '/services/smart-infrastructure'
+    || formIdentifier === 'smart_infrastructure_proposal'
+  ) {
+    return {
+      category: 'Services' as const,
+      originKey: 'smart_infrastructure',
+      originPath: '/services/smart-infrastructure',
+    };
+  }
+
+  if (formIdentifier === 'services_core_desk') {
+    return {
+      category: 'Services' as const,
+      originKey: 'services_core_desk',
+      originPath: originPath || '/services',
+    };
+  }
+
+  return {
+    category: 'Sales' as const,
+    originKey: 'general_contact',
+    originPath: originPath || '/contact',
+  };
 }
 
 export async function POST(request: NextRequest) {
@@ -65,6 +118,12 @@ export async function POST(request: NextRequest) {
     }
 
     const serviceSupabase = isSupabaseServiceConfigured ? createServiceClient() : await createServerClient();
+    const referrerUrl = request.headers.get('referer');
+    const classification = classifyInquiry({
+      originPath: parsed.data.origin_path,
+      formIdentifier: parsed.data.form_identifier,
+      subject: parsed.data.subject,
+    });
     const payload = {
       name: parsed.data.name.trim(),
       email: parsed.data.email.trim().toLowerCase(),
@@ -73,6 +132,20 @@ export async function POST(request: NextRequest) {
       message: parsed.data.message.trim(),
       status: 'New' as ContactMessageStatus,
       ip_address: submissionIp === 'anonymous' ? null : submissionIp,
+      company_name: parsed.data.company_name?.trim() || null,
+      inquiry_category: classification.category,
+      origin_key: classification.originKey,
+      origin_path: classification.originPath,
+      form_identifier: parsed.data.form_identifier?.trim().toLowerCase() || null,
+      referrer_url: referrerUrl,
+      utm_source: parsed.data.utm_source?.trim() || null,
+      utm_medium: parsed.data.utm_medium?.trim() || null,
+      utm_campaign: parsed.data.utm_campaign?.trim() || null,
+      origin_metadata: {
+        request_host: request.headers.get('host'),
+        user_agent: request.headers.get('user-agent'),
+      },
+      last_activity_at: new Date().toISOString(),
     };
 
     const { data, error } = await serviceSupabase

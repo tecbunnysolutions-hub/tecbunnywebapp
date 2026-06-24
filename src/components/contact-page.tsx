@@ -70,6 +70,7 @@ export default function ContactPage() {
   const subjectParam = searchParams.get('subject');
   const serviceParam = searchParams.get('service');
   const intentParam = searchParams.get('intent');
+  const sourceParam = searchParams.get('source');
   const messageParam = searchParams.get('message');
   const defaultSubject = (subjectParam && SUBJECT_OPTIONS.includes(subjectParam as any)) 
     ? (subjectParam as typeof SUBJECT_OPTIONS[number]) 
@@ -142,6 +143,19 @@ export default function ContactPage() {
         phone: values.phone.trim(),
         subject: normalizedSubject,
         message: values.message.trim(),
+        origin_path: values.subject === 'web_development'
+          ? '/webdev'
+          : sourceParam === 'services_core_desk'
+            ? '/services'
+            : '/contact',
+        form_identifier: values.subject === 'web_development'
+          ? 'web_development_contact'
+          : sourceParam === 'services_core_desk'
+            ? 'services_core_desk'
+            : 'general_contact',
+        utm_source: searchParams.get('utm_source') ?? undefined,
+        utm_medium: searchParams.get('utm_medium') ?? undefined,
+        utm_campaign: searchParams.get('utm_campaign') ?? undefined,
       };
 
       const response = await fetch('/api/contact-messages', {

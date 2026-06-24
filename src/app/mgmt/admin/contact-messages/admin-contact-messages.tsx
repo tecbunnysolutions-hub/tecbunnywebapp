@@ -17,11 +17,24 @@ import { logger } from '@/lib/logger';
 
 const STATUS_BADGE_VARIANT: Record<ContactMessageStatus, 'default' | 'secondary' | 'outline' | 'destructive'> = {
   New: 'secondary',
+  Assigned: 'default',
+  Contacted: 'default',
   'In Progress': 'default',
   Resolved: 'outline',
+  Closed: 'outline',
+  Rejected: 'destructive',
 };
 
-const STATUS_FILTER_OPTIONS: Array<'All' | ContactMessageStatus> = ['All', 'New', 'In Progress', 'Resolved'];
+const STATUS_FILTER_OPTIONS: Array<'All' | ContactMessageStatus> = [
+  'All',
+  'New',
+  'Assigned',
+  'Contacted',
+  'In Progress',
+  'Resolved',
+  'Closed',
+  'Rejected',
+];
 
 function formatDateTime(value: string | null | undefined) {
   if (!value) return '—';

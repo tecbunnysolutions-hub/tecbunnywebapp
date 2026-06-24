@@ -242,7 +242,16 @@ export interface Order {
   status_history?: OrderStatusHistory[];
 }
 
-export type ContactMessageStatus = 'New' | 'In Progress' | 'Resolved';
+export type ContactMessageStatus =
+  | 'New'
+  | 'Assigned'
+  | 'Contacted'
+  | 'In Progress'
+  | 'Resolved'
+  | 'Closed'
+  | 'Rejected';
+
+export type InquiryCategory = 'Sales' | 'Services';
 
 export interface ContactMessage {
   id: string;
@@ -259,6 +268,21 @@ export interface ContactMessage {
   handled_by_name?: string | null;
   admin_notes?: string | null;
   ip_address?: string | null;
+  company_name?: string | null;
+  inquiry_category?: InquiryCategory;
+  origin_key?: string;
+  origin_path?: string | null;
+  form_identifier?: string | null;
+  referrer_url?: string | null;
+  utm_source?: string | null;
+  utm_medium?: string | null;
+  utm_campaign?: string | null;
+  priority?: 'Low' | 'Normal' | 'High' | 'Urgent';
+  assigned_user_id?: string | null;
+  assigned_at?: string | null;
+  assigned_by_label?: string | null;
+  first_contact_at?: string | null;
+  last_activity_at?: string | null;
 }
 
 export interface ActivityLog {

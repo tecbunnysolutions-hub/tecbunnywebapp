@@ -7,7 +7,7 @@ import { logger } from '@/lib/logger';
 import type { ContactMessage } from '@/lib/types';
 
 const updateMessageSchema = z.object({
-  status: z.enum(['New', 'In Progress', 'Resolved']).optional(),
+  status: z.enum(['New', 'Assigned', 'Contacted', 'In Progress', 'Resolved', 'Closed', 'Rejected']).optional(),
   admin_notes: z
     .string()
     .max(2000)

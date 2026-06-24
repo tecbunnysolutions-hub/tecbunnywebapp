@@ -247,21 +247,21 @@ export default function ServicesPage({ services, hasServiceLoadError = false }: 
     const category = (service.category || '').toLowerCase();
 
     if (title.includes('amc')) {
-      return '/contact?subject=sales&service=amc_service&intent=amc_quote&message=I%20need%20an%20AMC%20quote.%20Please%20share%20coverage%20options%20for%20my%20setup.';
+      return '/contact?subject=sales&service=amc_service&intent=amc_quote&source=services_core_desk&message=I%20need%20an%20AMC%20quote.%20Please%20share%20coverage%20options%20for%20my%20setup.';
     }
     if (title.includes('cctv') && (title.includes('installation') || title.includes('new'))) {
-      return '/contact?subject=sales&service=cctv_installation&intent=site_survey&message=I%20need%20a%20CCTV%20site%20survey%20and%20quote.%20Please%20contact%20me.';
+      return '/contact?subject=sales&service=cctv_installation&intent=site_survey&source=services_core_desk&message=I%20need%20a%20CCTV%20site%20survey%20and%20quote.%20Please%20contact%20me.';
     }
     if (title.includes('web')) {
       return '/contact?subject=web_development&service=web_development&intent=project_quote&message=I%20need%20a%20web%20development%20quote.%20Please%20contact%20me%20about%20my%20project.';
     }
     if (title.includes('repair')) {
-      return '/contact?subject=support&service=repair_service&intent=service_request&message=I%20need%20help%20with%20a%20repair%20request.%20Please%20let%2520me%20know%20the%2520next%20steps.';
+      return '/contact?subject=support&service=repair_service&intent=service_request&source=services_core_desk&message=I%20need%20help%20with%20a%20repair%20request.%20Please%20let%2520me%20know%20the%2520next%20steps.';
     }
     if (category.includes('computer')) {
-      return '/contact?subject=sales&service=computer_setup&intent=project_quote&message=I%20need%20a%20computer%20setup%20or%20upgrade%20quote.%20Please%20contact%20me.';
+      return '/contact?subject=sales&service=computer_setup&intent=project_quote&source=services_core_desk&message=I%20need%20a%20computer%20setup%20or%20upgrade%20quote.%20Please%20contact%20me.';
     }
-    return '/contact?subject=sales&service=general_service&intent=quote_request&message=I%20need%20a%20service%20quote.%20Please%20contact%20me%20with%20the%20next%20steps.';
+    return '/contact?subject=sales&service=general_service&intent=quote_request&source=services_core_desk&message=I%20need%20a%20service%20quote.%20Please%20contact%20me%20with%20the%20next%20steps.';
   };
 
   const serviceSections = services.reduce<Array<{ key: string; items: Service[] }>>((acc, service) => {
@@ -455,7 +455,7 @@ export default function ServicesPage({ services, hasServiceLoadError = false }: 
                 We are currently deploying new service packages. Contact our engineers directly to map out your infrastructure.
               </p>
               <Link
-                href="/contact?subject=sales&intent=service_quote"
+                href="/contact?subject=sales&intent=service_quote&source=services_core_desk"
                 className="mt-6 inline-flex items-center justify-center rounded-lg bg-blue-600 hover:bg-blue-500 text-white px-5 py-2.5 text-xs font-bold uppercase tracking-wider transition-colors shadow-sm"
               >
                 Summon an Engineer
@@ -554,7 +554,7 @@ export default function ServicesPage({ services, hasServiceLoadError = false }: 
               </p>
             </div>
             <Link
-              href="/contact?subject=sales&intent=service_quote"
+              href="/contact?subject=sales&intent=service_quote&source=services_core_desk"
               className="inline-flex items-center justify-center rounded-lg border border-zinc-800 bg-zinc-900/30 hover:bg-white/10 hover:border-zinc-700 px-4 py-2.5 text-xs font-bold uppercase tracking-wider transition-colors shadow-sm"
             >
               Engineer My Custom Quote

@@ -58,8 +58,11 @@ ${form.message}
           name: form.name.trim(),
           email: form.email.trim(),
           phone: form.phone.trim(),
+          company_name: form.company.trim(),
           subject: `Smart Infrastructure Lead - ${form.service}`,
           message: formattedMessage,
+          origin_path: '/services/smart-infrastructure',
+          form_identifier: 'smart_infrastructure_proposal',
         }),
       });
 
