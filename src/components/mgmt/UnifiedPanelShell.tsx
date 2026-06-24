@@ -6,11 +6,9 @@ import { usePathname } from 'next/navigation';
 import {
   Bell,
   ChevronRight,
-  Command,
   LogOut,
   Menu,
   Plus,
-  Search,
   ShieldCheck,
   User,
   X,
@@ -49,22 +47,6 @@ function RoleBadge({ role }: { role: UserRole }) {
     <span className="inline-flex min-h-7 items-center rounded-md border border-blue-500/20 bg-blue-500/10 px-2.5 text-xs font-semibold text-blue-200">
       {ROLE_DISPLAY_NAME[role] ?? role}
     </span>
-  );
-}
-
-function QuickSearch() {
-  return (
-    <button
-      type="button"
-      className="hidden h-10 min-w-[18rem] items-center gap-2 rounded-md border border-zinc-800 bg-zinc-950/80 px-3 text-left text-sm text-zinc-500 transition-colors hover:border-zinc-700 hover:text-zinc-300 lg:flex"
-      aria-label="Open universal search"
-    >
-      <Search className="h-4 w-4" />
-      <span className="flex-1">Search orders, customers, invoices...</span>
-      <span className="inline-flex items-center gap-1 rounded border border-zinc-800 px-1.5 py-0.5 text-[10px] font-semibold text-zinc-500">
-        <Command className="h-3 w-3" /> K
-      </span>
-    </button>
   );
 }
 
@@ -201,6 +183,10 @@ export function UnifiedPanelShell({
   const pathname = usePathname() || '/';
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const sections = React.useMemo(() => getPanelNavigation(role), [role]);
+  const mobileItems = React.useMemo(
+    () => sections.flatMap((section) => section.items).slice(0, 4),
+    [sections],
+  );
 
   React.useEffect(() => {
     setMobileOpen(false);
@@ -208,7 +194,7 @@ export function UnifiedPanelShell({
 
   return (
     <div
-      className="admin-shell flex min-h-screen bg-zinc-950 text-zinc-100"
+      className="admin-shell flex min-h-[100dvh] w-full overflow-x-hidden bg-zinc-950 text-zinc-100"
       data-auth-state={authorized ? 'authorized' : loading ? 'checking' : 'redirecting'}
       data-panel-role={role}
     >
@@ -219,7 +205,7 @@ export function UnifiedPanelShell({
         Skip to main content
       </a>
 
-      <aside className="sticky top-0 hidden h-screen w-72 shrink-0 border-r border-zinc-800 lg:block">
+      <aside className="sticky top-0 hidden h-[100dvh] w-64 shrink-0 border-r border-zinc-800 xl:block">
         <SidebarContent
           sections={sections}
           pathname={pathname}
@@ -237,7 +223,7 @@ export function UnifiedPanelShell({
               <SheetTrigger asChild>
                 <button
                   type="button"
-                  className="flex h-10 w-10 items-center justify-center rounded-md border border-zinc-800 text-zinc-200 lg:hidden"
+                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-zinc-800 text-zinc-200 xl:hidden"
                   aria-label="Open navigation menu"
                 >
                   {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -269,8 +255,6 @@ export function UnifiedPanelShell({
               </div>
             </div>
 
-            <QuickSearch />
-
             <div className="hidden items-center gap-2 sm:flex">
               <Button variant="ghost" size="sm" className="h-10 gap-2 border border-zinc-800 bg-zinc-950 text-zinc-300 hover:bg-zinc-900 hover:text-white">
                 <Plus className="h-4 w-4" />
@@ -295,9 +279,9 @@ export function UnifiedPanelShell({
           tabIndex={-1}
           aria-label="Internal panel main content"
           aria-busy={loading && !authorized}
-          className="relative min-w-0 flex-1 bg-zinc-950 p-4 focus:outline-none sm:p-6 lg:p-8"
+          className="relative min-w-0 flex-1 bg-zinc-950 px-3 pb-24 pt-5 focus:outline-none sm:px-5 sm:pb-8 sm:pt-6 lg:px-8"
         >
-          <div className="mx-auto w-full max-w-7xl">
+          <div className="mx-auto w-full min-w-0 max-w-7xl [&_table]:max-w-full [&_table]:overflow-x-auto [&_table]:whitespace-nowrap [&_[role=tablist]]:max-w-full [&_[role=tablist]]:overflow-x-auto">
             {children}
           </div>
           {loading && !authorized ? (
@@ -310,6 +294,33 @@ export function UnifiedPanelShell({
           ) : null}
         </main>
       </div>
+      {mobileItems.length > 0 ? (
+        <nav
+          aria-label="Mobile panel navigation"
+          className="fixed inset-x-0 bottom-0 z-40 border-t border-zinc-800 bg-zinc-950/95 px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2 backdrop-blur-xl sm:hidden"
+        >
+          <div className="grid grid-cols-4 gap-1">
+            {mobileItems.map((item) => {
+              const active = isActivePath(pathname, item.href, item.exact);
+              const Icon = item.icon;
+              return (
+                <Link
+                  key={`mobile-${item.href}-${item.label}`}
+                  href={item.href}
+                  aria-current={active ? 'page' : undefined}
+                  className={cn(
+                    'flex min-h-14 min-w-0 flex-col items-center justify-center gap-1 rounded-lg px-1 text-[10px] font-semibold transition-colors',
+                    active ? 'bg-blue-500/10 text-blue-200' : 'text-zinc-500 active:bg-zinc-900 active:text-white',
+                  )}
+                >
+                  <Icon className="h-4 w-4" />
+                  <span className="w-full truncate text-center">{item.label}</span>
+                </Link>
+              );
+            })}
+          </div>
+        </nav>
+      ) : null}
       <Toaster />
     </div>
   );

@@ -104,14 +104,14 @@ export default function SalesDashboard() {
         } finally {
             setLoading(false);
         }
-    }, [supabase, toast]);
+    }, [supabase, toast, user?.id]);
 
     React.useEffect(() => {
         fetchStats();
     }, [fetchStats]);
 
     return (
-        <div className="space-y-8 max-w-7xl mx-auto px-1">
+        <div className="mx-auto max-w-7xl space-y-6 sm:space-y-8">
             {/* Header */}
             <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between border-b border-border pb-6">
                 <div>
@@ -133,9 +133,9 @@ export default function SalesDashboard() {
             </div>
 
             {/* Metrics Bento Grid */}
-            <div className="bento-grid sm:grid-cols-2 lg:grid-cols-4">
+            <div className="bento-grid grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {/* Card 1: Today's Revenue */}
-                <div className="bento-card p-6">
+                <div className="bento-card p-4 sm:p-6">
                     <div className="flex items-center justify-between">
                         <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Today's Revenue</span>
                         <div className="rounded-lg bg-muted p-2 text-muted-foreground border border-border">
@@ -157,7 +157,7 @@ export default function SalesDashboard() {
                 </div>
 
                 {/* Card 2: New Customers */}
-                <div className="bento-card p-6">
+                <div className="bento-card p-4 sm:p-6">
                     <div className="flex items-center justify-between">
                         <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">New Customers</span>
                         <div className="rounded-lg bg-muted p-2 text-muted-foreground border border-border">
@@ -179,7 +179,7 @@ export default function SalesDashboard() {
                 </div>
 
                 {/* Card 3: Pending Pickups */}
-                <div className="bento-card p-6">
+                <div className="bento-card p-4 sm:p-6">
                     <div className="flex items-center justify-between">
                         <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Pending Pickups</span>
                         <div className="rounded-lg bg-muted p-2 text-muted-foreground border border-border">
@@ -201,7 +201,7 @@ export default function SalesDashboard() {
                 </div>
 
                 {/* Card 4: Pending Deliveries */}
-                {user?.role === 'manager' && (
+                {(user?.role === 'manager' || user?.role === 'sales_manager') && (
                     <div className="bento-card p-6">
                         <div className="flex items-center justify-between">
                             <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Pending Deliveries</span>
@@ -232,7 +232,7 @@ export default function SalesDashboard() {
                     <p className="text-xs text-muted-foreground mt-0.5 font-light font-sans">Latest store, pickup, and delivery activity.</p>
                 </div>
                 
-                <div className="p-6">
+                <div className="p-4 sm:p-6">
                     {loading ? (
                         <div className="space-y-4">
                             <Skeleton className="h-14 w-full bg-muted/20" />

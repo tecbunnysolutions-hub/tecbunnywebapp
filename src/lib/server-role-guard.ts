@@ -1,7 +1,7 @@
 import type { Session, SupabaseClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
 
-import { ALL_ROLES, isAtLeast, normalizeRole, type UserRole } from './roles';
+import { ALL_ROLES, hasPermission, isAtLeast, normalizeRole, permissionImplies, type UserRole } from './roles';
 import { createClient } from './supabase/server';
 
 const DEFAULT_ROLE: UserRole = 'customer';
@@ -145,16 +145,8 @@ export async function requireApiRole(options: RoleCheckOptions = {}) {
 // New utility to evaluate specific permissions
 export async function hasServerPermission(requiredPermission: string): Promise<boolean> {
   const { permissions, role } = await getServerAuthState();
-  
-  if (role === 'superadmin') return true;
-
-  const [reqResource, reqAction] = requiredPermission.split(':');
-  
-  return permissions.some(p => {
-    if (p === requiredPermission) return true;
-    const [resource, action] = p.split(':');
-    return resource === reqResource && (action === '*' || action === 'all');
-  });
+  if (hasPermission(role, requiredPermission)) return true;
+  return permissions.some((permission) => permissionImplies(permission, requiredPermission));
 }
 
 // Guard for Route Handlers and Server Actions
@@ -165,4 +157,52 @@ export async function requirePermission(requiredPermission: string) {
   }
   
   return { success: true } as const;
+}
+
+const REGION_SCOPED_ROLES = new Set<UserRole>([
+  'sales_executive',
+  'store_executive',
+  'sales_agent',
+  'service_engineer',
+  'sales_manager',
+  'service_manager',
+  'sales',
+  'sales-staff',
+  'sales-external',
+  'manager',
+]);
+
+/**
+ * Route-handler guard for resources carrying an area_id.
+ * Admins and superadmins are global; every sales/service role must have an
+ * explicit user_area_assignments row for the target area.
+ */
+export async function requireAreaPermission(requiredPermission: string, areaId: string | null | undefined) {
+  const auth = await getServerAuthState();
+  if (!auth.session) {
+    return { error: NextResponse.json({ error: 'Unauthorized' }, { status: 401 }) } as const;
+  }
+  if (!hasPermission(auth.role, requiredPermission)
+    && !auth.permissions.some((permission) => permissionImplies(permission, requiredPermission))) {
+    return { error: NextResponse.json({ error: 'Forbidden' }, { status: 403 }) } as const;
+  }
+  if (!REGION_SCOPED_ROLES.has(auth.role)) {
+    return { ...auth, areaId: null } as const;
+  }
+  if (!areaId) {
+    return { error: NextResponse.json({ error: 'Forbidden: Resource area is required' }, { status: 403 }) } as const;
+  }
+
+  const { data, error } = await auth.supabase
+    .from('user_area_assignments')
+    .select('area_id')
+    .eq('user_id', auth.session.user.id)
+    .eq('area_id', areaId)
+    .maybeSingle();
+
+  if (error || !data) {
+    return { error: NextResponse.json({ error: 'Forbidden: Cross-region access denied' }, { status: 403 }) } as const;
+  }
+
+  return { ...auth, areaId } as const;
 }

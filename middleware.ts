@@ -448,7 +448,15 @@ export async function middleware(request: NextRequest) {
       if (checkPathPrefix(pathname, '/api/sales-staff') && !isAtLeast(userRole as any, 'sales') && !isSuperadmin) {
         return finalizeResponse(NextResponse.json({ error: 'Not Found' }, { status: 404 }));
       }
-      if (checkPathPrefix(pathname, '/api/sales-external') && userRole !== 'sales-external' && !isSuperadmin) {
+      if (
+        checkPathPrefix(pathname, '/api/sales-external')
+        && userRole !== 'sales-external'
+        && userRole !== 'sales_agent'
+        && !isSuperadmin
+      ) {
+        return finalizeResponse(NextResponse.json({ error: 'Not Found' }, { status: 404 }));
+      }
+      if (checkPathPrefix(pathname, '/api/service-manager') && !isAtLeast(userRole as any, 'service_manager') && !isSuperadmin) {
         return finalizeResponse(NextResponse.json({ error: 'Not Found' }, { status: 404 }));
       }
     }
@@ -461,7 +469,10 @@ export async function middleware(request: NextRequest) {
         return finalizeResponse(NextResponse.redirect(loginUrl));
       }
 
-      const STAFF_ROLES = new Set(['admin', 'manager', 'sales', 'sales-staff', 'sales-external', 'service_engineer', 'accounts']);
+      const STAFF_ROLES = new Set([
+        'admin', 'manager', 'sales', 'sales-staff', 'sales-external', 'service_engineer', 'accounts',
+        'sales_manager', 'service_manager', 'sales_executive', 'store_executive', 'sales_agent',
+      ]);
       if (!userRole || !STAFF_ROLES.has(userRole)) {
         return finalizeResponse(new NextResponse('Forbidden', { status: 403 }));
       }
@@ -489,13 +500,27 @@ export async function middleware(request: NextRequest) {
         }
       }
 
-      if (checkPathPrefix(pathname, '/mgmt/manager') && userRole !== 'manager') {
+      if (
+        checkPathPrefix(pathname, '/mgmt/manager')
+        && userRole !== 'manager'
+        && userRole !== 'sales_manager'
+      ) {
         return finalizeResponse(NextResponse.redirect(new URL('/mgmt/dashboard', request.url)));
       }
-      if (checkPathPrefix(pathname, '/mgmt/sales-staff') && userRole !== 'sales-staff' && userRole !== 'sales') {
+      if (
+        checkPathPrefix(pathname, '/mgmt/sales-staff')
+        && userRole !== 'sales-staff'
+        && userRole !== 'sales'
+        && userRole !== 'store_executive'
+        && userRole !== 'sales_executive'
+      ) {
         return finalizeResponse(NextResponse.redirect(new URL('/mgmt/dashboard', request.url)));
       }
-      if (checkPathPrefix(pathname, '/mgmt/sales-external') && userRole !== 'sales-external') {
+      if (
+        checkPathPrefix(pathname, '/mgmt/sales-external')
+        && userRole !== 'sales-external'
+        && userRole !== 'sales_agent'
+      ) {
         return finalizeResponse(NextResponse.redirect(new URL('/mgmt/dashboard', request.url)));
       }
       if (
@@ -503,9 +528,15 @@ export async function middleware(request: NextRequest) {
         !checkPathPrefix(pathname, '/mgmt/sales-staff') &&
         !checkPathPrefix(pathname, '/mgmt/sales-external')
       ) {
-        if (userRole !== 'sales' && userRole !== 'service_engineer') {
+        if (userRole !== 'sales' && userRole !== 'sales_executive') {
           return finalizeResponse(new NextResponse('Not Found', { status: 404 }));
         }
+      }
+      if (checkPathPrefix(pathname, '/mgmt/service-manager') && userRole !== 'service_manager') {
+        return finalizeResponse(new NextResponse('Not Found', { status: 404 }));
+      }
+      if (checkPathPrefix(pathname, '/mgmt/service-engineer') && userRole !== 'service_engineer') {
+        return finalizeResponse(new NextResponse('Not Found', { status: 404 }));
       }
       if (checkPathPrefix(pathname, '/mgmt/accounts') && userRole !== 'accounts') {
         return finalizeResponse(new NextResponse('Not Found', { status: 404 }));

@@ -110,22 +110,22 @@ export default function AdminDashboard() {
     const pendingCount = stats.recentActivity.filter((activity) => activity.status === 'pending').length;
     const completedCount = stats.recentActivity.filter((activity) => activity.status === 'completed').length;
     return (
-        <div className="min-h-screen bg-background text-foreground">
+        <div className="text-foreground">
             <div className="relative">
                 <div className="absolute inset-0 bg-noise opacity-5 pointer-events-none" />
 
-                <div className="relative z-10 mx-auto max-w-7xl px-6 py-8 lg:px-10 space-y-8">
-                    <div className="flex flex-wrap items-center justify-between gap-4">
+                <div className="relative z-10 mx-auto max-w-7xl space-y-6 sm:space-y-8">
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                         <div>
                             <p className="text-xs font-semibold uppercase tracking-[0.25em] text-muted-foreground">Admin Command</p>
-                            <h1 className="text-3xl font-bold text-foreground">Admin Dashboard</h1>
-                            <p className="text-muted-foreground">A complete overview of your store's performance and operations.</p>
+                            <h1 className="text-2xl font-bold text-foreground sm:text-3xl">Admin Dashboard</h1>
+                            <p className="mt-1 text-sm text-muted-foreground sm:text-base">A complete overview of store operations and customer escalations.</p>
                         </div>
                         <Button
                             onClick={fetchStats}
                             disabled={loading}
                             variant="outline"
-                            className="gap-2 border-border bg-muted/50 text-foreground hover:bg-muted"
+                            className="w-full gap-2 border-border bg-muted/50 text-foreground hover:bg-muted sm:w-auto"
                         >
                             <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
                             Refresh
@@ -144,7 +144,7 @@ export default function AdminDashboard() {
                         </div>
                     )}
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4 lg:gap-6">
                         {loading ? (
                             [1, 2, 3, 4].map((i) => (
                                 <div key={i} className="rounded-2xl border border-border bg-card p-6 animate-pulse">
@@ -155,7 +155,7 @@ export default function AdminDashboard() {
                             ))
                         ) : (
                             <>
-                                <div className="rounded-2xl border border-border bg-card p-6">
+                                <div className="rounded-xl border border-border bg-card p-4 sm:rounded-2xl sm:p-6">
                                     <p className="text-xs text-muted-foreground font-bold uppercase tracking-wider">Total Revenue</p>
                                     <div className="mt-2 text-2xl font-bold text-foreground font-tech">₹{stats.monthlyRevenue.toLocaleString('en-IN')}</div>
                                     <div className="mt-2 flex items-center gap-2 text-xs">
@@ -166,19 +166,19 @@ export default function AdminDashboard() {
                                     </div>
                                 </div>
 
-                                <div className="rounded-2xl border border-border bg-card p-6">
+                                <div className="rounded-xl border border-border bg-card p-4 sm:rounded-2xl sm:p-6">
                                     <p className="text-xs text-muted-foreground font-bold uppercase tracking-wider">Pending Quotes</p>
                                     <div className="mt-2 text-2xl font-bold text-foreground font-tech">{pendingCount}</div>
                                     <div className="mt-2 text-xs text-amber-600 dark:text-amber-400 font-semibold">Action Required</div>
                                 </div>
 
-                                <div className="rounded-2xl border border-border bg-card p-6">
+                                <div className="rounded-xl border border-border bg-card p-4 sm:rounded-2xl sm:p-6">
                                     <p className="text-xs text-muted-foreground font-bold uppercase tracking-wider">Active Tasks</p>
                                     <div className="mt-2 text-2xl font-bold text-foreground font-tech">{completedCount}</div>
                                     <div className="mt-2 text-xs text-muted-foreground">Completed this week</div>
                                 </div>
 
-                                <div className="rounded-2xl border border-border bg-card p-6">
+                                <div className="rounded-xl border border-border bg-card p-4 sm:rounded-2xl sm:p-6">
                                     <p className="text-xs text-muted-foreground font-bold uppercase tracking-wider">Total Orders</p>
                                     <div className="mt-2 text-2xl font-bold text-foreground font-tech">{stats.totalOrders}</div>
                                     <div className="mt-2 text-xs text-muted-foreground flex items-center gap-1">
@@ -194,9 +194,9 @@ export default function AdminDashboard() {
                         )}
                     </div>
 
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div className="grid grid-cols-1 gap-5 lg:grid-cols-3 lg:gap-8">
                         <div className="lg:col-span-2 rounded-2xl border border-border bg-card overflow-hidden">
-                            <div className="flex items-center justify-between px-6 py-4 border-b border-border">
+                            <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-4 sm:px-6">
                                 <h3 className="font-semibold text-foreground tracking-wide">Recent Transmissions</h3>
                                 <button className="text-xs text-primary hover:text-primary/80">View All</button>
                             </div>
@@ -204,9 +204,9 @@ export default function AdminDashboard() {
                         </div>
 
                         <div className="space-y-6">
-                            <div className="rounded-2xl border border-border bg-card p-6">
+                            <div className="rounded-2xl border border-border bg-card p-4 sm:p-6">
                                 <h3 className="font-semibold text-foreground tracking-wide mb-4">Command Protocols</h3>
-                                <div className="grid grid-cols-2 gap-3">
+                                <div className="grid grid-cols-1 gap-2 min-[420px]:grid-cols-2 sm:gap-3">
                                     <Link href="/mgmt/admin/staff">
                                         <div className="p-3 text-center rounded-xl border border-border hover:border-primary/50 hover:bg-primary/5 transition-all text-xs font-semibold text-foreground cursor-pointer">
                                             Staff Management
@@ -240,7 +240,7 @@ export default function AdminDashboard() {
                                 </div>
                             </div>
 
-                            <div className="rounded-2xl border border-border bg-card p-6">
+                            <div className="rounded-2xl border border-border bg-card p-4 sm:p-6">
                                 <h3 className="font-semibold text-foreground tracking-wide mb-4">Inventory Watch</h3>
                                 <div className="space-y-4">
                                     <div>

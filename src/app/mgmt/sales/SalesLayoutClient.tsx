@@ -1,43 +1,24 @@
 'use client';
 
 import * as React from 'react';
-import { useRouter } from 'next/navigation';
 
-import { UnifiedPanelShell } from '@/components/mgmt/UnifiedPanelShell';
-import { useAuth } from '@/lib/hooks';
-
-const SALES_ROLES = new Set(['sales', 'service_engineer']);
+import { RolePanelLayout } from '@/components/mgmt/RolePanelLayout';
 
 interface SalesLayoutClientProps {
   children: React.ReactNode;
 }
 
+const SALES_ROLES = ['sales_executive', 'sales'] as const;
+
 export default function SalesLayoutClient({ children }: SalesLayoutClientProps) {
-  const { user, loading, logout } = useAuth();
-  const router = useRouter();
-
-  React.useEffect(() => {
-    if (loading) return;
-    if (!user || !SALES_ROLES.has(user.role)) {
-      router.replace('/staff/login?denied=1');
-    }
-  }, [user, loading, router]);
-
-  const role = user?.role === 'service_engineer' ? 'service_engineer' : 'sales';
-  const authorized = !!user && SALES_ROLES.has(user.role);
-
   return (
-    <UnifiedPanelShell
-      role={role}
-      user={user}
-      loading={loading}
-      authorized={authorized}
-      mainId="sales-main"
-      workspaceLabel="Sales Workspace"
-      statusLabel="Retail operations online"
-      onLogout={logout}
+    <RolePanelLayout
+      allowedRoles={SALES_ROLES}
+      mainId="sales-executive-main"
+      workspaceLabel="Field Sales Workspace"
+      statusLabel="Territory workspace online"
     >
       {children}
-    </UnifiedPanelShell>
+    </RolePanelLayout>
   );
 }

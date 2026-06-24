@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/server';
 
 import type { User as CustomUser, UserRole } from './types';
 import { logger } from './logger';
-import { ROLE_HIERARCHY as roleHierarchy, EFFECTIVE_PERMISSIONS, isAtLeast, normalizeRole } from './roles';
+import { EFFECTIVE_PERMISSIONS, isAtLeast, normalizeRole } from './roles';
 import { verifySuperadminSessionToken } from './auth/superadmin-session';
 
 /**
@@ -84,7 +84,7 @@ async function getUserRole(user: SupabaseUser | null): Promise<UserRole | null> 
 export async function hasRole(user: SupabaseUser | null, requiredRole: UserRole): Promise<boolean> {
   const userRole = await getUserRole(user);
   if (!userRole) return false;
-  return roleHierarchy[userRole] >= roleHierarchy[requiredRole];
+  return isAtLeast(userRole, requiredRole);
 }
 
 // Check if user is admin
@@ -157,24 +157,24 @@ export function isCustomerClient(user: CustomUser | null): boolean { return user
 
 export function isSalesClient(user: CustomUser | null): boolean {
   if (!user?.role) return false;
-  return roleHierarchy[user.role] >= roleHierarchy.sales;
+  return isAtLeast(user.role, 'sales_executive');
 }
 
 export function isAccountsClient(user: CustomUser | null): boolean {
   if (!user?.role) return false;
-  return roleHierarchy[user.role] >= roleHierarchy.accounts;
+  return isAtLeast(user.role, 'accounts');
 }
 
 export function isServiceEngineerClient(user: CustomUser | null): boolean { return user?.role === 'service_engineer'; }
 
 export function isManagerClient(user: CustomUser | null): boolean {
   if (!user?.role) return false;
-  return roleHierarchy[user.role] >= roleHierarchy.manager;
+  return isAtLeast(user.role, 'sales_manager') || isAtLeast(user.role, 'service_manager');
 }
 
 export function isAdminClient(user: CustomUser | null): boolean {
   if (!user?.role) return false;
-  return roleHierarchy[user.role] >= roleHierarchy.admin;
+  return isAtLeast(user.role, 'admin');
 }
 
 export function isSuperadminClient(user: CustomUser | null): boolean {

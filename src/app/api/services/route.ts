@@ -5,7 +5,7 @@ import { logger } from '@/lib/logger';
 import { apiError, apiSuccess } from '@/lib/errors';
 import { getSessionWithRole } from '@/lib/auth/server-role';
 
-const ADMIN_ROLES = new Set(['admin', 'manager']);
+const ADMIN_ROLES = new Set(['superadmin']);
 
 // export const dynamic = 'force-dynamic';
 

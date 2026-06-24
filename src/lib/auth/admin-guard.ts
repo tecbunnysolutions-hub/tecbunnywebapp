@@ -6,7 +6,7 @@ import { logger } from '@/lib/logger';
 import { ALL_ROLES, normalizeRole as normalizeKnownRole, type UserRole } from '@/lib/roles';
 import { verifySuperadminSessionToken } from '@/lib/auth/superadmin-session';
 
-type AdminRole = 'admin' | 'manager' | 'superadmin';
+type AdminRole = 'admin' | 'superadmin';
 
 export class AdminAuthError extends Error {
   status: number;
@@ -24,7 +24,7 @@ export interface AdminContext {
 }
 
 function isAdminRole(role: unknown): role is AdminRole {
-  return role === 'admin' || role === 'manager' || role === 'superadmin';
+  return role === 'admin' || role === 'superadmin';
 }
 
 const METADATA_ROLE_KEYS = ['role', 'default_role', 'app_role', 'user_role'] as const;
@@ -125,7 +125,7 @@ export async function requireAdminContext(): Promise<AdminContext> {
 
   return {
     user,
-    role: resolvedRole as 'admin' | 'manager',
+    role: resolvedRole as 'admin',
     serviceSupabase,
   };
 }

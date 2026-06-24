@@ -4,7 +4,7 @@ import { getSessionWithRole } from '@/lib/auth/server-role';
 import { logger } from '@/lib/logger';
 import { imageJobsQueue } from '@/lib/queue/image-jobs';
 
-const ADMIN_ROLES = new Set(['admin', 'manager', 'superadmin']);
+const ADMIN_ROLES = new Set(['superadmin']);
 
 function isValidOrigin(request: NextRequest): boolean {
   const origin = request.headers.get('origin');

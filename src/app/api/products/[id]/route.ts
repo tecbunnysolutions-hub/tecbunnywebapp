@@ -8,7 +8,7 @@ import { isPubliclyVisibleProduct } from '@/lib/product-visibility';
 import { classifyProductTax, TaxClassificationError } from '@/lib/ai/tax-classification';
 import { processAndUploadExternalImage } from '@/lib/image-processor';
 
-const ADMIN_ROLES = new Set(['admin', 'manager', 'superadmin']);
+const ADMIN_ROLES = new Set(['superadmin']);
 
 function pickFirst(...values: unknown[]) {
   return values.find((value) => {

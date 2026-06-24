@@ -14,6 +14,7 @@ import {
 
 import { useAuth } from '@/lib/hooks';
 import { isAtLeast } from '@/lib/roles';
+import { getPanelHome } from '@/lib/panel-routing';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
@@ -30,34 +31,7 @@ export default function ManagementDashboard() {
     
     // Redirect to role-specific dashboard if user is authenticated
     if (!loading && user) {
-      let redirectPath: string;
-      
-      switch (user.role) {
-        case 'admin':
-          redirectPath = '/mgmt/admin';
-          break;
-        case 'manager':
-          redirectPath = '/mgmt/manager';
-          break;
-        case 'sales':
-        case 'service_engineer':
-          redirectPath = '/mgmt/sales';
-          break;
-        case 'sales-staff':
-          redirectPath = '/mgmt/sales-staff';
-          break;
-        case 'sales-external':
-          redirectPath = '/mgmt/sales-external';
-          break;
-        case 'accounts':
-          redirectPath = '/mgmt/accounts';
-          break;
-        default:
-          redirectPath = '/'; // Customers go to homepage
-          break;
-      }
-      
-      router.replace(redirectPath);
+      router.replace(getPanelHome(user.role));
       return;
     }
   }, [loading, user, router]);

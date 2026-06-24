@@ -17,6 +17,7 @@ import {
 import { useAnalytics } from '../../hooks/use-analytics';
 import { useAuth, useCart } from '@/lib/hooks';
 import { hasRoleClient } from '@/lib/permissions-client';
+import { getPanelHome } from '@/lib/panel-routing';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -180,24 +181,7 @@ export function Header() {
   const showAdminOption = !loading && hasRoleClient(user, 'admin');
 
   const dashboardHref = React.useMemo(() => {
-    if (!user?.role) return '/mgmt';
-    switch (user.role) {
-      case 'superadmin':
-        return '/superadmin/mgmt/dashboard';
-      case 'admin':
-        return '/mgmt/admin';
-      case 'manager':
-        return '/mgmt/manager';
-      case 'sales-staff':
-        return '/mgmt/sales-staff';
-      case 'sales':
-      case 'service_engineer':
-        return '/mgmt/sales';
-      case 'sales-external':
-        return '/mgmt/sales-external';
-      default:
-        return '/mgmt';
-    }
+    return getPanelHome(user?.role);
   }, [user?.role]);
 
   const accountHref = showDashboard ? dashboardHref : '/profile';

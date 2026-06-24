@@ -1,5 +1,5 @@
-import SalesDashboard from '../sales/sales-dashboard';
+import { RoleWorkspaceDashboard } from '@/components/mgmt/RoleWorkspaceDashboard';
 
 export default function Page() {
-  return <SalesDashboard />;
+  return <RoleWorkspaceDashboard kind="store-executive" />;
 }

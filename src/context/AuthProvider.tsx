@@ -10,6 +10,7 @@ import { logger } from '@/lib/logger';
 import { SessionManager, SESSION_EXPIRED_EVENT } from '@/lib/session-manager';
 import { useAnalytics } from '../hooks/use-analytics';
 import { normalizeRole } from '@/lib/roles';
+import { STAFF_PANEL_ROLES } from '@/lib/panel-routing';
 
 const parseRole = (value: unknown): UserRole | null => {
   return normalizeRole(value) as UserRole | null;
@@ -626,7 +627,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     // If redirectTo is not explicitly specified, detect if current user is staff/worker
     if (!redirectTo && user) {
-      const isStaff = ['admin', 'manager', 'sales-staff', 'sales', 'sales-external'].includes(user.role);
+      const isStaff = STAFF_PANEL_ROLES.has(user.role);
       redirectTo = isStaff ? '/staff/login' : '/auth/signin';
     }
 
@@ -689,7 +690,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (typeof window === 'undefined') return;
 
     const handleSessionExpired = () => {
-      const isStaff = user && ['admin', 'manager', 'sales-staff', 'sales', 'sales-external'].includes(user.role);
+      const isStaff = Boolean(user && STAFF_PANEL_ROLES.has(user.role));
       logout({ redirectTo: isStaff ? '/staff/login?session=expired' : '/auth/signin?session=expired', silent: true });
     };
 

@@ -1,202 +1,244 @@
-// Canonical role & permission definitions
 /**
- * @deprecated The static ROLE_HIERARCHY and EFFECTIVE_PERMISSIONS are being deprecated in favor of 
- * the new dynamic database-driven RBAC system. Please transition to using `hasServerPermission` 
- * (server) or `usePermissions` (client) for granular permission checks instead of hardcoded levels.
+ * Canonical additive RBAC model.
+ *
+ * Do not use numeric comparisons for authorization. The organization has two
+ * lateral branches (sales and service), so access is determined by the
+ * explicit inheritance graph below.
  */
-// Central source of truth to avoid duplication across server/client.
-export const ROLE_HIERARCHY = {
-  customer: 1,
-  'sales-external': 2,
-  sales: 2,
-  'sales-staff': 2,
-  service_engineer: 2, // lateral to sales
-  accounts: 3,
-  manager: 4,
-  admin: 5,
-  superadmin: 6
-} as const;
+export const CANONICAL_ROLES = [
+  'customer',
+  'sales_executive',
+  'store_executive',
+  'sales_agent',
+  'service_engineer',
+  'sales_manager',
+  'service_manager',
+  'admin',
+  'superadmin',
+] as const;
 
-export type UserRole = keyof typeof ROLE_HIERARCHY;
-export const ALL_ROLES: UserRole[] = Object.keys(ROLE_HIERARCHY) as UserRole[];
+export type CanonicalRole = (typeof CANONICAL_ROLES)[number];
+
+/** @deprecated Accepted during the staged migration to canonical role names. */
+export type LegacyRole = 'sales' | 'sales-staff' | 'sales-external' | 'manager' | 'accounts';
+export type UserRole = CanonicalRole | LegacyRole;
+
+export const ALL_ROLES: UserRole[] = [
+  ...CANONICAL_ROLES,
+  'sales',
+  'sales-staff',
+  'sales-external',
+  'manager',
+  'accounts',
+];
 
 const ROLE_ALIASES: Readonly<Record<string, UserRole>> = {
   super_admin: 'superadmin',
   'super-admin': 'superadmin',
   'super admin': 'superadmin',
-  'sales_staff': 'sales-staff',
+  sales_staff: 'sales-staff',
   'sales staff': 'sales-staff',
-  'sales_external': 'sales-external',
-  'sales external': 'sales-external'
+  sales_external: 'sales-external',
+  'sales external': 'sales-external',
+  'sales executive': 'sales_executive',
+  'store executive': 'store_executive',
+  'sales agent': 'sales_agent',
+  'sales manager': 'sales_manager',
+  'service manager': 'service_manager',
+  'service engineer': 'service_engineer',
 };
 
+const LEGACY_EQUIVALENTS: Readonly<Record<LegacyRole, CanonicalRole | 'accounts'>> = {
+  sales: 'sales_executive',
+  'sales-staff': 'store_executive',
+  'sales-external': 'sales_agent',
+  manager: 'sales_manager',
+  accounts: 'accounts',
+};
+
+type AuthorizationRole = CanonicalRole | 'accounts';
+
+function authorizationRole(role: UserRole): AuthorizationRole {
+  return role in LEGACY_EQUIVALENTS
+    ? LEGACY_EQUIVALENTS[role as LegacyRole]
+    : role as CanonicalRole;
+}
+
 export function normalizeRole(value: unknown): UserRole | null {
-  if (typeof value !== 'string') {
-    return null;
-  }
-
+  if (typeof value !== 'string') return null;
   const normalized = value.trim().toLowerCase();
-  if (!normalized) {
-    return null;
-  }
-
-  if (normalized in ROLE_HIERARCHY) {
-    return normalized as UserRole;
-  }
-
+  if (!normalized) return null;
+  if ((ALL_ROLES as string[]).includes(normalized)) return normalized as UserRole;
   return ROLE_ALIASES[normalized] ?? null;
 }
 
-// Master permission catalogue (add granular keys here; keep consistent naming)
-export const PERMS = {
-  PRODUCT_VIEW: 'product:view',
-  PRODUCT_CREATE: 'product:create',
-  ORDER_CREATE: 'order:create',
-  ORDER_VIEW_SELF: 'order:view:self',
-  ORDER_VIEW_ALL: 'order:view:all',
-  CUSTOMER_MANAGE: 'customer:manage',
-  SERVICE_TICKET_VIEW: 'service:ticket:view',
-  SERVICE_TICKET_MANAGE_ASSIGNED: 'service:ticket:manage:assigned',
-  SERVICE_TICKET_STATUS_UPDATE: 'service:ticket:status:update',
-  SERVICE_TICKET_ADD_PARTS: 'service:ticket:add-parts',
-  INVOICE_MANAGE: 'invoice:manage',
-  REPORT_VIEW: 'report:view',
-  INVENTORY_MANAGE: 'inventory:manage',
-  SALES_TEAM_MANAGE: 'sales:team:manage',
-  SERVICE_ENGINEER_ASSIGN: 'service:engineer:assign',
-  USER_MANAGE: 'user:manage', // Superadmin full access
-  USER_MANAGE_CUSTOMER: 'user:manage:customer', // Admin customer-only access
-  SETTINGS_MANAGE: 'system:settings', // Superadmin only
-  ROLE_MANAGE: 'system:roles', // Superadmin only
-  SYSTEM_CONFIG: 'system:config', // Superadmin only
-  AUDIT_LOG_VIEW: 'system:audit-logs', // Superadmin only
-  AI_ORCHESTRATION: 'system:ai-config' // Superadmin only
-} as const;
-
-export type Permission = typeof PERMS[keyof typeof PERMS];
-
-// Base direct permissions per role (without implicit inheritance). Roles inherit previous levels automatically.
-const BASE_ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
-  customer: [
-    PERMS.PRODUCT_VIEW,
-    PERMS.ORDER_CREATE,
-    PERMS.ORDER_VIEW_SELF
-  ],
-  sales: [
-    PERMS.ORDER_VIEW_ALL,
-    PERMS.CUSTOMER_MANAGE
-  ],
-  'sales-staff': [
-    PERMS.ORDER_VIEW_ALL,
-    PERMS.CUSTOMER_MANAGE
-  ],
-  'sales-external': [
-    PERMS.ORDER_VIEW_ALL,
-    PERMS.CUSTOMER_MANAGE
-  ],
-  service_engineer: [
-    PERMS.SERVICE_TICKET_VIEW,
-    PERMS.SERVICE_TICKET_MANAGE_ASSIGNED,
-    PERMS.SERVICE_TICKET_STATUS_UPDATE,
-    PERMS.SERVICE_TICKET_ADD_PARTS
-  ],
-  accounts: [
-    PERMS.INVOICE_MANAGE,
-    PERMS.REPORT_VIEW
-  ],
-  manager: [
-    PERMS.INVENTORY_MANAGE,
-    PERMS.SALES_TEAM_MANAGE,
-    PERMS.SERVICE_ENGINEER_ASSIGN
-  ],
-  admin: [
-    PERMS.USER_MANAGE_CUSTOMER,
-    PERMS.REPORT_VIEW // ensure included even if hierarchy shifts
-  ],
-  superadmin: [
-    PERMS.USER_MANAGE,
-    PERMS.SETTINGS_MANAGE,
-    PERMS.ROLE_MANAGE,
-    PERMS.SYSTEM_CONFIG,
-    PERMS.AUDIT_LOG_VIEW,
-    PERMS.AI_ORCHESTRATION
-  ]
+/**
+ * Compatibility-only display tier. Never use this object to authorize access.
+ */
+export const ROLE_HIERARCHY: Record<UserRole, number> = {
+  customer: 0,
+  sales_executive: 1,
+  store_executive: 1,
+  sales_agent: 1,
+  service_engineer: 1,
+  accounts: 2,
+  sales_manager: 2,
+  service_manager: 2,
+  admin: 3,
+  superadmin: 4,
+  sales: 1,
+  'sales-staff': 1,
+  'sales-external': 1,
+  manager: 2,
 };
 
-// Compute inherited permissions (customer < sales < accounts < manager < admin < superadmin)
-// service_engineer is a lateral branch at level 2, so it inherits customer but not sales' business perms.
-function buildEffectivePermissions(): Record<UserRole, Set<Permission>> {
-  const effective: Record<UserRole, Set<Permission>> = {
-    customer: new Set(BASE_ROLE_PERMISSIONS.customer),
-    sales: new Set(),
-    'sales-staff': new Set(),
-    'sales-external': new Set(),
-    service_engineer: new Set(),
-    accounts: new Set(),
-    manager: new Set(),
-    admin: new Set(),
-    superadmin: new Set()
-  };
+const ROLE_PARENTS: Readonly<Record<AuthorizationRole, readonly AuthorizationRole[]>> = {
+  customer: [],
+  sales_executive: ['customer'],
+  store_executive: ['customer'],
+  sales_agent: ['customer'],
+  service_engineer: ['customer'],
+  accounts: ['customer'],
+  sales_manager: ['sales_executive', 'store_executive', 'sales_agent'],
+  service_manager: ['service_engineer'],
+  admin: ['sales_manager', 'service_manager', 'accounts'],
+  superadmin: ['admin'],
+};
 
-  // Helper to merge
-  const addAll = (target: Set<Permission>, list: Permission[]) => list.forEach(p => target.add(p));
-
-  // customer already set
-  // sales inherits customer
-  addAll(effective.sales, Array.from(effective.customer));
-  addAll(effective.sales, BASE_ROLE_PERMISSIONS.sales);
-
-  // sales-staff inherits customer
-  addAll(effective['sales-staff'], Array.from(effective.customer));
-  addAll(effective['sales-staff'], BASE_ROLE_PERMISSIONS['sales-staff']);
-
-  // sales-external inherits customer
-  addAll(effective['sales-external'], Array.from(effective.customer));
-  addAll(effective['sales-external'], BASE_ROLE_PERMISSIONS['sales-external']);
-
-  // service_engineer inherits customer only (lateral)
-  addAll(effective.service_engineer, Array.from(effective.customer));
-  addAll(effective.service_engineer, BASE_ROLE_PERMISSIONS.service_engineer);
-
-  // accounts inherits sales (which already has customer) but NOT service_engineer branch
-  addAll(effective.accounts, Array.from(effective.sales));
-  addAll(effective.accounts, BASE_ROLE_PERMISSIONS.accounts);
-
-  // manager inherits accounts (+ everything below sales path)
-  addAll(effective.manager, Array.from(effective.accounts));
-  addAll(effective.manager, BASE_ROLE_PERMISSIONS.manager);
-
-  // admin inherits manager
-  addAll(effective.admin, Array.from(effective.manager));
-  addAll(effective.admin, BASE_ROLE_PERMISSIONS.admin);
-
-  // superadmin inherits admin
-  addAll(effective.superadmin, Array.from(effective.admin));
-  addAll(effective.superadmin, BASE_ROLE_PERMISSIONS.superadmin);
-
-  return effective;
+function roleInherits(actual: AuthorizationRole, required: AuthorizationRole, seen = new Set<AuthorizationRole>()): boolean {
+  if (actual === required) return true;
+  if (seen.has(actual)) return false;
+  seen.add(actual);
+  return ROLE_PARENTS[actual].some((parent) => roleInherits(parent, required, seen));
 }
 
-export const EFFECTIVE_PERMISSIONS = buildEffectivePermissions();
-
-export function isAtLeast(actual: UserRole, required: UserRole) {
-  return ROLE_HIERARCHY[actual] >= ROLE_HIERARCHY[required];
+export function isAtLeast(actual: UserRole, required: UserRole): boolean {
+  if (!ALL_ROLES.includes(actual) || !ALL_ROLES.includes(required)) return false;
+  return roleInherits(authorizationRole(actual), authorizationRole(required));
 }
 
-export function hasPermission(role: UserRole, perm: Permission): boolean {
-  return EFFECTIVE_PERMISSIONS[role].has(perm);
+export const PERMS = {
+  PRODUCT_VIEW: 'product:view',
+  ORDER_VIEW_SELF: 'order:view:self',
+  USER_ALL: 'user:all',
+  SYSTEM_CONFIG: 'system:config',
+  AI_CONFIG: 'ai:config',
+  CATALOG_ALL: 'catalog:all',
+  ORDERS_ALL: 'orders:all',
+  CRM_ALL: 'crm:all',
+  REPORTS_ALL: 'reports:all',
+  ADMIN_USERS: 'admin:users',
+  ADMIN_INVENTORY: 'admin:inventory',
+  ADMIN_CRM: 'admin:crm',
+  ADMIN_ORDERS: 'admin:orders',
+  ADMIN_SERVICES: 'admin:services',
+  ADMIN_REPORTS: 'admin:reports',
+  /** @deprecated Use ADMIN_INVENTORY. */
+  INVENTORY_MANAGE: 'admin:inventory',
+  TEAM_READ_AREA: 'team:read:area',
+  ORDERS_DISPATCH_AREA: 'orders:dispatch:area',
+  LEADS_ASSIGN_AREA: 'leads:assign:area',
+  LEADS_WRITE: 'leads:write',
+  ORDERS_CREATE: 'orders:create',
+  ORDERS_PROCESS: 'orders:process',
+  BILLING_QUICK: 'billing:quick',
+  ORDERS_CREATE_DELEGATE: 'orders:create:delegate',
+  COMMISSION_READ: 'commission:read',
+  SERVICE_ORDERS_DISPATCH: 'service_orders:dispatch',
+  ENGINEERS_ASSIGN: 'engineers:assign',
+  SERVICE_ORDERS_UPDATE_OWN: 'service_orders:update:own',
+  REPORTS_SUBMIT: 'reports:submit',
+  INVOICE_MANAGE: 'invoice:manage',
+  REPORT_VIEW: 'report:view',
+  AUDIT_LOG_VIEW: 'system:audit-logs',
+  ROLE_MANAGE: 'system:roles',
+  /** @deprecated Use SYSTEM_CONFIG. */
+  SETTINGS_MANAGE: 'system:config',
+  /** @deprecated Use AI_CONFIG. */
+  AI_ORCHESTRATION: 'ai:config',
+} as const;
+
+export type Permission = (typeof PERMS)[keyof typeof PERMS];
+
+const DIRECT_PERMISSIONS: Record<AuthorizationRole, readonly Permission[]> = {
+  customer: [PERMS.PRODUCT_VIEW, PERMS.ORDER_VIEW_SELF],
+  sales_executive: [PERMS.LEADS_WRITE, PERMS.ORDERS_CREATE],
+  store_executive: [PERMS.ORDERS_PROCESS, PERMS.BILLING_QUICK],
+  sales_agent: [PERMS.ORDERS_CREATE_DELEGATE, PERMS.COMMISSION_READ],
+  service_engineer: [PERMS.SERVICE_ORDERS_UPDATE_OWN, PERMS.REPORTS_SUBMIT],
+  accounts: [PERMS.INVOICE_MANAGE, PERMS.REPORT_VIEW],
+  sales_manager: [
+    PERMS.TEAM_READ_AREA,
+    PERMS.ORDERS_DISPATCH_AREA,
+    PERMS.LEADS_ASSIGN_AREA,
+  ],
+  service_manager: [
+    PERMS.TEAM_READ_AREA,
+    PERMS.SERVICE_ORDERS_DISPATCH,
+    PERMS.ENGINEERS_ASSIGN,
+  ],
+  admin: [
+    PERMS.ADMIN_USERS,
+    PERMS.ADMIN_INVENTORY,
+    PERMS.ADMIN_CRM,
+    PERMS.ADMIN_ORDERS,
+    PERMS.ADMIN_SERVICES,
+    PERMS.ADMIN_REPORTS,
+  ],
+  superadmin: [
+    PERMS.USER_ALL,
+    PERMS.SYSTEM_CONFIG,
+    PERMS.AI_CONFIG,
+    PERMS.CATALOG_ALL,
+    PERMS.ORDERS_ALL,
+    PERMS.CRM_ALL,
+    PERMS.REPORTS_ALL,
+    PERMS.AUDIT_LOG_VIEW,
+    PERMS.ROLE_MANAGE,
+  ],
+};
+
+function collectPermissions(role: AuthorizationRole, result = new Set<Permission>()): Set<Permission> {
+  for (const parent of ROLE_PARENTS[role]) collectPermissions(parent, result);
+  for (const permission of DIRECT_PERMISSIONS[role]) result.add(permission);
+  return result;
+}
+
+export const EFFECTIVE_PERMISSIONS = Object.fromEntries(
+  ALL_ROLES.map((role) => [role, collectPermissions(authorizationRole(role))]),
+) as Record<UserRole, Set<Permission>>;
+
+export function permissionImplies(granted: string, required: string): boolean {
+  if (granted === required || granted === '*') return true;
+  const grantedParts = granted.split(':');
+  const requiredParts = required.split(':');
+  if (grantedParts.at(-1) === 'all' && grantedParts[0] === requiredParts[0]) return true;
+  return grantedParts.length === requiredParts.length
+    && grantedParts.every((part, index) => part === '*' || part === requiredParts[index]);
+}
+
+export function hasPermission(role: UserRole, permission: Permission | string): boolean {
+  if (authorizationRole(role) === 'superadmin') return true;
+  return [...EFFECTIVE_PERMISSIONS[role]].some((granted) => permissionImplies(granted, permission));
 }
 
 export const ROLE_DISPLAY_NAME: Record<UserRole, string> = {
   customer: 'Customer',
-  sales: 'Sales Representative',
-  'sales-staff': 'Sales Staff',
-  'sales-external': 'External Sales',
+  sales_executive: 'Sales Executive',
+  store_executive: 'Store Executive',
+  sales_agent: 'Sales Agent',
   service_engineer: 'Service Engineer',
-  accounts: 'Accounts Manager',
-  manager: 'Manager',
+  sales_manager: 'Sales Manager',
+  service_manager: 'Service Manager',
   admin: 'Administrator',
-  superadmin: 'System Super Administrator'
+  superadmin: 'System Super Administrator',
+  sales: 'Sales Executive (Legacy)',
+  'sales-staff': 'Store Executive (Legacy)',
+  'sales-external': 'Sales Agent (Legacy)',
+  manager: 'Sales Manager (Legacy)',
+  accounts: 'Accounts (Legacy)',
 };
 
-export function getDisplayName(role: UserRole) { return ROLE_DISPLAY_NAME[role]; }
+export function getDisplayName(role: UserRole): string {
+  return ROLE_DISPLAY_NAME[role];
+}

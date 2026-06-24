@@ -24,7 +24,7 @@ import { TaxClassificationError } from '@/lib/ai/tax-classification';
 // Constants
 // ─────────────────────────────────────────────────────────────────────────────
 
-const ADMIN_ROLES = new Set(['admin', 'manager', 'superadmin']);
+const ADMIN_ROLES = new Set(['superadmin']);
 const HANDLE_MAX = 60;
 
 function getUuidAuditUserId(userId: string | undefined): string | null {

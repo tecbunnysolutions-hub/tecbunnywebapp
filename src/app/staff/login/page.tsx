@@ -8,20 +8,28 @@ import { Mail, Lock, Eye, EyeOff, AlertCircle, ShieldCheck, Users } from 'lucide
 
 import { createClient } from '@/lib/supabase/client';
 import { normalizeRole } from '@/lib/roles';
+import { getPanelHome, STAFF_PANEL_ROLES } from '@/lib/panel-routing';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '../../../hooks/use-toast';
 import { TwoFactorVerification } from '@/components/auth/TwoFactorVerification';
 
 // Staff roles permitted to access the CRM/Management Panel
-const STAFF_ROLES = new Set(['admin', 'manager', 'sales-staff', 'sales', 'sales-external']);
+const STAFF_ROLES = STAFF_PANEL_ROLES;
 
 const ROLE_LABELS: Record<string, string> = {
   admin: 'Administrator',
-  manager: 'Manager',
-  'sales-staff': 'Sales Staff',
-  sales: 'Sales Staff',
-  'sales-external': 'Sales Non-Staff (External)',
+  manager: 'Sales Manager',
+  sales_manager: 'Sales Manager',
+  service_manager: 'Service Manager',
+  'sales-staff': 'Store Executive',
+  store_executive: 'Store Executive',
+  sales: 'Sales Executive',
+  sales_executive: 'Sales Executive',
+  'sales-external': 'Sales Agent',
+  sales_agent: 'Sales Agent',
+  service_engineer: 'Service Engineer',
+  accounts: 'Accounts',
 };
 
 function StaffSignInForm() {
@@ -126,19 +134,7 @@ function StaffSignInForm() {
   };
 
   function getRedirectPath(role: string): string {
-    switch (role) {
-      case 'admin':
-        return '/mgmt/admin';
-      case 'manager':
-        return '/mgmt/manager';
-      case 'sales-staff':
-      case 'sales':
-        return '/mgmt/sales-staff';
-      case 'sales-external':
-        return '/mgmt/sales-external';
-      default:
-        return '/mgmt';
-    }
+    return getPanelHome(normalizeRole(role));
   }
 
   const handleSignIn = async (e: React.FormEvent) => {
@@ -260,7 +256,7 @@ function StaffSignInForm() {
   };
 
   return (
-    <div className="min-h-screen bg-[#030712] text-slate-200 flex flex-col items-center justify-center px-4 py-16">
+    <div className="relative flex min-h-screen w-full flex-col items-center justify-center overflow-x-hidden bg-[#030712] px-4 py-16 text-slate-200">
       
 
       {/* Background effects */}
