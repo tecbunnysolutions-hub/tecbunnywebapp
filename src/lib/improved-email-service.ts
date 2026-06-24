@@ -4,7 +4,11 @@ import { logger } from './logger';
 import { rateLimit } from './rate-limit';
 
 export interface EmailOptions {
-  to: string;
+  to: string | string[];
+  cc?: string | string[];
+  bcc?: string | string[];
+  replyTo?: string;
+  skipRateLimit?: boolean;
   subject: string;
   html: string;
   text?: string;
@@ -169,26 +173,27 @@ class ImprovedEmailService {
     transporterName: string
   ): Promise<EmailResult> {
     try {
-      // Ensure DMARC/SPF alignment: use SMTP_USER domain for From if different from desired business address
-      const smtpUser = process.env.SMTP_USER || '';
-      const desiredFrom = this.config.from;
-      const getDomain = (addr: string) => (addr.split('@')[1] || '').toLowerCase();
-      const fromDomain = getDomain(desiredFrom);
-      const smtpDomain = getDomain(smtpUser);
+      const headerValues = [
+        ...(Array.isArray(options.to) ? options.to : [options.to]),
+        ...(Array.isArray(options.cc) ? options.cc : options.cc ? [options.cc] : []),
+        ...(Array.isArray(options.bcc) ? options.bcc : options.bcc ? [options.bcc] : []),
+        options.replyTo,
+        options.subject,
+      ].filter((value): value is string => Boolean(value));
 
-      // If domains differ, send From as SMTP user (aligned) and set Reply-To to business address
-      const useAlignedFrom = !!smtpUser && smtpDomain && fromDomain && smtpDomain !== fromDomain;
-      const alignedFromAddress = useAlignedFrom ? smtpUser : desiredFrom;
-      const replyToAddress = useAlignedFrom ? desiredFrom : undefined;
+      if (headerValues.some(value => /[\r\n]/.test(value))) {
+        throw new Error('Invalid email header value');
+      }
 
       const mailOptions: nodemailer.SendMailOptions = {
-        from: `${this.config.fromName} <${alignedFromAddress}>`,
+        from: `${this.config.fromName} <${this.config.from}>`,
         to: options.to,
+        cc: options.cc,
+        bcc: options.bcc,
         subject: options.subject,
         html: options.html,
         text: options.text || options.html.replace(/<[^>]*>/g, ''),
-        replyTo: replyToAddress,
-        headers: useAlignedFrom && smtpUser ? { Sender: smtpUser } : undefined,
+        replyTo: options.replyTo,
         disableFileAccess: true,
         disableUrlAccess: true,
       };
@@ -196,8 +201,9 @@ class ImprovedEmailService {
       logger.info('Sending email', {
         transporter: transporterName,
         to: options.to,
+        cc: options.cc ?? null,
         subject: options.subject,
-        replyTo: replyToAddress ?? null,
+        replyTo: options.replyTo || null,
       });
       
       if (!transporter) {
@@ -252,14 +258,17 @@ class ImprovedEmailService {
       logger.info('sendEmail.start', { to: options.to, subject: options.subject });
       
       // Check rate limiting first
-      const rateLimitCheck = await this.checkRateLimit(options.to);
-      if (!rateLimitCheck.allowed) {
-        logger.warn('sendEmail.rate_limited', { to: options.to, waitTime: rateLimitCheck.waitTime });
-        return { 
-          success: false, 
-          error: rateLimitCheck.message,
-          waitTime: rateLimitCheck.waitTime
-        };
+      if (!options.skipRateLimit) {
+        const rateLimitRecipient = Array.isArray(options.to) ? options.to.join(',') : options.to;
+        const rateLimitCheck = await this.checkRateLimit(rateLimitRecipient);
+        if (!rateLimitCheck.allowed) {
+          logger.warn('sendEmail.rate_limited', { to: options.to, waitTime: rateLimitCheck.waitTime });
+          return {
+            success: false,
+            error: rateLimitCheck.message,
+            waitTime: rateLimitCheck.waitTime
+          };
+        }
       }
       
       logger.info('sendEmail.rate_limit_passed', { to: options.to });

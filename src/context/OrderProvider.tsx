@@ -163,6 +163,7 @@ export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         customer_email: customerEmail || null,
         customer_phone: customerPhone || null,
         delivery_address: orderData.delivery_address || null,
+        delivery_pincode: (orderData as any).delivery_pincode || null,
         pickup_store: orderData.pickup_store || null,
         customer_state: orderData.customer_state || null,
         customer_state_code: orderData.customer_state_code || null,

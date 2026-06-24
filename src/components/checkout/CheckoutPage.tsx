@@ -465,10 +465,11 @@ export default function CheckoutPage() {
         customer_name: customerInfo.name,
         customer_email: customerInfo.email,
         customer_phone: customerInfo.phone,
-        type: hasServiceItem ? 'Delivery' : orderType,
+        type: serviceOnlyCart ? 'Service' : (hasServiceItem ? 'Delivery' : orderType),
         delivery_address: orderType === 'Delivery' ? 
           `${customerInfo.address}, ${customerInfo.city}, ${customerInfo.state} - ${customerInfo.pincode}` : 
           pickupAddress || undefined,
+        delivery_pincode: orderType === 'Delivery' || serviceOnlyCart ? customerInfo.pincode : undefined,
         pickup_store: orderType === 'Pickup' && !hasServiceItem ? pickupAddress : undefined,
         customer_state: destinationState?.name || customerInfo.state,
         customer_state_code: destinationState?.code,

@@ -13,6 +13,7 @@ import type {
 } from '@/lib/types';
 
 import { logger } from './logger';
+import { extractPincode, sendServiceTicketRoutingNotifications } from './area-notifications';
 
 export interface ServiceTicketRequest {
   service_id?: string;
@@ -21,6 +22,8 @@ export interface ServiceTicketRequest {
   customer_email: string;
   customer_phone?: string;
   customer_address?: string;
+  service_pincode?: string;
+  pincode?: string;
   issue_description: string;
   priority?: ServiceTicketPriority;
 }
@@ -76,6 +79,7 @@ export class ServiceManagementService {
           customer_email: request.customer_email,
           customer_phone: request.customer_phone,
           customer_address: request.customer_address,
+          service_pincode: request.service_pincode || request.pincode || extractPincode(request),
           issue_description: request.issue_description,
           priority: request.priority || 'medium',
           status: 'created'
@@ -89,6 +93,27 @@ export class ServiceManagementService {
           success: false,
           error: 'Failed to create service ticket'
         };
+      }
+
+      try {
+        const notificationResult = await sendServiceTicketRoutingNotifications(ticket);
+        ticket.area_id = notificationResult.routing.areaId;
+        ticket.service_pincode = notificationResult.routing.pincode;
+        ticket.assigned_service_manager_id = notificationResult.routing.manager?.managerId || null;
+        logger.info('service_ticket_area_notifications_complete', {
+          ticketId: ticket.id,
+          pincode: notificationResult.routing.pincode,
+          areaId: notificationResult.routing.areaId,
+          managerId: notificationResult.routing.manager?.managerId || null,
+          routingStatus: notificationResult.routing.status,
+          customerSent: notificationResult.customerSent,
+          internalSent: notificationResult.internalSent,
+        });
+      } catch (notificationError) {
+        logger.warn('service_ticket_area_notifications_failed', {
+          ticketId: ticket.id,
+          error: notificationError instanceof Error ? notificationError.message : 'unknown',
+        });
       }
 
       return {

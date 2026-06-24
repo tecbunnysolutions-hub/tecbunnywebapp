@@ -12,10 +12,10 @@ import {
 } from '@/lib/whatsapp-service';
 import { otpService } from '@/lib/otp-service';
 import { enhancedCommissionService } from '@/lib/enhanced-commission-service';
-import { emailHelpers } from '@/lib/email';
 import { checkoutEngine } from '@/lib/checkout-engine';
 import { formatPlaceOfSupply, resolveIndianStateFromText, resolveIndianStateInfo, TECBUNNY_REGISTERED_STATE } from '@/lib/indian-tax';
 import { verifySuperadminSessionToken } from '@/lib/auth/superadmin-session';
+import { sendOrderRoutingNotifications } from '@/lib/area-notifications';
 
 const RATE_LIMIT = 5; // 5 orders
 const RATE_WINDOW_MS = 60 * 1000; // per minute
@@ -163,6 +163,7 @@ logger.info('order_create_attempt', { userId: effectiveUserId });
       customer_email: orderData.customer_email,
       customer_phone: orderData.customer_phone,
       delivery_address: orderData.delivery_address,
+      delivery_pincode: orderData.delivery_pincode || null,
       pickup_store: pickupStore,
       customer_state: destinationState?.name || orderData.customer_state || null,
       customer_state_code: destinationState?.code || orderData.customer_state_code || null,
@@ -222,6 +223,7 @@ logger.info('order_create_attempt', { userId: effectiveUserId });
       customer_email: createdOrder.customer_email || orderItemsData.customer_email,
       customer_phone: createdOrder.customer_phone || orderItemsData.customer_phone,
       delivery_address: createdOrder.delivery_address || orderItemsData.delivery_address,
+      delivery_pincode: createdOrder.delivery_pincode || orderItemsData.delivery_pincode,
       customer_state: orderItemsData.customer_state,
       customer_state_code: orderItemsData.customer_state_code,
       place_of_supply: orderItemsData.place_of_supply,
@@ -232,6 +234,36 @@ logger.info('order_create_attempt', { userId: effectiveUserId });
       items: orderItemsData.cart_items || [],
       pickup_store: orderItemsData.pickup_store || pickupStore || null
     };
+
+    const serviceOrderTypes = new Set(['Service', 'Repair', 'Installation', 'Setup']);
+    const managerRole = serviceOrderTypes.has(orderType) ? 'service_manager' : 'sales_manager';
+
+    try {
+      const notificationResult = await sendOrderRoutingNotifications(fullOrder, managerRole);
+      logger.info('order_area_notifications_complete', {
+        orderId: createdOrder.id,
+        managerRole,
+        pincode: notificationResult.routing.pincode,
+        areaId: notificationResult.routing.areaId,
+        managerId: notificationResult.routing.manager?.managerId || null,
+        routingStatus: notificationResult.routing.status,
+        customerSent: notificationResult.customerSent,
+        internalSent: notificationResult.internalSent,
+      });
+      fullOrder.area_id = notificationResult.routing.areaId;
+      fullOrder.delivery_pincode = notificationResult.routing.pincode;
+      if (managerRole === 'sales_manager') {
+        fullOrder.assigned_sales_manager_id = notificationResult.routing.manager?.managerId || null;
+      } else {
+        fullOrder.assigned_service_manager_id = notificationResult.routing.manager?.managerId || null;
+      }
+    } catch (notificationError) {
+      logger.warn('order_area_notifications_failed', {
+        orderId: createdOrder.id,
+        managerRole,
+        error: notificationError instanceof Error ? notificationError.message : 'unknown',
+      });
+    }
 
     // Verify agent_id context against user session
     let isAgentThemselves = false;
@@ -301,45 +333,6 @@ logger.info('order_create_attempt', { userId: effectiveUserId });
         });
         // Don't fail the order creation if agent processing fails
       }
-    }
-
-    // Send order confirmation email - REMOVED per user request (WhatsApp only)
-    /*
-    try {
-  await fetch(`${resolveSiteUrl(request.headers.get('host') || undefined)}/api/email/order-confirmation`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          to: orderData.customer_email,
-          orderData: fullOrder
-        }),
-      });
-    } catch (emailError) {
-      logger.warn('order_email_failure', { orderId: createdOrder.id, error: emailError instanceof Error ? emailError.message : 'unknown' });
-      // Don't fail the order creation if email fails
-    }
-    */
-
-    const adminEmailList = (process.env.ADMIN_ORDER_NOTIFICATION_EMAILS || process.env.ADMIN_NOTIFICATION_EMAILS || '')
-      .split(',')
-      .map(email => email.trim())
-      .filter(Boolean);
-
-    if (adminEmailList.length > 0) {
-      emailHelpers.sendAdminOrderNotification(adminEmailList, fullOrder)
-        .then(sent => {
-          if (!sent) {
-            logger.warn('order_admin_email_partial_failure', { orderId: createdOrder.id, adminEmailCount: adminEmailList.length });
-          }
-        })
-        .catch(adminEmailError => {
-          logger.warn('order_admin_email_failure', { 
-            orderId: createdOrder.id, 
-            error: adminEmailError instanceof Error ? adminEmailError.message : 'unknown' 
-          });
-        });
     }
 
     // Send WhatsApp notifications concurrently
