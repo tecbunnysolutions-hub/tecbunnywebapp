@@ -76,6 +76,7 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
     spikeGuardOption: PriceEntry;
     monitorOption: PriceEntry;
     installationOption: PriceEntry;
+    constants: Record<string, number>;
   }>({
     analog: FALLBACK_ANALOG_PRICING,
     ip: FALLBACK_IP_PRICING,
@@ -87,6 +88,7 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
     spikeGuardOption: FALLBACK_SPIKE_GUARD_OPTION,
     monitorOption: FALLBACK_MONITOR_OPTION,
     installationOption: FALLBACK_INSTALLATION_OPTION,
+    constants: {},
   });
 
   useEffect(() => {
