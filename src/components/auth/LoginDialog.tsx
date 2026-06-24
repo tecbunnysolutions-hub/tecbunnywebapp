@@ -35,7 +35,7 @@ import { useCartStore } from '@/store/cartStore';
 import { useWishlistStore } from '@/store/wishlistStore';
 
 const loginSchema = z.object({
-  identifier: z.string().min(10, { message: 'Mobile number must be at least 10 digits.' }),
+  identifier: z.string().trim().email({ message: 'Enter a valid email address.' }),
   password: z.string().min(1, { message: 'Password is required.' }),
 });
 
@@ -257,7 +257,7 @@ export function LoginDialog({ children }: { children: React.ReactNode }) {
         <DialogHeader>
           <DialogTitle className="text-2xl text-center">Login</DialogTitle>
           <DialogDescription className="text-center">
-            Enter your mobile number to login.
+            Enter your registered email address to login.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -267,9 +267,9 @@ export function LoginDialog({ children }: { children: React.ReactNode }) {
               name="identifier"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Mobile Number</FormLabel>
+                  <FormLabel>Email Address</FormLabel>
                   <FormControl>
-                    <Input placeholder="Enter your mobile number" {...field} disabled={isSubmitting} />
+                    <Input type="email" autoComplete="email" placeholder="Enter your email address" {...field} disabled={isSubmitting} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

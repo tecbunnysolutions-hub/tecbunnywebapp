@@ -55,7 +55,7 @@ interface SignupDetails {
   password: string;
   firstName: string;
   lastName: string;
-  phone?: string;
+  phone: string;
   captchaToken?: string;
   preferredChannel?: OTPChannel;
 }
@@ -513,46 +513,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
   }, [supabase.auth, fetchUserProfile, sessionManager, triggerFirstLoginWhatsApp, buildFallbackProfile, syncGuestCartToUser, setWishlistOwner, clearSessionScopedClientState]);
 
-  const login = async (identifier: string, password: string): Promise<AuthResponse> => {
+  const login = async (email: string, password: string): Promise<AuthResponse> => {
     try {
-      const normalized = identifier.trim();
-      const isEmail = normalized.includes('@');
-      let resolvedEmail = normalized;
-
-      if (!isEmail) {
-        let phone = normalized.replace(/\D/g, '');
-        if (phone.length === 10) {
-          phone = `91${phone}`;
-        }
-        
-        // Resolve phone number to email using API
-        const resolveRes = await fetch('/api/auth/resolve-phone', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ mobile: phone }),
-        });
-
-        if (!resolveRes.ok) {
-          return {
-            success: false,
-            message: 'Failed to resolve mobile number account.',
-            error: 'Failed to resolve mobile number'
-          };
-        }
-
-        const resolveData = await resolveRes.json();
-        if (!resolveData?.email) {
-          return {
-            success: false,
-            message: 'No account found for this mobile number.',
-            error: 'Account not found'
-          };
-        }
-        resolvedEmail = resolveData.email;
+      const normalized = email.trim().toLowerCase();
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalized)) {
+        return {
+          success: false,
+          message: 'Please enter a valid email address.',
+          error: 'Invalid email address'
+        };
       }
 
       const { data, error } = await supabase.auth.signInWithPassword({
-        email: resolvedEmail,
+        email: normalized,
         password
       });
       
@@ -612,7 +585,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         data: { user: data.user, session: data.session }
       };
     } catch (error) {
-      logger.error('Login error', { error, identifier });
+      logger.error('Login error', { error, email });
       return {
         success: false,
         message: error instanceof Error ? error.message : 'An unexpected error occurred',

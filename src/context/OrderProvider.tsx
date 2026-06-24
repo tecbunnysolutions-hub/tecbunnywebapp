@@ -134,14 +134,16 @@ export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         return null;
       }
 
-      const hydratedCartItems = await hydrateCartItemsWithProductData(cartItems);
+      // Ensure we use the items passed from the caller (e.g. Buy Now, Custom Setup) rather than just global cartItems
+      const itemsToProcess = orderData.items && orderData.items.length > 0 ? orderData.items : cartItems;
+      const hydratedItems = await hydrateCartItemsWithProductData(itemsToProcess as CartItem[]);
 
       // Calculate totals
-      const { subtotal, gstAmount, total } = calculateCartTotals(hydratedCartItems);
+      const { subtotal, gstAmount, total } = calculateCartTotals(hydratedItems);
 
-      // Convert cart items to order items
-      const orderItems: OrderItem[] = hydratedCartItems.map(item => ({
-        productId: item.id,
+      // Convert items to order items format
+      const orderItems: OrderItem[] = hydratedItems.map(item => ({
+        productId: (item as any).productId || item.id,
         quantity: item.quantity,
         price: item.price,
         gstRate: item.gstRate || 18,

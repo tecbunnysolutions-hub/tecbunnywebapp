@@ -87,7 +87,11 @@ export default function SignUpPage() {
       setError('Name is required');
       return false;
     }
-    if (formData.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+    if (!formData.email.trim()) {
+      setError('Email address is required');
+      return false;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())) {
       setError('Please enter a valid email address');
       return false;
     }
@@ -140,7 +144,7 @@ export default function SignUpPage() {
         headers,
         body: JSON.stringify({
           name: formData.name,
-          email: formData.email.trim() || undefined,
+          email: formData.email.trim(),
           mobile: formData.mobile,
           password: formData.password,
           channel: preferredChannel,
@@ -206,7 +210,7 @@ export default function SignUpPage() {
       // Persist signup session (email, name, mobile, password) for OTP verification and account creation
       try {
         const signupData = {
-          email: formData.email.trim() || undefined,
+          email: formData.email.trim(),
           name: formData.name,
           mobile: formData.mobile,
           password: formData.password,
@@ -314,8 +318,9 @@ export default function SignUpPage() {
                   onChange={handleInputChange}
                   placeholder="Email"
                   className="peer w-full bg-muted border border-border rounded-lg px-4 py-3 text-foreground outline-none focus:border-primary transition-colors placeholder-transparent"
+                  required
                 />
-                <Label htmlFor="email" className="absolute left-4 top-3 text-muted-foreground text-sm transition-all pointer-events-none">Email Address (Optional)</Label>
+                <Label htmlFor="email" className="absolute left-4 top-3 text-muted-foreground text-sm transition-all pointer-events-none">Email Address (Required)</Label>
                 <Mail className="absolute right-4 top-3.5 h-4 w-4 text-muted-foreground" />
               </div>
 
@@ -380,7 +385,7 @@ export default function SignUpPage() {
                 {(!emailValid || !mobileSupportsMessaging) && (
                   <p className="text-xs text-muted-foreground pt-1">
                     {!emailValid && !mobileSupportsMessaging 
-                      ? "Provide a valid email or WhatsApp number to enable verification."
+                      ? "A valid email and mobile number are required to create an account."
                       : !emailValid 
                         ? "Provide a valid email to enable email verification."
                         : "Provide a valid mobile number to enable WhatsApp verification."}

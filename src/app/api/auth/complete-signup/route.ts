@@ -59,9 +59,9 @@ export async function POST(request: NextRequest) {
     const { email, password, name, mobile, otpId } = await request.json();
 
     // Validate required fields
-    if (!password || !name || !mobile) {
+    if (!email || !password || !name || !mobile) {
       return NextResponse.json(
-        { error: 'Mobile, password, and name are required' },
+        { error: 'Email address, mobile number, password, and name are required' },
         { status: 400 }
       );
     }
@@ -73,7 +73,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    const normalizedEmail = String(email).trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
       return NextResponse.json(
         { error: 'Please enter a valid email address' },
         { status: 400 }
@@ -112,17 +113,23 @@ export async function POST(request: NextRequest) {
 
     // Verify OTP record binds cleanly to the registration identifiers
     const normalizedMobile = String(mobile).replace(/\D/g, '');
+    if (normalizedMobile.length < 10 || normalizedMobile.length > 15) {
+      return NextResponse.json(
+        { error: 'Mobile number must be between 10-15 digits' },
+        { status: 400 }
+      );
+    }
     const otpPhoneClean = otpRecord.phone ? String(otpRecord.phone).replace(/\D/g, '') : '';
     
     const isPhoneMatch = otpPhoneClean === normalizedMobile;
-    const isEmailMatch = email && otpRecord.email && otpRecord.email.trim().toLowerCase() === email.trim().toLowerCase();
+    const isEmailMatch = otpRecord.email && otpRecord.email.trim().toLowerCase() === normalizedEmail;
 
-    if (!isPhoneMatch && (!email || !isEmailMatch)) {
+    if (!isPhoneMatch || !isEmailMatch) {
       logger.warn('complete_signup.otp_identifier_mismatch', {
         otpId,
         requestMobile: normalizedMobile,
         otpPhone: otpPhoneClean,
-        requestEmail: email,
+        requestEmail: normalizedEmail,
         otpEmail: otpRecord.email
       });
       return NextResponse.json(
@@ -169,7 +176,7 @@ export async function POST(request: NextRequest) {
 
     // Check if user already exists — targeted query avoids fetching all users
     const orFilters: string[] = [];
-    if (email) orFilters.push(`email.eq.${email}`);
+    orFilters.push(`email.eq.${normalizedEmail}`);
     if (normalizedMobile) orFilters.push(`mobile.eq.${normalizedMobile}`);
 
     if (orFilters.length > 0) {
@@ -181,19 +188,18 @@ export async function POST(request: NextRequest) {
 
       if (existingProfiles && existingProfiles.length > 0) {
         return NextResponse.json(
-          { error: 'An account with this email or mobile already exists' },
+          { error: 'An account with this email address or mobile number already exists' },
           { status: 409 }
         );
       }
     }
 
     // Create user account NOW (after OTP verification)
-    const loginEmail = email || `${normalizedMobile}@tecbunny.phone`;
     const userPayload: Record<string, any> = {
       password,
       phone: `+${normalizedMobile}`,
       phone_confirm: true,
-      email: loginEmail,
+      email: normalizedEmail,
       email_confirm: true,
       user_metadata: {
         name,
@@ -212,7 +218,7 @@ export async function POST(request: NextRequest) {
           createError.message.includes('User already registered') ||
           createError.message.includes('already exists')) {
         return NextResponse.json(
-          { error: 'An account with this email or mobile already exists' },
+          { error: 'An account with this email address or mobile number already exists' },
           { status: 409 }
         );
       }
@@ -273,11 +279,7 @@ export async function POST(request: NextRequest) {
     }
 
     const signInPayload: Record<string, string> = { password };
-    if (email) {
-      signInPayload.email = email;
-    } else {
-      signInPayload.email = `${normalizedMobile}@tecbunny.phone`;
-    }
+    signInPayload.email = normalizedEmail;
 
     const { data: signInData, error: signInError } = await regularSupabase.auth.signInWithPassword({
       email: signInPayload.email,

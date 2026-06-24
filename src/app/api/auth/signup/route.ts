@@ -99,14 +99,14 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate required fields
-    if (!password || !name) {
+    if (!password || !name || !normalizedEmail || !normalizedMobile) {
       return NextResponse.json(
-        { error: 'Name and password are required' },
+        { error: 'Name, email address, mobile number, and password are required' },
         { status: 400 }
       );
     }
 
-    if (normalizedEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
       return NextResponse.json(
         { error: 'Please enter a valid email address' },
         { status: 400 }
@@ -130,12 +130,6 @@ export async function POST(request: NextRequest) {
 
     // Validate mobile if provided
     let mobile = normalizedMobile;
-    if (!mobile) {
-      return NextResponse.json(
-        { error: 'Mobile number is required' },
-        { status: 400 }
-      );
-    }
     mobile = mobile.replace(/\D/g, ''); // Remove non-digits
     if (mobile.length < 10 || mobile.length > 15) {
       return NextResponse.json(
@@ -165,7 +159,7 @@ export async function POST(request: NextRequest) {
         } else if (existingProfiles && existingProfiles.length > 0) {
           return NextResponse.json(
             { 
-              error: 'An account with this email or mobile already exists', 
+              error: 'An account with this email address or mobile number already exists',
               code: 'USER_ALREADY_EXISTS'
             },
             { status: 409 }

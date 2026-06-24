@@ -4,7 +4,7 @@ import { useState, useEffect, Suspense, useMemo } from 'react';
 import NextDynamic from 'next/dynamic';
 import { useSearchParams, useRouter } from 'next/navigation';
 
-import { Lock, Eye, EyeOff, CheckCircle, AlertCircle, Phone } from 'lucide-react';
+import { Lock, Eye, EyeOff, CheckCircle, AlertCircle, Mail } from 'lucide-react';
 
 import { createClient } from '@/lib/supabase/client';
 import { normalizeRole } from '@/lib/roles';
@@ -146,7 +146,7 @@ function SignInForm() {
   };
 
   // ─── Shared post sign-in handler ───────────────────────────────────────────
-  // Called after a successful Supabase signInWithPassword regardless of identifier type.
+  // Called after a successful email/password sign-in.
   const handleSignInSuccess = async (user: any) => {
     setFailedAttempts(0);
     setLockoutUntil(null);
@@ -208,7 +208,7 @@ function SignInForm() {
   };
 
   // ─── Shared sign-in error handler ──────────────────────────────────────────
-  const handleSignInError = (signInError: any, isEmailFlow: boolean) => {
+  const handleSignInError = (signInError: any) => {
     const newFailedAttempts = failedAttempts + 1;
     setFailedAttempts(newFailedAttempts);
 
@@ -220,8 +220,8 @@ function SignInForm() {
     }
 
     if (signInError.message.includes('Invalid login credentials')) {
-      setError(`Invalid ${isEmailFlow ? 'email' : 'mobile number'} or password. ${5 - newFailedAttempts} attempts remaining.`);
-    } else if (isEmailFlow && signInError.message.includes('Email not confirmed')) {
+      setError(`Invalid email or password. ${5 - newFailedAttempts} attempts remaining.`);
+    } else if (signInError.message.includes('Email not confirmed')) {
       setError('Please verify your email address before signing in.');
     } else {
       setError(signInError.message);
@@ -246,48 +246,17 @@ function SignInForm() {
 
     try {
       const normalized = identifier.trim();
-      const isEmail = normalized.includes('@');
-
-      if (isEmail) {
-        const { data, error: signInError } = await supabase.auth.signInWithPassword({
-          email: normalized,
-          password,
-        });
-        if (signInError) { handleSignInError(signInError, true); return; }
-        if (data.user) await handleSignInSuccess(data.user);
-      } else {
-        const digits = normalized.replace(/\D/g, '');
-        const phone = digits.length === 10 ? `91${digits}` : digits;
-
-        // Resolve phone number to email using API
-        const resolveRes = await fetch('/api/auth/resolve-phone', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ mobile: phone }),
-        });
-
-        if (!resolveRes.ok) {
-          setError('Failed to resolve phone account.');
-          setIsLoading(false);
-          return;
-        }
-
-        const resolveData = await resolveRes.json();
-        const resolvedEmail = resolveData?.email;
-
-        if (!resolvedEmail) {
-          setError('No account found for this mobile number.');
-          setIsLoading(false);
-          return;
-        }
-
-        const { data, error: signInError } = await supabase.auth.signInWithPassword({
-          email: resolvedEmail,
-          password,
-        });
-        if (signInError) { handleSignInError(signInError, false); return; }
-        if (data.user) await handleSignInSuccess(data.user);
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalized)) {
+        setError('Please enter a valid email address.');
+        return;
       }
+
+      const { data, error: signInError } = await supabase.auth.signInWithPassword({
+        email: normalized.toLowerCase(),
+        password,
+      });
+      if (signInError) { handleSignInError(signInError); return; }
+      if (data.user) await handleSignInSuccess(data.user);
     } catch (err) {
       console.error('Sign in error:', err);
       setError('An unexpected error occurred. Please try again.');
@@ -331,17 +300,18 @@ function SignInForm() {
                 <div className="floating-label relative">
                   <Input
                     id="identifier"
-                    type="text"
+                    type="email"
+                    autoComplete="email"
                     value={identifier}
                     onChange={(e) => setIdentifier(e.target.value)}
-                    placeholder="Mobile Number"
+                    placeholder="Email Address"
                     className="peer w-full bg-muted border border-border rounded-lg px-4 py-3 text-foreground outline-none focus:border-primary transition-colors placeholder-transparent"
                     required
                   />
                   <Label htmlFor="identifier" className="absolute left-4 top-3 text-muted-foreground text-sm transition-all pointer-events-none">
-                    Mobile Number
+                    Email Address
                   </Label>
-                  <Phone className="absolute right-4 top-3.5 h-4 w-4 text-muted-foreground" />
+                  <Mail className="absolute right-4 top-3.5 h-4 w-4 text-muted-foreground" />
                 </div>
 
                 <div className="floating-label relative">
