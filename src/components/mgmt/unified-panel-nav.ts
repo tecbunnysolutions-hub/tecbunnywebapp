@@ -13,6 +13,7 @@ import {
   Gauge,
   Image as ImageIcon,
   LayoutDashboard,
+  MapPin,
   Megaphone,
   Package,
   PackageCheck,
@@ -92,6 +93,7 @@ export const unifiedPanelNavSections: UnifiedPanelNavSection[] = [
     title: 'People & Inventory',
     items: [
       { href: '/superadmin/mgmt/users', label: 'User Governance', icon: Users, roles: ['superadmin'] },
+      { href: '/superadmin/mgmt/areas', label: 'Areas & Teams', icon: MapPin, roles: ['superadmin'] },
       { href: '/mgmt/admin/staff', label: 'Staff Operations', icon: Users, roles: ['admin'] },
       { href: '/mgmt/manager/salesperson', label: 'Regional Sales Team', icon: Users, roles: SALES_MANAGER_ROLES },
       { href: '/superadmin/mgmt/products', label: 'Product Catalogue', icon: Package, roles: ['superadmin'] },

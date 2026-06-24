@@ -15,7 +15,8 @@ import { enhancedCommissionService } from '@/lib/enhanced-commission-service';
 import { checkoutEngine } from '@/lib/checkout-engine';
 import { formatPlaceOfSupply, resolveIndianStateFromText, resolveIndianStateInfo, TECBUNNY_REGISTERED_STATE } from '@/lib/indian-tax';
 import { verifySuperadminSessionToken } from '@/lib/auth/superadmin-session';
-import { sendOrderRoutingNotifications } from '@/lib/area-notifications';
+import { extractPincode, sendOrderRoutingNotifications } from '@/lib/area-notifications';
+import { checkServiceAreaAvailability } from '@/lib/service-area-availability';
 
 const RATE_LIMIT = 5; // 5 orders
 const RATE_WINDOW_MS = 60 * 1000; // per minute
@@ -142,6 +143,25 @@ logger.info('order_create_attempt', { userId: effectiveUserId });
       orderType = 'Delivery';
     }
 
+    const serviceOrderTypes = new Set(['Service', 'Repair', 'Installation', 'Setup']);
+    if (serviceOrderTypes.has(orderType)) {
+      const servicePincode = extractPincode(orderData);
+      const availability = await checkServiceAreaAvailability(servicePincode);
+      if (!availability.available) {
+        logger.warn('service_order_outside_enabled_area', {
+          userId: effectiveUserId,
+          pincode: availability.pincode,
+          orderType,
+          reason: availability.reason,
+        });
+        return apiError('VALIDATION_ERROR', {
+          correlationId,
+          overrideMessage: availability.reason,
+        });
+      }
+      orderData.delivery_pincode = availability.pincode;
+    }
+
     // Store additional info that doesn't have dedicated columns in the items field
     const pickupStore = orderType === 'Pickup'
       ? (orderData.pickup_store || orderData.delivery_address || null)
@@ -254,7 +274,6 @@ logger.info('order_create_attempt', { userId: effectiveUserId });
       pickup_store: orderItemsData.pickup_store || pickupStore || null
     };
 
-    const serviceOrderTypes = new Set(['Service', 'Repair', 'Installation', 'Setup']);
     const managerRole = serviceOrderTypes.has(orderType) ? 'service_manager' : 'sales_manager';
 
     try {

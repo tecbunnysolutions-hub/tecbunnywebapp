@@ -14,6 +14,7 @@ import type {
 
 import { logger } from './logger';
 import { extractPincode, sendServiceTicketRoutingNotifications } from './area-notifications';
+import { checkServiceAreaAvailability } from './service-area-availability';
 
 export interface ServiceTicketRequest {
   service_id?: string;
@@ -70,6 +71,17 @@ export class ServiceManagementService {
       if (!this.supabase) {
         return { success: false, error: 'Supabase service client not configured' };
       }
+
+      const servicePincode = request.service_pincode || request.pincode || extractPincode(request);
+      const availability = await checkServiceAreaAvailability(servicePincode);
+      if (!availability.available) {
+        logger.warn('service_ticket_outside_enabled_area', {
+          pincode: availability.pincode,
+          reason: availability.reason,
+        });
+        return { success: false, error: availability.reason };
+      }
+
       const { data: ticket, error } = await this.supabase
         .from('service_tickets')
         .insert([{
@@ -79,7 +91,7 @@ export class ServiceManagementService {
           customer_email: request.customer_email,
           customer_phone: request.customer_phone,
           customer_address: request.customer_address,
-          service_pincode: request.service_pincode || request.pincode || extractPincode(request),
+          service_pincode: availability.pincode,
           issue_description: request.issue_description,
           priority: request.priority || 'medium',
           status: 'created'
