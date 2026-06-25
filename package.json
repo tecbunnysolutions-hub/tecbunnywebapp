@@ -15,11 +15,6 @@
     "build:analyze": "ANALYZE=true next build",
     "start": "next start",
     "start:prod": "NODE_ENV=production next start",
-    "lint": "npx cross-env NODE_NO_WARNINGS=1 next lint",
-    "lint:fix": "next lint --fix",
-    "lint:check": "next lint --quiet",
-    "lint:src": "eslint src/ --ext .ts,.tsx,.js,.jsx",
-    "lint:src:fix": "eslint src/ --ext .ts,.tsx,.js,.jsx --fix",
     "typecheck": "tsc --noEmit",
     "typecheck:watch": "tsc --noEmit --watch",
     "clean": "rm -rf .next out",
@@ -83,8 +78,6 @@
     "zustand": "^5.0.12"
   },
   "devDependencies": {
-    "@eslint/eslintrc": "^3.0.0",
-    "@next/eslint-plugin-next": "^16.2.6",
     "@tailwindcss/aspect-ratio": "0.4.2",
     "@tailwindcss/cli": "4.1.13",
     "@tailwindcss/forms": "0.5.10",
@@ -99,8 +92,6 @@
     "@types/speakeasy": "2.0.10",
     "autoprefixer": "10.4.21",
     "cross-env": "10.0.0",
-    "eslint": "^9.0.0",
-    "eslint-config-next": "^16.2.6",
     "postcss": "8.5.14",
     "tailwindcss": "4.1.13",
     "typescript": "5.9.2",
@@ -141,13 +132,6 @@
     "ws": "^8.21.0",
     "@tootallnate/once": ">=3.0.1",
     "@xmldom/xmldom": ">=0.8.12",
-    "eslint": {
-      "ajv": "^6.14.0"
-    },
-    "@eslint/eslintrc": {
-      "ajv": "^6.14.0",
-      "minimatch": "^3.1.5"
-    },
     "axios": ">=1.13.5",
     "brace-expansion": "5.0.6",
     "diff": "^4.0.4",
