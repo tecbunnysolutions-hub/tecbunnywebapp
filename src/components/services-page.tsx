@@ -452,67 +452,6 @@ export default function ServicesPage({ services, hasServiceLoadError = false }: 
           ))}
         </section>
 
-        {/* Static Rates Matrix Section */}
-        <section className="reveal-section rounded-2xl border border-zinc-850 p-6 sm:p-8 shadow-sm bento-card" data-reveal-id="services-pricing">
-          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <div>
-              <h2 className="text-xl font-bold font-tech tech-heading">Transparent Power. No Hidden Fees.</h2>
-              <p className="text-xs mt-1 font-light tech-body">
-                Aggressive pricing on world-class automation and proactive maintenance.
-              </p>
-            </div>
-            <Link
-              href="/contact?subject=sales&intent=service_quote&source=services_core_desk"
-              className="inline-flex items-center justify-center rounded-lg border border-zinc-800 bg-zinc-900/30 hover:bg-white/10 hover:border-zinc-700 px-4 py-2.5 text-xs font-bold uppercase tracking-wider transition-colors shadow-sm"
-            >
-              Engineer My Custom Quote
-            </Link>
-          </div>
-
-          <div className="mt-8 grid gap-6 lg:grid-cols-2">
-            {servicePricing.map((category) => (
-              <div key={category.category} className="rounded-xl border border-zinc-850 bg-zinc-950/20 p-6 space-y-4">
-                <div>
-                  <h3 className="font-bold text-sm font-tech tech-heading">{category.category}</h3>
-                  <p className="text-xs mt-0.5 font-light tech-body">{category.blurb}</p>
-                </div>
-                <div className="space-y-4">
-                  {category.plans.map((plan) => (
-                    <div key={plan.name} className="bento-card p-4 space-y-3 shadow-xs">
-                      <div>
-                        <p className="text-xs font-bold tech-heading">{plan.name}</p>
-                        <p className="text-[10px] font-light tech-body">{plan.summary}</p>
-                      </div>
-                      <div className="grid gap-2">
-                        {plan.tiers.map((tier) => {
-                          const hasPrice = Boolean(tier.amount);
-                          return (
-                            <div key={tier.label} className="border border-zinc-900 bg-zinc-900/20 rounded-md p-3 flex flex-col gap-2">
-                              <div className="flex justify-between items-baseline">
-                                <span className="text-[9px] font-bold uppercase tracking-widest text-blue-400">{tier.label}</span>
-                                <span className="text-xs font-bold font-mono tech-heading">{tier.price}</span>
-                              </div>
-                              <p className="text-[10px] leading-normal font-light tech-body">{tier.detail}</p>
-                              {hasPrice && (
-                                <button
-                                  type="button"
-                                  onClick={() => handlePricingTierAdd(category.category, plan, tier)}
-                                  className="w-full mt-1 py-1.5 bg-zinc-900 hover:bg-blue-600 hover:text-white text-zinc-300 border border-zinc-800 text-[10px] font-bold uppercase tracking-wider rounded transition-colors text-center"
-                                >
-                                  Add to Cart
-                                </button>
-                              )}
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
 
 
       </div>
