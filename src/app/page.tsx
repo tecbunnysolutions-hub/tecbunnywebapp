@@ -5,8 +5,8 @@ import type { Metadata } from 'next';
 import HomePage from '@/components/home-page';
 import { createPageMetadata } from '@/lib/metadata';
 
-// Force dynamic rendering for homepage as requested
-export const dynamic = 'force-dynamic';
+// Revalidate homepage every 60 seconds (ISR) to fix 2.8s Document Request Latency
+export const revalidate = 60;
 
 import { headers } from 'next/headers';
 
@@ -101,11 +101,11 @@ export default async function Page() {
     const protocol = host.includes('localhost') || host.includes('127.0.0.1') ? 'http' : 'https';
     const baseUrl = `${protocol}://${host}`;
 
-    // Parallel server-side fetching
+    // Parallel server-side fetching with ISR caching
     const [productsRes, brandsRes, heroRes] = await Promise.all([
-      fetch(`${baseUrl}/api/products?status=active&limit=12`, { cache: 'no-store' }).catch(() => null),
-      fetch(`${baseUrl}/api/settings?key=partnerBrands`, { cache: 'no-store' }).catch(() => null),
-      fetch(`${baseUrl}/api/page-content?key=hero-carousels`, { cache: 'no-store' }).catch(() => null)
+      fetch(`${baseUrl}/api/products?status=active&limit=12`, { next: { revalidate: 60 } }).catch(() => null),
+      fetch(`${baseUrl}/api/settings?key=partnerBrands`, { next: { revalidate: 60 } }).catch(() => null),
+      fetch(`${baseUrl}/api/page-content?key=hero-carousels`, { next: { revalidate: 60 } }).catch(() => null)
     ]);
 
     if (productsRes?.ok) {
