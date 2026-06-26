@@ -15,7 +15,7 @@ import { isManagerClient } from '@/lib/permissions-client';
 import { OrderActions } from '@/components/sales/OrderActions';
 import { formatOrderNumber } from '@/lib/order-utils';
 
-export default function OnlineOrdersPage() {
+export default function OnlineOrdersPage({ orderType = 'Delivery' }: { orderType?: string }) {
   const [orders, setOrders] = React.useState<Order[]>([]);
   const { toast } = useToast();
   const [loading, setLoading] = React.useState(true);
@@ -29,7 +29,7 @@ export default function OnlineOrdersPage() {
     const { data, error } = await supabase
         .from('orders')
         .select('*')
-        .eq('type', 'Delivery')
+        .eq('type', orderType)
         .order('created_at', { ascending: false });
     
     if (error) {

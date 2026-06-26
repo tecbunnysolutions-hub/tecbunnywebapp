@@ -152,6 +152,8 @@ export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         serialNumbers: []
       }));
 
+      const hasService = hydratedItems.some(item => item.product_type === 'service');
+
       const orderPayload = {
         customer_name: customerName,
         customer_id: user?.id || null,
@@ -159,7 +161,8 @@ export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         subtotal: Math.round(subtotal * 100) / 100,
         gst_amount: Math.round(gstAmount * 100) / 100,
         total: Math.round(total * 100) / 100,
-        type: orderData.type || 'Delivery',
+        type: hasService ? 'Service' : (orderData.type || 'Delivery'),
+        is_service_order: hasService,
   items: orderItems,
         processed_by: orderData.processed_by || null,
         customer_email: customerEmail || null,
