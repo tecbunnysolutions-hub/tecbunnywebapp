@@ -44,8 +44,10 @@ export function CartItemCard({ item }: CartItemCardProps) {
     }
   }
 
-  const cleanSrc = candidateImages.find((src) => typeof src === 'string' && src.trim().length > 0);
-  const imageSrc = cleanSrc ? cleanSrc.trim() : BRAND_LOGO_URL;
+  const cleanSrc = candidateImages.find((src) => typeof src === 'string' && src.trim().length > 0 && src !== 'null' && src !== 'undefined');
+  const initialImageSrc = cleanSrc ? cleanSrc.trim() : BRAND_LOGO_URL;
+  const [imageSrc, setImageSrc] = React.useState(initialImageSrc);
+
   const fallbackProductUrl = item.id?.startsWith('service-') ? '/services' : `/products/${item.id}`;
   const productHref = typeof item.product_url === 'string' && item.product_url.length > 0
     ? item.product_url
@@ -75,6 +77,11 @@ export function CartItemCard({ item }: CartItemCardProps) {
           sizes="96px"
           unoptimized
           className="object-contain"
+          onError={() => {
+            if (imageSrc !== BRAND_LOGO_URL) {
+              setImageSrc(BRAND_LOGO_URL);
+            }
+          }}
         />
       </div>
       <div className="flex-1 text-center sm:text-left space-y-1">
