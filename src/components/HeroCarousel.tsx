@@ -163,6 +163,7 @@ export default function HeroCarousel({ pageKey, intervalMs = 6000, className, in
                 fill
                 sizes="(max-width: 768px) 100vw, (max-width: 1280px) 80vw, 1200px"
                 priority
+                quality={60}
                 className="h-full w-full object-cover"
                 onError={event => {
                   const target = event.currentTarget as HTMLImageElement;
