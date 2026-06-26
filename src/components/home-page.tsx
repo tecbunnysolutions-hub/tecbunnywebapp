@@ -32,6 +32,10 @@ import { TrackQuoteForm } from './home/TrackQuoteForm';
 import { MagneticButton } from './home/MagneticButton';
 import { HeroRotator } from './home/HeroRotator';
 
+const DynamicBehavioralCouponPopup = dynamic(() => import('./BehavioralCouponPopup').then(mod => mod.BehavioralCouponPopup), { ssr: false });
+const DynamicAmbientEffects = dynamic(() => import('./home/AmbientEffects').then(mod => mod.AmbientEffects), { ssr: false });
+const DynamicHeroVisuals = dynamic(() => import('./home/HeroVisuals').then(mod => mod.HeroVisuals), { ssr: false });
+
 const AddToCartButton = dynamic(
   () => import('@/components/cart/AddToCartButton').then((module) => module.AddToCartButton),
   { ssr: false }
@@ -110,10 +114,10 @@ export default function HomePage({
 
   return (
     <div className="tb-page relative overflow-hidden selection:bg-blue-500/20 selection:text-white">
-      <BehavioralCouponPopup />
+      <DynamicBehavioralCouponPopup />
 
       <section className="relative flex min-h-[86vh] items-center overflow-hidden py-20 sm:py-28 lg:py-32">
-        <AmbientEffects />
+        <DynamicAmbientEffects />
         <div className="pointer-events-none absolute inset-0 bg-noise opacity-[0.06] brightness-100 contrast-150" />
 
         <div className="tb-container relative z-10">
@@ -159,7 +163,7 @@ export default function HomePage({
               </div>
             </div>
 
-            <HeroVisuals />
+            <DynamicHeroVisuals />
           </div>
         </div>
       </section>
