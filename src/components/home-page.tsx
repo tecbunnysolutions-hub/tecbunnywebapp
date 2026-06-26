@@ -118,7 +118,7 @@ export default function HomePage({
 
         <div className="tb-container relative z-10">
           <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-[1.05fr_0.95fr] xl:gap-16">
-            <div className="reveal-section is-revealed max-w-3xl animate-scale-in space-y-8" data-reveal-id="hero-copy" style={{ animationDuration: '0.8s' }}>
+            <div className="reveal-section is-revealed max-w-3xl space-y-8" data-reveal-id="hero-copy">
               <h1 className="text-4xl font-extrabold leading-[1.02] text-white sm:text-5xl md:text-6xl xl:text-7xl font-tech tracking-tight" aria-label="Bulletproof IT and Unblinking Security">
                 <span className="glitch-text block pb-3 text-blue-400" data-text="Bulletproof IT.">Bulletproof IT.</span>
                 <span className="block text-zinc-100">

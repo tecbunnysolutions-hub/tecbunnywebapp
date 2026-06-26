@@ -66,7 +66,7 @@ export function HeroVisuals() {
   };
 
   return (
-    <div className="reveal-section is-revealed relative hidden lg:block animate-scale-in" data-reveal-id="hero-visual" id="hero-visual" onMouseMove={handleTiltMove} onMouseLeave={handleTiltLeave} style={{ animationDuration: '1s', animationDelay: '0.2s', animationFillMode: 'backwards' }}>
+    <div className="reveal-section is-revealed relative hidden lg:block" data-reveal-id="hero-visual" id="hero-visual" onMouseMove={handleTiltMove} onMouseLeave={handleTiltLeave}>
       <div ref={tiltRef} className="hero-status-panel tilt-card tb-panel group relative z-10 overflow-hidden p-8">
         <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
         <div className="mb-6 flex items-center gap-2 border-b border-zinc-800/80 pb-5 relative z-10">

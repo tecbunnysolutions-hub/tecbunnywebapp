@@ -1,4 +1,5 @@
 import * as React from 'react';
+import Image from 'next/image';
 
 export const BRAND_LOGO_URL = '/logo.png';
 
@@ -22,7 +23,7 @@ function canLoadImage(src: string): Promise<boolean> {
   if (src === BRAND_LOGO_URL) return Promise.resolve(true);
 
   return new Promise((resolve) => {
-    const image = new Image();
+    const image = new window.Image();
     image.onload = () => resolve(true);
     image.onerror = () => resolve(false);
     image.src = src;
@@ -76,13 +77,13 @@ export function Logo({ className, width = 40, height = 40, alt = 'TecBunny Logo'
   }, []);
 
   return (
-    <img
+    <Image
       src={logoSrc}
       alt={alt}
       width={width}
       height={height}
       className={`object-contain ${className ?? ''}`}
-      loading="eager"
+      priority
       onError={() => {
         if (logoSrc !== BRAND_LOGO_URL) {
           setLogoSrc(BRAND_LOGO_URL);
@@ -92,4 +93,3 @@ export function Logo({ className, width = 40, height = 40, alt = 'TecBunny Logo'
     />
   );
 }
-
