@@ -93,7 +93,7 @@ export default function HeroCarousel({ pageKey, intervalMs = 6000, className, in
   const { content, loading: hookLoading } = usePageContent('hero-carousels');
   const prefersReducedMotion = usePrefersReducedMotion();
 
-  const activeContent = initialData || content?.content;
+  const activeContent = initialData?.content || content?.content;
   const loading = !activeContent && hookLoading;
 
   const slides = React.useMemo(() => {
