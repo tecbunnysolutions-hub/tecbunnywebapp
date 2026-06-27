@@ -3,7 +3,7 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Bot, X, Sparkles, ArrowRight } from 'lucide-react';
+import { Bot, X, Sparkles, ArrowRight, ArrowUp } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 
@@ -12,6 +12,19 @@ const EXCLUDED_PREFIXES = ['/auth', '/mgmt', '/checkout'];
 export function FloatingAIAssistant() {
   const pathname = usePathname() || '/';
   const [open, setOpen] = React.useState(false);
+  const [showScrollTop, setShowScrollTop] = React.useState(false);
+
+  React.useEffect(() => {
+    const handleScroll = () => {
+      setShowScrollTop(window.scrollY > 300);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   const isExcluded = EXCLUDED_PREFIXES.some((prefix) => pathname.startsWith(prefix));
   if (isExcluded) return null;
@@ -62,6 +75,18 @@ export function FloatingAIAssistant() {
       )}
 
       <div className="flex items-center gap-4">
+        {/* Scroll to Top Button */}
+        {showScrollTop && (
+          <button
+            type="button"
+            aria-label="Scroll to top"
+            onClick={scrollToTop}
+            className="group flex h-14 w-14 items-center justify-center rounded-full bg-zinc-800/80 text-zinc-300 shadow-lg backdrop-blur transition hover:bg-zinc-700 hover:text-white hover:scale-105 border border-zinc-700/50"
+          >
+            <ArrowUp className="h-6 w-6 transition-transform group-hover:-translate-y-1" />
+          </button>
+        )}
+
         {/* WhatsApp Button */}
         <Link
           href="https://wa.me/919604136010?text=I%20need%20more%20information"

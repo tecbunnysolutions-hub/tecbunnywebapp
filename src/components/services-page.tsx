@@ -381,13 +381,13 @@ export default function ServicesPage({ services, hasServiceLoadError = false }: 
                 </div>
               </div>
 
-              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              <div className="flex gap-6 overflow-x-auto snap-x snap-mandatory pb-8 pt-4 px-2 -mx-2 [&::-webkit-scrollbar]:h-2 [&::-webkit-scrollbar-thumb]:bg-blue-500/20 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-blue-500/40">
                 {section.items.map((service) => {
                   const Icon = iconMap[service.icon] || Wrench;
                   return (
                     <div
                       key={service.id}
-                      className="bento-card p-6 flex flex-col justify-between h-full transition-all duration-300"
+                      className="bento-card p-6 flex flex-col justify-between h-full transition-all duration-300 min-w-[85vw] sm:min-w-[340px] md:min-w-[380px] shrink-0 snap-start"
                     >
                       <div>
                         <div className="flex items-center justify-between">
