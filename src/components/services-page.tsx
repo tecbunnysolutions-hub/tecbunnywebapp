@@ -402,14 +402,14 @@ export default function ServicesPage({ services, hasServiceLoadError = false }: 
 
             <div
               ref={scrollContainerRef}
-              className="flex gap-6 overflow-x-auto snap-x snap-mandatory pb-8 pt-4 [&::-webkit-scrollbar]:h-2 [&::-webkit-scrollbar-thumb]:bg-blue-500/20 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-blue-500/40"
+              className="grid grid-cols-1 gap-6 pb-8 pt-4 sm:flex sm:overflow-x-auto sm:snap-x sm:snap-mandatory sm:[&::-webkit-scrollbar]:h-2 sm:[&::-webkit-scrollbar-thumb]:rounded-full sm:[&::-webkit-scrollbar-thumb]:bg-blue-500/20 sm:hover:[&::-webkit-scrollbar-thumb]:bg-blue-500/40"
             >
               {services.map((service) => {
                 const Icon = iconMap[service.icon] || Wrench;
                 return (
                   <div
                     key={service.id}
-                    className="bento-card p-6 flex flex-col justify-between h-full transition-all duration-300 w-full sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)] xl:w-[calc(25%-18px)] shrink-0 snap-start"
+                    className="bento-card flex h-full w-full flex-col justify-between p-6 transition-all duration-300 sm:w-[calc(50%-12px)] sm:shrink-0 sm:snap-start lg:w-[calc(33.333%-16px)] xl:w-[calc(25%-18px)]"
                   >
                     <div>
                       <div className="flex items-center justify-between">

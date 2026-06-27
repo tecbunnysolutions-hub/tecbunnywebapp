@@ -6,6 +6,7 @@ import { ChevronDown, ChevronUp, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const DISMISS_STORAGE_KEY = "tecbunny_promo_dismissed_until";
+const CONSENT_STORAGE_KEY = "tecbunny_analytics_consent";
 
 type PromoBannerState = "hidden" | "collapsed" | "expanded";
 
@@ -19,6 +20,30 @@ function readDismissed(): boolean {
     return false;
   }
   return true;
+}
+
+function hasCookieChoice(): boolean {
+  if (typeof window === "undefined") return false;
+
+  try {
+    const storedValue = window.localStorage.getItem(CONSENT_STORAGE_KEY);
+    if (storedValue === "accepted" || storedValue === "rejected") {
+      return true;
+    }
+  } catch {
+    // Ignore storage access errors
+  }
+
+  try {
+    return document.cookie
+      .split(";")
+      .some((item) => {
+        const value = item.trim();
+        return value === `${CONSENT_STORAGE_KEY}=accepted` || value === `${CONSENT_STORAGE_KEY}=rejected`;
+      });
+  } catch {
+    return false;
+  }
 }
 
 function dismissForSession() {
@@ -50,13 +75,21 @@ export function BlitzAuditBanner() {
   const [dismissed, setDismissed] = useState(true);
   const [expanded, setExpanded] = useState(false);
   const [hydrated, setHydrated] = useState(false);
+  const [consentKnown, setConsentKnown] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const { toast } = useToast();
   const pathname = usePathname();
 
   useEffect(() => {
     setDismissed(readDismissed());
+    setConsentKnown(hasCookieChoice());
     setHydrated(true);
+  }, []);
+
+  useEffect(() => {
+    const handleConsent = () => setConsentKnown(true);
+    window.addEventListener("tecbunny:analytics-consent", handleConsent);
+    return () => window.removeEventListener("tecbunny:analytics-consent", handleConsent);
   }, []);
 
   useEffect(() => {
@@ -81,7 +114,7 @@ export function BlitzAuditBanner() {
 
   const isExcluded = EXCLUDED_PREFIXES.some((prefix) => pathname?.startsWith(prefix));
   const slotsDisplay = slots ?? "—";
-  const isVisible = hydrated && !dismissed && step !== "success" && !isExcluded && slots !== 0;
+  const isVisible = hydrated && consentKnown && !dismissed && step !== "success" && !isExcluded && slots !== 0;
 
   useEffect(() => {
     if (!isVisible) {

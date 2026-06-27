@@ -591,10 +591,10 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
                 <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary" />
                 <input
                   type="text"
-                  placeholder="Search catalog... (e.g. CCTV, RAM, Router)"
+                  placeholder="Search catalog..."
                   value={localSearchQuery}
                   onChange={(e) => setLocalSearchQuery(e.target.value)}
-                  className="h-12 w-full rounded-xl border border-border bg-muted/30 pl-11 pr-12 text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all duration-300 font-mono"
+                  className="h-12 w-full rounded-xl border border-border bg-muted/30 pl-11 pr-12 text-sm text-foreground placeholder:text-muted-foreground/60 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/30 sm:text-base transition-all duration-300 font-mono"
                 />
                 <div className="absolute right-3 top-1/2 -translate-y-1/2 hidden sm:flex items-center gap-1 px-1.5 py-0.5 rounded border border-border bg-background text-[9px] font-mono text-muted-foreground/50 pointer-events-none">
                   <span>⏎</span>

@@ -60,6 +60,12 @@ export function safeWriteStoredConsent(value: Exclude<AnalyticsConsent, 'unknown
   } catch (e) {
     // Ignore cookie blocked errors
   }
+
+  try {
+    window.dispatchEvent(new CustomEvent('tecbunny:analytics-consent', { detail: value }));
+  } catch (e) {
+    // Ignore event dispatch errors
+  }
 }
 
 type CookieConsentBannerProps = {
@@ -98,14 +104,14 @@ export function CookieConsentBanner({ onConsentChange }: CookieConsentBannerProp
   }
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-[70] border-t border-border bg-card/95 px-4 py-4 text-card-foreground shadow-2xl backdrop-blur">
-      <div className="mx-auto flex max-w-6xl flex-col gap-4 md:flex-row md:items-end md:justify-between">
-        <div className="max-w-3xl space-y-2">
-          <p className="text-sm font-semibold uppercase tracking-[0.22em] text-primary">Privacy Controls</p>
-          <p className="text-sm leading-6 text-muted-foreground sm:text-[15px]">
-            TecBunny uses optional analytics and marketing cookies to understand site performance and measure campaign activity. Rejecting keeps the site fully usable and skips third-party tracking scripts.
+    <div className="fixed inset-x-0 bottom-0 z-[65] border-t border-border bg-card/95 px-4 py-3 text-card-foreground shadow-2xl backdrop-blur supports-[backdrop-filter]:bg-card/85 sm:py-4">
+      <div className="mx-auto flex max-w-6xl flex-col gap-3 md:flex-row md:items-center md:justify-between">
+        <div className="max-w-3xl space-y-1.5">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary sm:text-sm">Privacy Controls</p>
+          <p className="text-xs leading-5 text-muted-foreground sm:text-sm sm:leading-6">
+            TecBunny uses optional analytics and marketing cookies to measure site performance. Rejecting keeps the site fully usable.
           </p>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-[11px] text-muted-foreground sm:text-xs">
             Review the details in{' '}
             <Link href="/info/policies/privacy" className="text-primary underline decoration-primary/60 underline-offset-4 transition hover:text-foreground">
               our privacy policy
@@ -114,20 +120,20 @@ export function CookieConsentBanner({ onConsentChange }: CookieConsentBannerProp
           </p>
         </div>
 
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+        <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center">
           <button
             type="button"
             onClick={() => updateConsent('rejected')}
-            className="rounded-full border border-border px-5 py-2.5 text-sm font-medium text-muted-foreground transition hover:border-foreground/30 hover:bg-muted/40"
+            className="min-h-11 rounded-full border border-border px-4 py-2 text-xs font-semibold text-muted-foreground transition hover:border-foreground/30 hover:bg-muted/40 sm:px-5 sm:text-sm"
           >
-            Reject optional cookies
+            Reject
           </button>
           <button
             type="button"
             onClick={() => updateConsent('accepted')}
-            className="rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-primary/90"
+            className="min-h-11 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-white transition hover:bg-primary/90 sm:px-5 sm:text-sm"
           >
-            Accept optional cookies
+            Accept
           </button>
         </div>
       </div>
