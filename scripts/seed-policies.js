@@ -1,0 +1,205 @@
+import { createClient } from '@supabase/supabase-js';
+import dotenv from 'dotenv';
+
+dotenv.config({ path: '.env.local' });
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+if (!supabaseUrl || !supabaseServiceKey) {
+  console.error("Missing Supabase credentials in .env.local");
+  process.exit(1);
+}
+
+const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+const policies = [
+  {
+    key: 'privacy_policy',
+    title: 'Privacy Policy',
+    content: {
+      title: "Privacy Policy",
+      introduction: [
+        "Welcome to TecBunny (\"we,\" \"our,\" or \"us\"). We are committed to protecting your personal information and your right to privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you visit our application and use our services."
+      ],
+      sections: [
+        {
+          title: "Information We Collect",
+          content: ["Based on your interactions with our platform, we collect the following information:"],
+          list: [
+            "Personal Identification Information (PII): Name, full name, email address, phone number, and physical addresses.",
+            "Account Data: Profile pictures, role information, and authentication credentials.",
+            "Transaction Data: Order histories, quotes requested, items in your wishlist, and payment statuses.",
+            "Technical & Usage Data: Information about your interactions with our site, tracked via Vercel Analytics.",
+            "Communications: Records of WhatsApp messages (where consent is provided), emails sent to you, and customer service interactions."
+          ]
+        },
+        {
+          title: "How We Use Your Information",
+          content: ["We use the information we collect or receive to:"],
+          list: [
+            "Facilitate account creation and logon processes.",
+            "Fulfill and manage your orders, quotes, payments, and installations.",
+            "Send you administrative information.",
+            "Send marketing and promotional communications (only if you have opted in).",
+            "Deliver targeted advertising and analyze site usage to improve our platform.",
+            "Send WhatsApp notifications (subject to your explicit consent)."
+          ]
+        },
+        {
+          title: "Third-Party Service Providers",
+          content: ["We may share your data with third-party vendors, service providers, contractors, or agents who perform services for us or on our behalf. These include:"],
+          list: [
+            "Authentication & Database Hosting: Supabase",
+            "Payment Processing: Razorpay, PhonePe",
+            "Analytics: Vercel Analytics",
+            "Cloud Storage: Amazon Web Services (AWS S3)",
+            "Communications: SMTP Email Providers and WhatsApp API services.",
+            "Security: Cloudflare (Turnstile) for bot and spam protection."
+          ]
+        },
+        {
+          title: "Security of Your Information",
+          content: [
+            "We use administrative, technical, and physical security measures to help protect your personal information, including storing data securely within our managed databases (Supabase) and restricting access via Role-Based Access Control (RBAC)."
+          ]
+        },
+        {
+          title: "Your Privacy Rights",
+          content: [
+            "Depending on your jurisdiction, you may have rights regarding your personal information, including the right to access, correct, or request deletion of your personal data."
+          ]
+        },
+        {
+          title: "Contact Us",
+          content: [
+            "If you have questions or comments about this notice, you may contact us at support@tecbunny.com or +91 96041 36010."
+          ]
+        }
+      ],
+      lastUpdated: new Date().toISOString().split('T')[0]
+    }
+  },
+  {
+    key: 'terms_of_service',
+    title: 'Terms of Service',
+    content: {
+      title: "Terms of Service",
+      introduction: [
+        "By accessing or using the services provided by TecBunny (\"Company,\" \"we,\" \"us,\" or \"our\"), you agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use our services."
+      ],
+      sections: [
+        {
+          title: "User Accounts and Security",
+          content: ["To access certain features, you may be required to register for an account."],
+          list: [
+            "You are responsible for maintaining the confidentiality of your account credentials.",
+            "We reserve the right to suspend or terminate your account (and blocklist your access) at our sole discretion if we suspect any breach of these Terms or unauthorized use."
+          ]
+        },
+        {
+          title: "Orders, Quotes, and Pricing",
+          list: [
+            "Custom Setup Quotes: Any quotes generated through our Custom Setup service are valid strictly for 7 days from the date of generation.",
+            "Payments: Payments are processed securely via our third-party processors (Razorpay, PhonePe).",
+            "Taxes: Unless stated otherwise, quotes and orders will clearly indicate whether taxes (e.g., GST) are included."
+          ]
+        },
+        {
+          title: "User Obligations",
+          content: ["When using our platform, you agree not to:"],
+          list: [
+            "Bypass, circumvent, or attempt to bypass any security measures, including CAPTCHAs (Cloudflare Turnstile).",
+            "Use the platform for any illegal or unauthorized purpose.",
+            "Provide false or misleading personal information during checkout or account creation."
+          ]
+        },
+        {
+          title: "Third-Party Integrations",
+          content: [
+            "Our service may contain links to or utilize third-party services (e.g., AWS S3 for media, WhatsApp for notifications). We have no control over, and assume no responsibility for, the content, privacy policies, or practices of any third-party services."
+          ]
+        },
+        {
+          title: "Limitation of Liability",
+          content: [
+            "To the fullest extent permitted by applicable law, TecBunny shall not be liable for any indirect, incidental, special, consequential, or punitive damages, or any loss of profits or revenues, whether incurred directly or indirectly, resulting from your use of the service or hardware purchases."
+          ]
+        },
+        {
+          title: "Contact Information",
+          content: [
+            "For any questions regarding these Terms, please contact us at support@tecbunny.com or +91 96041 36010."
+          ]
+        }
+      ],
+      lastUpdated: new Date().toISOString().split('T')[0]
+    }
+  },
+  {
+    key: 'cookie_policy',
+    title: 'Cookie Policy',
+    content: {
+      title: "Cookie Policy",
+      introduction: [
+        "Cookies are small text files that are placed on your computer or mobile device when you visit a website. Local Storage is an industry-standard technology that allows a website or application to store information locally on your computer or mobile device. We use both technologies to ensure our platform functions correctly and to analyze how users interact with our site."
+      ],
+      sections: [
+        {
+          title: "Types of Cookies We Use: Essential Cookies",
+          content: ["These cookies are strictly necessary for the core functionality of our website. They enable you to log in securely, add items to your cart, and navigate the site. Because these cookies are essential for the site to function, they cannot be disabled."],
+          list: [
+            "Authentication Cookies: Used by our authentication provider (Supabase) to keep you logged in securely.",
+            "Security Cookies: Used by services like Cloudflare Turnstile to prevent spam and bot attacks."
+          ]
+        },
+        {
+          title: "Types of Cookies We Use: Analytics and Performance Cookies (Optional)",
+          content: ["We use analytics tools (such as Vercel Analytics) to measure site performance, understand user behavior, and improve our services."],
+          list: [
+            "Consent Key: tecbunny_analytics_consent",
+            "Storage Location: We store your consent preference in both your browser's Local Storage and as a secure cookie (SameSite=Lax, Secure).",
+            "Duration: Your consent preference is saved for 365 days (1 year), after which you will be asked to provide consent again."
+          ]
+        },
+        {
+          title: "Managing Your Cookie Preferences",
+          content: ["When you first visit our site, you will see a Privacy Controls banner at the bottom of the screen. You can choose to:"],
+          list: [
+            "Accept: Allows us to use analytics and marketing cookies.",
+            "Reject: Prevents the use of non-essential analytics cookies. The site remains fully usable."
+          ]
+        },
+        {
+          title: "Contact Us",
+          content: [
+            "If you have any questions about our use of cookies or other technologies, please contact us at support@tecbunny.com or +91 96041 36010."
+          ]
+        }
+      ],
+      lastUpdated: new Date().toISOString().split('T')[0]
+    }
+  }
+];
+
+async function seed() {
+  for (const policy of policies) {
+    const { data, error } = await supabase
+      .from('policies')
+      .upsert({
+        key: policy.key,
+        title: policy.title,
+        content: policy.content,
+        is_published: true,
+        updated_at: new Date().toISOString(),
+      }, { onConflict: 'key' });
+      
+    if (error) {
+      console.error(`Error upserting ${policy.key}:`, error.message);
+    } else {
+      console.log(`Successfully seeded ${policy.key}`);
+    }
+  }
+}
+
+seed().catch(console.error);
