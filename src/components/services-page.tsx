@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import type { ComponentType } from 'react';
 
 import Link from 'next/link';
@@ -148,6 +148,26 @@ export default function ServicesPage({ services, hasServiceLoadError = false }: 
   const { atLeast } = usePermissions();
   const [busyServiceId, setBusyServiceId] = useState<string | null>(null);
   const canManageServices = atLeast('admin');
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (scrollContainerRef.current) {
+        const container = scrollContainerRef.current;
+        const maxScroll = container.scrollWidth - container.clientWidth;
+        
+        // Scroll back to start if at the end, otherwise scroll by one card's width + gap (approx 344px)
+        if (container.scrollLeft >= maxScroll - 10) {
+          container.scrollTo({ left: 0, behavior: 'smooth' });
+        } else {
+          container.scrollBy({ left: 344, behavior: 'smooth' });
+        }
+      }
+    }, 15000); // 15 seconds auto-scroll
+
+    return () => clearInterval(interval);
+  }, []);
+
   useRevealSections();
 
   const getContactHref = (service: Service) => {
@@ -371,85 +391,86 @@ export default function ServicesPage({ services, hasServiceLoadError = false }: 
             </div>
           )}
 
-          {serviceSections.map((section) => (
-            <div key={section.key} className="reveal-section space-y-6" data-reveal-id={`services-group-${slugify(section.key)}`}>
-              <div className="flex items-center gap-3">
-                <div className="h-6 w-1 rounded-full bg-blue-500" />
-                <div>
-                  <h2 className="text-xl font-bold font-tech tech-heading">{section.key}</h2>
-                  <p className="text-xs text-zinc-500">Professional services configured under {section.key.toLowerCase()}.</p>
-                </div>
+          <div className="reveal-section space-y-6" data-reveal-id="services-all">
+            <div className="flex items-center gap-3">
+              <div className="h-6 w-1 rounded-full bg-blue-500" />
+              <div>
+                <h2 className="text-xl font-bold font-tech tech-heading">All Services</h2>
+                <p className="text-xs text-zinc-500">Explore our complete catalog of professional technology services.</p>
               </div>
+            </div>
 
-              <div className="flex gap-6 overflow-x-auto snap-x snap-mandatory pb-8 pt-4 px-2 -mx-2 [&::-webkit-scrollbar]:h-2 [&::-webkit-scrollbar-thumb]:bg-blue-500/20 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-blue-500/40">
-                {section.items.map((service) => {
-                  const Icon = iconMap[service.icon] || Wrench;
-                  return (
-                    <div
-                      key={service.id}
-                      className="bento-card p-6 flex flex-col justify-between h-full transition-all duration-300 w-[85vw] sm:w-[280px] md:w-[320px] shrink-0 snap-start"
-                    >
-                      <div>
-                        <div className="flex items-center justify-between">
-                          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-500/10 text-blue-400 border border-blue-500/20">
-                            <Icon className="h-5.5 w-5.5" />
-                          </div>
-                          {service.badge && (
-                            <span className="text-[10px] font-bold uppercase tracking-wider bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-full px-2.5 py-0.5">
-                              {service.badge}
-                            </span>
-                          )}
+            <div
+              ref={scrollContainerRef}
+              className="flex gap-6 overflow-x-auto snap-x snap-mandatory pb-8 pt-4 px-2 -mx-2 [&::-webkit-scrollbar]:h-2 [&::-webkit-scrollbar-thumb]:bg-blue-500/20 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-blue-500/40"
+            >
+              {services.map((service) => {
+                const Icon = iconMap[service.icon] || Wrench;
+                return (
+                  <div
+                    key={service.id}
+                    className="bento-card p-6 flex flex-col justify-between h-full transition-all duration-300 w-[85vw] sm:w-[280px] md:w-[320px] shrink-0 snap-start"
+                  >
+                    <div>
+                      <div className="flex items-center justify-between">
+                        <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                          <Icon className="h-5.5 w-5.5" />
                         </div>
-
-                        <h3 className="mt-4 text-base font-bold font-tech tech-heading">{service.title || service.name}</h3>
-                        <p className="mt-2 text-xs leading-relaxed font-light tech-body text-zinc-400">{service.description}</p>
-                        
-                        {service.features && service.features.length > 0 && (
-                          <ul className="mt-4 space-y-2 text-xs text-zinc-500">
-                            {service.features.map((feature, idx) => (
-                              <li key={idx} className="flex items-start gap-2">
-                                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-blue-50" />
-                                <span className="font-light tech-body">{feature}</span>
-                              </li>
-                            ))}
-                          </ul>
+                        {service.badge && (
+                          <span className="text-[10px] font-bold uppercase tracking-wider bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-full px-2.5 py-0.5">
+                            {service.badge}
+                          </span>
                         )}
                       </div>
 
-                      <div className="mt-6 pt-4 border-t border-zinc-800 flex flex-col gap-3">
-                        <div className="flex items-baseline justify-between">
-                          <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-550">Rate Credit</span>
-                          <span className="text-base font-bold font-mono tech-heading">
-                            {service.price ? `₹${Number(service.price).toLocaleString('en-IN')}` : 'Quotation Basis'}
-                          </span>
-                        </div>
-
-                        <button
-                          type="button"
-                          onClick={() => handleAddToCart(service)}
-                          className="w-full py-3 bg-blue-600 hover:bg-blue-555 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-colors flex items-center justify-center gap-2 shadow-[0_0_15px_-3px_rgba(59,130,246,0.3)] disabled:opacity-50"
-                        >
-                          <ShoppingCart className="h-3.5 w-3.5" />
-                          Add Service to Cart
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const href = getContactHref(service);
-                            router.push(href);
-                          }}
-                          className="w-full py-2 border border-zinc-800 text-zinc-450 hover:bg-zinc-800/30 text-xs font-semibold rounded-lg transition-colors text-center"
-                        >
-                          Consult Engineering Team
-                        </button>
-                      </div>
+                      <h3 className="mt-4 text-base font-bold font-tech tech-heading">{service.title || service.name}</h3>
+                      <p className="mt-2 text-xs leading-relaxed font-light tech-body text-zinc-400">{service.description}</p>
+                      
+                      {service.features && service.features.length > 0 && (
+                        <ul className="mt-4 space-y-2 text-xs text-zinc-500">
+                          {service.features.map((feature, idx) => (
+                            <li key={idx} className="flex items-start gap-2">
+                              <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-blue-50" />
+                              <span className="font-light tech-body">{feature}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
                     </div>
-                  );
-                })}
-              </div>
+
+                    <div className="mt-6 pt-4 border-t border-zinc-800 flex flex-col gap-3">
+                      <div className="flex items-baseline justify-between">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-550">Rate Credit</span>
+                        <span className="text-base font-bold font-mono tech-heading">
+                          {service.price ? `₹${Number(service.price).toLocaleString('en-IN')}` : 'Quotation Basis'}
+                        </span>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => handleAddToCart(service)}
+                        className="w-full py-3 bg-blue-600 hover:bg-blue-555 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-colors flex items-center justify-center gap-2 shadow-[0_0_15px_-3px_rgba(59,130,246,0.3)] disabled:opacity-50"
+                      >
+                        <ShoppingCart className="h-3.5 w-3.5" />
+                        Add Service to Cart
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const href = getContactHref(service);
+                          router.push(href);
+                        }}
+                        className="w-full py-2 border border-zinc-800 text-zinc-450 hover:bg-zinc-800/30 text-xs font-semibold rounded-lg transition-colors text-center"
+                      >
+                        Consult Engineering Team
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
-          ))}
+          </div>
         </section>
 
 
