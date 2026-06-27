@@ -432,148 +432,9 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
   }, [cameraCount, hddId, installationIncluded, monitorIncluded, selectableHddOptions, system, totals.overall.sale]);
 
   const handleInlineQuoteDownload = async () => {
-    if (!user) {
-      setIsDownloadModalOpen(true);
-      return;
-    }
-
-    setQuoteDownloading(true);
-    try {
-      const systemLabel = system === 'analog' ? 'Analog DVR' : 'IP NVR';
-      const hddLabel = selectableHddOptions.find((entry) => entry.id === hddId)?.label ?? 'Surveillance HDD';
-      const items = [
-        {
-          description: `${systemLabel} system (${cameraCount} cameras)`,
-          mrp: totals.system.mrp,
-          sale: totals.system.sale,
-        },
-        {
-          description: hddLabel,
-          mrp: totals.hdd.mrp,
-          sale: totals.hdd.sale,
-        },
-      ];
-
-      if (totals.monitor.included) {
-        items.push({
-          description: `Monitor (${totals.monitor.label})`,
-          mrp: totals.monitor.mrp,
-          sale: totals.monitor.sale,
-        });
-      }
-
-      if (totals.wallMount.included) {
-        items.push({
-          description: 'Wall Mount Installation Kit',
-          mrp: totals.wallMount.mrp,
-          sale: totals.wallMount.sale,
-        });
-      }
-
-      if (totals.spikeGuard.included) {
-        items.push({
-          description: 'Spike Guard / Power Surge Protector',
-          mrp: totals.spikeGuard.mrp,
-          sale: totals.spikeGuard.sale,
-        });
-      }
-
-      if (totals.rack.selected) {
-        items.push({
-          description: totals.rack.label,
-          mrp: totals.rack.mrp,
-          sale: totals.rack.sale,
-        });
-      }
-
-      if (totals.conduit.selected) {
-        items.push({
-          description: `${totals.conduit.label} × ${totals.conduit.meters}m`,
-          mrp: totals.conduit.mrp,
-          sale: totals.conduit.sale,
-        });
-      }
-
-      if (totals.installation.included) {
-        items.push({
-          description: `Installation (${installationOption.label})`,
-          mrp: totals.installation.mrp,
-          sale: totals.installation.sale,
-        });
-      }
-
-      if (totals.installationLabor.sale > 0) {
-        items.push({
-          description: `Installation Labor (₹${totals.installationLabor.sale})`,
-          mrp: totals.installationLabor.sale,
-          sale: totals.installationLabor.sale,
-        });
-      }
-
-
-
-      const customSetupConfig = {
-        system,
-        cameraCount,
-        analogSelections,
-        ipSelections,
-        hddId,
-        monitorIncluded,
-        monitorId,
-        wallMountIncluded,
-        spikeGuardIncluded,
-        rackId,
-        conduitPipeId,
-        conduitMeters,
-        installationIncluded,
-        automationEnabled,
-      };
-
-      const finalSelections = {
-        type: 'customised_setup',
-        systemType: systemLabel,
-        cameraCount,
-        items,
-        totals: totals.overall,
-        breakdown: totals.system.breakdown,
-      };
-
-      const response = await fetch('/api/quotes', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          summary: inlineQuoteSummary,
-          gstIncluded: true,
-          selections: finalSelections,
-          customSetupConfig
-        }),
-      });
-
-      if (!response.ok) {
-        const err = await response.json().catch(() => null);
-        const message = err?.details || err?.error || 'Failed to generate quote';
-        throw new Error(message);
-      }
-
-      const quoteNumberHeader = response.headers.get('X-Quote-Number') || 'pdf';
-
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `quote-${quoteNumberHeader}.pdf`;
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
-
-      toast({ title: 'Quote ready', description: `Downloaded quote PDF successfully. Quote Number: ${quoteNumberHeader}` });
-    } catch (error: any) {
-      toast({ variant: 'destructive', title: 'Quote failed', description: error?.message || 'Unable to generate quote.' });
-    } finally {
-      setQuoteDownloading(false);
-    }
+    setIsDownloadModalOpen(true);
   };
+
 
   const handleInlineQuoteDownloadAnon = async () => {
     if (!anonForm.name || !anonForm.phone || !anonForm.address) {
@@ -1829,6 +1690,41 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
             <div className="flex gap-3 justify-end mt-8">
               <Button variant="ghost" onClick={() => setIsBidding(false)} className="text-slate-400 hover:text-white">Cancel</Button>
               <Button onClick={handleSubmitBid} className="bg-amber-500 hover:bg-amber-400 text-slate-900 font-bold">Submit Bid</Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {isDownloadModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+          <div className="bg-[#030712] border border-amber-500/30 rounded-xl max-w-md w-full p-6 shadow-2xl relative">
+            <h3 className="text-xl font-bold text-white mb-2">Download Quote</h3>
+            <p className="text-sm text-slate-400 mb-6">Please provide your details to download the PDF quote.</p>
+            
+            <div className="space-y-4">
+              <div>
+                <Label className="text-slate-300">Name</Label>
+                <Input value={anonForm.name} onChange={e => setAnonForm({...anonForm, name: e.target.value})} className="bg-white/5 border-white/10" placeholder="John Doe" />
+              </div>
+              <div>
+                <Label className="text-slate-300">Mobile Number</Label>
+                <Input value={anonForm.phone} onChange={e => setAnonForm({...anonForm, phone: e.target.value})} className="bg-white/5 border-white/10" placeholder="+91 9876543210" />
+              </div>
+              <div>
+                <Label className="text-slate-300">City / Area</Label>
+                <Input value={anonForm.address} onChange={e => setAnonForm({...anonForm, address: e.target.value})} className="bg-white/5 border-white/10" placeholder="Mumbai, Area" />
+              </div>
+              <div>
+                <Label className="text-slate-300">Email Address (Optional)</Label>
+                <Input value={anonForm.email} onChange={e => setAnonForm({...anonForm, email: e.target.value})} className="bg-white/5 border-white/10" placeholder="john@example.com" />
+              </div>
+            </div>
+
+            <div className="flex gap-3 justify-end mt-8">
+              <Button variant="ghost" onClick={() => setIsDownloadModalOpen(false)} className="text-slate-400 hover:text-white">Cancel</Button>
+              <Button onClick={handleInlineQuoteDownloadAnon} disabled={quoteDownloading} className="bg-amber-500 hover:bg-amber-400 text-slate-900 font-bold">
+                {quoteDownloading ? 'Preparing...' : 'Download PDF'}
+              </Button>
             </div>
           </div>
         </div>

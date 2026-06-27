@@ -289,6 +289,22 @@ export async function POST(req: NextRequest) {
 
     if (insertResult.error) {
       logger.error('quotes.insert_failed', { error: insertResult.error, userId: user?.id });
+    } else if (insertResult.data) {
+      // Create a lead in the leads table
+      const leadInsertResult = await serviceClient.from('leads').insert({
+        user_id: user?.id || null,
+        customer_name: customerName,
+        customer_email: customerEmail,
+        customer_phone: customerPhone || null,
+        customer_address: customerAddress || null,
+        status: 'new',
+        type: 'quote',
+        product_id: 'custom_setup',
+        data: { quote_number: insertResult.data.quote_number, summary: summary }
+      });
+      if (leadInsertResult.error) {
+        logger.error('quotes.lead_insert_failed', { error: leadInsertResult.error, userId: user?.id });
+      }
     }
 
     const finalQuoteNumber = insertResult.data?.quote_number || quoteNumber;
