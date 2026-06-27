@@ -408,10 +408,13 @@ export function ProductDetailPage({ productId, initialProduct, sourceContext }: 
                   width={900}
                   height={900}
                   priority={true}
+                  quality={100}
+                  unoptimized={true}
                   className="max-w-full max-h-full object-contain relative z-0 transition-transform duration-500 group-hover:scale-105"
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;
                     target.src = `https://placehold.co/600x600/0f172a/94a3b8.png?text=${encodeURIComponent(displayName)}`;
+                    target.srcset = "";
                   }}
                 />
 
