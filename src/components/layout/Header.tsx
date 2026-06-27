@@ -218,7 +218,6 @@ export function Header() {
                           className="flex items-center justify-between rounded-lg px-2.5 py-1.5 text-xs text-zinc-300 transition-colors hover:bg-zinc-900 hover:text-white"
                         >
                           {child.name}
-                          <ChevronRight size={12} className="text-zinc-500" />
                         </Link>
                       ))}
                     </div>
