@@ -156,8 +156,9 @@ export function getAllProductImages(product: any): string[] {
   const images: string[] = [];
   
   // Add main image if valid
-  if (isValidImageUrl(product?.image)) {
-    images.push(product.image);
+  const normalizedMain = normalizeImageUrl(product?.image);
+  if (normalizedMain && isValidImageUrl(normalizedMain)) {
+    images.push(normalizedMain);
   }
   
   // Add valid images from images array
