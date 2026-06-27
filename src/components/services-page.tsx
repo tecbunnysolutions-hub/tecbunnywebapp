@@ -311,10 +311,10 @@ export default function ServicesPage({ services, hasServiceLoadError = false }: 
             <span>Platform Services</span>
           </div>
           <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl lg:text-6xl font-tech leading-tight tech-heading">
-            Zero-Downtime <span className="bg-gradient-to-r from-blue-400 via-indigo-200 to-white bg-clip-text text-transparent">Infrastructure</span>
+            Services Designed for <span className="bg-gradient-to-r from-blue-400 via-indigo-200 to-white bg-clip-text text-transparent">Your Peace of Mind</span>
           </h1>
           <p className="text-lg font-light leading-relaxed tech-body">
-            Stop worrying about your technology. From impenetrable security perimeters to custom IT solutions, we deploy systems that simply never fail. We also offer proactive Annual Maintenance Contracts (AMC) for IT, CCTV, and RFID Lock Systems.
+            Protect your property and stay connected with our professional installation and support plans. We handle the hard work so you don't have to.
           </p>
           {canManageServices && (
             <div className="mt-6 flex justify-center">
@@ -336,9 +336,9 @@ export default function ServicesPage({ services, hasServiceLoadError = false }: 
               <span className="text-[10px] font-bold uppercase tracking-wider bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-full px-2.5 py-0.5">
                 Hospitality & Construction
               </span>
-              <h3 className="text-xl font-bold font-tech tech-heading">Bulletproof Security Ecosystems</h3>
+              <h3 className="text-xl font-bold font-tech tech-heading">Complete Security Solutions</h3>
               <p className="text-xs leading-relaxed max-w-sm tech-body">
-                Flawless enterprise integration for luxury resorts and large-scale builders. Complete control, zero blind spots.
+                Keep your property perfectly safe with our top-of-the-line camera and access systems, professionally installed for you.
               </p>
             </div>
             <div className="mt-8">
@@ -357,9 +357,9 @@ export default function ServicesPage({ services, hasServiceLoadError = false }: 
               <span className="text-[10px] font-bold uppercase tracking-wider bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 rounded-full px-2.5 py-0.5">
                 Web Development
               </span>
-              <h3 className="text-xl font-bold font-tech tech-heading">Digital Ecosystems That Convert</h3>
+              <h3 className="text-xl font-bold font-tech tech-heading">Websites That Grow Your Business</h3>
               <p className="text-xs leading-relaxed max-w-sm tech-body">
-                We don't build basic websites. We engineer high-performance platforms, automated workflows, and aggressive e-commerce engines.
+                Get a stunning, fast, and easy-to-use website that turns your visitors into loyal customers.
               </p>
             </div>
             <div className="mt-8">

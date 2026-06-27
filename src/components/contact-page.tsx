@@ -241,14 +241,14 @@ export default function ContactPage() {
       <div className="mx-auto max-w-7xl px-4 pb-20 pt-20 sm:px-6 lg:px-8 sm:pt-28">
         <div className="text-center">
           <h1 className="text-4xl font-semibold sm:text-5xl lg:text-6xl tech-heading">
-            {content?.content?.hero?.title || 'Summon the'}{' '}
+            {content?.content?.hero?.title || 'Let’s Talk About'}{' '}
             <span className="text-primary">
-              Engineers.
+              Your Project.
             </span>
           </h1>
           <p className="mx-auto mt-4 max-w-2xl text-base text-muted-foreground sm:text-lg">
             {content?.content?.hero?.description ||
-              'No automated runarounds. Speak directly with the architects who will build, secure, and maintain your infrastructure.'}
+              'Have a question? Want a custom quote? Speak directly with our local experts who will build and support your perfect system.'}
           </p>
         </div>
 
@@ -484,7 +484,7 @@ export default function ContactPage() {
                     />
 
                     <Button type="submit" className="w-full bg-primary hover:bg-primary/95 text-white transition-colors font-medium" disabled={isSubmitting}>
-                      {isSubmitting ? 'Transmitting...' : <span className="flex items-center gap-2">Send Dispatch <Send className="h-4 w-4" /></span>}
+                      {isSubmitting ? 'Sending...' : <span className="flex items-center gap-2">Send Message <Send className="h-4 w-4" /></span>}
                     </Button>
                   </form>
                 </Form>

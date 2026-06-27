@@ -14,13 +14,13 @@ export default function AboutPage() {
             Est. 2025 • Goa
           </div>
           <h1 className="mt-6 text-4xl font-semibold sm:text-5xl lg:text-6xl tech-heading">
-            We Engineer{' '}
+            Your Trusted{' '}
             <span className="bg-gradient-to-r from-primary to-blue-400 bg-clip-text text-transparent">
-              Peace of Mind.
+              Technology Partner.
             </span>
           </h1>
           <p className="mx-auto mt-4 max-w-2xl text-base text-muted-foreground sm:text-lg">
-            We are Goa&apos;s most aggressive technology integrator. We strip away the complexity of high-end IT and surveillance, delivering flawless execution and radical transparency.
+            We make top-quality security and smart technology easy, reliable, and affordable for your home or business in Goa.
           </p>
         </div>
       </section>
@@ -32,11 +32,11 @@ export default function AboutPage() {
             <div className="relative bento-card p-8">
               <h3 className="text-2xl font-semibold tech-heading">Our Mission</h3>
               <div className="mt-4 text-sm leading-relaxed text-muted-foreground space-y-4">
-                <p>We believe enterprise-grade security shouldn&apos;t be a luxury. It should be the standard. Our mission is simple:</p>
+                <p>We believe everyone deserves peace of mind. Our mission is simple:</p>
                 <ul className="list-disc pl-5 space-y-2">
-                  <li><strong className="text-foreground">Democratize Technology:</strong> Bring top-tier surveillance and IT to local businesses.</li>
-                  <li><strong className="text-foreground">Kill the Markup:</strong> Deliver radical pricing through direct vendor partnerships.</li>
-                  <li><strong className="text-foreground">Never Go Dark:</strong> Provide relentless, Goa-based support that keeps your systems online 24/7.</li>
+                  <li><strong className="text-foreground">Top-Quality Tech for Everyone:</strong> Get the best surveillance and smart systems without the confusing tech jargon.</li>
+                  <li><strong className="text-foreground">Better Prices, Direct to You:</strong> Enjoy massive savings because we skip the middleman and work directly with top brands.</li>
+                  <li><strong className="text-foreground">Local Support You Can Count On:</strong> Rest easy knowing our Goa-based team is always here to keep your systems running smoothly.</li>
                 </ul>
               </div>
               <div className="mt-6 flex gap-4">
@@ -57,22 +57,22 @@ export default function AboutPage() {
             <div className="flex gap-4">
               <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">🏷️</div>
               <div>
-                <h4 className="text-lg font-semibold tech-heading">Radical Affordability</h4>
-                <p className="mt-1 text-sm text-muted-foreground">Enterprise-grade hardware priced to undercut traditional retail.</p>
+                <h4 className="text-lg font-semibold tech-heading">Incredible Value</h4>
+                <p className="mt-1 text-sm text-muted-foreground">Get premium equipment at prices that beat traditional retail.</p>
               </div>
             </div>
             <div className="flex gap-4">
               <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">🛠️</div>
               <div>
-                <h4 className="text-lg font-semibold tech-heading">Service-First Approach</h4>
-                <p className="mt-1 text-sm text-muted-foreground">Professional installation, tailored setup, and reliable AMC support.</p>
+                <h4 className="text-lg font-semibold tech-heading">Done-For-You Service</h4>
+                <p className="mt-1 text-sm text-muted-foreground">Professional installation and friendly support, every step of the way.</p>
               </div>
             </div>
             <div className="flex gap-4">
               <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">🏠</div>
               <div>
-                <h4 className="text-lg font-semibold tech-heading">Retrofit Focus</h4>
-                <p className="mt-1 text-sm text-muted-foreground">Wireless and minimally invasive installations for existing homes.</p>
+                <h4 className="text-lg font-semibold tech-heading">Mess-Free Installation</h4>
+                <p className="mt-1 text-sm text-muted-foreground">Clean, wire-free, and careful installations that respect your space.</p>
               </div>
             </div>
           </div>

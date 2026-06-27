@@ -131,13 +131,13 @@ export default function OffersPage() {
               Limited time deals
             </div>
             <h1 className="mt-6 text-4xl font-semibold text-foreground sm:text-5xl lg:text-6xl">
-              Secure More.{' '}
+              Big Savings on{' '}
               <span className="bg-gradient-to-r from-primary via-blue-500 to-indigo-600 bg-clip-text text-transparent">
-                Pay Less.
+                Complete Security.
               </span>
             </h1>
             <p className="mx-auto mt-4 max-w-2xl text-base text-muted-foreground sm:text-lg">
-              Exclusive bundles and seasonal discounts on hardware and AMC support. Engineered for affordability in Goa.
+              Get exclusive deals on top-rated camera kits and smart home setups. Fast, professional installation included!
             </p>
           </div>
         </div>

@@ -123,17 +123,17 @@ export default function HomePage({
         <div className="tb-container relative z-10">
           <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-[1.05fr_0.95fr] xl:gap-16">
             <div className="reveal-section is-revealed max-w-3xl space-y-8" data-reveal-id="hero-copy">
-              <h1 className="text-4xl font-extrabold leading-[1.02] text-white sm:text-5xl md:text-6xl xl:text-7xl font-tech tracking-tight" aria-label="Bulletproof IT and Unblinking Security">
-                <span className="glitch-text block pb-3 text-blue-400" data-text="Bulletproof IT.">Bulletproof IT.</span>
+              <h1 className="text-4xl font-extrabold leading-[1.02] text-white sm:text-5xl md:text-6xl xl:text-7xl font-tech tracking-tight" aria-label="Protect What Matters Most. 24/7.">
+                <span className="glitch-text block pb-3 text-blue-400" data-text="Protect What Matters Most.">Protect What Matters Most.</span>
                 <span className="block text-zinc-100">
-                  Unblinking Security.
+                  24/7.
                 </span>
               </h1>
 
               <HeroRotator />
 
               <p className="tb-lede max-w-2xl text-lg sm:text-xl">
-                Enterprise-grade CCTV, network infrastructure, and smart automation for Goa & Maharashtra. Engineered for zero downtime. Priced for aggressive growth.
+                Get crystal-clear security cameras and fast, reliable internet for your home or business. Enjoy total peace of mind with smart systems that just work.
               </p>
 
               <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:gap-4">
@@ -141,13 +141,13 @@ export default function HomePage({
                   href="/contact"
                   className="tb-button-primary focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-[#09090B]"
                 >
-                  Build My Setup
+                  Build Your Custom Setup
                 </MagneticButton>
                 <MagneticButton
                   href="/services"
                   className="tb-button-secondary"
                 >
-                  See What We Do
+                  Explore Our Services
                 </MagneticButton>
               </div>
 
@@ -179,11 +179,11 @@ export default function HomePage({
                 Instant Quotation & Live Negotiation
               </div>
               <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-white font-tech leading-tight animate-reveal">
-                Build Your Defenses. <br />
+                Design Your Perfect System. <br />
                 <span className="text-zinc-200">Name Your Price.</span>
               </h2>
               <p className="tb-lede max-w-2xl text-base">
-                Stop waiting days for bloated sales quotes. Use our live configurator to architect your exact security ecosystem, see transparent retail pricing, and submit a custom bid directly to our engineers.
+                Stop waiting for quotes. Pick exactly what you need, see the real price, and get a custom deal instantly.
               </p>
               
               {/* Feature grid */}
@@ -294,9 +294,9 @@ export default function HomePage({
         <div className="tb-container">
           <div className="mb-14 max-w-2xl">
             <span className="tb-kicker">Core pillars</span>
-            <h2 className="mt-4 text-3xl font-semibold text-white sm:text-4xl">Infrastructure that never sleeps.</h2>
+            <h2 className="mt-4 text-3xl font-semibold text-white sm:text-4xl">Security That Never Sleeps.</h2>
             <p className="tb-lede mt-4 text-sm sm:text-base">
-              We don&apos;t just install hardware. We build resilient, self-healing ecosystems that scale effortlessly as your footprint grows.
+              We don&apos;t just hang cameras. We build reliable, easy-to-use systems that grow seamlessly with your business.
             </p>
           </div>
 
@@ -329,9 +329,9 @@ export default function HomePage({
       <section className="tb-section reveal-section is-revealed" data-reveal-id="plans" style={{ contentVisibility: 'auto', containIntrinsicSize: '600px' }}>
         <div className="tb-container grid gap-12 lg:grid-cols-2 lg:items-center">
           <div className={cn('tb-panel reveal-item relative p-5 sm:p-10', revealDelayClass(0))}>
-            <h3 className="text-2xl font-semibold text-white sm:text-3xl">Operational clarity, not complexity.</h3>
+            <h3 className="text-2xl font-semibold text-white sm:text-3xl">Simple to use. Hard to break.</h3>
             <p className="tb-lede mt-4 text-sm sm:text-base">
-              Build a secure foundation with a service model that keeps technology dependable and aligned with your goals.
+              Enjoy peace of mind with smart systems designed for everyday people, backed by our friendly local support.
             </p>
             <div className="mt-6 grid gap-4">
               {['Unified monitoring', 'Actionable reporting', 'Hands-on lifecycle support'].map((item, index) => (
@@ -459,7 +459,7 @@ export default function HomePage({
                 </span>
                 <h3 className="mt-5 text-2xl font-semibold text-white sm:text-3xl">Stop guessing with your security.</h3>
                 <p className="tb-lede mt-4 text-sm sm:text-base">
-                  Share your requirements and we will map a secure, scalable setup tailored to your environment.
+                  Tell us what you need, and we&apos;ll help you choose the right setup for your home or business.
                 </p>
               </div>
               <div className={cn('reveal-item rounded-lg border border-zinc-800 bg-zinc-950/80 p-6 text-center', revealDelayClass(120))}>
