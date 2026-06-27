@@ -436,7 +436,8 @@ export function ProductDetailPage({ productId, initialProduct, sourceContext }: 
                 </div>
               </div>
 
-              <div className="flex gap-3 overflow-x-auto pb-2 no-scrollbar">
+              {productImages.length > 1 && (
+                <div className="flex gap-3 overflow-x-auto pb-2 no-scrollbar">
                 {productImages.map((image, index) => (
                   <button
                     key={index}
@@ -462,6 +463,7 @@ export function ProductDetailPage({ productId, initialProduct, sourceContext }: 
                   </button>
                 ))}
               </div>
+              )}
             </div>
 
             <div className="flex flex-col">
