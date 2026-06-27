@@ -18,6 +18,7 @@ const allowedImageHosts = Array.from(new Set([
   'tecbunny.com',
   'www.tecbunny.com',
   'placehold.co',
+  'm.media-amazon.com',
   hostFromUrl(process.env.NEXT_PUBLIC_SITE_URL),
   hostFromUrl(process.env.NEXT_PUBLIC_SUPABASE_URL),
   ...(process.env.NEXT_IMAGE_ALLOWED_HOSTS || '')
