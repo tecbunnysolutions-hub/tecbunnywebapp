@@ -156,11 +156,11 @@ export default function ServicesPage({ services, hasServiceLoadError = false }: 
         const container = scrollContainerRef.current;
         const maxScroll = container.scrollWidth - container.clientWidth;
         
-        // Scroll back to start if at the end, otherwise scroll by one card's width + gap (approx 344px)
+        // Scroll back to start if at the end, otherwise scroll by one full page of cards + gap
         if (container.scrollLeft >= maxScroll - 10) {
           container.scrollTo({ left: 0, behavior: 'smooth' });
         } else {
-          container.scrollBy({ left: 344, behavior: 'smooth' });
+          container.scrollBy({ left: container.clientWidth + 24, behavior: 'smooth' });
         }
       }
     }, 15000); // 15 seconds auto-scroll
@@ -402,14 +402,14 @@ export default function ServicesPage({ services, hasServiceLoadError = false }: 
 
             <div
               ref={scrollContainerRef}
-              className="flex gap-6 overflow-x-auto snap-x snap-mandatory pb-8 pt-4 px-2 -mx-2 [&::-webkit-scrollbar]:h-2 [&::-webkit-scrollbar-thumb]:bg-blue-500/20 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-blue-500/40"
+              className="flex gap-6 overflow-x-auto snap-x snap-mandatory pb-8 pt-4 [&::-webkit-scrollbar]:h-2 [&::-webkit-scrollbar-thumb]:bg-blue-500/20 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-blue-500/40"
             >
               {services.map((service) => {
                 const Icon = iconMap[service.icon] || Wrench;
                 return (
                   <div
                     key={service.id}
-                    className="bento-card p-6 flex flex-col justify-between h-full transition-all duration-300 w-[85vw] sm:w-[280px] md:w-[320px] shrink-0 snap-start"
+                    className="bento-card p-6 flex flex-col justify-between h-full transition-all duration-300 w-full sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)] xl:w-[calc(25%-18px)] shrink-0 snap-start"
                   >
                     <div>
                       <div className="flex items-center justify-between">
