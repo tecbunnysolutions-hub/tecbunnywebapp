@@ -99,6 +99,7 @@ export async function POST(request: NextRequest) {
       specifications: { sourceUrl: sourceUrl || '' },
       tags: ['scraped'],
       is_active: true,
+      stock_quantity: 1,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };
