@@ -54,6 +54,20 @@ export default function AdminProductsPage() {
   
   const [products, setProducts] = React.useState<Product[]>([]);
   const [loading, setLoading] = React.useState(true);
+  const [searchQuery, setSearchQuery] = React.useState('');
+  
+  const filteredProducts = React.useMemo(() => {
+    const q = searchQuery.toLowerCase().trim();
+    if (!q) return products;
+    return products.filter(p => {
+      const name = (p.title || p.name || '').toLowerCase();
+      const cat = (p.category || '').toLowerCase();
+      const brand = (p.brand || '').toLowerCase();
+      const desc = (p.description || '').toLowerCase();
+      return name.includes(q) || cat.includes(q) || brand.includes(q) || desc.includes(q);
+    });
+  }, [products, searchQuery]);
+
   const [importing, setImporting] = React.useState(false);
   const [createDialogOpen, setCreateDialogOpen] = React.useState(false);
   const [editDialogOpen, setEditDialogOpen] = React.useState(false);
@@ -484,6 +498,26 @@ export default function AdminProductsPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="p-4 sm:p-6 pt-0">
+          {/* Search bar */}
+          {isSuperadmin && !loading && products.length > 0 && (
+            <div className="mb-6 relative">
+              <input
+                type="text"
+                placeholder="Search products by title, category, brand..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full h-10 px-4 pr-10 rounded-lg border border-border bg-zinc-950 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/30 font-mono"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground hover:text-foreground font-mono cursor-pointer"
+                >
+                  ✕ Clear
+                </button>
+              )}
+            </div>
+          )}
           {loading ? (
             <div className="w-full min-h-[350px]">
               {/* Desktop Skeleton Loader (Hidden on Mobile) */}
@@ -540,6 +574,10 @@ export default function AdminProductsPage() {
             <div className="text-center py-12 text-muted-foreground text-sm">
               No products found. Click "Add Product" to create one.
             </div>
+          ) : filteredProducts.length === 0 ? (
+            <div className="text-center py-12 text-muted-foreground text-sm">
+              No products match your search query "{searchQuery}".
+            </div>
           ) : (
             <>
               {/* Desktop Table View (Hidden on Mobile) */}
@@ -557,7 +595,7 @@ export default function AdminProductsPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {products.map((product) => (
+                    {filteredProducts.map((product) => (
                       <TableRow key={product.id}>
                         <TableCell className="font-medium">
                           <div className="flex items-center gap-2">
@@ -668,7 +706,7 @@ export default function AdminProductsPage() {
 
               {/* Mobile Card Grid View (Hidden on Desktop) */}
               <div className="grid grid-cols-1 gap-4 md:hidden">
-                {products.map((product) => (
+                {filteredProducts.map((product) => (
                   <div 
                     key={product.id} 
                     className="rounded-xl border border-border/80 p-4 space-y-4 bg-card/60 text-card-foreground shadow-sm hover:border-border transition-all"

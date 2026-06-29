@@ -66,6 +66,7 @@ export function EditProductDialog({ open, onOpenChange, product, onProductUpdate
   const [productBrands, setProductBrands] = React.useState<string[]>([]);
   const [productCategories, setProductCategories] = React.useState<string[]>([]);
   const [isCustomCategory, setIsCustomCategory] = React.useState(false);
+  const [isCustomBrand, setIsCustomBrand] = React.useState(false);
 
   React.useEffect(() => {
     if (product?.category && productCategories.length > 0) {
@@ -78,6 +79,18 @@ export function EditProductDialog({ open, onOpenChange, product, onProductUpdate
       setIsCustomCategory(false);
     }
   }, [product, productCategories]);
+
+  React.useEffect(() => {
+    if (product?.brand && productBrands.length > 0) {
+      if (!productBrands.includes(product.brand)) {
+        setIsCustomBrand(true);
+      } else {
+        setIsCustomBrand(false);
+      }
+    } else {
+      setIsCustomBrand(false);
+    }
+  }, [product, productBrands]);
 
   React.useEffect(() => {
     let isMounted = true;
@@ -381,29 +394,55 @@ export function EditProductDialog({ open, onOpenChange, product, onProductUpdate
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Product Brand</FormLabel>
-                    {productBrands.length > 0 ? (
-                      <Select 
-                        onValueChange={(val) => field.onChange(val === 'none' ? '' : val)} 
-                        value={field.value || 'none'}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select brand" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="none">None</SelectItem>
-                          {productBrands.map((brandName) => (
-                            <SelectItem key={brandName} value={brandName}>
-                              {brandName}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                    {productBrands.length > 0 && !isCustomBrand ? (
+                      <div className="flex flex-col gap-1.5">
+                        <Select 
+                          onValueChange={(val) => field.onChange(val === 'none' ? '' : val)} 
+                          value={field.value || 'none'}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select brand" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="none">None</SelectItem>
+                            {productBrands.map((brandName) => (
+                              <SelectItem key={brandName} value={brandName}>
+                                {brandName}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setIsCustomBrand(true);
+                            field.onChange('');
+                          }}
+                          className="text-left text-[10px] font-mono text-primary hover:underline hover:text-primary/80 transition-colors"
+                        >
+                          + Add custom brand...
+                        </button>
+                      </div>
                     ) : (
-                      <FormControl>
-                        <Input placeholder="e.g. Hikvision" {...field} />
-                      </FormControl>
+                      <div className="flex flex-col gap-1.5">
+                        <FormControl>
+                          <Input placeholder="e.g. Hikvision" {...field} />
+                        </FormControl>
+                        {productBrands.length > 0 && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setIsCustomBrand(false);
+                              field.onChange('none');
+                            }}
+                            className="text-left text-[10px] font-mono text-primary hover:underline hover:text-primary/80 transition-colors"
+                          >
+                            ← Select from existing brands
+                          </button>
+                        )}
+                      </div>
                     )}
                     <FormMessage />
                   </FormItem>

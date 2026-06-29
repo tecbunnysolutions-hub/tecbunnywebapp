@@ -64,6 +64,8 @@ export function CreateProductDialog({ open, onOpenChange, onProductCreated }: Cr
   const [isGenerating, setIsGenerating] = React.useState(false);
   const [productBrands, setProductBrands] = React.useState<string[]>([]);
   const [productCategories, setProductCategories] = React.useState<string[]>([]);
+  const [isCustomCategory, setIsCustomCategory] = React.useState(false);
+  const [isCustomBrand, setIsCustomBrand] = React.useState(false);
 
   React.useEffect(() => {
     let isMounted = true;
@@ -296,25 +298,53 @@ export function CreateProductDialog({ open, onOpenChange, onProductCreated }: Cr
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Category</FormLabel>
-                    {productCategories.length > 0 ? (
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select category" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {productCategories.map((category) => (
-                            <SelectItem key={category} value={category}>
-                              {category}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                    {productCategories.length > 0 && !isCustomCategory ? (
+                      <div className="flex flex-col gap-1.5">
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select category" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {productCategories.map((category) => (
+                              <SelectItem key={category} value={category}>
+                                {category}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setIsCustomCategory(true);
+                            field.onChange('');
+                          }}
+                          className="text-left text-[10px] font-mono text-primary hover:underline hover:text-primary/80 transition-colors"
+                        >
+                          + Add custom category...
+                        </button>
+                      </div>
                     ) : (
-                      <FormControl>
-                        <Input placeholder="e.g. CCTV" {...field} />
-                      </FormControl>
+                      <div className="flex flex-col gap-1.5">
+                        <FormControl>
+                          <Input placeholder="e.g. CCTV" {...field} />
+                        </FormControl>
+                        {productCategories.length > 0 && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setIsCustomCategory(false);
+                              if (productCategories.length > 0) {
+                                field.onChange(productCategories[0]);
+                              }
+                            }}
+                            className="text-left text-[10px] font-mono text-primary hover:underline hover:text-primary/80 transition-colors"
+                          >
+                            ← Select from existing categories
+                          </button>
+                        )}
+                      </div>
                     )}
                     <FormMessage />
                   </FormItem>
@@ -327,29 +357,55 @@ export function CreateProductDialog({ open, onOpenChange, onProductCreated }: Cr
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Product Brand</FormLabel>
-                    {productBrands.length > 0 ? (
-                      <Select 
-                        onValueChange={(val) => field.onChange(val === 'none' ? '' : val)} 
-                        value={field.value || 'none'}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select brand" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="none">None</SelectItem>
-                          {productBrands.map((brandName) => (
-                            <SelectItem key={brandName} value={brandName}>
-                              {brandName}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                    {productBrands.length > 0 && !isCustomBrand ? (
+                      <div className="flex flex-col gap-1.5">
+                        <Select 
+                          onValueChange={(val) => field.onChange(val === 'none' ? '' : val)} 
+                          value={field.value || 'none'}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select brand" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="none">None</SelectItem>
+                            {productBrands.map((brandName) => (
+                              <SelectItem key={brandName} value={brandName}>
+                                {brandName}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setIsCustomBrand(true);
+                            field.onChange('');
+                          }}
+                          className="text-left text-[10px] font-mono text-primary hover:underline hover:text-primary/80 transition-colors"
+                        >
+                          + Add custom brand...
+                        </button>
+                      </div>
                     ) : (
-                      <FormControl>
-                        <Input placeholder="e.g. Hikvision" {...field} />
-                      </FormControl>
+                      <div className="flex flex-col gap-1.5">
+                        <FormControl>
+                          <Input placeholder="e.g. Hikvision" {...field} />
+                        </FormControl>
+                        {productBrands.length > 0 && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setIsCustomBrand(false);
+                              field.onChange('none');
+                            }}
+                            className="text-left text-[10px] font-mono text-primary hover:underline hover:text-primary/80 transition-colors"
+                          >
+                            ← Select from existing brands
+                          </button>
+                        )}
+                      </div>
                     )}
                     <FormMessage />
                   </FormItem>

@@ -393,7 +393,7 @@ export default function HomePage({
               return (
                 <div key={product.id} className={cn('tb-card reveal-item flex flex-col justify-between p-5', revealDelayClass(index * 90))}>
                   <Link href={`/products/${product.id}`} className="group/product-link block">
-                    <div className="group/product relative mb-4 flex h-32 sm:h-40 items-center justify-center overflow-hidden rounded-lg bg-zinc-900 p-2 border border-zinc-800">
+                    <div className="group/product relative mb-4 flex h-32 sm:h-40 items-center justify-center overflow-hidden rounded-lg bg-white p-2 border border-zinc-800">
                       {imageUrl ? (
                         <OptimizedImage
                           src={imageUrl}

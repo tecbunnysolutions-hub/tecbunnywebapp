@@ -396,10 +396,9 @@ export function ProductDetailPage({ productId, initialProduct, sourceContext }: 
 
           <section className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-12">
             <div className="space-y-6">
-              <div className="relative bg-muted/20 border border-border rounded-3xl p-8 h-[550px] flex items-center justify-center overflow-hidden group backdrop-blur-sm shadow-2xl">
+              <div className="relative bg-white border border-border rounded-3xl p-8 h-[550px] flex items-center justify-center overflow-hidden group shadow-2xl">
                 <div className="absolute inset-0 z-10 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500">
                   <div className="product-scan-line bg-gradient-to-b from-transparent via-primary/30 to-transparent"></div>
-                  <div className="absolute inset-0 bg-primary/5"></div>
                 </div>
 
                 <Image
@@ -445,9 +444,9 @@ export function ProductDetailPage({ productId, initialProduct, sourceContext }: 
                   <button
                     key={index}
                     onClick={() => setSelectedImage(index)}
-                    className={`w-16 h-16 sm:w-20 sm:h-20 rounded-xl bg-muted/30 border p-2 flex-shrink-0 transition-all duration-300 ${
+                    className={`w-16 h-16 sm:w-20 sm:h-20 rounded-xl bg-white border p-2 flex-shrink-0 transition-all duration-300 ${
                       selectedImage === index 
-                        ? 'border-primary bg-primary/5 shadow-[0_0_15px_rgba(59,130,246,0.2)] scale-105' 
+                        ? 'border-primary bg-white shadow-[0_0_15px_rgba(59,130,246,0.2)] scale-105' 
                          : 'border-border hover:border-border/80 hover:scale-102'
                     }`}
                   >
@@ -456,7 +455,7 @@ export function ProductDetailPage({ productId, initialProduct, sourceContext }: 
                       alt={`${displayName} view ${index + 1}`}
                       width={160}
                       height={160}
-                      className="w-full h-full object-cover rounded-lg opacity-80 hover:opacity-100 transition-opacity"
+                      className="w-full h-full object-contain rounded-lg opacity-80 hover:opacity-100 transition-opacity"
                       loading="lazy"
                       onError={(e) => {
                         const target = e.target as HTMLImageElement;

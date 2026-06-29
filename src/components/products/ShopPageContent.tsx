@@ -979,7 +979,7 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
                         >
                           <Link href={`/products/${product.id}`} className="block flex-grow">
                             {/* Image Frame */}
-                            <div className="relative mb-3 sm:mb-6 aspect-square overflow-hidden rounded-lg sm:rounded-xl bg-background/80 border border-border/50 group-hover:border-primary/30 transition-colors">
+                            <div className="relative mb-3 sm:mb-6 aspect-square overflow-hidden rounded-lg sm:rounded-xl bg-white border border-border/50 group-hover:border-primary/30 transition-colors">
                               <ProductGridImage
                                 src={imageUrl}
                                 alt={displayName}
