@@ -448,7 +448,7 @@ export default function UpcomingProjectsPage() {
 
             <div className="grid gap-4 md:grid-cols-3">
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-zinc-400">Target Capital (USD)</label>
+                <label className="text-xs font-semibold text-zinc-400">Target Capital (INR)</label>
                 <Input 
                   type="number"
                   value={formTargetAmount}
@@ -460,7 +460,7 @@ export default function UpcomingProjectsPage() {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-zinc-400">Amount Raised (USD)</label>
+                <label className="text-xs font-semibold text-zinc-400">Amount Raised (INR)</label>
                 <Input 
                   type="number"
                   value={formAmountRaised}
