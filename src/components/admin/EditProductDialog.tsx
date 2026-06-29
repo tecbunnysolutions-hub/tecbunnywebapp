@@ -65,6 +65,19 @@ export function EditProductDialog({ open, onOpenChange, product, onProductUpdate
   const [isGenerating, setIsGenerating] = React.useState(false);
   const [productBrands, setProductBrands] = React.useState<string[]>([]);
   const [productCategories, setProductCategories] = React.useState<string[]>([]);
+  const [isCustomCategory, setIsCustomCategory] = React.useState(false);
+
+  React.useEffect(() => {
+    if (product?.category && productCategories.length > 0) {
+      if (!productCategories.includes(product.category)) {
+        setIsCustomCategory(true);
+      } else {
+        setIsCustomCategory(false);
+      }
+    } else {
+      setIsCustomCategory(false);
+    }
+  }, [product, productCategories]);
 
   React.useEffect(() => {
     let isMounted = true;
@@ -309,25 +322,53 @@ export function EditProductDialog({ open, onOpenChange, product, onProductUpdate
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Category</FormLabel>
-                    {productCategories.length > 0 ? (
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select category" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {productCategories.map((category) => (
-                            <SelectItem key={category} value={category}>
-                              {category}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                    {productCategories.length > 0 && !isCustomCategory ? (
+                      <div className="flex flex-col gap-1.5">
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select category" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {productCategories.map((category) => (
+                              <SelectItem key={category} value={category}>
+                                {category}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setIsCustomCategory(true);
+                            field.onChange('');
+                          }}
+                          className="text-left text-[10px] font-mono text-primary hover:underline hover:text-primary/80 transition-colors"
+                        >
+                          + Add custom category...
+                        </button>
+                      </div>
                     ) : (
-                      <FormControl>
-                        <Input placeholder="e.g. CCTV" {...field} />
-                      </FormControl>
+                      <div className="flex flex-col gap-1.5">
+                        <FormControl>
+                          <Input placeholder="e.g. CCTV" {...field} />
+                        </FormControl>
+                        {productCategories.length > 0 && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setIsCustomCategory(false);
+                              if (productCategories.length > 0) {
+                                field.onChange(productCategories[0]);
+                              }
+                            }}
+                            className="text-left text-[10px] font-mono text-primary hover:underline hover:text-primary/80 transition-colors"
+                          >
+                            ← Select from existing categories
+                          </button>
+                        )}
+                      </div>
                     )}
                     <FormMessage />
                   </FormItem>
