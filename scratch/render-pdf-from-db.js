@@ -43,8 +43,7 @@ async function generateValidationPdf() {
     const { data: project, error } = await supabase
       .from('upcoming_projects')
       .select('*')
-      .order('created_at', { ascending: true })
-      .limit(1)
+      .eq('name', 'EduPortal and EduOS')
       .single();
 
     if (error || !project) {
@@ -54,8 +53,14 @@ async function generateValidationPdf() {
 
     console.log("Fetched project:", project.name);
 
+    // Set page margins so PDFKit manages top/bottom flow automatically
     const doc = new PDFDocument({
-      margin: 50,
+      margins: {
+        top: 75,
+        bottom: 60,
+        left: 50,
+        right: 50
+      },
       size: 'A4',
       bufferPages: true
     });
@@ -68,14 +73,12 @@ async function generateValidationPdf() {
     const raised = Number(project.amount_raised);
     const remaining = Math.max(0, target - raised);
 
-    // Start below the header standard blue line
-    doc.y = 80;
-
+    // Start rendering elements in order
     // --- Document Title ---
     doc.fillColor('#0F172A')
        .fontSize(24)
        .font('Helvetica-Bold')
-       .text(unescapeHtml(project.name).toUpperCase(), 50, undefined, { width: doc.page.width - 100 });
+       .text(unescapeHtml(project.name).toUpperCase(), { width: doc.page.width - 100 });
 
     doc.moveDown(0.5);
 
@@ -83,7 +86,7 @@ async function generateValidationPdf() {
     doc.fillColor('#2563EB')
        .fontSize(12)
        .font('Helvetica-Bold')
-       .text(`Status: ${project.status}`, 50);
+       .text(`Status: ${project.status}`);
 
     doc.moveDown(1.5);
 
@@ -112,51 +115,48 @@ async function generateValidationPdf() {
     // --- Section: Executive Summary ---
     if (doc.y > doc.page.height - 120) {
       doc.addPage();
-      doc.y = 75;
     }
 
     doc.fillColor('#0F172A')
        .fontSize(14)
        .font('Helvetica-Bold')
-       .text('1. Project Overview', 50);
+       .text('1. Project Overview');
     doc.moveDown(0.6);
 
     doc.fillColor('#334155')
        .fontSize(11)
        .font('Helvetica')
-       .text(unescapeHtml(project.explanation), 50, undefined, { width: doc.page.width - 100, lineGap: 4 });
+       .text(unescapeHtml(project.explanation), { width: doc.page.width - 100, lineGap: 4 });
 
     doc.moveDown(2);
 
     // --- Section: Strategic Motive ---
     if (doc.y > doc.page.height - 120) {
       doc.addPage();
-      doc.y = 75;
     }
 
     doc.fillColor('#0F172A')
        .fontSize(14)
        .font('Helvetica-Bold')
-       .text('2. Strategic Motive', 50);
+       .text('2. Strategic Motive');
     doc.moveDown(0.6);
 
     doc.fillColor('#334155')
        .fontSize(11)
        .font('Helvetica')
-       .text(unescapeHtml(project.motive), 50, undefined, { width: doc.page.width - 100, lineGap: 4 });
+       .text(unescapeHtml(project.motive), { width: doc.page.width - 100, lineGap: 4 });
 
     doc.moveDown(2);
 
     // --- Section: Detailed Specifications (HTML parser) ---
     if (doc.y > doc.page.height - 120) {
       doc.addPage();
-      doc.y = 75;
     }
 
     doc.fillColor('#0F172A')
        .fontSize(14)
        .font('Helvetica-Bold')
-       .text('3. Detailed Specifications', 50);
+       .text('3. Detailed Specifications');
     doc.moveDown(0.8);
 
     // Simple HTML Rendering
@@ -169,7 +169,6 @@ async function generateValidationPdf() {
 
       if (doc.y > doc.page.height - 80) {
         doc.addPage();
-        doc.y = 75;
       }
 
       if (part.includes('<h3') || part.includes('<h4')) {
@@ -177,7 +176,7 @@ async function generateValidationPdf() {
         doc.fillColor('#2563EB')
            .fontSize(12)
            .font('Helvetica-Bold')
-           .text(unescapeHtml(text), 50);
+           .text(unescapeHtml(text));
         doc.moveDown(0.5);
       } else if (part.includes('<li')) {
         const text = part.replace(/<[^>]*>/g, '').trim();
@@ -200,6 +199,10 @@ async function generateValidationPdf() {
     const pages = doc.bufferedPageRange();
     for (let i = 0; i < pages.count; i++) {
       doc.switchToPage(i);
+
+      // Temporarily set bottom margin to 0 to prevent footer text from triggering new page creation
+      const oldBottomMargin = doc.page.margins.bottom;
+      doc.page.margins.bottom = 0;
 
       // Draw header
       doc.fillColor('#0F172A')
@@ -225,6 +228,9 @@ async function generateValidationPdf() {
          .text('CONFIDENTIALITY NOTICE: This document is for qualified investors only and may contain proprietary info.', 50, doc.page.height - 35);
 
       doc.text(`Page ${i + 1} of ${pages.count}`, doc.page.width - 100, doc.page.height - 35, { align: 'right' });
+
+      // Restore margin
+      doc.page.margins.bottom = oldBottomMargin;
     }
 
     doc.end();

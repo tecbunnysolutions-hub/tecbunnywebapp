@@ -60,7 +60,12 @@ export async function GET(
     const pdfBuffer = await new Promise<Buffer>((resolve, reject) => {
       try {
         const doc = new PDFDocument({
-          margin: 50,
+          margins: {
+            top: 75,
+            bottom: 60,
+            left: 50,
+            right: 50
+          },
           size: 'A4',
           bufferPages: true
         });
@@ -207,6 +212,10 @@ export async function GET(
         for (let i = 0; i < pages.count; i++) {
           doc.switchToPage(i);
 
+          // Temporarily set bottom margin to 0 to prevent footer text from triggering new page creation
+          const oldBottomMargin = doc.page.margins.bottom;
+          doc.page.margins.bottom = 0;
+
           // Draw header
           doc.fillColor('#0F172A')
              .fontSize(10)
@@ -231,6 +240,9 @@ export async function GET(
              .text('CONFIDENTIALITY NOTICE: This document is for qualified investors only and may contain proprietary info.', 50, doc.page.height - 35);
 
           doc.text(`Page ${i + 1} of ${pages.count}`, doc.page.width - 100, doc.page.height - 35, { align: 'right' });
+
+          // Restore margins
+          doc.page.margins.bottom = oldBottomMargin;
         }
 
         doc.end();
