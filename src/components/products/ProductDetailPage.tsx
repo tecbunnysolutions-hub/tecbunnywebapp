@@ -469,7 +469,7 @@ export function ProductDetailPage({ productId, initialProduct, sourceContext }: 
             </div>
 
             <div className="flex flex-col">
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tight text-foreground font-tech leading-none mb-3">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-foreground font-tech leading-tight mb-3">
                 {displayName}
               </h1>
 
@@ -492,7 +492,7 @@ export function ProductDetailPage({ productId, initialProduct, sourceContext }: 
                 <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
                 {pricing && (
                   <div className="flex flex-wrap items-baseline gap-4 mb-3 relative z-10">
-                    <span className="text-5xl font-black text-foreground font-tech tracking-tight">₹{pricing.salePrice.toLocaleString('en-IN')}</span>
+                    <span className="text-3xl sm:text-4xl font-bold text-foreground font-tech tracking-tight">₹{pricing.salePrice.toLocaleString('en-IN')}</span>
                     {pricing.hasDiscount && (
                       <>
                         <span className="text-xl text-muted-foreground line-through font-light">₹{pricing.mrp.toLocaleString('en-IN')}</span>
