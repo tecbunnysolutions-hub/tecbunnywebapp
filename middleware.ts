@@ -208,7 +208,8 @@ export async function middleware(request: NextRequest) {
       const isCsrfExempt =
         isInternalApiCall ||
         checkPathPrefix(pathname, '/api/payment/payu/callback') ||
-        checkPathPrefix(pathname, '/api/webhooks');
+        checkPathPrefix(pathname, '/api/webhooks') ||
+        checkPathPrefix(pathname, '/api/products/scraper');
 
       if (!isCsrfExempt && !isSameOrigin) {
         console.warn('CSRF Blocked Request:', { pathname, correlationId, origin, referer });
