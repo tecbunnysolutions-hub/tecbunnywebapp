@@ -44,6 +44,7 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
   // 3. HEADLESS SEO META-PROPAGATION
   // Programmatically parse technical specs for optimized meta-density
   const specs = product.specifications ? Object.entries(product.specifications as Record<string, string>)
+    .filter(([k]) => !['sourceurl', 'source_url', 'source-url'].includes(k.toLowerCase()))
     .map(([k, v]) => `${k}: ${v}`).join(', ') : '';
 
   const plainDesc = await cleanMetadataDescription(

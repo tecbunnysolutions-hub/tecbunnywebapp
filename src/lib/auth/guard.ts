@@ -2,6 +2,8 @@ import type { UserRole } from '../roles';
 import { isAtLeast, normalizeRole as normalizeKnownRole } from '../roles';
 import { createClient, createServiceClient, isSupabaseServiceConfigured } from '../supabase/server';
 import { logger } from '../logger';
+import { cookies } from 'next/headers';
+import { verifySuperadminSessionToken } from './superadmin-session';
 
 function normalizeRole(value: unknown): UserRole | null {
   return normalizeKnownRole(value);
@@ -9,6 +11,34 @@ function normalizeRole(value: unknown): UserRole | null {
 
 // Standard server-side role guard returning a discriminated union
 export async function requireRole(minRole: UserRole) {
+  try {
+    const cookieStore = await cookies();
+    const superadminCookie = cookieStore.get('superadmin-session')?.value;
+    if (superadminCookie) {
+      const isSuperadmin = await verifySuperadminSessionToken(superadminCookie);
+      if (isSuperadmin) {
+        const service = isSupabaseServiceConfigured ? createServiceClient() : null;
+        return {
+          user: {
+            id: 'superadmin-system-session',
+            email: 'superadmin@tecbunny.com',
+            app_metadata: { role: 'superadmin' },
+            user_metadata: { name: 'Superadmin' },
+            aud: 'authenticated',
+            created_at: new Date().toISOString(),
+          } as any,
+          role: 'superadmin' as UserRole,
+          supabase: service || await createClient(),
+          service,
+        } as const;
+      }
+    }
+  } catch (cookieError) {
+    logger.warn('requireRole.superadmin_cookie_check_failed', {
+      error: cookieError instanceof Error ? cookieError.message : String(cookieError)
+    });
+  }
+
   const supabase = await createClient();
   const { data: { user }, error } = await supabase.auth.getUser();
   if (error || !user) {

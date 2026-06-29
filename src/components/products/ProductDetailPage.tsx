@@ -179,7 +179,9 @@ export function ProductDetailPage({ productId, initialProduct, sourceContext }: 
 
   const highlightSpecs = useMemo(() => {
     if (!product?.specifications) return [] as Array<[string, string]>;
-    return Object.entries(product.specifications).slice(0, 3) as Array<[string, string]>;
+    return Object.entries(product.specifications)
+      .filter(([key]) => !['sourceurl', 'source_url', 'source-url'].includes(key.toLowerCase()))
+      .slice(0, 3) as Array<[string, string]>;
   }, [product]);
 
   useEffect(() => {
@@ -605,12 +607,19 @@ export function ProductDetailPage({ productId, initialProduct, sourceContext }: 
               {activeTab === 'specs' && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-16 gap-y-4 text-sm font-mono">
                   {product.specifications && Object.keys(product.specifications).length > 0 ? (
-                    Object.entries(product.specifications).map(([key, value]) => (
-                      <div key={key} className="flex justify-between py-4 border-b border-border/60">
-                        <span className="text-muted-foreground/80 uppercase text-xs">{key}</span>
-                        <span className="text-foreground/90 text-right font-medium">{value}</span>
-                      </div>
-                    ))
+                    (() => {
+                      const filteredSpecs = Object.entries(product.specifications)
+                        .filter(([key]) => !['sourceurl', 'source_url', 'source-url'].includes(key.toLowerCase()));
+                      if (filteredSpecs.length === 0) {
+                        return <div className="text-muted-foreground/80 italic">Specifications will be updated soon.</div>;
+                      }
+                      return filteredSpecs.map(([key, value]) => (
+                        <div key={key} className="flex justify-between py-4 border-b border-border/60">
+                          <span className="text-muted-foreground/80 uppercase text-xs">{key}</span>
+                          <span className="text-foreground/90 text-right font-medium">{value}</span>
+                        </div>
+                      ));
+                    })()
                   ) : (
                     <div className="text-muted-foreground/80 italic">Specifications will be updated soon.</div>
                   )}

@@ -111,7 +111,7 @@ export async function POST(request: NextRequest) {
       images: finalImageUrl ? [finalImageUrl] : [],
       status: 'active', // Saved as active directly
       product_type: 'physical',
-      specifications: { sourceUrl: sourceUrl || '' },
+      specifications: {},
       tags: ['scraped'],
       is_active: true,
       stock_quantity: 1,
