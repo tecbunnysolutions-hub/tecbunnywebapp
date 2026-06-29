@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceClient, isSupabaseServiceConfigured } from '@/lib/supabase/server';
+import { processAndUploadExternalImage } from '@/lib/image-processor';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -83,6 +84,19 @@ export async function POST(request: NextRequest) {
 
     // 6. Insert Product using Service Role Client (bypasses RLS)
     const supabase = createServiceClient();
+
+    // 7. Process and Upload image to Supabase Storage
+    let finalImageUrl = imageUrl || null;
+    if (imageUrl) {
+      try {
+        const uploadedUrl = await processAndUploadExternalImage(imageUrl, supabase);
+        if (uploadedUrl) {
+          finalImageUrl = uploadedUrl;
+        }
+      } catch (err) {
+        console.error('[Scraper Image Upload Warning]:', err);
+      }
+    }
     
     const productPayload = {
       handle,
@@ -93,8 +107,8 @@ export async function POST(request: NextRequest) {
       mrp: parsedMrp,
       category: category || null,
       brand: brand || null,
-      image: imageUrl || null,
-      images: imageUrl ? [imageUrl] : [],
+      image: finalImageUrl,
+      images: finalImageUrl ? [finalImageUrl] : [],
       status: 'active', // Saved as active directly
       product_type: 'physical',
       specifications: { sourceUrl: sourceUrl || '' },
