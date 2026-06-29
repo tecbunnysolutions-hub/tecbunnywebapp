@@ -1,1 +1,0 @@
-const fs = require('fs'); const files = ['eslint.config.js', '.codex-dev.stderr.log', '.codex-dev.stdout.log', 'body.json', 'src/lib/roles.test.ts', 'src/lib/indian-tax.test.ts', 'src/lib/checkout-engine.test.ts', 'src/lib/area-notifications.test.ts']; files.forEach(f => { try { if (fs.existsSync(f)) fs.unlinkSync(f); } catch (e) {} });
