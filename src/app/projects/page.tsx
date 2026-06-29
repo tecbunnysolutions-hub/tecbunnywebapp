@@ -78,7 +78,7 @@ export default function UpcomingProjectsPage() {
   const fetchProjects = async () => {
     try {
       setLoading(true);
-      const res = await fetch('/api/upcoming');
+      const res = await fetch('/api/projects');
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to fetch projects');
       setProjects(data.projects || []);
@@ -134,7 +134,7 @@ export default function UpcomingProjectsPage() {
 
     try {
       setIsSubmitting(true);
-      const url = formMode === 'create' ? '/api/upcoming' : `/api/upcoming/${formId}`;
+      const url = formMode === 'create' ? '/api/projects' : `/api/projects/${formId}`;
       const method = formMode === 'create' ? 'POST' : 'PUT';
 
       const res = await fetch(url, {
@@ -168,7 +168,7 @@ export default function UpcomingProjectsPage() {
     if (!projectToDelete) return;
     try {
       setIsSubmitting(true);
-      const res = await fetch(`/api/upcoming/${projectToDelete.id}`, {
+      const res = await fetch(`/api/projects/${projectToDelete.id}`, {
         method: 'DELETE'
       });
       const data = await res.json();
@@ -326,7 +326,7 @@ export default function UpcomingProjectsPage() {
                       className="flex-1 text-[11px] h-9 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-lg flex items-center justify-center gap-1.5"
                       onClick={(e) => e.stopPropagation()}
                     >
-                      <a href={`/api/upcoming/${project.id}/pdf`} download>
+                      <a href={`/api/projects/${project.id}/pdf`} download>
                         <Download size={12} />
                         <span>Summary PDF</span>
                       </a>
@@ -401,7 +401,7 @@ export default function UpcomingProjectsPage() {
                   asChild
                   className="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl h-11 flex items-center justify-center gap-2 shadow-lg shadow-blue-500/10"
                 >
-                  <a href={`/api/upcoming/${selectedProject.id}/pdf`} download>
+                  <a href={`/api/projects/${selectedProject.id}/pdf`} download>
                     <Download size={16} />
                     <span>Download Executive PDF</span>
                   </a>
