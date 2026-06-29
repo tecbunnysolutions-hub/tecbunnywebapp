@@ -72,30 +72,30 @@ type DbProduct = {
 
 const FEATURE_PILLARS = [
   {
-    title: 'Security Systems',
-    desc: 'Layered protection with flexible monitoring and secure storage.',
-    icon: ShieldCheck,
-    accent: 'from-zinc-900 to-zinc-950',
-    href: '/services',
-  },
-  {
-    title: 'IT Reliability',
-    desc: 'Keep devices, networks, and workflows resilient and optimized.',
+    title: 'Core IT Infrastructure',
+    desc: 'Resilient digital foundations, seamless cloud migrations, and managed IT support.',
     icon: Server,
     accent: 'from-zinc-900 to-zinc-950',
     href: '/services',
   },
   {
-    title: 'Automation',
-    desc: 'Smarter controls that adapt to the way you run your space.',
-    icon: Wifi,
+    title: 'Cybersecurity & Compliance',
+    desc: 'Continuous threat detection, data backup, and uncompromised protection.',
+    icon: ShieldCheck,
     accent: 'from-zinc-900 to-zinc-950',
     href: '/services',
   },
   {
-    title: 'Incident Response',
-    desc: 'Rapid alerts, clear workflows, and actionable insights.',
+    title: 'Physical Tech Infrastructure',
+    desc: 'Integrated facility intelligence with smart automation and enterprise surveillance.',
     icon: Zap,
+    accent: 'from-zinc-900 to-zinc-950',
+    href: '/services',
+  },
+  {
+    title: 'Managed ITES',
+    desc: 'Optimized business processes, technical support desks, and back-office automation.',
+    icon: Layers,
     accent: 'from-zinc-900 to-zinc-950',
     href: '/services',
   },
@@ -123,17 +123,17 @@ export default function HomePage({
         <div className="tb-container relative z-10">
           <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-[1.05fr_0.95fr] xl:gap-16">
             <div className="reveal-section is-revealed max-w-3xl space-y-8" data-reveal-id="hero-copy">
-              <h1 className="text-4xl font-extrabold leading-[1.02] text-white sm:text-5xl md:text-6xl xl:text-7xl font-tech tracking-tight" aria-label="Protect What Matters Most. 24/7.">
-                <span className="glitch-text block pb-3 text-blue-400" data-text="Protect What Matters Most.">Protect What Matters Most.</span>
+              <h1 className="text-4xl font-extrabold leading-[1.02] text-white sm:text-5xl md:text-6xl xl:text-7xl font-tech tracking-tight" aria-label="Powering Your Operations. Securing Your Enterprise.">
+                <span className="glitch-text block pb-3 text-blue-400" data-text="Powering Your Operations.">Powering Your Operations.</span>
                 <span className="block text-zinc-100">
-                  24/7.
+                  Securing Your Enterprise.
                 </span>
               </h1>
 
               <HeroRotator />
 
               <p className="tb-lede max-w-2xl text-lg sm:text-xl">
-                Get crystal-clear security cameras and fast, reliable internet for your home or business. Enjoy total peace of mind with smart systems that just work.
+                From robust IT infrastructure to seamless business process outsourcing, we provide the end-to-end technology foundation scaling businesses rely on.
               </p>
 
               <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:gap-4">
@@ -294,9 +294,9 @@ export default function HomePage({
         <div className="tb-container">
           <div className="mb-14 max-w-2xl">
             <span className="tb-kicker">Core pillars</span>
-            <h2 className="mt-4 text-3xl font-semibold text-white sm:text-4xl">Security That Never Sleeps.</h2>
+            <h2 className="mt-4 text-3xl font-semibold text-white sm:text-4xl">Engineered for Scale, Designed for Security.</h2>
             <p className="tb-lede mt-4 text-sm sm:text-base">
-              We don&apos;t just hang cameras. We build reliable, easy-to-use systems that grow seamlessly with your business.
+              Comprehensive IT and ITES solutions tailored to the demands of modern business.
             </p>
           </div>
 
@@ -435,15 +435,15 @@ export default function HomePage({
       <section className="tb-section reveal-section is-revealed" data-reveal-id="about" style={{ contentVisibility: 'auto', containIntrinsicSize: '400px' }}>
         <div className="tb-container">
           <div className="mx-auto max-w-4xl space-y-6 text-sm leading-relaxed text-zinc-400 sm:text-base">
-            <h2 className="text-3xl font-semibold text-white mb-8">Goa & Maharashtra’s Trusted Technology Integrator</h2>
+            <h2 className="text-3xl font-semibold text-white mb-8">One Partner. Total Technological Command.</h2>
             <p>
-              At TecBunny Solutions, we design, deploy, and manage professional technology systems that protect your premises, keep your networks reliable, and automate your environment. Working closely with leading security and network brands, we deliver customized security and IT solutions for hospitality venues, retail shops, industrial spaces, and residential properties across Goa and Maharashtra.
+              At TecBunny Solutions, we believe that robust technology is the engine of business growth. We are a team of engineers, security experts, and operational strategists dedicated to building the infrastructure that powers your success across India.
             </p>
             <p>
-              Our security architectures are built with enterprise-grade equipment from CP Plus, Hikvision, and Dahua, offering high-definition IP cameras, smart perimeter security, and secure local or cloud NVR systems. We customize camera placement and coverage to ensure complete visual security and 24/7 reliability.
+              We built our foundation on securing physical perimeters, deploying enterprise-grade surveillance and access systems. Today, we have evolved into a comprehensive end-to-end technology partner. We bring that same rigorous, uncompromising approach to managing complex IT architectures, defending against cyber threats, and streamlining back-office operations.
             </p>
             <p>
-              For IT infrastructure, our engineers design high-performance wired and wireless networks, structured cabling layouts, and server setups to ensure zero-bottleneck operations. We also offer proactive Annual Maintenance Contracts (AMC) for IT, CCTV, and RFID Lock Systems, keeping your business systems secure and running smoothly at all times.
+              By bridging the gap between physical infrastructure, digital networks, and human processes, we eliminate vendor fatigue and provide a single point of accountability. Whether you need a network overhaul, compliance auditing, or a fully managed technical support desk, we deliver solutions engineered for scale and designed for security.
             </p>
           </div>
         </div>
@@ -457,9 +457,9 @@ export default function HomePage({
                 <span className="inline-flex items-center gap-2 rounded-lg border border-blue-500/20 bg-blue-500/5 text-blue-400 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em]">
                   <Sparkles size={14} /> Ready when you are
                 </span>
-                <h3 className="mt-5 text-2xl font-semibold text-white sm:text-3xl">Stop guessing with your security.</h3>
+                <h3 className="mt-5 text-2xl font-semibold text-white sm:text-3xl">Ready to upgrade your infrastructure?</h3>
                 <p className="tb-lede mt-4 text-sm sm:text-base">
-                  Tell us what you need, and we&apos;ll help you choose the right setup for your home or business.
+                  Let’s discuss how a unified approach to IT and ITES can secure your business and accelerate your growth.
                 </p>
               </div>
               <div className={cn('reveal-item rounded-lg border border-zinc-800 bg-zinc-950/80 p-6 text-center', revealDelayClass(120))}>
@@ -468,7 +468,7 @@ export default function HomePage({
                   href="/contact"
                   className="tb-button-primary mt-4 w-full"
                 >
-                  Claim Your Free Security Audit
+                  Schedule a Strategy Call
                 </Link>
                 <p className="mt-3 text-xs text-zinc-500">Response window: same business day</p>
               </div>

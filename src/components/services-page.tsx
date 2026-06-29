@@ -308,13 +308,13 @@ export default function ServicesPage({ services, hasServiceLoadError = false }: 
         <section className="reveal-section text-center space-y-6 max-w-3xl mx-auto" data-reveal-id="services-hero">
           <div className="inline-flex items-center gap-2 rounded-full border border-blue-500/20 bg-blue-500/5 px-4.5 py-1.5 text-xs font-semibold text-blue-400">
             <Sparkles size={14} className="animate-pulse" />
-            <span>Platform Services</span>
+            <span>Enterprise Solutions</span>
           </div>
           <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl lg:text-6xl font-tech leading-tight tech-heading">
-            Services Designed for <span className="bg-gradient-to-r from-blue-400 via-indigo-200 to-white bg-clip-text text-transparent">Your Peace of Mind</span>
+            End-to-End Solutions for <span className="bg-gradient-to-r from-blue-400 via-indigo-200 to-white bg-clip-text text-transparent">the Modern Enterprise</span>
           </h1>
           <p className="text-lg font-light leading-relaxed tech-body">
-            Protect your property and stay connected with our professional installation and support plans. We handle the hard work so you don't have to.
+            From securing your physical perimeter to optimizing your cloud infrastructure and scaling your back-office operations, we provide the technology that drives your business forward.
           </p>
           {canManageServices && (
             <div className="mt-6 flex justify-center">
@@ -330,41 +330,41 @@ export default function ServicesPage({ services, hasServiceLoadError = false }: 
 
         {/* Premium Enterprise Solutions Banners */}
         <section className="reveal-section grid gap-8 lg:grid-cols-2" data-reveal-id="premium-enterprise-services">
-          {/* Card 1: Smart Infrastructure */}
+          {/* Card 1: ITES */}
           <div className="bento-card p-8 flex flex-col justify-between group transition-all duration-300">
             <div className="space-y-4">
               <span className="text-[10px] font-bold uppercase tracking-wider bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-full px-2.5 py-0.5">
-                Hospitality & Construction
+                Managed ITES
               </span>
-              <h3 className="text-xl font-bold font-tech tech-heading">Complete Security Solutions</h3>
+              <h3 className="text-xl font-bold font-tech tech-heading">Scale Operations, Not Overhead</h3>
               <p className="text-xs leading-relaxed max-w-sm tech-body">
-                Keep your property perfectly safe with our top-of-the-line camera and access systems, professionally installed for you.
+                Free your internal teams from repetitive tasks. Our ITES division optimizes your back-office workflows with intelligent automation and expert personnel.
               </p>
             </div>
             <div className="mt-8">
               <Link
-                href="/services/smart-infrastructure"
+                href="/contact"
                 className="inline-flex items-center justify-center rounded-xl bg-blue-600 hover:bg-blue-550 text-white px-6 py-3 text-xs font-bold uppercase tracking-wider transition-colors shadow-lg shadow-blue-500/10"
               >
-                Scale Your Operations
+                Explore ITES Solutions
               </Link>
             </div>
           </div>
 
-          {/* Card 2: Web Dev */}
+          {/* Card 2: Cybersecurity */}
           <div className="bento-card p-8 flex flex-col justify-between group transition-all duration-300">
             <div className="space-y-4">
               <span className="text-[10px] font-bold uppercase tracking-wider bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 rounded-full px-2.5 py-0.5">
-                Web Development
+                Cybersecurity & Compliance
               </span>
-              <h3 className="text-xl font-bold font-tech tech-heading">Websites That Grow Your Business</h3>
+              <h3 className="text-xl font-bold font-tech tech-heading">Uncompromising Data Protection</h3>
               <p className="text-xs leading-relaxed max-w-sm tech-body">
-                Get a stunning, fast, and easy-to-use website that turns your visitors into loyal customers.
+                Defend your data, maintain regulatory compliance, and ensure business continuity with our proactive, multi-layered security frameworks.
               </p>
             </div>
             <div className="mt-8">
               <Link
-                href="/webdev"
+                href="/contact"
                 className="inline-flex items-center justify-center rounded-xl bg-indigo-600 hover:bg-indigo-550 text-white px-6 py-3 text-xs font-bold uppercase tracking-wider transition-colors shadow-lg shadow-indigo-500/10"
               >
                 Accelerate Your Growth
