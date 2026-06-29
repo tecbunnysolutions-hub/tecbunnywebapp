@@ -13,16 +13,17 @@ import { headers } from 'next/headers';
 // Homepage metadata for SEO
 export async function generateMetadata(): Promise<Metadata> {
   return createPageMetadata({
-  title: 'TecBunny | Tech Services, CCTV & AMC Solutions',
+  title: 'TecBunny | Enterprise IT Services & Managed ITES Solutions',
   description:
-    'TecBunny Solutions engineered premium IT services, CCTV installation, AMC support, home automation, and custom hardware setups in Goa and Maharashtra.',
+    'TecBunny Solutions provides enterprise-grade IT infrastructure, professional cybersecurity services, managed ITES back-office workflows, and custom technology integrations.',
   keywords: [
-    'tech services',
-    'custom setup',
-    'technology support',
-    'hardware solutions',
-    'technical services',
-    'IT support',
+    'enterprise IT services',
+    'managed ITES',
+    'network infrastructure',
+    'cybersecurity audit',
+    'smart access control',
+    'IT lifecycle management',
+    'Goa IT partner',
     'TecBunny',
   ],
   path: '/',
