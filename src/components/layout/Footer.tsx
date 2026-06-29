@@ -198,28 +198,28 @@ export function Footer() {
             <h4 className="text-white text-base font-tech font-black uppercase tracking-[0.2em] mb-6">Services</h4>
             <ul className="space-y-3.5 text-base font-medium">
               <li>
-                <Link href="/services/smart-infrastructure" className="hover:text-primary transition-all hover:translate-x-1 inline-block text-slate-300">
-                  Smart Infrastructure
+                <Link href="/services/network-infrastructure" className="hover:text-primary transition-all hover:translate-x-1 inline-block text-slate-300">
+                  Network & Infrastructure
                 </Link>
               </li>
               <li>
-                <Link href="/services" className="hover:text-primary transition-all hover:translate-x-1 inline-block text-slate-300">
-                  Biometric Access
+                <Link href="/services/physical-security" className="hover:text-primary transition-all hover:translate-x-1 inline-block text-slate-300">
+                  Security & Surveillance
                 </Link>
               </li>
               <li>
-                <Link href="/webdev" className="hover:text-primary transition-all hover:translate-x-1 inline-block text-slate-300">
-                  Web Development
+                <Link href="/services/smart-access-control" className="hover:text-primary transition-all hover:translate-x-1 inline-block text-slate-300">
+                  Smart Access Control
                 </Link>
               </li>
               <li>
-                <Link href="/services" className="hover:text-primary transition-all hover:translate-x-1 inline-block text-slate-300">
-                  Intruder Alarms
+                <Link href="/services/lifecycle-hardware" className="hover:text-primary transition-all hover:translate-x-1 inline-block text-slate-300">
+                  Lifecycle Hardware
                 </Link>
               </li>
               <li>
-                <Link href="/services" className="hover:text-primary transition-all hover:translate-x-1 inline-block text-slate-300">
-                  Video Door Phones
+                <Link href="/services/software-system-admin" className="hover:text-primary transition-all hover:translate-x-1 inline-block text-slate-300">
+                  System Administration
                 </Link>
               </li>
             </ul>

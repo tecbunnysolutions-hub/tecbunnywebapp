@@ -18,7 +18,14 @@ import {
   ShoppingCart,
   Truck,
   Wrench,
-  Sparkles
+  Sparkles,
+  Network,
+  Lock,
+  Fingerprint,
+  Camera,
+  Terminal,
+  Database,
+  ArrowRight
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -328,47 +335,120 @@ export default function ServicesPage({ services, hasServiceLoadError = false }: 
           )}
         </section>
 
-        {/* Premium Enterprise Solutions Banners */}
-        <section className="reveal-section grid gap-8 lg:grid-cols-2" data-reveal-id="premium-enterprise-services">
-          {/* Card 1: ITES */}
-          <div className="bento-card p-8 flex flex-col justify-between group transition-all duration-300">
-            <div className="space-y-4">
-              <span className="text-[10px] font-bold uppercase tracking-wider bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-full px-2.5 py-0.5">
-                Managed ITES
-              </span>
-              <h3 className="text-xl font-bold font-tech tech-heading">Scale Operations, Not Overhead</h3>
-              <p className="text-xs leading-relaxed max-w-sm tech-body">
-                Free your internal teams from repetitive tasks. Our ITES division optimizes your back-office workflows with intelligent automation and expert personnel.
-              </p>
-            </div>
-            <div className="mt-8">
-              <Link
-                href="/contact"
-                className="inline-flex items-center justify-center rounded-xl bg-blue-600 hover:bg-blue-550 text-white px-6 py-3 text-xs font-bold uppercase tracking-wider transition-colors shadow-lg shadow-blue-500/10"
-              >
-                Explore ITES Solutions
-              </Link>
+        {/* Core Service Categories */}
+        <section className="reveal-section space-y-8" data-reveal-id="core-service-categories">
+          <div className="flex items-center gap-3">
+            <div className="h-6 w-1 rounded-full bg-blue-500" />
+            <div>
+              <h2 className="text-xl font-bold font-tech tech-heading">Our Service Offerings</h2>
+              <p className="text-xs text-zinc-500">Select a category below to explore our deep-dive technical capabilities.</p>
             </div>
           </div>
 
-          {/* Card 2: Cybersecurity */}
-          <div className="bento-card p-8 flex flex-col justify-between group transition-all duration-300">
-            <div className="space-y-4">
-              <span className="text-[10px] font-bold uppercase tracking-wider bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 rounded-full px-2.5 py-0.5">
-                Cybersecurity & Compliance
-              </span>
-              <h3 className="text-xl font-bold font-tech tech-heading">Uncompromising Data Protection</h3>
-              <p className="text-xs leading-relaxed max-w-sm tech-body">
-                Defend your data, maintain regulatory compliance, and ensure business continuity with our proactive, multi-layered security frameworks.
-              </p>
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {/* Card 1: Network & Infrastructure */}
+            <div className="bento-card p-6 flex flex-col justify-between group transition-all duration-300 hover:border-blue-500/30">
+              <div className="space-y-4">
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-500/10 text-blue-400 border border-blue-500/20 group-hover:scale-105 transition-transform">
+                  <Network size={20} />
+                </div>
+                <h3 className="text-lg font-bold font-tech tech-heading text-white">Network & Infrastructure Solutions</h3>
+                <p className="text-xs leading-relaxed text-zinc-400 font-light tech-body">
+                  Enterprise-grade network design, structured copper/fiber cabling, core routing, managed switching, Wi-Fi optimization, and firewall configurations.
+                </p>
+              </div>
+              <div className="mt-6 pt-4 border-t border-zinc-900/60">
+                <Link
+                  href="/services/network-infrastructure"
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-400 hover:text-blue-300 transition-colors"
+                >
+                  Explore Details <ArrowRight size={14} />
+                </Link>
+              </div>
             </div>
-            <div className="mt-8">
-              <Link
-                href="/contact"
-                className="inline-flex items-center justify-center rounded-xl bg-indigo-600 hover:bg-indigo-550 text-white px-6 py-3 text-xs font-bold uppercase tracking-wider transition-colors shadow-lg shadow-indigo-500/10"
-              >
-                Accelerate Your Growth
-              </Link>
+
+            {/* Card 2: Physical Security */}
+            <div className="bento-card p-6 flex flex-col justify-between group transition-all duration-300 hover:border-blue-500/30">
+              <div className="space-y-4">
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 group-hover:scale-105 transition-transform">
+                  <Camera size={20} />
+                </div>
+                <h3 className="text-lg font-bold font-tech tech-heading text-white">Physical Security & Surveillance</h3>
+                <p className="text-xs leading-relaxed text-zinc-400 font-light tech-body">
+                  High-definition IP CCTV camera systems, secure local NVR server setups, AI video analytics, and motion-based intrusion alarm routing.
+                </p>
+              </div>
+              <div className="mt-6 pt-4 border-t border-zinc-900/60">
+                <Link
+                  href="/services/physical-security"
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-400 hover:text-blue-300 transition-colors"
+                >
+                  Explore Details <ArrowRight size={14} />
+                </Link>
+              </div>
+            </div>
+
+            {/* Card 3: Access Control */}
+            <div className="bento-card p-6 flex flex-col justify-between group transition-all duration-300 hover:border-blue-500/30">
+              <div className="space-y-4">
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/20 group-hover:scale-105 transition-transform">
+                  <Lock size={20} />
+                </div>
+                <h3 className="text-lg font-bold font-tech tech-heading text-white">Smart Access Control Systems</h3>
+                <p className="text-xs leading-relaxed text-zinc-400 font-light tech-body">
+                  Contactless RFID lock systems, biometric and facial recognition entry, speed gates, turnstiles, and automated driveway boom barriers.
+                </p>
+              </div>
+              <div className="mt-6 pt-4 border-t border-zinc-900/60">
+                <Link
+                  href="/services/smart-access-control"
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-400 hover:text-blue-300 transition-colors"
+                >
+                  Explore Details <ArrowRight size={14} />
+                </Link>
+              </div>
+            </div>
+
+            {/* Card 4: Lifecycle Hardware */}
+            <div className="bento-card p-6 flex flex-col justify-between group transition-all duration-300 hover:border-blue-500/30">
+              <div className="space-y-4">
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 group-hover:scale-105 transition-transform">
+                  <Cpu size={20} />
+                </div>
+                <h3 className="text-lg font-bold font-tech tech-heading text-white">Lifecycle Hardware Management</h3>
+                <p className="text-xs leading-relaxed text-zinc-400 font-light tech-body">
+                  Tier-1 OEM device procurement, standardized OS imaging, physical desk deployment, and proactive AMC maintenance/hardware swaps.
+                </p>
+              </div>
+              <div className="mt-6 pt-4 border-t border-zinc-900/60">
+                <Link
+                  href="/services/lifecycle-hardware"
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-400 hover:text-blue-300 transition-colors"
+                >
+                  Explore Details <ArrowRight size={14} />
+                </Link>
+              </div>
+            </div>
+
+            {/* Card 5: Software & System Admin */}
+            <div className="bento-card p-6 flex flex-col justify-between group transition-all duration-300 hover:border-blue-500/30">
+              <div className="space-y-4">
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20 group-hover:scale-105 transition-transform">
+                  <Terminal size={20} />
+                </div>
+                <h3 className="text-lg font-bold font-tech tech-heading text-white">Software & System Administration</h3>
+                <p className="text-xs leading-relaxed text-zinc-400 font-light tech-body">
+                  OS deployment, Active Directory/IAM access rules, patch management, cloud/offline backups, and disaster recovery strategies.
+                </p>
+              </div>
+              <div className="mt-6 pt-4 border-t border-zinc-900/60">
+                <Link
+                  href="/services/software-system-admin"
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-400 hover:text-blue-300 transition-colors"
+                >
+                  Explore Details <ArrowRight size={14} />
+                </Link>
+              </div>
             </div>
           </div>
         </section>

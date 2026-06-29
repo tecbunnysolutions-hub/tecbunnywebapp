@@ -36,8 +36,11 @@ const navLinks = [
     href: '/services',
     children: [
       { name: 'All Services', href: '/services' },
-      { name: 'Web Development', href: '/webdev' },
-      { name: 'Smart Infrastructure', href: '/services/smart-infrastructure' },
+      { name: 'Network & Infrastructure Solutions', href: '/services/network-infrastructure' },
+      { name: 'Physical Security & Surveillance', href: '/services/physical-security' },
+      { name: 'Smart Access Control Systems', href: '/services/smart-access-control' },
+      { name: 'Lifecycle Hardware Management', href: '/services/lifecycle-hardware' },
+      { name: 'Software & System Administration', href: '/services/software-system-admin' },
     ]
   },
   { name: 'About Us', href: '/about' },
