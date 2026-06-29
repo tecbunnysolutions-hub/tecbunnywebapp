@@ -12,6 +12,14 @@ export async function POST(request: Request) {
     maxAge: 0
   });
 
+  response.cookies.set('tb-superadmin-active', '', {
+    httpOnly: false,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    path: '/',
+    maxAge: 0
+  });
+
   // SECURITY: Force browser to clear sensitive data on signout
   response.headers.set('Clear-Site-Data', '"cookies", "storage", "cache"');
   

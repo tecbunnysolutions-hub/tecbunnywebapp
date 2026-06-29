@@ -26,7 +26,7 @@ export default function SignOutPage() {
         const referrer = document.referrer || '';
         const cookieStr = document.cookie || '';
         
-        const isSuperadmin = referrer.includes('/superadmin') || cookieStr.includes('superadmin-session');
+        const isSuperadmin = referrer.includes('/superadmin') || cookieStr.includes('superadmin-session') || cookieStr.includes('tb-superadmin-active');
         const isStaff = referrer.includes('/mgmt') || referrer.includes('/staff');
         
         if (isSuperadmin) {

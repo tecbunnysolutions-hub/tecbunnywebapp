@@ -49,6 +49,7 @@ export async function POST(request: NextRequest) {
     response.cookies.delete('sb-access-token')
     response.cookies.delete('sb-refresh-token')
     response.cookies.delete('superadmin-session')
+    response.cookies.delete('tb-superadmin-active')
 
     // SECURITY: Force browser to clear sensitive data on signout
     response.headers.set('Clear-Site-Data', '"cookies", "storage", "cache"')

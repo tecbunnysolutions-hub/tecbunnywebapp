@@ -89,6 +89,14 @@ export async function POST(request: Request) {
       maxAge: SUPERADMIN_SESSION_TTL_SECONDS
     });
 
+    response.cookies.set('tb-superadmin-active', 'true', {
+      httpOnly: false,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+      maxAge: SUPERADMIN_SESSION_TTL_SECONDS
+    });
+
     return response;
   } catch (error) {
     logger.error('superadmin_login.error', { error: error instanceof Error ? error.message : error });

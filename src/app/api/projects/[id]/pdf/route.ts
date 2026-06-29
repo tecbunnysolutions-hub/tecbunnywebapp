@@ -70,33 +70,27 @@ export async function GET(
         doc.on('end', () => resolve(Buffer.concat(chunks)));
         doc.on('error', (err) => reject(err));
 
-        // --- Header (Sitewide Standard) ---
-        doc.fillColor('#0F172A')
-           .fontSize(10)
-           .font('Helvetica-Bold')
-           .text('TECBUNNY SOLUTIONS PRIVATE LIMITED', 50, 40);
-        
-        doc.fillColor('#64748B')
-           .fontSize(8)
-           .font('Helvetica')
-           .text('CONFIDENTIAL INVESTOR DOCUMENT', 400, 40, { align: 'right' });
-
-        doc.strokeColor('#2563EB').lineWidth(1.5);
-        doc.moveTo(50, 55).lineTo(doc.page.width - 50, 55).stroke();
+        // Start below the header standard blue line
+        doc.y = 80;
 
         // --- Document Title ---
         doc.fillColor('#0F172A')
            .fontSize(24)
            .font('Helvetica-Bold')
-           .text(unescapeHtml(project.name).toUpperCase(), 50, 80);
+           .text(unescapeHtml(project.name).toUpperCase(), 50, undefined, { width: doc.page.width - 100 });
 
+        doc.moveDown(0.5);
+
+        // --- Status ---
         doc.fillColor('#2563EB')
            .fontSize(12)
            .font('Helvetica-Bold')
-           .text(`Status: ${project.status}`, 50, 110);
+           .text(`Status: ${project.status}`, 50);
+
+        doc.moveDown(1.5);
 
         // --- Financial Table ---
-        const tableTop = 135;
+        const tableTop = doc.y;
         doc.rect(50, tableTop, doc.page.width - 100, 70).fill('#F8FAFC');
         
         // Vertical accent bar
@@ -114,37 +108,62 @@ export async function GET(
         doc.fillColor('#475569').fontSize(9).font('Helvetica-Bold').text('REMAINING REQUIRED', 390, tableTop + 15);
         doc.fillColor('#EF4444').fontSize(16).font('Helvetica-Bold').text(formatCurrency(remaining), 390, tableTop + 30);
 
+        // Manually move cursor below the table card
+        doc.y = tableTop + 70;
+        doc.moveDown(2);
+
         // --- Section: Executive Summary ---
+        if (doc.y > doc.page.height - 120) {
+          doc.addPage();
+          doc.y = 75;
+        }
+
         doc.fillColor('#0F172A')
            .fontSize(14)
            .font('Helvetica-Bold')
-           .text('1. Project Overview', 50, 230);
+           .text('1. Project Overview', 50);
+        doc.moveDown(0.6);
 
         doc.fillColor('#334155')
            .fontSize(11)
            .font('Helvetica')
-           .text(unescapeHtml(project.explanation), 50, 250, { width: doc.page.width - 100, lineGap: 4 });
+           .text(unescapeHtml(project.explanation), 50, undefined, { width: doc.page.width - 100, lineGap: 4 });
+
+        doc.moveDown(2);
 
         // --- Section: Strategic Motive ---
+        if (doc.y > doc.page.height - 120) {
+          doc.addPage();
+          doc.y = 75;
+        }
+
         doc.fillColor('#0F172A')
            .fontSize(14)
            .font('Helvetica-Bold')
-           .text('2. Strategic Motive', 50, 320);
+           .text('2. Strategic Motive', 50);
+        doc.moveDown(0.6);
 
         doc.fillColor('#334155')
            .fontSize(11)
            .font('Helvetica')
-           .text(unescapeHtml(project.motive), 50, 340, { width: doc.page.width - 100, lineGap: 4 });
+           .text(unescapeHtml(project.motive), 50, undefined, { width: doc.page.width - 100, lineGap: 4 });
+
+        doc.moveDown(2);
 
         // --- Section: Detailed Specifications (HTML parser) ---
+        if (doc.y > doc.page.height - 120) {
+          doc.addPage();
+          doc.y = 75;
+        }
+
         doc.fillColor('#0F172A')
            .fontSize(14)
            .font('Helvetica-Bold')
-           .text('3. Detailed Specifications', 50, 420);
+           .text('3. Detailed Specifications', 50);
+        doc.moveDown(0.8);
 
         // Simple HTML Rendering
         const htmlContent = project.detailed_information || '';
-        let currentY = 440;
 
         // Split HTML text by paragraph, list item, or headings tags
         const parts = htmlContent.split(/<\/p>|<\/h3>|<\/h4>|<\/li>|<br\s*\/?>/i);
@@ -154,9 +173,9 @@ export async function GET(
           if (!part) continue;
 
           // Check overflow and add page if necessary
-          if (currentY > doc.page.height - 80) {
+          if (doc.y > doc.page.height - 80) {
             doc.addPage();
-            currentY = 60; // reset to top margin
+            doc.y = 75; // reset to top margin below header line
           }
 
           if (part.includes('<h3') || part.includes('<h4')) {
@@ -164,29 +183,45 @@ export async function GET(
             doc.fillColor('#2563EB')
                .fontSize(12)
                .font('Helvetica-Bold')
-               .text(unescapeHtml(text), 50, currentY);
-            currentY += 22;
+               .text(unescapeHtml(text), 50);
+            doc.moveDown(0.5);
           } else if (part.includes('<li')) {
             const text = part.replace(/<[^>]*>/g, '').trim();
             doc.fillColor('#1E293B')
                .fontSize(10.5)
                .font('Helvetica')
-               .text(`•  ${unescapeHtml(text)}`, 65, currentY, { width: doc.page.width - 130 });
-            currentY += doc.heightOfString(`•  ${unescapeHtml(text)}`, { width: doc.page.width - 130 }) + 8;
+               .text(`•  ${unescapeHtml(text)}`, 65, undefined, { width: doc.page.width - 130 });
+            doc.moveDown(0.4);
           } else {
             const text = part.replace(/<[^>]*>/g, '').trim();
             doc.fillColor('#334155')
                .fontSize(10.5)
                .font('Helvetica')
-               .text(unescapeHtml(text), 50, currentY, { width: doc.page.width - 100, lineGap: 3 });
-            currentY += doc.heightOfString(unescapeHtml(text), { width: doc.page.width - 100, lineGap: 3 }) + 12;
+               .text(unescapeHtml(text), 50, undefined, { width: doc.page.width - 100, lineGap: 3 });
+            doc.moveDown(0.6);
           }
         }
 
-        // --- Global Footer (confidential notice and page numbers) ---
+        // --- Global Header & Footer (drawn on every page at the end to prevent page-break ordering glitches) ---
         const pages = doc.bufferedPageRange();
         for (let i = 0; i < pages.count; i++) {
           doc.switchToPage(i);
+
+          // Draw header
+          doc.fillColor('#0F172A')
+             .fontSize(10)
+             .font('Helvetica-Bold')
+             .text('TECBUNNY SOLUTIONS PRIVATE LIMITED', 50, 40);
+          
+          doc.fillColor('#64748B')
+             .fontSize(8)
+             .font('Helvetica')
+             .text('CONFIDENTIAL INVESTOR DOCUMENT', 400, 40, { align: 'right' });
+
+          doc.strokeColor('#2563EB').lineWidth(1.5);
+          doc.moveTo(50, 55).lineTo(doc.page.width - 50, 55).stroke();
+
+          // Draw footer
           doc.strokeColor('#E2E8F0').lineWidth(0.5);
           doc.moveTo(50, doc.page.height - 45).lineTo(doc.page.width - 50, doc.page.height - 45).stroke();
 
