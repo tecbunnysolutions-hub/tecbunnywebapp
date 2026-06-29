@@ -360,6 +360,16 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
     }
     return [];
   });
+
+  const [brands, setBrands] = React.useState<string[]>(() => {
+    if (initialEnrichedProducts.length > 0) {
+      const extractedBrands = initialEnrichedProducts
+        .map(p => p.brand)
+        .filter((b): b is string => Boolean(b));
+      return [...new Set(extractedBrands)].sort((a, b) => a.localeCompare(b));
+    }
+    return [];
+  });
   
   const [priceRange, setPriceRange] = React.useState<[number, number]>(() => {
     if (initialEnrichedProducts.length > 0) {
@@ -434,6 +444,7 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
           }
           setProducts([]);
           setCategories([]);
+          setBrands([]);
           setLoading(false);
           return;
         }
@@ -452,6 +463,12 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
         const uniqueCategories = [...new Set(enrichedProducts.map(p => p.category).filter(Boolean))]
           .sort((a, b) => a.localeCompare(b));
         setCategories(uniqueCategories);
+        
+        const extractedBrands = enrichedProducts
+          .map(p => p.brand)
+          .filter((b): b is string => Boolean(b));
+        const uniqueBrands = [...new Set(extractedBrands)].sort((a, b) => a.localeCompare(b));
+        setBrands(uniqueBrands);
         
         // Set price range based on actual product prices
         if (enrichedProducts.length === 0) {
@@ -492,7 +509,10 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
     }
 
     if (categoryFilter) {
-      filtered = filtered.filter(product => product.category === categoryFilter);
+      filtered = filtered.filter(product => 
+        product.category === categoryFilter || 
+        (product.category || '').startsWith(`${categoryFilter} > `)
+      );
     }
 
     if (brandFilter) {
@@ -547,6 +567,71 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
 
   const hasActiveCategory = Boolean(categoryFilter);
   const resolvedResultsLabel = loading ? 'Loading...' : `${filteredProducts.length} items`;
+
+  // Helper to parse hierarchical category paths and build a tree
+  const categoryTree = React.useMemo(() => {
+    const tree: Record<string, { name: string; count: number; fullName: string; children: Record<string, any> }> = {};
+    
+    products.forEach(p => {
+      if (!p.category) return;
+      const parts = p.category.split(' > ').map(s => s.trim());
+      let currentLevel = tree;
+      let path = '';
+      
+      parts.forEach((part, idx) => {
+        path = idx === 0 ? part : `${path} > ${part}`;
+        if (!currentLevel[part]) {
+          currentLevel[part] = {
+            name: part,
+            count: 0,
+            fullName: path,
+            children: {}
+          };
+        }
+        currentLevel[part].count++;
+        currentLevel = currentLevel[part].children;
+      });
+    });
+    
+    return tree;
+  }, [products]);
+
+  // Helper to render nested category lists recursively
+  const renderCategoryTree = (
+    tree: Record<string, any>, 
+    level = 0
+  ) => {
+    return Object.keys(tree).map(key => {
+      const node = tree[key];
+      const isSelected = categoryFilter === node.fullName;
+      const isParentOfSelected = categoryFilter.startsWith(`${node.fullName} > `);
+      
+      return (
+        <div key={node.fullName} className="space-y-1">
+          <button
+            type="button"
+            onClick={() => updateUrlParams({ category: isSelected ? '' : node.fullName })}
+            className={cn(
+              "w-full text-left py-1 hover:text-primary transition-colors flex items-center justify-between gap-2 font-sans",
+              level === 0 ? "font-semibold text-white" : "font-normal text-xs",
+              isSelected ? "text-primary font-bold" : "text-muted-foreground",
+              level > 0 && "pl-3 border-l border-border/40 ml-1.5"
+            )}
+          >
+            <span className="truncate">{node.name}</span>
+            <span className="text-[10px] font-mono text-muted-foreground/60">({node.count})</span>
+          </button>
+          
+          {/* Render children if this node has children and is selected or is a parent of the selected category */}
+          {Object.keys(node.children).length > 0 && (isSelected || isParentOfSelected || categoryFilter === '') && (
+            <div className="space-y-1">
+              {renderCategoryTree(node.children, level + 1)}
+            </div>
+          )}
+        </div>
+      );
+    });
+  };
 
   return (
     <section className="relative overflow-hidden bg-background text-foreground selection:bg-primary/20 selection:text-white min-h-screen font-sans antialiased">
@@ -603,59 +688,105 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
               <p className="mt-2.5 text-xs font-mono text-muted-foreground/60 tracking-wider uppercase">{resolvedResultsLabel}</p>
             </form>
           </div>
+        </div>
 
-          {/* Control Bar (Category Filter + Sort Options) */}
-          {categories.length > 0 && (
-            <div 
-              className="reveal-section sticky top-[80px] z-20 flex flex-col sm:flex-row items-center justify-between gap-4 border-y border-border bg-background/85 backdrop-blur-md py-4 px-4 rounded-xl"
-              data-reveal-id="products-filters"
-            >
-              {/* Categories scrollable list */}
-              <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto overflow-x-auto no-scrollbar py-1">
-                <button
-                  type="button"
-                  onClick={() => updateUrlParams({ category: '' })}
-                  className={cn(
-                    'reveal-item rounded-lg px-4 py-2 text-sm font-semibold uppercase tracking-wider transition-all duration-300 border whitespace-nowrap',
-                    !categoryFilter
-                      ? 'bg-primary/15 text-primary border-primary/40 shadow-[0_0_15px_rgba(59,130,246,0.15)]'
-                      : 'bg-muted/50 text-muted-foreground border-border hover:text-foreground hover:bg-muted/80 hover:border-border/80',
-                    revealDelayClass(0)
-                  )}
+        {/* Layout container */}
+        <div className="flex flex-col lg:flex-row gap-8 items-start mt-8 w-full">
+          
+          {/* Sidebar Filters */}
+          <aside className="w-full lg:w-64 shrink-0 bg-card/20 border border-border/80 backdrop-blur-md rounded-2xl p-6 lg:sticky lg:top-[90px] space-y-6 reveal-section" data-reveal-id="products-sidebar">
+            {/* Header */}
+            <div className="flex items-center justify-between border-b border-border/60 pb-3">
+              <h2 className="text-sm font-bold uppercase tracking-wider font-mono text-white">Filters</h2>
+              {(categoryFilter || brandFilter || priceRange[0] > 0 || priceRange[1] < maxPrice) && (
+                <button 
+                  onClick={clearFilters}
+                  className="text-xs font-mono text-primary hover:underline transition-all"
                 >
-                  All Products
+                  Clear All
                 </button>
-                {categories.map((category, idx) => (
-                  <button
-                    key={category}
-                    type="button"
-                    onClick={() => updateUrlParams({ category })}
-                    className={cn(
-                      'reveal-item rounded-lg px-4 py-2 text-sm font-semibold uppercase tracking-wider transition-all duration-300 border whitespace-nowrap',
-                      categoryFilter === category
-                        ? 'bg-primary/15 text-primary border-primary/40 shadow-[0_0_15px_rgba(59,130,246,0.15)]'
-                        : 'bg-muted/50 text-muted-foreground border-border hover:text-foreground hover:bg-muted/80 hover:border-border/80',
-                      revealDelayClass(50 + idx * 20)
-                    )}
-                  >
-                    {category}
-                  </button>
-                ))}
-                {categoryFilter && (
-                  <button
-                    type="button"
-                    onClick={clearFilters}
-                    className={cn(
-                      'reveal-item rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-2 text-sm font-semibold uppercase tracking-wider text-destructive transition-all duration-300 hover:bg-destructive/20 hover:text-destructive-foreground',
-                      revealDelayClass(120)
-                    )}
-                  >
-                    Reset
-                  </button>
+              )}
+            </div>
+
+            {/* Category Tree Filter */}
+            <div className="space-y-3">
+              <h3 className="text-xs font-semibold uppercase tracking-wider font-mono text-muted-foreground">Categories</h3>
+              <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1 no-scrollbar text-sm">
+                {Object.keys(categoryTree).length === 0 ? (
+                  <p className="text-xs text-muted-foreground font-mono">No categories</p>
+                ) : (
+                  renderCategoryTree(categoryTree)
                 )}
               </div>
+            </div>
 
-              {/* Sort Dropdown */}
+            {/* Brand Filter */}
+            {brands.length > 0 && (
+              <div className="space-y-3 border-t border-border/40 pt-4">
+                <h3 className="text-xs font-semibold uppercase tracking-wider font-mono text-muted-foreground">Brands</h3>
+                <div className="space-y-2.5 max-h-[220px] overflow-y-auto pr-1 no-scrollbar text-sm">
+                  {brands.map(brand => {
+                    const isChecked = brandFilter === brand;
+                    return (
+                      <label key={brand} className="flex items-center gap-2.5 cursor-pointer text-muted-foreground hover:text-foreground transition-colors group">
+                        <input 
+                          type="checkbox"
+                          checked={isChecked}
+                          onChange={() => updateUrlParams({ brand: isChecked ? '' : brand })}
+                          className="rounded border-border bg-background text-primary focus:ring-primary/30 h-4 w-4 cursor-pointer"
+                        />
+                        <span className={cn("font-medium", isChecked && "text-primary font-semibold")}>
+                          {brand}
+                        </span>
+                      </label>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Price Filter */}
+            <div className="space-y-3 border-t border-border/40 pt-4">
+              <h3 className="text-xs font-semibold uppercase tracking-wider font-mono text-muted-foreground">Price (INR)</h3>
+              <div className="flex gap-2 items-center">
+                <div className="relative flex-1">
+                  <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[10px] font-mono text-muted-foreground/60">₹</span>
+                  <input 
+                    type="number" 
+                    value={priceRange[0] || ''} 
+                    onChange={e => {
+                      const val = e.target.value ? Number(e.target.value) : 0;
+                      setPriceRange([val, priceRange[1]]);
+                    }}
+                    className="w-full bg-background border border-border/80 rounded-lg pl-5 pr-1 py-1 text-xs font-mono text-white focus:outline-none focus:border-primary/50"
+                    placeholder="Min"
+                  />
+                </div>
+                <span className="text-muted-foreground/50 text-xs">-</span>
+                <div className="relative flex-1">
+                  <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[10px] font-mono text-muted-foreground/60">₹</span>
+                  <input 
+                    type="number" 
+                    value={priceRange[1] || ''} 
+                    onChange={e => {
+                      const val = e.target.value ? Number(e.target.value) : maxPrice;
+                      setPriceRange([priceRange[0], val]);
+                    }}
+                    className="w-full bg-background border border-border/80 rounded-lg pl-5 pr-1 py-1 text-xs font-mono text-white focus:outline-none focus:border-primary/50"
+                    placeholder="Max"
+                  />
+                </div>
+              </div>
+            </div>
+          </aside>
+
+          {/* Right Column: Grid and Controls */}
+          <div className="flex-1 w-full">
+            {/* Sub-header with item count and sorting */}
+            <div className="flex flex-col sm:flex-row items-center justify-between border-b border-border/40 pb-4 gap-4 mb-6">
+              <p className="text-sm font-mono text-muted-foreground w-full sm:w-auto text-left">
+                Showing {resolvedResultsLabel}
+              </p>
               <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
                 <span className="text-xs font-mono text-muted-foreground uppercase tracking-wider">Sort by</span>
                 <select
@@ -672,135 +803,134 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
                 </select>
               </div>
             </div>
-          )}
-        </div>
 
-        {/* Product Grid Area */}
-        <div className="reveal-section is-revealed mt-16" data-reveal-id="products-grid">
-          {loading ? (
-            <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 min-h-[400px]">
-              {Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} className="flex h-full w-full max-w-[320px] mx-auto sm:mx-0 flex-col rounded-2xl border border-border bg-card/20 p-6">
-                  <Skeleton className="mb-6 aspect-square w-full rounded-xl bg-muted/60 animate-pulse" />
-                  <div className="space-y-2">
-                    <Skeleton className="h-3 w-1/4 bg-muted/60 rounded animate-pulse" />
-                    <Skeleton className="h-5 w-3/4 bg-muted/60 rounded animate-pulse" />
-                    <Skeleton className="h-4 w-5/6 bg-muted/60 rounded animate-pulse" />
-                  </div>
-                  <div className="mt-8 flex items-center justify-between pt-4 border-t border-border">
-                    <div className="flex flex-col gap-1 w-20">
-                      <Skeleton className="h-6 w-full bg-muted/60 rounded animate-pulse" />
-                    </div>
-                    <Skeleton className="h-9 w-9 rounded-lg bg-muted/60 rounded animate-pulse" />
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : filteredProducts.length > 0 ? (
-            <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-              {filteredProducts.map((product, index) => {
-                const displayName = product.title || product.name || 'Product';
-                const imageUrl = getProductDisplayImage(product, {
-                  fallbackText: displayName,
-                  fallbackSize: '400x400',
-                });
-                const basePrice = typeof product.price === 'number' ? product.price : Number(product.price) || 0;
-                
-                // Ensure proper numeric parsing to avoid NaN rendering crashes if unstructured tier text leaks through
-                const tierVal = (product as any)?.pricing?.tiers?.[0]?.discount;
-                const activeTierPrice = tierVal != null ? Number(tierVal) || basePrice : basePrice;
-
-                let offerPrice = typeof product.offer_price === 'number' && product.offer_price > 0 && product.offer_price < basePrice
-                  ? product.offer_price
-                  : null;
-                
-                if (!offerPrice && activeTierPrice < basePrice) {
-                  offerPrice = activeTierPrice;
-                }
-
-                const simpleDesc = getSimplifiedDescription(product.description);
-
-                return (
-                  <ProductTileErrorBoundary key={product.id || index} productId={product.id}>
-                    <div
-                      className="relative flex h-full w-full max-w-[320px] mx-auto sm:mx-0 flex-col justify-between p-6 rounded-2xl border border-border/80 bg-card/40 backdrop-blur-sm shadow-[0_4px_20px_-1px_rgba(0,0,0,0.3)] transition-all duration-500 hover:-translate-y-1.5 hover:border-primary/50 hover:shadow-[0_0_30px_-5px_rgba(var(--primary),0.15)] group"
-                    >
-                      <Link href={`/products/${product.id}`} className="block flex-grow">
-                        {/* Image Frame */}
-                        <div className="relative mb-6 aspect-square overflow-hidden rounded-xl bg-background/80 border border-border/50 group-hover:border-primary/30 transition-colors">
-                          <ProductGridImage
-                            src={imageUrl}
-                            alt={displayName}
-                            fallbackText={displayName}
-                          />
-                          {/* Discount Badge */}
-                          {product.discount_percentage && product.discount_percentage > 0 ? (
-                            <div className="absolute left-3 top-3 rounded-full bg-primary/15 border border-primary/30 px-3 py-1 text-xs font-mono font-bold text-primary tracking-wider uppercase shadow-sm animate-fade-in">
-                              -{product.discount_percentage}% OFF
-                            </div>
-                          ) : null}
+            {/* Product Grid */}
+            <div className="reveal-section is-revealed" data-reveal-id="products-grid">
+              {loading ? (
+                <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 min-h-[400px]">
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <div key={i} className="flex h-full w-full max-w-[320px] mx-auto sm:mx-0 flex-col rounded-2xl border border-border bg-card/20 p-6">
+                      <Skeleton className="mb-6 aspect-square w-full rounded-xl bg-muted/60 animate-pulse" />
+                      <div className="space-y-2">
+                        <Skeleton className="h-3 w-1/4 bg-muted/60 rounded animate-pulse" />
+                        <Skeleton className="h-5 w-3/4 bg-muted/60 rounded animate-pulse" />
+                        <Skeleton className="h-4 w-5/6 bg-muted/60 rounded animate-pulse" />
+                      </div>
+                      <div className="mt-8 flex items-center justify-between pt-4 border-t border-border">
+                        <div className="flex flex-col gap-1 w-20">
+                          <Skeleton className="h-6 w-full bg-muted/60 rounded animate-pulse" />
                         </div>
-
-                        {/* Text Content */}
-                        <div className="space-y-2">
-                          <div className="flex items-center justify-between gap-2">
-                            <span className="text-xs font-mono uppercase tracking-wider text-muted-foreground/80">
-                              {product.brand || product.category || 'Hardware'}
-                            </span>
-                            {product.rating > 0 && (
-                              <div className="flex items-center gap-0.5 text-xs font-mono text-muted-foreground">
-                                <span className="text-amber-500">★</span>
-                                <span>{product.rating.toFixed(1)}</span>
-                              </div>
-                            )}
-                          </div>
-                          
-                          <h3 className="text-lg font-bold tracking-tight text-foreground transition-colors group-hover:text-primary font-tech">
-                            {displayName}
-                          </h3>
-                          
-                          <p className="text-sm font-light text-muted-foreground line-clamp-2 leading-relaxed">
-                            {simpleDesc}
-                          </p>
-                        </div>
-                      </Link>
-
-                      {/* Footer Actions */}
-                      <div className="mt-6 flex items-center justify-between pt-4 border-t border-border/60">
-                        <div className="flex flex-col">
-                          <span className="text-xl font-black tracking-tight text-foreground font-tech flex items-baseline gap-1.5">
-                            ₹{(offerPrice ?? basePrice).toLocaleString('en-IN')}
-                            <span className="text-xs font-normal text-muted-foreground uppercase tracking-wide">Inc. GST</span>
-                          </span>
-                          {offerPrice && (
-                            <span className="text-sm text-muted-foreground line-through font-light mt-0.5">
-                              ₹{basePrice.toLocaleString('en-IN')}
-                            </span>
-                          )}
-                        </div>
-                        <button
-                          type="button"
-                          onClick={(event) => {
-                            event.preventDefault();
-                            event.stopPropagation();
-                            addToCart(product);
-                          }}
-                          className="flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-muted/30 text-foreground transition-all duration-300 hover:border-primary/50 hover:bg-primary hover:text-primary-foreground hover:scale-110 shadow-sm cursor-pointer"
-                          aria-label={`Add ${displayName} to cart`}
-                        >
-                          <span className="text-lg font-bold">+</span>
-                        </button>
+                        <Skeleton className="h-9 w-9 rounded-lg bg-muted/60 animate-pulse" />
                       </div>
                     </div>
-                  </ProductTileErrorBoundary>
-                );
-              })}
+                  ))}
+                </div>
+              ) : filteredProducts.length > 0 ? (
+                <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3">
+                  {filteredProducts.map((product, index) => {
+                    const displayName = product.title || product.name || 'Product';
+                    const imageUrl = getProductDisplayImage(product, {
+                      fallbackText: displayName,
+                      fallbackSize: '400x400',
+                    });
+                    const basePrice = typeof product.price === 'number' ? product.price : Number(product.price) || 0;
+                    
+                    const tierVal = (product as any)?.pricing?.tiers?.[0]?.discount;
+                    const activeTierPrice = tierVal != null ? Number(tierVal) || basePrice : basePrice;
+
+                    let offerPrice = typeof product.offer_price === 'number' && product.offer_price > 0 && product.offer_price < basePrice
+                      ? product.offer_price
+                      : null;
+                    
+                    if (!offerPrice && activeTierPrice < basePrice) {
+                      offerPrice = activeTierPrice;
+                    }
+
+                    const simpleDesc = getSimplifiedDescription(product.description);
+
+                    return (
+                      <ProductTileErrorBoundary key={product.id || index} productId={product.id}>
+                        <div
+                          className="relative flex h-full w-full max-w-[320px] mx-auto sm:mx-0 flex-col justify-between p-6 rounded-2xl border border-border/80 bg-card/40 backdrop-blur-sm shadow-[0_4px_20px_-1px_rgba(0,0,0,0.3)] transition-all duration-500 hover:-translate-y-1.5 hover:border-primary/50 hover:shadow-[0_0_30px_-5px_rgba(var(--primary),0.15)] group"
+                        >
+                          <Link href={`/products/${product.id}`} className="block flex-grow">
+                            {/* Image Frame */}
+                            <div className="relative mb-6 aspect-square overflow-hidden rounded-xl bg-background/80 border border-border/50 group-hover:border-primary/30 transition-colors">
+                              <ProductGridImage
+                                src={imageUrl}
+                                alt={displayName}
+                                fallbackText={displayName}
+                              />
+                              {/* Discount Badge */}
+                              {product.discount_percentage && product.discount_percentage > 0 ? (
+                                <div className="absolute left-3 top-3 rounded-full bg-primary/15 border border-primary/30 px-3 py-1 text-xs font-mono font-bold text-primary tracking-wider uppercase shadow-sm animate-fade-in">
+                                  -{product.discount_percentage}% OFF
+                                </div>
+                              ) : null}
+                            </div>
+
+                            {/* Text Content */}
+                            <div className="space-y-2">
+                              <div className="flex items-center justify-between gap-2">
+                                <span className="text-xs font-mono uppercase tracking-wider text-muted-foreground/80">
+                                  {product.brand || product.category || 'Hardware'}
+                                </span>
+                                {product.rating > 0 && (
+                                  <div className="flex items-center gap-0.5 text-xs font-mono text-muted-foreground">
+                                    <span className="text-amber-500">★</span>
+                                    <span>{product.rating.toFixed(1)}</span>
+                                  </div>
+                                )}
+                              </div>
+                              
+                              <h3 className="text-lg font-bold tracking-tight text-foreground transition-colors group-hover:text-primary font-tech">
+                                {displayName}
+                              </h3>
+                              
+                              <p className="text-sm font-light text-muted-foreground line-clamp-2 leading-relaxed">
+                                {simpleDesc}
+                              </p>
+                            </div>
+                          </Link>
+
+                          {/* Footer Actions */}
+                          <div className="mt-6 flex items-center justify-between pt-4 border-t border-border/60">
+                            <div className="flex flex-col">
+                              <span className="text-xl font-black tracking-tight text-foreground font-tech flex items-baseline gap-1.5">
+                                ₹{(offerPrice ?? basePrice).toLocaleString('en-IN')}
+                                <span className="text-xs font-normal text-muted-foreground uppercase tracking-wide">Inc. GST</span>
+                              </span>
+                              {offerPrice && (
+                                <span className="text-sm text-muted-foreground line-through font-light mt-0.5">
+                                  ₹{basePrice.toLocaleString('en-IN')}
+                                </span>
+                              )}
+                            </div>
+                            <button
+                              type="button"
+                              onClick={(event) => {
+                                event.preventDefault();
+                                event.stopPropagation();
+                                addToCart(product);
+                              }}
+                              className="flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-muted/30 text-foreground transition-all duration-300 hover:border-primary/50 hover:bg-primary hover:text-primary-foreground hover:scale-110 shadow-sm cursor-pointer"
+                              aria-label={`Add ${displayName} to cart`}
+                            >
+                              <span className="text-lg font-bold">+</span>
+                            </button>
+                          </div>
+                        </div>
+                      </ProductTileErrorBoundary>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="rounded-2xl border border-dashed border-border bg-muted/20 p-16 text-center text-muted-foreground font-light text-base backdrop-blur-sm">
+                  {fetchWarning || 'No products matched your search.'}
+                </div>
+              )}
             </div>
-          ) : (
-            <div className="rounded-2xl border border-dashed border-border bg-muted/20 p-16 text-center text-muted-foreground font-light text-base backdrop-blur-sm">
-              {fetchWarning || 'No products matched your search.'}
-            </div>
-          )}
+          </div>
         </div>
       </div>
     </section>
