@@ -4,7 +4,7 @@ import { createServiceClient, isSupabaseServiceConfigured } from '@/lib/supabase
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-superadmin-username, x-superadmin-password',
 };
 
 export async function OPTIONS() {
