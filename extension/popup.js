@@ -1,13 +1,30 @@
 document.addEventListener('DOMContentLoaded', () => {
+  // Screens
+  const settingsScreen = document.getElementById('settingsScreen');
+  const scraperScreen = document.getElementById('scraperScreen');
+
+  // Triggers/Buttons
+  const settingsBtn = document.getElementById('settingsBtn');
+  const backBtn = document.getElementById('backBtn');
+  const saveSettingsBtn = document.getElementById('saveSettingsBtn');
   const scrapeBtn = document.getElementById('scrapeBtn');
   const sendBtn = document.getElementById('sendBtn');
+
+  // Input Fields
+  const superadminUser = document.getElementById('superadminUser');
+  const superadminPass = document.getElementById('superadminPass');
   const titleInput = document.getElementById('productTitle');
   const priceInput = document.getElementById('productPrice');
   const descInput = document.getElementById('productDescription');
   const imgInput = document.getElementById('productImage');
+
+  // Image Preview elements
   const imgThumbnail = document.getElementById('imgThumbnail');
   const imgPlaceholder = document.getElementById('imgPlaceholder');
+
+  // Status containers
   const statusContainer = document.getElementById('statusContainer');
+  const settingsStatus = document.getElementById('settingsStatus');
 
   let currentSourceUrl = '';
 
@@ -31,6 +48,25 @@ document.addEventListener('DOMContentLoaded', () => {
     statusContainer.textContent = '';
   }
 
+  function showSettingsStatus(message, type) {
+    settingsStatus.textContent = message;
+    settingsStatus.className = 'status-container'; // Reset
+    
+    if (type === 'success') {
+      settingsStatus.classList.add('status-success');
+    } else if (type === 'error') {
+      settingsStatus.classList.add('status-error');
+    } else {
+      settingsStatus.classList.add('status-info');
+    }
+    settingsStatus.style.display = 'flex';
+  }
+
+  function clearSettingsStatus() {
+    settingsStatus.style.display = 'none';
+    settingsStatus.textContent = '';
+  }
+
   function updateImagePreview(url) {
     if (url && (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:'))) {
       imgThumbnail.src = url;
@@ -42,6 +78,64 @@ document.addEventListener('DOMContentLoaded', () => {
       imgPlaceholder.style.display = 'flex';
     }
   }
+
+  // Navigation functions
+  function checkCredentials() {
+    chrome.storage.local.get(['superadminUser', 'superadminPass'], (data) => {
+      if (!data.superadminUser || !data.superadminPass) {
+        // First-time or reset credentials setup
+        superadminUser.value = '';
+        superadminPass.value = '';
+        backBtn.style.display = 'none'; // Force save
+        scraperScreen.classList.remove('active');
+        settingsScreen.classList.add('active');
+      } else {
+        // Normal scrape screen
+        superadminUser.value = data.superadminUser;
+        superadminPass.value = data.superadminPass;
+        backBtn.style.display = 'block';
+        settingsScreen.classList.remove('active');
+        scraperScreen.classList.add('active');
+      }
+    });
+  }
+
+  // Trigger check on load
+  checkCredentials();
+
+  // Settings screen navigation button
+  settingsBtn.addEventListener('click', () => {
+    clearSettingsStatus();
+    backBtn.style.display = 'block'; // Can cancel out
+    scraperScreen.classList.remove('active');
+    settingsScreen.classList.add('active');
+  });
+
+  // Cancel / Back Button Click
+  backBtn.addEventListener('click', () => {
+    settingsScreen.classList.remove('active');
+    scraperScreen.classList.add('active');
+  });
+
+  // Save Credentials Click
+  saveSettingsBtn.addEventListener('click', () => {
+    clearSettingsStatus();
+    const user = superadminUser.value.trim();
+    const pass = superadminPass.value.trim();
+
+    if (!user || !pass) {
+      showSettingsStatus('Please fill in both username and password fields.', 'error');
+      return;
+    }
+
+    chrome.storage.local.set({ superadminUser: user, superadminPass: pass }, () => {
+      showSettingsStatus('Credentials saved successfully!', 'success');
+      setTimeout(() => {
+        settingsScreen.classList.remove('active');
+        scraperScreen.classList.add('active');
+      }, 500);
+    });
+  });
 
   // Update preview image when user types in URL
   imgInput.addEventListener('input', () => {
@@ -60,7 +154,7 @@ document.addEventListener('DOMContentLoaded', () => {
         throw new Error('No active tab found.');
       }
 
-      // Check if page can be scripted (avoid chrome://, about:, file:// if restricted, etc.)
+      // Check if page can be scripted
       if (!tab.url || tab.url.startsWith('chrome://') || tab.url.startsWith('edge://') || tab.url.startsWith('about:')) {
         throw new Error('Cannot scrape system pages. Please navigate to a product web page.');
       }
@@ -135,7 +229,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (response && response.success) {
         showStatus('Product data successfully transmitted to external database!', 'success');
-        // Keep button disabled on success to prevent double submission
       } else {
         const errMsg = response && response.error ? response.error : 'Unknown server or network error.';
         showStatus(`Failed to transmit product: ${errMsg}`, 'error');

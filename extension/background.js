@@ -15,14 +15,22 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 async function sendProductData(productData) {
   // Configured to point directly to the production tecbunny API endpoint
   const url = 'https://www.tecbunny.com/api/products/scraper';
-  const token = 'tecbunny-scraper-token-2026';
+  
+  // Retrieve saved credentials from local storage
+  const credentials = await new Promise(resolve => {
+    chrome.storage.local.get(['superadminUser', 'superadminPass'], resolve);
+  });
+
+  const username = credentials.superadminUser || '';
+  const password = credentials.superadminPass || '';
   
   try {
     const response = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
+        'x-superadmin-username': username,
+        'x-superadmin-password': password
       },
       body: JSON.stringify(productData)
     });

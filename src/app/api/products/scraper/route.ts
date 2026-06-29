@@ -13,15 +13,17 @@ export async function OPTIONS() {
 
 export async function POST(request: NextRequest) {
   try {
-    // 1. Authenticate Request
-    const authHeader = request.headers.get('authorization') || '';
-    const token = authHeader.replace(/^bearer\s+/i, '').trim();
-    const expectedToken = process.env.SCRAPER_API_KEY || 'tecbunny-scraper-token-2026';
+    // 1. Authenticate Request using Superadmin credentials
+    const usernameHeader = request.headers.get('x-superadmin-username') || '';
+    const passwordHeader = request.headers.get('x-superadmin-password') || '';
 
-    if (!token || token !== expectedToken) {
+    const expectedUsername = process.env.SUPERADMIN_USER_ID || 'Shubham6010';
+    const expectedPassword = process.env.SUPERADMIN_PASSWORD || 'Bunny@6010';
+
+    if (usernameHeader !== expectedUsername || passwordHeader !== expectedPassword) {
       return NextResponse.json(
-        { error: 'Unauthorized: Invalid or missing API key' },
-        { status: 401, headers: corsHeaders }
+        { error: 'Forbidden: Invalid Superadmin credentials.' },
+        { status: 403, headers: corsHeaders }
       );
     }
 

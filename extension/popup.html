@@ -73,6 +73,7 @@
       letter-spacing: -0.025em;
       background: linear-gradient(135deg, #f8fafc, #cbd5e1);
       -webkit-background-clip: text;
+      background-clip: text;
       -webkit-text-fill-color: transparent;
     }
 
@@ -263,78 +264,182 @@
       color: #fca5a5;
       display: flex;
     }
+
+    /* Screen toggles & settings icon */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    
+    .header-title-area {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .settings-trigger {
+      background: none;
+      border: none;
+      color: #94a3b8;
+      cursor: pointer;
+      padding: 6px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+    }
+
+    .settings-trigger:hover {
+      background: #1e293b;
+      color: #cbd5e1;
+    }
+
+    .settings-trigger svg {
+      width: 20px;
+      height: 20px;
+      fill: currentColor;
+    }
+
+    .screen {
+      display: none;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    .screen.active {
+      display: flex;
+    }
   </style>
 </head>
 <body>
-  <!-- Header -->
-  <header>
-    <div class="logo-icon">
-      <svg viewBox="0 0 24 24">
-        <path d="M17.25 12a.75.75 0 0 1-.75.75H8.75a.75.75 0 0 1 0-1.5h7.75a.75.75 0 0 1 .75.75Zm.75-4a.75.75 0 0 0-.75-.75H5.75a.75.75 0 0 0 0 1.5h11.5A.75.75 0 0 0 18 8Zm-6 8a.75.75 0 0 0-.75-.75H5.75a.75.75 0 0 0 0 1.5h5.5A.75.75 0 0 0 12 16Z"/>
-        <path fill-rule="evenodd" d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2ZM3.5 12a8.5 8.5 0 1 1 17 0 8.5 8.5 0 0 1-17 0Z" clip-rule="evenodd"/>
-      </svg>
-    </div>
-    <div>
-      <h1>Product Extractor</h1>
-      <div class="subtitle">E-Commerce Data Pipeline</div>
-    </div>
-  </header>
-
-  <!-- Scrape Trigger -->
-  <div class="action-panel">
-    <button id="scrapeBtn" class="btn btn-primary">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
-        <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
-        <line x1="12" y1="22.08" x2="12" y2="12"></line>
-      </svg>
-      Scrape Product
-    </button>
-  </div>
-
-  <!-- Editable Preview Card -->
-  <div class="preview-card">
-    <div class="form-group">
-      <label for="productTitle">Title</label>
-      <input type="text" id="productTitle" placeholder="Product title will appear here...">
-    </div>
-
-    <div class="form-group">
-      <label for="productPrice">Price</label>
-      <input type="text" id="productPrice" placeholder="Product price...">
-    </div>
-
-    <div class="form-group">
-      <label for="productDescription">Description</label>
-      <textarea id="productDescription" placeholder="Product description..."></textarea>
-    </div>
-
-    <div class="form-group">
-      <label for="productImage">Image URL</label>
-      <div class="image-preview-container">
-        <img id="imgThumbnail" class="image-thumbnail" alt="Preview">
-        <div id="imgPlaceholder" class="image-placeholder">
+  <!-- Settings Screen -->
+  <div id="settingsScreen" class="screen">
+    <header>
+      <div class="header-title-area">
+        <div class="logo-icon">
           <svg viewBox="0 0 24 24">
-            <path d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-4.86 8.86l-3 3.87L9 13.14 6 17h12l-3.86-5.14z"/>
+            <path d="M12 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7Zm0-1.5a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/>
+            <path fill-rule="evenodd" d="m19.16 12.92.08-.92-.08-.92 1.76-1.38a.42.42 0 0 0 .1-.53l-1.67-2.88a.42.42 0 0 0-.5-.18l-2.07.83a7.7 7.7 0 0 0-1.6-0.92l-.31-2.2a.42.42 0 0 0-.41-.36H10.7a.42.42 0 0 0-.41.36l-.31 2.2a7.7 7.7 0 0 0-1.6.92l-2.07-.83a.42.42 0 0 0-.5.18l-1.67 2.88a.42.42 0 0 0 .1.53L6.01 11a7.7 7.7 0 0 0-.09.92c0 .31.03.62.09.92L4.25 14.22a.42.42 0 0 0-.1.53l1.67 2.88a.42.42 0 0 0 .5.18l2.07-.83c.49.36 1.02.67 1.6.92l.31 2.2a.42.42 0 0 0 .41.36h3.33a.42.42 0 0 0 .41-.36l.31-2.2a7.7 7.7 0 0 0 1.6-.92l2.07.83a.42.42 0 0 0 .5-.18l1.67-2.88a.42.42 0 0 0-.1-.53l-1.76-1.38Zm-7.16 3.08a4 4 0 1 1 0-8 4 4 0 0 1 0 8Z" clip-rule="evenodd"/>
           </svg>
         </div>
-        <input type="text" id="productImage" placeholder="Product image URL...">
+        <div>
+          <h1>Superadmin Config</h1>
+          <div class="subtitle">API Authentication</div>
+        </div>
       </div>
+    </header>
+
+    <div class="preview-card" style="margin-bottom: 24px;">
+      <p style="font-size: 0.8rem; color: #94a3b8; line-height: 1.4; margin-bottom: 12px;">
+        To send product data directly to tecbunny.com, authenticate using your website's Superadmin credentials.
+      </p>
+
+      <div class="form-group">
+        <label for="superadminUser">Username</label>
+        <input type="text" id="superadminUser" placeholder="Superadmin username...">
+      </div>
+
+      <div class="form-group">
+        <label for="superadminPass">Password</label>
+        <input type="password" id="superadminPass" placeholder="Superadmin password...">
+      </div>
+    </div>
+
+    <!-- Status for Settings -->
+    <div id="settingsStatus" class="status-container" style="margin-bottom: 18px;"></div>
+
+    <div>
+      <button id="saveSettingsBtn" class="btn btn-primary" style="margin-bottom: 12px;">
+        Save Credentials
+      </button>
+      <button id="backBtn" class="btn" style="background: transparent; border: 1px solid #334155; color: #94a3b8; display: none;">
+        Cancel
+      </button>
     </div>
   </div>
 
-  <!-- Status Panel -->
-  <div id="statusContainer" class="status-container"></div>
+  <!-- Scraper Screen -->
+  <div id="scraperScreen" class="screen active">
+    <!-- Header -->
+    <header>
+      <div class="header-title-area">
+        <div class="logo-icon">
+          <svg viewBox="0 0 24 24">
+            <path d="M17.25 12a.75.75 0 0 1-.75.75H8.75a.75.75 0 0 1 0-1.5h7.75a.75.75 0 0 1 .75.75Zm.75-4a.75.75 0 0 0-.75-.75H5.75a.75.75 0 0 0 0 1.5h11.5A.75.75 0 0 0 18 8Zm-6 8a.75.75 0 0 0-.75-.75H5.75a.75.75 0 0 0 0 1.5h5.5A.75.75 0 0 0 12 16Z"/>
+            <path fill-rule="evenodd" d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2ZM3.5 12a8.5 8.5 0 1 1 17 0 8.5 8.5 0 0 1-17 0Z" clip-rule="evenodd"/>
+          </svg>
+        </div>
+        <div>
+          <h1>Product Extractor</h1>
+          <div class="subtitle">E-Commerce Data Pipeline</div>
+        </div>
+      </div>
+      <button id="settingsBtn" class="settings-trigger" title="Configure Credentials">
+        <svg viewBox="0 0 24 24">
+          <path fill-rule="evenodd" d="M11.078 2.25c-.288 0-.547.195-.61.477l-.538 2.41a4.285 4.285 0 0 1-1.302.75l-2.22-.988a.625.625 0 0 0-.712.183l-2.029 2.507a.625.625 0 0 0 .075.827l1.79 1.545a4.285 4.285 0 0 1 0 1.502l-1.79 1.545a.625.625 0 0 0-.075.827l2.029 2.507a.625.625 0 0 0 .713.183l2.22-.988a4.285 4.285 0 0 1 1.302.75l.538 2.41c.063.282.322.477.61.477h3.844c.288 0 .547-.195.61-.477l.538-2.41c.49-.177.94-.43 1.302-.75l2.22.988a.625.625 0 0 0 .712-.183l2.029-2.507a.625.625 0 0 0-.075-.827l-1.79-1.545a4.285 4.285 0 0 1 0-1.502l1.79-1.545a.625.625 0 0 0 .075-.827l-2.029-2.507a.625.625 0 0 0-.713-.183l-2.22.988a4.285 4.285 0 0 1-1.302-.75l-.538-2.41a.611.611 0 0 0-.61-.477h-3.844ZM12 9.25a2.75 2.75 0 1 0 0 5.5 2.75 2.75 0 0 0 0-5.5Z" clip-rule="evenodd" />
+        </svg>
+      </button>
+    </header>
 
-  <!-- Send Trigger -->
-  <div>
-    <button id="sendBtn" class="btn btn-success" disabled>
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <line x1="22" y1="2" x2="11" y2="13"></line>
-        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-      </svg>
-      Send to Website
-    </button>
+    <!-- Scrape Trigger -->
+    <div class="action-panel">
+      <button id="scrapeBtn" class="btn btn-primary">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+          <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+          <line x1="12" y1="22.08" x2="12" y2="12"></line>
+        </svg>
+        Scrape Product
+      </button>
+    </div>
+
+    <!-- Editable Preview Card -->
+    <div class="preview-card">
+      <div class="form-group">
+        <label for="productTitle">Title</label>
+        <input type="text" id="productTitle" placeholder="Product title will appear here...">
+      </div>
+
+      <div class="form-group">
+        <label for="productPrice">Price</label>
+        <input type="text" id="productPrice" placeholder="Product price...">
+      </div>
+
+      <div class="form-group">
+        <label for="productDescription">Description</label>
+        <textarea id="productDescription" placeholder="Product description..."></textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="productImage">Image URL</label>
+        <div class="image-preview-container">
+          <img id="imgThumbnail" class="image-thumbnail" alt="Preview">
+          <div id="imgPlaceholder" class="image-placeholder">
+            <svg viewBox="0 0 24 24">
+              <path d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-4.86 8.86l-3 3.87L9 13.14 6 17h12l-3.86-5.14z"/>
+            </svg>
+          </div>
+          <input type="text" id="productImage" placeholder="Product image URL...">
+        </div>
+      </div>
+    </div>
+
+    <!-- Status Panel -->
+    <div id="statusContainer" class="status-container"></div>
+
+    <!-- Send Trigger -->
+    <div>
+      <button id="sendBtn" class="btn btn-success" disabled>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="22" y1="2" x2="11" y2="13"></line>
+          <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+        </svg>
+        Send to Website
+      </button>
+    </div>
   </div>
 
   <!-- Script logic loaded at the bottom -->
