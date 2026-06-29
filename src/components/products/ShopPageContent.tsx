@@ -652,7 +652,7 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
       {isMobileFilterOpen && (
         <div className="fixed inset-0 z-50 flex lg:hidden bg-background/80 backdrop-blur-sm animate-fade-in transition-all">
           <div 
-            className="fixed inset-y-0 left-0 w-full max-w-[280px] bg-background/95 border-r border-border p-6 overflow-y-auto flex flex-col justify-between space-y-6 shadow-2xl animate-slide-in backdrop-blur-md"
+            className="fixed inset-y-0 left-0 w-full max-w-[280px] bg-zinc-950 border-r border-border p-6 overflow-y-auto flex flex-col justify-between space-y-6 shadow-2xl animate-slide-in"
           >
             <div className="space-y-6">
               <div className="flex items-center justify-between border-b border-border/60 pb-3">
@@ -809,7 +809,7 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
         <div className="flex flex-col lg:flex-row gap-8 items-start mt-8 w-full">
           
           {/* Sidebar Filters - Desktop only */}
-          <aside className="w-full lg:w-64 shrink-0 bg-card/20 border border-border/80 backdrop-blur-md rounded-2xl p-6 lg:sticky lg:top-[90px] space-y-6 reveal-section hidden lg:block" data-reveal-id="products-sidebar">
+          <aside className="w-full lg:w-64 shrink-0 bg-zinc-950 border border-border rounded-2xl p-6 lg:sticky lg:top-[90px] space-y-6 reveal-section hidden lg:block" data-reveal-id="products-sidebar">
             {/* Header */}
             <div className="flex items-center justify-between border-b border-border/60 pb-3">
               <h2 className="text-sm font-bold uppercase tracking-wider font-mono text-white">Filters</h2>
@@ -975,7 +975,7 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
                     return (
                       <ProductTileErrorBoundary key={product.id || index} productId={product.id}>
                         <div
-                          className="relative flex h-full w-full flex-col justify-between p-3 sm:p-6 rounded-xl sm:rounded-2xl border border-border/80 bg-card/45 backdrop-blur-sm shadow-[0_4px_20px_-1px_rgba(0,0,0,0.3)] transition-all duration-500 hover:-translate-y-1.5 hover:border-primary/50 hover:shadow-[0_0_30px_-5px_rgba(var(--primary),0.15)] group"
+                          className="relative flex h-full w-full flex-col justify-between p-3 sm:p-6 rounded-xl sm:rounded-2xl border border-border bg-zinc-900 shadow-[0_4px_20px_-1px_rgba(0,0,0,0.3)] transition-all duration-500 hover:-translate-y-1.5 hover:border-primary/50 hover:shadow-[0_0_30px_-5px_rgba(var(--primary),0.15)] group"
                         >
                           <Link href={`/products/${product.id}`} className="block flex-grow">
                             {/* Image Frame */}
