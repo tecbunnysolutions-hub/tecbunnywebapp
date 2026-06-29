@@ -352,6 +352,7 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
   const [filteredProducts, setFilteredProducts] = React.useState<Product[]>([]);
   const [loading, setLoading] = React.useState(!initialRawProducts || initialRawProducts.length === 0);
   const [fetchWarning, setFetchWarning] = React.useState<string | null>(null);
+  const [isMobileFilterOpen, setIsMobileFilterOpen] = React.useState(false);
   
   const [categories, setCategories] = React.useState<string[]>(() => {
     if (initialEnrichedProducts.length > 0) {
@@ -647,6 +648,120 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
       <div className="ambient-blob pointer-events-none absolute -left-24 -top-24 h-96 w-96 rounded-full bg-primary/10 blur-[120px] animate-pulse" aria-hidden="true" />
       <div className="ambient-blob ambient-blob--delayed pointer-events-none absolute right-0 top-1/2 h-96 w-96 -translate-y-1/2 rounded-full bg-primary/10 blur-[120px]" aria-hidden="true" />
 
+      {/* Mobile Filter Drawer Overlay */}
+      {isMobileFilterOpen && (
+        <div className="fixed inset-0 z-50 flex lg:hidden bg-background/80 backdrop-blur-sm animate-fade-in transition-all">
+          <div 
+            className="fixed inset-y-0 left-0 w-full max-w-[280px] bg-background/95 border-r border-border p-6 overflow-y-auto flex flex-col justify-between space-y-6 shadow-2xl animate-slide-in backdrop-blur-md"
+          >
+            <div className="space-y-6">
+              <div className="flex items-center justify-between border-b border-border/60 pb-3">
+                <h2 className="text-sm font-bold uppercase tracking-wider font-mono text-white">Filters</h2>
+                <button 
+                  onClick={() => setIsMobileFilterOpen(false)}
+                  className="text-xs font-mono text-muted-foreground hover:text-white transition-colors"
+                >
+                  Close ✕
+                </button>
+              </div>
+              
+              {/* Category Tree Filter */}
+              <div className="space-y-3">
+                <h3 className="text-xs font-semibold uppercase tracking-wider font-mono text-muted-foreground">Categories</h3>
+                <div className="space-y-2 text-sm max-h-[220px] overflow-y-auto pr-1 no-scrollbar">
+                  {Object.keys(categoryTree).length === 0 ? (
+                    <p className="text-xs text-muted-foreground font-mono">No categories</p>
+                  ) : (
+                    renderCategoryTree(categoryTree)
+                  )}
+                </div>
+              </div>
+
+              {/* Brand Filter */}
+              {brands.length > 0 && (
+                <div className="space-y-3 border-t border-border/40 pt-4">
+                  <h3 className="text-xs font-semibold uppercase tracking-wider font-mono text-muted-foreground">Brands</h3>
+                  <div className="space-y-2.5 max-h-[180px] overflow-y-auto pr-1 no-scrollbar text-sm">
+                    {brands.map(brand => {
+                      const isChecked = brandFilter === brand;
+                      return (
+                        <label key={brand} className="flex items-center gap-2.5 cursor-pointer text-muted-foreground hover:text-foreground transition-colors group">
+                          <input 
+                            type="checkbox"
+                            checked={isChecked}
+                            onChange={() => {
+                              updateUrlParams({ brand: isChecked ? '' : brand });
+                            }}
+                            className="rounded border-border bg-background text-primary focus:ring-primary/30 h-4 w-4 cursor-pointer"
+                          />
+                          <span className={cn("font-medium", isChecked && "text-primary font-semibold")}>
+                            {brand}
+                          </span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Price Filter */}
+              <div className="space-y-3 border-t border-border/40 pt-4">
+                <h3 className="text-xs font-semibold uppercase tracking-wider font-mono text-muted-foreground">Price (INR)</h3>
+                <div className="flex gap-2 items-center">
+                  <div className="relative flex-1">
+                    <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[10px] font-mono text-muted-foreground/60">₹</span>
+                    <input 
+                      type="number" 
+                      value={priceRange[0] || ''} 
+                      onChange={e => {
+                        const val = e.target.value ? Number(e.target.value) : 0;
+                        setPriceRange([val, priceRange[1]]);
+                      }}
+                      className="w-full bg-background border border-border/80 rounded-lg pl-5 pr-1 py-1 text-xs font-mono text-white focus:outline-none focus:border-primary/50"
+                      placeholder="Min"
+                    />
+                  </div>
+                  <span className="text-muted-foreground/50 text-xs">-</span>
+                  <div className="relative flex-1">
+                    <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[10px] font-mono text-muted-foreground/60">₹</span>
+                    <input 
+                      type="number" 
+                      value={priceRange[1] || ''} 
+                      onChange={e => {
+                        const val = e.target.value ? Number(e.target.value) : maxPrice;
+                        setPriceRange([priceRange[0], val]);
+                      }}
+                      className="w-full bg-background border border-border/80 rounded-lg pl-5 pr-1 py-1 text-xs font-mono text-white focus:outline-none focus:border-primary/50"
+                      placeholder="Max"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="border-t border-border/60 pt-4 flex gap-2">
+              <button 
+                onClick={() => {
+                  clearFilters();
+                  setIsMobileFilterOpen(false);
+                }}
+                className="flex-1 border border-border hover:bg-muted text-xs font-mono py-2 rounded-lg text-white"
+              >
+                Reset
+              </button>
+              <button 
+                onClick={() => setIsMobileFilterOpen(false)}
+                className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-mono py-2 rounded-lg"
+              >
+                Apply
+              </button>
+            </div>
+          </div>
+          {/* Click outside to close */}
+          <div className="flex-1" onClick={() => setIsMobileFilterOpen(false)} />
+        </div>
+      )}
+
       <div className="relative mx-auto max-w-7xl px-6 pb-24 pt-24 sm:px-8 sm:pt-32">
         <div className="flex flex-col gap-12">
           {/* Hero Header */}
@@ -693,8 +808,8 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
         {/* Layout container */}
         <div className="flex flex-col lg:flex-row gap-8 items-start mt-8 w-full">
           
-          {/* Sidebar Filters */}
-          <aside className="w-full lg:w-64 shrink-0 bg-card/20 border border-border/80 backdrop-blur-md rounded-2xl p-6 lg:sticky lg:top-[90px] space-y-6 reveal-section" data-reveal-id="products-sidebar">
+          {/* Sidebar Filters - Desktop only */}
+          <aside className="w-full lg:w-64 shrink-0 bg-card/20 border border-border/80 backdrop-blur-md rounded-2xl p-6 lg:sticky lg:top-[90px] space-y-6 reveal-section hidden lg:block" data-reveal-id="products-sidebar">
             {/* Header */}
             <div className="flex items-center justify-between border-b border-border/60 pb-3">
               <h2 className="text-sm font-bold uppercase tracking-wider font-mono text-white">Filters</h2>
@@ -781,18 +896,27 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
           </aside>
 
           {/* Right Column: Grid and Controls */}
-          <div className="flex-1 w-full">
+          <div className="flex-1 w-full font-sans">
             {/* Sub-header with item count and sorting */}
-            <div className="flex flex-col sm:flex-row items-center justify-between border-b border-border/40 pb-4 gap-4 mb-6">
-              <p className="text-sm font-mono text-muted-foreground w-full sm:w-auto text-left">
-                Showing {resolvedResultsLabel}
-              </p>
-              <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
-                <span className="text-xs font-mono text-muted-foreground uppercase tracking-wider">Sort by</span>
+            <div className="flex items-center justify-between border-b border-border/40 pb-4 gap-4 mb-6">
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setIsMobileFilterOpen(true)}
+                  className="lg:hidden flex items-center gap-2 rounded-lg border border-border/85 bg-card/65 px-3 py-1.5 text-xs font-mono font-bold text-white uppercase hover:bg-muted/80 transition-colors animate-pulse"
+                >
+                  Filters
+                </button>
+                <p className="text-xs sm:text-sm font-mono text-muted-foreground">
+                  Showing {resolvedResultsLabel}
+                </p>
+              </div>
+              <div className="flex items-center gap-3 justify-end">
+                <span className="text-[10px] sm:text-xs font-mono text-muted-foreground uppercase tracking-wider">Sort by</span>
                 <select
                   value={sortOption}
                   onChange={(e) => updateUrlParams({ sort: e.target.value })}
-                  className="bg-background text-foreground border border-border rounded-lg px-3 py-1.5 focus:outline-none focus:border-primary/50 hover:bg-muted transition-all duration-300 font-mono cursor-pointer text-sm"
+                  className="bg-background text-foreground border border-border rounded-lg px-2 sm:px-3 py-1 sm:py-1.5 focus:outline-none focus:border-primary/50 hover:bg-muted transition-all duration-300 font-mono cursor-pointer text-xs sm:text-sm"
                 >
                   <option value="popularity">Popularity</option>
                   <option value="newest">New Arrivals</option>
@@ -807,7 +931,7 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
             {/* Product Grid */}
             <div className="reveal-section is-revealed" data-reveal-id="products-grid">
               {loading ? (
-                <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 min-h-[400px]">
+                <div className="grid gap-4 sm:gap-6 grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 min-h-[400px]">
                   {Array.from({ length: 6 }).map((_, i) => (
                     <div key={i} className="flex h-full w-full max-w-[320px] mx-auto sm:mx-0 flex-col rounded-2xl border border-border bg-card/20 p-6">
                       <Skeleton className="mb-6 aspect-square w-full rounded-xl bg-muted/60 animate-pulse" />
@@ -826,7 +950,7 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
                   ))}
                 </div>
               ) : filteredProducts.length > 0 ? (
-                <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3">
+                <div className="grid gap-4 sm:gap-6 grid-cols-2 sm:grid-cols-3 lg:grid-cols-3">
                   {filteredProducts.map((product, index) => {
                     const displayName = product.title || product.name || 'Product';
                     const imageUrl = getProductDisplayImage(product, {
@@ -851,11 +975,11 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
                     return (
                       <ProductTileErrorBoundary key={product.id || index} productId={product.id}>
                         <div
-                          className="relative flex h-full w-full max-w-[320px] mx-auto sm:mx-0 flex-col justify-between p-6 rounded-2xl border border-border/80 bg-card/40 backdrop-blur-sm shadow-[0_4px_20px_-1px_rgba(0,0,0,0.3)] transition-all duration-500 hover:-translate-y-1.5 hover:border-primary/50 hover:shadow-[0_0_30px_-5px_rgba(var(--primary),0.15)] group"
+                          className="relative flex h-full w-full flex-col justify-between p-3 sm:p-6 rounded-xl sm:rounded-2xl border border-border/80 bg-card/45 backdrop-blur-sm shadow-[0_4px_20px_-1px_rgba(0,0,0,0.3)] transition-all duration-500 hover:-translate-y-1.5 hover:border-primary/50 hover:shadow-[0_0_30px_-5px_rgba(var(--primary),0.15)] group"
                         >
                           <Link href={`/products/${product.id}`} className="block flex-grow">
                             {/* Image Frame */}
-                            <div className="relative mb-6 aspect-square overflow-hidden rounded-xl bg-background/80 border border-border/50 group-hover:border-primary/30 transition-colors">
+                            <div className="relative mb-3 sm:mb-6 aspect-square overflow-hidden rounded-lg sm:rounded-xl bg-background/80 border border-border/50 group-hover:border-primary/30 transition-colors">
                               <ProductGridImage
                                 src={imageUrl}
                                 alt={displayName}
@@ -863,45 +987,45 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
                               />
                               {/* Discount Badge */}
                               {product.discount_percentage && product.discount_percentage > 0 ? (
-                                <div className="absolute left-3 top-3 rounded-full bg-primary/15 border border-primary/30 px-3 py-1 text-xs font-mono font-bold text-primary tracking-wider uppercase shadow-sm animate-fade-in">
-                                  -{product.discount_percentage}% OFF
+                                <div className="absolute left-2 top-2 sm:left-3 sm:top-3 rounded-full bg-primary/15 border border-primary/30 px-2 py-0.5 sm:px-3 sm:py-1 text-[9px] sm:text-xs font-mono font-bold text-primary tracking-wider uppercase shadow-sm">
+                                  -{product.discount_percentage}%
                                 </div>
                               ) : null}
                             </div>
 
                             {/* Text Content */}
-                            <div className="space-y-2">
-                              <div className="flex items-center justify-between gap-2">
-                                <span className="text-xs font-mono uppercase tracking-wider text-muted-foreground/80">
+                            <div className="space-y-1.5">
+                              <div className="flex items-center justify-between gap-1">
+                                <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground/80 truncate">
                                   {product.brand || product.category || 'Hardware'}
                                 </span>
                                 {product.rating > 0 && (
-                                  <div className="flex items-center gap-0.5 text-xs font-mono text-muted-foreground">
+                                  <div className="flex items-center gap-0.5 text-[10px] font-mono text-muted-foreground">
                                     <span className="text-amber-500">★</span>
                                     <span>{product.rating.toFixed(1)}</span>
                                   </div>
                                 )}
                               </div>
                               
-                              <h3 className="text-lg font-bold tracking-tight text-foreground transition-colors group-hover:text-primary font-tech">
+                              <h3 className="text-xs sm:text-lg font-bold tracking-tight text-foreground transition-colors group-hover:text-primary font-tech line-clamp-2 h-8 sm:h-auto">
                                 {displayName}
                               </h3>
                               
-                              <p className="text-sm font-light text-muted-foreground line-clamp-2 leading-relaxed">
+                              <p className="text-xs font-light text-muted-foreground line-clamp-2 leading-relaxed hidden sm:block">
                                 {simpleDesc}
                               </p>
                             </div>
                           </Link>
 
                           {/* Footer Actions */}
-                          <div className="mt-6 flex items-center justify-between pt-4 border-t border-border/60">
+                          <div className="mt-4 sm:mt-6 flex items-center justify-between pt-3 sm:pt-4 border-t border-border/60">
                             <div className="flex flex-col">
-                              <span className="text-xl font-black tracking-tight text-foreground font-tech flex items-baseline gap-1.5">
+                              <span className="text-sm sm:text-xl font-black tracking-tight text-foreground font-tech flex items-baseline gap-1 sm:gap-1.5">
                                 ₹{(offerPrice ?? basePrice).toLocaleString('en-IN')}
-                                <span className="text-xs font-normal text-muted-foreground uppercase tracking-wide">Inc. GST</span>
+                                <span className="text-[9px] sm:text-xs font-normal text-muted-foreground uppercase tracking-wide hidden xs:inline">Inc. GST</span>
                               </span>
                               {offerPrice && (
-                                <span className="text-sm text-muted-foreground line-through font-light mt-0.5">
+                                <span className="text-xs sm:text-sm text-muted-foreground line-through font-light mt-0.5">
                                   ₹{basePrice.toLocaleString('en-IN')}
                                 </span>
                               )}
@@ -913,10 +1037,10 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
                                 event.stopPropagation();
                                 addToCart(product);
                               }}
-                              className="flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-muted/30 text-foreground transition-all duration-300 hover:border-primary/50 hover:bg-primary hover:text-primary-foreground hover:scale-110 shadow-sm cursor-pointer"
+                              className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-lg sm:rounded-xl border border-border bg-muted/30 text-foreground transition-all duration-300 hover:border-primary/50 hover:bg-primary hover:text-primary-foreground hover:scale-110 shadow-sm cursor-pointer"
                               aria-label={`Add ${displayName} to cart`}
                             >
-                              <span className="text-lg font-bold">+</span>
+                              <span className="text-sm sm:text-lg font-bold">+</span>
                             </button>
                           </div>
                         </div>
