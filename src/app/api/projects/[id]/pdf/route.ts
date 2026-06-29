@@ -36,11 +36,24 @@ export async function GET(
 
     // Format currency helpers
     const formatCurrency = (val: number) => {
-      return new Intl.NumberFormat('en-US', {
+      const formatted = new Intl.NumberFormat('en-IN', {
         style: 'currency',
-        currency: 'USD',
+        currency: 'INR',
         maximumFractionDigits: 0
       }).format(val);
+      return formatted.replace(/₹/g, 'Rs.').replace(/INR/g, 'Rs.').trim();
+    };
+
+    const unescapeHtml = (str: string): string => {
+      if (!str) return '';
+      return str
+        .replace(/&amp;/g, '&')
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&quot;/g, '"')
+        .replace(/&#39;/g, "'")
+        .replace(/&nbsp;/g, ' ')
+        .replace(/₹/g, 'Rs.');
     };
 
     // PDF Generation
@@ -75,7 +88,7 @@ export async function GET(
         doc.fillColor('#0F172A')
            .fontSize(24)
            .font('Helvetica-Bold')
-           .text(project.name.toUpperCase(), 50, 80);
+           .text(unescapeHtml(project.name).toUpperCase(), 50, 80);
 
         doc.fillColor('#2563EB')
            .fontSize(12)
@@ -110,7 +123,7 @@ export async function GET(
         doc.fillColor('#334155')
            .fontSize(11)
            .font('Helvetica')
-           .text(project.explanation, 50, 250, { width: doc.page.width - 100, lineGap: 4 });
+           .text(unescapeHtml(project.explanation), 50, 250, { width: doc.page.width - 100, lineGap: 4 });
 
         // --- Section: Strategic Motive ---
         doc.fillColor('#0F172A')
@@ -121,7 +134,7 @@ export async function GET(
         doc.fillColor('#334155')
            .fontSize(11)
            .font('Helvetica')
-           .text(project.motive, 50, 340, { width: doc.page.width - 100, lineGap: 4 });
+           .text(unescapeHtml(project.motive), 50, 340, { width: doc.page.width - 100, lineGap: 4 });
 
         // --- Section: Detailed Specifications (HTML parser) ---
         doc.fillColor('#0F172A')
@@ -151,22 +164,22 @@ export async function GET(
             doc.fillColor('#2563EB')
                .fontSize(12)
                .font('Helvetica-Bold')
-               .text(text, 50, currentY);
+               .text(unescapeHtml(text), 50, currentY);
             currentY += 22;
           } else if (part.includes('<li')) {
             const text = part.replace(/<[^>]*>/g, '').trim();
             doc.fillColor('#1E293B')
                .fontSize(10.5)
                .font('Helvetica')
-               .text(`•  ${text}`, 65, currentY, { width: doc.page.width - 130 });
-            currentY += doc.heightOfString(`•  ${text}`, { width: doc.page.width - 130 }) + 8;
+               .text(`•  ${unescapeHtml(text)}`, 65, currentY, { width: doc.page.width - 130 });
+            currentY += doc.heightOfString(`•  ${unescapeHtml(text)}`, { width: doc.page.width - 130 }) + 8;
           } else {
             const text = part.replace(/<[^>]*>/g, '').trim();
             doc.fillColor('#334155')
                .fontSize(10.5)
                .font('Helvetica')
-               .text(text, 50, currentY, { width: doc.page.width - 100, lineGap: 3 });
-            currentY += doc.heightOfString(text, { width: doc.page.width - 100, lineGap: 3 }) + 12;
+               .text(unescapeHtml(text), 50, currentY, { width: doc.page.width - 100, lineGap: 3 });
+            currentY += doc.heightOfString(unescapeHtml(text), { width: doc.page.width - 100, lineGap: 3 }) + 12;
           }
         }
 
