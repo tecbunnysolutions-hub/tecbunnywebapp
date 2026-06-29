@@ -15,6 +15,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const superadminPass = document.getElementById('superadminPass');
   const titleInput = document.getElementById('productTitle');
   const priceInput = document.getElementById('productPrice');
+  const mrpInput = document.getElementById('productMrp');
+  const categoryInput = document.getElementById('productCategory');
   const descInput = document.getElementById('productDescription');
   const imgInput = document.getElementById('productImage');
 
@@ -170,6 +172,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // Populate inputs
         titleInput.value = data.title || '';
         priceInput.value = data.price || '';
+        mrpInput.value = data.mrp || '';
+        categoryInput.value = data.category || '';
         descInput.value = data.description || '';
         imgInput.value = data.imageUrl || '';
         currentSourceUrl = data.sourceUrl || tab.url;
@@ -207,6 +211,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const payload = {
       title: titleInput.value.trim(),
       price: priceInput.value.trim(),
+      mrp: mrpInput.value.trim(),
+      category: categoryInput.value.trim(),
       description: descInput.value.trim(),
       imageUrl: imgInput.value.trim(),
       sourceUrl: currentSourceUrl

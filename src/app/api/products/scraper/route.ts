@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
 
     // 3. Parse and Validate Request Body
     const body = await request.json();
-    const { title, price, description, imageUrl, sourceUrl } = body;
+    const { title, price, mrp, category, description, imageUrl, sourceUrl } = body;
 
     if (!title) {
       return NextResponse.json(
@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 4. Parse Price
+    // 4. Parse Price and MRP
     let parsedPrice = 0;
     if (price) {
       // Remove currency symbols, commas, and other non-digit/non-dot characters
@@ -54,6 +54,15 @@ export async function POST(request: NextRequest) {
       const parsed = parseFloat(cleanPriceStr);
       if (!isNaN(parsed)) {
         parsedPrice = parsed;
+      }
+    }
+
+    let parsedMrp = null;
+    if (mrp) {
+      const cleanMrpStr = mrp.replace(/[^0-9.]/g, '');
+      const parsed = parseFloat(cleanMrpStr);
+      if (!isNaN(parsed)) {
+        parsedMrp = parsed;
       }
     }
 
@@ -81,9 +90,11 @@ export async function POST(request: NextRequest) {
       title: title,
       description: description || '',
       price: parsedPrice,
+      mrp: parsedMrp,
+      category: category || null,
       image: imageUrl || null,
       images: imageUrl ? [imageUrl] : [],
-      status: 'draft', // Saved as draft for admin moderation
+      status: 'active', // Saved as active directly
       product_type: 'physical',
       specifications: { sourceUrl: sourceUrl || '' },
       tags: ['scraped'],

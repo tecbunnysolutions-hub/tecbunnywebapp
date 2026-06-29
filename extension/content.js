@@ -180,7 +180,6 @@
         }
       }
       
-      // Fallback: If offscreen text was not found, check the whole/fractional price tags
       if (!price) {
         const wholeEl = document.querySelector('.a-price-whole');
         if (wholeEl) {
@@ -194,6 +193,31 @@
             price = symbolEl.textContent.trim() + ' ' + price;
           }
         }
+      }
+
+      // MRP (Original Price) on Amazon
+      let mrp = '';
+      const mrpSelectors = [
+        '.a-size-small.a-color-secondary.a-text-strike',
+        '.a-price.a-text-price span.a-offscreen',
+        '#listPrice',
+        '.basisPrice .a-offscreen'
+      ];
+      for (const sel of mrpSelectors) {
+        const el = document.querySelector(sel);
+        if (el && el.textContent.trim()) {
+          mrp = el.textContent.trim();
+          break;
+        }
+      }
+
+      // Category Breadcrumbs on Amazon
+      let category = '';
+      const crumbs = Array.from(document.querySelectorAll('#wayfinding-breadcrumbs_container ul li a, .a-breadcrumb a, #wayfinding-breadcrumbs_container a'))
+        .map(a => a.textContent.trim())
+        .filter(t => t.length > 0 && !t.toLowerCase().includes('back to') && !t.toLowerCase().includes('home') && !t.toLowerCase().includes('return'));
+      if (crumbs.length > 0) {
+        category = crumbs.join(' > ');
       }
 
       // Feature bullets / Product description
@@ -210,7 +234,7 @@
         description = descEl.textContent.trim();
       }
 
-      // Image: Search landingImage or dynamic source maps
+      // Image
       const imgEl = document.getElementById('landingImage') || document.getElementById('imgBlkFront');
       let imageUrl = '';
       if (imgEl) {
@@ -223,7 +247,7 @@
         }
       }
 
-      return { title, price, description, imageUrl };
+      return { title, price, mrp, category, description, imageUrl };
     }
 
     // Flipkart Extractor
@@ -234,13 +258,26 @@
       const priceEl = document.querySelector('._30jeq3._16Jk6d') || document.querySelector('.nxrK3y') || document.querySelector('div[class*="_30jeq3"]');
       const price = priceEl ? priceEl.textContent.trim() : '';
 
+      // MRP on Flipkart
+      const mrpEl = document.querySelector('._3I9_ca') || document.querySelector('.y331Z_') || document.querySelector('div[class*="_3I9_ca"]') || document.querySelector('div[class*="strike"]');
+      const mrp = mrpEl ? mrpEl.textContent.trim() : '';
+
+      // Category Breadcrumbs on Flipkart
+      let category = '';
+      const crumbs = Array.from(document.querySelectorAll('a._2whKao, a[class*="_2whKao"], ._2whKao'))
+        .map(a => a.textContent.trim())
+        .filter(t => t.length > 0 && !t.toLowerCase().includes('home'));
+      if (crumbs.length > 0) {
+        category = crumbs.join(' > ');
+      }
+
       const descEl = document.querySelector('._1mX1Vo') || document.querySelector('.yN-eZm') || document.querySelector('div[class*="product-description"]');
       const description = descEl ? descEl.textContent.trim() : '';
 
       const imgEl = document.querySelector('img[class*="_396cs4"]') || document.querySelector('img.q6DClP') || document.querySelector('._396cs4');
       const imageUrl = imgEl ? imgEl.getAttribute('src') || imgEl.src : '';
 
-      return { title, price, description, imageUrl };
+      return { title, price, mrp, category, description, imageUrl };
     }
 
     // JioMart Extractor
@@ -251,23 +288,72 @@
       const priceEl = document.querySelector('#prod_price') || document.querySelector('.prod-price') || document.querySelector('#lbl_pdp_selling_price') || document.querySelector('.price-box .final-price');
       const price = priceEl ? priceEl.textContent.trim() : '';
 
+      // MRP on JioMart
+      const mrpEl = document.querySelector('.mrp') || document.querySelector('.mrp-strip') || document.querySelector('span.strike') || document.querySelector('span[class*="strike"]');
+      const mrp = mrpEl ? mrpEl.textContent.trim() : '';
+
+      // Category Breadcrumbs on JioMart
+      let category = '';
+      const crumbs = Array.from(document.querySelectorAll('.j-breadcrumbs li a, .j-breadcrumbs li, .breadcrumbs a'))
+        .map(li => li.textContent.trim())
+        .filter(t => t.length > 0 && !t.toLowerCase().includes('home'));
+      if (crumbs.length > 0) {
+        category = crumbs.join(' > ');
+      }
+
       const descEl = document.querySelector('#pdp_desc') || document.querySelector('.pdp-desc-content') || document.querySelector('#product_description');
       const description = descEl ? descEl.textContent.trim() : '';
 
       const imgEl = document.querySelector('#main_img') || document.querySelector('.main-image img') || document.querySelector('#pdp-main-image img');
       const imageUrl = imgEl ? imgEl.getAttribute('src') || imgEl.src : '';
 
-      return { title, price, description, imageUrl };
+      return { title, price, mrp, category, description, imageUrl };
     }
 
     return null;
+  }
+
+  // Fallbacks for generic sites
+  function getFallbackMrp() {
+    const selectors = ['strike', 'del', '.strike', '.original-price', '.old-price', '[class*="strike" i]', '[class*="original" i]'];
+    const priceRegex = /([$£€¥₹]\s*\d+(?:[.,]\d{2})?)/;
+    for (const selector of selectors) {
+      try {
+        const elements = document.querySelectorAll(selector);
+        for (const el of elements) {
+          const text = el.textContent.trim();
+          if (text && text.length < 20) {
+            const match = text.match(priceRegex);
+            if (match) return match[0].trim();
+          }
+        }
+      } catch (e) {}
+    }
+    return '';
+  }
+
+  function getFallbackCategory() {
+    const selectors = ['.breadcrumb', '.breadcrumbs', '[class*="breadcrumb" i]', 'nav[aria-label="Breadcrumb"]'];
+    for (const sel of selectors) {
+      try {
+        const el = document.querySelector(sel);
+        if (el) {
+          const texts = Array.from(el.querySelectorAll('a, span, li'))
+            .map(e => e.textContent.trim())
+            .filter(t => t.length > 0 && t !== '/' && t !== '>' && !t.toLowerCase().includes('home'));
+          const unique = texts.filter((v, i, a) => !i || v !== a[i-1]);
+          if (unique.length > 0) return unique.join(' > ');
+        }
+      } catch (e) {}
+    }
+    return '';
   }
 
   // --- Execution & Prioritization Pipeline ---
   const jsonLd = getJsonLdData() || {};
   const domainData = getDomainSpecificData() || {};
 
-  // Title: A) Domain-Specific -> B) JSON-LD -> C) OG Tag -> D) Meta Title -> Fallback) Document Title
+  // Title: Domain-Specific -> JSON-LD -> OG Tag -> Meta Title -> Fallback Title
   const title = domainData.title ||
                 jsonLd.title || 
                 getMetaContent('og:title') || 
@@ -275,7 +361,7 @@
                 document.title || 
                 '';
 
-  // Price: A) Domain-Specific -> B) JSON-LD -> C) OG Price -> Fallback) Text Pattern Search
+  // Sale Price: Domain-Specific -> JSON-LD -> OG Price -> Fallback Price
   const price = domainData.price ||
                 jsonLd.price || 
                 getMetaContent('og:price:amount') || 
@@ -283,14 +369,24 @@
                 getFallbackPrice() || 
                 '';
 
-  // Description: A) Domain-Specific -> B) JSON-LD -> C) OG Description -> D) Standard Meta Description -> Fallback) Empty
+  // MRP: Domain-Specific -> Fallback MRP
+  const mrp = domainData.mrp || 
+              getFallbackMrp() || 
+              '';
+
+  // Category: Domain-Specific -> Fallback Category
+  const category = domainData.category || 
+                   getFallbackCategory() || 
+                   '';
+
+  // Description: Domain-Specific -> JSON-LD -> OG Description -> Meta Description
   const description = domainData.description ||
                       jsonLd.description || 
                       getMetaContent('og:description') || 
                       getMetaContent('description') || 
                       '';
 
-  // Image: A) Domain-Specific -> B) JSON-LD -> C) OG Image -> Fallback) Img > 200px wide
+  // Image: Domain-Specific -> JSON-LD -> OG Image -> Fallback Image
   const imageUrl = domainData.imageUrl ||
                    jsonLd.imageUrl || 
                    getMetaContent('og:image') || 
@@ -303,6 +399,8 @@
   return {
     title: title.trim(),
     price: price.trim(),
+    mrp: mrp.trim(),
+    category: category.trim(),
     description: description.trim(),
     imageUrl: imageUrl.trim(),
     sourceUrl: sourceUrl.trim()
