@@ -8,7 +8,6 @@ import { createPageMetadata } from '@/lib/metadata';
 // Revalidate homepage every 60 seconds (ISR) to fix 2.8s Document Request Latency
 export const revalidate = 60;
 
-import { headers } from 'next/headers';
 
 // Homepage metadata for SEO
 export async function generateMetadata(): Promise<Metadata> {
@@ -97,10 +96,8 @@ export default async function Page() {
   let initialHeroCarousel = undefined;
 
   try {
-    const headersList = await headers();
-    const host = headersList.get('host') || 'localhost:3000';
-    const protocol = host.includes('localhost') || host.includes('127.0.0.1') ? 'http' : 'https';
-    const baseUrl = `${protocol}://${host}`;
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.tecbunny.com';
+    const baseUrl = process.env.NODE_ENV === 'development' ? 'http://localhost:9003' : siteUrl;
 
     // Parallel server-side fetching with ISR caching
     const [productsRes, brandsRes, heroRes] = await Promise.all([
