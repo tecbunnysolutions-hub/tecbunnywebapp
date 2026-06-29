@@ -127,6 +127,7 @@ export async function middleware(request: NextRequest) {
       { path: '/api/offers', methods: ['GET'] },
       { path: '/api/coupons', methods: ['GET'] },
       { path: '/api/products', methods: ['GET'] },
+      { path: '/api/upcoming', methods: ['GET'], prefix: true },
       { path: '/api/checkout/calculate', methods: ['POST'] },
       { path: '/api/analytics/track', methods: ['POST'] },
       { path: '/api/captcha', prefix: true },
