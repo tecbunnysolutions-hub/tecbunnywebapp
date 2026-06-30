@@ -312,6 +312,17 @@ export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const getOrders = useCallback(async (customerId?: string): Promise<void> => {
     try {
+      // First try to load from secure server API to bypass client RLS and get complete history
+      const apiRes = await fetch('/api/orders');
+      if (apiRes.ok) {
+        const payload = await apiRes.json();
+        if (payload?.success && Array.isArray(payload?.orders)) {
+          setOrders(payload.orders);
+          return;
+        }
+      }
+
+      // Fallback to client-side Supabase select if server fetch fails
       let query = supabase
         .from('orders')
         .select('*')
@@ -334,7 +345,7 @@ export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         return;
       }
 
-    const normalizedOrders = (data ?? []).map(deserializeOrder);
+      const normalizedOrders = (data ?? []).map(deserializeOrder);
       setOrders(normalizedOrders);
     } catch (error) {
       logger.error('OrderProvider getOrders failed', {
@@ -342,7 +353,7 @@ export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         customerId,
       });
     }
-  }, [supabase]);
+  }, [supabase, user]);
 
   const getOrderById = useCallback(async (orderId: string): Promise<Order | null> => {
     try {

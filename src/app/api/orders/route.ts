@@ -1,4 +1,4 @@
-import { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
 import { createClient as createServerClient, createServiceClient, isSupabaseServiceConfigured } from '@/lib/supabase/server';
 import { rateLimit } from '@/lib/rate-limit';
@@ -17,9 +17,49 @@ import { formatPlaceOfSupply, resolveIndianStateFromText, resolveIndianStateInfo
 import { verifySuperadminSessionToken } from '@/lib/auth/superadmin-session';
 import { extractPincode, sendOrderRoutingNotifications } from '@/lib/area-notifications';
 import { checkServiceAreaAvailability } from '@/lib/service-area-availability';
+import { deserializeOrder } from '@/lib/orders/normalizers';
 
 const RATE_LIMIT = 5; // 5 orders
 const RATE_WINDOW_MS = 60 * 1000; // per minute
+
+export async function GET(request: NextRequest) {
+  try {
+    const supabase = await createServerClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      return NextResponse.json({ orders: [] });
+    }
+
+    const serviceSupabase = isSupabaseServiceConfigured ? createServiceClient() : supabase;
+
+    // Fetch all orders matching customer_id, customer_email, or customer_phone
+    const conditions = [`customer_id.eq.${user.id}`];
+    if (user.email) {
+      conditions.push(`customer_email.eq.${user.email}`);
+    }
+    if (user.user_metadata?.mobile) {
+      conditions.push(`customer_phone.eq.${user.user_metadata.mobile}`);
+    }
+
+    const { data: orders, error } = await serviceSupabase
+      .from('orders')
+      .select('*')
+      .or(conditions.join(','))
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      logger.error('failed_to_fetch_customer_orders_api', { userId: user.id, error: error.message });
+      return NextResponse.json({ error: 'Failed to load orders' }, { status: 500 });
+    }
+
+    const normalizedOrders = (orders ?? []).map(deserializeOrder);
+    return NextResponse.json({ success: true, orders: normalizedOrders });
+  } catch (error: any) {
+    logger.error('uncaught_error_in_customer_orders_api', { error: error.message });
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
+}
 
 export async function POST(request: NextRequest) {
   try {
