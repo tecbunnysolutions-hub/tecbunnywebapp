@@ -55,7 +55,6 @@ export async function GET(request: NextRequest) {
           'shipping_amount',
           'total',
           'delivery_address',
-          'pickup_store',
           'notes',
           'payment_method',
           'payment_status',
