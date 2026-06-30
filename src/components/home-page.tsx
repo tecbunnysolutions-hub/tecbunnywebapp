@@ -136,19 +136,42 @@ export default function HomePage({
                 From robust IT infrastructure to seamless business process outsourcing, we provide the end-to-end technology foundation scaling businesses rely on.
               </p>
 
-              <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:gap-4">
-                <MagneticButton
-                  href="/contact"
-                  className="tb-button-primary focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-[#09090B]"
-                >
-                  Build Your Custom Setup
-                </MagneticButton>
-                <MagneticButton
-                  href="/services"
-                  className="tb-button-secondary"
-                >
-                  Explore Our Services
-                </MagneticButton>
+              <div className="flex flex-col sm:flex-row gap-5 pt-4">
+                {/* B2B Action Card */}
+                <div className="flex-1 p-5 rounded-2xl border border-blue-500/20 bg-blue-500/5 hover:border-blue-500/40 hover:bg-blue-500/10 transition-all duration-300 flex flex-col justify-between backdrop-blur-sm">
+                  <div>
+                    <span className="text-[10px] font-bold tracking-widest uppercase text-blue-400">B2B Solutions</span>
+                    <h3 className="text-lg font-bold text-white mt-1 font-tech">Enterprise IT Infrastructure</h3>
+                    <p className="text-xs text-zinc-400 mt-2 mb-4 leading-relaxed font-light">
+                      Custom corporate networks, smart biometrics, server systems, and dedicated SLAs for Goa hotels/resorts.
+                    </p>
+                  </div>
+                  <Link
+                    href="/solutions"
+                    className="tb-button-primary w-full text-center flex items-center justify-center gap-1.5 h-11 text-xs uppercase tracking-wider font-semibold rounded-xl"
+                  >
+                    Enterprise Portal
+                    <ArrowRight size={14} />
+                  </Link>
+                </div>
+
+                {/* B2C Action Card */}
+                <div className="flex-1 p-5 rounded-2xl border border-zinc-800 bg-zinc-900/10 hover:border-zinc-700 hover:bg-zinc-900/20 transition-all duration-300 flex flex-col justify-between backdrop-blur-sm">
+                  <div>
+                    <span className="text-[10px] font-bold tracking-widest uppercase text-zinc-500">B2C Retail Store</span>
+                    <h3 className="text-lg font-bold text-white mt-1 font-tech">Bespoke Tech Storefront</h3>
+                    <p className="text-xs text-zinc-450 mt-2 mb-4 leading-relaxed font-light">
+                      High-performance custom gaming PCs, NVR hardware, core components, and fast next-day delivery in Goa.
+                    </p>
+                  </div>
+                  <Link
+                    href="/products"
+                    className="tb-button-secondary w-full text-center flex items-center justify-center gap-1.5 h-11 text-xs uppercase tracking-wider font-semibold rounded-xl"
+                  >
+                    Shop Tech Catalog
+                    <ArrowRight size={14} />
+                  </Link>
+                </div>
               </div>
 
               <div className="grid max-w-md grid-cols-2 gap-6 border-t border-zinc-800/80 pt-8">

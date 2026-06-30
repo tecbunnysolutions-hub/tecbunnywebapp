@@ -129,6 +129,20 @@ const structuredData = {
   '@context': 'https://schema.org',
   '@graph': [
     {
+      '@context': 'https://schema.org',
+      '@type': 'ITPrivateLimitedCompany',
+      'name': 'Tecbunny Solutions Private Limited',
+      'address': {
+        '@type': 'PostalAddress',
+        'streetAddress': 'H No 11, Nhayginwada, Parse, Parxem',
+        'addressLocality': 'North Goa, Pernem',
+        'addressRegion': 'Goa',
+        'postalCode': '403512',
+        'addressCountry': 'IN'
+      },
+      'cin': 'U80200GA2025PTC017488'
+    },
+    {
       '@type': 'WebSite',
       '@id': 'https://www.tecbunny.com/#website',
       url: 'https://www.tecbunny.com',
@@ -211,6 +225,10 @@ const structuredData = {
       areaServed: [
         { '@type': 'City', name: 'Pernem', sameAs: 'https://www.wikidata.org/wiki/Q1011550' },
         { '@type': 'City', name: 'Mapusa', sameAs: 'https://www.wikidata.org/wiki/Q1015694' },
+        { '@type': 'City', name: 'Siolim', sameAs: 'https://www.wikidata.org/wiki/Q2783854' },
+        { '@type': 'City', name: 'Arambol', sameAs: 'https://www.wikidata.org/wiki/Q625595' },
+        { '@type': 'City', name: 'Anjuna', sameAs: 'https://www.wikidata.org/wiki/Q551528' },
+        { '@type': 'City', name: 'Parra', sameAs: 'https://www.wikidata.org/wiki/Q7139686' },
         { '@type': 'City', name: 'Panaji', sameAs: 'https://www.wikidata.org/wiki/Q1352' },
         { '@type': 'City', name: 'Margao', sameAs: 'https://www.wikidata.org/wiki/Q1006277' },
         { '@type': 'City', name: 'Vasco da Gama', sameAs: 'https://www.wikidata.org/wiki/Q1006271' },

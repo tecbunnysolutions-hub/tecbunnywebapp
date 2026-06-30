@@ -38,6 +38,64 @@ export function ProductDetailPage({ productId, initialProduct, sourceContext }: 
   const { showAssistance, triggerContext, dismissAssistance } = useBehavioralCRO();
   const isMountedRef = useRef(true);
 
+  const [pincode, setPincode] = useState<string>('');
+  const [showPincodeInput, setShowPincodeInput] = useState<boolean>(false);
+  const [deliveryInfo, setDeliveryInfo] = useState<{
+    locationName: string;
+    isGoa: boolean;
+    hasEstimated: boolean;
+  }>({
+    locationName: '',
+    isGoa: false,
+    hasEstimated: false
+  });
+
+  useEffect(() => {
+    const savedPincode = localStorage.getItem('tb_delivery_pincode');
+    if (savedPincode && savedPincode.length === 6) {
+      setPincode(savedPincode);
+      const isGoa = savedPincode.startsWith('403');
+      setDeliveryInfo({
+        locationName: isGoa ? 'Goa' : 'Out of State',
+        isGoa,
+        hasEstimated: true
+      });
+    } else {
+      setDeliveryInfo({
+        locationName: 'Goa (Default)',
+        isGoa: true,
+        hasEstimated: false
+      });
+    }
+  }, []);
+
+  const handlePincodeSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (pincode.length === 6 && /^\d+$/.test(pincode)) {
+      const isGoa = pincode.startsWith('403');
+      localStorage.setItem('tb_delivery_pincode', pincode);
+      setDeliveryInfo({
+        locationName: isGoa ? 'Goa' : 'Out of State',
+        isGoa,
+        hasEstimated: true
+      });
+      setShowPincodeInput(false);
+      toast({
+        title: 'Delivery Estimate Updated',
+        description: isGoa 
+          ? 'Next-day delivery available from our Parse Hub in Pernem!' 
+          : 'Standard shipping of 4-5 days from Mumbai/Bangalore network.',
+        variant: 'default',
+      });
+    } else {
+      toast({
+        title: 'Invalid Pincode',
+        description: 'Please enter a valid 6-digit Indian PIN code.',
+        variant: 'destructive',
+      });
+    }
+  };
+
   const initialEnrichedProduct = useMemo(() => {
     if (initialProduct) {
       const p = initialProduct;
@@ -409,8 +467,8 @@ export function ProductDetailPage({ productId, initialProduct, sourceContext }: 
                   width={900}
                   height={900}
                   priority={true}
-                  quality={100}
-                  unoptimized={true}
+                  quality={85}
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                   className="max-w-full max-h-full object-contain relative z-0 transition-transform duration-500 group-hover:scale-105"
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;
@@ -452,16 +510,17 @@ export function ProductDetailPage({ productId, initialProduct, sourceContext }: 
                          : 'border-border hover:border-border/80 hover:scale-102'
                     }`}
                   >
-                    <img
+                    <Image
                       src={image}
                       alt={`${displayName} view ${index + 1}`}
-                      width={160}
-                      height={160}
+                      width={80}
+                      height={80}
                       className="w-full h-full object-contain rounded-lg opacity-80 hover:opacity-100 transition-opacity"
                       loading="lazy"
                       onError={(e) => {
                         const target = e.target as HTMLImageElement;
                         target.src = `https://placehold.co/150x150/0f172a/94a3b8.png?text=View+${index + 1}`;
+                        target.srcset = "";
                       }}
                     />
                   </button>
@@ -556,6 +615,67 @@ export function ProductDetailPage({ productId, initialProduct, sourceContext }: 
                     <Truck className="mr-2 h-4 w-4 text-primary" />
                     Installation Inquiry
                   </Button>
+                  <a
+                    href={`https://wa.me/919604136010?text=Hi%20TecBunny,%20I%20would%20like%20to%20request%20a%20corporate%20B2B%20quotation%20for%20the%20following%20hardware%20setup:%0A%0A-%20Product:%20${encodeURIComponent(displayName)}%0A-%20SKU:%20${encodeURIComponent((product as any).sku || product.barcode || product.id)}%0A%0AMy%20Company%20Details:%0A-%20Company%20Name:%20%0A-%20GSTIN:%20%0A-%20Deployment%20Location:%20%0A-%20Requirements:%20`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-1 h-12 border border-emerald-500/35 bg-emerald-500/5 hover:bg-emerald-500/10 hover:border-emerald-500/50 text-emerald-450 hover:text-emerald-400 rounded-xl transition-all duration-300 flex items-center justify-center gap-2 text-sm font-semibold uppercase tracking-wider cursor-pointer"
+                  >
+                    <svg viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4 text-emerald-500 fill-emerald-500 shrink-0">
+                      <path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38c1.45.79 3.08 1.21 4.79 1.21 5.46 0 9.91-4.45 9.91-9.91S17.5 2 12.04 2m.01 1.67c4.56 0 8.25 3.69 8.25 8.25 0 4.56-3.69 8.25-8.25 8.25-1.53 0-3-.42-4.29-1.19l-.3-.18-3.18.83.85-3.11-.2-.32a8.182 8.182 0 0 1-1.25-4.38c0-4.56 3.69-8.25 8.25-8.25M9.42 7.72l-.12.02c-.15.03-.3.06-.44.09-.15.03-.28.06-.41.1-.39.12-.76.3-1.09.56-.33.27-.63.6-.88.97-.27.41-.43.85-.43 1.32 0 .5.16.98.48 1.41.32.43.72.84 1.2 1.24.48.4 1 1.03 1.63 1.28.63.25 1.22.4 1.84.4.45 0 .86-.08 1.23-.25.37-.17.63-.38.83-.63.2-.25.32-.54.4-.85.08-.31.13-.64.13-1s-.05-.72-.13-1.03c-.08-.31-.2-.59-.4-.84-.2-.25-.46-.46-.83-.63-.37-.17-.78-.25-1.23-.25-.62 0-1.21.15-1.84.4-.05.02-.1.04-.15.07-.1.03-.18.07-.27.1-.1.03-.18.05-.28.07l-.17.04c-.06.01-.1.02-.12.02-.02 0-.04.01-.06.01-.02 0-.03 0-.03-.01s0-.01 0-.01l-.01-.01c0-.01.01-.02.01-.04 0-.02 0-.04.01-.06.01-.02.01-.04.02-.06a.7.7 0 0 1 .05-.12c.04-.08.08-.15.14-.23.06-.08.12-.15.2-.22.07-.07.15-.14.23-.2.08-.06.16-.12.25-.17.09-.05.18-.09.28-.13.05-.02.1-.04.13-.05.28-.11.53-.17.75-.17.22 0 .43.03.62.09.19.06.37.14.53.25.16.11.3.25.41.41s.19.34.24.54c.05.2.07.4.07.61 0 .02 0 .03 0 .03s0 .02 0 .02l-.01.03c0 .01-.01.02-.01.03 0 .01-.01.02-.02.03-.01.01-.02.02-.04.03l-.05.03-.06.03c-.02.01-.05.02-.08.03-.03.01-.06.02-.1.04-.04.01-.07.02-.11.04-.04.01-.07.03-.11.04-.04.02-.07.03-.1.05s-.07.04-.1.06-.06.04-.1.07c-.03.02-.06.04-.1.07l-.07.05c-.01 0-.01.01-.01.01s0 .01 0 .01l.01.01c.22-.12.44-.24.67-.35.23-.11.45-.24.67-.35.22-.11.44-.22.65-.33.21-.11.42-.22.62-.33l.2-.1c.14-.07.26-.15.39-.22.13-.07.25-.15.36-.24.11-.09.22-.18.31-.29s.18-.23.25-.36a2.64 2.64 0 0 0 .28-1.38c0-.52-.13-1-.39-1.44a3.17 3.17 0 0 0-1.08-1.21c-.4-.33-.86-.57-1.36-.72s-1.02-.22-1.56-.22c-.54 0-1.06.07-1.56.22s-.96.39-1.36.72c-.4.34-.72.75-.97 1.21-.25.46-.38.96-.38 1.51 0 .42.09.82.26 1.17.17.35.4.66.68.92.28.26.59.47.92.62.33.15.68.25 1.04.28h.1c.02 0 .03 0 .03-.01s0-.01 0-.01l-.01-.01c0-.01 0-.01.01-.02l.01-.02c0-.01.01-.02.01-.03l.01-.03c.01-.02.01-.03.01-.05 0-.02 0-.04.01-.06 0-.02.01-.04.01-.06a.71.71 0 0 0 0-.1c0-.04 0-.08-.02-.13s-.04-.1-.07-.15a.43.43 0 0 0-.1-.13c-.04-.04-.08-.08-.13-.11-.05-.03-.1-.06-.17-.08-.07-.02-.13-.04-.2-.06-.07-.02-.15-.03-.22-.04-.04-.01-.07-.01-.11-.02l-.11-.02h-.04z" />
+                    </svg>
+                    Request B2B Quote
+                  </a>
+                </div>
+
+                <div className="border border-border/40 bg-muted/5 rounded-2xl p-4 mt-2">
+                  <div className="flex items-center justify-between gap-2 text-xs">
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <Truck className="h-4.5 w-4.5 text-primary shrink-0" />
+                      <div>
+                        {deliveryInfo.isGoa ? (
+                          <p className="font-semibold text-emerald-400">
+                            In Stock at Parse Hub &mdash; Next-Day Delivery
+                          </p>
+                        ) : (
+                          <p className="font-semibold text-zinc-400">
+                            Sourced from Mumbai/Bangalore Hub &mdash; Ships in 4&ndash;5 Days
+                          </p>
+                        )}
+                        <p className="text-[10px] text-muted-foreground/60 mt-0.5">
+                          {deliveryInfo.hasEstimated 
+                            ? `Estimated for PIN ${pincode}` 
+                            : 'Estimated for Goa Region'}
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setShowPincodeInput(!showPincodeInput)}
+                      className="text-[10px] font-bold uppercase tracking-wider text-primary hover:underline cursor-pointer shrink-0"
+                    >
+                      {showPincodeInput ? 'Cancel' : 'Change PIN'}
+                    </button>
+                  </div>
+
+                  {showPincodeInput && (
+                    <form onSubmit={handlePincodeSubmit} className="mt-3 flex gap-2">
+                      <input
+                        type="text"
+                        maxLength={6}
+                        placeholder="Enter 6-digit PIN code"
+                        value={pincode}
+                        onChange={(e) => setPincode(e.target.value.replace(/\D/g, ''))}
+                        className="flex-1 h-9 rounded-lg bg-zinc-950 border border-border/80 px-3 text-xs text-foreground placeholder:text-zinc-650 focus:outline-none focus:border-primary"
+                      />
+                      <button
+                        type="submit"
+                        className="h-9 px-4 rounded-lg bg-primary text-primary-foreground text-xs font-bold uppercase tracking-wider hover:bg-primary/90 transition-colors"
+                      >
+                        Apply
+                      </button>
+                    </form>
+                  )}
                 </div>
 
                 <p className="text-xs text-center text-muted-foreground/60">

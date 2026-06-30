@@ -29,6 +29,37 @@ export function FloatingAIAssistant() {
   const isExcluded = EXCLUDED_PREFIXES.some((prefix) => pathname.startsWith(prefix));
   if (isExcluded) return null;
 
+  const getWhatsAppLink = () => {
+    const baseText = "Hi TecBunny, ";
+    let customText = "I have a question about your services.";
+
+    if (pathname === '/') {
+      customText = "I am on your homepage and would like to learn more about your custom tech solutions.";
+    } else if (pathname.startsWith('/products/')) {
+      customText = `I am looking at your product page (${pathname}) and wanted to inquire about bulk B2B pricing and availability.`;
+    } else if (pathname === '/products') {
+      customText = "I am browsing your product catalog and have a question about custom hardware options.";
+    } else if (pathname.includes('/network-infrastructure')) {
+      customText = "I am interested in your Network & Infrastructure Solutions for a home/office setup in Goa.";
+    } else if (pathname.includes('/physical-security')) {
+      customText = "I am looking at your Physical Security & Surveillance solutions for a villa/office perimeter in Goa.";
+    } else if (pathname.includes('/smart-access-control')) {
+      customText = "I am interested in your Smart Access Control & biometric lock installations for my premises.";
+    } else if (pathname.includes('/lifecycle-hardware')) {
+      customText = "I would like to inquire about your Lifecycle Hardware and IT AMC support programs.";
+    } else if (pathname.includes('/software-system-admin')) {
+      customText = "I need information regarding your software administration and custom system provisioning.";
+    } else if (pathname === '/customised-setups') {
+      customText = "I am using your Custom Setup Configurator and would like a direct quotation on my designs.";
+    } else if (pathname === '/portfolio') {
+      customText = "I just reviewed your project portfolio case studies and would like to discuss a similar deployment.";
+    } else if (pathname === '/contact') {
+      customText = "I am on your contact page and would like to schedule an on-site technical survey.";
+    }
+
+    return `https://wa.me/919604136010?text=${encodeURIComponent(baseText + customText)}`;
+  };
+
   const aiHref = '/ai-research';
 
   return (
@@ -89,7 +120,7 @@ export function FloatingAIAssistant() {
 
         {/* WhatsApp Button */}
         <Link
-          href="https://wa.me/919604136010?text=I%20need%20more%20information"
+          href={getWhatsAppLink()}
           target="_blank"
           rel="noopener noreferrer"
           aria-label="Chat on WhatsApp"

@@ -51,12 +51,47 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
     `${product.seo_description || product.description || product.details} Technical Specs: ${specs}`
   );
 
-  return createPageMetadata({
-    title: `${title} | Professional Grade B2B Surveillance`,
+  const productPrice = Number(product.price ?? product.offer_price ?? 0);
+  const formattedPrice = productPrice > 0 ? `₹${productPrice.toLocaleString('en-IN')}` : 'Request Quote';
+  const availabilityText = product.stock_status === 'out_of_stock' ? 'Out of Stock' : 'In Stock';
+  
+  const ogTitle = `${formattedPrice} - ${title} (${availabilityText})`;
+  const ogDescription = `${plainDesc.substring(0, 120)}... Need a custom setup in Goa? Chat with a TecBunny Expert: https://wa.me/919604136010`;
+
+  const baseTitle = product.title || product.name || '';
+  const localSuffix = ' | Buy in Goa | TecBunny';
+  let seoTitle = baseTitle;
+  if (baseTitle.length + localSuffix.length <= 60) {
+    seoTitle = `${baseTitle}${localSuffix}`;
+  } else {
+    const tightSuffix = ' | Goa | TecBunny';
+    if (baseTitle.length + tightSuffix.length <= 60) {
+      seoTitle = `${baseTitle}${tightSuffix}`;
+    } else {
+      seoTitle = `${baseTitle.slice(0, 60 - tightSuffix.length)}${tightSuffix}`;
+    }
+  }
+
+  const baseMetadata = await createPageMetadata({
+    title: seoTitle,
     description: plainDesc.substring(0, 160),
     path: `/products/${id}`,
     image: product.image || product.image_url || BRAND_LOGO_URL,
+    openGraph: {
+      title: ogTitle,
+      description: ogDescription,
+      type: 'website',
+    }
   });
+
+  return {
+    ...baseMetadata,
+    other: {
+      'product:price:amount': String(productPrice),
+      'product:price:currency': 'INR',
+      'product:availability': availabilityText,
+    }
+  };
 }
 
 export default async function ProductPage({ params }: ProductPageProps) {

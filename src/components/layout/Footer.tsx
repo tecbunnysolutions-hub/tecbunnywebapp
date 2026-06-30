@@ -231,6 +231,8 @@ export function Footer() {
             <ul className="space-y-3.5 text-base font-medium">
               <li><Link href="/about" className="hover:text-primary transition-all hover:translate-x-1 inline-block text-slate-300">About Us</Link></li>
               <li><Link href="/products" className="hover:text-primary transition-all hover:translate-x-1 inline-block text-slate-300">Products</Link></li>
+              <li><Link href="/portfolio" className="hover:text-primary transition-all hover:translate-x-1 inline-block text-slate-300">Portfolio</Link></li>
+              <li><Link href="/solutions" className="hover:text-primary transition-all hover:translate-x-1 inline-block text-slate-300">Enterprise Solutions</Link></li>
               <li><Link href="/info/policies/privacy" className="hover:text-primary transition-all hover:translate-x-1 inline-block text-slate-300">Privacy Policy</Link></li>
               <li><Link href="/info/policies/terms" className="hover:text-primary transition-all hover:translate-x-1 inline-block text-slate-300">Terms of Service</Link></li>
             </ul>
