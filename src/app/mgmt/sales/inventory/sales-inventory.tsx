@@ -15,7 +15,6 @@ import { Badge } from '@/components/ui/badge';
 import type { Product } from '@/lib/types';
 import { ViewSerialsDialog } from '@/components/sales/ViewSerialsDialog';
 import { Skeleton } from '@/components/ui/skeleton';
-import { createClient } from '@/lib/supabase/client';
 import { useToast } from '../../../../hooks/use-toast';
 import { logger } from '@/lib/logger';
 
@@ -34,61 +33,34 @@ export default function InventoryManagementPage() {
     const [editingStock, setEditingStock] = React.useState<string | null>(null);
     const [newStockValue, setNewStockValue] = React.useState<number>(0);
     const [loading, setLoading] = React.useState(true);
-    const supabase = createClient();
     const { toast } = useToast();
 
     const fetchInventory = React.useCallback(async () => {
         setLoading(true);
         try {
-            // Prefer the inventory_items view for consolidated stock data
-            const { data: inventoryData, error: inventoryError } = await supabase
-                .from('inventory_items')
-                .select('*')
-                .order('name');
+            const response = await fetch('/api/inventory');
+            const data = await response.json();
 
-            if (inventoryError) {
-                logger.warn("inventory_items unavailable, falling back to products", { inventoryError });
-                const { data: productsData, error: productsError } = await supabase
-                    .from('products')
-                    .select('*')
-                    .order('name');
-
-                if (productsError) {
-                    logger.error("Error fetching products in sales-inventory", { productsError });
-                    toast({
-                        title: "Error",
-                        description: "Failed to fetch inventory data",
-                        variant: "destructive",
-                    });
-                    return;
-                }
-
-                const mappedData = (productsData || []).map(product => {
-                    const normalizedName = product?.name || product?.title || product?.model_number || 'Unnamed Product';
-                    const stockQty = Number(product?.stock_quantity ?? product?.quantity ?? 0);
-                    return {
-                        ...product,
-                        name: normalizedName,
-                        stock_quantity: stockQty,
-                        stock_label: stockQty === 0 ? 'Out of Stock' : stockQty <= 5 ? 'Low Stock' : 'In Stock',
-                        warehouse_location: product?.warehouse_location || 'Main Warehouse',
-                        minimum_stock: Number(product?.minimum_stock ?? 5),
-                        available_serials: Array.isArray(product?.serial_numbers) ? product.serial_numbers.length : 0,
-                    };
+            if (!response.ok) {
+                logger.error('Failed to fetch inventory from API', { data });
+                toast({
+                    title: "Error",
+                    description: data.error || "Failed to fetch inventory data",
+                    variant: "destructive",
                 });
-
-                setProductList(mappedData);
-            } else {
-                const normalizedInventory = (inventoryData || []).map((item: any) => ({
-                    ...item,
-                    name: item?.name || item?.product_name || 'Unnamed Product',
-                    stock_quantity: Number(item?.stock_quantity ?? 0),
-                    category: item?.category || 'Uncategorized',
-                }));
-                setProductList(normalizedInventory as ProductWithStock[]);
+                setProductList([]);
+                return;
             }
+
+            const normalizedInventory = (data.inventory || []).map((item: any) => ({
+                ...item,
+                name: item?.name || item?.product_name || 'Unnamed Product',
+                stock_quantity: Number(item?.stock_quantity ?? 0),
+                category: item?.category || 'Uncategorized',
+            }));
+            setProductList(normalizedInventory as ProductWithStock[]);
         } catch (error) {
-            logger.error("Unexpected error in sales-inventory", { error });
+            logger.error("Unexpected error in sales-inventory fetch", { error });
             toast({
                 title: "Error",
                 description: "An unexpected error occurred",
@@ -97,7 +69,7 @@ export default function InventoryManagementPage() {
         } finally {
             setLoading(false);
         }
-    }, [supabase, toast]);
+    }, [toast]);
 
     React.useEffect(() => {
         fetchInventory();

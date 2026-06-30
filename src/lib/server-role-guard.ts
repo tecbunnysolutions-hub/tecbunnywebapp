@@ -78,6 +78,42 @@ export interface ServerAuthState {
 }
 
 export async function getServerAuthState(): Promise<ServerAuthState> {
+  try {
+    const { cookies } = await import('next/headers');
+    const { verifySuperadminSessionToken } = await import('./auth/superadmin-session');
+    const cookieStore = await cookies();
+    const superadminCookie = cookieStore.get('superadmin-session')?.value;
+    if (superadminCookie) {
+      const isSuperadmin = await verifySuperadminSessionToken(superadminCookie);
+      if (isSuperadmin) {
+        const { createServiceClient, isSupabaseServiceConfigured } = await import('./supabase/server');
+        const supabase = isSupabaseServiceConfigured ? createServiceClient() : await createClient();
+        return {
+          supabase,
+          session: {
+            access_token: 'superadmin-token-stub',
+            refresh_token: 'superadmin-refresh-stub',
+            token_type: 'bearer',
+            expires_in: 3600,
+            expires_at: Math.floor(Date.now() / 1000) + 3600,
+            user: {
+              id: 'superadmin-system-session',
+              email: 'superadmin@tecbunny.com',
+              app_metadata: { role: 'superadmin' },
+              user_metadata: { name: 'Superadmin' },
+              aud: 'authenticated',
+              created_at: new Date().toISOString(),
+            } as any,
+          },
+          role: 'superadmin' as UserRole,
+          permissions: ['*'],
+        };
+      }
+    }
+  } catch (cookieError) {
+    // Ignore and fallback
+  }
+
   const supabase = await createClient();
   // Security: use getUser() not getSession(). getSession() only reads from cookies
   // without server-side JWT validation. getUser() verifies the token with Supabase auth server.

@@ -1,5 +1,5 @@
-import SalesOrders from '../../sales/orders/sales-orders';
+import OrderDataTable from '@/components/shared/OrderDataTable';
 
 export default function Page() {
-  return <SalesOrders />;
+  return <OrderDataTable role="ADMIN" />;
 }
