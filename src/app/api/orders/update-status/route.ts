@@ -207,7 +207,7 @@ export async function POST(request: NextRequest) {
     const serviceClient = isSupabaseServiceConfigured ? createServiceClient() : supabase;
     const { data: orderRecord, error: fetchError } = await serviceClient
       .from('orders')
-      .select('id, type, payment_status, payment_method, status, customer_phone, customer_name, total, customer_id')
+      .select('id, type, payment_status, payment_method, status, customer_phone, customer_name, customer_email, total, customer_id, created_at, delivery_address')
       .eq('id', orderId)
       .maybeSingle();
 
@@ -310,6 +310,29 @@ export async function POST(request: NextRequest) {
         cancelReason: additionalDataPayload.cancellation_reason as string,
         pickupCode
       });
+    }
+
+    // Send Email confirmation if transitioned to Confirmed or Payment Confirmed
+    if (normalizedStatus === 'Confirmed' || normalizedStatus === 'Payment Confirmed') {
+      const emailRecipient = orderRecord.customer_email || (orderRecord as any).email || null;
+      if (emailRecipient && /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(emailRecipient)) {
+        try {
+          const { emailHelpers } = await import('@/lib/email');
+          const emailOrderData = {
+            id: orderRecord.id,
+            customer_name: orderRecord.customer_name || 'Valued Customer',
+            created_at: orderRecord.created_at || new Date().toISOString(),
+            total: orderRecord.total || 0,
+            delivery_address: orderRecord.delivery_address || null,
+          };
+          await emailHelpers.sendOrderConfirmation(emailRecipient, emailOrderData);
+          logger.info('Order confirmation email sent successfully for order:', { orderId, email: emailRecipient, status: normalizedStatus });
+        } catch (emailErr: any) {
+          logger.error('Failed to send order confirmation email', { error: emailErr.message, orderId });
+        }
+      } else {
+        logger.warn('No valid customer email found to send confirmation email for order:', { orderId });
+      }
     }
 
     return NextResponse.json({ success: true, orderId, status: normalizedStatus });
