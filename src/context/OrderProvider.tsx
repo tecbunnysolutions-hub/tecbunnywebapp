@@ -346,6 +346,17 @@ export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const getOrderById = useCallback(async (orderId: string): Promise<Order | null> => {
     try {
+      // First try to load from secure server API to bypass client RLS for guests/COD
+      const apiRes = await fetch(`/api/orders/${orderId}`);
+      if (apiRes.ok) {
+        const payload = await apiRes.json();
+        if (payload?.success && payload?.order) {
+          const order = payload.order;
+          setCurrentOrder(order);
+          return order;
+        }
+      }
+
       const { data, error } = await supabase
         .from('orders')
         .select('*')

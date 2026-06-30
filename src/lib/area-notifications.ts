@@ -328,88 +328,90 @@ export async function sendOrderRoutingNotifications(
   const customerEmail = validEmail(order.customer_email) ? order.customer_email.trim() : null;
   const items = getOrderItems(order);
 
-  let customerSent = false;
-  let internalSent = false;
+  // Send notifications in the background to prevent blocking order creation and timing out
+  void (async () => {
+    try {
+      if (customerEmail && !(await notificationAlreadySent('order', orderId, customerKind))) {
+        const result = await improvedEmailService.sendEmail({
+          to: customerEmail,
+          replyTo: centralEmail,
+          subject: `${isService ? 'Service order' : 'Order'} confirmation #${escapeHtml(order.order_number || orderId)}`,
+          html: `
+            <h2>Thank you, ${escapeHtml(order.customer_name || 'Customer')}.</h2>
+            <p>Your ${isService ? 'service request' : 'product order'} has been received.</p>
+            <p><strong>Order:</strong> ${escapeHtml(order.order_number || orderId)}</p>
+            <p><strong>Total:</strong> INR ${escapeHtml(order.total || 0)}</p>
+            ${items.length ? `<p><strong>Items</strong></p><ul>${renderItems(items)}</ul>` : ''}
+            <p><a href="${orderLink}">View order status</a></p>
+            <p>Need assistance? Reply to this message and it will reach our ${teamLabel.toLowerCase()} team.</p>
+          `,
+          text: [
+            `${isService ? 'Service order' : 'Order'} confirmation #${order.order_number || orderId}`,
+            `Thank you, ${order.customer_name || 'Customer'}.`,
+            `Total: INR ${order.total || 0}`,
+            `View order: ${orderLink}`,
+            `Reply to contact the TecBunny ${teamLabel} team.`,
+          ].join('\n'),
+        });
+        await recordNotification({
+          sourceType: 'order',
+          sourceId: orderId,
+          notificationKind: customerKind,
+          routing,
+          recipients: [customerEmail],
+          messageIds: result.messageId ? [result.messageId] : [],
+          error: result.success ? undefined : result.error,
+        });
+      }
 
-  if (customerEmail && !(await notificationAlreadySent('order', orderId, customerKind))) {
-    const result = await improvedEmailService.sendEmail({
-      to: customerEmail,
-      replyTo: centralEmail,
-      subject: `${isService ? 'Service order' : 'Order'} confirmation #${escapeHtml(order.order_number || orderId)}`,
-      html: `
-        <h2>Thank you, ${escapeHtml(order.customer_name || 'Customer')}.</h2>
-        <p>Your ${isService ? 'service request' : 'product order'} has been received.</p>
-        <p><strong>Order:</strong> ${escapeHtml(order.order_number || orderId)}</p>
-        <p><strong>Total:</strong> INR ${escapeHtml(order.total || 0)}</p>
-        ${items.length ? `<p><strong>Items</strong></p><ul>${renderItems(items)}</ul>` : ''}
-        <p><a href="${orderLink}">View order status</a></p>
-        <p>Need assistance? Reply to this message and it will reach our ${teamLabel.toLowerCase()} team.</p>
-      `,
-      text: [
-        `${isService ? 'Service order' : 'Order'} confirmation #${order.order_number || orderId}`,
-        `Thank you, ${order.customer_name || 'Customer'}.`,
-        `Total: INR ${order.total || 0}`,
-        `View order: ${orderLink}`,
-        `Reply to contact the TecBunny ${teamLabel} team.`,
-      ].join('\n'),
-    });
-    customerSent = result.success;
-    await recordNotification({
-      sourceType: 'order',
-      sourceId: orderId,
-      notificationKind: customerKind,
-      routing,
-      recipients: [customerEmail],
-      messageIds: result.messageId ? [result.messageId] : [],
-      error: result.success ? undefined : result.error,
-    });
-  }
+      if (!(await notificationAlreadySent('order', orderId, internalKind))) {
+        const managerEmail = routing.manager?.managerEmail;
+        const recipients = managerEmail ? [managerEmail, centralEmail] : [centralEmail];
+        const result = await improvedEmailService.sendEmail({
+          to: managerEmail || centralEmail,
+          cc: managerEmail ? centralEmail : undefined,
+          replyTo: centralEmail,
+          skipRateLimit: true,
+          subject: `${routing.status === 'assigned' ? '' : '[UNASSIGNED PINCODE] '}${isService ? '[NEW SERVICE ORDER]' : '[NEW PRODUCT ORDER]'} ${order.order_number || orderId} - ${routing.areaName || pincode || 'Pincode missing'}`,
+          html: `
+            <h2>${isService ? 'New service order' : 'New product order'}</h2>
+            ${routing.manager ? `<p>Hi ${escapeHtml(routing.manager.managerName)},</p>` : '<p>Manual area assignment is required.</p>'}
+            <p><strong>Order:</strong> ${escapeHtml(order.order_number || orderId)}</p>
+            <p><strong>Customer:</strong> ${escapeHtml(order.customer_name || 'Unknown')}</p>
+            <p><strong>Phone:</strong> ${escapeHtml(order.customer_phone || 'Not provided')}</p>
+            <p><strong>Email:</strong> ${escapeHtml(order.customer_email || 'Not provided')}</p>
+            <p><strong>Value:</strong> INR ${escapeHtml(order.total || 0)}</p>
+            <p><strong>Pincode:</strong> ${escapeHtml(pincode || 'Missing')}</p>
+            <p><strong>Area:</strong> ${escapeHtml(routing.areaName || 'Unassigned')}</p>
+            ${items.length ? `<p><strong>Items</strong></p><ul>${renderItems(items)}</ul>` : ''}
+            <p><a href="${orderLink}">Review order</a></p>
+          `,
+          text: [
+            `New ${isService ? 'service' : 'product'} order ${order.order_number || orderId}`,
+            `Customer: ${order.customer_name || 'Unknown'}`,
+            `Phone: ${order.customer_phone || 'Not provided'}`,
+            `Value: INR ${order.total || 0}`,
+            `Pincode: ${pincode || 'Missing'}`,
+            `Area: ${routing.areaName || 'Unassigned'}`,
+            `Review: ${orderLink}`,
+          ].join('\n'),
+        });
+        await recordNotification({
+          sourceType: 'order',
+          sourceId: orderId,
+          notificationKind: internalKind,
+          routing,
+          recipients,
+          messageIds: result.messageId ? [result.messageId] : [],
+          error: result.success ? undefined : result.error,
+        });
+      }
+    } catch (bgError) {
+      logger.error('Background order routing notifications failed', { orderId, error: bgError });
+    }
+  })();
 
-  if (!(await notificationAlreadySent('order', orderId, internalKind))) {
-    const managerEmail = routing.manager?.managerEmail;
-    const recipients = managerEmail ? [managerEmail, centralEmail] : [centralEmail];
-    const result = await improvedEmailService.sendEmail({
-      to: managerEmail || centralEmail,
-      cc: managerEmail ? centralEmail : undefined,
-      replyTo: centralEmail,
-      skipRateLimit: true,
-      subject: `${routing.status === 'assigned' ? '' : '[UNASSIGNED PINCODE] '}${isService ? '[NEW SERVICE ORDER]' : '[NEW PRODUCT ORDER]'} ${order.order_number || orderId} - ${routing.areaName || pincode || 'Pincode missing'}`,
-      html: `
-        <h2>${isService ? 'New service order' : 'New product order'}</h2>
-        ${routing.manager ? `<p>Hi ${escapeHtml(routing.manager.managerName)},</p>` : '<p>Manual area assignment is required.</p>'}
-        <p><strong>Order:</strong> ${escapeHtml(order.order_number || orderId)}</p>
-        <p><strong>Customer:</strong> ${escapeHtml(order.customer_name || 'Unknown')}</p>
-        <p><strong>Phone:</strong> ${escapeHtml(order.customer_phone || 'Not provided')}</p>
-        <p><strong>Email:</strong> ${escapeHtml(order.customer_email || 'Not provided')}</p>
-        <p><strong>Value:</strong> INR ${escapeHtml(order.total || 0)}</p>
-        <p><strong>Pincode:</strong> ${escapeHtml(pincode || 'Missing')}</p>
-        <p><strong>Area:</strong> ${escapeHtml(routing.areaName || 'Unassigned')}</p>
-        ${items.length ? `<p><strong>Items</strong></p><ul>${renderItems(items)}</ul>` : ''}
-        <p><a href="${orderLink}">Review order</a></p>
-      `,
-      text: [
-        `New ${isService ? 'service' : 'product'} order ${order.order_number || orderId}`,
-        `Customer: ${order.customer_name || 'Unknown'}`,
-        `Phone: ${order.customer_phone || 'Not provided'}`,
-        `Value: INR ${order.total || 0}`,
-        `Pincode: ${pincode || 'Missing'}`,
-        `Area: ${routing.areaName || 'Unassigned'}`,
-        `Review: ${orderLink}`,
-      ].join('\n'),
-    });
-    internalSent = result.success;
-    await recordNotification({
-      sourceType: 'order',
-      sourceId: orderId,
-      notificationKind: internalKind,
-      routing,
-      recipients,
-      messageIds: result.messageId ? [result.messageId] : [],
-      error: result.success ? undefined : result.error,
-    });
-  }
-
-  return { customerSent, internalSent, routing };
+  return { customerSent: true, internalSent: true, routing };
 }
 
 export async function sendServiceTicketRoutingNotifications(
