@@ -278,33 +278,33 @@ export default function OrderDataTable({ role }: OrderDataTableProps) {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Order ID</TableHead>
-                <TableHead>Customer</TableHead>
-                {role === 'ADMIN' && <TableHead>Type</TableHead>}
-                <TableHead>{role === 'ADMIN' ? 'Placed' : 'Date'}</TableHead>
-                <TableHead>Status</TableHead>
-                {role === 'ADMIN' && <TableHead>Payment</TableHead>}
-                <TableHead>Total</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead className="px-2 py-3 text-xs sm:text-sm font-medium">Order ID</TableHead>
+                <TableHead className="px-2 py-3 text-xs sm:text-sm font-medium">Customer</TableHead>
+                {role === 'ADMIN' && <TableHead className="px-2 py-3 text-xs sm:text-sm font-medium">Type</TableHead>}
+                <TableHead className="px-2 py-3 text-xs sm:text-sm font-medium">{role === 'ADMIN' ? 'Placed' : 'Date'}</TableHead>
+                <TableHead className="px-2 py-3 text-xs sm:text-sm font-medium">Status</TableHead>
+                {role === 'ADMIN' && <TableHead className="px-2 py-3 text-xs sm:text-sm font-medium">Payment</TableHead>}
+                <TableHead className="px-2 py-3 text-xs sm:text-sm font-medium">Total</TableHead>
+                <TableHead className="px-2 py-3 text-right text-xs sm:text-sm font-medium">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {loading ? (
                 Array.from({ length: 4 }).map((_, index) => (
                   <TableRow key={`order-skeleton-${index}`}>
-                    <TableCell><Skeleton className="h-5 w-24" /></TableCell>
-                    <TableCell>
+                    <TableCell className="px-2 py-3"><Skeleton className="h-5 w-24" /></TableCell>
+                    <TableCell className="px-2 py-3">
                       <div className="space-y-1">
                         <Skeleton className="h-4 w-32" />
                         <Skeleton className="h-3 w-40" />
                       </div>
                     </TableCell>
-                    {role === 'ADMIN' && <TableCell><Skeleton className="h-5 w-16" /></TableCell>}
-                    <TableCell><Skeleton className="h-5 w-24" /></TableCell>
-                    <TableCell><Skeleton className="h-6 w-24" /></TableCell>
-                    {role === 'ADMIN' && <TableCell><Skeleton className="h-5 w-20" /></TableCell>}
-                    <TableCell><Skeleton className="h-5 w-16" /></TableCell>
-                    <TableCell className="text-right"><Skeleton className="h-8 w-24 ml-auto" /></TableCell>
+                    {role === 'ADMIN' && <TableCell className="px-2 py-3"><Skeleton className="h-5 w-16" /></TableCell>}
+                    <TableCell className="px-2 py-3"><Skeleton className="h-5 w-24" /></TableCell>
+                    <TableCell className="px-2 py-3"><Skeleton className="h-6 w-24" /></TableCell>
+                    {role === 'ADMIN' && <TableCell className="px-2 py-3"><Skeleton className="h-5 w-20" /></TableCell>}
+                    <TableCell className="px-2 py-3"><Skeleton className="h-5 w-16" /></TableCell>
+                    <TableCell className="px-2 py-3 text-right"><Skeleton className="h-8 w-24 ml-auto" /></TableCell>
                   </TableRow>
                 ))
               ) : filteredOrders.length === 0 ? (
@@ -316,62 +316,70 @@ export default function OrderDataTable({ role }: OrderDataTableProps) {
               ) : (
                 filteredOrders.map(order => (
                   <TableRow key={order.id}>
-                    <TableCell className="font-medium">{formatOrderNumber(order.id)}</TableCell>
-                    <TableCell>
-                      <div className="space-y-1">
-                        <p className="font-medium">{order.customer_name || 'Unknown customer'}</p>
+                    <TableCell className="font-medium px-2 py-3 text-xs sm:text-sm whitespace-nowrap">{formatOrderNumber(order.id)}</TableCell>
+                    <TableCell className="px-2 py-3 max-w-[150px] lg:max-w-[200px]">
+                      <div className="space-y-0.5 truncate">
+                        <p className="font-medium text-xs sm:text-sm truncate" title={order.customer_name || 'Unknown customer'}>
+                          {order.customer_name || 'Unknown customer'}
+                        </p>
                         {order.customer_email && (
-                          <p className="text-xs text-muted-foreground">{order.customer_email}</p>
+                          <p className="text-[10px] sm:text-xs text-muted-foreground truncate" title={order.customer_email}>
+                            {order.customer_email}
+                          </p>
                         )}
                         {order.customer_phone && (
-                          <p className="text-xs text-muted-foreground">{order.customer_phone}</p>
+                          <p className="text-[10px] sm:text-xs text-muted-foreground truncate" title={order.customer_phone}>
+                            {order.customer_phone}
+                          </p>
                         )}
                       </div>
                     </TableCell>
                     {role === 'ADMIN' && (
-                      <TableCell>
-                        <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${getTypeBadgeClass(order.type)}`}>
+                      <TableCell className="px-2 py-3 text-xs sm:text-sm whitespace-nowrap">
+                        <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] sm:text-xs font-medium ${getTypeBadgeClass(order.type)}`}>
                           {order.type || 'Unknown'}
                         </span>
                       </TableCell>
                     )}
-                    <TableCell>
+                    <TableCell className="px-2 py-3 text-xs sm:text-sm whitespace-nowrap">
                       <div>
                         <p>{new Date(order.created_at).toLocaleDateString()}</p>
-                        <p className="text-xs text-muted-foreground">
+                        <p className="text-[10px] sm:text-xs text-muted-foreground">
                           {new Date(order.created_at).toLocaleTimeString()}
                         </p>
                       </div>
                     </TableCell>
-                    <TableCell>
-                      <Badge variant={getStatusBadgeVariant(order.status)}>{role === 'ADMIN' ? getStatusLabel(order) : order.status}</Badge>
+                    <TableCell className="px-2 py-3 text-xs sm:text-sm">
+                      <Badge variant={getStatusBadgeVariant(order.status)} className="text-[10px] sm:text-xs px-2 py-0.5 whitespace-nowrap">
+                        {role === 'ADMIN' ? getStatusLabel(order) : order.status}
+                      </Badge>
                     </TableCell>
                     {role === 'ADMIN' && (
-                      <TableCell>
-                        <div className="space-y-1 text-sm">
-                          <p>{order.payment_method ? order.payment_method.toUpperCase() : 'Not set'}</p>
-                          <p className="text-muted-foreground">{getPaymentStatusLabel(order)}</p>
+                      <TableCell className="px-2 py-3 max-w-[120px] lg:max-w-[150px]">
+                        <div className="space-y-0.5 text-[11px] sm:text-xs truncate">
+                          <p className="font-medium truncate">{order.payment_method ? order.payment_method.toUpperCase() : 'Not set'}</p>
+                          <p className="text-muted-foreground truncate" title={getPaymentStatusLabel(order)}>{getPaymentStatusLabel(order)}</p>
                           {order.payment_reference && (
-                            <p className="text-xs text-muted-foreground">Ref: {order.payment_reference}</p>
+                            <p className="text-[10px] text-muted-foreground truncate" title={`Ref: ${order.payment_reference}`}>Ref: {order.payment_reference}</p>
                           )}
                         </div>
                       </TableCell>
                     )}
-                    <TableCell>
+                    <TableCell className="px-2 py-3 text-xs sm:text-sm whitespace-nowrap">
                       <div>
-                        <p className="font-medium">₹{order.total.toFixed(2)}</p>
+                        <p className="font-medium text-xs sm:text-sm">₹{order.total.toFixed(2)}</p>
                         {role === 'ADMIN' && (order.discount_amount || order.shipping_amount) && (
-                          <p className="text-xs text-muted-foreground">
+                          <p className="text-[10px] text-muted-foreground">
                             {order.discount_amount ? `Disc: ₹${order.discount_amount.toFixed(2)}` : ''}
                             {order.shipping_amount ? ` Ship: ₹${order.shipping_amount.toFixed(2)}` : ''}
                           </p>
                         )}
                         {role === 'SALES' && order.payment_method && (
-                          <p className="text-xs text-muted-foreground">{order.payment_method}</p>
+                          <p className="text-[10px] text-muted-foreground">{order.payment_method}</p>
                         )}
                       </div>
                     </TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="px-2 py-3 text-right whitespace-nowrap">
                       <OrderActions order={order} onStatusUpdate={fetchOrders} variant="dropdown" />
                     </TableCell>
                   </TableRow>
