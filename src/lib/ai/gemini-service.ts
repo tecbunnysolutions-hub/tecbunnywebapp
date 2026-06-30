@@ -3,6 +3,7 @@ type GeminiGenerateParams = {
   model?: string;
   temperature?: number;
   maxOutputTokens?: number;
+  reasoningEffort?: 'low' | 'medium' | 'high' | null;
 };
 
 const SARVAM_BASE_URL = 'https://api.sarvam.ai/v1/chat/completions';
@@ -13,6 +14,7 @@ export async function generateGeminiText({
   model = DEFAULT_SARVAM_MODEL,
   temperature = 0.4,
   maxOutputTokens = 600,
+  reasoningEffort = null,
 }: GeminiGenerateParams): Promise<string> {
   const apiKey = process.env.SARVAM_API_KEY || process.env.API_KEY;
   if (!apiKey) {
@@ -32,6 +34,7 @@ export async function generateGeminiText({
     ],
     temperature,
     max_tokens: maxOutputTokens,
+    reasoning_effort: reasoningEffort,
   };
 
   const controller = new AbortController();
