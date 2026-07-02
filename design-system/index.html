@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="A demonstration of classless, semantic HTML design driven by fluid spacing, fluid typography, and media-query-free intrinsic layouts.">
+  <title>Aether — Intrinsic Classless Web Architecture</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@500;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="global.css">
+</head>
+<body>
+
+  <!-- SITE HEADER -->
+  <header>
+    <div data-layout="container" style="--container-max-width: 80rem;">
+      <nav data-layout="switcher" style="--switcher-threshold: 38rem;">
+        <!-- Logo / Brand Link -->
+        <a href="#home" style="font-family: 'Outfit', sans-serif; font-weight: 800; font-size: var(--font-size-l); letter-spacing: -0.03em;">
+          ÆTHER
+        </a>
+        
+        <!-- Navigation Links -->
+        <div data-layout="switcher" style="--switcher-threshold: 24rem; --switcher-gap: var(--space-xs); justify-content: flex-end;">
+          <a href="#features">Features</a>
+          <a href="#showcase">Showcase</a>
+          <a href="#pricing">Pricing</a>
+          <a href="#contact">Get Started</a>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT AREA -->
+  <main id="home">
+
+    <!-- HERO SECTION -->
+    <section>
+      <div data-layout="container" style="--container-max-width: 80rem;">
+        <div data-layout="switcher" style="--switcher-threshold: 50rem; --switcher-gap: var(--space-l);">
+          
+          <!-- Hero Text -->
+          <article data-layout="stack" style="--stack-space: var(--space-m);">
+            <h1>Design for the medium. Outsource the screen queries.</h1>
+            <p>
+              Aether is a minimalist design system designed entirely without classes, utility frameworks, or CSS modules. By using semantic HTML5 tags and fluid calculations, Aether lets your content adapt intrinsically to any viewport.
+            </p>
+            <!-- CTA Button Group -->
+            <div data-layout="switcher" style="--switcher-threshold: 28rem; --switcher-gap: var(--space-xs); justify-content: flex-start;">
+              <a href="#contact" role="button">Start Designing</a>
+              <a href="#features" role="button">Learn the Spec</a>
+            </div>
+          </article>
+
+          <!-- Hero Graphical Feature (Classless Aside) -->
+          <aside data-layout="stack" style="--stack-space: var(--space-s); background-color: var(--color-primary); color: var(--color-neutral); border-radius: var(--radius-l); padding: var(--space-l); border-left: none; border-bottom: 4px solid var(--color-accent);">
+            <h4 style="color: var(--color-surface);">System Diagnostics</h4>
+            <pre><code>:root {
+  --font-size-hero: clamp(2.5rem, 2.0714rem + 2.1429vw, 4rem);
+  --space-xl: clamp(3rem, 2.4286rem + 2.8571vw, 5rem);
+}
+[data-layout="switcher"] > * {
+  flex-basis: calc((44rem - 100%) * 999);
+}</code></pre>
+            <p style="color: var(--color-neutral); font-size: var(--font-size-xs); opacity: 0.8;">
+              No media queries were loaded to format this dashboard codeblock on your current viewport.
+            </p>
+          </aside>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- FEATURES GRID SECTION -->
+    <section id="features">
+      <div data-layout="container" style="--container-max-width: 80rem;">
+        <div data-layout="stack" style="--stack-space: var(--space-m); text-align: center; margin-bottom: var(--space-l);">
+          <h2>Intrinsic Spacing & Typography</h2>
+          <p style="margin-inline: auto;">
+            Our styling system computes type scale and margins relative to the viewport dynamically, scaling smoothly between mobile and desktop configurations.
+          </p>
+        </div>
+
+        <!-- Features Grid -->
+        <div data-layout="grid">
+          
+          <!-- Card 1 -->
+          <article data-layout="stack" style="--stack-space: var(--space-xs);">
+            <h3>Fluid Typography</h3>
+            <p>Uses CSS clamp rules to transition headers between 320px and 1440px viewports without rigid breakpoints.</p>
+            <a href="#read">Read documentation &rarr;</a>
+          </article>
+
+          <!-- Card 2 -->
+          <article data-layout="stack" style="--stack-space: var(--space-xs);">
+            <h3>Fluid Spacing</h3>
+            <p>Paddings, margins, and gaps utilize linear scaling, maintaining visual rhythm across different devices.</p>
+            <a href="#read">Read documentation &rarr;</a>
+          </article>
+
+          <!-- Card 3 -->
+          <article data-layout="stack" style="--stack-space: var(--space-xs);">
+            <h3>Intrinsic Layouts</h3>
+            <p>Grid, Container, Switcher, and Stack attributes arrange elements logically based on container constraint limits.</p>
+            <a href="#read">Read documentation &rarr;</a>
+          </article>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- CASE STUDY / SPOTLIGHT SECTION -->
+    <section id="showcase">
+      <div data-layout="container" style="--container-max-width: 80rem;">
+        <div data-layout="switcher" style="--switcher-threshold: 48rem; --switcher-gap: var(--space-l);">
+          
+          <!-- Interactive Mock Image / Aside -->
+          <aside data-layout="stack" style="--stack-space: var(--space-xs); padding: 0; background: transparent; border-left: none;">
+            <svg viewBox="0 0 500 350" fill="none" xmlns="http://www.w3.org/2000/svg" style="background-color: var(--color-primary); border-radius: var(--radius-l); width: 100%; height: auto;">
+              <rect width="100%" height="100%" fill="var(--color-primary)"/>
+              <circle cx="250" cy="175" r="90" fill="url(#circle-gradient)" opacity="0.8"/>
+              <path d="M150 175H350" stroke="var(--color-surface)" stroke-width="2" opacity="0.3"/>
+              <path d="M250 75V275" stroke="var(--color-surface)" stroke-width="2" opacity="0.3"/>
+              <defs>
+                <linearGradient id="circle-gradient" x1="160" y1="85" x2="340" y2="265" gradientUnits="userSpaceOnUse">
+                  <stop stop-color="var(--color-secondary)"/>
+                  <stop offset="1" stop-color="var(--color-accent)"/>
+                </linearGradient>
+              </defs>
+            </svg>
+            <p style="font-size: var(--font-size-xs); text-align: center; color: var(--color-text-muted);">
+              Fig 1. Intrinsic canvas vector composition adjusting to parent width.
+            </p>
+          </aside>
+
+          <!-- Spotlight Details -->
+          <article data-layout="stack" style="--stack-space: var(--space-m);">
+            <h2>A Radical Shift in Design Mindset</h2>
+            <p>
+              By styling elements contextually through their natural HTML tags, you write less CSS and produce more predictable code. Components are no longer isolated boxes with hardcoded behaviors; they are layout flow contributors.
+            </p>
+            <blockquote>
+              "Web design is not about creating pixel-perfect replicas of print. It's about designing systems that allow content to settle beautifully inside whatever space it finds itself."
+              <cite>The Intrinsic Web Manifesto</cite>
+            </blockquote>
+          </article>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- PRICING & COMPILATION TABLE SECTION -->
+    <section id="pricing">
+      <div data-layout="container" style="--container-max-width: 80rem;">
+        <div data-layout="stack" style="--stack-space: var(--space-m);">
+          <div style="text-align: center;">
+            <h2>Simple, Open Architectures</h2>
+            <p style="margin-inline: auto;">Compare our classless architecture constraints against standard utility frameworks.</p>
+          </div>
+
+          <!-- Feature Comparison Table -->
+          <table>
+            <thead>
+              <tr>
+                <th>Architectural Pattern</th>
+                <th>Utility Classes (Tailwind)</th>
+                <th>Semantic Classless (Aether)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>HTML File Weight</td>
+                <td>Large (Heavy class listings)</td>
+                <td>Lightweight (Pure semantic tags)</td>
+              </tr>
+              <tr>
+                <td>CSS File Weight</td>
+                <td>Large (Tens of thousands of classes)</td>
+                <td>Tiny (&lt; 8KB global.css)</td>
+              </tr>
+              <tr>
+                <td>Breakpoints Configuration</td>
+                <td>Manual media classes (md:flex, lg:grid)</td>
+                <td>Intrinsic calculations (clamp, auto-fit)</td>
+              </tr>
+              <tr>
+                <td>Separation of Concerns</td>
+                <td>Poor (Markup holds design layout)</td>
+                <td>Excellent (Styles separated from structure)</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- SIGN UP / FORM SECTION -->
+    <section id="contact">
+      <div data-layout="container" style="--container-max-width: 48rem;">
+        <div data-layout="stack" style="--stack-space: var(--space-m);">
+          
+          <div style="text-align: center;">
+            <h2>Register Your System</h2>
+            <p>Join the classless movement. Sign up below for notifications on design token changes.</p>
+          </div>
+
+          <!-- Semantic Stack Form -->
+          <form action="#" method="POST" data-layout="stack" style="--stack-space: var(--space-s);">
+            
+            <!-- Grid field for First/Last Name -->
+            <div data-layout="grid" style="--grid-gap: var(--space-s);">
+              <div>
+                <label for="first-name">First Name</label>
+                <input type="text" id="first-name" name="first-name" placeholder="John" required>
+              </div>
+              <div>
+                <label for="last-name">Last Name</label>
+                <input type="text" id="last-name" name="last-name" placeholder="Doe" required>
+              </div>
+            </div>
+
+            <!-- Email Field -->
+            <div>
+              <label for="email">Email Address</label>
+              <input type="email" id="email" name="email" placeholder="john.doe@example.com" required>
+            </div>
+
+            <!-- Select Element -->
+            <div>
+              <label for="theme">Preferred Color Accent</label>
+              <select id="theme" name="theme">
+                <option value="cobalt">Cobalt Blue (Default)</option>
+                <option value="amber">Sunset Amber (Highlight)</option>
+                <option value="emerald">Emerald Green (Emerald)</option>
+              </select>
+            </div>
+
+            <!-- Comments Area -->
+            <div>
+              <label for="comments">Design Feedback</label>
+              <textarea id="comments" name="comments" rows="4" placeholder="Your thoughts on classless design architectures..."></textarea>
+            </div>
+
+            <!-- Consent Checkbox -->
+            <div style="display: flex; flex-direction: row; align-items: center; gap: 0;">
+              <input type="checkbox" id="newsletter" name="newsletter" checked>
+              <label for="newsletter" style="text-transform: none; letter-spacing: normal; font-size: var(--font-size-s); cursor: pointer;">
+                I agree to the intrinsic styling guidelines
+              </label>
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" style="width: 100%; margin-top: var(--space-s);">Submit Application</button>
+
+          </form>
+
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- SITE FOOTER -->
+  <footer>
+    <div data-layout="container" style="--container-max-width: 80rem;">
+      <div data-layout="switcher" style="--switcher-threshold: 40rem; --switcher-gap: var(--space-l); align-items: flex-start;">
+        
+        <!-- Info Column -->
+        <div data-layout="stack" style="--stack-space: var(--space-xs);">
+          <h3 style="color: var(--color-surface); font-family: 'Outfit', sans-serif;">ÆTHER</h3>
+          <p style="font-size: var(--font-size-s); opacity: 0.8;">
+            A senior architectural exploration of fluid typography, spacing systems, and classless CSS design. Made for the open web.
+          </p>
+        </div>
+
+        <!-- Links Column -->
+        <div data-layout="switcher" style="--switcher-threshold: 20rem; --switcher-gap: var(--space-m); align-items: flex-start;">
+          <nav>
+            <h4 style="color: var(--color-surface); font-size: var(--font-size-s);">Navigation</h4>
+            <a href="#home">Home</a>
+            <a href="#features">Features</a>
+            <a href="#showcase">Showcase</a>
+            <a href="#pricing">Pricing</a>
+          </nav>
+          <nav>
+            <h4 style="color: var(--color-surface); font-size: var(--font-size-s);">Resources</h4>
+            <a href="https://every-layout.dev" target="_blank" rel="noopener">Every Layout</a>
+            <a href="https://css-tricks.com" target="_blank" rel="noopener">CSS Tricks</a>
+            <a href="https://web.dev" target="_blank" rel="noopener">Web Dev</a>
+          </nav>
+        </div>
+
+      </div>
+
+      <!-- Copyright Info -->
+      <p style="text-align: center; border-top: 1px solid rgba(255, 255, 255, 0.1); padding-top: var(--space-m);">
+        &copy; 2026 Æther. All rights reserved. Intrinsic design is standard compliance.
+      </p>
+    </div>
+  </footer>
+
+</body>
+</html>
