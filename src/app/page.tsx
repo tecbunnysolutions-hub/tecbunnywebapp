@@ -4,6 +4,7 @@ import type { Metadata } from 'next';
 
 import HomePage from '@/components/home-page';
 import { createPageMetadata } from '@/lib/metadata';
+import { createClient } from '@/lib/supabase/server';
 
 // Revalidate homepage every 60 seconds (ISR) to fix 2.8s Document Request Latency
 export const revalidate = 60;
@@ -96,19 +97,17 @@ export default async function Page() {
   let initialHeroCarousel = undefined;
 
   try {
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.tecbunny.com';
-    const baseUrl = process.env.NODE_ENV === 'development' ? 'http://localhost:9003' : siteUrl;
+    const supabase = await createClient();
 
-    // Parallel server-side fetching with ISR caching
+    // Parallel server-side fetching directly from DB (prevents Next.js internal API deadlocks)
     const [productsRes, brandsRes, heroRes] = await Promise.all([
-      fetch(`${baseUrl}/api/products?status=active&limit=12`, { next: { revalidate: 60 } }).catch(() => null),
-      fetch(`${baseUrl}/api/settings?key=partnerBrands`, { next: { revalidate: 60 } }).catch(() => null),
-      fetch(`${baseUrl}/api/page-content?key=hero-carousels`, { next: { revalidate: 60 } }).catch(() => null)
+      supabase.from('products').select('*').eq('status', 'active').limit(12),
+      supabase.from('settings').select('value').eq('key', 'partnerBrands').maybeSingle(),
+      supabase.from('page_content').select('data').eq('key', 'hero-carousels').maybeSingle()
     ]);
 
-    if (productsRes?.ok) {
-      const payload = await productsRes.json();
-      const items = Array.isArray(payload?.data) ? payload.data : [];
+    if (productsRes.data && !productsRes.error) {
+      const items = Array.isArray(productsRes.data) ? productsRes.data : [];
       
       const hasAnyImage = (item: any) => {
         if (item.image) return true;
@@ -121,14 +120,12 @@ export default async function Page() {
       initialProducts = (itemsWithImages.length ? itemsWithImages : items).slice(0, 4);
     }
 
-    if (brandsRes?.ok) {
-      const payload = await brandsRes.json();
-      initialPartnerBrands = parsePartnerBrands(payload?.value);
+    if (brandsRes.data && !brandsRes.error) {
+      initialPartnerBrands = parsePartnerBrands(brandsRes.data.value);
     }
 
-    if (heroRes?.ok) {
-      const payload = await heroRes.json();
-      initialHeroCarousel = payload?.data ?? null;
+    if (heroRes.data && !heroRes.error) {
+      initialHeroCarousel = heroRes.data.data ?? null;
     }
   } catch (error) {
     console.error('Error prefetching data for homepage:', error);
