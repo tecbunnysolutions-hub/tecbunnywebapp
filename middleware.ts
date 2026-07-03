@@ -4,20 +4,23 @@ import { verifySuperadminSessionToken } from '@/lib/auth/superadmin-session'
 import { requireSupabasePublicEnv } from '@/lib/supabase/env'
 import { isAtLeast } from '@/lib/roles'
 
-const SHARED_CONTENT_SECURITY_POLICY = [
-  "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com https://cs.iubenda.com https://cdn.iubenda.com https://static.cloudflareinsights.com https://www.googletagmanager.com https://www.google-analytics.com https://va.vercel-scripts.com https://connect.facebook.net",
-  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-  "font-src 'self' data: https://fonts.gstatic.com",
-  "img-src 'self' data: blob: https:",
-  "connect-src 'self' https://*.supabase.co https://www.google-analytics.com https://region1.analytics.google.com https://analytics.google.com https://www.google.com https://api.postalpincode.in https://cloudflareinsights.com https://static.cloudflareinsights.com https://challenges.cloudflare.com https://vitals.vercel-insights.com",
-  "frame-src 'self' https://challenges.cloudflare.com https://www.google.com",
-  "worker-src 'self' blob:",
-  "object-src 'none'",
-  "base-uri 'self'",
-  "form-action 'self' https://secure.payu.in https://test.payu.in",
-  "frame-ancestors 'none'",
-].join('; ')
+// Helper to generate the CSP with a dynamic nonce
+function generateCSP(nonce: string) {
+  return [
+    "default-src 'self'",
+    `script-src 'self' 'nonce-${nonce}' 'strict-dynamic' https://challenges.cloudflare.com https://cs.iubenda.com https://cdn.iubenda.com https://static.cloudflareinsights.com https://www.googletagmanager.com https://www.google-analytics.com https://va.vercel-scripts.com https://connect.facebook.net`,
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+    "font-src 'self' data: https://fonts.gstatic.com",
+    "img-src 'self' data: blob: https:",
+    "connect-src 'self' https://*.supabase.co https://www.google-analytics.com https://region1.analytics.google.com https://analytics.google.com https://www.google.com https://api.postalpincode.in https://cloudflareinsights.com https://static.cloudflareinsights.com https://challenges.cloudflare.com https://vitals.vercel-insights.com",
+    "frame-src 'self' https://challenges.cloudflare.com https://www.google.com",
+    "worker-src 'self' blob:",
+    "object-src 'none'",
+    "base-uri 'self'",
+    "form-action 'self' https://secure.payu.in https://test.payu.in",
+    "frame-ancestors 'none'",
+  ].join('; ');
+}
 
 // Global Cache for HMAC key used in Role Cache Signing (prevents GC thrashing)
 let cachedRoleKey: CryptoKey | null = null;
@@ -104,7 +107,8 @@ export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   const requestHeaders = new Headers(request.headers);
   const correlationId = requestHeaders.get('x-correlation-id') || crypto.randomUUID();
-  requestHeaders.set('x-correlation-id', correlationId);
+  const nonce = safeBase64Encode(crypto.randomUUID());
+  requestHeaders.set('x-nonce', nonce);
 
   let response = NextResponse.next({ request: { headers: requestHeaders } });
 
@@ -282,7 +286,7 @@ export async function middleware(request: NextRequest) {
       res.headers.set('X-Content-Type-Options', 'nosniff');
       res.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
       res.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
-      res.headers.set('Content-Security-Policy', SHARED_CONTENT_SECURITY_POLICY);
+      res.headers.set('Content-Security-Policy', generateCSP(nonce));
       res.headers.set('X-Correlation-Id', correlationId);
 
       return res;

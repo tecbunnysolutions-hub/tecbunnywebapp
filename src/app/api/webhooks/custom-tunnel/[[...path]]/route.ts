@@ -11,6 +11,20 @@ export async function POST(
 ) {
   const correlationId = req.headers.get('x-correlation-id') || crypto.randomUUID();
   
+  // Security checks: Disable in production and require tunnel secret
+  if (process.env.NODE_ENV === 'production') {
+    logger.warn('custom_tunnel.production_access_attempt', { correlationId });
+    return new NextResponse(null, { status: 404 });
+  }
+
+  const expectedSecret = process.env.TUNNEL_SECRET;
+  const providedSecret = req.headers.get('x-tunnel-secret');
+  
+  if (!expectedSecret || providedSecret !== expectedSecret) {
+    logger.warn('custom_tunnel.unauthorized_access', { correlationId });
+    return NextResponse.json({ error: 'Unauthorized access to webhook tunnel' }, { status: 401 });
+  }
+
   try {
     // 1. Resolve path parameter
     const resolvedParams = await params;

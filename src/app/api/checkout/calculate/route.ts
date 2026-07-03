@@ -27,9 +27,7 @@ export async function POST(req: NextRequest) {
     const validatedItems = items.map(item => ({
       ...item,
       id: String(item.id || item.productId || ''),
-      price: Number(item.price) || 0,
-      quantity: Number(item.quantity) || 1,
-      mrp: item.mrp != null ? Number(item.mrp) : null
+      quantity: Number(item.quantity) || 1
     }));
 
     // Get user id from session if available
@@ -71,7 +69,7 @@ export async function POST(req: NextRequest) {
       if (nextTier) {
         const diff = nextTier.min_quantity - item.quantity;
         const currentPrice = item.price;
-        const savings = Math.round(((currentPrice - nextTier.price) / currentPrice) * 100);
+        const savings = currentPrice > 0 ? Math.round(((currentPrice - nextTier.price) / currentPrice) * 100) : 0;
         
         if (diff <= 5) { // Only suggest if close
           return {

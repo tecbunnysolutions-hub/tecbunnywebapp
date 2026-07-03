@@ -58,11 +58,12 @@ export async function POST(req: NextRequest) {
       customerName: anonName, 
       customerPhone: anonPhone, 
       customerAddress: anonAddress, 
-      customerEmail: anonEmail,
-      quote_number: bodyQuoteNumber,
-      biddedPrice,
-      status: bodyStatus
+      customerEmail: anonEmail
     } = body;
+    
+    // Ignore client-provided status and quote_number for security
+    const bodyQuoteNumber = undefined;
+    const bodyStatus = 'created';
 
     const supabase = await createClient();
     const { data: auth, error: authError } = await supabase.auth.getUser();
@@ -88,6 +89,9 @@ export async function POST(req: NextRequest) {
 
     let finalSelections = selections;
     if (customSetupConfig) {
+      if (typeof customSetupConfig !== 'object') {
+        return NextResponse.json({ error: 'Invalid customSetupConfig format' }, { status: 400 });
+      }
       const blueprint = await getCustomSetupBlueprintSummary(DEFAULT_CUSTOM_SETUP_TEMPLATE_SLUG);
       const pricingCatalog = await buildPricingCatalog(blueprint);
 
@@ -246,18 +250,22 @@ export async function POST(req: NextRequest) {
       logger.error('quotes.load_company_info_failed', { error, userId: user?.id });
     }
 
-    const quoteNumber = bodyQuoteNumber || `${new Date().getFullYear()}${String(new Date().getMonth() + 1).padStart(2, '0')}${String(Math.floor(10000 + Math.random() * 90000))}`;
-    const statusVal = bodyStatus || 'created';
+    const quoteNumber = `${new Date().getFullYear()}${String(new Date().getMonth() + 1).padStart(2, '0')}${String(Math.floor(10000 + Math.random() * 90000))}`;
+    const statusVal = 'created';
+    
+    // Sanitize user inputs to prevent SSRF/HTML Injection in PDF
+    const safeSummary = summary ? String(summary).replace(/</g, '&lt;').replace(/>/g, '&gt;') : undefined;
+    const safeCustomerName = customerName ? String(customerName).replace(/</g, '&lt;').replace(/>/g, '&gt;') : 'Customer';
 
     let pdfBuffer: Buffer;
     try {
       const { buildPdf } = await import('@/lib/pdf-generator');
       pdfBuffer = await buildPdf({
         company,
-        customerName,
+        customerName: safeCustomerName,
         customerEmail,
         gstIncluded,
-        summary,
+        summary: safeSummary,
         selections: finalSelections,
         quoteNumber,
       });
@@ -278,11 +286,11 @@ export async function POST(req: NextRequest) {
       customer_email: customerEmail,
       customer_phone: customerPhone || null,
       customer_address: customerAddress || null,
-      bidded_price: biddedPrice != null ? Number(biddedPrice) : null,
+      bidded_price: null, // Bidded prices must be set via admin endpoints, not client quote creation
       quote_number: quoteNumber,
       gst_included: !!gstIncluded,
       expiry_at: expiryAt,
-      summary: summary || null,
+      summary: safeSummary || null,
       selections: finalSelections ?? null,
       status: statusVal,
     }).select('id, quote_number').single();
@@ -300,7 +308,7 @@ export async function POST(req: NextRequest) {
         status: 'new',
         type: 'quote',
         product_id: 'custom_setup',
-        data: { quote_number: insertResult.data.quote_number, summary: summary }
+        data: { quote_number: insertResult.data.quote_number, summary: safeSummary }
       });
       if (leadInsertResult.error) {
         logger.error('quotes.lead_insert_failed', { error: leadInsertResult.error, userId: user?.id });

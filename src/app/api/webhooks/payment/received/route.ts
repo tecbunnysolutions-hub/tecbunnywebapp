@@ -166,7 +166,8 @@ async function processPaymentReceived(supabase: any, data: any, source: string) 
 
   const cleanPhone = customer_phone?.replace(/[^\d]/g, '');
   const formattedPhone = cleanPhone ? (cleanPhone.startsWith('91') ? cleanPhone : `91${cleanPhone}`) : null;
-  const paymentAmount = Number(amount ?? 0);
+  const parsedAmount = parseFloat(String(amount));
+  const paymentAmount = isNaN(parsedAmount) ? 0 : parsedAmount;
   const systemPaymentStatus = mapPaymentStatus(payment_status);
 
   // Update order status based on payment outcome
@@ -186,7 +187,8 @@ async function processPaymentReceived(supabase: any, data: any, source: string) 
       .single();
 
     if (orderError) {
-      logger.warn('Failed to update order payment status:', orderError);
+      logger.error('Failed to update order payment status, aborting payment record to maintain consistency:', orderError);
+      throw new Error(`Order update failed: ${orderError.message}`);
     } else if (systemPaymentStatus === 'approved' && updatedOrder) {
       // Check if order has installation service and is eligible for free installation offer
       const orderItems = updatedOrder.items || [];
@@ -210,29 +212,39 @@ async function processPaymentReceived(supabase: any, data: any, source: string) 
       if (totalInstallationPrice > 0 && totalInstallationPrice <= 2499) {
         shouldUseSlot = true;
 
-        // Decrement free installation slot
+        // Decrement free installation slot via direct DB call
         try {
-          const slotResponse = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/free-installation-slots`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'x-internal-api-key': process.env.INTERNAL_API_KEY || process.env.INTERNAL_API_TOKEN || process.env.CRON_SECRET || '',
-            },
-          });
+          const currentMonth = new Date();
+          currentMonth.setDate(1);
+          const monthStart = currentMonth.toISOString().split('T')[0];
 
-          const slotData = await slotResponse.json();
-          
-          if (slotData.success) {
-            logger.info('Free installation slot decremented', { 
-              orderId, 
-              remainingSlots: slotData.remainingSlots,
-              confirmedCount: slotData.confirmedCount 
-            });
-          } else {
-            logger.warn('Failed to decrement free installation slot', { orderId, error: slotData.message });
+          let { data: existingSlot } = await supabase
+            .from('free_installation_slots')
+            .select('remaining_slots, confirmed_count, id')
+            .eq('month', monthStart)
+            .single();
+
+          if (!existingSlot) {
+            const { data: newSlot } = await supabase
+              .from('free_installation_slots')
+              .insert({ month: monthStart, total_slots: 10, remaining_slots: 10, confirmed_count: 0 })
+              .select().single();
+            existingSlot = newSlot;
+          }
+
+          if (existingSlot && existingSlot.remaining_slots > 0) {
+            await supabase
+              .from('free_installation_slots')
+              .update({
+                remaining_slots: existingSlot.remaining_slots - 1,
+                confirmed_count: existingSlot.confirmed_count + 1,
+                updated_at: new Date().toISOString(),
+              })
+              .eq('id', existingSlot.id);
+            logger.info('Free installation slot decremented', { orderId });
           }
         } catch (slotError: any) {
-          logger.error('Error calling free installation slots API', { orderId, error: slotError.message });
+          logger.error('Error decrementing free installation slot directly', { orderId, error: slotError.message });
         }
 
         // Mark order as using free installation
@@ -262,8 +274,8 @@ async function processPaymentReceived(supabase: any, data: any, source: string) 
       gateway_response,
       source,
       metadata: {
-        ...metadata,
-        ...additionalData
+        ...(metadata && typeof metadata === 'object' ? metadata : {}),
+        ...((additionalData && Object.keys(additionalData).length <= 15) ? additionalData : { _overflow: 'Data truncated due to size limits' })
       },
       created_at: payment_date || new Date().toISOString()
     })
