@@ -78,11 +78,11 @@ export async function POST(request: NextRequest) {
         },
         warrantyPeriod: {
           type: Type.STRING,
-          description: "The duration of the warranty (e.g., 1 Year, 6 Months). Leave blank if not found."
+          description: "The duration of the warranty (e.g., 1 Year, 6 Months). NEVER GUESS. If it is not explicitly mentioned in the text, you MUST leave this blank."
         },
         warrantyType: {
           type: Type.STRING,
-          description: "The type of warranty (e.g., Manufacturer, Seller). Leave blank if not found."
+          description: "The type of warranty (e.g., Manufacturer, Seller). NEVER GUESS. If it is not explicitly mentioned, you MUST leave this blank."
         },
         additional1: {
           type: Type.STRING,
