@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
       You are an expert e-commerce data extraction assistant and a world-class technical copywriter.
       Read the following raw text scraped from an e-commerce product webpage.
       Extract all the required fields into JSON format.
-      For the 'title', DO NOT use the raw long title from the website. Instead, generate a clean, concise title strictly in the format: BRAND NAME MODEL NAME AND NUMBER COLOR AND VARIANT (e.g. "Boat Rockerz 200 Black 16GB").
+      For the 'title', YOU MUST NOT use the raw long title from the website. You MUST generate an ultra-short, concise title containing ONLY: [Brand] [Model Name] [Model Number] [Color] [Variant]. DO NOT include any promotional text, features, or battery life. MAXIMUM 6-7 WORDS. (e.g. strictly "Boat Rockerz 200 Black 16GB").
       For the 'htmlDescription', craft a stunning, well-structured product description using modern HTML tags (like <h3>, <ul>, <li>, <br/>, <strong>). Make sure it looks professional and highlights key features.
       If a field is not present or cannot be determined confidently, leave it empty or null.
       
