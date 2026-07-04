@@ -44,6 +44,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 import { CreateProductDialog } from '@/components/admin/CreateProductDialog';
 import { EditProductDialog } from '@/components/admin/EditProductDialog';
 
@@ -76,7 +77,66 @@ export default function AdminProductsPage() {
   const [editedPrices, setEditedPrices] = React.useState<Record<string, { mrp: number; price: number }>>({});
   const [savingProductId, setSavingProductId] = React.useState<string | null>(null);
 
+  // Bulk Edit State
+  const [selectedProductIds, setSelectedProductIds] = React.useState<Set<string>>(new Set());
+  const [bulkActionLoading, setBulkActionLoading] = React.useState<string | null>(null); // 'delete', 'activate', 'deactivate'
+
   const { toast } = useToast();
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedProductIds(new Set(filteredProducts.map(p => p.id)));
+    } else {
+      setSelectedProductIds(new Set());
+    }
+  };
+
+  const handleSelectProduct = (id: string, checked: boolean) => {
+    const newSelected = new Set(selectedProductIds);
+    if (checked) {
+      newSelected.add(id);
+    } else {
+      newSelected.delete(id);
+    }
+    setSelectedProductIds(newSelected);
+  };
+
+  const handleBulkAction = async (action: 'delete' | 'activate' | 'deactivate') => {
+    if (selectedProductIds.size === 0) return;
+    
+    // Add confirmation for delete
+    if (action === 'delete') {
+      const confirmed = window.confirm(`Are you sure you want to permanently delete ${selectedProductIds.size} products?`);
+      if (!confirmed) return;
+    }
+
+    setBulkActionLoading(action);
+    try {
+      const response = await fetch('/api/admin/products/bulk', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids: Array.from(selectedProductIds), action })
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Bulk action failed');
+      
+      toast({
+        title: 'Success',
+        description: `Successfully applied '${action}' to ${selectedProductIds.size} products.`,
+      });
+      
+      setSelectedProductIds(new Set());
+      fetchProducts();
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message || 'Bulk action failed',
+        variant: 'destructive',
+      });
+    } finally {
+      setBulkActionLoading(null);
+    }
+  };
 
   const handleCSVImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -490,6 +550,53 @@ export default function AdminProductsPage() {
         </div>
       </div>
 
+      {/* Bulk Actions Toolbar */}
+      {selectedProductIds.size > 0 && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-background border border-border/80 shadow-lg rounded-full px-6 py-3 flex items-center gap-2 sm:gap-4 animate-in slide-in-from-bottom-5 w-[95%] sm:w-auto overflow-x-auto">
+          <span className="text-sm font-medium border-r pr-4 border-border/40 whitespace-nowrap">
+            {selectedProductIds.size} selected
+          </span>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => handleBulkAction('activate')}
+            disabled={!!bulkActionLoading}
+            className="text-green-500 hover:text-green-600 hover:bg-green-500/10 whitespace-nowrap"
+          >
+            {bulkActionLoading === 'activate' ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+            Set Active
+          </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => handleBulkAction('deactivate')}
+            disabled={!!bulkActionLoading}
+            className="text-orange-500 hover:text-orange-600 hover:bg-orange-500/10 whitespace-nowrap"
+          >
+            {bulkActionLoading === 'deactivate' ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+            Set Inactive
+          </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => handleBulkAction('delete')}
+            disabled={!!bulkActionLoading}
+            className="text-red-500 hover:text-red-600 hover:bg-red-500/10 whitespace-nowrap"
+          >
+            {bulkActionLoading === 'delete' ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Trash2 className="h-4 w-4 sm:mr-2" />}
+            <span className="hidden sm:inline">Delete</span>
+          </Button>
+          <Button
+            size="icon"
+            variant="ghost"
+            onClick={() => setSelectedProductIds(new Set())}
+            className="ml-auto sm:ml-2 h-8 w-8 rounded-full flex-shrink-0"
+          >
+            ✕
+          </Button>
+        </div>
+      )}
+
       <Card className="border-border bg-card/40 backdrop-blur-sm shadow-sm overflow-hidden">
         <CardHeader className="p-4 sm:p-6">
           <CardTitle>All Products</CardTitle>
@@ -585,6 +692,12 @@ export default function AdminProductsPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead className="w-12">
+                        <Checkbox 
+                          checked={filteredProducts.length > 0 && selectedProductIds.size === filteredProducts.length}
+                          onCheckedChange={handleSelectAll}
+                        />
+                      </TableHead>
                       <TableHead>Title</TableHead>
                       <TableHead>Category</TableHead>
                       <TableHead>MRP</TableHead>
@@ -597,6 +710,12 @@ export default function AdminProductsPage() {
                   <TableBody>
                     {filteredProducts.map((product) => (
                       <TableRow key={product.id}>
+                        <TableCell>
+                          <Checkbox 
+                            checked={selectedProductIds.has(product.id)}
+                            onCheckedChange={(checked) => handleSelectProduct(product.id, checked as boolean)}
+                          />
+                        </TableCell>
                         <TableCell className="font-medium">
                           <div className="flex items-center gap-2">
                             {getProductDisplayImage(product) ? (
@@ -609,8 +728,10 @@ export default function AdminProductsPage() {
                             <span className="truncate max-w-[200px]">{product.title || product.name}</span>
                           </div>
                         </TableCell>
-                        <TableCell>
-                          <Badge variant="outline">{product.category}</Badge>
+                        <TableCell className="max-w-[150px] md:max-w-[200px]">
+                          <Badge variant="outline" className="truncate block w-full text-left" title={product.category}>
+                            {product.category}
+                          </Badge>
                         </TableCell>
                         <TableCell>
                           <div className="flex flex-col gap-1 w-28">
@@ -711,7 +832,13 @@ export default function AdminProductsPage() {
                     key={product.id} 
                     className="rounded-xl border border-border/80 p-4 space-y-4 bg-card/60 text-card-foreground shadow-sm hover:border-border transition-all"
                   >
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-start gap-3">
+                      <div className="pt-1">
+                        <Checkbox 
+                          checked={selectedProductIds.has(product.id)}
+                          onCheckedChange={(checked) => handleSelectProduct(product.id, checked as boolean)}
+                        />
+                      </div>
                       {getProductDisplayImage(product) ? (
                         <img src={getProductDisplayImage(product)!} alt={product.title} className="w-12 h-12 rounded-lg object-cover flex-shrink-0" />
                       ) : (
@@ -721,7 +848,7 @@ export default function AdminProductsPage() {
                       )}
                       <div className="min-w-0 flex-1">
                         <h3 className="font-bold text-base text-foreground truncate">{product.title || product.name}</h3>
-                        <p className="text-xs text-muted-foreground mt-0.5">{product.category}</p>
+                        <p className="text-xs text-muted-foreground mt-0.5 truncate max-w-[200px]" title={product.category}>{product.category}</p>
                       </div>
                       <div className="flex-shrink-0">
                         <DropdownMenu>
