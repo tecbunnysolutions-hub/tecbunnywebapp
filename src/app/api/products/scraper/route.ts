@@ -38,7 +38,10 @@ export async function POST(request: NextRequest) {
 
     // 3. Parse and Validate Request Body
     const body = await request.json();
-    const { title, price, mrp, category, brand, description, imageUrl, sourceUrl } = body;
+    const { 
+      title, price, mrp, category, brand, description, imageUrl, sourceUrl,
+      shortDescription, modelNo, warrantyPeriod, warrantyType, additional1, additional2, additional3
+    } = body;
 
     if (!title) {
       return NextResponse.json(
@@ -111,7 +114,15 @@ export async function POST(request: NextRequest) {
       images: finalImageUrl ? [finalImageUrl] : [],
       status: 'active', // Saved as active directly
       product_type: 'physical',
-      specifications: {},
+      specifications: {
+        ...(modelNo && { 'Model No.': modelNo }),
+        ...(warrantyPeriod && { 'Warranty Period': warrantyPeriod }),
+        ...(warrantyType && { 'Warranty Type': warrantyType }),
+        ...(additional1 && { 'Additional 1': additional1 }),
+        ...(additional2 && { 'Additional 2': additional2 }),
+        ...(additional3 && { 'Additional 3': additional3 })
+      },
+      seo_description: shortDescription || null,
       tags: ['scraped'],
       is_active: true,
       stock_quantity: 1,

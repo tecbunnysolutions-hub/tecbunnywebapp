@@ -237,22 +237,29 @@
       const techSpecsEl = document.getElementById('productDetails_techSpec_section_1') || document.getElementById('detailBullets_feature_div') || document.getElementById('detailBulletsWrapper_feature_div');
       
       let descParts = [];
-      
       if (bulletsEl) {
-        const text = bulletsEl.innerText || bulletsEl.textContent;
-        if (text) descParts.push(text.trim().replace(/\r\n/g, '<br />').replace(/\n/g, '<br />'));
+        const clone = bulletsEl.cloneNode(true);
+        // Remove the 'See more product details' link
+        const seeMoreLinks = clone.querySelectorAll('a#seeMoreDetailsLink, a[href*="productDetails"]');
+        seeMoreLinks.forEach(link => link.remove());
+        
+        let html = clone.innerHTML;
+        // Strip any remaining text just in case
+        html = html.replace(/›\s*See more product details/gi, '').replace(/>\s*See more product details/gi, '');
+        
+        if (html) descParts.push(html.trim());
       }
       if (descEl) {
-        const text = descEl.innerText || descEl.textContent;
-        if (text) descParts.push(text.trim().replace(/\r\n/g, '<br />').replace(/\n/g, '<br />'));
+        const html = descEl.innerHTML;
+        if (html) descParts.push(html.trim());
       }
       if (techSpecsEl) {
-        const text = techSpecsEl.innerText || techSpecsEl.textContent;
-        if (text) descParts.push("<b>Technical Specifications:</b><br />" + text.trim().replace(/\r\n/g, '<br />').replace(/\n/g, '<br />'));
+        const html = techSpecsEl.innerHTML;
+        if (html) descParts.push("<b>Technical Specifications:</b><br />" + html.trim());
       }
       if (aplusEl) {
-        const text = aplusEl.innerText || aplusEl.textContent;
-        if (text) descParts.push("<b>From the Manufacturer:</b><br />" + text.trim().replace(/\r\n/g, '<br />').replace(/\n/g, '<br />'));
+        const html = aplusEl.innerHTML;
+        if (html) descParts.push("<b>From the Manufacturer:</b><br />" + html.trim());
       }
       
       const description = descParts.join('<br /><br />');
@@ -270,7 +277,18 @@
         }
       }
 
-      return { title, price, mrp, category, brand, description, imageUrl };
+      let modelNo = '';
+      if (techSpecsEl) {
+        const ths = techSpecsEl.querySelectorAll('th, td.a-color-base, span.a-text-bold');
+        ths.forEach(th => {
+          if (th.textContent.toLowerCase().includes('model number') || th.textContent.toLowerCase().includes('model name')) {
+            const td = th.nextElementSibling || th.parentElement.querySelector('td') || th.parentElement.querySelector('span:not(.a-text-bold)');
+            if (td) modelNo = td.textContent.replace(/[\u200E\u200F\u202A-\u202E]/g, '').trim();
+          }
+        });
+      }
+
+      return { title, price, mrp, category, brand, description, imageUrl, modelNo };
     }
 
     // Flipkart Extractor
@@ -307,23 +325,23 @@
       
       let descParts = [];
       if (highlightEl) {
-        const text = highlightEl.innerText || highlightEl.textContent;
-        if (text) descParts.push(text.trim().replace(/\r\n/g, '<br />').replace(/\n/g, '<br />'));
+        const html = highlightEl.innerHTML;
+        if (html) descParts.push(html.trim());
       }
       if (descEl) {
-        const text = descEl.innerText || descEl.textContent;
-        if (text) descParts.push(text.trim().replace(/\r\n/g, '<br />').replace(/\n/g, '<br />'));
+        const html = descEl.innerHTML;
+        if (html) descParts.push(html.trim());
       }
       if (specsEl) {
-        const text = specsEl.innerText || specsEl.textContent;
-        if (text) descParts.push("<b>Specifications:</b><br />" + text.trim().replace(/\r\n/g, '<br />').replace(/\n/g, '<br />'));
+        const html = specsEl.innerHTML;
+        if (html) descParts.push("<b>Specifications:</b><br />" + html.trim());
       }
       const description = descParts.join('<br /><br />');
 
       const imgEl = document.querySelector('img[class*="_396cs4"]') || document.querySelector('img.q6DClP') || document.querySelector('._396cs4');
       const imageUrl = imgEl ? imgEl.getAttribute('src') || imgEl.src : '';
 
-      return { title, price, mrp, category, brand, description, imageUrl };
+      return { title, price, mrp, category, brand, description, imageUrl, modelNo: '' };
     }
 
     // JioMart Extractor
@@ -360,23 +378,23 @@
       
       let descParts = [];
       if (featuresEl) {
-        const text = featuresEl.innerText || featuresEl.textContent;
-        if (text) descParts.push(text.trim().replace(/\r\n/g, '<br />').replace(/\n/g, '<br />'));
+        const html = featuresEl.innerHTML;
+        if (html) descParts.push(html.trim());
       }
       if (descEl) {
-        const text = descEl.innerText || descEl.textContent;
-        if (text) descParts.push(text.trim().replace(/\r\n/g, '<br />').replace(/\n/g, '<br />'));
+        const html = descEl.innerHTML;
+        if (html) descParts.push(html.trim());
       }
       if (specsEl) {
-        const text = specsEl.innerText || specsEl.textContent;
-        if (text) descParts.push("<b>Specifications:</b><br />" + text.trim().replace(/\r\n/g, '<br />').replace(/\n/g, '<br />'));
+        const html = specsEl.innerHTML;
+        if (html) descParts.push("<b>Specifications:</b><br />" + html.trim());
       }
       const description = descParts.join('<br /><br />');
 
       const imgEl = document.querySelector('#main_img') || document.querySelector('.main-image img') || document.querySelector('#pdp-main-image img');
       const imageUrl = imgEl ? imgEl.getAttribute('src') || imgEl.src : '';
 
-      return { title, price, mrp, category, brand, description, imageUrl };
+      return { title, price, mrp, category, brand, description, imageUrl, modelNo: '' };
     }
 
     return null;
@@ -485,6 +503,8 @@
 
   const sourceUrl = window.location.href;
 
+  const modelNo = domainData.modelNo || '';
+
   // Return the final scraped object
   return {
     title: title.trim(),
@@ -494,6 +514,13 @@
     brand: brand.trim(),
     description: description.trim(),
     imageUrl: imageUrl.trim(),
-    sourceUrl: sourceUrl.trim()
+    sourceUrl: sourceUrl.trim(),
+    modelNo: modelNo,
+    shortDescription: '',
+    warrantyPeriod: '',
+    warrantyType: '',
+    additional1: '',
+    additional2: '',
+    additional3: ''
   };
 })();

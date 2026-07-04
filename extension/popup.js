@@ -20,6 +20,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const brandInput = document.getElementById('productBrand');
   const descInput = document.getElementById('productDescription');
   const imgInput = document.getElementById('productImage');
+  const shortDescInput = document.getElementById('productShortDesc');
+  const modelInput = document.getElementById('productModel');
+  const warrantyPeriodInput = document.getElementById('productWarrantyPeriod');
+  const warrantyTypeInput = document.getElementById('productWarrantyType');
+  const add1Input = document.getElementById('productAdd1');
+  const add2Input = document.getElementById('productAdd2');
+  const add3Input = document.getElementById('productAdd3');
 
   // Image Preview elements
   const imgThumbnail = document.getElementById('imgThumbnail');
@@ -178,6 +185,13 @@ document.addEventListener('DOMContentLoaded', () => {
         brandInput.value = data.brand || '';
         descInput.value = data.description || '';
         imgInput.value = data.imageUrl || '';
+        shortDescInput.value = data.shortDescription || '';
+        modelInput.value = data.modelNo || '';
+        warrantyPeriodInput.value = data.warrantyPeriod || '';
+        warrantyTypeInput.value = data.warrantyType || '';
+        add1Input.value = data.additional1 || '';
+        add2Input.value = data.additional2 || '';
+        add3Input.value = data.additional3 || '';
         currentSourceUrl = data.sourceUrl || tab.url;
 
         updateImagePreview(data.imageUrl);
@@ -218,7 +232,14 @@ document.addEventListener('DOMContentLoaded', () => {
       brand: brandInput.value.trim(),
       description: descInput.value.trim(),
       imageUrl: imgInput.value.trim(),
-      sourceUrl: currentSourceUrl
+      sourceUrl: currentSourceUrl,
+      shortDescription: shortDescInput.value.trim(),
+      modelNo: modelInput.value.trim(),
+      warrantyPeriod: warrantyPeriodInput.value.trim(),
+      warrantyType: warrantyTypeInput.value.trim(),
+      additional1: add1Input.value.trim(),
+      additional2: add2Input.value.trim(),
+      additional3: add3Input.value.trim()
     };
 
     chrome.runtime.sendMessage({ action: 'sendProduct', data: payload }, (response) => {

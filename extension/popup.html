@@ -19,9 +19,9 @@
       font-family: 'Outfit', sans-serif;
       background: #0f172a; /* Slate 900 */
       color: #f1f5f9; /* Slate 100 */
-      width: 380px;
-      height: 560px;
-      overflow-y: auto;
+      width: 600px;
+      height: 600px;
+      overflow: hidden;
       display: flex;
       flex-direction: column;
       padding: 20px;
@@ -156,6 +156,7 @@
       gap: 14px;
       margin-bottom: 18px;
       backdrop-filter: blur(10px);
+      overflow-y: auto;
     }
 
     .form-group {
@@ -191,8 +192,9 @@
     }
 
     textarea {
-      resize: none;
-      height: 60px;
+      resize: vertical;
+      min-height: 80px;
+      height: 120px;
     }
 
     /* Image Preview Container */
@@ -426,8 +428,47 @@
       </div>
 
       <div class="form-group">
-        <label for="productDescription">Description</label>
-        <textarea id="productDescription" placeholder="Product description..."></textarea>
+        <label for="productShortDesc">Short Description</label>
+        <textarea id="productShortDesc" placeholder="Brief summary of the product..." style="height: 60px; min-height: 40px;"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="productDescription">Detailed Description</label>
+        <textarea id="productDescription" placeholder="Detailed product description..."></textarea>
+      </div>
+
+      <div style="display: flex; gap: 12px; margin-bottom: 0px;">
+        <div class="form-group" style="flex: 1;">
+          <label for="productModel">Model No.</label>
+          <input type="text" id="productModel" placeholder="Model number...">
+        </div>
+        <div class="form-group" style="flex: 1;">
+          <label for="productWarrantyPeriod">Warranty Period</label>
+          <input type="text" id="productWarrantyPeriod" placeholder="e.g. 1 Year">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="productWarrantyType">Warranty Type</label>
+        <select id="productWarrantyType" style="width: 100%; background: #1e293b; border: 1px solid #334155; border-radius: 8px; color: #f8fafc; padding: 8px 12px; font-family: 'Outfit', sans-serif; font-size: 0.85rem; outline: none; transition: all 0.2s ease;">
+          <option value="">Select warranty type...</option>
+          <option value="Brand Warranty">Brand Warranty</option>
+          <option value="Dealer Warranty">Dealer Warranty</option>
+          <option value="No Warranty">No Warranty</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="productAdd1">Additional 1</label>
+        <input type="text" id="productAdd1" placeholder="Extra specification (e.g. 24h Battery)">
+      </div>
+      <div class="form-group">
+        <label for="productAdd2">Additional 2</label>
+        <input type="text" id="productAdd2" placeholder="Extra specification (e.g. Bluetooth 5.3)">
+      </div>
+      <div class="form-group">
+        <label for="productAdd3">Additional 3</label>
+        <input type="text" id="productAdd3" placeholder="Extra specification (e.g. Waterproof IPX5)">
       </div>
 
       <div class="form-group">
