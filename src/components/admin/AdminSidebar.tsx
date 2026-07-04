@@ -72,9 +72,10 @@ export const adminNavSections: NavSection[] = [
     ]
   },
   {
-    title: 'Marketing',
+    title: 'Marketing & Support',
     items: [
       { href: '/mgmt/admin/broadcast-desk', label: 'Broadcast Desk', icon: Megaphone },
+      { href: '/mgmt/admin/whatsapp', label: 'WhatsApp Inbox', icon: MessageSquare },
     ]
   }
 ];

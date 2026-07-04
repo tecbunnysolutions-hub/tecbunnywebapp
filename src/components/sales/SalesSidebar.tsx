@@ -17,6 +17,7 @@ import {
   Archive,
   Receipt,
   PackageSearch,
+  MessageSquare
 } from 'lucide-react';
 
 import { logger } from '@/lib/logger';
@@ -39,6 +40,7 @@ const navItems = [
   { href: '/mgmt/sales/invoice-lookup', label: 'Invoice Lookup', icon: FileSearch, roles: ['sales', 'manager'] },
   { href: '/mgmt/sales/history', label: 'Billing History', icon: History, roles: ['sales', 'manager'] },
   { href: '/mgmt/sales/expenses', label: 'Expense Entry', icon: Receipt, roles: ['sales', 'manager'] },
+  { href: '/mgmt/sales/whatsapp', label: 'WhatsApp Inbox', icon: MessageSquare, roles: ['sales', 'manager'] },
 ];
 
 export function SalesSidebar() {
