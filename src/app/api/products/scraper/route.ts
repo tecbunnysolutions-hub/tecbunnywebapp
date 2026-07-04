@@ -126,10 +126,8 @@ export async function POST(request: NextRequest) {
       tags: ['scraped'],
       is_active: true,
       stock_quantity: 1,
-      metadata: {
-        ...(seoTitle && { seo_title: seoTitle }),
-        ...(seoDescription && { seo_description: seoDescription })
-      },
+      ...(seoTitle && { seo_title: seoTitle }),
+      ...(seoDescription && { seo_description: seoDescription }),
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };

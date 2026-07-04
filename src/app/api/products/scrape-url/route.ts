@@ -132,10 +132,8 @@ export async function POST(request: NextRequest) {
       tags: ['scraped-url'],
       is_active: true,
       stock_quantity: 1,
-      metadata: {
-        ...(result.seoTitle && { seo_title: result.seoTitle }),
-        ...(result.seoDescription && { seo_description: result.seoDescription })
-      }
+      ...(result.seoTitle && { seo_title: result.seoTitle }),
+      ...(result.seoDescription && { seo_description: result.seoDescription })
     };
 
     const { data: insertedProduct, error: dbError } = await supabase
