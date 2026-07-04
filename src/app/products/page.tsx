@@ -6,7 +6,7 @@ import { ShopPageContent } from '@/components/products/ShopPageContent';
 import { logger } from '@/lib/logger';
 import { createPageMetadata } from '@/lib/metadata';
 import { filterPubliclyVisibleProducts } from '@/lib/product-visibility';
-import { envConfig } from '@/lib/environment-validator';
+import { createClient } from '@/lib/supabase/server';
 
 // ISR: revalidate every 5 minutes (300 seconds)
 export const revalidate = 300;
@@ -19,42 +19,6 @@ export async function generateMetadata(): Promise<Metadata> {
   path: '/products',
   image: '/brand.png',
 });
-}
-
-function getSiteOrigin() {
-  return envConfig.app.siteUrl.replace(/\/$/, '');
-}
-
-async function fetchJsonArray(pathname: string, dataKey = 'data') {
-  try {
-    const response = await fetch(`${getSiteOrigin()}${pathname}`, {
-      next: { revalidate: 300 },
-      headers: { Accept: 'application/json' },
-    });
-
-    if (!response.ok) {
-      const body = await response.json().catch(() => null);
-      const errorMessage = typeof body?.error === 'string' ? body.error.toLowerCase() : '';
-      if (pathname.startsWith('/api/auto-offers') && errorMessage.includes('auto_offers')) {
-        return [];
-      }
-
-      logger.warn('products.page.initial_fetch_failed', {
-        pathname,
-        status: response.status,
-        error: body?.error ?? null,
-      });
-      return [];
-    }
-
-    const payload = await response.json();
-    if (Array.isArray(payload)) return payload;
-    if (Array.isArray(payload?.[dataKey])) return payload[dataKey];
-    return [];
-  } catch (error) {
-    logger.error('products.page.initial_fetch_error', { pathname, error });
-    return [];
-  }
 }
 
 function ProductsPageSkeleton() {
@@ -95,13 +59,15 @@ function ProductsPageSkeleton() {
 }
 
 export default async function Page() {
-  const [products, offers] = await Promise.all([
-    fetchJsonArray('/api/products?status=active&limit=200'),
-    fetchJsonArray('/api/auto-offers?active=true'),
+  const supabase = await createClient();
+  
+  const [productsRes, offersRes] = await Promise.all([
+    supabase.from('products').select('*').eq('status', 'active').limit(200),
+    supabase.from('auto_offers').select('*').eq('is_active', true)
   ]);
 
-  const rawProducts = filterPubliclyVisibleProducts(products);
-  const rawOffers = offers;
+  const rawProducts = filterPubliclyVisibleProducts(productsRes.data || []);
+  const rawOffers = offersRes.data || [];
 
   return (
     <Suspense fallback={<ProductsPageSkeleton />}>
