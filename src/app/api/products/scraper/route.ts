@@ -122,7 +122,7 @@ export async function POST(request: NextRequest) {
         ...(additional2 && { 'Additional 2': additional2 }),
         ...(additional3 && { 'Additional 3': additional3 })
       },
-      seo_description: shortDescription || null,
+      short_description: shortDescription || null,
       tags: ['scraped'],
       is_active: true,
       stock_quantity: 1,
