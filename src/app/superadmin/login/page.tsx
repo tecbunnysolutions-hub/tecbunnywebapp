@@ -211,6 +211,8 @@ function SuperadminSignInForm() {
   );
 }
 
+export const dynamic = 'force-dynamic';
+
 export default function SuperadminSignInPage() {
   return (
     <Suspense fallback={
