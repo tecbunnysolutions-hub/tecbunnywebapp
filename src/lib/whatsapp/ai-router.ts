@@ -1,6 +1,6 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { GoogleGenAI } from '@google/genai';
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
 
 const SYSTEM_PROMPT = `
 You are TecBot, a helpful virtual assistant for TecBunny Solutions. 
@@ -30,25 +30,24 @@ export async function processWhatsAppMessageWithAI(messageHistory: {role: 'user'
   location?: string
 } | null> {
   try {
-    const model = genAI.getGenerativeModel({
+    // Convert history format to one single prompt for stateless generateContent
+    let fullPrompt = SYSTEM_PROMPT + "\n\nChat History:\n";
+    for (const msg of messageHistory) {
+      fullPrompt += `${msg.role.toUpperCase()}: ${msg.parts[0].text}\n`;
+    }
+    fullPrompt += "MODEL: ";
+
+    const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash',
-      systemInstruction: SYSTEM_PROMPT,
-      generationConfig: {
+      contents: fullPrompt,
+      config: {
         responseMimeType: 'application/json',
         temperature: 0.2,
       }
     });
 
-    // Start chat with history
-    const chat = model.startChat({
-      history: messageHistory.slice(0, -1), // Everything except the latest message
-    });
-
-    const latestMessage = messageHistory[messageHistory.length - 1].parts[0].text;
-    const result = await chat.sendMessage(latestMessage);
-    
-    const responseText = result.response.text();
-    return JSON.parse(responseText);
+    const responseText = response.text;
+    return responseText ? JSON.parse(responseText) : null;
 
   } catch (error) {
     console.error("AI Router Error:", error);
