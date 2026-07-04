@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { RefreshCw, Search, Trash, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { toast } from 'react-hot-toast';
+import { toast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 
 type Email = {
@@ -31,7 +31,7 @@ export default function WebmailInbox() {
       const data = await res.json();
       if (res.ok) setEmails(data.messages || []);
     } catch (err) {
-      toast.error('Failed to fetch emails');
+      toast({ title: "Error", description: 'Failed to fetch emails', variant: "destructive" });
     } finally {
       setLoading(false);
     }

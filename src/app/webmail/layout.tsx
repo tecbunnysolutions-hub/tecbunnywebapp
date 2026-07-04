@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { toast } from 'react-hot-toast';
+import { toast } from '@/hooks/use-toast';
 import { X, Minus, Maximize2, Loader2 } from 'lucide-react';
 
 export default function WebmailLayout({ children }: { children: React.ReactNode }) {
@@ -26,7 +26,7 @@ export default function WebmailLayout({ children }: { children: React.ReactNode 
 
   const handleSend = async () => {
     if (!to) {
-      toast.error('Recipient is required');
+      toast({ title: "Error", description: 'Recipient is required', variant: "destructive" });
       return;
     }
     setSending(true);
@@ -37,11 +37,11 @@ export default function WebmailLayout({ children }: { children: React.ReactNode 
         body: JSON.stringify({ to, subject, text: body })
       });
       if (!res.ok) throw new Error('Failed to send email');
-      toast.success('Email sent!');
+      toast({ title: "Success", description: 'Email sent!' });
       setIsComposeOpen(false);
       setTo(''); setSubject(''); setBody('');
     } catch (err: any) {
-      toast.error(err.message);
+      toast({ title: "Error", description: err.message, variant: "destructive" });
     } finally {
       setSending(false);
     }

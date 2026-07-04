@@ -6,7 +6,7 @@ import { Mail, Lock, Loader2, Server } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { toast } from 'react-hot-toast';
+import { toast } from '@/hooks/use-toast';
 
 export default function WebmailLogin() {
   const router = useRouter();
@@ -31,10 +31,10 @@ export default function WebmailLogin() {
         throw new Error(data.error || 'Login failed');
       }
 
-      toast.success('Logged in successfully!');
+      toast({ title: "Success", description: 'Logged in successfully!' });
       router.push('/webmail/inbox');
     } catch (err: any) {
-      toast.error(err.message);
+      toast({ title: "Error", description: err.message, variant: "destructive" });
     } finally {
       setLoading(false);
     }

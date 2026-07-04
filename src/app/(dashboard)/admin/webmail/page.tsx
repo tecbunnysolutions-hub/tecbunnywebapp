@@ -5,7 +5,7 @@ import { Mail, Plus, Loader2, Server } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { toast } from 'react-hot-toast';
+import { toast } from '@/hooks/use-toast';
 
 export default function WebmailAdminPage() {
   const [domains, setDomains] = useState<any[]>([]);
@@ -30,8 +30,8 @@ export default function WebmailAdminPage() {
         setAccounts(data.accounts || []);
         if (data.domains?.length > 0) setSelectedDomain(data.domains[0].domain);
       }
-    } catch (err) {
-      toast.error('Failed to load webmail data');
+    } catch (err: any) {
+      toast({ title: "Error", description: 'Failed to load webmail data', variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -50,12 +50,15 @@ export default function WebmailAdminPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'create_domain', domain: newDomain })
       });
-      if (!res.ok) throw new Error('Failed to create domain');
-      toast.success('Domain added!');
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to create domain. Did you run the Supabase migration?');
+      }
+      toast({ title: "Success", description: 'Domain added!' });
       setNewDomain('');
       fetchData();
     } catch (err: any) {
-      toast.error(err.message);
+      toast({ title: "Error", description: err.message, variant: "destructive" });
     }
   };
 
@@ -74,13 +77,13 @@ export default function WebmailAdminPage() {
         })
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Failed to create account');
-      toast.success('Account created successfully!');
+      if (!res.ok) throw new Error(data.error || 'Failed to create account. Did you run the Supabase migration?');
+      toast({ title: "Success", description: 'Account created successfully!' });
       setNewAccountEmail('');
       setNewAccountPassword('');
       fetchData();
     } catch (err: any) {
-      toast.error(err.message);
+      toast({ title: "Error", description: err.message, variant: "destructive" });
     }
   };
 
