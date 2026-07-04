@@ -153,24 +153,23 @@ async function processInfobipMessages(supabase: any, results: any[], claimedMess
         .eq('contact_id', waContact.id)
         .maybeSingle();
         
-      const previewText = getMessageContent(result.message) || 'Incoming message';
-        
       if (!waConv) {
-        const { data: newConv } = await supabase
+        const { data: newConv, error: convError } = await supabase
           .from('whatsapp_conversations')
           .insert({
             contact_id: waContact.id,
             status: 'open',
-            last_message_at: timestamp,
-            last_message_preview: previewText
+            last_message_at: timestamp
           })
           .select()
           .single();
         waConv = newConv;
+        if (convError) {
+           logger.error('Failed to create whatsapp_conversation', { convError });
+        }
       } else {
         await supabase.from('whatsapp_conversations').update({
           last_message_at: timestamp,
-          last_message_preview: previewText,
           status: waConv.status === 'resolved' ? 'open' : waConv.status
         }).eq('id', waConv.id);
       }
