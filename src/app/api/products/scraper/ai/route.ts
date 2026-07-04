@@ -62,11 +62,11 @@ export async function POST(request: NextRequest) {
         },
         mrp: {
           type: Type.STRING,
-          description: "The Original Price or M.R.P. Keep the currency symbol, e.g., ₹2,490"
+          description: "The Original Price or M.R.P. (must be INCLUSIVE of GST/taxes). Keep the currency symbol, e.g., ₹2,490"
         },
         price: {
           type: Type.STRING,
-          description: "The current Sale Price. Keep the currency symbol, e.g., ₹760"
+          description: "The current Sale Price. If both an exclusive and inclusive price are shown (like on Amazon Business), you MUST choose the price INCLUSIVE of GST/taxes. Keep the currency symbol, e.g., ₹760"
         },
         category: {
           type: Type.STRING,
