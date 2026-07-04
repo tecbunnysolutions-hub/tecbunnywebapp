@@ -114,6 +114,7 @@ export async function middleware(request: NextRequest) {
   const correlationId = requestHeaders.get('x-correlation-id') || crypto.randomUUID();
   const nonce = safeBase64Encode(crypto.randomUUID());
   requestHeaders.set('x-nonce', nonce);
+  requestHeaders.set('Content-Security-Policy', generateCSP(nonce));
 
   let response = NextResponse.next({ request: { headers: requestHeaders } });
 
