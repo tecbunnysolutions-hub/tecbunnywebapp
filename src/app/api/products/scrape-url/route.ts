@@ -107,9 +107,9 @@ export async function POST(request: NextRequest) {
       if (match) parsedMrp = parseFloat(match[0].replace(/,/g, ''));
     }
 
-    const baseHandleSegment = \`url-\${crypto.randomUUID().slice(0, 8)}\`;
+    const baseHandleSegment = `url-${crypto.randomUUID().slice(0, 8)}`;
     const productPayload = {
-      handle: \`id-\${baseHandleSegment}\`,
+      handle: `id-${baseHandleSegment}`,
       name: result.title || 'Scraped Product',
       title: result.title || 'Scraped Product',
       description: result.htmlDescription || result.shortDescription || '',
@@ -143,7 +143,7 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (dbError) {
-      throw new Error(\`Database Error: \${dbError.message}\`);
+      throw new Error(`Database Error: ${dbError.message}`);
     }
 
     logger.info('url_scraper.success', { correlationId, url });
