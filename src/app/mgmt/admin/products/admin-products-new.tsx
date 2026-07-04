@@ -73,6 +73,9 @@ export default function AdminProductsPage() {
   const [createDialogOpen, setCreateDialogOpen] = React.useState(false);
   const [editDialogOpen, setEditDialogOpen] = React.useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
+  const [scrapeDialogOpen, setScrapeDialogOpen] = React.useState(false);
+  const [scrapeUrl, setScrapeUrl] = React.useState('');
+  const [scraping, setScraping] = React.useState(false);
   const [selectedProduct, setSelectedProduct] = React.useState<Product | null>(null);
   const [editedPrices, setEditedPrices] = React.useState<Record<string, { mrp: number; price: number }>>({});
   const [savingProductId, setSavingProductId] = React.useState<string | null>(null);
@@ -135,6 +138,28 @@ export default function AdminProductsPage() {
       });
     } finally {
       setBulkActionLoading(null);
+    }
+  };
+
+  const handleScrapeUrl = async () => {
+    if (!scrapeUrl.trim()) return;
+    setScraping(true);
+    try {
+      const response = await fetch('/api/products/scrape-url', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: scrapeUrl.trim() }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Failed to scrape URL');
+      toast({ title: 'Success', description: 'Product imported successfully via AI' });
+      setScrapeDialogOpen(false);
+      setScrapeUrl('');
+      fetchProducts();
+    } catch (error: any) {
+      toast({ title: 'Scraping Failed', description: error.message, variant: 'destructive' });
+    } finally {
+      setScraping(false);
     }
   };
 
@@ -540,6 +565,14 @@ export default function AdminProductsPage() {
               </div>
             </>
           )}
+          <Button 
+            onClick={() => setScrapeDialogOpen(true)}
+            variant="outline"
+            className="w-full sm:w-auto h-11 sm:h-9 text-sm flex items-center justify-center border-primary text-primary hover:bg-primary/10"
+          >
+            <Plus className="mr-1.5 h-4 w-4" />
+            URL Scrape
+          </Button>
           <Button 
             onClick={() => setCreateDialogOpen(true)}
             className="w-full sm:w-auto h-11 sm:h-9 text-sm font-semibold flex items-center justify-center bg-primary text-white hover:bg-primary/95"
@@ -977,6 +1010,34 @@ export default function AdminProductsPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Scrape from URL Dialog */}
+      <AlertDialog open={scrapeDialogOpen} onOpenChange={setScrapeDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Scrape Product via URL</AlertDialogTitle>
+            <AlertDialogDescription>
+              Enter a public URL (e.g. Amazon, Flipkart) to extract product details using AI. Note: Some sites might block server-side requests.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="py-4">
+            <Input 
+              value={scrapeUrl}
+              onChange={(e) => setScrapeUrl(e.target.value)}
+              placeholder="https://www.amazon.in/dp/B0..."
+              disabled={scraping}
+            />
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={scraping}>Cancel</AlertDialogCancel>
+            <Button onClick={handleScrapeUrl} disabled={!scrapeUrl || scraping}>
+              {scraping ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+              {scraping ? 'Scraping with AI...' : 'Extract & Import'}
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
     </div>
   );
 }
