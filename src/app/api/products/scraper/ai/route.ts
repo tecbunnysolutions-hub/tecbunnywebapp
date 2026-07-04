@@ -2,21 +2,44 @@ import { NextRequest, NextResponse } from 'next/server';
 import { logger } from '@/lib/logger';
 import { GoogleGenAI, Type } from '@google/genai';
 
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-superadmin-username, x-superadmin-password',
+};
+
+export async function OPTIONS() {
+  return NextResponse.json({}, { headers: corsHeaders });
+}
+
 export async function POST(request: NextRequest) {
   const correlationId = request.headers.get('x-correlation-id') || crypto.randomUUID();
 
   try {
+    const usernameHeader = request.headers.get('x-superadmin-username') || '';
+    const passwordHeader = request.headers.get('x-superadmin-password') || '';
+
+    const expectedUsername = process.env.SUPERADMIN_USER_ID || 'Shubham6010';
+    const expectedPassword = process.env.SUPERADMIN_PASSWORD || 'Bunny@6010';
+
+    if (usernameHeader !== expectedUsername || passwordHeader !== expectedPassword) {
+      return NextResponse.json(
+        { error: 'Forbidden: Invalid Superadmin credentials.' },
+        { status: 403, headers: corsHeaders }
+      );
+    }
+
     const body = await request.json();
     const { rawText } = body;
 
     if (!rawText) {
-      return NextResponse.json({ error: 'rawText is required' }, { status: 400 });
+      return NextResponse.json({ error: 'rawText is required' }, { status: 400, headers: corsHeaders });
     }
 
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
       logger.error('ai_scraper.missing_api_key', { correlationId });
-      return NextResponse.json({ error: 'GEMINI_API_KEY is not configured on the server.' }, { status: 500 });
+      return NextResponse.json({ error: 'GEMINI_API_KEY is not configured on the server.' }, { status: 500, headers: corsHeaders });
     }
 
     const ai = new GoogleGenAI({ apiKey });
@@ -105,10 +128,10 @@ export async function POST(request: NextRequest) {
     const result = JSON.parse(response.text);
     
     logger.info('ai_scraper.success', { correlationId });
-    return NextResponse.json({ success: true, data: result, correlationId });
+    return NextResponse.json({ success: true, data: result, correlationId }, { headers: corsHeaders });
 
   } catch (err: any) {
     logger.error('ai_scraper.error', { correlationId: 'unknown', error: err.message, stack: err.stack });
-    return NextResponse.json({ error: err.message || 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ error: err.message || 'Internal server error' }, { status: 500, headers: corsHeaders });
   }
 }
