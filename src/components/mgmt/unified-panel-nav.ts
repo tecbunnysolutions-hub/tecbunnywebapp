@@ -27,6 +27,7 @@ import {
   Users,
   Wrench,
   Zap,
+  MessageSquare,
 } from 'lucide-react';
 
 import { hasPermission, isAtLeast, PERMS, type Permission, type UserRole } from '@/lib/roles';
