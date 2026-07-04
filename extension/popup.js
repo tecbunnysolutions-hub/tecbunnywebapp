@@ -251,6 +251,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (d.shortDescription) shortDescInput.value = d.shortDescription;
         if (d.seoTitle) seoTitleInput.value = d.seoTitle;
         if (d.seoDescription) seoDescInput.value = d.seoDescription;
+        if (d.htmlDescription) descInput.value = d.htmlDescription;
         if (d.modelNo) modelInput.value = d.modelNo;
         if (d.warrantyPeriod) warrantyPeriodInput.value = d.warrantyPeriod;
         if (d.warrantyType) warrantyTypeInput.value = d.warrantyType;

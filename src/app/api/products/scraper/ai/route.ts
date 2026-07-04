@@ -103,15 +103,20 @@ export async function POST(request: NextRequest) {
         seoDescription: {
           type: Type.STRING,
           description: "An optimized SEO Meta Description, max 160 characters, written to maximize click-through rate."
+        },
+        htmlDescription: {
+          type: Type.STRING,
+          description: "A beautifully structured, highly detailed HTML description of the product. Use <h3> for subheadings, <ul>/<li> for feature points, and <strong> for emphasis. Make it read like a premium tech/gadget showcase."
         }
       },
-      required: ["title", "shortDescription", "seoTitle", "seoDescription"]
+      required: ["title", "shortDescription", "seoTitle", "seoDescription", "htmlDescription"]
     };
 
     const prompt = `
-      You are an expert e-commerce data extraction assistant.
+      You are an expert e-commerce data extraction assistant and a world-class technical copywriter.
       Read the following raw text from an e-commerce product webpage.
       Extract all the required fields into JSON format.
+      For the 'htmlDescription', craft a stunning, well-structured product description using modern HTML tags (like <h3>, <ul>, <li>, <br/>, <strong>). Make sure it looks professional and highlights key features, specifications, and benefits cleanly.
       If a field is not present or cannot be determined confidently, leave it empty or null.
       
       RAW WEBPAGE TEXT:
