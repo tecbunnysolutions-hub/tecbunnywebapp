@@ -198,16 +198,39 @@
       // MRP (Original Price) on Amazon
       let mrp = '';
       const mrpSelectors = [
-        '.a-size-small.a-color-secondary.a-text-strike',
-        '.a-price.a-text-price span.a-offscreen',
+        '.a-text-strike',
         '#listPrice',
-        '.basisPrice .a-offscreen'
+        '.basisPrice .a-offscreen',
+        'span[data-a-strike="true"] .a-offscreen'
       ];
       for (const sel of mrpSelectors) {
         const el = document.querySelector(sel);
         if (el && el.textContent.trim()) {
           mrp = el.textContent.trim();
           break;
+        }
+      }
+      
+      // Amazon fallback: search for M.R.P label
+      if (!mrp) {
+        const elements = document.querySelectorAll('span, div, td');
+        for (const el of elements) {
+          const text = el.textContent.trim();
+          if (text === 'M.R.P.:' || text === 'MRP:' || text === 'M.R.P:') {
+             const parent = el.parentElement;
+             // Usually the price is in a sibling or a span nearby with a strike
+             const strike = parent.querySelector('.a-text-strike') || 
+                            parent.querySelector('span[data-a-strike="true"]') ||
+                            ((el.nextElementSibling && el.nextElementSibling.textContent.match(/[\d,.]+/)) ? el.nextElementSibling : null);
+                            
+             if (strike && strike.textContent) {
+                const match = strike.textContent.match(/[$£€¥₹]\s*[\d,]+(?:\.\d{2})?/);
+                if (match) {
+                  mrp = match[0].trim();
+                  break;
+                }
+             }
+          }
         }
       }
 
