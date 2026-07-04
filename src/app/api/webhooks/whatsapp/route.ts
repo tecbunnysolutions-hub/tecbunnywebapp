@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 import { sendWhatsAppNotification } from '@/lib/whatsapp-service';
-import { createClient } from '@/lib/supabase/server';
+import { createServiceClient } from '@/lib/supabase/server';
 import { getRedis } from '@/lib/redis';
 import { logger } from '@/lib/logger';
 
@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
       body.__claimedMessageIds = new Set(messageIds);
     }
 
-    const supabase = await createClient();
+    const supabase = createServiceClient();
     const claimedMessageIds: Set<string> | undefined = body.__claimedMessageIds;
 
     // Process Infobip webhook events
