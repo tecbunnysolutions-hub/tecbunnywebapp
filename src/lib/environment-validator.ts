@@ -19,9 +19,11 @@ export interface EnvironmentConfig {
     fromName: string;
   };
   whatsapp: {
-    accessToken: string;
-    phoneNumberId: string;
-    apiUrl: string;
+    apiKey: string;
+    senderNumber: string;
+    baseUrl: string;
+    templateName: string;
+    templateLanguage: string;
   };
   app: {
     siteUrl: string;
@@ -71,11 +73,13 @@ class EnvironmentValidator {
       fromName: this.getEnv('SMTP_FROM_NAME', 'TecBunny Solutions')
     };
 
-    // WhatsApp Configuration
+    // Infobip WhatsApp Configuration
     this.config.whatsapp = {
-      accessToken: this.getEnv('WHATSAPP_ACCESS_TOKEN', 'WhatsApp Access Token'),
-      phoneNumberId: this.getEnv('WHATSAPP_PHONE_NUMBER_ID', 'WhatsApp Phone Number ID'),
-      apiUrl: this.getEnv('WHATSAPP_API_URL', 'https://graph.facebook.com/v19.0')
+      apiKey: this.getEnv('INFOBIP_API_KEY', 'Infobip API Key'),
+      senderNumber: this.getEnv('INFOBIP_WHATSAPP_FROM', 'Infobip Sender Number'),
+      baseUrl: this.getEnv('INFOBIP_BASE_URL', 'Infobip Base URL'),
+      templateName: this.optionalEnv('INFOBIP_WHATSAPP_TEMPLATE_NAME', 'Infobip Template Name'),
+      templateLanguage: this.optionalEnv('INFOBIP_WHATSAPP_TEMPLATE_LANGUAGE', 'Infobip Template Language')
     };
 
     // App Configuration
@@ -149,7 +153,7 @@ class EnvironmentValidator {
   }
 
   isWhatsAppEnabled(): boolean {
-    return !!(this.config.whatsapp?.accessToken && this.config.whatsapp?.phoneNumberId);
+    return !!(this.config.whatsapp?.apiKey && this.config.whatsapp?.senderNumber);
   }
 
   isSupabaseEnabled(): boolean {

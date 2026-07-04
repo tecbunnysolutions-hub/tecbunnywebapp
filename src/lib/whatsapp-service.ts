@@ -190,9 +190,13 @@ export class WhatsAppService {
   private phoneNumberId: string;
 
   constructor() {
-    this.baseUrl = process.env.INFOBIP_BASE_URL || '';
+    let base = process.env.INFOBIP_BASE_URL || '';
+    if (base && !base.startsWith('http')) {
+      base = `https://${base}`;
+    }
+    this.baseUrl = base;
     this.accessToken = process.env.INFOBIP_API_KEY || '';
-    this.phoneNumberId = process.env.INFOBIP_SENDER_NUMBER || '';
+    this.phoneNumberId = process.env.INFOBIP_WHATSAPP_FROM || '';
   }
 
   async checkWhatsAppConsent(to: string, category: 'orderUpdates' | 'serviceUpdates' | 'securityAlerts' = 'orderUpdates'): Promise<boolean> {
@@ -299,9 +303,13 @@ export class WhatsAppService {
   }
 
   // Send OTP using Meta Cloud API template
-  async sendOTP(to: string, code: string, templateName: string = 'otp1', languageCode: string = 'en_US') {
+  async sendOTP(to: string, code: string, templateName?: string, languageCode?: string) {
+    const defaultTemplate = process.env.INFOBIP_WHATSAPP_TEMPLATE_NAME || 'tecbunny12';
+    const defaultLanguage = process.env.INFOBIP_WHATSAPP_TEMPLATE_LANGUAGE || 'en_GB';
+    const finalTemplateName = templateName || defaultTemplate;
+    const finalLanguage = languageCode || defaultLanguage;
     const templateMessage = {
-      templateName,
+      templateName: finalTemplateName,
       templateData: {
         body: {
           placeholders: [code]
@@ -313,7 +321,7 @@ export class WhatsAppService {
           }
         ]
       },
-      language: languageCode
+      language: finalLanguage
     };
 
     // 'securityAlerts' = bypass marketing consent for critical auth messages
