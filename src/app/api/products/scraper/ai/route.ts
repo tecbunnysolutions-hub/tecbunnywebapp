@@ -119,10 +119,11 @@ export async function POST(request: NextRequest) {
       For the 'title', YOU MUST NOT use the raw long title from the website. You MUST generate an ultra-short, concise title containing ONLY: [Brand] [Model Name] [Model Number] [Color] [Variant]. DO NOT include any promotional text, features, or battery life. MAXIMUM 6-7 WORDS. (e.g. strictly "Boat Rockerz 200 Black 16GB").
       For the 'htmlDescription', craft a stunning, well-structured product description.
       CRITICAL HTML RULES:
-      1. DO NOT add extra spacing or <br/> tags between list items.
-      2. Use a compact <ul> and <li> structure.
-      3. DO NOT wrap list items in <p> tags.
-      4. Highlight key features using <strong> tags cleanly.
+      1. You MUST use <ul> and <li> tags for any list of features or benefits.
+      2. Each <li> should have the feature name in <strong> tags, followed by the description. (e.g., <li><strong>Feature:</strong> description</li>)
+      3. Use <h3> tags for section headers.
+      4. You may use <p> for introductory paragraphs, but DO NOT wrap <ul> or <li> inside <p> tags.
+      Make sure it looks highly professional, well-spaced, and readable.
       If a field is not present or cannot be determined confidently, leave it empty or null.
       
       RAW WEBPAGE TEXT:

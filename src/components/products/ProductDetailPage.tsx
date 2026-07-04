@@ -761,7 +761,7 @@ export function ProductDetailPage({ productId, initialProduct, sourceContext }: 
               )}
 
               {activeTab === 'description' && (
-                <div className="prose prose-invert max-w-none text-muted-foreground leading-relaxed">
+                <div className="prose prose-invert prose-sm sm:prose-base max-w-none text-muted-foreground leading-relaxed prose-headings:text-foreground prose-strong:text-foreground prose-ul:list-disc prose-ul:pl-5 prose-li:my-1 prose-p:my-3">
                   <div dangerouslySetInnerHTML={{ __html: descriptionHtml }} />
                 </div>
               )}
