@@ -117,13 +117,23 @@ export async function POST(request: NextRequest) {
       Read the following raw text from an e-commerce product webpage.
       Extract all the required fields into JSON format.
       For the 'title', YOU MUST NOT use the raw long title from the website. You MUST generate an ultra-short, concise title containing ONLY: [Brand] [Model Name] [Model Number] [Color] [Variant]. DO NOT include any promotional text, features, or battery life. MAXIMUM 6-7 WORDS. (e.g. strictly "Boat Rockerz 200 Black 16GB").
-      For the 'htmlDescription', craft a stunning, well-structured product description.
+      For the 'htmlDescription', craft a stunning, well-structured product description EXACTLY following this HTML template structure:
+      
+      <p>Introductory paragraph summarizing the product...</p>
+      <h3>Key Features & Benefits</h3>
+      <ul>
+        <li><strong>Feature Name:</strong> Feature description goes here.</li>
+        <li><strong>Feature Name:</strong> Feature description goes here.</li>
+      </ul>
+      <h3>Additional Details</h3>
+      <ul>
+        <li><strong>Detail:</strong> Detail description.</li>
+      </ul>
+      
       CRITICAL HTML RULES:
-      1. You MUST use <ul> and <li> tags for any list of features or benefits.
-      2. Each <li> should have the feature name in <strong> tags, followed by the description. (e.g., <li><strong>Feature:</strong> description</li>)
-      3. Use <h3> tags for section headers.
-      4. You may use <p> for introductory paragraphs, but DO NOT wrap <ul> or <li> inside <p> tags.
-      Make sure it looks highly professional, well-spaced, and readable.
+      1. YOU MUST STRICTLY USE <ul> and <li> tags for ALL lists. DO NOT use plain text with bolded headers instead of lists.
+      2. DO NOT wrap <ul> or <li> tags inside <p> tags.
+      3. Use EXACTLY the HTML structure shown above. Do not invent your own spacing or line breaks.
       If a field is not present or cannot be determined confidently, leave it empty or null.
       
       RAW WEBPAGE TEXT:
