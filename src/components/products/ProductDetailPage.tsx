@@ -591,8 +591,8 @@ export function ProductDetailPage({ productId, initialProduct, sourceContext }: 
                     </ul>
                   </div>
                 )}
-                <div className="prose prose-invert prose-sm text-muted-foreground max-w-none prose-p:my-2 prose-ul:my-2 prose-li:my-0">
-                  <div dangerouslySetInnerHTML={{ __html: descriptionHtml }} className="leading-relaxed" />
+                <div className="prose prose-invert prose-sm sm:prose-base max-w-none text-muted-foreground leading-relaxed prose-headings:text-foreground prose-headings:mt-6 prose-headings:mb-3 prose-strong:text-foreground prose-ul:list-disc prose-ul:pl-5 prose-li:my-2 prose-p:my-3">
+                  <div dangerouslySetInnerHTML={{ __html: descriptionHtml }} />
                 </div>
               </div>
 
