@@ -77,6 +77,17 @@ async function processInfobipMessages(supabase: any, results: any[], claimedMess
       continue;
     }
 
+    // Handle Delivery Receipts (DLR) - these have no 'from' field
+    if (!phoneNumber) {
+      if (result.status) {
+        await supabase
+          .from('whatsapp_messages')
+          .update({ message_status: result.status.name?.toLowerCase() || result.status.groupName?.toLowerCase() || 'delivered' })
+          .eq('whatsapp_message_id', messageId);
+      }
+      continue;
+    }
+
     const { data: existingMessage, error: existingMessageError } = await supabase
       .from('whatsapp_messages')
       .select('id')
