@@ -4,12 +4,9 @@ import { verifySuperadminSessionToken } from '@/lib/auth/superadmin-session'
 import { requireSupabasePublicEnv } from '@/lib/supabase/env'
 import { isAtLeast } from '@/lib/roles'
 
-// Helper to generate the CSP with a dynamic nonce
-function generateCSP(nonce: string) {
-  const isDev = process.env.NODE_ENV === 'development';
-  const scriptSrc = isDev 
-    ? "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com https://cs.iubenda.com https://cdn.iubenda.com https://static.cloudflareinsights.com https://www.googletagmanager.com https://www.google-analytics.com https://va.vercel-scripts.com https://connect.facebook.net"
-    : `script-src 'self' 'nonce-${nonce}' 'strict-dynamic' https://challenges.cloudflare.com https://cs.iubenda.com https://cdn.iubenda.com https://static.cloudflareinsights.com https://www.googletagmanager.com https://www.google-analytics.com https://va.vercel-scripts.com https://connect.facebook.net`;
+// Helper to generate the CSP without strict nonce (to allow Next.js static pages to hydrate)
+function generateCSP() {
+  const scriptSrc = "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com https://cs.iubenda.com https://cdn.iubenda.com https://static.cloudflareinsights.com https://www.googletagmanager.com https://www.google-analytics.com https://va.vercel-scripts.com https://connect.facebook.net";
 
   return [
     "default-src 'self'",
@@ -114,7 +111,7 @@ export async function middleware(request: NextRequest) {
   const correlationId = requestHeaders.get('x-correlation-id') || crypto.randomUUID();
   const nonce = safeBase64Encode(crypto.randomUUID());
   requestHeaders.set('x-nonce', nonce);
-  requestHeaders.set('Content-Security-Policy', generateCSP(nonce));
+  requestHeaders.set('Content-Security-Policy', generateCSP());
 
   let response = NextResponse.next({ request: { headers: requestHeaders } });
 
@@ -292,7 +289,7 @@ export async function middleware(request: NextRequest) {
       res.headers.set('X-Content-Type-Options', 'nosniff');
       res.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
       res.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
-      res.headers.set('Content-Security-Policy', generateCSP(nonce));
+      res.headers.set('Content-Security-Policy', generateCSP());
       res.headers.set('X-Correlation-Id', correlationId);
 
       return res;
