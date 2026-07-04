@@ -190,9 +190,9 @@ export class WhatsAppService {
   private phoneNumberId: string;
 
   constructor() {
-    this.baseUrl = envConfig.whatsapp.apiUrl;
-    this.accessToken = envConfig.whatsapp.accessToken;
-    this.phoneNumberId = envConfig.whatsapp.phoneNumberId;
+    this.baseUrl = process.env.INFOBIP_BASE_URL || '';
+    this.accessToken = process.env.INFOBIP_API_KEY || '';
+    this.phoneNumberId = process.env.INFOBIP_SENDER_NUMBER || '';
   }
 
   async checkWhatsAppConsent(to: string, category: 'orderUpdates' | 'serviceUpdates' | 'securityAlerts' = 'orderUpdates'): Promise<boolean> {
@@ -257,17 +257,21 @@ export class WhatsAppService {
       const cleanNumber = to.replace(/[^\d]/g, '');
       const formattedNumber = cleanNumber.startsWith('91') ? cleanNumber : `91${cleanNumber}`;
 
-      let url = `${this.baseUrl}/${this.phoneNumberId}/messages`;
+      let url = `${this.baseUrl}/whatsapp/1/message/${messageType}`;
       const headers: Record<string, string> = {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${this.accessToken}`
+        'Accept': 'application/json',
+        'Authorization': `App ${this.accessToken}`
       };
 
       const payload = {
-        messaging_product: 'whatsapp',
-        to: formattedNumber,
-        type: messageType,
-        [messageType]: messageType === 'text' ? { body: message } : message
+        messages: [
+          {
+            from: this.phoneNumberId,
+            to: formattedNumber,
+            content: messageType === 'text' ? { text: message } : message
+          }
+        ]
       };
 
       const response = await fetchWithTimeoutAndRetry(url, {
@@ -279,7 +283,7 @@ export class WhatsAppService {
       const result = await response.json();
       
       if (!response.ok) {
-        throw new Error(`WhatsApp API error: ${result.error?.message || 'Unknown error'}`);
+        throw new Error(`Infobip API error: ${result.requestError?.serviceException?.text || JSON.stringify(result)}`);
       }
 
       logger.info('WhatsApp message sent successfully:', {
@@ -297,24 +301,19 @@ export class WhatsAppService {
   // Send OTP using Meta Cloud API template
   async sendOTP(to: string, code: string, templateName: string = 'otp1', languageCode: string = 'en_US') {
     const templateMessage = {
-      name: templateName,
-      language: { code: languageCode },
-      components: [
-        {
-          type: "body",
-          parameters: [
-            { type: "text", text: code }
-          ]
+      templateName,
+      templateData: {
+        body: {
+          placeholders: [code]
         },
-        {
-          type: "button",
-          sub_type: "url",
-          index: "0",
-          parameters: [
-            { type: "text", text: code }
-          ]
-        }
-      ]
+        buttons: [
+          {
+            type: "URL",
+            parameter: code
+          }
+        ]
+      },
+      language: languageCode
     };
 
     // 'securityAlerts' = bypass marketing consent for critical auth messages
