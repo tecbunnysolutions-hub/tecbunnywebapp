@@ -242,10 +242,9 @@ export function ProductDetailPage({ productId, initialProduct, sourceContext }: 
   }, [product]);
 
   const highlightSpecs = useMemo(() => {
-    if (!product?.specifications) return [] as Array<[string, string]>;
-    return Object.entries(product.specifications)
-      .filter(([key]) => !['sourceurl', 'source_url', 'source-url'].includes(key.toLowerCase()))
-      .slice(0, 3) as Array<[string, string]>;
+    return product?.specifications ? Object.entries(product.specifications as Record<string, string>)
+    .filter(([k]) => !['sourceurl', 'source_url', 'source-url', 'seo_title', 'seo_description'].includes(k.toLowerCase()))
+    .slice(0, 8) : [];
   }, [product]);
 
   useEffect(() => {
@@ -592,7 +591,7 @@ export function ProductDetailPage({ productId, initialProduct, sourceContext }: 
                     </ul>
                   </div>
                 )}
-                <div className="prose prose-invert prose-sm text-muted-foreground max-w-none space-y-4">
+                <div className="prose prose-invert prose-sm text-muted-foreground max-w-none prose-p:my-2 prose-ul:my-2 prose-li:my-0">
                   <div dangerouslySetInnerHTML={{ __html: descriptionHtml }} className="leading-relaxed" />
                 </div>
               </div>

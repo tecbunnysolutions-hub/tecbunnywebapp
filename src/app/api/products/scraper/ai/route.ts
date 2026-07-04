@@ -117,7 +117,12 @@ export async function POST(request: NextRequest) {
       Read the following raw text from an e-commerce product webpage.
       Extract all the required fields into JSON format.
       For the 'title', YOU MUST NOT use the raw long title from the website. You MUST generate an ultra-short, concise title containing ONLY: [Brand] [Model Name] [Model Number] [Color] [Variant]. DO NOT include any promotional text, features, or battery life. MAXIMUM 6-7 WORDS. (e.g. strictly "Boat Rockerz 200 Black 16GB").
-      For the 'htmlDescription', craft a stunning, well-structured product description using modern HTML tags (like <h3>, <ul>, <li>, <br/>, <strong>). Make sure it looks professional and highlights key features, specifications, and benefits cleanly.
+      For the 'htmlDescription', craft a stunning, well-structured product description.
+      CRITICAL HTML RULES:
+      1. DO NOT add extra spacing or <br/> tags between list items.
+      2. Use a compact <ul> and <li> structure.
+      3. DO NOT wrap list items in <p> tags.
+      4. Highlight key features using <strong> tags cleanly.
       If a field is not present or cannot be determined confidently, leave it empty or null.
       
       RAW WEBPAGE TEXT:
