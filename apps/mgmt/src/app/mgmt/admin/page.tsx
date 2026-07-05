@@ -7,7 +7,7 @@ import dynamic from 'next/dynamic';
 
 import { TrendingUp, TrendingDown, RefreshCw } from 'lucide-react';
 
-const RecentActivityTable = dynamic(() => import('@tecbunny/admin-ui'), {
+const RecentActivityTable = dynamic(() => import('@tecbunny/admin-ui').then((mod) => mod.RecentActivityTable), {
     loading: () => <div className="p-6 text-center text-sm text-muted-foreground animate-pulse">Loading activity data...</div>,
     ssr: false
 });
