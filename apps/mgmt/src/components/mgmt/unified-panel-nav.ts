@@ -1,3 +1,4 @@
+import { PERMS, hasPermission, isAtLeast, type Permission, type UserRole } from "@tecbunny/core";
 import type { LucideIcon } from 'lucide-react';
 import {
   Activity,
@@ -30,7 +31,7 @@ import {
   MessageSquare,
 } from 'lucide-react';
 
-import { hasPermission, isAtLeast, PERMS, type Permission, type UserRole } from "@tecbunny/core/roles";
+
 
 export type UnifiedPanelNavItem = {
   href: string;

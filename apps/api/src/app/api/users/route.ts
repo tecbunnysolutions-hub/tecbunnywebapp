@@ -1,13 +1,13 @@
+import { USER_ASSIGNABLE_ROLES, createClient as createServerClient, normalizeRole, type AssignableRole } from "@tecbunny/core";
 import { createClient } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 
 import { resolveSiteUrl } from "@tecbunny/core/site-url";
-import { createClient as createServerClient } from "@tecbunny/core/supabase/server";
+
 import { getEffectiveUserRole } from "@tecbunny/core/auth/server-role";
 import { verifySuperadminSessionToken } from "@tecbunny/core/auth/superadmin-session";
 import { logger } from "@tecbunny/core/logger";
-import { normalizeRole, USER_ASSIGNABLE_ROLES, type AssignableRole } from "@tecbunny/core/roles";
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY;

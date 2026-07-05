@@ -1,3 +1,4 @@
+import { createClient } from "@tecbunny/core";
 
 'use client';
 
@@ -20,7 +21,7 @@ import { Label } from "@tecbunny/ui";
 import { InvoiceTemplate, type CompanySettings } from '@/components/invoices/InvoiceTemplate';
 import { SerialNumberDialog } from '@/components/sales/SerialNumberDialog';
 import { useAuth } from "@tecbunny/core/hooks";
-import { createClient } from "@tecbunny/core/supabase/client";
+
 import { getGstRateForProduct, type CategoryGstRates } from "@tecbunny/core/utils";
 
 

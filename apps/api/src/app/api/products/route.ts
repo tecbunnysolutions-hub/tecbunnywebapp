@@ -1,8 +1,9 @@
+import { createClient, createServiceClient, isSupabaseServiceConfigured } from "@tecbunny/core";
 import crypto from 'crypto';
 
 import { NextRequest, NextResponse } from 'next/server';
 
-import { createClient, createServiceClient, isSupabaseServiceConfigured } from "@tecbunny/core/supabase/server";
+
 import { getSessionWithRole } from "@tecbunny/core/auth/server-role";
 import { logger } from "@tecbunny/core/logger";
 import { getProductDisplayImage } from "@tecbunny/core/image-utils";

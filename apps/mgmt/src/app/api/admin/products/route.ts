@@ -1,7 +1,8 @@
+import { createClient, createServiceClient, isAdmin, isSupabaseServiceConfigured, isSuperadminSession } from "@tecbunny/core";
 import { NextRequest, NextResponse } from 'next/server';
 
-import { createClient, createServiceClient, isSupabaseServiceConfigured } from "@tecbunny/core/supabase/server";
-import { isAdmin, isSuperadminSession } from "@tecbunny/core/permissions";
+
+
 import { logger } from "@tecbunny/core/logger";
 import { getProductDisplayImage } from "@tecbunny/core/image-utils";
 export { POST, PUT } from '@/app/api/products/route';

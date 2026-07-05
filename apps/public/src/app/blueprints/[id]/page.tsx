@@ -1,6 +1,7 @@
+import { createServiceClient } from "@tecbunny/core";
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { createServiceClient } from "@tecbunny/core/supabase/server";
+
 import { BlueprintShowcase } from '@/components/customised-setups/BlueprintShowcase';
 
 interface BlueprintPageProps {

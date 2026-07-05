@@ -1,4 +1,6 @@
 'use client';
+import { getPanelHome } from "@tecbunny/core";
+
 
 import React from 'react';
 import Link from 'next/link';
@@ -17,7 +19,7 @@ import {
 import { useAnalytics } from '../../hooks/use-analytics';
 import { useAuth, useCart } from "@tecbunny/core/hooks";
 import { hasRoleClient } from "@tecbunny/core/permissions-client";
-import { getPanelHome } from "@tecbunny/core/panel-routing";
+
 import {
   DropdownMenu,
   DropdownMenuContent,

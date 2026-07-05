@@ -1,3 +1,4 @@
+import { createClient } from "@tecbunny/core";
 
 'use client';
 
@@ -20,7 +21,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDes
 import { Label } from "@tecbunny/ui";
 import { useToast } from "@tecbunny/ui";
 import { fetchAiProductDetails, formatAiSpecifications } from "@tecbunny/core/ai/product-details";
-import { createClient } from "@tecbunny/core/supabase/client";
+
 
 const productSchema = z.object({
   name: z.string().min(3, { message: "Product name must be at least 3 characters." }),

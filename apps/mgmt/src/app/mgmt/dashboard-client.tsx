@@ -1,4 +1,6 @@
 'use client';
+import { getPanelHome, isAtLeast } from "@tecbunny/core";
+
 
 import React from 'react';
 import { useRouter } from 'next/navigation';
@@ -13,8 +15,6 @@ import {
 } from 'lucide-react';
 
 import { useAuth } from "@tecbunny/core/hooks";
-import { isAtLeast } from "@tecbunny/core/roles";
-import { getPanelHome } from "@tecbunny/core/panel-routing";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@tecbunny/ui";
 import { Button } from "@tecbunny/ui";
 

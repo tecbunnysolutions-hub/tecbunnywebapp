@@ -1,3 +1,4 @@
+import { createClient } from "@tecbunny/core";
 
 'use client';
 
@@ -33,7 +34,7 @@ import {
   SelectValue,
 } from "@tecbunny/ui";
 import type { Coupon, Product, Discount } from "@tecbunny/core/types";
-import { createClient } from "@tecbunny/core/supabase/client";
+
 import { logger } from "@tecbunny/core/logger";
 import { useToast } from "@tecbunny/ui";
 

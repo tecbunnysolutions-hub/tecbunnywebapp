@@ -1,7 +1,8 @@
 "use client";
+import { createClient } from "@tecbunny/core";
+
 
 import { useState } from "react";
-import { createClient } from "@tecbunny/core/supabase/client";
 import { Mail, CheckCircle2 } from "lucide-react";
 import { mapHumanError } from "@tecbunny/core/errorMapper";
 

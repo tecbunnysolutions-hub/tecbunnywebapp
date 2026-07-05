@@ -1,5 +1,6 @@
+import { createServiceClient } from "@tecbunny/core";
 import { NextResponse } from 'next/server';
-import { createServiceClient } from "@tecbunny/core/supabase/server";
+
 import { processWhatsAppMessageWithAI } from "@tecbunny/core/whatsapp/ai-router";
 import { sendWhatsAppMessage, markWhatsAppMessageRead } from "@tecbunny/core/whatsapp/api";
 

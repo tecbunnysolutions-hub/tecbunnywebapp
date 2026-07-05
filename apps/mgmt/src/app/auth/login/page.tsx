@@ -1,4 +1,6 @@
 'use client';
+import { STAFF_PANEL_ROLES, createClient, getPanelHome, normalizeRole } from "@tecbunny/core";
+
 
 import { useState, useEffect, Suspense, useMemo } from 'react';
 import NextDynamic from 'next/dynamic';
@@ -6,9 +8,7 @@ import { useSearchParams } from 'next/navigation';
 
 import { Mail, Lock, Eye, EyeOff, AlertCircle, ShieldCheck, Users } from 'lucide-react';
 
-import { createClient } from "@tecbunny/core/supabase/client";
-import { normalizeRole } from "@tecbunny/core/roles";
-import { getPanelHome, STAFF_PANEL_ROLES } from "@tecbunny/core/panel-routing";
+
 import { Input } from "@tecbunny/ui";
 import { Label } from "@tecbunny/ui";
 import { useToast } from "@tecbunny/ui";

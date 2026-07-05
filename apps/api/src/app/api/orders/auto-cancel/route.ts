@@ -1,8 +1,9 @@
+import { createClient, createClient as createServerClient, createServiceClient, isAtLeast, isSupabaseServiceConfigured, normalizeRole } from "@tecbunny/core";
 import { NextRequest, NextResponse } from 'next/server';
 
-import { createClient as createServerClient, createServiceClient , isSupabaseServiceConfigured , createClient } from "@tecbunny/core/supabase/server";
+
 import { logger } from "@tecbunny/core/logger";
-import { isAtLeast, normalizeRole } from "@tecbunny/core/roles";
+
 
 // export const dynamic = 'force-dynamic';
 

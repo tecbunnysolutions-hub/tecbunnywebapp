@@ -1,9 +1,10 @@
+import { createClient as createServerClient } from "@tecbunny/core";
 import { NextRequest, NextResponse } from 'next/server';
 
 import { sendWhatsAppNotification } from "@tecbunny/core/whatsapp-service";
 import { logger } from "@tecbunny/core/logger";
 import { rateLimit } from "@tecbunny/core/rate-limit";
-import { createClient as createServerClient } from "@tecbunny/core/supabase/server";
+
 
 const LIMIT = 5; // per 10 min
 const WINDOW_MS = 10 * 60 * 1000;

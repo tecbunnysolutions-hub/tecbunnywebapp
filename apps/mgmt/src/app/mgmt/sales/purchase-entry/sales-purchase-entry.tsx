@@ -1,3 +1,4 @@
+import { createClient } from "@tecbunny/core";
 
 'use client';
 
@@ -15,7 +16,7 @@ import { Separator } from "@tecbunny/ui";
 import CreateProductDialog from '@/components/sales/CreateProductDialog';
 import { PurchaseSerialNumberDialog } from '@/components/sales/PurchaseSerialNumberDialog';
 import { useToast } from "@tecbunny/ui";
-import { createClient } from "@tecbunny/core/supabase/client";
+
 
 export default function PurchaseEntryPage() {
     const { toast } = useToast();

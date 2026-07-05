@@ -1,6 +1,7 @@
+import { createClient } from "@tecbunny/core";
 import { NextRequest, NextResponse } from 'next/server';
 
-import { createClient } from "@tecbunny/core/supabase/server";
+
 import { ProductImportRow } from "@tecbunny/core/types/products";
 import { logger } from "@tecbunny/core/logger";
 import sanitizeHtml from "@tecbunny/core/sanitize-html";

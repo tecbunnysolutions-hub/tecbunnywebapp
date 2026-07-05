@@ -1,4 +1,6 @@
 'use client';
+import { createClient } from "@tecbunny/core";
+
 
 import * as React from 'react';
 
@@ -14,7 +16,7 @@ import type { Order, OrderType, OrderStatus } from "@tecbunny/core/types";
 import { useToast } from "@tecbunny/ui";
 import { OrderActions } from '../sales/OrderActions';
 import { formatOrderNumber } from "@tecbunny/core/order-utils";
-import { createClient } from "@tecbunny/core/supabase/client";
+
 
 const STATUS_VARIANT: Record<OrderStatus, 'default' | 'destructive' | 'outline' | 'secondary'> = {
   'Pending': 'outline',

@@ -1,5 +1,6 @@
+import { createClient } from "@tecbunny/core";
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from "@tecbunny/core/supabase/server";
+
 import { getProductDisplayImage } from "@tecbunny/core/image-utils";
 import { filterPubliclyVisibleProducts } from "@tecbunny/core/product-visibility";
 

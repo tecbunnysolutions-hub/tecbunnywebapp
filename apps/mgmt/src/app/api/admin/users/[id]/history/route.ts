@@ -1,5 +1,6 @@
+import { createClient, createServiceClient, isSupabaseServiceConfigured } from "@tecbunny/core";
 ﻿import { NextRequest, NextResponse } from 'next/server';
-import { createClient, createServiceClient, isSupabaseServiceConfigured } from "@tecbunny/core/supabase/server";
+
 import { requireAdmin } from "@tecbunny/core/admin-auth";
 
 async function safeListQuery<T>(query: PromiseLike<{ data: T[] | null; error: { message?: string } | null }>) {

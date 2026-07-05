@@ -1,4 +1,5 @@
-import { createClient, createServiceClient, isSupabaseServiceConfigured } from "@tecbunny/core/supabase/server";
+import { createClient, createServiceClient, isSupabaseServiceConfigured } from "@tecbunny/core";
+
 import { getPageContentServer } from './page-content';
 import { logger } from './logger';
 

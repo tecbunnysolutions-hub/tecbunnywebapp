@@ -1,6 +1,7 @@
+import { createClient, createServiceClient, isSupabaseServiceConfigured } from "@tecbunny/core";
 import { NextRequest, NextResponse } from 'next/server';
 
-import { createClient, createServiceClient, isSupabaseServiceConfigured } from "@tecbunny/core/supabase/server";
+
 
 export async function POST(request: NextRequest) {
   try {

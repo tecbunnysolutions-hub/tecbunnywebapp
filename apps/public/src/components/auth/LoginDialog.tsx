@@ -1,4 +1,6 @@
 'use client';
+import { createClient, normalizeRole } from "@tecbunny/core";
+
 
 import * as React from 'react';
 import { useForm } from 'react-hook-form';
@@ -28,9 +30,9 @@ import {
 import { Input } from "@tecbunny/ui";
 import { useAuth } from "@tecbunny/core/hooks";
 import { useToast } from "@tecbunny/ui";
-import { createClient } from "@tecbunny/core/supabase/client";
+
 import { logger } from "@tecbunny/core/logger";
-import { normalizeRole } from "@tecbunny/core/roles";
+
 import { useCartStore } from "@tecbunny/core/store/cartStore";
 import { useWishlistStore } from "@tecbunny/core/store/wishlistStore";
 

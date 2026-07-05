@@ -1,6 +1,7 @@
+import { createClient } from "@tecbunny/core";
 import { NextRequest, NextResponse } from 'next/server';
 
-import { createClient } from "@tecbunny/core/supabase/server";
+
 import { requireAdmin } from "@tecbunny/core/admin-auth";
 import { logger } from "@tecbunny/core/logger";
 import { imageJobsQueue } from "@tecbunny/core/queue/image-jobs";

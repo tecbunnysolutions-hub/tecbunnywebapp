@@ -1,5 +1,6 @@
+import { Permission, UserRole, hasPermission, isAtLeast } from "@tecbunny/core";
 import { useAuth } from "@tecbunny/core/hooks";
-import { isAtLeast, hasPermission, Permission, UserRole } from "@tecbunny/core/roles";
+
 
 interface PermissionsApi {
   role: UserRole;

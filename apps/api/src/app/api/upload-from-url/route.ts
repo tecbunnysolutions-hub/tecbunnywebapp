@@ -1,10 +1,10 @@
+import { createClient } from "@tecbunny/core";
 import { NextRequest } from 'next/server';
 
 import { apiSuccess, apiError } from "@tecbunny/core/errors";
 import { uploadProductImage, uploadToSupabase } from "@tecbunny/core/supabase-storage";
 import { uploadHeroBanner, isS3Configured } from "@tecbunny/core/s3-storage";
 import { logger } from "@tecbunny/core/logger";
-import { createClient } from "@tecbunny/core/supabase/server";
 import { requireAdmin } from "@tecbunny/core/admin-auth";
 import { validatePublicRemoteUrl } from "@tecbunny/core/security/network-validation";
 

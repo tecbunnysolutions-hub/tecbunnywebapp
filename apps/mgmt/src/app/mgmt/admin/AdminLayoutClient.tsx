@@ -1,11 +1,12 @@
 'use client';
+import { isAtLeast } from "@tecbunny/core";
+
 
 import * as React from 'react';
 import { useRouter } from 'next/navigation';
 
 import { UnifiedPanelShell } from '@/components/mgmt/UnifiedPanelShell';
 import { useAuth } from "@tecbunny/core/hooks";
-import { isAtLeast } from "@tecbunny/core/roles";
 import { logger } from "@tecbunny/core/logger";
 import { useToast } from "@tecbunny/ui";
 

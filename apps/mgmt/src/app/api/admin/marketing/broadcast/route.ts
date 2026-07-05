@@ -1,8 +1,8 @@
+import { createServerClient, createServiceClient } from "@tecbunny/core";
 ﻿import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { WhatsAppService } from "@tecbunny/core/whatsapp-service";
 import improvedEmailService from "@tecbunny/core/improved-email-service";
-import { createServerClient, createServiceClient } from "@tecbunny/core/supabase/server";
 import { logger } from "@tecbunny/core/logger";
 
 const ContactRowSchema = z.object({

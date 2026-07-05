@@ -1,8 +1,9 @@
+import { createClient as createServerClient, isAtLeast } from "@tecbunny/core";
 import { NextRequest, NextResponse } from 'next/server';
 
-import { createClient as createServerClient } from "@tecbunny/core/supabase/server";
+
 import { logger } from "@tecbunny/core/logger";
-import { isAtLeast } from "@tecbunny/core/roles";
+
 import type { UserRole } from "@tecbunny/core/types";
 import { computeAutoFill } from "@tecbunny/core/homepage-auto-fill";
 

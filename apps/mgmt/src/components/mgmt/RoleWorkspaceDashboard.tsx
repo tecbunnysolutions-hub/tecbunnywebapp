@@ -1,4 +1,6 @@
 'use client';
+import { ROLE_DISPLAY_NAME, type UserRole } from "@tecbunny/core";
+
 
 import Link from 'next/link';
 import type { LucideIcon } from 'lucide-react';
@@ -21,7 +23,6 @@ import {
 } from 'lucide-react';
 
 import { useAuth } from "@tecbunny/core/hooks";
-import { ROLE_DISPLAY_NAME, type UserRole } from "@tecbunny/core/roles";
 
 type WorkspaceKind =
   | 'sales-manager'

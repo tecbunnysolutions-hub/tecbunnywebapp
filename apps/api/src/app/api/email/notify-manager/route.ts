@@ -1,10 +1,11 @@
+import { createClient, isAtLeast } from "@tecbunny/core";
 import { NextRequest, NextResponse } from 'next/server';
 
 import * as z from 'zod';
 
 import { emailHelpers } from "@tecbunny/core/email";
-import { createClient } from "@tecbunny/core/supabase/server";
-import { isAtLeast } from "@tecbunny/core/roles";
+
+
 
 // Simple in-memory dedupe to avoid duplicate sends in quick succession (best-effort only)
 const recentSends = new Map<string, number>();

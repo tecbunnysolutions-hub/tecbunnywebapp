@@ -1,6 +1,6 @@
+import { createClient } from "@tecbunny/core";
 import { NextResponse } from 'next/server'
 
-import { createClient } from "@tecbunny/core/supabase/server"
 import { logger } from "@tecbunny/core/logger"
 
 // export const dynamic = 'force-dynamic'

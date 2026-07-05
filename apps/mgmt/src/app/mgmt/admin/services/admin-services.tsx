@@ -1,4 +1,6 @@
 'use client';
+import { createClient } from "@tecbunny/core";
+
 
 import * as React from 'react';
 import Link from 'next/link';
@@ -46,7 +48,7 @@ import {
 import { Button } from "@tecbunny/ui";
 import { Badge } from "@tecbunny/ui";
 
-import { createClient } from "@tecbunny/core/supabase/client";
+
 import { useToast } from "@tecbunny/ui";
 import type { Service, ServiceRequest } from "@tecbunny/core/types";
 import { Skeleton } from "@tecbunny/ui";

@@ -1,7 +1,8 @@
+import { createClient, createServiceClient, isAdmin, isSupabaseServiceConfigured } from "@tecbunny/core";
 import { NextResponse } from 'next/server';
 
-import { createClient, createServiceClient , isSupabaseServiceConfigured } from "@tecbunny/core/supabase/server";
-import { isAdmin } from "@tecbunny/core/permissions";
+
+
 
 // export const dynamic = 'force-dynamic';
 

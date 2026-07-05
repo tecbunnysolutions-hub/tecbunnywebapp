@@ -1,8 +1,9 @@
+import { createClient, createServiceClient, isSupabaseServiceConfigured } from "@tecbunny/core";
 import { NextRequest, NextResponse } from 'next/server';
 
 import { OTPManager, type OTPVerification } from "@tecbunny/core/otp-manager";
 import { logger } from "@tecbunny/core/logger";
-import { createServiceClient, isSupabaseServiceConfigured , createClient } from "@tecbunny/core/supabase/server";
+
 import { requireApiRole } from "@tecbunny/core/server-role-guard";
 import { rateLimit } from "@tecbunny/core/rate-limit";
 

@@ -1,7 +1,7 @@
+import { createClient } from "@tecbunny/core";
 import { NextRequest, NextResponse, after } from 'next/server';
 import crypto from 'crypto';
 
-import { createClient } from "@tecbunny/core/supabase/server";
 import { sendWhatsAppNotification } from "@tecbunny/core/whatsapp-service";
 import { logger } from "@tecbunny/core/logger";
 import { validateWebhookSignature, validateWebhookTimestamp } from "@tecbunny/core/webhook-validator";

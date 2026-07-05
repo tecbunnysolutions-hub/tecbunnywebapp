@@ -1,3 +1,4 @@
+import { createClient, createServiceClient, isSupabaseServiceConfigured } from "@tecbunny/core";
 /**
  * AI-Powered Product Ingestion Pool
  * POST /api/admin/products/ai-add
@@ -15,7 +16,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 
 import { logger } from "@tecbunny/core/logger";
-import { createServiceClient, isSupabaseServiceConfigured, createClient } from "@tecbunny/core/supabase/server";
+
 import { getSessionWithRole } from "@tecbunny/core/auth/server-role";
 import { getSystemPrompt } from "@tecbunny/core/ai/prompts";
 import { TaxClassificationError } from "@tecbunny/core/ai/tax-classification";

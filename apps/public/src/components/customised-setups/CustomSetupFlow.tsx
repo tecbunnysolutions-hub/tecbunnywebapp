@@ -1,4 +1,6 @@
 'use client';
+import { createClient } from "@tecbunny/core";
+
 
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -25,7 +27,7 @@ export interface CustomSetupFlowProps {
   variant?: 'default' | 'tech';
 }
 
-import { createClient } from "@tecbunny/core/supabase/client";
+
 
 import {
   type SetupSystem,

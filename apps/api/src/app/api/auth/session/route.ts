@@ -1,6 +1,7 @@
+import { createClient, isSupabasePublicConfigured } from "@tecbunny/core";
 import { NextRequest, NextResponse } from 'next/server';
 
-import { createClient, isSupabasePublicConfigured } from "@tecbunny/core/supabase/server";
+
 import { logger } from "@tecbunny/core/logger";
 import { verifySuperadminSessionToken } from "@tecbunny/core/auth/superadmin-session";
 

@@ -1,10 +1,10 @@
+import { createServiceClient, isSupabaseServiceConfigured } from "@tecbunny/core";
 import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 
 import { verifySuperadminSessionToken } from "@tecbunny/core/auth/superadmin-session";
 import { logger } from "@tecbunny/core/logger";
-import { createServiceClient, isSupabaseServiceConfigured } from "@tecbunny/core/supabase/server";
 
 const areaSchema = z.object({
   id: z.string().uuid().nullable().optional(),

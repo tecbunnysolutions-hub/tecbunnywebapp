@@ -1,7 +1,8 @@
+import { createClient } from "@tecbunny/core";
 import crypto from 'crypto';
 import { NextRequest, NextResponse } from 'next/server';
 
-import { createClient } from "@tecbunny/core/supabase/server";
+
 import { generateGeminiText } from "@tecbunny/core/ai/gemini-service";
 import { getProductDisplayImage } from "@tecbunny/core/image-utils";
 import { getRedis } from "@tecbunny/core/redis";

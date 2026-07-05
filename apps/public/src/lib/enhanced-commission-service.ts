@@ -1,8 +1,9 @@
+import { createServiceClient, isSupabaseServiceConfigured } from "@tecbunny/core";
 /**
  * Enhanced Commission Service
  * Handles agent commission calculation with product-specific rules and pre-tax calculations
  */
-import { createServiceClient, isSupabaseServiceConfigured } from "@tecbunny/core/supabase/server";
+
 import type {
   AgentCommissionRule,
   OrderItem

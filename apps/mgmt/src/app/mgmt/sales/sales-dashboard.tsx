@@ -1,3 +1,4 @@
+import { createClient } from "@tecbunny/core";
 
 'use client';
 
@@ -10,7 +11,7 @@ import { Badge } from "@tecbunny/ui";
 import { Skeleton } from "@tecbunny/ui";
 import { useToast } from "@tecbunny/ui";
 import { useAuth } from "@tecbunny/core/hooks";
-import { createClient } from "@tecbunny/core/supabase/client";
+
 import type { Order, OrderStatus } from "@tecbunny/core/types";
 import { MarketingKitTerminal } from '@/components/sales/MarketingKitTerminal';
 

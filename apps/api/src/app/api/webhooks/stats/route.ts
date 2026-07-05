@@ -1,6 +1,7 @@
+import { createClient } from "@tecbunny/core";
 import { NextRequest, NextResponse } from 'next/server';
 
-import { createClient } from "@tecbunny/core/supabase/server";
+
 import { logger } from "@tecbunny/core/logger";
 
 // Get webhook statistics from the webhook_stats view

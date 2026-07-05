@@ -1,6 +1,6 @@
+import { createClient as createServerClient } from "@tecbunny/core";
 import { NextRequest, NextResponse } from 'next/server';
 
-import { createClient as createServerClient } from "@tecbunny/core/supabase/server";
 import { uploadToSupabase } from "@tecbunny/core/supabase-storage";
 import { logger } from "@tecbunny/core/logger";
 import { envConfig } from "@tecbunny/core/environment-validator";

@@ -1,3 +1,4 @@
+import { createServiceClient } from "@tecbunny/core";
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { cookies } from 'next/headers';
@@ -6,7 +7,7 @@ import {
   Key, ArrowRight, FileText, Share2, Ticket, Wrench, 
   Globe, Building, Percent, Activity, Sliders
 } from 'lucide-react';
-import { createServiceClient } from "@tecbunny/core/supabase/server";
+
 import { verifySuperadminSessionToken } from "@tecbunny/core/auth/superadmin-session";
 
 export const dynamic = 'force-dynamic';

@@ -1,4 +1,6 @@
 'use client';
+import { createClient } from "@tecbunny/core";
+
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -11,7 +13,7 @@ import { Button } from "@tecbunny/ui";
 import { Card, CardContent } from "@tecbunny/ui";
 import { WishlistButton } from '@/components/wishlist/WishlistButton';
 import { logger } from "@tecbunny/core/logger";
-import { createClient } from "@tecbunny/core/supabase/client";
+
 import { isPubliclyVisibleProduct } from "@tecbunny/core/product-visibility";
 import { getAllProductImages } from "@tecbunny/core/image-utils";
 import type { Product } from "@tecbunny/core/types";

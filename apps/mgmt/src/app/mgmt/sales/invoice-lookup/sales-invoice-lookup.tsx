@@ -1,3 +1,4 @@
+import { createClient } from "@tecbunny/core";
 
 'use client';
 
@@ -11,7 +12,7 @@ import { Input } from "@tecbunny/ui";
 import type { Order } from "@tecbunny/core/types";
 import { InvoiceTemplate, type CompanySettings } from '@/components/invoices/InvoiceTemplate';
 import { useToast } from "@tecbunny/ui";
-import { createClient } from "@tecbunny/core/supabase/client";
+
 
 
 // In a real app, this would be fetched from a database

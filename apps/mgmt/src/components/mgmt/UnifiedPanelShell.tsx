@@ -1,4 +1,6 @@
 'use client';
+import { ROLE_DISPLAY_NAME, type UserRole } from "@tecbunny/core";
+
 
 import * as React from 'react';
 import Link from 'next/link';
@@ -19,7 +21,6 @@ import { Button } from "@tecbunny/ui";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@tecbunny/ui";
 import { Toaster } from "@tecbunny/ui";
 import { cn } from "@tecbunny/core/utils";
-import { ROLE_DISPLAY_NAME, type UserRole } from "@tecbunny/core/roles";
 import type { User as TecbunnyUser } from "@tecbunny/core/types";
 import { getPanelNavigation, type UnifiedPanelNavSection } from './unified-panel-nav';
 

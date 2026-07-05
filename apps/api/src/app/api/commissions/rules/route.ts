@@ -1,7 +1,8 @@
+import { isSupabaseServiceConfigured } from "@tecbunny/core";
 import { NextRequest, NextResponse } from 'next/server';
 
 import { enhancedCommissionService } from "@tecbunny/core/enhanced-commission-service";
-import { isSupabaseServiceConfigured } from "@tecbunny/core/supabase/server";
+
 import { logger } from "@tecbunny/core/logger";
 
 /**

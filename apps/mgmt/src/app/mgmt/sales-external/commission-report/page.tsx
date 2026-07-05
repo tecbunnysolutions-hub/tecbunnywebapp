@@ -1,4 +1,6 @@
 'use client';
+import { createClient } from "@tecbunny/core";
+
 
 import * as React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@tecbunny/ui";
@@ -6,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@tecbunny/ui";
 import { Skeleton } from "@tecbunny/ui";
 import { useAuth } from "@tecbunny/core/hooks";
-import { createClient } from "@tecbunny/core/supabase/client";
+
 import { DollarSign, Percent, TrendingUp, Calendar, AlertCircle } from 'lucide-react';
 
 interface CommissionRecord {

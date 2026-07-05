@@ -1,3 +1,4 @@
+import { createClient } from "@tecbunny/core";
 
 'use client';
 
@@ -12,7 +13,7 @@ import { Badge } from "@tecbunny/ui";
 import { useAuth } from "@tecbunny/core/hooks";
 import type { Order } from "@tecbunny/core/types";
 import { Skeleton } from "@tecbunny/ui";
-import { createClient } from "@tecbunny/core/supabase/client";
+
 
 export default function BillingHistoryPage() {
   const { user } = useAuth();

@@ -1,4 +1,6 @@
 'use client';
+import { createClient } from "@tecbunny/core";
+
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
@@ -39,7 +41,7 @@ import {
 } from "@tecbunny/ui";
 import { Input } from "@tecbunny/ui";
 import { useToast } from "@tecbunny/ui";
-import { createClient } from "@tecbunny/core/supabase/client";
+
 import { logger } from "@tecbunny/core/logger";
 import { Label } from "@tecbunny/ui";
 import {

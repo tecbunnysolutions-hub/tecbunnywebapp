@@ -1,8 +1,9 @@
+import { isSupabaseServiceConfigured } from "@tecbunny/core";
 import { NextRequest, NextResponse } from 'next/server';
 
 import { logger } from "@tecbunny/core/logger";
 import { AdminAuthError, requireAdminContext } from "@tecbunny/core/auth/admin-guard";
-import { isSupabaseServiceConfigured } from "@tecbunny/core/supabase/server";
+
 import { formatOrderNumber } from "@tecbunny/core/order-utils";
 
 // Disable caching for this route

@@ -1,6 +1,7 @@
+import { createClient, createServiceClient, isSupabaseServiceConfigured } from "@tecbunny/core";
 import { NextResponse } from 'next/server';
 
-import { createServiceClient, isSupabaseServiceConfigured, createClient } from "@tecbunny/core/supabase/server";
+
 
 const BRAND_LOGO_URL = '/logo.png';
 const DEFAULT_PARTNER_BRANDS = '';

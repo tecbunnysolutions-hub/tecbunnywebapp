@@ -1,7 +1,8 @@
+import { createClient as createServerClient } from "@tecbunny/core";
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient as createAdminClient } from '@supabase/supabase-js';
 
-import { createClient as createServerClient } from "@tecbunny/core/supabase/server";
+
 import { logger } from "@tecbunny/core/logger";
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;

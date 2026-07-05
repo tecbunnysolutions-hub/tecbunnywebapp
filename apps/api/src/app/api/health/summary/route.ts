@@ -1,6 +1,7 @@
+import { createClient as createServerClient } from "@tecbunny/core";
 import { NextResponse } from 'next/server';
 
-import { createClient as createServerClient } from "@tecbunny/core/supabase/server";
+
 
 export const runtime = 'nodejs';
 

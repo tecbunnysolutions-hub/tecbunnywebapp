@@ -1,8 +1,9 @@
+import { createClient, createServiceClient } from "@tecbunny/core";
 import { NextRequest, NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
 
 
-import { createClient, createServiceClient } from "@tecbunny/core/supabase/server";
+
 import { logger } from "@tecbunny/core/logger";
 import { getCustomSetupBlueprintSummary } from "@tecbunny/core/custom-setup-service";
 import { DEFAULT_CUSTOM_SETUP_TEMPLATE_SLUG } from "@tecbunny/core/custom-setup.constants";

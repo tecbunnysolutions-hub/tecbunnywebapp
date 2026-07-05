@@ -1,3 +1,4 @@
+import { createClient } from "@tecbunny/core";
 
 'use client';
 
@@ -46,7 +47,7 @@ import { useToast } from "@tecbunny/ui";
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 
 
-import { createClient } from "@tecbunny/core/supabase/client";
+
 
 export default function ProductManagementPage() {
   const [productList, setProductList] = React.useState<Product[]>([]);

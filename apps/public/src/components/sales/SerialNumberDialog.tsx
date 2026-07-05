@@ -1,3 +1,4 @@
+import { createClient } from "@tecbunny/core";
 
 'use client';
 
@@ -12,7 +13,7 @@ import { Label } from "@tecbunny/ui";
 import { ScrollArea } from "@tecbunny/ui";
 import { useToast } from "@tecbunny/ui";
 
-import { createClient } from "@tecbunny/core/supabase/client";
+
 
 import { Input } from "@tecbunny/ui";
 import { Modal } from "@tecbunny/ui";

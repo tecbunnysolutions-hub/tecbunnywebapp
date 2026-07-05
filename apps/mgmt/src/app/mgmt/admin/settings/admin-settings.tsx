@@ -1,4 +1,6 @@
 'use client';
+import { createClient } from "@tecbunny/core";
+
 
 import * as React from 'react';
 import { useForm } from 'react-hook-form';
@@ -29,7 +31,7 @@ import {
 import { Input } from "@tecbunny/ui";
 import { useToast } from "@tecbunny/ui";
 import { Textarea } from "@tecbunny/ui";
-import { createClient } from "@tecbunny/core/supabase/client";
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@tecbunny/ui";
 import { Label } from "@tecbunny/ui";
 import { Switch } from "@tecbunny/ui";

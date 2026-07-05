@@ -1,3 +1,4 @@
+import { createClient, createServiceClient, isSupabaseServiceConfigured } from "@tecbunny/core";
 /**
  * Product Archive / Soft Delete API
  * POST   /api/admin/products/archive           → Soft-delete (archive) a product
@@ -20,7 +21,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 
 import { logger } from "@tecbunny/core/logger";
-import { createServiceClient, isSupabaseServiceConfigured, createClient } from "@tecbunny/core/supabase/server";
+
 import { getSessionWithRole } from "@tecbunny/core/auth/server-role";
 
 // ─────────────────────────────────────────────────────────────────────────────

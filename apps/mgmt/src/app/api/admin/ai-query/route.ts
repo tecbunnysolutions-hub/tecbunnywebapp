@@ -1,6 +1,7 @@
+import { createClient, createServiceClient, isAtLeast, isSupabaseServiceConfigured } from "@tecbunny/core";
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient, createServiceClient, isSupabaseServiceConfigured } from "@tecbunny/core/supabase/server";
-import { isAtLeast } from "@tecbunny/core/roles";
+
+
 import { logger } from "@tecbunny/core/logger";
 import { generateGeminiText } from "@tecbunny/core/ai/gemini-service";
 import { getSystemPrompt } from "@tecbunny/core/ai/prompts";

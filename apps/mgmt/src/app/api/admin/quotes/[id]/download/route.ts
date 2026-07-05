@@ -1,5 +1,6 @@
+import { createClient } from "@tecbunny/core";
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from "@tecbunny/core/supabase/server";
+
 import { requireAdmin } from "@tecbunny/core/admin-auth";
 import { buildPdf, loadCompanyInfo } from "@tecbunny/core/pdf-generator";
 import { logger } from "@tecbunny/core/logger";

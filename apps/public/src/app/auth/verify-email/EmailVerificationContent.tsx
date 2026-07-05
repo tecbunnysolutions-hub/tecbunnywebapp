@@ -1,4 +1,6 @@
 'use client';
+import { createClient } from "@tecbunny/core";
+
 
 import { useState } from 'react';
 import { useSearchParams } from 'next/navigation';
@@ -7,7 +9,7 @@ import { Mail, RefreshCw, ArrowLeft, CheckCircle } from 'lucide-react';
 
 import Link from 'next/link';
 
-import { createClient } from "@tecbunny/core/supabase/client";
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@tecbunny/ui";
 import { Button } from "@tecbunny/ui";
 

@@ -1,4 +1,6 @@
 'use client';
+import { createClient } from "@tecbunny/core";
+
 
 import * as React from 'react';
 
@@ -26,7 +28,7 @@ import {
 import { Switch } from "@tecbunny/ui";
 import { Badge } from "@tecbunny/ui";
 import type { AutoOffer, OfferType, CustomerCategory } from "@tecbunny/core/types";
-import { createClient } from "@tecbunny/core/supabase/client";
+
 import { logger } from "@tecbunny/core/logger";
 import { useToast } from "@tecbunny/ui";
 

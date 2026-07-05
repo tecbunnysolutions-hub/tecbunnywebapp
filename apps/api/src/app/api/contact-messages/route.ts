@@ -1,7 +1,7 @@
+import { createClient as createServerClient, createServiceClient, isSupabaseServiceConfigured } from "@tecbunny/core";
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 
-import { createServiceClient, createClient as createServerClient, isSupabaseServiceConfigured } from "@tecbunny/core/supabase/server";
 import { rateLimit } from "@tecbunny/core/rate-limit";
 import { logger } from "@tecbunny/core/logger";
 import { verifySuperadminSessionToken } from "@tecbunny/core/auth/superadmin-session";

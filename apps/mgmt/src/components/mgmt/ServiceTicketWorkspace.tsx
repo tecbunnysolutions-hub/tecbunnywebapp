@@ -1,10 +1,11 @@
 'use client';
+import { createClient } from "@tecbunny/core";
+
 
 import * as React from 'react';
 import { AlertTriangle, CalendarDays, MapPin, RefreshCw, Wrench } from 'lucide-react';
 
 import { Button } from "@tecbunny/ui";
-import { createClient } from "@tecbunny/core/supabase/client";
 import type { ServiceTicket } from "@tecbunny/core/types";
 
 interface ServiceTicketWorkspaceProps {

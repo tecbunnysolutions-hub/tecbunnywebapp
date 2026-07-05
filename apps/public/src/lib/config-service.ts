@@ -1,6 +1,6 @@
+import { createClient } from "@tecbunny/core";
 import { unstable_cache } from 'next/cache';
 import { z } from 'zod';
-import { createClient } from "@tecbunny/core/supabase/server";
 import { logger } from "@tecbunny/core/logger";
 
 export const AppSettingsSchema = z.object({

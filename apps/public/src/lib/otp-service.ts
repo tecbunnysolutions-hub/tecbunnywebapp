@@ -1,9 +1,10 @@
+import { createServiceClient, isSupabaseServiceConfigured } from "@tecbunny/core";
 /**
  * OTP Verification Service for Agent Orders and Customer Verification
  * Handles OTP generation, validation, and management
  */
 
-import { createServiceClient, isSupabaseServiceConfigured } from "@tecbunny/core/supabase/server";
+
 import type { OtpType } from "@tecbunny/core/types";
 import { emailClient } from './email/client';
 import { WhatsAppService } from './whatsapp-service';

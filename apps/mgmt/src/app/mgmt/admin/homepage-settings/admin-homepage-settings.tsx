@@ -1,3 +1,4 @@
+import { createClient } from "@tecbunny/core";
 
 'use client';
 
@@ -18,7 +19,7 @@ import { Checkbox } from "@tecbunny/ui";
 import { getProductDisplayImage } from "@tecbunny/core/image-utils";
 import { useToast } from "@tecbunny/ui";
 import { ScrollArea } from "@tecbunny/ui";
-import { createClient } from "@tecbunny/core/supabase/client";
+
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@tecbunny/ui";
 
 interface ProductSelectorProps {

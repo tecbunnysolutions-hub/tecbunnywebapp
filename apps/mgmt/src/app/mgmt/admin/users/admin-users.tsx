@@ -1,3 +1,4 @@
+import { ROLE_DISPLAY_NAME } from "@tecbunny/core";
 
 'use client';
 
@@ -33,7 +34,6 @@ import { DiscountOffersDialog } from '@/components/admin/DiscountOffersDialog';
 import { UniversalSearch, SearchFilter, SortOption } from '@/components/shared/UniversalSearch';
 import { useToast } from "@tecbunny/ui";
 import { useDebounce } from '../../../../hooks/use-debounce';
-import { ROLE_DISPLAY_NAME } from "@tecbunny/core/roles";
 
 const ROLE_SENTINEL_NONE = '__none__';
 

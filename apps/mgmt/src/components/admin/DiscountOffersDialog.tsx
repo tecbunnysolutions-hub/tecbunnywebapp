@@ -1,4 +1,6 @@
 'use client';
+import { createClient } from "@tecbunny/core";
+
 
 import * as React from 'react';
 
@@ -36,7 +38,7 @@ import { Badge } from "@tecbunny/ui";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@tecbunny/ui";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@tecbunny/ui";
 import { useToast } from "@tecbunny/ui";
-import { createClient } from "@tecbunny/core/supabase/client";
+
 import { logger } from "@tecbunny/core/logger";
 import type { CustomerDiscount, CustomerOffer, CustomerCategory } from "@tecbunny/core/types";
 

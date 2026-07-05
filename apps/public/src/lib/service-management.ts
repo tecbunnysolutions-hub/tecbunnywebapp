@@ -1,9 +1,10 @@
+import { createServiceClient, isSupabaseServiceConfigured } from "@tecbunny/core";
 /**
  * Service Management System
  * Handles service engineer assignments, ticket management, and service billing
  */
 
-import { createServiceClient, isSupabaseServiceConfigured } from "@tecbunny/core/supabase/server";
+
 import type { 
   ServiceTicket, 
   ServiceEngineer, 

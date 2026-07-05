@@ -1,3 +1,4 @@
+import { createClient } from "@tecbunny/core";
 
 'use client';
 
@@ -24,7 +25,7 @@ import { logger } from "@tecbunny/core/logger";
 import type { Expense, ExpenseStatus } from "@tecbunny/core/types";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@tecbunny/ui";
 import { Badge } from "@tecbunny/ui";
-import { createClient } from "@tecbunny/core/supabase/client";
+
 
 const expenseSchema = z.object({
   date: z.string().refine((val) => !isNaN(Date.parse(val)), { message: "Invalid date" }),

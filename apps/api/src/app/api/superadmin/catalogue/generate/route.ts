@@ -1,6 +1,6 @@
+import { createServiceClient } from "@tecbunny/core";
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import { createServiceClient } from "@tecbunny/core/supabase/server";
 import { verifySuperadminSessionToken } from "@tecbunny/core/auth/superadmin-session";
 import { generateCataloguePdf } from "@tecbunny/core/catalogue-pdf-generator";
 import { logger } from "@tecbunny/core/logger";

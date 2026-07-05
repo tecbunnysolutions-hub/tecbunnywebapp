@@ -1,4 +1,6 @@
 'use client';
+import { createClient, normalizeRole } from "@tecbunny/core";
+
 
 import { useState, useEffect, Suspense, useMemo } from 'react';
 import NextDynamic from 'next/dynamic';
@@ -6,8 +8,8 @@ import { useSearchParams, useRouter } from 'next/navigation';
 
 import { Lock, Eye, EyeOff, CheckCircle, AlertCircle, Mail } from 'lucide-react';
 
-import { createClient } from "@tecbunny/core/supabase/client";
-import { normalizeRole } from "@tecbunny/core/roles";
+
+
 
 // Force dynamic rendering for auth page
 // export const dynamic = 'force-dynamic';

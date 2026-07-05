@@ -1,8 +1,9 @@
+import { createServiceClient, isSupabaseServiceConfigured } from "@tecbunny/core";
 import { Metadata } from 'next';
 
 import ServicesPage from '@/components/services-page';
 import { logger } from "@tecbunny/core/logger";
-import { createServiceClient, isSupabaseServiceConfigured } from "@tecbunny/core/supabase/server";
+
 import { createSupabaseClient as createPublicSupabaseClient } from "@tecbunny/core/supabase-server";
 import { createPageMetadata } from "@tecbunny/core/metadata";
 import { BRAND_LOGO_URL } from "@tecbunny/ui";

@@ -1,5 +1,6 @@
+import { createClient, isSupabasePublicConfigured } from "@tecbunny/core";
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient, isSupabasePublicConfigured } from "@tecbunny/core/supabase/server";
+
 import { logger } from "@tecbunny/core/logger";
 
 const MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_ID || 'G-VCCMTMSVP4';

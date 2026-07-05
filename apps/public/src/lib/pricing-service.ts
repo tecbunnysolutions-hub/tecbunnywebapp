@@ -1,9 +1,10 @@
+import { createClient } from "@tecbunny/core";
 /**
  * Enhanced Pricing Service for B2C/B2B Pricing
  * Handles dual pricing, customer type detection, and pricing calculations
  */
 
-import { createClient } from "@tecbunny/core/supabase/server";
+
 import type { Product, CustomerType, CustomerCategory, B2BCategory } from "@tecbunny/core/types";
 
 export interface PricingContext {

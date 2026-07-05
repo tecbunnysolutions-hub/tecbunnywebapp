@@ -1,9 +1,10 @@
+import { createClient as createServerClient } from "@tecbunny/core";
 import { NextRequest, NextResponse } from 'next/server';
 
 import { sendWhatsAppNotification } from "@tecbunny/core/whatsapp-service";
 import { logger } from "@tecbunny/core/logger";
 import { rateLimit } from "@tecbunny/core/rate-limit";
-import { createClient as createServerClient } from "@tecbunny/core/supabase/server";
+
 
 // Abandoned cart reminders: 3 per 12h per user/IP
 const LIMIT = 3;

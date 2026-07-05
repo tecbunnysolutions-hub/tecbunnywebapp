@@ -1,8 +1,9 @@
+import { createServiceClient, isSupabaseServiceConfigured } from "@tecbunny/core";
 import { ProductDetailPage } from '@/components/products/ProductDetailPage';
 import { Metadata } from 'next';
 import { cookies } from 'next/headers';
 import { cleanMetadataDescription, cleanMetadataTitle, createPageMetadata } from "@tecbunny/core/metadata";
-import { createServiceClient, isSupabaseServiceConfigured } from "@tecbunny/core/supabase/server";
+
 import { createSupabaseClient as createPublicSupabaseClient } from "@tecbunny/core/supabase-server";
 import { BRAND_LOGO_URL } from "@tecbunny/ui";
 import { stripHtmlToPlainText } from "@tecbunny/core/strings";

@@ -1,11 +1,13 @@
 'use client';
+import { createClient } from "@tecbunny/core";
+
 
 import { useEffect, useRef, useState, Suspense, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 
 import { ArrowLeft, CreditCard, Loader2, ShieldCheck } from 'lucide-react';
 
-import { createClient } from "@tecbunny/core/supabase/client";
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@tecbunny/ui";
 import { Button } from "@tecbunny/ui";
 import { Badge } from "@tecbunny/ui";

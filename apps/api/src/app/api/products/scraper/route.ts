@@ -1,5 +1,5 @@
+import { createServiceClient, isSupabaseServiceConfigured } from "@tecbunny/core";
 import { NextRequest, NextResponse } from 'next/server';
-import { createServiceClient, isSupabaseServiceConfigured } from "@tecbunny/core/supabase/server";
 import { processAndUploadExternalImage } from "@tecbunny/core/image-processor";
 
 const corsHeaders = {

@@ -1,6 +1,7 @@
+import { createClient } from "@tecbunny/core";
 import { NextRequest, NextResponse } from 'next/server';
 
-import { createClient } from "@tecbunny/core/supabase/server";
+
 import { twoFactorManager } from "@tecbunny/core/two-factor-manager";
 import { logger } from "@tecbunny/core/logger";
 

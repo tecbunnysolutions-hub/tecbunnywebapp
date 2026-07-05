@@ -1,3 +1,4 @@
+import { createClient as createServerClient } from "@tecbunny/core";
 import crypto from 'crypto';
 
 import { NextRequest } from 'next/server';
@@ -5,7 +6,7 @@ import { createClient } from '@supabase/supabase-js';
 
 import { rateLimit } from "@tecbunny/core/rate-limit";
 import { getEffectiveUserRole } from "@tecbunny/core/auth/server-role";
-import { createClient as createServerClient } from "@tecbunny/core/supabase/server";
+
 import { apiError, apiSuccess } from "@tecbunny/core/errors";
 import { logger } from "@tecbunny/core/logger";
 import { resolveSiteUrl } from "@tecbunny/core/site-url";

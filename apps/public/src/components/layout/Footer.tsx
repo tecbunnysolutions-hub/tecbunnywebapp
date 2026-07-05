@@ -1,4 +1,6 @@
 'use client';
+import { createClient } from "@tecbunny/core";
+
 
 import * as React from 'react';
 import Link from 'next/link';
@@ -6,7 +8,7 @@ import { Logo } from "@tecbunny/ui";
 
 import { Facebook, Twitter, Instagram, Linkedin, Youtube, Globe, FileText, Shield } from 'lucide-react';
 
-import { createClient } from "@tecbunny/core/supabase/client";
+
 import { logger } from "@tecbunny/core/logger";
 import { useAnalytics } from '../../hooks/use-analytics';
 

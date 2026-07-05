@@ -1,3 +1,4 @@
+import { createServiceClient } from "@tecbunny/core";
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
 
@@ -6,7 +7,7 @@ import { notFound } from 'next/navigation';
 
 import { InvoiceTemplate, type CompanySettings } from '@/components/invoices/InvoiceTemplate';
 import type { Order } from "@tecbunny/core/types";
-import { createServiceClient } from "@tecbunny/core/supabase/server";
+
 import { deserializeOrder } from "@tecbunny/core/orders/normalizers";
 import { logger } from "@tecbunny/core/logger";
 

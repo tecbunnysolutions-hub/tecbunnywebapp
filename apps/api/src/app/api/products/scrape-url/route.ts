@@ -1,8 +1,8 @@
+import { createServiceClient } from "@tecbunny/core";
 import { NextRequest, NextResponse } from 'next/server';
 import { logger } from "@tecbunny/core/logger";
 import { GoogleGenAI, Type } from '@google/genai';
 import * as cheerio from 'cheerio';
-import { createServiceClient } from "@tecbunny/core/supabase/server";
 
 export async function POST(request: NextRequest) {
   const correlationId = crypto.randomUUID();

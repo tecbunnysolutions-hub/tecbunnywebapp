@@ -1,4 +1,6 @@
 'use client';
+import { createClient } from "@tecbunny/core";
+
 
 import { useCallback, useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
@@ -7,7 +9,7 @@ import { ArrowLeft, Smartphone, Copy, Check, QrCode, Clock, CreditCard } from 'l
 
 import QRCode from 'qrcode';
 
-import { createClient } from "@tecbunny/core/supabase/client";
+
 import { Button } from "@tecbunny/ui";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@tecbunny/ui";
 import { Badge } from "@tecbunny/ui";

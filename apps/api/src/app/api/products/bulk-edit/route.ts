@@ -1,6 +1,6 @@
+import { createServiceClient } from "@tecbunny/core";
 import { NextRequest, NextResponse } from 'next/server';
 
-import { createServiceClient } from "@tecbunny/core/supabase/server";
 import { logger } from "@tecbunny/core/logger";
 import { AdminAuthError, requireAdminContext } from "@tecbunny/core/auth/admin-guard";
 

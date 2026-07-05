@@ -1,6 +1,6 @@
+import { createServiceClient, isSupabaseServiceConfigured } from "@tecbunny/core";
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import { createServiceClient, isSupabaseServiceConfigured } from "@tecbunny/core/supabase/server";
 import { createSupabaseClient as createPublicSupabaseClient } from "@tecbunny/core/supabase-server";
 import { verifySuperadminSessionToken } from "@tecbunny/core/auth/superadmin-session";
 import { logger } from "@tecbunny/core/logger";

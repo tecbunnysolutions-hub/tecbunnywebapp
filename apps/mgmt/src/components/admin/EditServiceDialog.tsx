@@ -1,4 +1,6 @@
 'use client';
+import { createClient } from "@tecbunny/core";
+
 
 import * as React from 'react';
 import { useForm } from 'react-hook-form';
@@ -34,7 +36,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@tecbunny/ui";
-import { createClient } from "@tecbunny/core/supabase/client";
+
 import { useToast } from "@tecbunny/ui";
 import { logger } from "@tecbunny/core/logger";
 import { Badge } from "@tecbunny/ui";

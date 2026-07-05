@@ -1,8 +1,9 @@
+import { createClient as createServerClient } from "@tecbunny/core";
 import { NextRequest, NextResponse } from 'next/server';
 
 import { emailHelpers } from "@tecbunny/core/email";
 import { rateLimit } from "@tecbunny/core/rate-limit";
-import { createClient as createServerClient } from "@tecbunny/core/supabase/server";
+
 
 // OTP emails stricter: 5 per 30 minutes
 const LIMIT = 5;
