@@ -33,7 +33,7 @@ type MarketingOfferRecord = {
  * Handles auto-offers and manual discounts with combination rules
  */
 export class OfferDiscountService {
-    private supabase = createClient();
+    private get supabase() { return createClient(); }
     
     /**
      * Get all active auto-offers

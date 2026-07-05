@@ -14,7 +14,7 @@ export const SESSION_EXPIRED_EVENT = 'tecbunny:session-expired-event';
 
 export class SessionManager {
   private static instance: SessionManager;
-  private supabase = createClient();
+  private get supabase() { return createClient(); }
   private refreshInterval: NodeJS.Timeout | null = null;
   private expiryTimer: NodeJS.Timeout | null = null;
   private isExpiring = false;
