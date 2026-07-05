@@ -125,9 +125,6 @@
     }
   },
   "overrides": {
-    "q": false,
-    "@types/handlebars": false,
-    "node-domexception": false,
     "@smithy/config-resolver": "^4.4.0",
     "esbuild": "0.28.0",
     "glob": "^11.0.0",
@@ -158,20 +155,12 @@
     "tmp": ">=0.2.4",
     "vite": "$vite",
     "path-match": "^1.2.4",
-    "dotprompt": {
-      "@types/handlebars": false
-    },
-    "fetch-blob": {
-      "node-domexception": false
-    },
+    "dotprompt": {},
+    "fetch-blob": {},
     "whatwg-url": "5.0.0",
     "@radix-ui/react-primitive": "2.1.3"
   },
-  "resolutions": {
-    "q": false,
-    "@types/handlebars": false,
-    "node-domexception": false
-  },
+  "resolutions": {},
   "engines": {
     "node": "20.x || 22.x || 24.x",
     "npm": ">=10.2.0"
