@@ -9,6 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@tecbunny/core": "workspace:*",
     "@supabase/supabase-js": "^2.57.0",
     "bullmq": "^5.79.2",
     "ioredis": "^5.7.0",
@@ -27,3 +28,4 @@
     "typescript": "^5"
   }
 }
+

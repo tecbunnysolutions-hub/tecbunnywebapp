@@ -6,6 +6,9 @@
   "exports": {
     ".": "./src/index.ts",
     "./*": "./src/*",
+    "./supabase/server": "./src/supabase/server.ts",
+    "./supabase/client": "./src/supabase/client.ts",
+    "./supabase/storage": "./src/supabase/storage.ts",
     "./store/*": "./src/store/*",
     "./context/*": "./src/context/*"
   },
