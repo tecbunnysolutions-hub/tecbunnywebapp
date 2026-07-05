@@ -5,7 +5,7 @@ import { Send, CheckCircle2, AlertCircle } from 'lucide-react';
 import { Button } from "@tecbunny/ui";
 import { Input } from "@tecbunny/ui";
 import { Textarea } from "@tecbunny/ui";
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from "@tecbunny/ui";
 
 export function InfrastructureLeadForm() {
   const { toast } = useToast();

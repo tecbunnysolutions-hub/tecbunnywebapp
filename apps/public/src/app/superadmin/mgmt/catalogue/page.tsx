@@ -13,7 +13,7 @@ import {
   Info,
   Check
 } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from "@tecbunny/ui";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@tecbunny/ui";
 import { Button } from "@tecbunny/ui";
 import { Badge } from "@tecbunny/ui";

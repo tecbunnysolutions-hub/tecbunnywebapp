@@ -23,7 +23,7 @@ import { logger } from '@/lib/logger';
 
 import type { Coupon } from '@/lib/types';
 import { Input } from "@tecbunny/ui";
-import { useToast } from '../../hooks/use-toast';
+import { useToast } from "@tecbunny/ui";
 
 import { CartItemCard } from './CartItemCard';
 

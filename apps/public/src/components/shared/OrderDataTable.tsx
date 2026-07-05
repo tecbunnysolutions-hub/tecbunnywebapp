@@ -11,7 +11,7 @@ import { Button } from "@tecbunny/ui";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@tecbunny/ui";
 import { Skeleton } from "@tecbunny/ui";
 import type { Order, OrderType, OrderStatus } from '@/lib/types';
-import { useToast } from '../../hooks/use-toast';
+import { useToast } from "@tecbunny/ui";
 import { OrderActions } from '../sales/OrderActions';
 import { formatOrderNumber } from '@/lib/order-utils';
 import { createClient } from '@/lib/supabase/client';

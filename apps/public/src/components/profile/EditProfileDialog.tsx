@@ -27,7 +27,7 @@ import {
 } from "@tecbunny/ui";
 import { Input } from "@tecbunny/ui";
 import { Textarea } from "@tecbunny/ui";
-import { useToast } from '../../hooks/use-toast';
+import { useToast } from "@tecbunny/ui";
 import { useAuth } from '@/lib/hooks';
 import type { User } from '@/lib/types';
 

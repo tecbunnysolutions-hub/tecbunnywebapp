@@ -35,7 +35,7 @@ import {
   SelectValue,
 } from "@tecbunny/ui";
 import { createClient } from '@/lib/supabase/client';
-import { useToast } from '../../hooks/use-toast';
+import { useToast } from "@tecbunny/ui";
 import { logger } from '@/lib/logger';
 import { Badge } from "@tecbunny/ui";
 import type { Service } from '@/lib/types';

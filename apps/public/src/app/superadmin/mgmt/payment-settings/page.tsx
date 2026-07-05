@@ -6,7 +6,7 @@ import {
   ArrowLeft, Save, RefreshCw, CreditCard, ToggleLeft, ToggleRight, 
   HelpCircle, Eye, EyeOff, Globe 
 } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from "@tecbunny/ui";
 
 export default function PaymentSettingsConsole() {
   const [isEnabled, setIsEnabled] = useState(true);

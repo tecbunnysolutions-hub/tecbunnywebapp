@@ -11,7 +11,7 @@ import { normalizeRole } from '@/lib/roles';
 import { getPanelHome, STAFF_PANEL_ROLES } from '@/lib/panel-routing';
 import { Input } from "@tecbunny/ui";
 import { Label } from "@tecbunny/ui";
-import { useToast } from '../../../hooks/use-toast';
+import { useToast } from "@tecbunny/ui";
 import { TwoFactorVerification } from '@/components/auth/TwoFactorVerification';
 
 // Staff roles permitted to access the CRM/Management Panel

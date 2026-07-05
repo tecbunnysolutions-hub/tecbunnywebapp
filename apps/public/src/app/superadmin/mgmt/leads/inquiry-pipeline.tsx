@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@tecb
 import { Input } from "@tecbunny/ui";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@tecbunny/ui";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@tecbunny/ui";
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from "@tecbunny/ui";
 import type { ContactMessage, ContactMessageStatus, InquiryCategory } from '@/lib/types';
 
 type Staff = {

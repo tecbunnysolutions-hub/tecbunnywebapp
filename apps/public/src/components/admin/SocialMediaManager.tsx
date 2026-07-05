@@ -38,7 +38,7 @@ import {
   FormMessage,
 } from "@tecbunny/ui";
 import { Input } from "@tecbunny/ui";
-import { useToast } from '../../hooks/use-toast';
+import { useToast } from "@tecbunny/ui";
 import { createClient } from '@/lib/supabase/client';
 import { logger } from '@/lib/logger';
 import { Label } from "@tecbunny/ui";

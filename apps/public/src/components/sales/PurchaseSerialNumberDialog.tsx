@@ -7,10 +7,10 @@ import type { Product } from '@/lib/types';
 
 import { Button } from "@tecbunny/ui";
 import { Textarea } from "@tecbunny/ui";
-import { useToast } from '../../hooks/use-toast';
+import { useToast } from "@tecbunny/ui";
 
-import Modal from '../ui/modal';
-import { Label } from '../ui/label';
+import { Modal } from "@tecbunny/ui";
+import { Label } from "@tecbunny/ui";
 
 interface PurchaseItem extends Product {
     quantity: number;

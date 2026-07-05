@@ -27,7 +27,7 @@ import {
 } from "@tecbunny/ui";
 import { Input } from "@tecbunny/ui";
 import { useAuth } from '@/lib/hooks';
-import { useToast } from '../../hooks/use-toast';
+import { useToast } from "@tecbunny/ui";
 import { createClient } from '@/lib/supabase/client';
 import { logger } from '@/lib/logger';
 import { normalizeRole } from '@/lib/roles';

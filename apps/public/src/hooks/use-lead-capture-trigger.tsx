@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from "@tecbunny/ui";
 
 export function useLeadCaptureTrigger(delayMs: number = 45000) {
   const [hasTriggered, setHasTriggered] = useState(false);

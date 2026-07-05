@@ -10,12 +10,12 @@ import { Button } from "@tecbunny/ui";
 import { Checkbox } from "@tecbunny/ui";
 import { Label } from "@tecbunny/ui";
 import { ScrollArea } from "@tecbunny/ui";
-import { useToast } from '../../hooks/use-toast';
+import { useToast } from "@tecbunny/ui";
 
 import { createClient } from '@/lib/supabase/client';
 
-import { Input } from '../ui/input';
-import Modal from '../ui/modal';
+import { Input } from "@tecbunny/ui";
+import { Modal } from "@tecbunny/ui";
 
 interface SerialNumberDialogProps {
   product: Product;

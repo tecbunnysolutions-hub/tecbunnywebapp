@@ -7,12 +7,12 @@ import { Gift, ShoppingCart, Tag, ArrowRight, Lock } from "lucide-react";
 import { useCart } from "@/lib/hooks";
 import { logger } from "@/lib/logger";
 import type { Coupon } from "@/lib/types";
-import { Button } from "../ui/button";
-import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
-import { Badge } from "../ui/badge";
-import { Input } from "../ui/input";
+import { Button } from "@tecbunny/ui";
+import { Alert, AlertDescription, AlertTitle } from "@tecbunny/ui";
+import { Badge } from "@tecbunny/ui";
+import { Input } from "@tecbunny/ui";
 
-import { useToast } from "../../hooks/use-toast";
+import { useToast } from "@tecbunny/ui";
 
 import { CartItemCard } from "./CartItemCard";
 

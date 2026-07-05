@@ -16,7 +16,7 @@ import { isPubliclyVisibleProduct } from '@/lib/product-visibility';
 import { getAllProductImages } from '@/lib/image-utils';
 import type { Product } from '@/lib/types';
 import { useAnalytics } from '../../hooks/use-analytics';
-import { useToast } from '../../hooks/use-toast';
+import { useToast } from "@tecbunny/ui";
 import { useBehavioralCRO } from '../../hooks/use-behavioral-cro';
 import { StarRating } from './StarRating';
 

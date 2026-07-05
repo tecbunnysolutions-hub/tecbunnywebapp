@@ -8,7 +8,7 @@ import { Badge } from "@tecbunny/ui";
 import { Checkbox } from "@tecbunny/ui";
 import { Separator } from "@tecbunny/ui";
 import { Loader2, FileUp, Check, AlertCircle, Upload } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from "@tecbunny/ui";
 import { format } from 'date-fns';
 
 export default function AdvancePaymentPage() {

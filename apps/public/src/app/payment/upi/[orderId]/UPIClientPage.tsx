@@ -12,7 +12,7 @@ import { Button } from "@tecbunny/ui";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@tecbunny/ui";
 import { Badge } from "@tecbunny/ui";
 import { Separator } from "@tecbunny/ui";
-import { useToast } from '../../../../hooks/use-toast';
+import { useToast } from "@tecbunny/ui";
 import { logger } from '@/lib/logger';
 import { formatOrderNumber } from '@/lib/order-utils';
 

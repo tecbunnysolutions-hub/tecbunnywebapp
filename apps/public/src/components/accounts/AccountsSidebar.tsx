@@ -11,9 +11,9 @@ import {
   User,
 } from 'lucide-react';
 
-import { Logo } from '../ui/logo';
+import { Logo } from "@tecbunny/ui";
 import { cn } from '@/lib/utils';
-import { Button } from '../ui/button';
+import { Button } from "@tecbunny/ui";
 import { useAuth } from '@/lib/hooks';
 import { MgmtMobileNav } from '@/components/mgmt/MgmtMobileNav';
 

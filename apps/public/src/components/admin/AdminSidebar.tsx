@@ -37,7 +37,7 @@ import { cn } from '@/lib/utils';
 import { Button } from "@tecbunny/ui";
 import { useAuth } from '@/lib/hooks';
 
-import { Separator } from '../ui/separator';
+import { Separator } from "@tecbunny/ui";
 import { MgmtMobileNav } from '@/components/mgmt/MgmtMobileNav';
 
 type NavItem = {

@@ -27,7 +27,7 @@ import {
   FormMessage,
 } from "@tecbunny/ui";
 import { Input } from "@tecbunny/ui";
-import { useToast } from '../../hooks/use-toast';
+import { useToast } from "@tecbunny/ui";
 
 const customerSchema = z.object({
   name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),

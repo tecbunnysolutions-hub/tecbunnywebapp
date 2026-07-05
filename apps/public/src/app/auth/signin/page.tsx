@@ -15,7 +15,7 @@ import { normalizeRole } from '@/lib/roles';
 import { Input } from "@tecbunny/ui";
 import { Label } from "@tecbunny/ui";
 
-import { useToast } from '../../../hooks/use-toast';
+import { useToast } from "@tecbunny/ui";
 import { TwoFactorVerification } from '@/components/auth/TwoFactorVerification';
 
 function SignInForm() {

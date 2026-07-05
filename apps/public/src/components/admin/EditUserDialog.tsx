@@ -24,7 +24,7 @@ import {
 } from "@tecbunny/ui";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@tecbunny/ui";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@tecbunny/ui";
-import { useToast } from '../../hooks/use-toast';
+import { useToast } from "@tecbunny/ui";
 import { logger } from '@/lib/logger';
 import type { User, UserRole, CustomerCategory } from '@/lib/types';
 import {

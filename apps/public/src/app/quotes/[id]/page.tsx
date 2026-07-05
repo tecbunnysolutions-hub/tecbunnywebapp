@@ -7,7 +7,7 @@ import { Button } from "@tecbunny/ui";
 import { Badge } from "@tecbunny/ui";
 import { Separator } from "@tecbunny/ui";
 import { Loader2, Check, X, Download } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from "@tecbunny/ui";
 import { format } from 'date-fns';
 import { useAuth } from '@/lib/hooks';
 import {

@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from "@tecbunny/ui";
 
 import { ShoppingCart, CreditCard, MapPin, User, Wallet, Banknote, QrCode, Tag, Sparkles, ArrowLeft, CheckCircle, Shield, ChevronDown } from 'lucide-react';
 
@@ -14,7 +14,7 @@ import { logger } from '@/lib/logger';
 import { Button } from "@tecbunny/ui";
 import { calculateCartTotals } from '@/lib/order-utils';
 import { LoginDialog } from '@/components/auth/LoginDialog';
-import { Badge } from '../ui/badge';
+import { Badge } from "@tecbunny/ui";
 import type { OrderStatus, OrderType } from '@/lib/types';
 import { formatPlaceOfSupply, resolveIndianStateInfo, TECBUNNY_REGISTERED_STATE } from '@/lib/indian-tax';
 

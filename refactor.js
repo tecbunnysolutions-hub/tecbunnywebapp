@@ -1,24 +1,50 @@
 const fs = require('fs');
 const path = require('path');
 
-function walkDir(dir, callback) {
-    fs.readdirSync(dir).forEach(f => {
-        let dirPath = path.join(dir, f);
-        let isDirectory = fs.statSync(dirPath).isDirectory();
-        isDirectory ? walkDir(dirPath, callback) : callback(path.join(dir, f));
-    });
+function walk(dir) {
+  let results = [];
+  const list = fs.readdirSync(dir);
+  list.forEach(file => {
+    file = path.join(dir, file);
+    const stat = fs.statSync(file);
+    if (stat && stat.isDirectory()) {
+      results = results.concat(walk(file));
+    } else {
+      if (file.endsWith('.tsx') || file.endsWith('.ts')) {
+        results.push(file);
+      }
+    }
+  });
+  return results;
 }
 
-let modifiedFiles = 0;
-walkDir('apps/public/src', function(filePath) {
-    if (filePath.endsWith('.ts') || filePath.endsWith('.tsx')) {
-        let content = fs.readFileSync(filePath, 'utf8');
-        // Replace all @/components/ui/XXX with @tecbunny/ui
-        let newContent = content.replace(/(['"])@\/components\/ui\/[^'"\s;]+(['"])/g, '"@tecbunny/ui"');
-        if (content !== newContent) {
-            fs.writeFileSync(filePath, newContent, 'utf8');
-            modifiedFiles++;
-        }
-    }
+const files = walk('apps/public/src');
+let changedFiles = 0;
+
+files.forEach(file => {
+  let content = fs.readFileSync(file, 'utf8');
+  let original = content;
+
+  const regex = /import\s+{([^}]+)}\s+from\s+["'](?:\.\.\/)+((?:components\/)?ui\/[^"']+)["']/g;
+  content = content.replace(regex, (match, p1) => {
+    return `import {${p1}} from "@tecbunny/ui"`;
+  });
+
+  const aliasRegex = /import\s+{([^}]+)}\s+from\s+["']@\/components\/ui\/[^"']+["']/g;
+  content = content.replace(aliasRegex, (match, p1) => {
+    return `import {${p1}} from "@tecbunny/ui"`;
+  });
+
+  const toastRegex = /import\s+{\s*useToast\s*}\s+from\s+["'](?:\.\.\/)+(?:hooks\/)?use-toast["']/g;
+  content = content.replace(toastRegex, 'import { useToast } from "@tecbunny/ui"');
+  
+  const toastAliasRegex = /import\s+{\s*useToast\s*}\s+from\s+["']@\/hooks\/use-toast["']/g;
+  content = content.replace(toastAliasRegex, 'import { useToast } from "@tecbunny/ui"');
+
+  if (content !== original) {
+    fs.writeFileSync(file, content);
+    changedFiles++;
+  }
 });
-console.log(`Refactored imports in ${modifiedFiles} files.`);
+
+console.log(`Updated ${changedFiles} files with fixed UI imports.`);

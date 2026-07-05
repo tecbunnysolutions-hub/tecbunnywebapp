@@ -11,7 +11,7 @@ import { Input } from "@tecbunny/ui";
 import { Label } from "@tecbunny/ui";
 import { RadioGroup, RadioGroupItem } from "@tecbunny/ui";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@tecbunny/ui";
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from "@tecbunny/ui";
 import type { CustomSetupBlueprintComponentSummary, CustomSetupBlueprintSummary } from '@/lib/custom-setup-service';
 import { useAuth, useCart } from '@/lib/hooks';
 import { cn } from '@/lib/utils';

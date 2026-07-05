@@ -6,7 +6,7 @@ import { useSearchParams } from 'next/navigation';
 import { User, Lock, Eye, EyeOff, AlertCircle, ShieldAlert, Terminal } from 'lucide-react';
 import { Input } from "@tecbunny/ui";
 import { Label } from "@tecbunny/ui";
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from "@tecbunny/ui";
 
 const Turnstile = NextDynamic(() => import('react-turnstile').then(m => m.default), {
   ssr: false,

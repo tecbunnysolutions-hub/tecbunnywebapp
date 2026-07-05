@@ -4,12 +4,12 @@ import * as React from 'react';
 import { useRouter } from 'next/navigation';
 
 import { useAuth } from '@/lib/hooks';
-import { Button } from '../ui/button';
-import { Checkbox } from '../ui/checkbox';
-import { Input } from '../ui/input';
-import { Label } from '../ui/label';
-import { Textarea } from '../ui/textarea';
-import { useToast } from '../../hooks/use-toast';
+import { Button } from "@tecbunny/ui";
+import { Checkbox } from "@tecbunny/ui";
+import { Input } from "@tecbunny/ui";
+import { Label } from "@tecbunny/ui";
+import { Textarea } from "@tecbunny/ui";
+import { useToast } from "@tecbunny/ui";
 
 export function QuoteCTA() {
   const { user, loading } = useAuth();

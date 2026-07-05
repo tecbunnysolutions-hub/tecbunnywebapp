@@ -39,7 +39,7 @@ import {
 import { Label } from "@tecbunny/ui";
 import { Textarea } from "@tecbunny/ui";
 import { Input } from "@tecbunny/ui";
-import { useToast } from '../../hooks/use-toast';
+import { useToast } from "@tecbunny/ui";
 import { useAuth } from '@/lib/hooks';
 import { isManagerClient, isSalesClient } from '@/lib/permissions-client';
 import type { Order, OrderStatus } from '@/lib/types';

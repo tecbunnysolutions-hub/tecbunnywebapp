@@ -28,7 +28,7 @@ import { Input } from "@tecbunny/ui";
 import { Label } from "@tecbunny/ui";
 import { Textarea } from "@tecbunny/ui";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@tecbunny/ui";
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from "@tecbunny/ui";
 import { PartnerBrandsEditor } from '@/components/admin/PartnerBrandsEditor';
 import { SingleImageUploader } from '@/components/admin/SingleImageUploader';
 

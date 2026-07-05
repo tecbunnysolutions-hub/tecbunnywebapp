@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import { Input } from "@tecbunny/ui";
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from "@tecbunny/ui";
 
 export const SingleImageUploader = ({ 
   value, 

@@ -6,7 +6,7 @@ import {
   ArrowLeft, Terminal, Save, 
   RefreshCw, Cpu, Code, HelpCircle 
 } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from "@tecbunny/ui";
 
 const PROMPT_TYPES = [
   { 

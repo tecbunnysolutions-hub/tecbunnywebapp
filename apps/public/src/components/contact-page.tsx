@@ -35,7 +35,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@tecbunny/ui";
-import { useToast } from '../hooks/use-toast';
+import { useToast } from "@tecbunny/ui";
 import { useAnalytics } from '../hooks/use-analytics';
 
 const SUBJECT_OPTIONS = ['general', 'support', 'sales', 'billing', 'partnership', 'feedback', 'web_development'] as const;

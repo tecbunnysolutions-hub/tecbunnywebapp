@@ -4,7 +4,7 @@ import { useState } from 'react';
 
 import { RefreshCw } from 'lucide-react';
 
-import { Button } from '../ui/button';
+import { Button } from "@tecbunny/ui";
 
 export function RefreshButton() {
   const [isRefreshing, setIsRefreshing] = useState(false);

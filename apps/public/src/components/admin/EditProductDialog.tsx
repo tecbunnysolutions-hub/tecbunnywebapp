@@ -33,7 +33,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@tecbunny/ui";
-import { useToast } from '../../hooks/use-toast';
+import { useToast } from "@tecbunny/ui";
 import { logger } from '@/lib/logger';
 import type { Product } from '@/lib/types';
 

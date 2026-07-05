@@ -4,7 +4,7 @@ import React, { createContext, useState, useCallback, useContext, useRef } from 
 
 import type { CartItem, Order, OrderItem, OrderStatus } from '@/lib/types';
 import { createClient } from '@/lib/supabase/client';
-import { useToast } from '../hooks/use-toast';
+import { useToast } from "@tecbunny/ui";
 import { useCart } from '@/lib/hooks';
 import { useAuth } from '@/lib/hooks';
 import { logger } from '@/lib/logger';

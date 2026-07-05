@@ -7,7 +7,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { logger } from '@/lib/logger';
 import sanitizeHtml from '@/lib/sanitize-html';
 
-import { useToast } from '../hooks/use-toast';
+import { useToast } from "@tecbunny/ui";
 
 interface Offer {
   id: string;

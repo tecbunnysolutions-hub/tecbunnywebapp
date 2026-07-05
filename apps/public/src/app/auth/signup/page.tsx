@@ -13,7 +13,7 @@ import Link from 'next/link';
 import { Input } from "@tecbunny/ui";
 import { Label } from "@tecbunny/ui";
 
-import { useToast } from '../../../hooks/use-toast';
+import { useToast } from "@tecbunny/ui";
 import { logger } from '@/lib/logger';
 import { cn } from '@/lib/utils';
 

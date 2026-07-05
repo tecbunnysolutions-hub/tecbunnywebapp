@@ -10,7 +10,7 @@ import type { User as SupabaseUser } from '@supabase/supabase-js';
 import { logger } from '@/lib/logger';
 
 import { Button } from "@tecbunny/ui";
-import { useToast } from '../../hooks/use-toast';
+import { useToast } from "@tecbunny/ui";
 
 import { EditProfileDialog } from '@/components/profile/EditProfileDialog';
 import { TwoFactorSetup } from '@/components/auth/TwoFactorSetup';

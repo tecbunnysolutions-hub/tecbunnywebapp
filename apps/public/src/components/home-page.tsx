@@ -21,7 +21,7 @@ import {
 
 import { getProductDisplayImage } from '@/lib/image-utils';
 import { cn, revealDelayClass } from '@/lib/utils';
-import { OptimizedImage } from './ui/optimized-image';
+import { OptimizedImage } from "@tecbunny/ui";
 import type { Product } from '@/lib/types';
 import { BehavioralCouponPopup } from './BehavioralCouponPopup';
 import { RegionalTrustBanner } from './RegionalTrustBanner';

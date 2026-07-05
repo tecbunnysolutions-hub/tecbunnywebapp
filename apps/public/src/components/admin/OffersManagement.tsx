@@ -49,7 +49,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@tecbunny/ui";
-import { useToast } from '../../hooks/use-toast';
+import { useToast } from "@tecbunny/ui";
 import { useDebounce } from '../../hooks/use-debounce';
 import { logger } from '@/lib/logger';
 import type { Coupon, Discount } from '@/lib/types';

@@ -28,7 +28,7 @@ import { Badge } from "@tecbunny/ui";
 import type { AutoOffer, OfferType, CustomerCategory } from '@/lib/types';
 import { createClient } from '@/lib/supabase/client';
 import { logger } from '@/lib/logger';
-import { useToast } from '../../hooks/use-toast';
+import { useToast } from "@tecbunny/ui";
 
 interface CreateOfferDialogProps {
   children: React.ReactNode;

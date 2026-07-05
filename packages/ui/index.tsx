@@ -28,6 +28,7 @@ export * from "./src/components/ui/switch";
 export * from "./src/components/ui/table";
 export * from "./src/components/ui/tabs";
 export * from "./src/components/ui/textarea";
+export * from "./src/hooks/use-toast";
 export * from "./src/components/ui/toast";
 export * from "./src/components/ui/toaster";
 export * from "./src/components/ui/ViralWarrantyModal";

@@ -24,7 +24,7 @@ import {
 import { Button } from "@tecbunny/ui";
 import { Input } from "@tecbunny/ui";
 import { Textarea } from "@tecbunny/ui";
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from "@tecbunny/ui";
 
 interface CaseStudy {
   title: string;

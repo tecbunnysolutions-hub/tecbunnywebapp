@@ -9,7 +9,7 @@ import { Input } from "@tecbunny/ui";
 import { Label } from "@tecbunny/ui";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@tecbunny/ui";
 import { Alert, AlertDescription } from "@tecbunny/ui";
-import { useToast } from '../../hooks/use-toast';
+import { useToast } from "@tecbunny/ui";
 import { logger } from '@/lib/logger';
 
 interface TwoFactorSetupProps {

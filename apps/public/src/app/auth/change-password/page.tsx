@@ -19,7 +19,7 @@ import {
 } from "@tecbunny/ui";
 import { Input } from "@tecbunny/ui";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@tecbunny/ui";
-import { useToast } from '../../../hooks/use-toast';
+import { useToast } from "@tecbunny/ui";
 import { useAuth } from '@/lib/hooks';
 
 // Validation schema

@@ -23,7 +23,7 @@ import {
 } from "@tecbunny/ui";
 import { Button } from "@tecbunny/ui";
 import { Badge, type BadgeProps } from "@tecbunny/ui";
-import { useToast } from '../../hooks/use-toast';
+import { useToast } from "@tecbunny/ui";
 import { logger } from '@/lib/logger';
 
 // Define the structure of an application, including the joined user details

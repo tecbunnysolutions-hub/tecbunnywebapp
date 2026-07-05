@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Logo } from '../ui/logo';
+import { Logo } from "@tecbunny/ui";
 import {
   Menu,
   X,
@@ -24,7 +24,7 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '../ui/dropdown-menu';
+} from "@tecbunny/ui";
 import { EnhancedCartSheet as CartSheet } from '../cart/EnhancedCartSheet';
 import companyInfo from '../../../public/company-info.json';
 

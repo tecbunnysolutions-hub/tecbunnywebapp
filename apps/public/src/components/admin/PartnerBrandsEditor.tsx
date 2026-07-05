@@ -5,7 +5,7 @@ import { Trash, Plus, Upload } from 'lucide-react';
 import { Input } from "@tecbunny/ui";
 import { Button } from "@tecbunny/ui";
 import { Label } from "@tecbunny/ui";
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from "@tecbunny/ui";
 
 export const parsePartnerBrands = (raw: string | undefined): Array<{ name: string; logoUrl: string }> => {
   if (!raw) return [];

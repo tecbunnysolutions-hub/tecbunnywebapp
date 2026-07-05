@@ -6,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Pencil, Trash2, Plus, Loader2 } from 'lucide-react';
 
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from "@tecbunny/ui";
 import { Button } from "@tecbunny/ui";
 import { Input } from "@tecbunny/ui";
 import { Textarea } from "@tecbunny/ui";

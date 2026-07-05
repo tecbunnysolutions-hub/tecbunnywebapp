@@ -12,12 +12,12 @@ import {
 } from 'lucide-react';
 
 import { usePageContent } from '../../hooks/use-page-content';
-import { useToast } from '../../hooks/use-toast';
+import { useToast } from "@tecbunny/ui";
 import type { HeroCarouselContent, HeroCarouselItem, HeroCarouselPageKey } from '@/lib/types';
 
-import { Badge } from '../ui/badge';
-import { Button } from '../ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
+import { Badge } from "@tecbunny/ui";
+import { Button } from "@tecbunny/ui";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@tecbunny/ui";
 import {
   Dialog,
   DialogContent,
@@ -25,12 +25,12 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '../ui/dialog';
-import { Input } from '../ui/input';
-import { Label } from '../ui/label';
-import { Switch } from '../ui/switch';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
-import { Textarea } from '../ui/textarea';
+} from "@tecbunny/ui";
+import { Input } from "@tecbunny/ui";
+import { Label } from "@tecbunny/ui";
+import { Switch } from "@tecbunny/ui";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@tecbunny/ui";
+import { Textarea } from "@tecbunny/ui";
 
 const PAGE_TABS: Array<{ key: HeroCarouselPageKey; label: string; description: string }> = [
   { key: 'homepage', label: 'Homepage', description: 'Large banners shown below the primary hero on the storefront.' },

@@ -47,7 +47,7 @@ import {
   TableHeader,
   TableRow,
 } from "@tecbunny/ui";
-import { useToast } from '../../hooks/use-toast';
+import { useToast } from "@tecbunny/ui";
 
 interface Product {
   id: string;

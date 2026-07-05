@@ -8,7 +8,7 @@ import { useDeferredActivation } from '../../hooks/use-deferred-activation';
 import { CookieConsentBanner, CONSENT_STORAGE_KEY, safeReadStoredConsent } from './CookieConsentBanner';
 
 const Toaster = dynamic(
-  () => import('../ui/toaster').then((module) => module.Toaster),
+  () => import('@tecbunny/ui').then((module) => module.Toaster),
   { ssr: false }
 );
 

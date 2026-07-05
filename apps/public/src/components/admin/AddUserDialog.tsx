@@ -32,7 +32,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@tecbunny/ui";
-import { useToast } from '../../hooks/use-toast';
+import { useToast } from "@tecbunny/ui";
 import {
   EFFECTIVE_PERMISSIONS,
   ROLE_DESCRIPTION,

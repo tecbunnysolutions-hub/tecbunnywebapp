@@ -35,7 +35,7 @@ import {
 import type { Coupon, Product, Discount } from '@/lib/types';
 import { createClient } from '@/lib/supabase/client';
 import { logger } from '@/lib/logger';
-import { useToast } from '../../hooks/use-toast';
+import { useToast } from "@tecbunny/ui";
 
 // Coupon schema (requires code)
 const couponSchema = z.object({
