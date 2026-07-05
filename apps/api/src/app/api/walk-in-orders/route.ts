@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { z } from 'zod';
 
-import { logger } from '@/lib/logger';
-import { requireApiRole, type RoleCheckOptions } from '@/lib/server-role-guard';
+import { logger } from "@tecbunny/core/logger";
+import { requireApiRole, type RoleCheckOptions } from "@tecbunny/core/server-role-guard";
 
 const WALK_IN_ACCESS: RoleCheckOptions = {
   allowedRoles: ['sales', 'manager'],

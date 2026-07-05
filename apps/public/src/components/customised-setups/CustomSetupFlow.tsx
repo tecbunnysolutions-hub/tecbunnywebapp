@@ -12,9 +12,9 @@ import { Label } from "@tecbunny/ui";
 import { RadioGroup, RadioGroupItem } from "@tecbunny/ui";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@tecbunny/ui";
 import { useToast } from "@tecbunny/ui";
-import type { CustomSetupBlueprintComponentSummary, CustomSetupBlueprintSummary } from '@/lib/custom-setup-service';
-import { useAuth, useCart } from '@/lib/hooks';
-import { cn } from '@/lib/utils';
+import type { CustomSetupBlueprintComponentSummary, CustomSetupBlueprintSummary } from "@tecbunny/core/custom-setup-service";
+import { useAuth, useCart } from "@tecbunny/core/hooks";
+import { cn } from "@tecbunny/core/utils";
 import { ROICostEfficiencyBanner } from './ROICostEfficiencyBanner';
 import { useLeadCaptureTrigger } from '@/hooks/use-lead-capture-trigger';
 import { FreeInstallationOfferBanner } from "@tecbunny/ui";
@@ -25,7 +25,7 @@ export interface CustomSetupFlowProps {
   variant?: 'default' | 'tech';
 }
 
-import { createClient } from '@/lib/supabase/client';
+import { createClient } from "@tecbunny/core/supabase/client";
 
 import {
   type SetupSystem,
@@ -61,7 +61,7 @@ import {
   buildAnalogSystemSummary,
   buildIpSystemSummary,
   resolveAccessoryPrice,
-} from '@/lib/custom-setup-pricing';
+} from "@tecbunny/core/custom-setup-pricing";
 
 export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupFlowProps) {
   const isTech = variant === 'tech';

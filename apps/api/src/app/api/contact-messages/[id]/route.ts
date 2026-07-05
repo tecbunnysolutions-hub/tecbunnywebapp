@@ -2,9 +2,9 @@ export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 
-import { AdminAuthError, requireAdminContext } from '@/lib/auth/admin-guard';
-import { logger } from '@/lib/logger';
-import type { ContactMessage } from '@/lib/types';
+import { AdminAuthError, requireAdminContext } from "@tecbunny/core/auth/admin-guard";
+import { logger } from "@tecbunny/core/logger";
+import type { ContactMessage } from "@tecbunny/core/types";
 
 const updateMessageSchema = z.object({
   status: z.enum(['New', 'Assigned', 'Contacted', 'In Progress', 'Resolved', 'Closed', 'Rejected']).optional(),

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { createClient } from '@/lib/supabase/server';
-import { logger } from '@/lib/logger';
+import { createClient } from "@tecbunny/core/supabase/server";
+import { logger } from "@tecbunny/core/logger";
 
 // Get webhook statistics from the webhook_stats view
 export async function GET(request: NextRequest) {

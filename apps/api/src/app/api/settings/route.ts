@@ -1,10 +1,10 @@
 import { createClient as createAdminClient } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
 
-import { getSessionWithRole } from '@/lib/auth/server-role';
-import { verifySuperadminSessionToken } from '@/lib/auth/superadmin-session';
-import { isSupabasePublicConfigured, isSupabaseServiceConfigured } from '@/lib/supabase/server';
-import { logger } from '@/lib/logger';
+import { getSessionWithRole } from "@tecbunny/core/auth/server-role";
+import { verifySuperadminSessionToken } from "@tecbunny/core/auth/superadmin-session";
+import { isSupabasePublicConfigured, isSupabaseServiceConfigured } from "@tecbunny/core/supabase/server";
+import { logger } from "@tecbunny/core/logger";
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;

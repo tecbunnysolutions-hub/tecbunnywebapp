@@ -1,7 +1,7 @@
 'use client';
 
 import { useContext } from 'react';
-import { AuthContext } from '@/context/AuthProvider';
+import { AuthContext } from "@tecbunny/core/context/AuthProvider";
 
 export function usePermissions() {
   const auth = useContext(AuthContext);

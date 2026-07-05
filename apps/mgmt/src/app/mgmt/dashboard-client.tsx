@@ -12,9 +12,9 @@ import {
   Lock
 } from 'lucide-react';
 
-import { useAuth } from '@/lib/hooks';
-import { isAtLeast } from '@/lib/roles';
-import { getPanelHome } from '@/lib/panel-routing';
+import { useAuth } from "@tecbunny/core/hooks";
+import { isAtLeast } from "@tecbunny/core/roles";
+import { getPanelHome } from "@tecbunny/core/panel-routing";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@tecbunny/ui";
 import { Button } from "@tecbunny/ui";
 

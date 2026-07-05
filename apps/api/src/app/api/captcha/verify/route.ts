@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { verifyCaptcha } from '@/lib/captcha/captcha-service';
-import { logger } from '@/lib/logger';
+import { verifyCaptcha } from "@tecbunny/core/captcha/captcha-service";
+import { logger } from "@tecbunny/core/logger";
 
 /**
  * POST /api/captcha/verify

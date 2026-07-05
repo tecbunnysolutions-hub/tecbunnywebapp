@@ -12,11 +12,11 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@tecbunny/ui";
 import { Input } from "@tecbunny/ui";
 import { Badge } from "@tecbunny/ui";
-import type { Product } from '@/lib/types';
+import type { Product } from "@tecbunny/core/types";
 import { ViewSerialsDialog } from '@/components/sales/ViewSerialsDialog';
 import { Skeleton } from "@tecbunny/ui";
 import { useToast } from "@tecbunny/ui";
-import { logger } from '@/lib/logger';
+import { logger } from "@tecbunny/core/logger";
 
 interface ProductWithStock extends Product {
     stock_quantity: number;

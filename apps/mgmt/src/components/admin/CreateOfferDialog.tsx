@@ -25,9 +25,9 @@ import {
 } from "@tecbunny/ui";
 import { Switch } from "@tecbunny/ui";
 import { Badge } from "@tecbunny/ui";
-import type { AutoOffer, OfferType, CustomerCategory } from '@/lib/types';
-import { createClient } from '@/lib/supabase/client';
-import { logger } from '@/lib/logger';
+import type { AutoOffer, OfferType, CustomerCategory } from "@tecbunny/core/types";
+import { createClient } from "@tecbunny/core/supabase/client";
+import { logger } from "@tecbunny/core/logger";
 import { useToast } from "@tecbunny/ui";
 
 interface CreateOfferDialogProps {

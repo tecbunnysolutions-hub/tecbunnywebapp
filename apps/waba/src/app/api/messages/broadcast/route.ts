@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { whatsappQueue } from '../../../../lib/queue';
-import { supabaseAdmin } from '../../../../lib/supabase-server';
+import { whatsappQueue } from "@tecbunny/core/queue";
+import { supabaseAdmin } from "@tecbunny/core/supabase-server";
 
 export async function POST(req: NextRequest) {
   try {

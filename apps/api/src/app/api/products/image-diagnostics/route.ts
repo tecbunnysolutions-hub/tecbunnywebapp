@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { isValidImageUrl } from '@/lib/image-utils';
-import { logger } from '@/lib/logger';
-import { AdminAuthError, requireAdminContext } from '@/lib/auth/admin-guard';
+import { isValidImageUrl } from "@tecbunny/core/image-utils";
+import { logger } from "@tecbunny/core/logger";
+import { AdminAuthError, requireAdminContext } from "@tecbunny/core/auth/admin-guard";
 
 /**
  * Diagnostic endpoint to check product image status

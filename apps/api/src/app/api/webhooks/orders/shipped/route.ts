@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { createClient } from '@/lib/supabase/server';
-import { sendWhatsAppNotification, sendShipmentNotification } from '@/lib/whatsapp-service';
-import { logger } from '@/lib/logger';
+import { createClient } from "@tecbunny/core/supabase/server";
+import { sendWhatsAppNotification, sendShipmentNotification } from "@tecbunny/core/whatsapp-service";
+import { logger } from "@tecbunny/core/logger";
 
 // Generic order shipped webhook handler
 export async function POST(request: NextRequest) {

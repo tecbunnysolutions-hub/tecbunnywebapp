@@ -7,16 +7,16 @@ import { useToast } from "@tecbunny/ui";
 
 import { ShoppingCart, CreditCard, MapPin, User, Wallet, Banknote, QrCode, Tag, Sparkles, ArrowLeft, CheckCircle, Shield, ChevronDown } from 'lucide-react';
 
-import { useCart, useAuth } from '@/lib/hooks';
-import { useOrder } from '../../context/OrderProvider';
+import { useCart, useAuth } from "@tecbunny/core/hooks";
+import { useOrder } from "@tecbunny/core/context/OrderProvider";
 import { usePaymentMethods } from '../../hooks/use-payment-methods';
-import { logger } from '@/lib/logger';
+import { logger } from "@tecbunny/core/logger";
 import { Button } from "@tecbunny/ui";
-import { calculateCartTotals } from '@/lib/order-utils';
+import { calculateCartTotals } from "@tecbunny/core/order-utils";
 import { LoginDialog } from '@/components/auth/LoginDialog';
 import { Badge } from "@tecbunny/ui";
-import type { OrderStatus, OrderType } from '@/lib/types';
-import { formatPlaceOfSupply, resolveIndianStateInfo, TECBUNNY_REGISTERED_STATE } from '@/lib/indian-tax';
+import type { OrderStatus, OrderType } from "@tecbunny/core/types";
+import { formatPlaceOfSupply, resolveIndianStateInfo, TECBUNNY_REGISTERED_STATE } from "@tecbunny/core/indian-tax";
 
 const PICKUP_STORES = [
   {

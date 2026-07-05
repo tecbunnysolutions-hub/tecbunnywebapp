@@ -1,4 +1,4 @@
-import { logger } from '@/lib/logger';
+import { logger } from "@tecbunny/core/logger";
 
 const WEBHOOK_LOG_RETRIES = 2;
 

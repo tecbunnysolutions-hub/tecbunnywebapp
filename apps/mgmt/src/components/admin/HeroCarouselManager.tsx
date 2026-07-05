@@ -13,7 +13,7 @@ import {
 
 import { usePageContent } from '../../hooks/use-page-content';
 import { useToast } from "@tecbunny/ui";
-import type { HeroCarouselContent, HeroCarouselItem, HeroCarouselPageKey } from '@/lib/types';
+import type { HeroCarouselContent, HeroCarouselItem, HeroCarouselPageKey } from "@tecbunny/core/types";
 
 import { Badge } from "@tecbunny/ui";
 import { Button } from "@tecbunny/ui";

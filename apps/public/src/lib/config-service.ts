@@ -1,7 +1,7 @@
 import { unstable_cache } from 'next/cache';
 import { z } from 'zod';
-import { createClient } from '@/lib/supabase/server';
-import { logger } from '@/lib/logger';
+import { createClient } from "@tecbunny/core/supabase/server";
+import { logger } from "@tecbunny/core/logger";
 
 export const AppSettingsSchema = z.object({
   max_quote_items: z.number().default(150),

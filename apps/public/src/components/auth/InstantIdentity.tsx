@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { createClient } from "@tecbunny/core/supabase/client";
 import { Mail, CheckCircle2 } from "lucide-react";
-import { mapHumanError } from "@/lib/errorMapper";
+import { mapHumanError } from "@tecbunny/core/errorMapper";
 
 interface InstantIdentityProps {
   onSuccess?: () => void;

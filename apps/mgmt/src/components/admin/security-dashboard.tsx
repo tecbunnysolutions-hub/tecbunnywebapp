@@ -43,7 +43,7 @@ interface AuditLog {
   };
 }
 
-import { logger } from '@/lib/logger';
+import { logger } from "@tecbunny/core/logger";
 
 export default function SecurityDashboard() {
   const [settings, setSettings] = useState<SecuritySettings>({});

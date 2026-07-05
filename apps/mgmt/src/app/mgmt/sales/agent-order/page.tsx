@@ -6,8 +6,8 @@ import { Input } from "@tecbunny/ui"
 import { Button } from "@tecbunny/ui"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@tecbunny/ui"
 import { useToast } from "@tecbunny/ui"
-import { createClient } from '@/lib/supabase/client'
-import type { Product, CartItem } from '@/lib/types'
+import { createClient } from "@tecbunny/core/supabase/client"
+import type { Product, CartItem } from "@tecbunny/core/types"
 
 export default function AgentOrderPage() {
   const supabase = createClient()

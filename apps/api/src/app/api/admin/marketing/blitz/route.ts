@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
-import { WhatsAppService } from '@/lib/whatsapp-service';
-import { AdminAuthError, requireAdminContext } from '@/lib/auth/admin-guard';
-import { logger } from '@/lib/logger';
+import { WhatsAppService } from "@tecbunny/core/whatsapp-service";
+import { AdminAuthError, requireAdminContext } from "@tecbunny/core/auth/admin-guard";
+import { logger } from "@tecbunny/core/logger";
 
 const BlitzPayloadSchema = z.object({
   localArea: z.string().trim().min(1).max(80).default('North Goa'),

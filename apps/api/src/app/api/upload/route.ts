@@ -3,17 +3,17 @@ import { NextRequest } from 'next/server';
 import {
   createClient as createServerClient,
   isSupabaseServiceConfigured
-} from '@/lib/supabase/server';
-import { logger } from '@/lib/logger';
-import { apiError, apiSuccess } from '@/lib/errors';
-import { requireAdmin } from '@/lib/admin-auth';
+} from "@tecbunny/core/supabase/server";
+import { logger } from "@tecbunny/core/logger";
+import { apiError, apiSuccess } from "@tecbunny/core/errors";
+import { requireAdmin } from "@tecbunny/core/admin-auth";
 
 // Ensure Node.js runtime for streaming uploads
 export const runtime = 'nodejs';
 // Allow more time for larger uploads on serverless
 export const maxDuration = 60;
-import { uploadToSupabase, uploadFavicon, uploadLogo, uploadProductImage } from '@/lib/supabase-storage';
-import { uploadHeroBanner, isS3Configured } from '@/lib/s3-storage';
+import { uploadToSupabase, uploadFavicon, uploadLogo, uploadProductImage } from "@tecbunny/core/supabase-storage";
+import { uploadHeroBanner, isS3Configured } from "@tecbunny/core/s3-storage";
 import sharp from 'sharp';
 
 export async function POST(request: NextRequest) {

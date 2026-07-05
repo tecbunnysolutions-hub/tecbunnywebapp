@@ -1,5 +1,5 @@
 import crypto from 'crypto';
-import { logger } from '@/lib/logger';
+import { logger } from "@tecbunny/core/logger";
 
 /**
  * Validates custom webhook signature using HMAC-SHA256.

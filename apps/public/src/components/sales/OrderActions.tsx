@@ -15,8 +15,8 @@ import {
   Eye
 } from 'lucide-react';
 
-import { logger } from '@/lib/logger';
-import { formatOrderNumber } from '@/lib/order-utils';
+import { logger } from "@tecbunny/core/logger";
+import { formatOrderNumber } from "@tecbunny/core/order-utils";
 
 import { Button } from "@tecbunny/ui";
 import { Badge } from "@tecbunny/ui";
@@ -40,9 +40,9 @@ import { Label } from "@tecbunny/ui";
 import { Textarea } from "@tecbunny/ui";
 import { Input } from "@tecbunny/ui";
 import { useToast } from "@tecbunny/ui";
-import { useAuth } from '@/lib/hooks';
-import { isManagerClient, isSalesClient } from '@/lib/permissions-client';
-import type { Order, OrderStatus } from '@/lib/types';
+import { useAuth } from "@tecbunny/core/hooks";
+import { isManagerClient, isSalesClient } from "@tecbunny/core/permissions-client";
+import type { Order, OrderStatus } from "@tecbunny/core/types";
 
 const SERVICE_TYPE_SET = new Set(['Service', 'Repair', 'Installation', 'Setup']);
 

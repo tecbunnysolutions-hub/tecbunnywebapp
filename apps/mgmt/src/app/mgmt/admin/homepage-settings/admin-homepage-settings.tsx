@@ -13,12 +13,12 @@ import {
   CardTitle,
 } from "@tecbunny/ui";
 import { Button } from "@tecbunny/ui";
-import type { Product } from '@/lib/types';
+import type { Product } from "@tecbunny/core/types";
 import { Checkbox } from "@tecbunny/ui";
-import { getProductDisplayImage } from '@/lib/image-utils';
+import { getProductDisplayImage } from "@tecbunny/core/image-utils";
 import { useToast } from "@tecbunny/ui";
 import { ScrollArea } from "@tecbunny/ui";
-import { createClient } from '@/lib/supabase/client';
+import { createClient } from "@tecbunny/core/supabase/client";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@tecbunny/ui";
 
 interface ProductSelectorProps {

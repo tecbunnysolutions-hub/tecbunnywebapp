@@ -21,10 +21,10 @@ import {
 } from "@tecbunny/ui";
 import { Button } from "@tecbunny/ui";
 import { Badge } from "@tecbunny/ui";
-import type { AutoOffer } from '@/lib/types';
-import { createClient } from '@/lib/supabase/client';
+import type { AutoOffer } from "@tecbunny/core/types";
+import { createClient } from "@tecbunny/core/supabase/client";
 
-import { logger } from '@/lib/logger';
+import { logger } from "@tecbunny/core/logger";
 import { useToast } from "@tecbunny/ui";
 
 import { CreateOfferDialog } from './CreateOfferDialog';

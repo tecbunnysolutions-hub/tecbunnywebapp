@@ -3,8 +3,8 @@ import crypto from 'crypto';
 import { createClient } from '@supabase/supabase-js';
 import { z } from 'zod';
 
-import { logger } from '@/lib/logger';
-import { requireSupabaseServiceEnv } from '@/lib/supabase/env';
+import { logger } from "@tecbunny/core/logger";
+import { requireSupabaseServiceEnv } from "@tecbunny/core/supabase/env";
 
 
 let supabaseAdmin: any = null;

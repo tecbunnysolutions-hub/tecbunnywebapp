@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { logger } from '@/lib/logger';
-import { createServiceClient, isSupabaseServiceConfigured, createClient } from '@/lib/supabase/server';
-import { getSessionWithRole } from '@/lib/auth/server-role';
+import { logger } from "@tecbunny/core/logger";
+import { createServiceClient, isSupabaseServiceConfigured, createClient } from "@tecbunny/core/supabase/server";
+import { getSessionWithRole } from "@tecbunny/core/auth/server-role";
 
 const ADMIN_ROLES = new Set(['superadmin', 'admin', 'manager']);
 

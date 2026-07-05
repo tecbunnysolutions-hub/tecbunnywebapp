@@ -39,7 +39,7 @@ import {
   ROLE_DISPLAY_NAME,
   USER_ASSIGNABLE_ROLES,
   type AssignableRole,
-} from '@/lib/roles';
+} from "@tecbunny/core/roles";
 
 const addUserSchema = z.object({
   name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),

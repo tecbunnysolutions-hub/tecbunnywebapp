@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { OTPManager } from '@/lib/otp-manager';
-import { requireApiRole } from '@/lib/server-role-guard';
+import { OTPManager } from "@tecbunny/core/otp-manager";
+import { requireApiRole } from "@tecbunny/core/server-role-guard";
 
 const otpManager = new OTPManager();
 

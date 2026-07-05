@@ -13,13 +13,13 @@ import { Separator } from "@tecbunny/ui";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@tecbunny/ui";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@tecbunny/ui";
 import { useToast } from "@tecbunny/ui";
-import { DEFAULT_CUSTOM_SETUP_TEMPLATE_SLUG } from '@/lib/custom-setup.constants';
+import { DEFAULT_CUSTOM_SETUP_TEMPLATE_SLUG } from "@tecbunny/core/custom-setup.constants";
 import {
   type CustomSetupBlueprintSummary,
   type CustomSetupBlueprintSystemSummary,
   type JsonRecord,
-} from '@/lib/custom-setup-service';
-import { logger } from '@/lib/logger';
+} from "@tecbunny/core/custom-setup-service";
+import { logger } from "@tecbunny/core/logger";
 
 interface TemplateListItem {
   id: string;

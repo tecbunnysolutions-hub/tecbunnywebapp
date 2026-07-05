@@ -2,15 +2,15 @@ import { NextRequest, NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
 
 
-import { createClient, createServiceClient } from '@/lib/supabase/server';
-import { logger } from '@/lib/logger';
-import { getCustomSetupBlueprintSummary } from '@/lib/custom-setup-service';
-import { DEFAULT_CUSTOM_SETUP_TEMPLATE_SLUG } from '@/lib/custom-setup.constants';
+import { createClient, createServiceClient } from "@tecbunny/core/supabase/server";
+import { logger } from "@tecbunny/core/logger";
+import { getCustomSetupBlueprintSummary } from "@tecbunny/core/custom-setup-service";
+import { DEFAULT_CUSTOM_SETUP_TEMPLATE_SLUG } from "@tecbunny/core/custom-setup.constants";
 import {
   buildPricingCatalog,
   calculateTotals,
   FALLBACK_HDD_OPTIONS
-} from '@/lib/custom-setup-pricing';
+} from "@tecbunny/core/custom-setup-pricing";
 
 export const runtime = 'nodejs';
 

@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
-import { requireAdmin } from '@/lib/admin-auth';
-import { buildPdf, loadCompanyInfo } from '@/lib/pdf-generator';
-import { logger } from '@/lib/logger';
+import { createClient } from "@tecbunny/core/supabase/server";
+import { requireAdmin } from "@tecbunny/core/admin-auth";
+import { buildPdf, loadCompanyInfo } from "@tecbunny/core/pdf-generator";
+import { logger } from "@tecbunny/core/logger";
 
 // export const dynamic = 'force-dynamic';
 

@@ -1,8 +1,8 @@
 import { NextRequest } from 'next/server';
 
-import { APIResponseBuilder } from '@/lib/api-response';
-import { buildCustomSetupBlueprintSummary, fetchCustomSetupTemplateBySlug } from '@/lib/custom-setup-service';
-import { logger } from '@/lib/logger';
+import { APIResponseBuilder } from "@tecbunny/core/api-response";
+import { buildCustomSetupBlueprintSummary, fetchCustomSetupTemplateBySlug } from "@tecbunny/core/custom-setup-service";
+import { logger } from "@tecbunny/core/logger";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);

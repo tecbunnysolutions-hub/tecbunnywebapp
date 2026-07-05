@@ -28,8 +28,8 @@ import {
 import { Input } from "@tecbunny/ui";
 import { Textarea } from "@tecbunny/ui";
 import { useToast } from "@tecbunny/ui";
-import { useAuth } from '@/lib/hooks';
-import type { User } from '@/lib/types';
+import { useAuth } from "@tecbunny/core/hooks";
+import type { User } from "@tecbunny/core/types";
 
 const profileSchema = z.object({
   name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),

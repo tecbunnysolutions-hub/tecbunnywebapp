@@ -4,8 +4,8 @@ import * as React from 'react';
 import { useRouter } from 'next/navigation';
 
 import { UnifiedPanelShell } from './UnifiedPanelShell';
-import { useAuth } from '@/lib/hooks';
-import type { UserRole } from '@/lib/roles';
+import { useAuth } from "@tecbunny/core/hooks";
+import type { UserRole } from "@tecbunny/core/roles";
 
 interface RolePanelLayoutProps {
   allowedRoles: readonly UserRole[];

@@ -2,8 +2,8 @@
 
 import React, { useEffect, useState } from 'react';
 import { Sparkles, Tag, X, ArrowRight } from 'lucide-react';
-import { useAuth } from '@/lib/hooks';
-import { createClient } from '@/lib/supabase/client';
+import { useAuth } from "@tecbunny/core/hooks";
+import { createClient } from "@tecbunny/core/supabase/client";
 import { Button } from "@tecbunny/ui";
 
 export function BehavioralCouponPopup() {

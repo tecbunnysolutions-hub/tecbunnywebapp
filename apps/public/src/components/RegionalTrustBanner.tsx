@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { ShieldCheck, Activity } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn } from "@tecbunny/core/utils";
 
 interface RegionalTrustBannerProps {
   className?: string;

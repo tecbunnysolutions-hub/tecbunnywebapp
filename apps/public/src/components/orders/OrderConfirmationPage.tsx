@@ -4,14 +4,14 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { CheckCircle, Package, MapPin, Phone, Mail, Calendar, Hash, CreditCard, FileText, AlertTriangle } from 'lucide-react';
 
-import { formatOrderNumber } from '@/lib/order-utils';
+import { formatOrderNumber } from "@tecbunny/core/order-utils";
 
-import { useOrder } from '../../context/OrderProvider';
+import { useOrder } from "@tecbunny/core/context/OrderProvider";
 import { Card, CardContent, CardHeader, CardTitle } from "@tecbunny/ui";
 import { Button } from "@tecbunny/ui";
 import { Badge } from "@tecbunny/ui";
 import { Separator } from "@tecbunny/ui";
-import type { Order } from '@/lib/types';
+import type { Order } from "@tecbunny/core/types";
 
 interface OrderConfirmationPageProps {
   orderId: string;

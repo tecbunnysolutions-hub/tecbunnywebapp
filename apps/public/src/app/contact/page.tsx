@@ -2,7 +2,7 @@ import { Suspense } from 'react';
 import { Metadata } from 'next';
 
 import ContactPage from '@/components/contact-page';
-import { createPageMetadata } from '@/lib/metadata';
+import { createPageMetadata } from "@tecbunny/core/metadata";
 
 // Static metadata for better SEO and performance
 export async function generateMetadata(): Promise<Metadata> {

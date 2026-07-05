@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 
-import { requireSuperadminContext, AdminAuthError } from '@/lib/auth/admin-guard';
-import { logger } from '@/lib/logger';
-import type { ContactMessage } from '@/lib/types';
+import { requireSuperadminContext, AdminAuthError } from "@tecbunny/core/auth/admin-guard";
+import { logger } from "@tecbunny/core/logger";
+import type { ContactMessage } from "@tecbunny/core/types";
 
 const filtersSchema = z.object({
   category: z.enum(['Sales', 'Services']).optional(),

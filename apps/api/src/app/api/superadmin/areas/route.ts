@@ -2,9 +2,9 @@ import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 
-import { verifySuperadminSessionToken } from '@/lib/auth/superadmin-session';
-import { logger } from '@/lib/logger';
-import { createServiceClient, isSupabaseServiceConfigured } from '@/lib/supabase/server';
+import { verifySuperadminSessionToken } from "@tecbunny/core/auth/superadmin-session";
+import { logger } from "@tecbunny/core/logger";
+import { createServiceClient, isSupabaseServiceConfigured } from "@tecbunny/core/supabase/server";
 
 const areaSchema = z.object({
   id: z.string().uuid().nullable().optional(),

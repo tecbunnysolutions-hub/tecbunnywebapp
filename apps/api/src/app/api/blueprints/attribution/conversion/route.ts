@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServiceClient } from '@/lib/supabase/server';
-import { logger } from '@/lib/logger';
+import { createServiceClient } from "@tecbunny/core/supabase/server";
+import { logger } from "@tecbunny/core/logger";
 
 /**
  * Background query rule to trigger creator milestones

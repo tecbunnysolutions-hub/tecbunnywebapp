@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import { createServiceClient, isSupabaseServiceConfigured } from '@/lib/supabase/server';
-import { createSupabaseClient as createPublicSupabaseClient } from '@/lib/supabase-server';
-import { verifySuperadminSessionToken } from '@/lib/auth/superadmin-session';
-import { logger } from '@/lib/logger';
+import { createServiceClient, isSupabaseServiceConfigured } from "@tecbunny/core/supabase/server";
+import { createSupabaseClient as createPublicSupabaseClient } from "@tecbunny/core/supabase-server";
+import { verifySuperadminSessionToken } from "@tecbunny/core/auth/superadmin-session";
+import { logger } from "@tecbunny/core/logger";
 
 export async function GET(request: NextRequest) {
   try {

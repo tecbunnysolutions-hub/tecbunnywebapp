@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { checkServiceAreaAvailability } from '@/lib/service-area-availability';
+import { checkServiceAreaAvailability } from "@tecbunny/core/service-area-availability";
 
 export async function GET(request: NextRequest) {
   const pincode = new URL(request.url).searchParams.get('pincode');

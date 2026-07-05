@@ -1,7 +1,7 @@
 import type { MetadataRoute } from 'next';
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
-import { filterPubliclyVisibleProducts } from '@/lib/product-visibility';
-import { isSupabasePublicConfigured, requireSupabasePublicEnv } from '@/lib/supabase/env';
+import { filterPubliclyVisibleProducts } from "@tecbunny/core/product-visibility";
+import { isSupabasePublicConfigured, requireSupabasePublicEnv } from "@tecbunny/core/supabase/env";
 
 export const revalidate = 3600;
 

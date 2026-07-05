@@ -1,4 +1,4 @@
-import { uiText } from '@/lib/strings';
+import { uiText } from "@tecbunny/core/strings";
 
 export default function Loading() {
   return (

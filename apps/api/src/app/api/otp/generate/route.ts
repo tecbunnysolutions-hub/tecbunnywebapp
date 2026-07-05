@@ -2,10 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import { createClient } from '@supabase/supabase-js';
 
-import { requireApiRole } from '@/lib/server-role-guard';
-import { OTPManager, type OTPRequest } from '@/lib/otp-manager';
-import { rateLimit } from '@/lib/rate-limit';
-import { logger } from '@/lib/logger';
+import { requireApiRole } from "@tecbunny/core/server-role-guard";
+import { OTPManager, type OTPRequest } from "@tecbunny/core/otp-manager";
+import { rateLimit } from "@tecbunny/core/rate-limit";
+import { logger } from "@tecbunny/core/logger";
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;

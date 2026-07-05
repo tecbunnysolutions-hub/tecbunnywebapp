@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { Sparkles, Copy, CheckCircle2 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn } from "@tecbunny/core/utils";
 
 export default function ReferralWidget({ className }: { className?: string }) {
   const [copied, setCopied] = useState(false);

@@ -39,8 +39,8 @@ import {
 } from "@tecbunny/ui";
 import { Input } from "@tecbunny/ui";
 import { useToast } from "@tecbunny/ui";
-import { createClient } from '@/lib/supabase/client';
-import { logger } from '@/lib/logger';
+import { createClient } from "@tecbunny/core/supabase/client";
+import { logger } from "@tecbunny/core/logger";
 import { Label } from "@tecbunny/ui";
 import {
   Dialog,

@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { OTPManager, type OTPVerification } from '@/lib/otp-manager';
-import { logger } from '@/lib/logger';
-import { createServiceClient, isSupabaseServiceConfigured , createClient } from '@/lib/supabase/server';
-import { requireApiRole } from '@/lib/server-role-guard';
-import { rateLimit } from '@/lib/rate-limit';
+import { OTPManager, type OTPVerification } from "@tecbunny/core/otp-manager";
+import { logger } from "@tecbunny/core/logger";
+import { createServiceClient, isSupabaseServiceConfigured , createClient } from "@tecbunny/core/supabase/server";
+import { requireApiRole } from "@tecbunny/core/server-role-guard";
+import { rateLimit } from "@tecbunny/core/rate-limit";
 
 const otpManager = new OTPManager();
 const VERIFY_RATE_LIMIT = { limit: 5, windowMs: 15 * 60 * 1000 };

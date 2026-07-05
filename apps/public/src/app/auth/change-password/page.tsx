@@ -20,7 +20,7 @@ import {
 import { Input } from "@tecbunny/ui";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@tecbunny/ui";
 import { useToast } from "@tecbunny/ui";
-import { useAuth } from '@/lib/hooks';
+import { useAuth } from "@tecbunny/core/hooks";
 
 // Validation schema
 const changePasswordSchema = z.object({

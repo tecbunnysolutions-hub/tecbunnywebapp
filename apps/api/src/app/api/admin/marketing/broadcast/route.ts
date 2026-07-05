@@ -1,9 +1,9 @@
 ﻿import { NextResponse } from 'next/server';
 import { z } from 'zod';
-import { WhatsAppService } from '@/lib/whatsapp-service';
-import improvedEmailService from '@/lib/improved-email-service';
-import { createServerClient, createServiceClient } from '@/lib/supabase/server';
-import { logger } from '@/lib/logger';
+import { WhatsAppService } from "@tecbunny/core/whatsapp-service";
+import improvedEmailService from "@tecbunny/core/improved-email-service";
+import { createServerClient, createServiceClient } from "@tecbunny/core/supabase/server";
+import { logger } from "@tecbunny/core/logger";
 
 const ContactRowSchema = z.object({
   name: z.string().min(1, "Name is required"),

@@ -14,8 +14,8 @@ import { Input } from "@tecbunny/ui";
 import { Label } from "@tecbunny/ui";
 
 import { useToast } from "@tecbunny/ui";
-import { logger } from '@/lib/logger';
-import { cn } from '@/lib/utils';
+import { logger } from "@tecbunny/core/logger";
+import { cn } from "@tecbunny/core/utils";
 
 export default function SignUpPage() {
   const [formData, setFormData] = useState({

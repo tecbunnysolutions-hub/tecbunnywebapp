@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { AdminAuthError, requireAdminContext } from "@/lib/auth/admin-guard";
-import { logger } from "@/lib/logger";
-import { WhatsAppService } from "@/lib/whatsapp-service";
+import { AdminAuthError, requireAdminContext } from "@tecbunny/core/auth/admin-guard";
+import { logger } from "@tecbunny/core/logger";
+import { WhatsAppService } from "@tecbunny/core/whatsapp-service";
 
 const PayloadSchema = z.object({
   serialNumber: z.string().trim().min(1).max(128),

@@ -3,7 +3,7 @@ import { Suspense } from 'react';
 import type { Metadata } from 'next';
 
 import HomePage from '@/components/home-page';
-import { createPageMetadata } from '@/lib/metadata';
+import { createPageMetadata } from "@tecbunny/core/metadata";
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 
 // Revalidate homepage every 60 seconds (ISR) to fix 2.8s Document Request Latency

@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 
-import { createSupabaseServiceClient } from '@/lib/supabase-server';
-import { logger } from '@/lib/logger';
+import { createSupabaseServiceClient } from "@tecbunny/core/supabase-server";
+import { logger } from "@tecbunny/core/logger";
 
 // Simple admin guard via header token (set in Vercel env)
 function isAuthorized(req: NextRequest) {

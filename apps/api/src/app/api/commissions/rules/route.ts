@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { enhancedCommissionService } from '@/lib/enhanced-commission-service';
-import { isSupabaseServiceConfigured } from '@/lib/supabase/server';
-import { logger } from '@/lib/logger';
+import { enhancedCommissionService } from "@tecbunny/core/enhanced-commission-service";
+import { isSupabaseServiceConfigured } from "@tecbunny/core/supabase/server";
+import { logger } from "@tecbunny/core/logger";
 
 /**
  * Create or update commission rules

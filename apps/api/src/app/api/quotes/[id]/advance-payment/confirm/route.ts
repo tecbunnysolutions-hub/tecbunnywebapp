@@ -1,8 +1,8 @@
 import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
-import { logger } from '@/lib/logger';
-import { requireSupabaseServiceEnv } from '@/lib/supabase/env';
-import { verifyQuoteActionToken } from '@/lib/quotes/action-token';
+import { logger } from "@tecbunny/core/logger";
+import { requireSupabaseServiceEnv } from "@tecbunny/core/supabase/env";
+import { verifyQuoteActionToken } from "@tecbunny/core/quotes/action-token";
 
 let supabaseAdmin: any = null;
 

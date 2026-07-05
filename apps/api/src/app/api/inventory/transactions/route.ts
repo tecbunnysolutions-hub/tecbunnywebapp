@@ -23,9 +23,9 @@ import crypto from 'crypto';
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 
-import { logger } from '@/lib/logger';
-import { requireApiRole } from '@/lib/server-role-guard';
-import { createServiceClient, isSupabaseServiceConfigured } from '@/lib/supabase/server';
+import { logger } from "@tecbunny/core/logger";
+import { requireApiRole } from "@tecbunny/core/server-role-guard";
+import { createServiceClient, isSupabaseServiceConfigured } from "@tecbunny/core/supabase/server";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Movement type definitions

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
-import { getProductDisplayImage } from '@/lib/image-utils';
-import { filterPubliclyVisibleProducts } from '@/lib/product-visibility';
+import { createClient } from "@tecbunny/core/supabase/server";
+import { getProductDisplayImage } from "@tecbunny/core/image-utils";
+import { filterPubliclyVisibleProducts } from "@tecbunny/core/product-visibility";
 
 export async function GET(request: NextRequest) {
   const supabase = await createClient();

@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { buildCustomSetupBlueprintSummary, type CustomSetupBlueprintSummary } from '@/lib/custom-setup-service';
-import { AdminAuthError, requireAdminContext } from '@/lib/auth/admin-guard';
-import { logger } from '@/lib/logger';
-import { getRedis } from '@/lib/redis';
-import { DEFAULT_CUSTOM_SETUP_TEMPLATE_SLUG } from '@/lib/custom-setup.constants';
+import { buildCustomSetupBlueprintSummary, type CustomSetupBlueprintSummary } from "@tecbunny/core/custom-setup-service";
+import { AdminAuthError, requireAdminContext } from "@tecbunny/core/auth/admin-guard";
+import { logger } from "@tecbunny/core/logger";
+import { getRedis } from "@tecbunny/core/redis";
+import { DEFAULT_CUSTOM_SETUP_TEMPLATE_SLUG } from "@tecbunny/core/custom-setup.constants";
 
 // export const dynamic = 'force-dynamic';
 export const revalidate = 0;

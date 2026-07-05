@@ -21,11 +21,11 @@ import {
   TableRow,
 } from "@tecbunny/ui";
 import { Button } from "@tecbunny/ui";
-import type { Coupon } from '@/lib/types';
+import type { Coupon } from "@tecbunny/core/types";
 import { Badge } from "@tecbunny/ui";
-import { createClient } from '@/lib/supabase/client';
+import { createClient } from "@tecbunny/core/supabase/client";
 import { CreateDiscountDialog } from '@/components/admin/CreateDiscountDialog';
-import type { Discount } from '@/lib/types';
+import type { Discount } from "@tecbunny/core/types";
 import { useToast } from "@tecbunny/ui";
 import {
   DropdownMenu,

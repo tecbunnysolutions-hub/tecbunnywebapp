@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-import { logger } from '@/lib/logger';
+import { logger } from "@tecbunny/core/logger";
 
 function isAuthorizedInternalRequest(request: NextRequest) {
   const expected = process.env.INTERNAL_API_KEY || process.env.INTERNAL_API_TOKEN || process.env.CRON_SECRET;

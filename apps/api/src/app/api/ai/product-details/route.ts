@@ -3,11 +3,11 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import { z } from 'zod';
 
-import { generateGeminiText } from '@/lib/ai/gemini-service';
-import { requireRole } from '@/lib/auth/guard';
-import { logger } from '@/lib/logger';
-import { getRedis } from '@/lib/redis';
-import { getSystemPrompt } from '@/lib/ai/prompts';
+import { generateGeminiText } from "@tecbunny/core/ai/gemini-service";
+import { requireRole } from "@tecbunny/core/auth/guard";
+import { logger } from "@tecbunny/core/logger";
+import { getRedis } from "@tecbunny/core/redis";
+import { getSystemPrompt } from "@tecbunny/core/ai/prompts";
 
 const requestSchema = z.object({
   productUrl: z.string().url(),

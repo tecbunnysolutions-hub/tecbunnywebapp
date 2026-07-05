@@ -25,7 +25,7 @@ import {
 import { Button } from "@tecbunny/ui";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@tecbunny/ui";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@tecbunny/ui";
-import type { User, CustomerCategory } from '@/lib/types';
+import type { User, CustomerCategory } from "@tecbunny/core/types";
 import { Badge } from "@tecbunny/ui";
 import { AddUserDialog } from '@/components/admin/AddUserDialog';
 import { EditUserDialog } from '@/components/admin/EditUserDialog';
@@ -33,7 +33,7 @@ import { DiscountOffersDialog } from '@/components/admin/DiscountOffersDialog';
 import { UniversalSearch, SearchFilter, SortOption } from '@/components/shared/UniversalSearch';
 import { useToast } from "@tecbunny/ui";
 import { useDebounce } from '../../../../hooks/use-debounce';
-import { ROLE_DISPLAY_NAME } from '@/lib/roles';
+import { ROLE_DISPLAY_NAME } from "@tecbunny/core/roles";
 
 const ROLE_SENTINEL_NONE = '__none__';
 

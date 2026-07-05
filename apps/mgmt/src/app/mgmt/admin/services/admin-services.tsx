@@ -46,9 +46,9 @@ import {
 import { Button } from "@tecbunny/ui";
 import { Badge } from "@tecbunny/ui";
 
-import { createClient } from '@/lib/supabase/client';
+import { createClient } from "@tecbunny/core/supabase/client";
 import { useToast } from "@tecbunny/ui";
-import type { Service, ServiceRequest } from '@/lib/types';
+import type { Service, ServiceRequest } from "@tecbunny/core/types";
 import { Skeleton } from "@tecbunny/ui";
 import {
   DropdownMenu,
@@ -62,7 +62,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@tecbunny/ui";
 import { CreateServiceDialog } from '@/components/admin/CreateServiceDialog';
 import { EditServiceDialog } from '@/components/admin/EditServiceDialog';
 
-import { logger } from '@/lib/logger';
+import { logger } from "@tecbunny/core/logger";
 
 export default function AdminServicesPage() {
   const [services, setServices] = React.useState<Service[]>([]);

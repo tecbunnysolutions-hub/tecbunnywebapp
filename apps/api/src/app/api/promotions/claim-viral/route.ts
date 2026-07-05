@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
-import { createServiceClient, isSupabaseServiceConfigured } from "@/lib/supabase/server";
-import { rateLimit } from "@/lib/rate-limit";
-import { logger } from "@/lib/logger";
+import { createServiceClient, isSupabaseServiceConfigured } from "@tecbunny/core/supabase/server";
+import { rateLimit } from "@tecbunny/core/rate-limit";
+import { logger } from "@tecbunny/core/logger";
 
 const claimSchema = z.object({
   phone: z.string().min(10).max(15),

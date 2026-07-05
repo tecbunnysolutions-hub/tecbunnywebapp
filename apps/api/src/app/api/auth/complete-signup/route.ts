@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-import { logger } from '@/lib/logger';
-import { sendWelcomeNotification } from '@/lib/whatsapp-service';
-import { requireSupabasePublicEnv, requireSupabaseServiceEnv } from '@/lib/supabase/env';
+import { logger } from "@tecbunny/core/logger";
+import { sendWelcomeNotification } from "@tecbunny/core/whatsapp-service";
+import { requireSupabasePublicEnv, requireSupabaseServiceEnv } from "@tecbunny/core/supabase/env";
 
 const PASSWORD_POLICY_MESSAGE = 'Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number and one special character';
 

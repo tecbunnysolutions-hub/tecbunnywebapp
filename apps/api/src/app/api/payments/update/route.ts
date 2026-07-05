@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { createClient } from '@/lib/supabase/server';
-import { sendPaymentConfirmationNotification, sendWhatsAppNotification } from '@/lib/whatsapp-service';
-import { logger } from '@/lib/logger';
-import { apiError, apiSuccess } from '@/lib/errors';
-import { rateLimit } from '@/lib/rate-limit';
+import { createClient } from "@tecbunny/core/supabase/server";
+import { sendPaymentConfirmationNotification, sendWhatsAppNotification } from "@tecbunny/core/whatsapp-service";
+import { logger } from "@tecbunny/core/logger";
+import { apiError, apiSuccess } from "@tecbunny/core/errors";
+import { rateLimit } from "@tecbunny/core/rate-limit";
 
 interface PaymentUpdateData {
   order_id: string;

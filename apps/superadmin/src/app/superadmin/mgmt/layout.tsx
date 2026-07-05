@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation';
 import React from 'react';
 
 import { UnifiedPanelShell } from '@/components/mgmt/UnifiedPanelShell';
-import { verifySuperadminSessionToken } from '@/lib/auth/superadmin-session';
+import { verifySuperadminSessionToken } from "@tecbunny/core/auth/superadmin-session";
 
 export const dynamic = 'force-dynamic';
 

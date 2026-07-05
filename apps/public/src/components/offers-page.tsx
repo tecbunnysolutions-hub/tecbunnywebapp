@@ -4,8 +4,8 @@
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 
-import { logger } from '@/lib/logger';
-import sanitizeHtml from '@/lib/sanitize-html';
+import { logger } from "@tecbunny/core/logger";
+import sanitizeHtml from "@tecbunny/core/sanitize-html";
 
 import { useToast } from "@tecbunny/ui";
 

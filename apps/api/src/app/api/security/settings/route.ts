@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { logger } from '@/lib/logger';
-import { AdminAuthError, requireSuperadminContext } from '@/lib/auth/admin-guard';
+import { logger } from "@tecbunny/core/logger";
+import { AdminAuthError, requireSuperadminContext } from "@tecbunny/core/auth/admin-guard";
 
 const DEFAULT_SECURITY_SETTINGS: Record<string, { value: string; description: string | null }> = {
   password_min_length: {

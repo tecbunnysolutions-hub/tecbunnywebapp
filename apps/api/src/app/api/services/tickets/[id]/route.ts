@@ -1,8 +1,8 @@
 export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 
-import { serviceManagementService } from '@/lib/service-management';
-import { logger } from '@/lib/logger';
+import { serviceManagementService } from "@tecbunny/core/service-management";
+import { logger } from "@tecbunny/core/logger";
 
 /**
  * Update service ticket status or assign engineer

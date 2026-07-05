@@ -19,10 +19,10 @@ import {
   TrendingDown,
 } from 'lucide-react';
 
-import { getProductDisplayImage } from '@/lib/image-utils';
-import { cn, revealDelayClass } from '@/lib/utils';
+import { getProductDisplayImage } from "@tecbunny/core/image-utils";
+import { cn, revealDelayClass } from "@tecbunny/core/utils";
 import { OptimizedImage } from "@tecbunny/ui";
-import type { Product } from '@/lib/types';
+import type { Product } from "@tecbunny/core/types";
 import { BehavioralCouponPopup } from './BehavioralCouponPopup';
 import { RegionalTrustBanner } from './RegionalTrustBanner';
 

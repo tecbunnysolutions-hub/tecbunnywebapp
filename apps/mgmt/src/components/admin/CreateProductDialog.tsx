@@ -35,7 +35,7 @@ import {
   SelectValue,
 } from "@tecbunny/ui";
 import { useToast } from "@tecbunny/ui";
-import { logger } from '@/lib/logger';
+import { logger } from "@tecbunny/core/logger";
 
 const productSchema = z.object({
   title: z.string().min(3, 'Title is required'),

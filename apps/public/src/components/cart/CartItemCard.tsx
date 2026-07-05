@@ -4,9 +4,9 @@ import * as React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Trash2, Plus, Minus } from 'lucide-react';
-import { useCart } from '@/lib/hooks';
-import { formatCurrency } from '@/lib/utils';
-import type { CartItem } from '@/lib/types';
+import { useCart } from "@tecbunny/core/hooks";
+import { formatCurrency } from "@tecbunny/core/utils";
+import type { CartItem } from "@tecbunny/core/types";
 
 import { BRAND_LOGO_URL } from "@tecbunny/ui";
 

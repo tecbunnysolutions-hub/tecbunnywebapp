@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import type { User } from '@supabase/supabase-js';
 
-import { logger } from '@/lib/logger';
-import { OTPManager } from '@/lib/otp-manager';
+import { logger } from "@tecbunny/core/logger";
+import { OTPManager } from "@tecbunny/core/otp-manager";
 
 // Rate limiting storage (in production, use Redis)
 const rateLimitMap = new Map<string, { count: number; resetTime: number }>();

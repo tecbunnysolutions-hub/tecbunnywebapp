@@ -15,9 +15,9 @@ import {
 } from 'lucide-react';
 
 import { useAnalytics } from '../../hooks/use-analytics';
-import { useAuth, useCart } from '@/lib/hooks';
-import { hasRoleClient } from '@/lib/permissions-client';
-import { getPanelHome } from '@/lib/panel-routing';
+import { useAuth, useCart } from "@tecbunny/core/hooks";
+import { hasRoleClient } from "@tecbunny/core/permissions-client";
+import { getPanelHome } from "@tecbunny/core/panel-routing";
 import {
   DropdownMenu,
   DropdownMenuContent,

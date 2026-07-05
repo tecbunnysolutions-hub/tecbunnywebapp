@@ -9,9 +9,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@tecb
 import { Badge } from "@tecbunny/ui";
 import { Skeleton } from "@tecbunny/ui";
 import { useToast } from "@tecbunny/ui";
-import { useAuth } from '@/lib/hooks';
-import { createClient } from '@/lib/supabase/client';
-import type { Order, OrderStatus } from '@/lib/types';
+import { useAuth } from "@tecbunny/core/hooks";
+import { createClient } from "@tecbunny/core/supabase/client";
+import type { Order, OrderStatus } from "@tecbunny/core/types";
 import { MarketingKitTerminal } from '@/components/sales/MarketingKitTerminal';
 
 const COMPLETED_STATUSES: OrderStatus[] = ['Completed', 'Delivered', 'Payment Confirmed'];

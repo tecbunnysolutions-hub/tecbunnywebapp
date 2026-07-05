@@ -4,9 +4,9 @@ import * as React from 'react';
 import { useRouter } from 'next/navigation';
 
 import { UnifiedPanelShell } from '@/components/mgmt/UnifiedPanelShell';
-import { useAuth } from '@/lib/hooks';
-import { isAtLeast } from '@/lib/roles';
-import { logger } from '@/lib/logger';
+import { useAuth } from "@tecbunny/core/hooks";
+import { isAtLeast } from "@tecbunny/core/roles";
+import { logger } from "@tecbunny/core/logger";
 import { useToast } from "@tecbunny/ui";
 
 interface AdminLayoutClientProps {

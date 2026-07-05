@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import { logger } from '@/lib/logger';
+import { logger } from "@tecbunny/core/logger";
 
 export default function SignOutPage() {
   const [isSigningOut, setIsSigningOut] = React.useState(true);

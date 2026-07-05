@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { createClient } from '@/lib/supabase/server';
+import { createClient } from "@tecbunny/core/supabase/server";
 import { 
   sendShipmentNotification,
   sendWhatsAppNotification
-} from '@/lib/whatsapp-service';
-import { logger } from '@/lib/logger';
-import { apiError, apiSuccess } from '@/lib/errors';
-import { rateLimit } from '@/lib/rate-limit';
+} from "@tecbunny/core/whatsapp-service";
+import { logger } from "@tecbunny/core/logger";
+import { apiError, apiSuccess } from "@tecbunny/core/errors";
+import { rateLimit } from "@tecbunny/core/rate-limit";
 
 interface ShippingUpdateData {
   order_id: string;

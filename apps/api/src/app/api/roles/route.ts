@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { getSessionWithRole } from '@/lib/auth/server-role';
+import { getSessionWithRole } from "@tecbunny/core/auth/server-role";
 import {
   EFFECTIVE_PERMISSIONS,
   ROLE_DESCRIPTION,
   ROLE_DISPLAY_NAME,
   USER_ASSIGNABLE_ROLES,
-} from '@/lib/roles';
-import { logger } from '@/lib/logger';
+} from "@tecbunny/core/roles";
+import { logger } from "@tecbunny/core/logger";
 
 // GET /api/roles - Return the canonical roles the current operator may assign.
 export async function GET(request: NextRequest) {

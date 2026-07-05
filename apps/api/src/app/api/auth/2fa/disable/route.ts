@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { createClient } from '@/lib/supabase/server';
-import { twoFactorManager } from '@/lib/two-factor-manager';
+import { createClient } from "@tecbunny/core/supabase/server";
+import { twoFactorManager } from "@tecbunny/core/two-factor-manager";
 
 // export const dynamic = 'force-dynamic';
 

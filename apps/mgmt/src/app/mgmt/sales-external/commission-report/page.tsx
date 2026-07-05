@@ -5,8 +5,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@tecb
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@tecbunny/ui";
 import { Badge } from "@tecbunny/ui";
 import { Skeleton } from "@tecbunny/ui";
-import { useAuth } from '@/lib/hooks';
-import { createClient } from '@/lib/supabase/client';
+import { useAuth } from "@tecbunny/core/hooks";
+import { createClient } from "@tecbunny/core/supabase/client";
 import { DollarSign, Percent, TrendingUp, Calendar, AlertCircle } from 'lucide-react';
 
 interface CommissionRecord {

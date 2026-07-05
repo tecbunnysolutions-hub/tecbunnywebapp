@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServiceClient, isSupabaseServiceConfigured } from '@/lib/supabase/server';
-import { logger } from '@/lib/logger';
-import { AdminAuthError, requireAdminContext } from '@/lib/auth/admin-guard';
+import { createServiceClient, isSupabaseServiceConfigured } from "@tecbunny/core/supabase/server";
+import { logger } from "@tecbunny/core/logger";
+import { AdminAuthError, requireAdminContext } from "@tecbunny/core/auth/admin-guard";
 
 export async function POST(request: NextRequest) {
   try {

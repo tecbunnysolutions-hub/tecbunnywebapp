@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { getSessionWithRole } from '@/lib/auth/server-role';
-import { logger } from '@/lib/logger';
-import { imageJobsQueue } from '@/lib/queue/image-jobs';
+import { getSessionWithRole } from "@tecbunny/core/auth/server-role";
+import { logger } from "@tecbunny/core/logger";
+import { imageJobsQueue } from "@tecbunny/core/queue/image-jobs";
 
 const ADMIN_ROLES = new Set(['superadmin']);
 

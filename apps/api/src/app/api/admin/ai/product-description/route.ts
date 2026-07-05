@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { createClient, createServiceClient, isSupabaseServiceConfigured } from '@/lib/supabase/server';
-import { logger } from '@/lib/logger';
-import { requireAdminContext } from '@/lib/auth/admin-guard';
-import { generateGeminiText } from '@/lib/ai/gemini-service';
-import { getSystemPrompt } from '@/lib/ai/prompts';
+import { createClient, createServiceClient, isSupabaseServiceConfigured } from "@tecbunny/core/supabase/server";
+import { logger } from "@tecbunny/core/logger";
+import { requireAdminContext } from "@tecbunny/core/auth/admin-guard";
+import { generateGeminiText } from "@tecbunny/core/ai/gemini-service";
+import { getSystemPrompt } from "@tecbunny/core/ai/prompts";
 
 export async function POST(request: NextRequest) {
   try {

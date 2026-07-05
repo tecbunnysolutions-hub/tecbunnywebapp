@@ -11,14 +11,14 @@ import {
   Sparkles
 } from 'lucide-react';
 
-import { logger } from '@/lib/logger';
-import { getProductDisplayImage } from '@/lib/image-utils';
-import { cn, revealDelayClass } from '@/lib/utils';
+import { logger } from "@tecbunny/core/logger";
+import { getProductDisplayImage } from "@tecbunny/core/image-utils";
+import { cn, revealDelayClass } from "@tecbunny/core/utils";
 
-import type { Product, AutoOffer } from '@/lib/types';
+import type { Product, AutoOffer } from "@tecbunny/core/types";
 import { Skeleton } from "@tecbunny/ui";
 import { Input } from "@tecbunny/ui";
-import { useCart } from '@/lib/hooks';
+import { useCart } from "@tecbunny/core/hooks";
 import { useRevealSections } from '../../hooks/use-reveal-sections';
 
 const DEFAULT_CUSTOMER_CATEGORY = 'Normal';

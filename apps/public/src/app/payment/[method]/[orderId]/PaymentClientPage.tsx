@@ -5,14 +5,14 @@ import { useParams, useRouter } from 'next/navigation';
 
 import { ArrowLeft, CreditCard, Smartphone, Banknote, Clock, CheckCircle } from 'lucide-react';
 
-import { createClient } from '@/lib/supabase/client';
+import { createClient } from "@tecbunny/core/supabase/client";
 import { Button } from "@tecbunny/ui";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@tecbunny/ui";
 import { Badge } from "@tecbunny/ui";
 import { Separator } from "@tecbunny/ui";
 import { useToast } from "@tecbunny/ui";
-import { logger } from '@/lib/logger';
-import { formatOrderNumber } from '@/lib/order-utils';
+import { logger } from "@tecbunny/core/logger";
+import { formatOrderNumber } from "@tecbunny/core/order-utils";
 
 interface Order {
   id: string;

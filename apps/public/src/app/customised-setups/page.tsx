@@ -8,10 +8,10 @@ import { RefreshButton } from '@/components/customised-setups/RefreshButton';
 import { QuoteCTA } from '@/components/customised-setups/QuoteCTA';
 import { QuotationStatusLookup } from '@/components/customised-setups/QuotationStatusLookup';
 import CustomSetupFlow from '@/components/customised-setups/ClientCustomSetupFlow';
-import { DEFAULT_CUSTOM_SETUP_TEMPLATE_SLUG } from '@/lib/custom-setup.constants';
-import { getCustomSetupBlueprintSummary } from '@/lib/custom-setup-service';
+import { DEFAULT_CUSTOM_SETUP_TEMPLATE_SLUG } from "@tecbunny/core/custom-setup.constants";
+import { getCustomSetupBlueprintSummary } from "@tecbunny/core/custom-setup-service";
 
-import { createPageMetadata } from '@/lib/metadata';
+import { createPageMetadata } from "@tecbunny/core/metadata";
 
 export async function generateMetadata(): Promise<Metadata> {
   return createPageMetadata({

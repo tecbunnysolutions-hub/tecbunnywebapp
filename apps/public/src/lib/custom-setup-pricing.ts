@@ -1,4 +1,4 @@
-import type { CustomSetupBlueprintSummary, CustomSetupBlueprintComponentSummary } from '@/lib/custom-setup-service';
+import type { CustomSetupBlueprintSummary, CustomSetupBlueprintComponentSummary } from "@tecbunny/core/custom-setup-service";
 
 export type SetupSystem = 'analog' | 'ip';
 

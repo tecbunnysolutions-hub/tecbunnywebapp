@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient, createServiceClient, isSupabaseServiceConfigured } from '@/lib/supabase/server';
-import { requireAdmin } from '@/lib/admin-auth';
+import { createClient, createServiceClient, isSupabaseServiceConfigured } from "@tecbunny/core/supabase/server";
+import { requireAdmin } from "@tecbunny/core/admin-auth";
 
 export async function GET(request: NextRequest) {
   const supabase = await createClient();

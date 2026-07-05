@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { createClient, isSupabasePublicConfigured } from '@/lib/supabase/server';
-import { logger } from '@/lib/logger';
-import { verifySuperadminSessionToken } from '@/lib/auth/superadmin-session';
+import { createClient, isSupabasePublicConfigured } from "@tecbunny/core/supabase/server";
+import { logger } from "@tecbunny/core/logger";
+import { verifySuperadminSessionToken } from "@tecbunny/core/auth/superadmin-session";
 
 // Create client for current user authentication
 async function createAuthenticatedClient() {

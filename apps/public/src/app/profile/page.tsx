@@ -5,8 +5,8 @@ import { useRouter } from 'next/navigation';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 
 import UserProfile from '@/components/profile/UserProfile';
-import { useAuth } from '@/lib/hooks';
-import { logger } from '@/lib/logger';
+import { useAuth } from "@tecbunny/core/hooks";
+import { logger } from "@tecbunny/core/logger";
 
 export default function ProfilePage() {
   const { supabase, loading: authLoading, user: authUser } = useAuth();

@@ -30,7 +30,7 @@ import {
   MessageSquare,
 } from 'lucide-react';
 
-import { hasPermission, isAtLeast, PERMS, type Permission, type UserRole } from '@/lib/roles';
+import { hasPermission, isAtLeast, PERMS, type Permission, type UserRole } from "@tecbunny/core/roles";
 
 export type UnifiedPanelNavItem = {
   href: string;

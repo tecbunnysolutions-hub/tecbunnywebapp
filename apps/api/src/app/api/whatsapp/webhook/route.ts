@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
-import { createServiceClient } from '@/lib/supabase/server';
-import { processWhatsAppMessageWithAI } from '@/lib/whatsapp/ai-router';
-import { sendWhatsAppMessage, markWhatsAppMessageRead } from '@/lib/whatsapp/api';
+import { createServiceClient } from "@tecbunny/core/supabase/server";
+import { processWhatsAppMessageWithAI } from "@tecbunny/core/whatsapp/ai-router";
+import { sendWhatsAppMessage, markWhatsAppMessageRead } from "@tecbunny/core/whatsapp/api";
 
 // Webhook Verification (required by Meta)
 export async function GET(request: Request) {

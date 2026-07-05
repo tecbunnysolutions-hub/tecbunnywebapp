@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServiceClient, isSupabaseServiceConfigured } from '@/lib/supabase/server';
-import { createSupabaseClient as createPublicSupabaseClient } from '@/lib/supabase-server';
-import { logger } from '@/lib/logger';
+import { createServiceClient, isSupabaseServiceConfigured } from "@tecbunny/core/supabase/server";
+import { createSupabaseClient as createPublicSupabaseClient } from "@tecbunny/core/supabase-server";
+import { logger } from "@tecbunny/core/logger";
 import PDFDocument from 'pdfkit';
 
 export async function GET(

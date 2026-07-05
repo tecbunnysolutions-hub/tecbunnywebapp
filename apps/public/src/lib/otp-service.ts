@@ -3,8 +3,8 @@
  * Handles OTP generation, validation, and management
  */
 
-import { createServiceClient, isSupabaseServiceConfigured } from '@/lib/supabase/server';
-import type { OtpType } from '@/lib/types';
+import { createServiceClient, isSupabaseServiceConfigured } from "@tecbunny/core/supabase/server";
+import type { OtpType } from "@tecbunny/core/types";
 import { emailClient } from './email/client';
 import { WhatsAppService } from './whatsapp-service';
 import crypto from 'crypto';

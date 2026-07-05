@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 
-import { AdminAuthError, requireAdminContext } from '@/lib/auth/admin-guard'
+import { AdminAuthError, requireAdminContext } from "@tecbunny/core/auth/admin-guard"
 
 // export const dynamic = 'force-dynamic'
 

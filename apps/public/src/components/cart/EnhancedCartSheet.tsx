@@ -17,11 +17,11 @@ import { Button } from "@tecbunny/ui";
 import { ScrollArea } from "@tecbunny/ui";
 import { Separator } from "@tecbunny/ui";
 import { Badge } from "@tecbunny/ui";
-import { useCart } from '@/lib/hooks';
-import { formatCurrency } from '@/lib/utils';
-import { logger } from '@/lib/logger';
+import { useCart } from "@tecbunny/core/hooks";
+import { formatCurrency } from "@tecbunny/core/utils";
+import { logger } from "@tecbunny/core/logger";
 
-import type { Coupon } from '@/lib/types';
+import type { Coupon } from "@tecbunny/core/types";
 import { Input } from "@tecbunny/ui";
 import { useToast } from "@tecbunny/ui";
 

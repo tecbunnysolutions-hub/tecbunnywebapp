@@ -6,8 +6,8 @@ import { useSearchParams, useRouter } from 'next/navigation';
 
 import { Lock, Eye, EyeOff, CheckCircle, AlertCircle, Mail } from 'lucide-react';
 
-import { createClient } from '@/lib/supabase/client';
-import { normalizeRole } from '@/lib/roles';
+import { createClient } from "@tecbunny/core/supabase/client";
+import { normalizeRole } from "@tecbunny/core/roles";
 
 // Force dynamic rendering for auth page
 // export const dynamic = 'force-dynamic';

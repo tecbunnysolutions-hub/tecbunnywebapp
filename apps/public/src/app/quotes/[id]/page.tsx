@@ -9,7 +9,7 @@ import { Separator } from "@tecbunny/ui";
 import { Loader2, Check, X, Download } from 'lucide-react';
 import { useToast } from "@tecbunny/ui";
 import { format } from 'date-fns';
-import { useAuth } from '@/lib/hooks';
+import { useAuth } from "@tecbunny/core/hooks";
 import {
   Dialog,
   DialogContent,

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { requireApiRole, type RoleCheckOptions } from '@/lib/server-role-guard';
-import { createServiceClient, isSupabaseServiceConfigured } from '@/lib/supabase/server';
+import { requireApiRole, type RoleCheckOptions } from "@tecbunny/core/server-role-guard";
+import { createServiceClient, isSupabaseServiceConfigured } from "@tecbunny/core/supabase/server";
 
 const INVENTORY_ACCESS: RoleCheckOptions = {
   allowedRoles: ['sales', 'manager'],

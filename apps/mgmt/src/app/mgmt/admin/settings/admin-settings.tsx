@@ -29,12 +29,12 @@ import {
 import { Input } from "@tecbunny/ui";
 import { useToast } from "@tecbunny/ui";
 import { Textarea } from "@tecbunny/ui";
-import { createClient } from '@/lib/supabase/client';
+import { createClient } from "@tecbunny/core/supabase/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@tecbunny/ui";
 import { Label } from "@tecbunny/ui";
 import { Switch } from "@tecbunny/ui";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@tecbunny/ui";
-import { logger } from '@/lib/logger';
+import { logger } from "@tecbunny/core/logger";
 
 const settingsSchema = z.object({
   // Site Identity

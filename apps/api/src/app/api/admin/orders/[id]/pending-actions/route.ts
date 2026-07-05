@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { createClient as createServerClient } from '@/lib/supabase/server';
-import { uploadToSupabase } from '@/lib/supabase-storage';
-import { logger } from '@/lib/logger';
-import { envConfig } from '@/lib/environment-validator';
-import { sendPaymentActionRequired, sendPaymentConfirmationNotification, sendWhatsAppNotification } from '@/lib/whatsapp-service';
+import { createClient as createServerClient } from "@tecbunny/core/supabase/server";
+import { uploadToSupabase } from "@tecbunny/core/supabase-storage";
+import { logger } from "@tecbunny/core/logger";
+import { envConfig } from "@tecbunny/core/environment-validator";
+import { sendPaymentActionRequired, sendPaymentConfirmationNotification, sendWhatsAppNotification } from "@tecbunny/core/whatsapp-service";
 
 export async function POST(
   request: NextRequest,

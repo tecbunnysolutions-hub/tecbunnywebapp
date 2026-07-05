@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 
 import PolicyPage from '@/components/policy-page';
-import { getPolicyContent } from '@/lib/settings';
+import { getPolicyContent } from "@tecbunny/core/settings";
 
 export const revalidate = 300;
 

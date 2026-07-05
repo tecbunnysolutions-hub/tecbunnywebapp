@@ -3,14 +3,14 @@
  * Handles service engineer assignments, ticket management, and service billing
  */
 
-import { createServiceClient, isSupabaseServiceConfigured } from '@/lib/supabase/server';
+import { createServiceClient, isSupabaseServiceConfigured } from "@tecbunny/core/supabase/server";
 import type { 
   ServiceTicket, 
   ServiceEngineer, 
   ServiceTicketStatus, 
   ServiceTicketPriority,
   ServiceEngineerSkillLevel
-} from '@/lib/types';
+} from "@tecbunny/core/types";
 
 import { logger } from './logger';
 import { extractPincode, sendServiceTicketRoutingNotifications } from './area-notifications';

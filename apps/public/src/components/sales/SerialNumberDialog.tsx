@@ -3,16 +3,16 @@
 
 import * as React from 'react';
 
-import type { Product, InventoryItem } from '@/lib/types';
+import type { Product, InventoryItem } from "@tecbunny/core/types";
 
-import { logger } from '@/lib/logger';
+import { logger } from "@tecbunny/core/logger";
 import { Button } from "@tecbunny/ui";
 import { Checkbox } from "@tecbunny/ui";
 import { Label } from "@tecbunny/ui";
 import { ScrollArea } from "@tecbunny/ui";
 import { useToast } from "@tecbunny/ui";
 
-import { createClient } from '@/lib/supabase/client';
+import { createClient } from "@tecbunny/core/supabase/client";
 
 import { Input } from "@tecbunny/ui";
 import { Modal } from "@tecbunny/ui";

@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 
-import { createClient, createServiceClient , isSupabaseServiceConfigured } from '@/lib/supabase/server';
-import { isAdmin } from '@/lib/permissions';
-import { logger } from '@/lib/logger';
+import { createClient, createServiceClient , isSupabaseServiceConfigured } from "@tecbunny/core/supabase/server";
+import { isAdmin } from "@tecbunny/core/permissions";
+import { logger } from "@tecbunny/core/logger";
 
 // export const dynamic = 'force-dynamic';
 

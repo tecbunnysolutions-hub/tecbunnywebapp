@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { getSessionWithRole } from '@/lib/auth/server-role';
-import { createServiceClient, isSupabaseServiceConfigured } from '@/lib/supabase/server';
-import { logger } from '@/lib/logger';
-import { deserializeOrder } from '@/lib/orders/normalizers';
+import { getSessionWithRole } from "@tecbunny/core/auth/server-role";
+import { createServiceClient, isSupabaseServiceConfigured } from "@tecbunny/core/supabase/server";
+import { logger } from "@tecbunny/core/logger";
+import { deserializeOrder } from "@tecbunny/core/orders/normalizers";
 
 const ADMIN_ROLES = new Set(['admin', 'manager', 'superadmin']);
 const MIN_LIMIT = 10;

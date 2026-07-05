@@ -3,10 +3,10 @@ import { Suspense } from 'react';
 import type { Metadata } from 'next';
 
 import { ShopPageContent } from '@/components/products/ShopPageContent';
-import { logger } from '@/lib/logger';
-import { createPageMetadata } from '@/lib/metadata';
-import { filterPubliclyVisibleProducts } from '@/lib/product-visibility';
-import { createClient } from '@/lib/supabase/server';
+import { logger } from "@tecbunny/core/logger";
+import { createPageMetadata } from "@tecbunny/core/metadata";
+import { filterPubliclyVisibleProducts } from "@tecbunny/core/product-visibility";
+import { createClient } from "@tecbunny/core/supabase/server";
 
 // ISR: revalidate every 5 minutes (300 seconds)
 export const revalidate = 300;

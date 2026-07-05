@@ -2,9 +2,9 @@
 
 import { useContext, useEffect, useCallback, useMemo } from 'react';
 
-import { AuthContext } from '../context/AuthProvider';
-import { useWishlistStore } from '../store/wishlistStore';
-import { useCartStore } from '../store/cartStore';
+import { AuthContext } from "@tecbunny/core/context/AuthProvider";
+import { useWishlistStore } from "@tecbunny/core/store/wishlistStore";
+import { useCartStore } from "@tecbunny/core/store/cartStore";
 import { useAnalytics } from '../hooks/use-analytics';
 import { calculateCartTotals } from './order-utils';
 

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { APIResponseBuilder } from '@/lib/api-response';
-import { createClient } from '@/lib/supabase/server';
+import { APIResponseBuilder } from "@tecbunny/core/api-response";
+import { createClient } from "@tecbunny/core/supabase/server";
 
 export const dynamic = 'force-dynamic';
 

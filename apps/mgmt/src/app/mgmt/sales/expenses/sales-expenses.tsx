@@ -19,12 +19,12 @@ import {
 } from "@tecbunny/ui";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@tecbunny/ui";
 import { useToast } from "@tecbunny/ui";
-import { useAuth } from '@/lib/hooks';
-import { logger } from '@/lib/logger';
-import type { Expense, ExpenseStatus } from '@/lib/types';
+import { useAuth } from "@tecbunny/core/hooks";
+import { logger } from "@tecbunny/core/logger";
+import type { Expense, ExpenseStatus } from "@tecbunny/core/types";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@tecbunny/ui";
 import { Badge } from "@tecbunny/ui";
-import { createClient } from '@/lib/supabase/client';
+import { createClient } from "@tecbunny/core/supabase/client";
 
 const expenseSchema = z.object({
   date: z.string().refine((val) => !isNaN(Date.parse(val)), { message: "Invalid date" }),

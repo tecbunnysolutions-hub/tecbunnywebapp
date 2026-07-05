@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 
-import { OTPManager } from '@/lib/otp-manager';
-import { createServiceClient, isSupabaseServiceConfigured } from '@/lib/supabase/server';
-import { rateLimit } from '@/lib/rate-limit';
-import { logger } from '@/lib/logger';
+import { OTPManager } from "@tecbunny/core/otp-manager";
+import { createServiceClient, isSupabaseServiceConfigured } from "@tecbunny/core/supabase/server";
+import { rateLimit } from "@tecbunny/core/rate-limit";
+import { logger } from "@tecbunny/core/logger";
 
 const ACTIVATE_RATE_LIMIT = { limit: 8, windowMs: 15 * 60 * 1000 };
 

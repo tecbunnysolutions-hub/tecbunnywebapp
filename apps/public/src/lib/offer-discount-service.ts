@@ -1,6 +1,6 @@
 
-import type { CartItem, CustomerCategory, AutoOffer, Coupon } from '@/lib/types';
-import { createClient } from '@/lib/supabase/client';
+import type { CartItem, CustomerCategory, AutoOffer, Coupon } from "@tecbunny/core/types";
+import { createClient } from "@tecbunny/core/supabase/client";
 
 import { logger } from './logger';
 import { resolveSiteUrl } from './site-url';

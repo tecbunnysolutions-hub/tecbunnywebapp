@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 
-import { createServiceClient, createClient as createServerClient, isSupabaseServiceConfigured } from '@/lib/supabase/server';
-import { rateLimit } from '@/lib/rate-limit';
-import { logger } from '@/lib/logger';
-import { verifySuperadminSessionToken } from '@/lib/auth/superadmin-session';
-import { AdminAuthError, requireAdminContext } from '@/lib/auth/admin-guard';
-import type { ContactMessage, ContactMessageStatus } from '@/lib/types';
+import { createServiceClient, createClient as createServerClient, isSupabaseServiceConfigured } from "@tecbunny/core/supabase/server";
+import { rateLimit } from "@tecbunny/core/rate-limit";
+import { logger } from "@tecbunny/core/logger";
+import { verifySuperadminSessionToken } from "@tecbunny/core/auth/superadmin-session";
+import { AdminAuthError, requireAdminContext } from "@tecbunny/core/auth/admin-guard";
+import type { ContactMessage, ContactMessageStatus } from "@tecbunny/core/types";
 
 const CONTACT_RATE_LIMIT = {
   limit: 5,

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServiceClient, isSupabaseServiceConfigured } from '@/lib/supabase/server';
-import { processAndUploadExternalImage } from '@/lib/image-processor';
+import { createServiceClient, isSupabaseServiceConfigured } from "@tecbunny/core/supabase/server";
+import { processAndUploadExternalImage } from "@tecbunny/core/image-processor";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',

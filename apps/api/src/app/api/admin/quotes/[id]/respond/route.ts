@@ -1,6 +1,6 @@
 import { NextResponse, NextRequest } from 'next/server';
-import { createServerClient } from '@/lib/supabase/server';
-import { logger } from '@/lib/logger';
+import { createServerClient } from "@tecbunny/core/supabase/server";
+import { logger } from "@tecbunny/core/logger";
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {

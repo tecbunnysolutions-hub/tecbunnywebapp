@@ -13,15 +13,15 @@ import { Input } from "@tecbunny/ui";
 import { Separator } from "@tecbunny/ui";
 
 
-import type { Product, CartItem, Order, User as CustomerType } from '@/lib/types';
+import type { Product, CartItem, Order, User as CustomerType } from "@tecbunny/core/types";
 import { useToast } from "@tecbunny/ui";
 import { CreateCustomerDialog } from '@/components/sales/CreateCustomerDialog';
 import { Label } from "@tecbunny/ui";
 import { InvoiceTemplate, type CompanySettings } from '@/components/invoices/InvoiceTemplate';
 import { SerialNumberDialog } from '@/components/sales/SerialNumberDialog';
-import { useAuth } from '@/lib/hooks';
-import { createClient } from '@/lib/supabase/client';
-import { getGstRateForProduct, type CategoryGstRates } from '@/lib/utils';
+import { useAuth } from "@tecbunny/core/hooks";
+import { createClient } from "@tecbunny/core/supabase/client";
+import { getGstRateForProduct, type CategoryGstRates } from "@tecbunny/core/utils";
 
 
 const defaultCompanySettings: CompanySettings = {

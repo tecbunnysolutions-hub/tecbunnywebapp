@@ -3,7 +3,7 @@
 
 import * as React from 'react';
 
-import type { Product } from '@/lib/types';
+import type { Product } from "@tecbunny/core/types";
 
 import { Button } from "@tecbunny/ui";
 import { ScrollArea } from "@tecbunny/ui";

@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
-import { verifyCaptcha } from '@/lib/captcha/captcha-service';
-import { logger } from '@/lib/logger';
-import { rateLimit } from '@/lib/rate-limit';
-import { createSuperadminSessionToken, SUPERADMIN_SESSION_TTL_SECONDS } from '@/lib/auth/superadmin-session';
+import { verifyCaptcha } from "@tecbunny/core/captcha/captcha-service";
+import { logger } from "@tecbunny/core/logger";
+import { rateLimit } from "@tecbunny/core/rate-limit";
+import { createSuperadminSessionToken, SUPERADMIN_SESSION_TTL_SECONDS } from "@tecbunny/core/auth/superadmin-session";
 
 const textEncoder = new TextEncoder();
 

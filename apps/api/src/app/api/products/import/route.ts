@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { createClient } from '@/lib/supabase/server';
-import { ProductImportRow } from '@/lib/types/products';
-import { logger } from '@/lib/logger';
-import sanitizeHtml from '@/lib/sanitize-html';
-import { AdminAuthError, requireAdminContext } from '@/lib/auth/admin-guard';
+import { createClient } from "@tecbunny/core/supabase/server";
+import { ProductImportRow } from "@tecbunny/core/types/products";
+import { logger } from "@tecbunny/core/logger";
+import sanitizeHtml from "@tecbunny/core/sanitize-html";
+import { AdminAuthError, requireAdminContext } from "@tecbunny/core/auth/admin-guard";
 
 async function ensureProductColumns(supabase: any) {
   try {

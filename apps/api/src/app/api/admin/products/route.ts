@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { createClient, createServiceClient, isSupabaseServiceConfigured } from '@/lib/supabase/server';
-import { isAdmin, isSuperadminSession } from '@/lib/permissions';
-import { logger } from '@/lib/logger';
-import { getProductDisplayImage } from '@/lib/image-utils';
+import { createClient, createServiceClient, isSupabaseServiceConfigured } from "@tecbunny/core/supabase/server";
+import { isAdmin, isSuperadminSession } from "@tecbunny/core/permissions";
+import { logger } from "@tecbunny/core/logger";
+import { getProductDisplayImage } from "@tecbunny/core/image-utils";
 export { POST, PUT } from '@/app/api/products/route';
 
 // export const dynamic = 'force-dynamic';

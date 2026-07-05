@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
-import { APIResponseBuilder } from '@/lib/api-response';
-import { requireApiRole } from '@/lib/server-role-guard';
+import { APIResponseBuilder } from "@tecbunny/core/api-response";
+import { requireApiRole } from "@tecbunny/core/server-role-guard";
 
 export const dynamic = 'force-dynamic';
 

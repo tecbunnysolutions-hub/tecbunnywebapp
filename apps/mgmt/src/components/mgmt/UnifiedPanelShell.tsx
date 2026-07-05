@@ -18,9 +18,9 @@ import { Logo } from "@tecbunny/ui";
 import { Button } from "@tecbunny/ui";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@tecbunny/ui";
 import { Toaster } from "@tecbunny/ui";
-import { cn } from '@/lib/utils';
-import { ROLE_DISPLAY_NAME, type UserRole } from '@/lib/roles';
-import type { User as TecbunnyUser } from '@/lib/types';
+import { cn } from "@tecbunny/core/utils";
+import { ROLE_DISPLAY_NAME, type UserRole } from "@tecbunny/core/roles";
+import type { User as TecbunnyUser } from "@tecbunny/core/types";
 import { getPanelNavigation, type UnifiedPanelNavSection } from './unified-panel-nav';
 
 type UnifiedPanelShellProps = {

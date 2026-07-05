@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { rateLimit } from '@/lib/rate-limit';
-import { createClient as createServerClient } from '@/lib/supabase/server';
+import { rateLimit } from "@tecbunny/core/rate-limit";
+import { createClient as createServerClient } from "@tecbunny/core/supabase/server";
 
-import { logger } from '@/lib/logger';
+import { logger } from "@tecbunny/core/logger";
 
 export interface EmailHandlerConfig<T, R = { success: true }> {
   validate: (body: any) => { ok: true; data: T } | { ok: false; error: string };

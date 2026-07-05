@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireSuperadminContext } from '@/lib/auth/admin-guard';
-import { logger } from '@/lib/logger';
+import { requireSuperadminContext } from "@tecbunny/core/auth/admin-guard";
+import { logger } from "@tecbunny/core/logger";
 
 export const dynamic = 'force-dynamic';
 

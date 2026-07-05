@@ -19,7 +19,7 @@ import {
   XCircle
 } from 'lucide-react';
 
-import { logger } from '@/lib/logger';
+import { logger } from "@tecbunny/core/logger";
 
 import { 
   Card, 

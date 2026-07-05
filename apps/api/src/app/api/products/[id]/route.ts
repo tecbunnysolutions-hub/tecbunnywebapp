@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { createClient, createServiceClient, isSupabaseServiceConfigured } from '@/lib/supabase/server';
-import { getSessionWithRole } from '@/lib/auth/server-role';
-import { logger } from '@/lib/logger';
-import { getProductDisplayImage } from '@/lib/image-utils';
-import { isPubliclyVisibleProduct } from '@/lib/product-visibility';
-import { classifyProductTax, TaxClassificationError } from '@/lib/ai/tax-classification';
-import { processAndUploadExternalImage } from '@/lib/image-processor';
+import { createClient, createServiceClient, isSupabaseServiceConfigured } from "@tecbunny/core/supabase/server";
+import { getSessionWithRole } from "@tecbunny/core/auth/server-role";
+import { logger } from "@tecbunny/core/logger";
+import { getProductDisplayImage } from "@tecbunny/core/image-utils";
+import { isPubliclyVisibleProduct } from "@tecbunny/core/product-visibility";
+import { classifyProductTax, TaxClassificationError } from "@tecbunny/core/ai/tax-classification";
+import { processAndUploadExternalImage } from "@tecbunny/core/image-processor";
 
 const ADMIN_ROLES = new Set(['superadmin']);
 

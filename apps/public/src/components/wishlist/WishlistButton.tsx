@@ -4,9 +4,9 @@ import * as React from 'react';
 import { Heart } from 'lucide-react';
 
 import { Button } from "@tecbunny/ui";
-import { useWishlist } from '@/lib/hooks';
-import type { Product } from '@/lib/types';
-import { cn } from '@/lib/utils';
+import { useWishlist } from "@tecbunny/core/hooks";
+import type { Product } from "@tecbunny/core/types";
+import { cn } from "@tecbunny/core/utils";
 
 interface WishlistButtonProps {
   product: Product;

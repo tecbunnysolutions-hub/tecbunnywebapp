@@ -32,7 +32,7 @@ import {
   DialogTrigger,
 } from "@tecbunny/ui";
 import { useToast } from "@tecbunny/ui";
-import { logger } from '@/lib/logger';
+import { logger } from "@tecbunny/core/logger";
 
 interface CustomSetupOffer {
   id: string;

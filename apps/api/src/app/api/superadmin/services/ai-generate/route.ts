@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import { verifySuperadminSessionToken } from '@/lib/auth/superadmin-session';
-import { generateGeminiText } from '@/lib/ai/gemini-service';
-import { logger } from '@/lib/logger';
+import { verifySuperadminSessionToken } from "@tecbunny/core/auth/superadmin-session";
+import { generateGeminiText } from "@tecbunny/core/ai/gemini-service";
+import { logger } from "@tecbunny/core/logger";
 
 export async function POST(request: NextRequest) {
   try {

@@ -20,8 +20,8 @@ import {
   Zap,
 } from 'lucide-react';
 
-import { useAuth } from '@/lib/hooks';
-import { ROLE_DISPLAY_NAME, type UserRole } from '@/lib/roles';
+import { useAuth } from "@tecbunny/core/hooks";
+import { ROLE_DISPLAY_NAME, type UserRole } from "@tecbunny/core/roles";
 
 type WorkspaceKind =
   | 'sales-manager'

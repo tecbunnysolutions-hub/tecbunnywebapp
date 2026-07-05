@@ -6,8 +6,8 @@ import {
   Key, ArrowRight, FileText, Share2, Ticket, Wrench, 
   Globe, Building, Percent, Activity, Sliders
 } from 'lucide-react';
-import { createServiceClient } from '@/lib/supabase/server';
-import { verifySuperadminSessionToken } from '@/lib/auth/superadmin-session';
+import { createServiceClient } from "@tecbunny/core/supabase/server";
+import { verifySuperadminSessionToken } from "@tecbunny/core/auth/superadmin-session";
 
 export const dynamic = 'force-dynamic';
 

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
-import { requireAdmin } from '@/lib/admin-auth';
-import { createQuoteActionToken } from '@/lib/quotes/action-token';
+import { createClient } from "@tecbunny/core/supabase/server";
+import { requireAdmin } from "@tecbunny/core/admin-auth";
+import { createQuoteActionToken } from "@tecbunny/core/quotes/action-token";
 
 // export const dynamic = 'force-dynamic';
 

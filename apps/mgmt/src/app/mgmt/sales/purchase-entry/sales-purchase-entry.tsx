@@ -10,12 +10,12 @@ import { Button } from "@tecbunny/ui";
 import { Input } from "@tecbunny/ui";
 import { Label } from "@tecbunny/ui";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@tecbunny/ui";
-import type { Product, PurchaseItem } from '@/lib/types';
+import type { Product, PurchaseItem } from "@tecbunny/core/types";
 import { Separator } from "@tecbunny/ui";
 import CreateProductDialog from '@/components/sales/CreateProductDialog';
 import { PurchaseSerialNumberDialog } from '@/components/sales/PurchaseSerialNumberDialog';
 import { useToast } from "@tecbunny/ui";
-import { createClient } from '@/lib/supabase/client';
+import { createClient } from "@tecbunny/core/supabase/client";
 
 export default function PurchaseEntryPage() {
     const { toast } = useToast();

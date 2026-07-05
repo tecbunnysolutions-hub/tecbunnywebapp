@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation';
 
-import { createServerClient } from '@/lib/supabase';
+import { createServerClient } from "@tecbunny/core/supabase";
 
 import DashboardClient from './dashboard-client';
 

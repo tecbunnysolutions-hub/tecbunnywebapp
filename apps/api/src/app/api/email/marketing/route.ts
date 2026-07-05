@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { emailHelpers } from '@/lib/email';
-import { rateLimit } from '@/lib/rate-limit';
-import { requireApiRole } from '@/lib/server-role-guard';
+import { emailHelpers } from "@tecbunny/core/email";
+import { rateLimit } from "@tecbunny/core/rate-limit";
+import { requireApiRole } from "@tecbunny/core/server-role-guard";
 
 // Marketing emails: stricter (2 per 30m) due to bulk nature
 const LIMIT = 2;

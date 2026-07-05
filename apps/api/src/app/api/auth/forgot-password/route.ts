@@ -3,9 +3,9 @@ import { createClient } from '@supabase/supabase-js';
 
 import type { User } from '@supabase/supabase-js';
 
-import { verifyCaptcha } from '@/lib/captcha/captcha-service';
-import { logger } from '@/lib/logger';
-import { OTPManager, type OTPChannel } from '@/lib/otp-manager';
+import { verifyCaptcha } from "@tecbunny/core/captcha/captcha-service";
+import { logger } from "@tecbunny/core/logger";
+import { OTPManager, type OTPChannel } from "@tecbunny/core/otp-manager";
 
 // Rate limiting storage (in production, use Redis)
 const rateLimitMap = new Map<string, { count: number; resetTime: number }>();

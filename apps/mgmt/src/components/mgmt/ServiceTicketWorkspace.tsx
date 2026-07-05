@@ -4,8 +4,8 @@ import * as React from 'react';
 import { AlertTriangle, CalendarDays, MapPin, RefreshCw, Wrench } from 'lucide-react';
 
 import { Button } from "@tecbunny/ui";
-import { createClient } from '@/lib/supabase/client';
-import type { ServiceTicket } from '@/lib/types';
+import { createClient } from "@tecbunny/core/supabase/client";
+import type { ServiceTicket } from "@tecbunny/core/types";
 
 interface ServiceTicketWorkspaceProps {
   mode: 'manager' | 'engineer';

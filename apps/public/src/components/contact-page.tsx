@@ -13,7 +13,7 @@ import {
   Send,
 } from 'lucide-react';
 
-import { logger } from '@/lib/logger';
+import { logger } from "@tecbunny/core/logger";
 
 import { Button } from "@tecbunny/ui";
 import { Checkbox } from "@tecbunny/ui";

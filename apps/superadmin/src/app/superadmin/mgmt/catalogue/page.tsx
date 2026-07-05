@@ -19,7 +19,7 @@ import { Button } from "@tecbunny/ui";
 import { Badge } from "@tecbunny/ui";
 import { Switch } from "@tecbunny/ui";
 import { Checkbox } from "@tecbunny/ui";
-import { logger } from '@/lib/logger';
+import { logger } from "@tecbunny/core/logger";
 
 interface CatalogueItem {
   id: string;

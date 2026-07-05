@@ -14,11 +14,11 @@ import crypto from 'crypto';
 import { NextRequest, NextResponse } from 'next/server';
 
 
-import { logger } from '@/lib/logger';
-import { createServiceClient, isSupabaseServiceConfigured, createClient } from '@/lib/supabase/server';
-import { getSessionWithRole } from '@/lib/auth/server-role';
-import { getSystemPrompt } from '@/lib/ai/prompts';
-import { TaxClassificationError } from '@/lib/ai/tax-classification';
+import { logger } from "@tecbunny/core/logger";
+import { createServiceClient, isSupabaseServiceConfigured, createClient } from "@tecbunny/core/supabase/server";
+import { getSessionWithRole } from "@tecbunny/core/auth/server-role";
+import { getSystemPrompt } from "@tecbunny/core/ai/prompts";
+import { TaxClassificationError } from "@tecbunny/core/ai/tax-classification";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Constants

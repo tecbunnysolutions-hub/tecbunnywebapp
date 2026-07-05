@@ -2,11 +2,11 @@
  * Enhanced Commission Service
  * Handles agent commission calculation with product-specific rules and pre-tax calculations
  */
-import { createServiceClient, isSupabaseServiceConfigured } from '@/lib/supabase/server';
+import { createServiceClient, isSupabaseServiceConfigured } from "@tecbunny/core/supabase/server";
 import type {
   AgentCommissionRule,
   OrderItem
-} from '@/lib/types';
+} from "@tecbunny/core/types";
 
 import { logger } from './logger';
 import { WhatsAppService } from './whatsapp-service';

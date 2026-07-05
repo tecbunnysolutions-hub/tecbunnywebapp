@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServiceClient } from '@/lib/supabase/server';
-import { WhatsAppService } from '@/lib/whatsapp-service';
-import { logger } from '@/lib/logger';
+import { createServiceClient } from "@tecbunny/core/supabase/server";
+import { WhatsAppService } from "@tecbunny/core/whatsapp-service";
+import { logger } from "@tecbunny/core/logger";
 
 /**
  * SLA Re-engagement Loop: Automated background evaluation worker

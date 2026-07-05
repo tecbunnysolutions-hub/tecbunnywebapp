@@ -7,14 +7,14 @@ import { User, CheckCircle, XCircle, Clock, Users, Edit, Camera, Monitor, Bell, 
 
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 
-import { logger } from '@/lib/logger';
+import { logger } from "@tecbunny/core/logger";
 
 import { Button } from "@tecbunny/ui";
 import { useToast } from "@tecbunny/ui";
 
 import { EditProfileDialog } from '@/components/profile/EditProfileDialog';
 import { TwoFactorSetup } from '@/components/auth/TwoFactorSetup';
-import { useAuth } from '@/lib/hooks';
+import { useAuth } from "@tecbunny/core/hooks";
 
 interface UserProfileProps {
   user: SupabaseUser;

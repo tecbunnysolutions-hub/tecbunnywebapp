@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { AdminAuthError, requireAdminContext } from '@/lib/auth/admin-guard';
+import { AdminAuthError, requireAdminContext } from "@tecbunny/core/auth/admin-guard";
 
 // Force dynamic rendering for this route
 // export const dynamic = 'force-dynamic';

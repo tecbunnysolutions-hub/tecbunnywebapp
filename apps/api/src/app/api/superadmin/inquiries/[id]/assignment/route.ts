@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 
-import { requireSuperadminContext, AdminAuthError } from '@/lib/auth/admin-guard';
-import improvedEmailService from '@/lib/improved-email-service';
-import { logger } from '@/lib/logger';
+import { requireSuperadminContext, AdminAuthError } from "@tecbunny/core/auth/admin-guard";
+import improvedEmailService from "@tecbunny/core/improved-email-service";
+import { logger } from "@tecbunny/core/logger";
 
 const assignmentSchema = z.object({
   assignedUserId: z.string().uuid(),

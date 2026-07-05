@@ -34,11 +34,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@tecbunny/ui";
-import { createClient } from '@/lib/supabase/client';
+import { createClient } from "@tecbunny/core/supabase/client";
 import { useToast } from "@tecbunny/ui";
-import { logger } from '@/lib/logger';
+import { logger } from "@tecbunny/core/logger";
 import { Badge } from "@tecbunny/ui";
-import type { Service } from '@/lib/types';
+import type { Service } from "@tecbunny/core/types";
 
 const serviceSchema = z.object({
   title: z.string().min(3, 'Title must be at least 3 characters'),

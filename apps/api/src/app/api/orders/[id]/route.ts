@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient as createServerClient, createServiceClient, isSupabaseServiceConfigured } from '@/lib/supabase/server';
-import { deserializeOrder } from '@/lib/orders/normalizers';
-import { logger } from '@/lib/logger';
+import { createClient as createServerClient, createServiceClient, isSupabaseServiceConfigured } from "@tecbunny/core/supabase/server";
+import { deserializeOrder } from "@tecbunny/core/orders/normalizers";
+import { logger } from "@tecbunny/core/logger";
 
 export async function GET(
   request: NextRequest,

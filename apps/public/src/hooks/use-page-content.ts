@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-import { logger } from '@/lib/logger';
+import { logger } from "@tecbunny/core/logger";
 
 interface PageContent {
   id: string;

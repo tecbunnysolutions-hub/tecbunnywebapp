@@ -1,12 +1,12 @@
 import { NextRequest } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-import { OTPManager } from '@/lib/otp-manager';
-import { logger } from '@/lib/logger';
-import { apiError, apiSuccess } from '@/lib/errors';
-import { verifyCaptcha } from '@/lib/captcha/captcha-service';
-import { rateLimit } from '@/lib/rate-limit';
-import { requireSupabaseServiceEnv } from '@/lib/supabase/env';
+import { OTPManager } from "@tecbunny/core/otp-manager";
+import { logger } from "@tecbunny/core/logger";
+import { apiError, apiSuccess } from "@tecbunny/core/errors";
+import { verifyCaptcha } from "@tecbunny/core/captcha/captcha-service";
+import { rateLimit } from "@tecbunny/core/rate-limit";
+import { requireSupabaseServiceEnv } from "@tecbunny/core/supabase/env";
 
 const SEND_OTP_IP_LIMIT = { limit: 5, windowMs: 15 * 60 * 1000 };
 const SEND_OTP_IDENTIFIER_LIMIT = { limit: 3, windowMs: 15 * 60 * 1000 };

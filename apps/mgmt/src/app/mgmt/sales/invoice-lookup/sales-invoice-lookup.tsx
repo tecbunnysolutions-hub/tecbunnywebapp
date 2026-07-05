@@ -8,10 +8,10 @@ import { Search } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@tecbunny/ui";
 import { Button } from "@tecbunny/ui";
 import { Input } from "@tecbunny/ui";
-import type { Order } from '@/lib/types';
+import type { Order } from "@tecbunny/core/types";
 import { InvoiceTemplate, type CompanySettings } from '@/components/invoices/InvoiceTemplate';
 import { useToast } from "@tecbunny/ui";
-import { createClient } from '@/lib/supabase/client';
+import { createClient } from "@tecbunny/core/supabase/client";
 
 
 // In a real app, this would be fetched from a database

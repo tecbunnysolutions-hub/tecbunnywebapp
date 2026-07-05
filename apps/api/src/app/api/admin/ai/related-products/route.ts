@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { createClient, createServiceClient, isSupabaseServiceConfigured } from '@/lib/supabase/server';
-import { requireAdminContext } from '@/lib/auth/admin-guard';
-import { logger } from '@/lib/logger';
+import { createClient, createServiceClient, isSupabaseServiceConfigured } from "@tecbunny/core/supabase/server";
+import { requireAdminContext } from "@tecbunny/core/auth/admin-guard";
+import { logger } from "@tecbunny/core/logger";
 
 const tokenize = (text: string) =>
   text

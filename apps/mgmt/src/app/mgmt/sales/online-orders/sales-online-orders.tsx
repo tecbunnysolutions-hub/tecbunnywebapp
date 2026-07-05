@@ -6,14 +6,14 @@ import * as React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@tecbunny/ui";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@tecbunny/ui";
 import { Badge } from "@tecbunny/ui";
-import type { Order } from '@/lib/types';
+import type { Order } from "@tecbunny/core/types";
 import { useToast } from "@tecbunny/ui";
 import { Skeleton } from "@tecbunny/ui";
-import { createClient } from '@/lib/supabase/client';
-import { useAuth } from '@/lib/hooks';
-import { isManagerClient } from '@/lib/permissions-client';
+import { createClient } from "@tecbunny/core/supabase/client";
+import { useAuth } from "@tecbunny/core/hooks";
+import { isManagerClient } from "@tecbunny/core/permissions-client";
 import { OrderActions } from '@/components/sales/OrderActions';
-import { formatOrderNumber } from '@/lib/order-utils';
+import { formatOrderNumber } from "@tecbunny/core/order-utils";
 
 export default function OnlineOrdersPage({ orderType = 'Delivery' }: { orderType?: string }) {
   const [orders, setOrders] = React.useState<Order[]>([]);

@@ -10,7 +10,7 @@ import { Input } from "@tecbunny/ui";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@tecbunny/ui";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@tecbunny/ui";
 import { useToast } from "@tecbunny/ui";
-import type { ContactMessage, ContactMessageStatus, InquiryCategory } from '@/lib/types';
+import type { ContactMessage, ContactMessageStatus, InquiryCategory } from "@tecbunny/core/types";
 
 type Staff = {
   id: string;

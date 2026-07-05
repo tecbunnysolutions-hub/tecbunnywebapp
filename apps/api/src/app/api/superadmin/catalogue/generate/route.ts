@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import { createServiceClient } from '@/lib/supabase/server';
-import { verifySuperadminSessionToken } from '@/lib/auth/superadmin-session';
-import { generateCataloguePdf } from '@/lib/catalogue-pdf-generator';
-import { logger } from '@/lib/logger';
+import { createServiceClient } from "@tecbunny/core/supabase/server";
+import { verifySuperadminSessionToken } from "@tecbunny/core/auth/superadmin-session";
+import { generateCataloguePdf } from "@tecbunny/core/catalogue-pdf-generator";
+import { logger } from "@tecbunny/core/logger";
 
 export async function POST(request: NextRequest) {
   try {

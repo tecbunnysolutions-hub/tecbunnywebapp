@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse, after } from 'next/server';
 import crypto from 'crypto';
 
-import { createClient } from '@/lib/supabase/server';
-import { sendWhatsAppNotification } from '@/lib/whatsapp-service';
-import { logger } from '@/lib/logger';
-import { validateWebhookSignature, validateWebhookTimestamp } from '@/lib/webhook-validator';
-import { logWebhookEvent } from '@/lib/webhook-logger';
-import { getRedis } from '@/lib/redis';
+import { createClient } from "@tecbunny/core/supabase/server";
+import { sendWhatsAppNotification } from "@tecbunny/core/whatsapp-service";
+import { logger } from "@tecbunny/core/logger";
+import { validateWebhookSignature, validateWebhookTimestamp } from "@tecbunny/core/webhook-validator";
+import { logWebhookEvent } from "@tecbunny/core/webhook-logger";
+import { getRedis } from "@tecbunny/core/redis";
 
 const deriveWebhookEventId = (source: string, rawBody: string, signature: string | null): string => {
   return crypto

@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-import { verifyCaptcha } from '@/lib/captcha/captcha-service';
-import { logger } from '@/lib/logger';
-import { rateLimit } from '@/lib/rate-limit';
-import { OTPManager, type OTPChannel } from '@/lib/otp-manager';
+import { verifyCaptcha } from "@tecbunny/core/captcha/captcha-service";
+import { logger } from "@tecbunny/core/logger";
+import { rateLimit } from "@tecbunny/core/rate-limit";
+import { OTPManager, type OTPChannel } from "@tecbunny/core/otp-manager";
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY;

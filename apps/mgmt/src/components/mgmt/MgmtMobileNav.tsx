@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation';
 import { Menu, X } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
-import { cn } from '@/lib/utils';
+import { cn } from "@tecbunny/core/utils";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@tecbunny/ui";
 
 export type MgmtNavItem = {

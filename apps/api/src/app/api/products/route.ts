@@ -2,13 +2,13 @@ import crypto from 'crypto';
 
 import { NextRequest, NextResponse } from 'next/server';
 
-import { createClient, createServiceClient, isSupabaseServiceConfigured } from '@/lib/supabase/server';
-import { getSessionWithRole } from '@/lib/auth/server-role';
-import { logger } from '@/lib/logger';
-import { getProductDisplayImage } from '@/lib/image-utils';
-import { filterPubliclyVisibleProducts, isPubliclyVisibleProduct } from '@/lib/product-visibility';
-import { classifyProductTax, TaxClassificationError, type ProductTaxClassification } from '@/lib/ai/tax-classification';
-import { processAndUploadExternalImage } from '@/lib/image-processor';
+import { createClient, createServiceClient, isSupabaseServiceConfigured } from "@tecbunny/core/supabase/server";
+import { getSessionWithRole } from "@tecbunny/core/auth/server-role";
+import { logger } from "@tecbunny/core/logger";
+import { getProductDisplayImage } from "@tecbunny/core/image-utils";
+import { filterPubliclyVisibleProducts, isPubliclyVisibleProduct } from "@tecbunny/core/product-visibility";
+import { classifyProductTax, TaxClassificationError, type ProductTaxClassification } from "@tecbunny/core/ai/tax-classification";
+import { processAndUploadExternalImage } from "@tecbunny/core/image-processor";
 
 const HANDLE_MAX_LENGTH = 60;
 const PUBLIC_PRODUCTS_CACHE_CONTROL = 'public, s-maxage=300, stale-while-revalidate=900';

@@ -4,8 +4,8 @@ import * as React from 'react';
 import { ShoppingCart } from 'lucide-react';
 
 import { Button } from "@tecbunny/ui";
-import { useCart } from '@/lib/hooks';
-import type { Product } from '@/lib/types';
+import { useCart } from "@tecbunny/core/hooks";
+import type { Product } from "@tecbunny/core/types";
 
 interface AddToCartButtonProps {
   product: Product;

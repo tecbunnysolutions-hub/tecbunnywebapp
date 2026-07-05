@@ -1,6 +1,6 @@
-import { Product } from '@/lib/types';
-import { stripHtmlToPlainText } from '@/lib/strings';
-import { envConfig } from '@/lib/environment-validator';
+import { Product } from "@tecbunny/core/types";
+import { stripHtmlToPlainText } from "@tecbunny/core/strings";
+import { envConfig } from "@tecbunny/core/environment-validator";
 
 export default function ProductJsonLd({ product }: { product: Product }) {
   const siteUrl = envConfig.app.siteUrl;

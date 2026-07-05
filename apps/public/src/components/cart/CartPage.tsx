@@ -4,9 +4,9 @@ import * as React from "react";
 import Link from "next/link";
 import { Gift, ShoppingCart, Tag, ArrowRight, Lock } from "lucide-react";
 
-import { useCart } from "@/lib/hooks";
-import { logger } from "@/lib/logger";
-import type { Coupon } from "@/lib/types";
+import { useCart } from "@tecbunny/core/hooks";
+import { logger } from "@tecbunny/core/logger";
+import type { Coupon } from "@tecbunny/core/types";
 import { Button } from "@tecbunny/ui";
 import { Alert, AlertDescription, AlertTitle } from "@tecbunny/ui";
 import { Badge } from "@tecbunny/ui";

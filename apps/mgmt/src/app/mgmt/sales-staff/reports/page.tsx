@@ -5,10 +5,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@tecb
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@tecbunny/ui";
 import { Badge } from "@tecbunny/ui";
 import { Skeleton } from "@tecbunny/ui";
-import { useAuth } from '@/lib/hooks';
-import { createClient } from '@/lib/supabase/client';
+import { useAuth } from "@tecbunny/core/hooks";
+import { createClient } from "@tecbunny/core/supabase/client";
 import { Award, DollarSign, TrendingUp, Calendar } from 'lucide-react';
-import type { Order } from '@/lib/types';
+import type { Order } from "@tecbunny/core/types";
 
 export default function SalesStaffReportsPage() {
   const { user } = useAuth();

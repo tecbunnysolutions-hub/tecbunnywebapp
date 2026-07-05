@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 
-import { requireRole } from '@/lib/auth/guard';
-import { normalizeRole, UserRole } from '@/lib/roles';
-import { createServiceClient , isSupabaseServiceConfigured , createClient } from '@/lib/supabase/server';
+import { requireRole } from "@tecbunny/core/auth/guard";
+import { normalizeRole, UserRole } from "@tecbunny/core/roles";
+import { createServiceClient , isSupabaseServiceConfigured , createClient } from "@tecbunny/core/supabase/server";
 
 interface Body {
   userId: string;

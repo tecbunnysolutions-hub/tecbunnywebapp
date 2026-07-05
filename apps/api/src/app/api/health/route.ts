@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { createClient } from '@/lib/supabase/server';
-import { environmentValidator } from '@/lib/environment-validator';
-import { logger } from '@/lib/logger';
+import { createClient } from "@tecbunny/core/supabase/server";
+import { environmentValidator } from "@tecbunny/core/environment-validator";
+import { logger } from "@tecbunny/core/logger";
 
 interface HealthCheck {
   service: string;

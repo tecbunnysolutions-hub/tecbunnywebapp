@@ -26,13 +26,13 @@ import {
   FormMessage,
 } from "@tecbunny/ui";
 import { Input } from "@tecbunny/ui";
-import { useAuth } from '@/lib/hooks';
+import { useAuth } from "@tecbunny/core/hooks";
 import { useToast } from "@tecbunny/ui";
-import { createClient } from '@/lib/supabase/client';
-import { logger } from '@/lib/logger';
-import { normalizeRole } from '@/lib/roles';
-import { useCartStore } from '@/store/cartStore';
-import { useWishlistStore } from '@/store/wishlistStore';
+import { createClient } from "@tecbunny/core/supabase/client";
+import { logger } from "@tecbunny/core/logger";
+import { normalizeRole } from "@tecbunny/core/roles";
+import { useCartStore } from "@tecbunny/core/store/cartStore";
+import { useWishlistStore } from "@tecbunny/core/store/wishlistStore";
 
 const loginSchema = z.object({
   identifier: z.string().trim().email({ message: 'Enter a valid email address.' }),

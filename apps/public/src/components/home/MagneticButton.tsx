@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePrefersReducedMotion } from '@/hooks/use-prefers-reduced-motion';
-import { cn } from '@/lib/utils';
+import { cn } from "@tecbunny/core/utils";
 
 interface MagneticButtonProps extends React.AnchorHTMLAttributes<HTMLAnchorElement> {
   href: string;

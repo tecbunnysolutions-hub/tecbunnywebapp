@@ -29,12 +29,12 @@ import {
 } from 'lucide-react';
 
 import { Button } from "@tecbunny/ui";
-import { cn, revealDelayClass } from '@/lib/utils';
-import { useCart } from '@/lib/hooks';
+import { cn, revealDelayClass } from "@tecbunny/core/utils";
+import { useCart } from "@tecbunny/core/hooks";
 import { useAnalytics } from '../hooks/use-analytics';
 import { usePermissions } from '../hooks/use-permissions';
 import { useRevealSections } from '../hooks/use-reveal-sections';
-import type { Product, Service } from '@/lib/types';
+import type { Product, Service } from "@tecbunny/core/types";
 import { BRAND_LOGO_URL } from "@tecbunny/ui";
 
 const iconMap: Record<string, ComponentType<LucideProps>> = {

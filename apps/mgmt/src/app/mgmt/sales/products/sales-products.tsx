@@ -38,7 +38,7 @@ import {
   DropdownMenuTrigger,
 } from "@tecbunny/ui";
 
-import type { Product } from '@/lib/types';
+import type { Product } from "@tecbunny/core/types";
 import { Badge } from "@tecbunny/ui";
 
 
@@ -46,7 +46,7 @@ import { useToast } from "@tecbunny/ui";
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 
 
-import { createClient } from '@/lib/supabase/client';
+import { createClient } from "@tecbunny/core/supabase/client";
 
 export default function ProductManagementPage() {
   const [productList, setProductList] = React.useState<Product[]>([]);

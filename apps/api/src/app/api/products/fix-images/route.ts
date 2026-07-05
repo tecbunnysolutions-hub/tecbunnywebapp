@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { createClient } from '@/lib/supabase/server';
-import { requireAdmin } from '@/lib/admin-auth';
-import { logger } from '@/lib/logger';
-import { imageJobsQueue } from '@/lib/queue/image-jobs';
+import { createClient } from "@tecbunny/core/supabase/server";
+import { requireAdmin } from "@tecbunny/core/admin-auth";
+import { logger } from "@tecbunny/core/logger";
+import { imageJobsQueue } from "@tecbunny/core/queue/image-jobs";
 
 function isValidOrigin(request: NextRequest): boolean {
   const origin = request.headers.get('origin');

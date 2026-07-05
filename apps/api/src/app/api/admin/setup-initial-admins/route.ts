@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import { rateLimit } from '@/lib/rate-limit';
-import { requireSupabaseServiceEnv } from '@/lib/supabase/env';
+import { rateLimit } from "@tecbunny/core/rate-limit";
+import { requireSupabaseServiceEnv } from "@tecbunny/core/supabase/env";
 
 let supabaseAdmin: any = null;
 

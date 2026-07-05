@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServiceClient } from '@/lib/supabase/server';
-import { logger } from '@/lib/logger';
+import { createServiceClient } from "@tecbunny/core/supabase/server";
+import { logger } from "@tecbunny/core/logger";
 
 /**
  * Public API for Whitelabel Embeddable Configurator

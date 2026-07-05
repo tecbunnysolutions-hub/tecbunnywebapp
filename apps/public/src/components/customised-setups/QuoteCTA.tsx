@@ -3,7 +3,7 @@
 import * as React from 'react';
 import { useRouter } from 'next/navigation';
 
-import { useAuth } from '@/lib/hooks';
+import { useAuth } from "@tecbunny/core/hooks";
 import { Button } from "@tecbunny/ui";
 import { Checkbox } from "@tecbunny/ui";
 import { Input } from "@tecbunny/ui";

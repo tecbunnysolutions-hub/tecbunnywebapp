@@ -33,9 +33,9 @@ import {
 } from 'lucide-react';
 
 import { Logo } from "@tecbunny/ui";
-import { cn } from '@/lib/utils';
+import { cn } from "@tecbunny/core/utils";
 import { Button } from "@tecbunny/ui";
-import { useAuth } from '@/lib/hooks';
+import { useAuth } from "@tecbunny/core/hooks";
 
 import { Separator } from "@tecbunny/ui";
 import { MgmtMobileNav } from '@/components/mgmt/MgmtMobileNav';

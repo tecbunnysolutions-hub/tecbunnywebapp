@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient, createServiceClient, isSupabaseServiceConfigured } from '@/lib/supabase/server';
-import { isAtLeast } from '@/lib/roles';
-import { logger } from '@/lib/logger';
-import { generateGeminiText } from '@/lib/ai/gemini-service';
-import { getSystemPrompt } from '@/lib/ai/prompts';
+import { createClient, createServiceClient, isSupabaseServiceConfigured } from "@tecbunny/core/supabase/server";
+import { isAtLeast } from "@tecbunny/core/roles";
+import { logger } from "@tecbunny/core/logger";
+import { generateGeminiText } from "@tecbunny/core/ai/gemini-service";
+import { getSystemPrompt } from "@tecbunny/core/ai/prompts";
 
 const ADMIN_REPORT_HINT = `You are the TecBunny admin assistant. Provide concise, factual responses. If data is missing, say so.`;
 const AI_RESPONSE_TIMEOUT_MS = 8000;

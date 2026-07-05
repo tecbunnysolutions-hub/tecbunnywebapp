@@ -19,8 +19,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@tecbunny/ui";
 import { Label } from "@tecbunny/ui";
 import { useToast } from "@tecbunny/ui";
-import { fetchAiProductDetails, formatAiSpecifications } from '@/lib/ai/product-details';
-import { createClient } from '@/lib/supabase/client';
+import { fetchAiProductDetails, formatAiSpecifications } from "@tecbunny/core/ai/product-details";
+import { createClient } from "@tecbunny/core/supabase/client";
 
 const productSchema = z.object({
   name: z.string().min(3, { message: "Product name must be at least 3 characters." }),

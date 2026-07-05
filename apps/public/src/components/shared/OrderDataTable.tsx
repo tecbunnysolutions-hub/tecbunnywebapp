@@ -10,11 +10,11 @@ import { Badge } from "@tecbunny/ui";
 import { Button } from "@tecbunny/ui";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@tecbunny/ui";
 import { Skeleton } from "@tecbunny/ui";
-import type { Order, OrderType, OrderStatus } from '@/lib/types';
+import type { Order, OrderType, OrderStatus } from "@tecbunny/core/types";
 import { useToast } from "@tecbunny/ui";
 import { OrderActions } from '../sales/OrderActions';
-import { formatOrderNumber } from '@/lib/order-utils';
-import { createClient } from '@/lib/supabase/client';
+import { formatOrderNumber } from "@tecbunny/core/order-utils";
+import { createClient } from "@tecbunny/core/supabase/client";
 
 const STATUS_VARIANT: Record<OrderStatus, 'default' | 'destructive' | 'outline' | 'secondary'> = {
   'Pending': 'outline',

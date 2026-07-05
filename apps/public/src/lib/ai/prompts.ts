@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server';
+import { createClient } from "@tecbunny/core/supabase/server";
 
 const MINIMAL_FALLBACKS: Record<string, string> = {
   research: `You are an expert technical consultant and e-commerce research assistant for TecBunny.

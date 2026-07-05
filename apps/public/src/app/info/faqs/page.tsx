@@ -1,5 +1,5 @@
 import { Suspense } from 'react';
-import { createClient } from '@/lib/supabase/server';
+import { createClient } from "@tecbunny/core/supabase/server";
 import FaqsClient from '@/components/FaqsClient';
 import { Skeleton } from "@tecbunny/ui";
 

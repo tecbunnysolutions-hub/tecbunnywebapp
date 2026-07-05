@@ -1,9 +1,9 @@
 import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
-import { logger } from '@/lib/logger';
-import { sendWhatsAppNotification } from '@/lib/whatsapp-service';
-import { requireSupabaseServiceEnv } from '@/lib/supabase/env';
-import { createQuoteActionToken, verifyQuoteActionToken } from '@/lib/quotes/action-token';
+import { logger } from "@tecbunny/core/logger";
+import { sendWhatsAppNotification } from "@tecbunny/core/whatsapp-service";
+import { requireSupabaseServiceEnv } from "@tecbunny/core/supabase/env";
+import { createQuoteActionToken, verifyQuoteActionToken } from "@tecbunny/core/quotes/action-token";
 
 let supabaseInstance: any = null;
 function getSupabase(): any {

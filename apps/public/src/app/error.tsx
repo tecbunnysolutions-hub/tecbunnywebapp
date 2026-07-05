@@ -2,7 +2,7 @@
 
 import { PublicRouteError } from '@/components/shared/PublicRouteError';
 import { useEffect } from 'react';
-import { logger } from '@/lib/logger';
+import { logger } from "@tecbunny/core/logger";
 
 export default function RootError({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
   useEffect(() => {

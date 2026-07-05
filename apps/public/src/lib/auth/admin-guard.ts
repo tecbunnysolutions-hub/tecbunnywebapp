@@ -1,10 +1,10 @@
 import type { User } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
 
-import { createClient, createServiceClient, isSupabaseServiceConfigured } from '@/lib/supabase/server';
-import { logger } from '@/lib/logger';
-import { ALL_ROLES, normalizeRole as normalizeKnownRole, type UserRole } from '@/lib/roles';
-import { verifySuperadminSessionToken } from '@/lib/auth/superadmin-session';
+import { createClient, createServiceClient, isSupabaseServiceConfigured } from "@tecbunny/core/supabase/server";
+import { logger } from "@tecbunny/core/logger";
+import { ALL_ROLES, normalizeRole as normalizeKnownRole, type UserRole } from "@tecbunny/core/roles";
+import { verifySuperadminSessionToken } from "@tecbunny/core/auth/superadmin-session";
 
 type AdminRole = 'admin' | 'superadmin';
 

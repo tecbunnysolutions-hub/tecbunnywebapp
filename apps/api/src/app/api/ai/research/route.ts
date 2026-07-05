@@ -1,13 +1,13 @@
 import crypto from 'crypto';
 import { NextRequest, NextResponse } from 'next/server';
 
-import { createClient } from '@/lib/supabase/server';
-import { generateGeminiText } from '@/lib/ai/gemini-service';
-import { getProductDisplayImage } from '@/lib/image-utils';
-import { getRedis } from '@/lib/redis';
-import { getSystemPrompt } from '@/lib/ai/prompts';
-import { rateLimit } from '@/lib/rate-limit';
-import { logger } from '@/lib/logger';
+import { createClient } from "@tecbunny/core/supabase/server";
+import { generateGeminiText } from "@tecbunny/core/ai/gemini-service";
+import { getProductDisplayImage } from "@tecbunny/core/image-utils";
+import { getRedis } from "@tecbunny/core/redis";
+import { getSystemPrompt } from "@tecbunny/core/ai/prompts";
+import { rateLimit } from "@tecbunny/core/rate-limit";
+import { logger } from "@tecbunny/core/logger";
 
 const MAX_SOURCES = 3;
 const MAX_SOURCE_CHARS = 3500;

@@ -5,10 +5,10 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
 import { InvoiceTemplate, type CompanySettings } from '@/components/invoices/InvoiceTemplate';
-import type { Order } from '@/lib/types';
-import { createServiceClient } from '@/lib/supabase/server';
-import { deserializeOrder } from '@/lib/orders/normalizers';
-import { logger } from '@/lib/logger';
+import type { Order } from "@tecbunny/core/types";
+import { createServiceClient } from "@tecbunny/core/supabase/server";
+import { deserializeOrder } from "@tecbunny/core/orders/normalizers";
+import { logger } from "@tecbunny/core/logger";
 
 // export const dynamic = 'force-dynamic';
 

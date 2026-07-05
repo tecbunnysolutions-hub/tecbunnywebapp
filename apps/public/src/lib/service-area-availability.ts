@@ -1,5 +1,5 @@
-import { logger } from '@/lib/logger';
-import { createServiceClient, isSupabaseServiceConfigured } from '@/lib/supabase/server';
+import { logger } from "@tecbunny/core/logger";
+import { createServiceClient, isSupabaseServiceConfigured } from "@tecbunny/core/supabase/server";
 
 export type ServiceAreaAvailability = {
   available: boolean;

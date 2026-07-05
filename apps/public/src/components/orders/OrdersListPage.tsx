@@ -4,19 +4,19 @@ import React, { useEffect, useState } from 'react';
 
 import { Package, Search, Calendar, MapPin, CreditCard, Eye } from 'lucide-react';
 
-import { formatOrderNumber } from '@/lib/order-utils';
+import { formatOrderNumber } from "@tecbunny/core/order-utils";
 
-import { getOrderStatusFlow, getServiceOrderStatusFlow } from '@/lib/data';
+import { getOrderStatusFlow, getServiceOrderStatusFlow } from "@tecbunny/core/data";
 
-import { useAuth } from '@/lib/hooks';
+import { useAuth } from "@tecbunny/core/hooks";
 import { useRouter } from 'next/navigation';
-import { useOrder } from '../../context/OrderProvider';
+import { useOrder } from "@tecbunny/core/context/OrderProvider";
 import { Card, CardContent, CardHeader, CardTitle } from "@tecbunny/ui";
 import { Button } from "@tecbunny/ui";
 import { Badge } from "@tecbunny/ui";
 import { Input } from "@tecbunny/ui";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@tecbunny/ui";
-import type { Order, OrderStatus } from '@/lib/types';
+import type { Order, OrderStatus } from "@tecbunny/core/types";
 
 export default function OrdersListPage() {
   const { user, loading: authLoading } = useAuth();

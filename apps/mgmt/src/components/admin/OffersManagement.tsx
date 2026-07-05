@@ -51,8 +51,8 @@ import {
 } from "@tecbunny/ui";
 import { useToast } from "@tecbunny/ui";
 import { useDebounce } from '../../hooks/use-debounce';
-import { logger } from '@/lib/logger';
-import type { Coupon, Discount } from '@/lib/types';
+import { logger } from "@tecbunny/core/logger";
+import type { Coupon, Discount } from "@tecbunny/core/types";
 
 import { CreateDiscountDialog } from './CreateDiscountDialog';
 

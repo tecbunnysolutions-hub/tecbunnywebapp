@@ -12,8 +12,8 @@ import { Skeleton } from "@tecbunny/ui";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@tecbunny/ui";
 import { Textarea } from "@tecbunny/ui";
 import { useToast } from "@tecbunny/ui";
-import type { ContactMessage, ContactMessageStatus } from '@/lib/types';
-import { logger } from '@/lib/logger';
+import type { ContactMessage, ContactMessageStatus } from "@tecbunny/core/types";
+import { logger } from "@tecbunny/core/logger";
 
 const STATUS_BADGE_VARIANT: Record<ContactMessageStatus, 'default' | 'secondary' | 'outline' | 'destructive'> = {
   New: 'secondary',

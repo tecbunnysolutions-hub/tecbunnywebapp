@@ -3,9 +3,9 @@
 import * as React from 'react';
 import { Pencil, Plus, Trash2, MoreHorizontal, Loader2, Upload, Download } from 'lucide-react';
 import { useToast } from "@tecbunny/ui";
-import { logger } from '@/lib/logger';
-import type { Product } from '@/lib/types';
-import { getProductDisplayImage } from '@/lib/image-utils';
+import { logger } from "@tecbunny/core/logger";
+import type { Product } from "@tecbunny/core/types";
+import { getProductDisplayImage } from "@tecbunny/core/image-utils";
 import { usePathname } from 'next/navigation';
 
 import {

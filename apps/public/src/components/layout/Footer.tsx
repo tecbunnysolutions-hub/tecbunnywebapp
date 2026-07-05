@@ -6,8 +6,8 @@ import { Logo } from "@tecbunny/ui";
 
 import { Facebook, Twitter, Instagram, Linkedin, Youtube, Globe, FileText, Shield } from 'lucide-react';
 
-import { createClient } from '@/lib/supabase/client';
-import { logger } from '@/lib/logger';
+import { createClient } from "@tecbunny/core/supabase/client";
+import { logger } from "@tecbunny/core/logger";
 import { useAnalytics } from '../../hooks/use-analytics';
 
 function WhatsAppIcon(props: React.SVGProps<SVGSVGElement>) {

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 
-import { createClient, createServiceClient , isSupabaseServiceConfigured } from '@/lib/supabase/server'
+import { createClient, createServiceClient , isSupabaseServiceConfigured } from "@tecbunny/core/supabase/server"
 
 // export const dynamic = 'force-dynamic'
 

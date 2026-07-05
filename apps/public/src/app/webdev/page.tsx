@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 
 import { Button } from "@tecbunny/ui";
-import { createPageMetadata } from '@/lib/metadata';
+import { createPageMetadata } from "@tecbunny/core/metadata";
 
 export async function generateMetadata(): Promise<Metadata> {
   return createPageMetadata({

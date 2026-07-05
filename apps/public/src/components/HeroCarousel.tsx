@@ -4,12 +4,12 @@ import * as React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import sanitizeHtml from '@/lib/sanitize-html';
+import sanitizeHtml from "@tecbunny/core/sanitize-html";
 
 import { usePageContent } from '../hooks/use-page-content';
 import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
-import type { HeroCarouselContent, HeroCarouselItem, HeroCarouselPageKey } from '@/lib/types';
-import { cn } from '@/lib/utils';
+import type { HeroCarouselContent, HeroCarouselItem, HeroCarouselPageKey } from "@tecbunny/core/types";
+import { cn } from "@tecbunny/core/utils";
 
 interface HeroCarouselProps {
   pageKey: HeroCarouselPageKey;

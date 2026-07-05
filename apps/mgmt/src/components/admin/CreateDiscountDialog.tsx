@@ -32,9 +32,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@tecbunny/ui";
-import type { Coupon, Product, Discount } from '@/lib/types';
-import { createClient } from '@/lib/supabase/client';
-import { logger } from '@/lib/logger';
+import type { Coupon, Product, Discount } from "@tecbunny/core/types";
+import { createClient } from "@tecbunny/core/supabase/client";
+import { logger } from "@tecbunny/core/logger";
 import { useToast } from "@tecbunny/ui";
 
 // Coupon schema (requires code)
