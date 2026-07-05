@@ -1,10 +1,38 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-// @ts-ignore
-import { createClient } from "@tecbunny/core/supabase/client";
+import { createServerClient } from '@supabase/ssr';
+import { requireSupabasePublicEnv } from '@tecbunny/core/supabase/env';
 
 export async function middleware(request: NextRequest) {
-  const supabase = await createClient();
+  let supabasePublicEnv: ReturnType<typeof requireSupabasePublicEnv>;
+  try {
+    supabasePublicEnv = requireSupabasePublicEnv();
+  } catch (error) {
+    console.error('Middleware Supabase configuration error:', error);
+    return new NextResponse('Internal Server Error: Missing Supabase Config', { status: 500 });
+  }
+
+  let response = NextResponse.next({ request: { headers: request.headers } });
+
+  const supabase = createServerClient(
+    supabasePublicEnv.url,
+    supabasePublicEnv.publicKey,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll();
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
+          response = NextResponse.next({ request });
+          cookiesToSet.forEach(({ name, value, options }) => {
+            response.cookies.set(name, value, options);
+          });
+        },
+      },
+    }
+  );
+
   const { data: { user } } = await supabase.auth.getUser();
 
   // If no user, redirect to login (assuming superadmin uses the same auth flow or custom route)
@@ -24,7 +52,7 @@ export async function middleware(request: NextRequest) {
     return new NextResponse('Forbidden: Superadmin Privileges Required', { status: 403 });
   }
 
-  return NextResponse.next();
+  return response;
 }
 
 export const config = {

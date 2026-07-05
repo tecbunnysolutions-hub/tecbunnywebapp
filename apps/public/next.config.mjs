@@ -28,6 +28,7 @@ const allowedImageHosts = Array.from(new Set([
 
 const nextConfig = {
   ...(isStaticExport ? { output: 'export' } : {}),
+  transpilePackages: ["@tecbunny/core", "@tecbunny/ui"],
   experimental: {
     optimizeCss: true,
   },
