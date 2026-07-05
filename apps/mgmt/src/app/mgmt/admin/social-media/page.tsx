@@ -1,4 +1,4 @@
-import SocialMediaManager from '@tecbunny/admin-ui';
+import { SocialMediaManager } from '@tecbunny/admin-ui';
 
 export default function SocialMediaPage() {
   return (

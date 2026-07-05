@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 
-import OffersManagement from '@tecbunny/admin-ui';
+import { OffersManagement } from '@tecbunny/admin-ui';
 
 export const metadata: Metadata = {
   title: 'Offers Management - Admin Panel | TecBunny Solutions',

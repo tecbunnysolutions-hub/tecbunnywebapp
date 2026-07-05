@@ -1,4 +1,4 @@
-import { Admincontact-messages as AdminContactMessages } from '@tecbunny/admin-ui';
+import { AdminContactMessages } from '@tecbunny/admin-ui';
 
 // export const dynamic = 'force-dynamic';
 

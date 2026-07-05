@@ -15,7 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Skeleton } from "@tecbunny/ui";
 import type { Order, OrderType, OrderStatus } from '@tecbunny/core';
 import { useToast } from "@tecbunny/ui";
-import { OrderActions } from '../sales/OrderActions';
+import { OrderActions } from './OrderActions';
 import { formatOrderNumber } from "@tecbunny/core/order-utils";
 
 

@@ -16,7 +16,7 @@ import { Label } from "@tecbunny/ui";
 import { Textarea } from "@tecbunny/ui";
 import { Switch } from "@tecbunny/ui";
 import { useToast } from "@tecbunny/ui";
-import { usePaymentMethods } from '../../../../hooks/use-payment-methods';
+import { usePaymentMethods } from '@tecbunny/core/hooks';
 import { Alert, AlertDescription, AlertTitle } from "@tecbunny/ui";
 import { InfoIcon } from 'lucide-react';
 

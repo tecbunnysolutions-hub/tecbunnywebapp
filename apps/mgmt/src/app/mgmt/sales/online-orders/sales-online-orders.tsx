@@ -13,7 +13,7 @@ import { Skeleton } from "@tecbunny/ui";
 
 import { useAuth } from "@tecbunny/core/hooks";
 import { isManagerClient } from "@tecbunny/core/permissions-client";
-import { OrderActions } from '@/components/sales/OrderActions';
+import { OrderActions } from '@tecbunny/admin-ui';
 import { formatOrderNumber } from "@tecbunny/core/order-utils";
 
 export default function OnlineOrdersPage({ orderType = 'Delivery' }: { orderType?: string }) {

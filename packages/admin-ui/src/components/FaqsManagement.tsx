@@ -11,7 +11,7 @@ import { Button } from "@tecbunny/ui";
 import { Input } from "@tecbunny/ui";
 import { Textarea } from "@tecbunny/ui";
 import { Switch } from "@tecbunny/ui";
-import { LoadingSpinner } from '@/shared/LoadingSpinner';
+import { LoadingSpinner } from '../shared/LoadingSpinner';
 import {
   Table,
   TableBody,

@@ -11,7 +11,7 @@ import {
   Upload,
 } from 'lucide-react';
 
-import { usePageContent } from '../../hooks/use-page-content';
+import { usePageContent } from '@tecbunny/core/hooks';
 import { useToast } from "@tecbunny/ui";
 import type { HeroCarouselContent, HeroCarouselItem, HeroCarouselPageKey } from "@tecbunny/core/types";
 

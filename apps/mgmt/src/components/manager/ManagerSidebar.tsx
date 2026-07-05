@@ -22,7 +22,7 @@ import { Logo } from "@tecbunny/ui";
 import { cn } from "@tecbunny/core/utils";
 import { Button } from "@tecbunny/ui";
 import { useAuth } from "@tecbunny/core/hooks";
-import { MgmtMobileNav } from '@/components/mgmt/MgmtMobileNav';
+import { MgmtMobileNav } from '@tecbunny/admin-ui';
 
 const navItems = [
   { href: '/mgmt/manager', label: 'Dashboard', icon: LayoutDashboard, exact: true },

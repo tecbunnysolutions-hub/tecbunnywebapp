@@ -33,7 +33,7 @@ import { EditUserDialog } from '@tecbunny/admin-ui';
 import { DiscountOffersDialog } from '@tecbunny/admin-ui';
 import { UniversalSearch, SearchFilter, SortOption } from '@tecbunny/admin-ui';
 import { useToast } from "@tecbunny/ui";
-import { useDebounce } from '@tecbunny/core/hooks/use-debounce';
+import { useDebounce } from '@tecbunny/core/hooks';
 
 const ROLE_SENTINEL_NONE = '__none__';
 

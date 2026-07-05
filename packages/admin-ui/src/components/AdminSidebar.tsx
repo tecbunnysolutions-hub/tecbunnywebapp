@@ -38,7 +38,7 @@ import { Button } from "@tecbunny/ui";
 import { useAuth } from "@tecbunny/core/hooks";
 
 import { Separator } from "@tecbunny/ui";
-import { MgmtMobileNav } from '@/components/mgmt/MgmtMobileNav';
+import { MgmtMobileNav } from '../shared/MgmtMobileNav';
 
 type NavItem = {
   href: string;
