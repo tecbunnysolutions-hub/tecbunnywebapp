@@ -35,12 +35,14 @@ export async function middleware(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser();
 
-  // If no user, redirect to login (assuming superadmin uses the same auth flow or custom route)
+  // If no user, redirect to login
   if (!user) {
+    // Avoid infinite redirect loop
+    if (request.nextUrl.pathname === '/superadmin/login') {
+      return response;
+    }
     const url = request.nextUrl.clone();
-    // Assuming mgmt dashboard handles auth or there is a specific superadmin login
-    url.hostname = 'mgmt.tecbunny.com';
-    url.pathname = '/auth/login';
+    url.pathname = '/superadmin/login';
     return NextResponse.redirect(url);
   }
 

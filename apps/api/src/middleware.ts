@@ -4,10 +4,10 @@ import type { NextRequest } from 'next/server';
 const allowedOrigins = [
   'https://tecbunny.com',
   'https://www.tecbunny.com',
-  'https://mgmt.tecbunny.com',
+  'https://staff.tecbunny.com',
   'https://superadmin.tecbunny.com',
   'http://localhost:3000', // public
-  'http://localhost:3001', // mgmt
+  'http://localhost:3001', // staff
   'http://localhost:3002', // superadmin
 ];
 
