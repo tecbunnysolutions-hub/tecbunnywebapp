@@ -52,7 +52,6 @@ import {
   FALLBACK_RACK_OPTIONS,
   FALLBACK_CONDUIT_PIPE_OPTIONS,
   FALLBACK_INSTALLATION_OPTION,
-  buildPricingCatalog,
   calculateTotals,
   pickCapacityOption,
   calculateQuantity,
@@ -65,6 +64,7 @@ import {
   buildIpSystemSummary,
   resolveAccessoryPrice,
 } from "@tecbunny/core/custom-setup-pricing";
+import { buildPricingCatalog } from "@tecbunny/core/custom-setup-pricing-server";
 
 export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupFlowProps) {
   const isTech = variant === 'tech';

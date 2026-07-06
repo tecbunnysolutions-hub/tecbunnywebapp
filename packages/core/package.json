@@ -27,6 +27,7 @@
     "./constants": "./src/constants.ts",
     "./crypto-utils": "./src/crypto-utils.ts",
     "./custom-setup-pricing": "./src/custom-setup-pricing.ts",
+    "./custom-setup-pricing-server": "./src/custom-setup-pricing-server.ts",
     "./custom-setup-service": "./src/custom-setup-service.ts",
     "./custom-setup.constants": "./src/custom-setup.constants.ts",
     "./data": "./src/data.ts",

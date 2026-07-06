@@ -9,10 +9,10 @@ import { logger } from "@tecbunny/core";
 import { getCustomSetupBlueprintSummary } from "@tecbunny/core/custom-setup-service";
 import { DEFAULT_CUSTOM_SETUP_TEMPLATE_SLUG } from "@tecbunny/core/custom-setup.constants";
 import {
-  buildPricingCatalog,
   calculateTotals,
   FALLBACK_HDD_OPTIONS
 } from "@tecbunny/core/custom-setup-pricing";
+import { buildPricingCatalog } from "@tecbunny/core/custom-setup-pricing-server";
 
 export const runtime = 'nodejs';
 
