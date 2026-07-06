@@ -18,11 +18,9 @@ const STAFF_ROLES = ['sales_executive', 'store_executive', 'sales_agent', 'servi
 const SALES_ROLES = ['sales_executive', 'store_executive', 'sales_agent', 'sales_manager'];
 const ROLE_SENTINEL_NONE = '__none__';
 const SORTABLE_COLUMNS: Record<string, string> = {
-  name: 'name',
+  name: 'full_name',
   email: 'email',
   role: 'role',
-  customerCategory: 'customer_category',
-  discountPercentage: 'discount_percentage',
   created_at: 'created_at',
   updated_at: 'updated_at'
 };
@@ -247,29 +245,14 @@ export async function GET(request: NextRequest) {
       profileQuery = profileQuery.in('role', roles);
     }
 
-    if (status === 'active') {
-      profileQuery = profileQuery.eq('is_active', true);
-    } else if (status === 'inactive') {
-      profileQuery = profileQuery.eq('is_active', false);
-    }
-
-    if (customerCategories.length) {
-      profileQuery = profileQuery.in('customer_category', customerCategories);
-    }
-
-    if (discountMin !== null && Number.isFinite(discountMin)) {
-      profileQuery = profileQuery.gte('discount_percentage', discountMin);
-    }
-
-    if (discountMax !== null && Number.isFinite(discountMax)) {
-      profileQuery = profileQuery.lte('discount_percentage', discountMax);
-    }
+    // customer_category and discount_percentage columns do not exist in profiles table
+    // is_active column does not exist in profiles table
 
     if (search) {
       const sanitizedSearch = search.replace(/[%_]/g, (match) => `\\${match}`);
       const pattern = `%${sanitizedSearch}%`;
       profileQuery = profileQuery.or(
-        `name.ilike.${pattern},email.ilike.${pattern},mobile.ilike.${pattern}`
+        `full_name.ilike.${pattern},email.ilike.${pattern},phone.ilike.${pattern}`
       );
     }
 
