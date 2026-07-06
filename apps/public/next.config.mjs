@@ -77,6 +77,18 @@ const nextConfig = {
       },
     ];
   },
+  async rewrites() {
+    if (isStaticExport) return [];
+    
+    // Proxy API requests to the external API app
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.tecbunny.com';
+    return [
+      {
+        source: '/api/:path*',
+        destination: `${apiUrl}/api/:path*`,
+      },
+    ];
+  },
 }
 
 export default nextConfig

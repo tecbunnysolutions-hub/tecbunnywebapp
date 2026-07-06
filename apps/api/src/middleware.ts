@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { verifySuperadminSessionToken } from '@tecbunny/core/src/auth/superadmin-session';
 
 const allowedOrigins = [
   'https://tecbunny.com',
@@ -11,10 +12,29 @@ const allowedOrigins = [
   'http://localhost:3002', // superadmin
 ];
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const origin = request.headers.get('origin');
   const authHeader = request.headers.get('authorization');
   const isM2MAuth = authHeader === `Bearer ${process.env.INTERNAL_SERVICE_KEY}`;
+  const pathname = request.nextUrl.pathname;
+
+  // Protect Dashboard Routes
+  if (pathname.startsWith('/dashboard') || pathname.startsWith('/login')) {
+    const superadminCookie = request.cookies.get('superadmin-session')?.value;
+    const isSuperadmin = Boolean(await verifySuperadminSessionToken(superadminCookie));
+
+    if (pathname.startsWith('/dashboard') && !isSuperadmin) {
+      const loginUrl = new URL('/login', request.url);
+      return NextResponse.redirect(loginUrl);
+    }
+
+    if (pathname.startsWith('/login') && isSuperadmin) {
+      const dashboardUrl = new URL('/dashboard', request.url);
+      return NextResponse.redirect(dashboardUrl);
+    }
+
+    return NextResponse.next();
+  }
 
   // Allow M2M Auth directly (e.g., from WABA worker)
   if (isM2MAuth) {
@@ -57,5 +77,9 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: '/api/:path*',
+  matcher: [
+    '/api/:path*',
+    '/dashboard/:path*',
+    '/login'
+  ]
 };
