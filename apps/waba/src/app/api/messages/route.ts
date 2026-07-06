@@ -47,9 +47,9 @@ export async function GET(req: Request) {
 
     return NextResponse.json({ conversations: conversationsWithMessages });
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Failed to fetch messages', error);
-    return NextResponse.json({ error: 'Failed to fetch messages' }, { status: 500 });
+    return NextResponse.json({ error: error.message || 'Failed to fetch messages', details: error }, { status: 500 });
   }
 }
 
