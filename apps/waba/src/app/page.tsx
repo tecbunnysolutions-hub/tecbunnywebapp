@@ -132,9 +132,12 @@ export default function Dashboard() {
       const data = await res.json();
       if (data.conversations) {
         setConversations(data.conversations);
-        setLoading(false);
       }
-    } catch (err) { console.error(err); }
+    } catch (err) { 
+      console.error(err); 
+    } finally {
+      setLoading(false);
+    }
   };
 
   const fetchMessages = async (sender: string) => {

@@ -1,36 +1,78 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# TecBunny WhatsApp Business API (WABA) (`apps/waba`)
 
-## Getting Started
+Welcome to the **TecBunny WABA Application**. This is a specialized microservice within the ecosystem dedicated entirely to handling interactions with the Meta/WhatsApp Business API.
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## 📖 Project Overview
+
+The WABA app bridges the gap between the TecBunny backend and WhatsApp users. It is responsible for sending transactional outbounds (like OTPs, Order Confirmations) and receiving inbound messages. Crucially, it incorporates Google's Generative AI to provide users with an intelligent, conversational bot experience directly within WhatsApp.
+
+## ✨ In-Depth Features
+
+### 1. Outbound Transactional Messaging
+- **Automated Notifications**: Triggers templated WhatsApp messages for critical system events (e.g., "Your order has shipped").
+- **OTP Delivery**: Sends One-Time Passwords via WhatsApp as an alternative (or addition) to SMS for authentication.
+
+### 2. Inbound Webhook Processing
+- **Event Listeners**: Consumes real-time webhooks from Meta to track message delivery receipts (Sent, Delivered, Read).
+- **Message Routing**: Receives incoming customer messages, identifies the user via their phone number, and routes the message to the internal AI handler or human support queue.
+
+### 3. AI-Powered Chatbot
+- **Generative Responses**: Integrates `@google/generative-ai` to parse natural language queries (e.g., "Where is my order?" or "What are your server prices?") and generates contextually accurate responses using data fetched from the main API/Database.
+- **Context Management**: Maintains conversation history to provide seamless multi-turn interactions.
+
+---
+
+## 🛠 Tech Stack
+
+- **Framework**: Next.js (Used primarily for robust webhook endpoints and routing logic).
+- **Language**: TypeScript
+- **Database ORM**: Prisma Client (`@prisma/client`) - specifically chosen for structured logging of chat histories and delivery statuses.
+- **AI Integration**: Google Generative AI (`@google/generative-ai`)
+- **Backend Sync**: Supabase (`@supabase/supabase-js`) for linking WhatsApp numbers to registered platform accounts.
+- **Internal Libraries**: `@tecbunny/core`
+
+---
+
+## 📁 Directory Structure
+
+```text
+apps/waba/
+├── prisma/                  # Prisma schema and migrations specifically for WABA tables
+├── src/
+│   ├── app/                 # Webhook endpoints (e.g., /api/webhook)
+│   ├── lib/                 # Shared utilities and constants
+│   └── services/            # Core logic for sending messages, parsing incoming, and AI generation
+├── test_outbound.js         # Quick script for testing outbound messages
+├── test_webhook.js          # Quick script for simulating incoming webhooks
+├── package.json             # Scripts & Dependencies
+└── next.config.ts           # Next.js configuration
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 💻 Scripts & Getting Started
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Prerequisites
+- Node.js (v20+)
+- Active Meta Developer account with WABA configured.
+- Database access for Prisma.
 
-## Learn More
+### Installation & Running
 
-To learn more about Next.js, take a look at the following resources:
+Before starting, ensure you have generated the Prisma client:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+# Generate Prisma Client
+npx prisma generate
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+# Start the development server
+npm run dev
+```
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+To test incoming webhooks locally, you must expose your localhost to the internet using a reverse proxy tool like Ngrok:
+```bash
+ngrok http 3000
+```
+Then, update your Meta Developer Dashboard with the generated Ngrok URL.

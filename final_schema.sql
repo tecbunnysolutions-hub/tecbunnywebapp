@@ -10,7 +10,8 @@
 -- ==========================================
 
 -- Profiles
-CREATE TABLE IF NOT EXISTS public.profiles (
+DROP TABLE IF EXISTS public.profiles CASCADE;
+CREATE TABLE public.profiles (
     id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
     full_name TEXT,
     phone TEXT UNIQUE,
@@ -22,7 +23,8 @@ CREATE TABLE IF NOT EXISTS public.profiles (
 );
 
 -- Customers (Used heavily by webhooks)
-CREATE TABLE IF NOT EXISTS public.customers (
+DROP TABLE IF EXISTS public.customers CASCADE;
+CREATE TABLE public.customers (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     phone TEXT UNIQUE,
     name TEXT,
@@ -32,7 +34,8 @@ CREATE TABLE IF NOT EXISTS public.customers (
 );
 
 -- Products
-CREATE TABLE IF NOT EXISTS public.products (
+DROP TABLE IF EXISTS public.products CASCADE;
+CREATE TABLE public.products (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     handle TEXT UNIQUE NOT NULL,
     title TEXT NOT NULL,
@@ -51,38 +54,44 @@ CREATE TABLE IF NOT EXISTS public.products (
 );
 
 -- Tenants
-CREATE TABLE IF NOT EXISTS public.tenants (
+DROP TABLE IF EXISTS public.tenants CASCADE;
+CREATE TABLE public.tenants (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name TEXT NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 -- Webhook Events
-CREATE TABLE IF NOT EXISTS public.webhook_events (
+DROP TABLE IF EXISTS public.webhook_events CASCADE;
+CREATE TABLE public.webhook_events (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    event_id TEXT UNIQUE NOT NULL,
+    event_id TEXT UNIQUE,
     event_type TEXT NOT NULL,
     source TEXT NOT NULL,
     payload JSONB,
-    error TEXT,
+    processed BOOLEAN DEFAULT false,
+    status TEXT,
+    error_message TEXT,
     processed_at TIMESTAMPTZ,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- Webhook Stats
-CREATE TABLE IF NOT EXISTS public.webhook_stats (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    date DATE NOT NULL,
-    event_type TEXT NOT NULL,
-    status TEXT NOT NULL,
-    count INTEGER DEFAULT 0,
-    avg_processing_time NUMERIC,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    UNIQUE(date, event_type, status)
-);
+-- Webhook Stats (Aggregated View)
+DROP VIEW IF EXISTS public.webhook_stats CASCADE;
+CREATE OR REPLACE VIEW public.webhook_stats AS
+SELECT 
+    DATE(created_at) AS date,
+    event_type,
+    status,
+    COUNT(*) AS count,
+    AVG(EXTRACT(EPOCH FROM (processed_at - created_at))) AS avg_processing_time
+FROM public.webhook_events
+GROUP BY DATE(created_at), event_type, status;
 
 -- Free Installation Slots
-CREATE TABLE IF NOT EXISTS public.free_installation_slots (
+DROP TABLE IF EXISTS public.free_installation_slots CASCADE;
+CREATE TABLE public.free_installation_slots (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     month DATE NOT NULL UNIQUE,
     total_slots INTEGER NOT NULL DEFAULT 10,
@@ -93,7 +102,8 @@ CREATE TABLE IF NOT EXISTS public.free_installation_slots (
 );
 
 -- Auto Offers
-CREATE TABLE IF NOT EXISTS public.auto_offers (
+DROP TABLE IF EXISTS public.auto_offers CASCADE;
+CREATE TABLE public.auto_offers (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     title TEXT NOT NULL,
     description TEXT,
@@ -103,7 +113,9 @@ CREATE TABLE IF NOT EXISTS public.auto_offers (
 );
 
 -- Settings
-CREATE TABLE IF NOT EXISTS public.settings (
+-- Settings
+DROP TABLE IF EXISTS public.settings CASCADE;
+CREATE TABLE public.settings (
     key TEXT PRIMARY KEY,
     value JSONB,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -111,14 +123,16 @@ CREATE TABLE IF NOT EXISTS public.settings (
 );
 
 -- Page Content
-CREATE TABLE IF NOT EXISTS public.page_content (
+DROP TABLE IF EXISTS public.page_content CASCADE;
+CREATE TABLE public.page_content (
     key TEXT PRIMARY KEY,
     data JSONB,
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 -- FAQs
-CREATE TABLE IF NOT EXISTS public.faqs (
+DROP TABLE IF EXISTS public.faqs CASCADE;
+CREATE TABLE public.faqs (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     question TEXT NOT NULL,
     answer TEXT NOT NULL,
@@ -128,7 +142,8 @@ CREATE TABLE IF NOT EXISTS public.faqs (
 );
 
 -- Custom Setup Offers
-CREATE TABLE IF NOT EXISTS public.custom_setup_offers (
+DROP TABLE IF EXISTS public.custom_setup_offers CASCADE;
+CREATE TABLE public.custom_setup_offers (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     title TEXT NOT NULL,
     description TEXT,
@@ -139,7 +154,8 @@ CREATE TABLE IF NOT EXISTS public.custom_setup_offers (
 );
 
 -- Published Blueprints
-CREATE TABLE IF NOT EXISTS public.published_blueprints (
+DROP TABLE IF EXISTS public.published_blueprints CASCADE;
+CREATE TABLE public.published_blueprints (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     title TEXT NOT NULL,
     description TEXT,
@@ -152,7 +168,8 @@ CREATE TABLE IF NOT EXISTS public.published_blueprints (
 );
 
 -- Services
-CREATE TABLE IF NOT EXISTS public.services (
+DROP TABLE IF EXISTS public.services CASCADE;
+CREATE TABLE public.services (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     title TEXT NOT NULL,
     description TEXT,
@@ -164,7 +181,8 @@ CREATE TABLE IF NOT EXISTS public.services (
 );
 
 -- Contact Messages
-CREATE TABLE IF NOT EXISTS public.contact_messages (
+DROP TABLE IF EXISTS public.contact_messages CASCADE;
+CREATE TABLE public.contact_messages (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name TEXT NOT NULL,
     email TEXT NOT NULL,
@@ -175,7 +193,8 @@ CREATE TABLE IF NOT EXISTS public.contact_messages (
 );
 
 -- Security Audit Log
-CREATE TABLE IF NOT EXISTS public.security_audit_log (
+DROP TABLE IF EXISTS public.security_audit_log CASCADE;
+CREATE TABLE public.security_audit_log (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID REFERENCES auth.users(id),
     action TEXT NOT NULL,
@@ -186,7 +205,8 @@ CREATE TABLE IF NOT EXISTS public.security_audit_log (
 );
 
 -- Expenses
-CREATE TABLE IF NOT EXISTS public.expenses (
+DROP TABLE IF EXISTS public.expenses CASCADE;
+CREATE TABLE public.expenses (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     category TEXT NOT NULL,
     amount NUMERIC NOT NULL,
@@ -196,7 +216,8 @@ CREATE TABLE IF NOT EXISTS public.expenses (
 );
 
 -- WABA: User
-CREATE TABLE IF NOT EXISTS public."User" (
+DROP TABLE IF EXISTS public."User" CASCADE;
+CREATE TABLE public."User" (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name TEXT,
     email TEXT UNIQUE,
@@ -206,7 +227,8 @@ CREATE TABLE IF NOT EXISTS public."User" (
 );
 
 -- WABA: Conversation
-CREATE TABLE IF NOT EXISTS public."Conversation" (
+DROP TABLE IF EXISTS public."Conversation" CASCADE;
+CREATE TABLE public."Conversation" (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     sender_number TEXT UNIQUE NOT NULL,
     contact_name TEXT,
@@ -219,7 +241,8 @@ CREATE TABLE IF NOT EXISTS public."Conversation" (
 );
 
 -- WABA: Template
-CREATE TABLE IF NOT EXISTS public."Template" (
+DROP TABLE IF EXISTS public."Template" CASCADE;
+CREATE TABLE public."Template" (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name TEXT NOT NULL,
     content TEXT NOT NULL,
@@ -229,7 +252,8 @@ CREATE TABLE IF NOT EXISTS public."Template" (
 );
 
 -- WABA: FailedApiCall
-CREATE TABLE IF NOT EXISTS public."FailedApiCall" (
+DROP TABLE IF EXISTS public."FailedApiCall" CASCADE;
+CREATE TABLE public."FailedApiCall" (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     endpoint TEXT,
     payload JSONB,
@@ -242,7 +266,8 @@ CREATE TABLE IF NOT EXISTS public."FailedApiCall" (
 -- ==========================================
 
 -- Orders
-CREATE TABLE IF NOT EXISTS public.orders (
+DROP TABLE IF EXISTS public.orders CASCADE;
+CREATE TABLE public.orders (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     order_id TEXT UNIQUE NOT NULL,
     customer_id UUID REFERENCES public.customers(id),
@@ -259,7 +284,8 @@ CREATE TABLE IF NOT EXISTS public.orders (
 );
 
 -- Sales Agents
-CREATE TABLE IF NOT EXISTS public.sales_agents (
+DROP TABLE IF EXISTS public.sales_agents CASCADE;
+CREATE TABLE public.sales_agents (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
     agent_code TEXT UNIQUE NOT NULL,
@@ -270,7 +296,8 @@ CREATE TABLE IF NOT EXISTS public.sales_agents (
 );
 
 -- Service Tickets
-CREATE TABLE IF NOT EXISTS public.service_tickets (
+DROP TABLE IF EXISTS public.service_tickets CASCADE;
+CREATE TABLE public.service_tickets (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     customer_id UUID REFERENCES public.profiles(id),
     issue_description TEXT NOT NULL,
@@ -282,7 +309,8 @@ CREATE TABLE IF NOT EXISTS public.service_tickets (
 );
 
 -- Quotes
-CREATE TABLE IF NOT EXISTS public.quotes (
+DROP TABLE IF EXISTS public.quotes CASCADE;
+CREATE TABLE public.quotes (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID REFERENCES public.profiles(id),
     total_amount NUMERIC,
@@ -293,7 +321,8 @@ CREATE TABLE IF NOT EXISTS public.quotes (
 );
 
 -- Inventory
-CREATE TABLE IF NOT EXISTS public.inventory (
+DROP TABLE IF EXISTS public.inventory CASCADE;
+CREATE TABLE public.inventory (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     product_id UUID REFERENCES public.products(id),
     sku TEXT,
@@ -304,7 +333,8 @@ CREATE TABLE IF NOT EXISTS public.inventory (
 );
 
 -- Purchases
-CREATE TABLE IF NOT EXISTS public.purchases (
+DROP TABLE IF EXISTS public.purchases CASCADE;
+CREATE TABLE public.purchases (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     supplier_name TEXT,
     product_id UUID REFERENCES public.products(id),
@@ -315,7 +345,8 @@ CREATE TABLE IF NOT EXISTS public.purchases (
 );
 
 -- Customer Interactions
-CREATE TABLE IF NOT EXISTS public.customer_interactions (
+DROP TABLE IF EXISTS public.customer_interactions CASCADE;
+CREATE TABLE public.customer_interactions (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     customer_id UUID REFERENCES public.customers(id),
     interaction_type TEXT NOT NULL,
@@ -325,7 +356,8 @@ CREATE TABLE IF NOT EXISTS public.customer_interactions (
 );
 
 -- WABA: Message
-CREATE TABLE IF NOT EXISTS public."Message" (
+DROP TABLE IF EXISTS public."Message" CASCADE;
+CREATE TABLE public."Message" (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     conversation_id UUID REFERENCES public."Conversation"(id) ON DELETE CASCADE,
     message_id TEXT UNIQUE, 
@@ -343,7 +375,8 @@ CREATE TABLE IF NOT EXISTS public."Message" (
 -- ==========================================
 
 -- Payments
-CREATE TABLE IF NOT EXISTS public.payments (
+DROP TABLE IF EXISTS public.payments CASCADE;
+CREATE TABLE public.payments (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     payment_id TEXT UNIQUE NOT NULL,
     order_id TEXT REFERENCES public.orders(order_id),
@@ -359,7 +392,8 @@ CREATE TABLE IF NOT EXISTS public.payments (
 );
 
 -- Order Cancellations
-CREATE TABLE IF NOT EXISTS public.order_cancellations (
+DROP TABLE IF EXISTS public.order_cancellations CASCADE;
+CREATE TABLE public.order_cancellations (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     order_id TEXT REFERENCES public.orders(order_id),
     reason TEXT,
@@ -368,7 +402,8 @@ CREATE TABLE IF NOT EXISTS public.order_cancellations (
 );
 
 -- Sales Agent Commissions
-CREATE TABLE IF NOT EXISTS public.sales_agent_commissions (
+DROP TABLE IF EXISTS public.sales_agent_commissions CASCADE;
+CREATE TABLE public.sales_agent_commissions (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     agent_id UUID REFERENCES public.sales_agents(id),
     order_id TEXT REFERENCES public.orders(order_id),
@@ -415,7 +450,6 @@ ALTER TABLE public.customers ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.products ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.tenants ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.webhook_events ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.webhook_stats ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.free_installation_slots ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.auto_offers ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.settings ENABLE ROW LEVEL SECURITY;
