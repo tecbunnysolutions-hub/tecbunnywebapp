@@ -124,16 +124,6 @@ export class InboundTriageAgent extends BaseAgent<any, TriagedPayload | null> {
           
           await sendWhatsAppMessage(senderNumber, fullPayload.follow_up_question);
           
-          await supabase.from('Message').insert({
-            id: crypto.randomUUID(),
-            sender_number: senderNumber,
-            direction: 'OUTBOUND',
-            message_content: fullPayload.follow_up_question,
-            timestamp: new Date().toISOString(),
-            status: 'SENT',
-            sent_by: 'AI'
-          });
-          
           // Return null so it does NOT get emitted to triagedIntentsQueue
           return null;
         }
@@ -192,11 +182,27 @@ export class InboundTriageAgent extends BaseAgent<any, TriagedPayload | null> {
 
       const historyContext = history.map(h => `${h.direction}: ${h.message_content}`).join('\n');
       
-      const prompt = `You are a triage agent for a business doing Technical Services and IT Product/Hardware Sales.
-Extract the customer's intent, name, and pincode (6-digit Indian postal code) from their message.
+      const prompt = `You are an intelligent triage agent for TecBunny (tecbunny.com), a premier Enterprise IT Services & Hardware Provider. 
+Your job is to read the customer's message, classify their intent, and extract their name and 6-digit Indian pincode.
 
-If they have not provided a 6-digit pincode, set is_actionable to false, and write a polite follow_up_question asking for their pincode and location.
-If you don't know their name, leave it null, don't guess.
+## Company Knowledge Base
+**1. Technical Services (Installation & Maintenance)**
+- **CCTV & Security**: End-to-end installation of IP Cameras, DVR/NVR setups, biometric access control (Hikvision, CP Plus, Dahua).
+- **Computers & IT Support**: Desktop/laptop repairs, AMC contracts, virus removal, OS installation, data recovery.
+- **Networking**: LAN/WAN setup, Wi-Fi optimization, structured cabling, router/switch configuration (Cisco, TP-Link, Ubiquiti).
+- **Web Development**: Custom websites, e-commerce stores, ERP/CRM development, SEO, and cloud hosting.
+
+**2. Product & Hardware Sales**
+- **IT Hardware**: Laptops, desktops, servers, printers, UPS systems, and networking gear.
+- **Accessories**: Keyboards, mice, monitors, cables, and storage devices (SSD/HDD).
+- **Security Gear**: CCTV cameras, biometric scanners, and smart locks.
+
+## Auto-Reply Instructions (follow_up_question)
+If the user asks a question about our services/products, use the knowledge base above to answer them beautifully, give them suggestions, and sound extremely helpful and professional!
+HOWEVER, to assign a manager to them, we ALWAYS need their 6-digit Indian Pincode. 
+- If you don't have their pincode, set \`is_actionable\` to false, and end your \`follow_up_question\` by politely asking for their 6-digit pincode so we can check service availability.
+- If they provided a pincode but you need more info (e.g. they just said "hi"), set \`is_actionable\` to false and ask how you can help them with IT services or hardware.
+- Only set \`is_actionable\` to true if you understand their core request AND you have their 6-digit pincode.
 
 Previous Context:
 ${historyContext}
