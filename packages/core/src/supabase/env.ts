@@ -16,9 +16,11 @@ const LEGACY_ANON_KEY_ENV = 'NEXT_PUBLIC_SUPABASE_ANON_KEY';
 const LEGACY_SERVICE_KEY_ENV = 'SUPABASE_SERVICE_ROLE_KEY';
 const SECRET_KEY_ENV = 'SUPABASE_SECRET_KEY';
 
-const env: Record<string, string | undefined> = typeof process !== 'undefined' ? process.env : {};
-
-const trimEnv = (name: string): string => ((env)[name] || '').trim();
+const trimEnv = (name: string, staticValue?: string): string => {
+  if (staticValue) return staticValue.trim();
+  if (typeof process !== 'undefined' && process.env[name]) return process.env[name]!.trim();
+  return '';
+};
 
 const isPlaceholder = (value: string): boolean =>
   !value ||
@@ -86,9 +88,9 @@ export function getSupabaseRuntimeEnv(): 'production' | 'development' {
 
 export function resolveSupabasePublicEnv(): PublicSupabaseEnv {
   const runtimeEnv = getSupabaseRuntimeEnv();
-  const url = trimEnv(SUPABASE_URL_ENV);
-  const publishableKey = trimEnv(PUBLISHABLE_KEY_ENV);
-  const anonKey = trimEnv(LEGACY_ANON_KEY_ENV);
+  const url = trimEnv(SUPABASE_URL_ENV, process.env.NEXT_PUBLIC_SUPABASE_URL);
+  const publishableKey = trimEnv(PUBLISHABLE_KEY_ENV, process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY);
+  const anonKey = trimEnv(LEGACY_ANON_KEY_ENV, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
   const publicKey = publishableKey || anonKey;
   const keySource = isPublishableKey(publicKey) ? 'publishable' : 'anon';
 
@@ -135,8 +137,8 @@ export function requireSupabasePublicEnv() {
 }
 
 export function resolveSupabaseServiceEnv(): ServiceSupabaseEnv {
-  const url = trimEnv(SUPABASE_URL_ENV);
-  const serviceKey = trimEnv(LEGACY_SERVICE_KEY_ENV) || trimEnv(SECRET_KEY_ENV);
+  const url = trimEnv(SUPABASE_URL_ENV, process.env.NEXT_PUBLIC_SUPABASE_URL);
+  const serviceKey = trimEnv(LEGACY_SERVICE_KEY_ENV, process.env.SUPABASE_SERVICE_ROLE_KEY) || trimEnv(SECRET_KEY_ENV, process.env.SUPABASE_SECRET_KEY);
 
   if (isPlaceholder(url)) {
     throw new Error(`[supabase] ${SUPABASE_URL_ENV} is required for service clients.`);
