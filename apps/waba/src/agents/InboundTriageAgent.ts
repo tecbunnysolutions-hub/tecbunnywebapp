@@ -2,26 +2,29 @@ import { BaseAgent } from './BaseAgent';
 import { triagedIntentsQueue } from '../lib/queue';
 import { supabase } from '@/lib/supabase';
 import crypto from 'crypto';
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { GoogleGenerativeAI, SchemaType } from '@google/generative-ai';
+import { sendWhatsAppMessage } from '../services/infobipService';
 
 const apiKey = process.env.GEMINI_API_KEY || "";
 const genAI = apiKey ? new GoogleGenerativeAI(apiKey) : null;
 
-interface TriagedPayload {
+// New schema as requested by user
+export interface TriagedPayload {
+  customer_name: string | null;
+  pincode: string | null;
+  domain: 'TECHNICAL_SERVICE' | 'REAL_ESTATE_BROKERAGE' | 'UNKNOWN';
+  sub_category: 'CCTV' | 'COMPUTERS' | 'NETWORKING' | 'WEB_DEV' | 'PROPERTY_SALE' | 'OTHER';
+  is_actionable: boolean;
+  follow_up_question: string | null;
+  
+  // Metadata for downstream processing
   messageId: string;
   senderNumber: string;
-  textContent: string;
-  intent: 'OPT_OUT' | 'PROPERTY_INQUIRY' | 'TECH_SERVICES' | 'UNKNOWN';
-  hoursSinceLastMessage: number;
-  contactName?: string;
-  dealValue?: string;
-  activeFlow?: string;
   history: { direction: string; message_content: string }[];
 }
 
 export class InboundTriageAgent extends BaseAgent<any, TriagedPayload | null> {
   constructor() {
-    // Consume from inbound, emit to triagedIntentsQueue
     super('inbound-whatsapp-events', triagedIntentsQueue);
   }
 
@@ -35,21 +38,13 @@ export class InboundTriageAgent extends BaseAgent<any, TriagedPayload | null> {
       if (!senderNumber || !messageId) continue;
 
       let textContent = '';
-      let mediaUrl = null;
-      let mediaType = null;
-      
-      // Basic extraction
       if (msg.message?.text) {
         textContent = msg.message.text;
       } else if (msg.content?.text) {
         textContent = msg.content.text;
       } else if (Array.isArray(msg.content) && msg.content.length > 0) {
         const content = msg.content[0];
-        if (content.type === 'TEXT') {
-          textContent = content.text || '';
-        } else {
-           textContent = `[${content.type || 'Media'}]`;
-        }
+        textContent = content.type === 'TEXT' ? (content.text || '') : `[${content.type || 'Media'}]`;
       }
 
       // Idempotency check
@@ -64,22 +59,19 @@ export class InboundTriageAgent extends BaseAgent<any, TriagedPayload | null> {
         continue;
       }
 
-      // Fetch or Create Conversation
+      // Upsert Conversation and set to PROCESSING
       const { data: existingConv } = await supabase
         .from('Conversation')
-        .select('id, ad_source, last_interaction_timestamp, ai_active, contact_name, deal_value, active_flow, status')
+        .select('id, contact_name')
         .eq('sender_number', senderNumber)
         .single();
         
-      const oldLastInteraction = existingConv?.last_interaction_timestamp ? new Date(existingConv.last_interaction_timestamp) : new Date(0);
-      const hoursSinceLastMessage = (new Date().getTime() - oldLastInteraction.getTime()) / (1000 * 60 * 60);
-
       if (existingConv) {
         await supabase
           .from('Conversation')
           .update({ 
             last_interaction_timestamp: new Date().toISOString(),
-            status: 'PROCESSING' // As requested in Phase 2
+            status: 'PROCESSING'
           })
           .eq('sender_number', senderNumber);
       } else {
@@ -105,7 +97,7 @@ export class InboundTriageAgent extends BaseAgent<any, TriagedPayload | null> {
         });
 
       if (textContent) {
-        // Fetch last 5 messages for context
+        // Fetch history for context
         const { data: historyData } = await supabase
           .from('Message')
           .select('direction, message_content')
@@ -113,70 +105,122 @@ export class InboundTriageAgent extends BaseAgent<any, TriagedPayload | null> {
           .order('timestamp', { ascending: false })
           .limit(5);
           
-        const lastBotMsg = historyData?.find(m => m.direction === 'OUTBOUND')?.message_content || null;
         const history = (historyData || []).reverse();
         
-        // Analyze Intent
-        const intent = await this.analyzeIntent(textContent, lastBotMsg);
+        // Extract structured JSON payload using Gemini
+        const triageResult = await this.extractStructuredIntent(textContent, history, existingConv?.contact_name || null);
         
-        // We return the structured payload to be placed onto the triaged-intents queue
-        return {
+        // Inject metadata
+        const fullPayload: TriagedPayload = {
+          ...triageResult,
           messageId,
           senderNumber,
-          textContent,
-          intent,
-          hoursSinceLastMessage,
-          contactName: existingConv?.contact_name,
-          dealValue: existingConv?.deal_value,
-          activeFlow: existingConv?.active_flow,
           history
         };
+
+        // Fallback Logic: If missing data (not actionable), ask the follow up question
+        if (!fullPayload.is_actionable && fullPayload.follow_up_question) {
+          console.log(`[InboundTriageAgent] Payload not actionable for ${senderNumber}. Asking: ${fullPayload.follow_up_question}`);
+          
+          await sendWhatsAppMessage(senderNumber, fullPayload.follow_up_question);
+          
+          await supabase.from('Message').insert({
+            id: crypto.randomUUID(),
+            sender_number: senderNumber,
+            direction: 'OUTBOUND',
+            message_content: fullPayload.follow_up_question,
+            timestamp: new Date().toISOString(),
+            status: 'SENT',
+            sent_by: 'AI'
+          });
+          
+          // Return null so it does NOT get emitted to triagedIntentsQueue
+          return null;
+        }
+
+        // If actionable, return payload for the Assignment Orchestrator (Phase 3)
+        return fullPayload;
       }
     }
     
     return null;
   }
 
-  private async analyzeIntent(
+  private async extractStructuredIntent(
     userMessage: string,
-    botLastMessage: string | null
-  ): Promise<'OPT_OUT' | 'PROPERTY_INQUIRY' | 'TECH_SERVICES' | 'UNKNOWN'> {
-    if (!genAI) {
-      if (userMessage.toLowerCase().trim() === 'no' || userMessage.toLowerCase().includes('stop')) return 'OPT_OUT';
-      return 'UNKNOWN';
-    }
+    history: { direction: string; message_content: string }[],
+    contactName: string | null
+  ): Promise<Omit<TriagedPayload, 'messageId' | 'senderNumber' | 'history'>> {
+    const defaultFallback: Omit<TriagedPayload, 'messageId' | 'senderNumber' | 'history'> = {
+      customer_name: null,
+      pincode: null,
+      domain: 'UNKNOWN',
+      sub_category: 'OTHER',
+      is_actionable: false,
+      follow_up_question: "I'm having trouble understanding. Could you provide your pincode and what you need help with?"
+    };
+
+    if (!genAI) return defaultFallback;
 
     try {
-      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-      const prompt = `You are an intent classifier for a real estate and technical solutions brokerage.
-The bot last said: "${botLastMessage || 'Nothing'}"
-The user replied: "${userMessage}"
+      const model = genAI.getGenerativeModel({ 
+        model: "gemini-1.5-flash",
+        generationConfig: {
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: SchemaType.OBJECT,
+            properties: {
+              customer_name: { type: SchemaType.STRING, nullable: true },
+              pincode: { type: SchemaType.STRING, nullable: true },
+              domain: { 
+                type: SchemaType.STRING, 
+                enum: ['TECHNICAL_SERVICE', 'REAL_ESTATE_BROKERAGE', 'UNKNOWN'],
+                format: 'enum'
+              },
+              sub_category: { 
+                type: SchemaType.STRING, 
+                enum: ['CCTV', 'COMPUTERS', 'NETWORKING', 'WEB_DEV', 'PROPERTY_SALE', 'OTHER'],
+                format: 'enum'
+              },
+              is_actionable: { type: SchemaType.BOOLEAN },
+              follow_up_question: { type: SchemaType.STRING, nullable: true },
+            },
+            required: ['domain', 'sub_category', 'is_actionable']
+          }
+        }
+      });
 
-Classify the user's intent into exactly ONE of these categories:
-- OPT_OUT: User says "No", declines to continue, or asks to stop/pause messages.
-- PROPERTY_INQUIRY: User asks about property, 3BHK, rent, buying, listings, etc.
-- TECH_SERVICES: User asks about tech, CCTV installation, wiring, etc.
-- UNKNOWN: Anything else, like general greetings or unrelated topics.
+      const historyContext = history.map(h => `${h.direction}: ${h.message_content}`).join('\n');
+      
+      const prompt = `You are a triage agent for a business doing Technical Services and Real Estate Brokerage.
+Extract the customer's intent, name, and pincode (6-digit Indian postal code) from their message.
 
-Output ONLY a raw JSON object, no markdown formatting or backticks. Example:
-{"intent": "OPT_OUT"}`;
+If they have not provided a 6-digit pincode, set is_actionable to false, and write a polite follow_up_question asking for their pincode and location.
+If you don't know their name, leave it null, don't guess.
+
+Previous Context:
+${historyContext}
+
+Latest Message:
+"${userMessage}"
+`;
 
       const result = await model.generateContent(prompt);
-      const text = result.response.text().trim();
+      const text = result.response.text();
       
-      try {
-        const parsed = JSON.parse(text);
-        if (parsed.intent) return parsed.intent;
-      } catch (e) {
-        if (text.includes("OPT_OUT")) return 'OPT_OUT';
-        if (text.includes("PROPERTY_INQUIRY")) return 'PROPERTY_INQUIRY';
-        if (text.includes("TECH_SERVICES")) return 'TECH_SERVICES';
-      }
-      return 'UNKNOWN';
+      const parsed = JSON.parse(text);
+      return {
+        customer_name: parsed.customer_name || contactName || null,
+        pincode: parsed.pincode || null,
+        domain: parsed.domain || 'UNKNOWN',
+        sub_category: parsed.sub_category || 'OTHER',
+        is_actionable: typeof parsed.is_actionable === 'boolean' ? parsed.is_actionable : false,
+        follow_up_question: parsed.follow_up_question || null
+      };
+
     } catch (err) {
-      console.error("[InboundTriageAgent] Intent analysis failed:", err);
-      if (userMessage.toLowerCase().trim() === 'no') return 'OPT_OUT';
-      return 'UNKNOWN';
+      console.error("[InboundTriageAgent] Intent extraction failed:", err);
+      return defaultFallback;
     }
   }
 }
