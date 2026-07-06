@@ -21,33 +21,41 @@ export default async function SuperadminDashboard() {
     redirect('/superadmin/login');
   }
 
-  const supabase = createSupabaseServiceClient();
+  let supabase;
+  let initError = null;
+  try {
+    supabase = createSupabaseServiceClient();
+  } catch (err: any) {
+    initError = err.message || 'Unknown initialization error';
+  }
 
   // Fetch telemetry counts from DB safely
   let userCount = 0;
   let adminCount = 0;
   let recentLogs: any[] = [];
 
-  try {
-    const { count } = await supabase
-      .from('profiles')
-      .select('*', { count: 'exact', head: true });
-    userCount = count || 0;
+  if (supabase) {
+    try {
+      const { count } = await supabase
+        .from('profiles')
+        .select('*', { count: 'exact', head: true });
+      userCount = count || 0;
 
-    const { count: admins } = await supabase
-      .from('profiles')
-      .select('*', { count: 'exact', head: true })
-      .in('role', ['admin', 'superadmin']);
-    adminCount = admins || 0;
+      const { count: admins } = await supabase
+        .from('profiles')
+        .select('*', { count: 'exact', head: true })
+        .in('role', ['admin', 'superadmin']);
+      adminCount = admins || 0;
 
-    const { data: logs } = await supabase
-      .from('security_audit_log')
-      .select('*')
-      .order('created_at', { ascending: false })
-      .limit(4);
-    recentLogs = logs || [];
-  } catch (e) {
-    console.error('Superadmin dashboard data fetch failed:', e);
+      const { data: logs } = await supabase
+        .from('security_audit_log')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(4);
+      recentLogs = logs || [];
+    } catch (e) {
+      console.error('Superadmin dashboard data fetch failed:', e);
+    }
   }
 
   const managementBlocks = [
@@ -149,6 +157,12 @@ export default async function SuperadminDashboard() {
       <div>
         <h1 className="text-2xl font-extrabold tracking-tight text-white sm:text-3xl">System Administration</h1>
         <p className="mt-1 max-w-3xl text-sm leading-6 text-zinc-400">Configure protected system parameters, inspect governance data, and manage core orchestration controls.</p>
+        
+        {initError && (
+          <div className="mt-4 p-4 rounded-md bg-red-500/10 border border-red-500/20 text-red-500 font-mono text-sm">
+            Critical Initialization Error: {initError}
+          </div>
+        )}
       </div>
 
       {/* Grid Layout: Stats & Logs */}
