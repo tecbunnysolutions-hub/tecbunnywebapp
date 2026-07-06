@@ -10,16 +10,14 @@ async function fetchFaqs() {
   const supabase = await createClient();
   const { data: faqs, error } = await supabase
     .from('faqs')
-    .select('id, category, question, answer, display_order')
-    .eq('is_published', true)
-    .order('category', { ascending: true })
-    .order('display_order', { ascending: true });
+    .select('id, category, question, answer')
+    .order('category', { ascending: true });
 
   if (error) {
     console.error('Error loading FAQs from DB:', error);
     return [];
   }
-  return faqs || [];
+  return (faqs || []).map((faq: any) => ({ ...faq, display_order: 0 }));
 }
 
 export default async function FaqsPage() {

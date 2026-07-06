@@ -76,7 +76,8 @@ export async function createPageMetadata({
   const xHandle = process.env.NEXT_PUBLIC_X_HANDLE;
 
   const actualImage = image || defaultOgImage;
-  const activeImage = (actualImage === '/brand.png' || actualImage.endsWith('/brand.png')) ? defaultOgImage : actualImage;
+  const actualImageStr = typeof actualImage === 'string' ? actualImage : String(actualImage);
+  const activeImage = (actualImageStr === '/brand.png' || actualImageStr.endsWith('/brand.png')) ? defaultOgImage : actualImageStr;
   const resolvedImage = activeImage.startsWith('http') ? activeImage : `${siteUrl}${activeImage}`;
   
   const rawCanonical = path.startsWith('http') ? path : `${siteUrl}${path}`;

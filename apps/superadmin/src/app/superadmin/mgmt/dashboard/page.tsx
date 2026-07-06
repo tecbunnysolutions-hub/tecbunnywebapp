@@ -18,7 +18,8 @@ export default async function SuperadminDashboard() {
   const isSuperadmin = Boolean(await verifySuperadminSessionToken(superadminCookie));
 
   if (!isSuperadmin) {
-    redirect('/superadmin/login');
+    // layout.tsx will handle the redirect, returning null here prevents concurrent redirect errors
+    return null;
   }
 
   let supabase;
