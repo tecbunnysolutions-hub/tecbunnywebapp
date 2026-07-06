@@ -33,37 +33,19 @@ export default function ProfilePage() {
         if (cancelled) return;
         setUser(authUser);
 
-        const { data: profileData } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', authUser.id)
-          .maybeSingle();
-
-        const { data: salesAgent } = await supabase
-          .from('sales_agents')
-          .select('*')
-          .eq('user_id', authUser.id)
-          .maybeSingle();
-
-        const { data: recentOrders } = await supabase
-          .from('orders')
-          .select('id, status, total, total_amount, created_at, type')
-          .eq('customer_id', authUser.id)
-          .order('created_at', { ascending: false })
-          .limit(3);
-
-        const { data: recentTickets } = await supabase
-          .from('service_tickets')
-          .select('id, issue_description, status, priority, created_at')
-          .eq('customer_id', authUser.id)
-          .order('created_at', { ascending: false })
-          .limit(5);
-
-        const { data: quoteData } = await supabase
-          .from('quotes')
-          .select('*')
-          .eq('user_id', authUser.id)
-          .order('created_at', { ascending: false });
+        const [
+          { data: profileData },
+          { data: salesAgent },
+          { data: recentOrders },
+          { data: recentTickets },
+          { data: quoteData }
+        ] = await Promise.all([
+          supabase.from('profiles').select('*').eq('id', authUser.id).maybeSingle(),
+          supabase.from('sales_agents').select('*').eq('user_id', authUser.id).maybeSingle(),
+          supabase.from('orders').select('id, status, total, total_amount, created_at, type').eq('customer_id', authUser.id).order('created_at', { ascending: false }).limit(3),
+          supabase.from('service_tickets').select('id, issue_description, status, priority, created_at').eq('customer_id', authUser.id).order('created_at', { ascending: false }).limit(5),
+          supabase.from('quotes').select('*').eq('user_id', authUser.id).order('created_at', { ascending: false })
+        ]);
 
         const fallbackProfile = profileData ?? {
           id: authUser.id,

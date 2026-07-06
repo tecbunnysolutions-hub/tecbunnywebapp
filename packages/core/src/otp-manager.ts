@@ -227,10 +227,56 @@ export class OTPManager {
 
   private async sendWhatsAppOTP(phone: string, code: string, purpose: string): Promise<ChannelSendSuccess> {
     try {
-      // WhatsApp sending is disabled
+      const baseUrl = process.env.INFOBIP_BASE_URL;
+      const apiKey = process.env.INFOBIP_API_KEY;
+      const from = process.env.INFOBIP_WHATSAPP_FROM;
+      const templateName = process.env.INFOBIP_WHATSAPP_TEMPLATE_NAME || 'tecbunny12';
+      const language = process.env.INFOBIP_WHATSAPP_TEMPLATE_LANGUAGE || 'en_GB';
+
+      if (!baseUrl || !apiKey || !from) {
+         throw new Error("InfoBip environment variables are missing for WhatsApp OTP.");
+      }
+
+      const cleanPhone = phone.replace(/\D/g, '');
+
+      const response = await fetch(`${baseUrl}/whatsapp/1/message/template`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `App ${apiKey}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify({
+          messages: [
+            {
+              from,
+              to: cleanPhone,
+              content: {
+                templateName,
+                templateData: {
+                  body: {
+                    placeholders: [code]
+                  }
+                },
+                language
+              }
+            }
+          ]
+        })
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`InfoBip API Error: ${response.status} ${errorText}`);
+      }
+
+      const responseData = await response.json();
+      
       return {
         success: true,
-        provider: 'disabled'
+        provider: 'infobip_whatsapp',
+        providerMessageId: responseData.messages?.[0]?.messageId,
+        raw: responseData
       };
     } catch (error) {
       throw new Error(error instanceof Error ? error.message : 'WhatsApp send failed');
