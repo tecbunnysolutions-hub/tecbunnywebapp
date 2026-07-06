@@ -1,3 +1,5 @@
+'use server';
+
 import type { CategoryGstRates } from './utils';
 import type { UserRole, CustomerCategory } from '@tecbunny/core';
 import { 

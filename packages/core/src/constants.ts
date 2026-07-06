@@ -1,3 +1,5 @@
+'use server';
+
 import { getAppSettings } from './config-db';
 
 export async function getSupportPhone(): Promise<string> {

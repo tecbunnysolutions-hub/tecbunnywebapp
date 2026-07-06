@@ -23,7 +23,7 @@ const PAGE_CONTENT_SELECTS = [
 
 export async function getPageContentServer(pageKey: string): Promise<PageContent | null> {
   try {
-    const supabase = createSupabaseClient();
+    const supabase = await createSupabaseClient();
     
     // Try modern and legacy schemas dynamically
     const attempts = [
