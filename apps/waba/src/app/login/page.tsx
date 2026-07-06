@@ -1,47 +1,48 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { createClient } from "@tecbunny/core/supabase/client";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
-  const [name, setName] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
+  const [error, setError] = useState("");
+
+  const supabase = createClient();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !name) return;
+    if (!email || !password) return;
     
     setLoading(true);
+    setError("");
+    
     try {
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, name })
+      const { data, error: authError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
       });
-      if (res.ok) {
-        window.location.href = "/";
+      
+      if (authError) {
+        setError(authError.message);
+        setLoading(false);
+        return;
       }
-    } catch (err) {
-      console.error(err);
-    }
-    setLoading(false);
-  };
 
-  const handleQuickLogin = async () => {
-    setLoading(true);
-    try {
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: 'demo@business.com', name: 'Demo Agent' })
-      });
-      if (res.ok) {
+      if (data.user) {
+        // Set the legacy waba_agent_id cookie for existing WABA api routes if needed
+        await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: data.user.email, name: data.user.user_metadata?.first_name || 'Agent', id: data.user.id })
+        });
+        
         window.location.href = "/";
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
+      setError("An unexpected error occurred");
     }
     setLoading(false);
   };
@@ -55,19 +56,13 @@ export default function LoginPage() {
           <p style={{ color: '#94a3b8', fontSize: '0.9rem', marginTop: '0.5rem' }}>Access your WABA CRM Workspace</p>
         </div>
 
-        <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          <div className="crm-field">
-            <label>Agent Name</label>
-            <input 
-              type="text" 
-              className="crm-input" 
-              value={name} 
-              onChange={e => setName(e.target.value)}
-              placeholder="e.g. John Smith"
-              required
-            />
+        {error && (
+          <div style={{ padding: '1rem', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.2)', borderRadius: '8px', color: '#fca5a5', fontSize: '0.9rem' }}>
+            {error}
           </div>
-          
+        )}
+
+        <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           <div className="crm-field">
             <label>Email Address</label>
             <input 
@@ -75,7 +70,19 @@ export default function LoginPage() {
               className="crm-input" 
               value={email} 
               onChange={e => setEmail(e.target.value)}
-              placeholder="john@business.com"
+              placeholder="agent@tecbunny.com"
+              required
+            />
+          </div>
+          
+          <div className="crm-field">
+            <label>Password</label>
+            <input 
+              type="password" 
+              className="crm-input" 
+              value={password} 
+              onChange={e => setPassword(e.target.value)}
+              placeholder="••••••••"
               required
             />
           </div>
@@ -99,29 +106,6 @@ export default function LoginPage() {
             {loading ? 'Authenticating...' : 'Sign In to Workspace'}
           </button>
         </form>
-
-        <div style={{ textAlign: 'center', marginTop: '1rem', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '1.5rem' }}>
-          <p style={{ fontSize: '0.85rem', color: '#94a3b8', marginBottom: '1rem' }}>Just want to test the app?</p>
-          <button 
-            type="button"
-            onClick={handleQuickLogin}
-            disabled={loading}
-            style={{
-              width: '100%',
-              padding: '1rem',
-              background: 'rgba(255,255,255,0.1)',
-              color: 'white',
-              border: '1px solid rgba(255,255,255,0.2)',
-              borderRadius: '8px',
-              fontWeight: 600,
-              cursor: loading ? 'not-allowed' : 'pointer',
-              fontSize: '0.95rem',
-              transition: 'background 0.2s'
-            }}
-          >
-            ⚡ Quick Login as Demo Agent
-          </button>
-        </div>
       </div>
     </div>
   );

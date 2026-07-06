@@ -7,9 +7,11 @@ const allowedOrigins = [
   'https://www.tecbunny.com',
   'https://staff.tecbunny.com',
   'https://superadmin.tecbunny.com',
+  'https://api.tecbunny.com',
   'http://localhost:3000', // public
   'http://localhost:3001', // staff
   'http://localhost:3002', // superadmin
+  'http://localhost:3003', // api
 ];
 
 export async function middleware(request: NextRequest) {
