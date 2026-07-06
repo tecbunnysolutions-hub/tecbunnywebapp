@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { verifySuperadminSessionToken } from '@tecbunny/core/server';
+import { verifySuperadminSessionToken } from '@tecbunny/core/auth/superadmin-session';
 
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next({ request: { headers: request.headers } });
