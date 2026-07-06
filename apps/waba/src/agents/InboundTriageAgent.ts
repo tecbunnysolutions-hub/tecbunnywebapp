@@ -12,8 +12,8 @@ const genAI = apiKey ? new GoogleGenerativeAI(apiKey) : null;
 export interface TriagedPayload {
   customer_name: string | null;
   pincode: string | null;
-  domain: 'TECHNICAL_SERVICE' | 'REAL_ESTATE_BROKERAGE' | 'UNKNOWN';
-  sub_category: 'CCTV' | 'COMPUTERS' | 'NETWORKING' | 'WEB_DEV' | 'PROPERTY_SALE' | 'OTHER';
+  domain: 'TECHNICAL_SERVICE' | 'PRODUCT_SALES' | 'UNKNOWN';
+  sub_category: 'CCTV' | 'COMPUTERS' | 'NETWORKING' | 'WEB_DEV' | 'HARDWARE_SALES' | 'OTHER';
   is_actionable: boolean;
   follow_up_question: string | null;
   
@@ -174,12 +174,12 @@ export class InboundTriageAgent extends BaseAgent<any, TriagedPayload | null> {
               pincode: { type: SchemaType.STRING, nullable: true },
               domain: { 
                 type: SchemaType.STRING, 
-                enum: ['TECHNICAL_SERVICE', 'REAL_ESTATE_BROKERAGE', 'UNKNOWN'],
+                enum: ['TECHNICAL_SERVICE', 'PRODUCT_SALES', 'UNKNOWN'],
                 format: 'enum'
               },
               sub_category: { 
                 type: SchemaType.STRING, 
-                enum: ['CCTV', 'COMPUTERS', 'NETWORKING', 'WEB_DEV', 'PROPERTY_SALE', 'OTHER'],
+                enum: ['CCTV', 'COMPUTERS', 'NETWORKING', 'WEB_DEV', 'HARDWARE_SALES', 'OTHER'],
                 format: 'enum'
               },
               is_actionable: { type: SchemaType.BOOLEAN },
@@ -192,7 +192,7 @@ export class InboundTriageAgent extends BaseAgent<any, TriagedPayload | null> {
 
       const historyContext = history.map(h => `${h.direction}: ${h.message_content}`).join('\n');
       
-      const prompt = `You are a triage agent for a business doing Technical Services and Real Estate Brokerage.
+      const prompt = `You are a triage agent for a business doing Technical Services and IT Product/Hardware Sales.
 Extract the customer's intent, name, and pincode (6-digit Indian postal code) from their message.
 
 If they have not provided a 6-digit pincode, set is_actionable to false, and write a polite follow_up_question asking for their pincode and location.

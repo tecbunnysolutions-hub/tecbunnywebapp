@@ -41,13 +41,13 @@ model User {
 
 enum DomainType {
   TECHNICAL_SERVICE
-  REAL_ESTATE_BROKERAGE
+  PRODUCT_SALES
 }
 
 model Lead {
   id           String     @id @default(uuid())
   domain       DomainType
-  sub_category String     // e.g., CCTV, COMPUTERS, NETWORKING, WEB_DEV, PROPERTY_SALE, OTHER
+  sub_category String     // e.g., CCTV, COMPUTERS, NETWORKING, WEB_DEV, HARDWARE_SALES, OTHER
   pincode      String
   status       String     @default("NEW")
   assigned_to  String?

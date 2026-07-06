@@ -216,7 +216,7 @@ exports.Role = exports.$Enums.Role = {
 
 exports.DomainType = exports.$Enums.DomainType = {
   TECHNICAL_SERVICE: 'TECHNICAL_SERVICE',
-  REAL_ESTATE_BROKERAGE: 'REAL_ESTATE_BROKERAGE'
+  PRODUCT_SALES: 'PRODUCT_SALES'
 };
 
 exports.Direction = exports.$Enums.Direction = {

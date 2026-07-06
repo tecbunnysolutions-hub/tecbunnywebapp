@@ -5,9 +5,10 @@ import { LeadService } from '@/services/leadService';
 const prisma = new PrismaClient();
 
 // PATCH /api/leads/:id/assign
-export async function PATCH(req: Request, { params }: { params: { id: string } }) {
+export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const leadId = params.id;
+    const resolvedParams = await params;
+    const leadId = resolvedParams.id;
     const body = await req.json();
     const { assigned_to } = body;
 

@@ -21,7 +21,7 @@ export class AssignmentOrchestrator extends BaseAgent<TriagedPayload, void> {
     // Map domain to role
     let requiredRole: Role | null = null;
     if (data.domain === 'TECHNICAL_SERVICE') requiredRole = Role.SERVICE_MANAGER;
-    if (data.domain === 'REAL_ESTATE_BROKERAGE') requiredRole = Role.SALES_MANAGER;
+    if (data.domain === 'PRODUCT_SALES') requiredRole = Role.SALES_MANAGER;
 
     let assignedUserId: string | null = null;
 

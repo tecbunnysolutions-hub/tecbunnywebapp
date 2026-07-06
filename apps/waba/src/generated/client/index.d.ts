@@ -59,7 +59,7 @@ export type Role = (typeof Role)[keyof typeof Role]
 
 export const DomainType: {
   TECHNICAL_SERVICE: 'TECHNICAL_SERVICE',
-  REAL_ESTATE_BROKERAGE: 'REAL_ESTATE_BROKERAGE'
+  PRODUCT_SALES: 'PRODUCT_SALES'
 };
 
 export type DomainType = (typeof DomainType)[keyof typeof DomainType]
