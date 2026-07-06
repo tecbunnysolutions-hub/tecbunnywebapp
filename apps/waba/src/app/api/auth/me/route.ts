@@ -10,13 +10,13 @@ export async function GET(req: Request) {
     const agentId = match ? match[1] : null;
 
     if (!agentId) {
-      return NextResponse.json({ user: null }, { status: 401 });
+      return NextResponse.json({ user: null }, { status: 200 });
     }
 
     const { data: user } = await supabase.from('User').select('*').eq('id', agentId).single();
 
     if (!user) {
-      return NextResponse.json({ user: null }, { status: 401 });
+      return NextResponse.json({ user: null }, { status: 200 });
     }
 
     return NextResponse.json({ user });

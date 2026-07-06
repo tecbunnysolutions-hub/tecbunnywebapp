@@ -1,20 +1,48 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-// @ts-ignore
-import { createClient } from "@tecbunny/core/supabase/client";
+import { createServerClient, type CookieOptions } from '@supabase/ssr';
+import { requireSupabasePublicEnv } from '@tecbunny/core/supabase/env';
 
 // Allowed staff roles for the mgmt dashboard
 const ALLOWED_ROLES = ['admin', 'sales_manager', 'service_manager', 'sales_executive', 'store_executive', 'superadmin'];
 
 export async function middleware(request: NextRequest) {
-  const supabase = await createClient();
+  let response = NextResponse.next({
+    request: {
+      headers: request.headers,
+    },
+  });
+
+  const { url, publicKey } = requireSupabasePublicEnv();
+  const supabase = createServerClient(url, publicKey, {
+    cookies: {
+      get(name: string) {
+        return request.cookies.get(name)?.value;
+      },
+      set(name: string, value: string, options: CookieOptions) {
+        request.cookies.set({ name, value, ...options });
+        response = NextResponse.next({
+          request: { headers: request.headers },
+        });
+        response.cookies.set({ name, value, ...options });
+      },
+      remove(name: string, options: CookieOptions) {
+        request.cookies.set({ name, value: '', ...options });
+        response = NextResponse.next({
+          request: { headers: request.headers },
+        });
+        response.cookies.set({ name, value: '', ...options });
+      },
+    },
+  });
+
   const { data: { user } } = await supabase.auth.getUser();
 
   // If no user, redirect to login
   if (!user) {
-    const url = request.nextUrl.clone();
-    url.pathname = '/auth/login';
-    return NextResponse.redirect(url);
+    const loginUrl = request.nextUrl.clone();
+    loginUrl.pathname = '/auth/login';
+    return NextResponse.redirect(loginUrl);
   }
 
   // Assuming roles are embedded in user_metadata or app_metadata
@@ -25,7 +53,7 @@ export async function middleware(request: NextRequest) {
     return new NextResponse('Forbidden: Insufficient Privileges', { status: 403 });
   }
 
-  return NextResponse.next();
+  return response;
 }
 
 export const config = {
