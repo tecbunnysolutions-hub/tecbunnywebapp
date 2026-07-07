@@ -5,7 +5,7 @@ import Image, { type ImageProps } from 'next/image';
 
 import { cn } from '../../lib/utils';
 
-import { logger } from '@tecbunny/core';
+import { logger } from '@tecbunny/core/logger';
 
 interface OptimizedImageProps extends Omit<ImageProps, 'src' | 'alt' | 'width' | 'height' | 'fill' | 'quality' | 'placeholder' | 'blurDataURL'> {
   src: string;
