@@ -1,5 +1,4 @@
 import { BaseAgent } from './BaseAgent';
-import { BaseAgent } from './BaseAgent';
 import { supabase } from '@/lib/supabase';
 import crypto from 'crypto';
 import { GoogleGenerativeAI, SchemaType } from '@google/generative-ai';
