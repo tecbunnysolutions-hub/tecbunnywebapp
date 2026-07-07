@@ -1,5 +1,5 @@
 import { BaseAgent } from './BaseAgent';
-import { triagedIntentsQueue } from '../lib/queue';
+import { BaseAgent } from './BaseAgent';
 import { supabase } from '@/lib/supabase';
 import crypto from 'crypto';
 import { GoogleGenerativeAI, SchemaType } from '@google/generative-ai';
@@ -25,7 +25,7 @@ export interface TriagedPayload {
 
 export class InboundTriageAgent extends BaseAgent<any, TriagedPayload | null> {
   constructor() {
-    super('inbound-whatsapp-events', triagedIntentsQueue);
+    super('inbound-whatsapp-events');
   }
 
   protected async process(data: any): Promise<TriagedPayload | null> {

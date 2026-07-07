@@ -1,12 +1,8 @@
 import { BaseAgent } from './BaseAgent';
-import { PrismaClient, Role, DomainType } from '@/generated/client';
 import { TriagedPayload } from './InboundTriageAgent';
-
-const prisma = new PrismaClient();
-
+import { supabase } from '@/lib/supabase';
 export class AssignmentOrchestrator extends BaseAgent<TriagedPayload, void> {
   constructor() {
-    // Consumes from triaged-intents, no output queue (end of the line for lead routing)
     super('triaged-intents');
   }
 
@@ -19,30 +15,23 @@ export class AssignmentOrchestrator extends BaseAgent<TriagedPayload, void> {
     console.log(`[AssignmentOrchestrator] Processing lead for pincode ${data.pincode}, domain ${data.domain}`);
 
     // Map domain to role
-    let requiredRole: Role | null = null;
-    if (data.domain === 'TECHNICAL_SERVICE') requiredRole = Role.SERVICE_MANAGER;
-    if (data.domain === 'PRODUCT_SALES') requiredRole = Role.SALES_MANAGER;
+    let requiredRole: string | null = null;
+    if (data.domain === 'TECHNICAL_SERVICE') requiredRole = 'SERVICE_MANAGER';
+    if (data.domain === 'PRODUCT_SALES') requiredRole = 'SALES_MANAGER';
 
     let assignedUserId: string | null = null;
 
     if (requiredRole) {
-      // Find an active manager matching the domain role and having the pincode in managed_pincodes
-      // Since managed_pincodes is JSONB array of strings, we use Prisma's JSON filtering if possible
-      // or we can just fetch all users of that role and filter in memory if the dataset is small.
-      // Using raw query for JSONB array containment is often safer in Postgres:
+      // Fetch users from Supabase instead of Prisma
+      const { data: managers } = await supabase
+        .from('User')
+        .select('id, managed_pincodes')
+        .eq('role', requiredRole);
       
-      const managers = await prisma.user.findMany({
-        where: {
-          role: requiredRole
-        }
-      });
-      
-      // Filter in memory for simplicity to check JSON array containment
-      const matchedManager = managers.find(user => {
+      const matchedManager = (managers || []).find(user => {
         if (!user.managed_pincodes) return false;
         try {
-          // If it's a JSON array
-          const pincodes = user.managed_pincodes as string[];
+          const pincodes = Array.isArray(user.managed_pincodes) ? user.managed_pincodes : JSON.parse(user.managed_pincodes as any);
           return Array.isArray(pincodes) && pincodes.includes(data.pincode as string);
         } catch {
           return false;
@@ -57,17 +46,23 @@ export class AssignmentOrchestrator extends BaseAgent<TriagedPayload, void> {
       }
     }
 
-    // Insert the new Lead record
-    await prisma.lead.create({
-      data: {
-        domain: data.domain as DomainType,
+    // Insert the new Lead record via Supabase
+    const { error } = await supabase
+      .from('Lead')
+      .insert({
+        domain: data.domain,
         sub_category: data.sub_category,
         pincode: data.pincode,
         status: 'NEW',
-        assigned_to: assignedUserId
-      }
-    });
+        assigned_to: assignedUserId,
+        updated_at: new Date().toISOString()
+      });
 
-    console.log(`[AssignmentOrchestrator] Successfully saved lead to DB for ${data.senderNumber}`);
+    if (error) {
+      console.error(`[AssignmentOrchestrator] Failed to save lead:`, error);
+    } else {
+      console.log(`[AssignmentOrchestrator] Successfully saved lead to DB for ${data.senderNumber}`);
+    }
   }
 }
+

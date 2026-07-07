@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import crypto from 'crypto';
-import { inboundWhatsappQueue } from '@/lib/queue';
+import { InboundTriageAgent } from '@/agents/InboundTriageAgent';
+import { AssignmentOrchestrator } from '@/agents/AssignmentOrchestrator';
 
 const INFOBIP_HMAC_SECRET = process.env.INFOBIP_HMAC_SECRET || 'bunny@6010';
 
@@ -41,13 +42,17 @@ export async function POST(req: Request) {
 
     const body = JSON.parse(rawBody);
     
-    // Enqueue raw payload for asynchronous processing (Phase 1)
-    await inboundWhatsappQueue.add('process-inbound-webhook', body, {
-      removeOnComplete: true,
-      removeOnFail: false,
-      attempts: 3,
-      backoff: { type: 'exponential', delay: 1000 }
-    });
+    // Execute agents synchronously since Vercel is serverless and cannot run background BullMQ workers
+    const triageAgent = new InboundTriageAgent();
+    const orchestrator = new AssignmentOrchestrator();
+
+    // 1. Process incoming message and triage
+    const triageResult = await triageAgent.execute(body);
+
+    // 2. If the message was actionable and actionable payload was returned, assign to manager
+    if (triageResult) {
+      await orchestrator.execute(triageResult);
+    }
 
     return NextResponse.json({ status: 'success' }, { status: 200 });
 
