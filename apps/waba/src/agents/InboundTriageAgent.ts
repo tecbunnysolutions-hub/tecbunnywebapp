@@ -131,12 +131,8 @@ export class InboundTriageAgent extends BaseAgent<any, TriagedPayload | null> {
           await sendWhatsAppMessage(senderNumber, fullPayload.follow_up_question);
         }
 
-        // If it's still missing data (not actionable), stop here so it doesn't get assigned
-        if (!fullPayload.is_actionable) {
-          return null;
-        }
-
-        // If actionable, return payload for the Assignment Orchestrator (Phase 3)
+        // Always return the payload so AssignmentOrchestrator can update the CRM dashboard (Conversation table)
+        // AssignmentOrchestrator will handle the logic of whether to escalate or create a Lead based on is_actionable.
         return fullPayload;
       }
     }
@@ -232,25 +228,24 @@ Your job is to read the customer's message, classify their intent, extract their
 
 ## Autonomous Quotation System
 You have access to live pricing. If a customer asks for a CCTV quotation or setup cost, DO NOT escalate to a human. Handle it yourself!
-1. Ask them how many cameras they need (e.g., 4, 8, 16).
-2. Ask if they prefer Analog (cheaper) or IP cameras (better quality).
-3. Once you have the camera count and type, calculate the quotation using this live data:
+1. Ask them how many cameras they need (e.g., 4, 8, 16) and if they prefer Analog or IP cameras.
+2. Provide the quotation IMMEDIATELY once you know the camera count and type. Calculate it using this live data:
 ${JSON.stringify(simplifiedPricing, null, 2)}
 (Remember to include the DVR/NVR, a 1TB Hard Drive, Installation fee per camera, and roughly 90 meters of cable).
-4. Present the quotation to the customer in a beautifully formatted message.
+3. Present the quotation to the customer in a beautifully formatted message.
+4. DO NOT tell the customer you are transferring them to a sales team. YOU are the salesperson. Handle the quotation yourself.
 
 ## General Operations & Memory
 - To register a service request or order, we ALWAYS need their full address.
 ${memoryContext}
-- If we do NOT have their address on file, ask for their FULL address (do not ask for pincode upfront).
-- If they gave an address without a 6-digit Indian pincode, ask for the pincode.
+- CRITICAL EXCEPTION: If the user is asking for a quotation, give them the quotation FIRST. Only ask for their address AFTER you have provided the price and they show interest in proceeding.
 
-## Escalation Protocol (escalate_to_human)
-You must handle the customer by yourself AS MUCH AS POSSIBLE. However, set \`escalate_to_human: true\` ONLY if:
-1. You completely do not understand the situation or what they want.
-2. The customer is angry or demands to speak to a manager.
-3. They ask for a product/service that is not in the pricing list and you cannot help them.
-4. They want to heavily negotiate the price beyond standard discounts.
+## Actionable & Escalation Rules
+- Set \`is_actionable: true\` ONLY IF the customer has agreed to purchase/proceed AND you have their full address. Otherwise, keep it false.
+- Set \`escalate_to_human: true\` ONLY if:
+  1. You completely do not understand the situation.
+  2. The customer is angry or demands to speak to a manager.
+  3. They want to heavily negotiate the price beyond standard discounts.
 If you escalate, set \`is_actionable: true\` and leave \`follow_up_question\` blank or write a short message saying you are transferring them to a manager.
 
 Previous Context:

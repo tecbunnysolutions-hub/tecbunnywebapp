@@ -20,8 +20,19 @@ export class AssignmentOrchestrator extends BaseAgent<TriagedPayload, void> {
   }
 
   protected async process(data: TriagedPayload): Promise<void> {
+    // 1. ALWAYS Update Conversation with CRM details instantly, regardless of actionable status!
+    await supabase
+      .from('Conversation')
+      .update({
+        contact_name: data.customer_name || undefined,
+        department: data.domain === 'PRODUCT_SALES' ? 'SALES' : (data.domain === 'TECHNICAL_SERVICE' ? 'SUPPORT' : undefined),
+        notes: data.notes || undefined,
+        status: data.is_actionable || data.escalate_to_human ? (data.escalate_to_human ? 'NEW' : 'LEAD') : 'PROCESSING',
+      })
+      .eq('sender_number', data.senderNumber);
+
     if (!data.is_actionable) {
-      console.warn(`[AssignmentOrchestrator] Received non-actionable payload for ${data.senderNumber}. Skipping assignment.`);
+      console.warn(`[AssignmentOrchestrator] Received non-actionable payload for ${data.senderNumber}. CRM updated, but skipping assignment.`);
       return;
     }
 
@@ -61,6 +72,9 @@ export class AssignmentOrchestrator extends BaseAgent<TriagedPayload, void> {
         assignedUserId = matchedManager.id;
         managerDetails = matchedManager;
         console.log(`[AssignmentOrchestrator] Auto-assigned lead to manager ${assignedUserId}`);
+        
+        // Update assigned_to on the Conversation as well
+        await supabase.from('Conversation').update({ assigned_to: assignedUserId }).eq('sender_number', data.senderNumber);
       } else {
         console.log(`[AssignmentOrchestrator] No matching territory manager found for pincode ${data.pincode}. Leave unassigned.`);
       }
@@ -78,18 +92,6 @@ export class AssignmentOrchestrator extends BaseAgent<TriagedPayload, void> {
         assigned_to: assignedUserId,
         updated_at: new Date().toISOString()
       });
-
-    // Update Conversation with CRM details
-    await supabase
-      .from('Conversation')
-      .update({
-        contact_name: data.customer_name || undefined,
-        department: data.domain === 'PRODUCT_SALES' ? 'SALES' : 'SUPPORT',
-        notes: data.notes || undefined,
-        status: data.escalate_to_human ? 'NEW' : 'LEAD',
-        assigned_to: assignedUserId || undefined
-      })
-      .eq('sender_number', data.senderNumber);
 
     if (error) {
       console.error(`[AssignmentOrchestrator] Failed to save lead:`, error);
