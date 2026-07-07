@@ -3,6 +3,7 @@ import { supabase } from '@/lib/supabase';
 import crypto from 'crypto';
 import { GoogleGenerativeAI, SchemaType } from '@google/generative-ai';
 import { sendWhatsAppMessage } from '../services/infobipService';
+import { buildPricingCatalog } from '@tecbunny/core/custom-setup-pricing-server';
 
 const apiKey = process.env.GEMINI_API_KEY || "";
 const genAI = apiKey ? new GoogleGenerativeAI(apiKey) : null;
@@ -15,6 +16,7 @@ export interface TriagedPayload {
   domain: 'TECHNICAL_SERVICE' | 'PRODUCT_SALES' | 'UNKNOWN';
   sub_category: 'CCTV' | 'COMPUTERS' | 'NETWORKING' | 'WEB_DEV' | 'HARDWARE_SALES' | 'OTHER';
   is_actionable: boolean;
+  escalate_to_human: boolean;
   follow_up_question: string | null;
   
   // Metadata for downstream processing
@@ -153,12 +155,27 @@ export class InboundTriageAgent extends BaseAgent<any, TriagedPayload | null> {
       domain: 'UNKNOWN',
       sub_category: 'OTHER',
       is_actionable: false,
-      follow_up_question: "Oops, I didn't quite catch that! Could you please share your full address and let me know how I can help you today? 😊"
+      escalate_to_human: true,
+      follow_up_question: "Oops, I didn't quite catch that! I'm transferring you to a human manager to assist you further."
     };
 
     if (!genAI) return defaultFallback;
 
     try {
+      // Fetch live pricing context from the database
+      const pricingCatalog = await buildPricingCatalog(null);
+      const simplifiedPricing = {
+        analog_camera_2_4mp: pricingCatalog.analog.camera['2.4mp']?.standard?.sale || 1500,
+        analog_camera_5mp: pricingCatalog.analog.camera['5mp']?.standard?.sale || 2200,
+        ip_camera_2mp: pricingCatalog.ip.camera['2mp']?.standard?.sale || 2500,
+        ip_camera_5mp: pricingCatalog.ip.camera['5mp']?.standard?.sale || 3500,
+        analog_dvr_4ch: pricingCatalog.analog.dvr.find(d => d.capacity === 4)?.sale || 2800,
+        ip_nvr_4ch: pricingCatalog.ip.nvr.find(d => d.capacity === 4)?.sale || 3500,
+        hard_drive_1tb: pricingCatalog.hddOptions.find(h => h.label.includes('1TB'))?.sale || 3500,
+        installation_fee_per_camera: pricingCatalog.installationOption?.sale || 500,
+        cable_fee_per_meter: pricingCatalog.analog.cable[0]?.salePerUnit || 25,
+      };
+
       const model = genAI.getGenerativeModel({ 
         model: "gemini-2.5-flash",
         generationConfig: {
@@ -177,45 +194,46 @@ export class InboundTriageAgent extends BaseAgent<any, TriagedPayload | null> {
                 type: SchemaType.STRING, 
                 description: "Must be exactly one of: 'CCTV', 'COMPUTERS', 'NETWORKING', 'WEB_DEV', 'HARDWARE_SALES', 'OTHER'"
               },
-              is_actionable: { type: SchemaType.BOOLEAN },
-              follow_up_question: { type: SchemaType.STRING, nullable: true },
+              is_actionable: { type: SchemaType.BOOLEAN, description: "Set to true ONLY if you are done processing the user or need to escalate to human." },
+              escalate_to_human: { type: SchemaType.BOOLEAN, description: "Set to true if you are confused, the customer is angry, or they ask for something not in the knowledge base." },
+              follow_up_question: { type: SchemaType.STRING, nullable: true, description: "Your response to the customer." },
             },
-            required: ['domain', 'sub_category', 'is_actionable']
+            required: ['domain', 'sub_category', 'is_actionable', 'escalate_to_human']
           }
         }
       });
 
       const historyContext = history.map(h => `${h.direction}: ${h.message_content}`).join('\n');
       
-      const prompt = `You are a warm, highly human-like, and friendly conversational assistant for TecBunny (tecbunny.com), a premier Enterprise IT Services & Hardware Provider. 
-Your job is to read the customer's message, classify their intent, and extract their name, full address, and 6-digit Indian pincode.
+      const prompt = `You are a warm, highly human-like, and friendly autonomous conversational sales agent for TecBunny (tecbunny.com), a premier Enterprise IT Services & Hardware Provider. 
+Your job is to read the customer's message, classify their intent, extract their info, and handle their queries (including providing quotations) by yourself without human intervention whenever possible.
 
 ## Personality Rules (CRITICAL)
 - Sound like a real, friendly human being! Use a warm conversational tone.
-- Use emojis naturally (e.g., 👋, 😊, 🚀, 💻), but don't overdo it.
-- Keep your responses concise and conversational. Do NOT sound like a robotic script.
-- Acknowledge what the user said before asking for more information.
+- Use emojis naturally (e.g., 👋, 😊, 🚀, 💻).
+- Acknowledge what the user said before answering.
 
-## Company Knowledge Base
-**1. Technical Services (Installation & Maintenance)**
-- **CCTV & Security**: End-to-end installation of IP Cameras, DVR/NVR setups, biometric access control.
-- **Computers & IT Support**: Desktop/laptop repairs, AMC contracts, virus removal, OS installation.
-- **Networking**: LAN/WAN setup, Wi-Fi optimization, structured cabling.
-- **Web Development**: Custom websites, e-commerce stores, ERP/CRM development.
+## Autonomous Quotation System
+You have access to live pricing. If a customer asks for a CCTV quotation or setup cost, DO NOT escalate to a human. Handle it yourself!
+1. Ask them how many cameras they need (e.g., 4, 8, 16).
+2. Ask if they prefer Analog (cheaper) or IP cameras (better quality).
+3. Once you have the camera count and type, calculate the quotation using this live data:
+${JSON.stringify(simplifiedPricing, null, 2)}
+(Remember to include the DVR/NVR, a 1TB Hard Drive, Installation fee per camera, and roughly 90 meters of cable).
+4. Present the quotation to the customer in a beautifully formatted message.
 
-**2. Product & Hardware Sales**
-- **IT Hardware**: Laptops, desktops, servers, printers, UPS systems.
-- **Accessories**: Keyboards, mice, monitors, cables, storage devices.
-- **Security Gear**: CCTV cameras, biometric scanners, smart locks.
+## General Operations
+- To register a service request or order, we ALWAYS need their full address.
+- Ask for their FULL address (do not ask for pincode upfront).
+- If they gave an address without a 6-digit Indian pincode, ask for the pincode.
 
-## Auto-Reply Instructions (follow_up_question)
-If the user asks a question about our services/products, use the knowledge base above to answer them warmly, give them suggestions, and sound extremely helpful!
-HOWEVER, to assign a manager to them, we ALWAYS need their full address to store in our database for future reference.
-- Do NOT directly ask for a pincode upfront. Ask for their FULL address.
-- If they have not provided an address yet, set \`is_actionable\` to false, and casually ask for their full address so we can register their service request.
-- If they provided an address, but the address DOES NOT contain a 6-digit Indian pincode, set \`is_actionable\` to false, thank them for the address, and politely request their 6-digit pincode so we can check service availability.
-- If they provided an address but you need more info about the service, set \`is_actionable\` to false and ask how you can help them today.
-- Only set \`is_actionable\` to true if you understand their core request AND you have their full address AND their 6-digit pincode. (If true, you can leave follow_up_question blank or send a short confirmation like "Got it! Let me connect you with our team...").
+## Escalation Protocol (escalate_to_human)
+You must handle the customer by yourself AS MUCH AS POSSIBLE. However, set \`escalate_to_human: true\` ONLY if:
+1. You completely do not understand the situation or what they want.
+2. The customer is angry or demands to speak to a manager.
+3. They ask for a product/service that is not in the pricing list and you cannot help them.
+4. They want to heavily negotiate the price beyond standard discounts.
+If you escalate, set \`is_actionable: true\` and leave \`follow_up_question\` blank or write a short message saying you are transferring them to a manager.
 
 Previous Context:
 ${historyContext}
@@ -227,7 +245,6 @@ Latest Message:
       const result = await model.generateContent(prompt);
       const text = result.response.text();
       
-      // Clean text to handle possible markdown wrappers from the LLM
       const cleanText = text.replace(/```json/g, '').replace(/```/g, '').trim();
       const parsed = JSON.parse(cleanText);
       
@@ -238,6 +255,7 @@ Latest Message:
         domain: parsed.domain || 'UNKNOWN',
         sub_category: parsed.sub_category || 'OTHER',
         is_actionable: typeof parsed.is_actionable === 'boolean' ? parsed.is_actionable : false,
+        escalate_to_human: typeof parsed.escalate_to_human === 'boolean' ? parsed.escalate_to_human : false,
         follow_up_question: parsed.follow_up_question || null
       };
 
