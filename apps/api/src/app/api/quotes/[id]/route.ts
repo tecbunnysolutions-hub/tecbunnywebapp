@@ -1,37 +1,18 @@
-import { createClient as createServerClient } from "@tecbunny/core/supabase/server";
-
-import { createClient } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
+import { getAdminDb, getUserDb } from "@tecbunny/core/db";
 import { buildPdf, loadCompanyInfo } from "@tecbunny/core/pdf-generator";
 import { requireAdmin } from "@tecbunny/core/admin-auth";
-import { requireSupabaseServiceEnv } from "@tecbunny/core/supabase/env";
-
-let supabaseAdmin: any = null;
-
-function getSupabaseAdmin(): any {
-  if (!supabaseAdmin) {
-    const { url, serviceKey } = requireSupabaseServiceEnv();
-    supabaseAdmin = createClient(url, serviceKey, {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false,
-      },
-    });
-  }
-
-  return supabaseAdmin;
-}
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
-    const supabase = getSupabaseAdmin();
+    const db = getAdminDb();
 
     const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
 
     if (!isUuid) {
-      const supabaseAuth = await createServerClient();
-      const { data: { user } } = await supabaseAuth.auth.getUser();
+      const userDb = await getUserDb();
+      const { data: { user } } = await userDb.auth.getUser();
 
       if (!user) {
         return NextResponse.json(
@@ -41,15 +22,16 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       }
 
       // Check if user is admin/staff
-      const { isAdmin } = await requireAdmin(user, supabaseAuth);
+      const { isAdmin } = await requireAdmin(user, userDb.supabase);
 
       if (!isAdmin) {
         // Enforce owner check
-        const { data: quoteCheck } = await supabase
-          .from('quotes')
-          .select('user_id')
-          .eq('quote_number', id)
-          .maybeSingle();
+        const quoteCheck = await db.executeMaybe(
+          db.from('quotes')
+            .select('user_id')
+            .eq('quote_number', id)
+            .maybeSingle()
+        );
 
         if (!quoteCheck || quoteCheck.user_id !== user.id) {
           return NextResponse.json({ error: 'Access denied' }, { status: 403 });
@@ -57,16 +39,16 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       }
     }
 
-    let query = supabase.from('quotes').select('*');
+    let query = db.from('quotes').select('*');
     if (isUuid) {
       query = query.eq('id', id);
     } else {
       query = query.eq('quote_number', id);
     }
 
-    const { data, error } = await query.single();
+    const data = await db.execute(query.single());
 
-    if (error || !data) throw error || new Error('Quote not found');
+    if (!data) throw new Error('Quote not found');
 
     const formatParam = req.nextUrl.searchParams.get('format');
     if (formatParam === 'pdf') {

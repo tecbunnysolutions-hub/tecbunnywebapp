@@ -1,11 +1,9 @@
 import { createClient } from "@tecbunny/core/supabase/client";
 import { NextRequest, NextResponse } from 'next/server';
-
-
-import { sendPaymentConfirmationNotification, sendWhatsAppNotification } from "@tecbunny/core/whatsapp-service";
 import { logger } from "@tecbunny/core";
 import { apiError, apiSuccess } from "@tecbunny/core";
 import { rateLimit } from "@tecbunny/core/rate-limit";
+import { PaymentService } from "@tecbunny/core";
 
 interface PaymentUpdateData {
   order_id: string;
@@ -56,200 +54,33 @@ export async function POST(request: NextRequest) {
       correlationId
     });
 
-    // Get order details with customer information
-    const { data: order, error: orderError } = await supabase
-      .from('orders')
-      .select('*, items')
-      .eq('id', order_id)
-      .single();
+    const paymentService = new PaymentService(supabase);
 
-    if (orderError || !order) {
-      logger.error('order_not_found', { order_id, error: orderError, correlationId });
-      return apiError('NOT_FOUND', { 
-        correlationId, 
-        overrideMessage: 'Order not found' 
+    try {
+      const result = await paymentService.updatePaymentStatus({
+        orderId: order_id,
+        paymentId: payment_id,
+        status,
+        amount,
+        gateway,
+        transactionId: transaction_id,
+        failureReason: failure_reason,
+        correlationId: correlationId || 'missing-correlation-id'
       });
-    }
 
-    // Parse order items to get customer info
-  const orderItems = typeof order.items === 'string' ? JSON.parse(order.items) : order.items;
-  const customerPhone = orderItems?.customer_phone;
-
-    // Create or update payment record in orders table (if you have payments tracking)
-    // For now, we'll update the order status based on payment status
-    let newOrderStatus: string = order.status;
-    let newPaymentStatus: string | null = order.payment_status ?? null;
-
-    switch (status) {
-      case 'success':
-        newOrderStatus = 'Payment Confirmed';
-        newPaymentStatus = 'Payment Confirmed';
-        break;
-      case 'pending':
-        newOrderStatus = 'Awaiting Payment';
-        newPaymentStatus = 'Payment Confirmation Pending';
-        break;
-      case 'failed':
-        newOrderStatus = 'Awaiting Payment';
-        newPaymentStatus = 'Payment Failed';
-        break;
-      case 'refunded':
-        newPaymentStatus = 'Refund Initiated';
-        break;
-      default:
-        newPaymentStatus = status;
-        break;
-    }
-
-    // Update order status
-    const { data: updatedOrder, error: updateError } = await supabase
-      .from('orders')
-      .update({ 
-        status: newOrderStatus,
-        payment_status: newPaymentStatus,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', order_id)
-      .select()
-      .single();
-
-    if (updateError) {
-      logger.error('order_update_error', { order_id, error: updateError, correlationId });
+      return apiSuccess({
+        order_id: result.orderId,
+        payment_status: result.paymentStatus,
+        order_status: result.orderStatus,
+        amount: result.amount,
+        updated_at: result.updatedAt
+      }, correlationId);
+    } catch (e: any) {
+      if (e.message === 'Order not found') {
+        return apiError('NOT_FOUND', { correlationId, overrideMessage: 'Order not found' });
+      }
       return apiError('DATABASE_ERROR', { correlationId });
     }
-
-    logger.info('payment_status_updated', { 
-      order_id, 
-      old_status: order.status, 
-      new_status: newOrderStatus,
-      payment_status: newPaymentStatus,
-      correlationId 
-    });
-
-    // Send WhatsApp notifications
-    if (customerPhone) {
-      try {
-        // Clean and format phone number
-        const cleanPhone = customerPhone.replace(/[^\d+]/g, '');
-        const formattedPhone = cleanPhone.startsWith('+') ? cleanPhone : `+91${cleanPhone}`;
-
-  let customerMessage = '';
-
-        switch (status) {
-          case 'success':
-            customerMessage = `✅ Payment Successful!\n\n` +
-              `💰 Amount: ₹${amount}\n` +
-              `📋 Order ID: ${order_id}\n` +
-              `🎯 Transaction ID: ${transaction_id || 'N/A'}\n` +
-              `📦 Your order is now confirmed and being processed!\n` +
-              `📅 Date: ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}`;
-            break;
-
-          case 'failed':
-            customerMessage = `❌ Payment Failed\n\n` +
-              `💰 Amount: ₹${amount}\n` +
-              `📋 Order ID: ${order_id}\n` +
-              `🔍 Reason: ${failure_reason || 'Unknown error'}\n` +
-              `🔄 Please try again or contact support.\n` +
-              `📅 Date: ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}`;
-            break;
-
-          case 'refunded':
-            customerMessage = `💸 Refund Processed\n\n` +
-              `💰 Amount: ₹${amount}\n` +
-              `📋 Order ID: ${order_id}\n` +
-              `🏦 Refund will be credited to your account within 5-7 business days.\n` +
-              `📅 Date: ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}`;
-            break;
-
-          default:
-            customerMessage = `📄 Payment Status Update\n\n` +
-              `💰 Amount: ₹${amount}\n` +
-              `📋 Order ID: ${order_id}\n` +
-              `📊 Status: ${status}\n` +
-              `📅 Date: ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}`;
-        }
-
-        if (status === 'success') {
-          await sendPaymentConfirmationNotification(formattedPhone, {
-            orderNumber: order_id,
-            amount: `₹${amount}`,
-            customerName: order.customer_name
-          });
-        } else {
-          await sendWhatsAppNotification(formattedPhone, customerMessage);
-        }
-
-        logger.info('payment_whatsapp_customer_sent', { 
-          order_id, 
-          phone: formattedPhone,
-          status,
-          correlationId 
-        });
-
-        // Notify admin about payment status
-        const adminPhone = process.env.ADMIN_WHATSAPP_NUMBER;
-        if (adminPhone) {
-          let adminMessage = `💳 Payment ${status.toUpperCase()}\n\n` +
-            `📋 Order ID: ${order_id}\n` +
-            `👤 Customer: ${order.customer_name}\n` +
-            `📱 Phone: ${formattedPhone}\n` +
-            `💰 Amount: ₹${amount}\n` +
-            `🏦 Gateway: ${gateway}\n` +
-            `🆔 Transaction: ${transaction_id || 'N/A'}\n` +
-            `📅 Time: ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}`;
-
-          if (status === 'failed' && failure_reason) {
-            adminMessage += `
-❌ Reason: ${failure_reason}`;
-          }
-
-          await sendWhatsAppNotification(adminPhone, adminMessage);
-
-          logger.info('payment_whatsapp_admin_sent', { 
-            order_id, 
-            adminPhone,
-            status,
-            correlationId 
-          });
-        }
-
-        // Notify manager if different from admin
-        const managerPhone = process.env.MANAGER_WHATSAPP_NUMBER;
-        if (managerPhone && managerPhone !== adminPhone) {
-          const managerMessage = `💳 Payment ${status.toUpperCase()}\n` +
-            `📋 Order: ${order_id}\n` +
-            `💰 ₹${amount}\n` +
-            `👤 ${order.customer_name}\n` +
-            `⏰ ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}`;
-
-          await sendWhatsAppNotification(managerPhone, managerMessage);
-
-          logger.info('payment_whatsapp_manager_sent', { 
-            order_id, 
-            managerPhone,
-            status,
-            correlationId 
-          });
-        }
-
-      } catch (whatsappError) {
-        logger.warn('payment_whatsapp_failure', { 
-          order_id, 
-          error: whatsappError instanceof Error ? whatsappError.message : 'unknown',
-          correlationId 
-        });
-        // Don't fail the payment update if WhatsApp fails
-      }
-    }
-
-    return apiSuccess({
-      order_id,
-      payment_status: status,
-      order_status: newOrderStatus,
-      amount,
-      updated_at: updatedOrder.updated_at
-    }, correlationId);
 
   } catch (error) {
     const correlationId = request.headers.get('x-correlation-id') || null;
@@ -273,33 +104,27 @@ export async function GET(request: NextRequest) {
     }
 
     const supabase = await createClient();
+    const paymentService = new PaymentService(supabase);
     
-    const { data: order, error } = await supabase
-      .from('orders')
-      .select('id, status, total, created_at, updated_at')
-      .eq('id', order_id)
-      .single();
-
-    if (error && error.code !== 'PGRST116') { // PGRST116 is "not found"
-      logger.error('payment_status_lookup_error', { error, order_id, correlationId });
+    try {
+      const order = await paymentService.getPaymentStatus(order_id);
+      return apiSuccess({
+        order_id: order.id,
+        status: order.status,
+        total: order.total,
+        created_at: order.created_at,
+        updated_at: order.updated_at
+      }, correlationId);
+    } catch (e: any) {
+      if (e.message === 'Order not found') {
+        return NextResponse.json({
+          success: false,
+          error: 'Order not found',
+          order: null
+        }, { status: 404 });
+      }
       return apiError('DATABASE_ERROR', { correlationId });
     }
-
-    if (!order) {
-      return NextResponse.json({
-        success: false,
-        error: 'Order not found',
-        order: null
-      }, { status: 404 });
-    }
-
-    return apiSuccess({
-      order_id: order.id,
-      status: order.status,
-      total: order.total,
-      created_at: order.created_at,
-      updated_at: order.updated_at
-    }, correlationId);
 
   } catch (error) {
     const correlationId = request.headers.get('x-correlation-id') || null;

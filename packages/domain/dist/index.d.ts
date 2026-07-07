@@ -1,2 +1,2 @@
-export * from './services/order.service';
+export {};
 //# sourceMappingURL=index.d.ts.map

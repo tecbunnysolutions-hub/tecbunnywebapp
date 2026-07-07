@@ -1,14 +1,14 @@
 import { IOrderService, CreateOrderParams } from '@tecbunny/types';
 import { IOrderRepository } from '@tecbunny/types';
 import { INotificationService } from '@tecbunny/types';
-import { logger } from '@tecbunny/core';
-import { checkoutEngine } from '@tecbunny/core/checkout-engine';
-import { formatPlaceOfSupply, resolveIndianStateFromText, resolveIndianStateInfo, TECBUNNY_REGISTERED_STATE } from '@tecbunny/core/indian-tax';
-import { extractPincode, sendOrderRoutingNotifications } from '@tecbunny/core/area-notifications';
-import { checkServiceAreaAvailability } from '@tecbunny/core/service-area-availability';
-import { deserializeOrder } from '@tecbunny/core/orders/normalizers';
-import { enhancedCommissionService } from '@tecbunny/core/enhanced-commission-service';
-import { otpService } from '@tecbunny/core/otp-service';
+import { logger } from '../logger';
+import { checkoutEngine } from '../checkout-engine';
+import { formatPlaceOfSupply, resolveIndianStateFromText, resolveIndianStateInfo, TECBUNNY_REGISTERED_STATE } from '../indian-tax';
+import { extractPincode, sendOrderRoutingNotifications } from '../area-notifications';
+import { checkServiceAreaAvailability } from '../service-area-availability';
+import { deserializeOrder } from '../orders/normalizers';
+import { enhancedCommissionService } from '../enhanced-commission-service';
+import { otpService } from '../otp-service';
 
 export class OrderService implements IOrderService {
   constructor(

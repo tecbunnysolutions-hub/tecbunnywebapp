@@ -2,7 +2,6 @@
   "files": [],
   "references": [
     { "path": "./packages/admin-ui" },
-    { "path": "./packages/config-typescript" },
     { "path": "./packages/core" },
     { "path": "./packages/domain" },
     { "path": "./packages/infra" },
@@ -11,7 +10,6 @@
     { "path": "./apps/mgmt" },
     { "path": "./apps/public" },
     { "path": "./apps/superadmin" },
-    { "path": "./apps/waba" },
-    { "path": "./apps/webmail" }
+    { "path": "./apps/waba" }
   ]
 }

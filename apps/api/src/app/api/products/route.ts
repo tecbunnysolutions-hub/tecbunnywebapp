@@ -376,7 +376,7 @@ export async function GET(request: NextRequest) {
     const include_variants = searchParams.get('include_variants') === 'true';
     const include_options = searchParams.get('include_options') === 'true';
 
-    const { supabase: authClient, role } = await getSessionWithRole(request);
+    const { supabase: authClient, role } = await getSessionWithRole(request as any);
     const isPrivilegedRequest = Boolean(role && ADMIN_ROLES.has(role));
     const supabase = role && ADMIN_ROLES.has(role) && isSupabaseServiceConfigured
       ? createSupabaseServiceClient()
@@ -696,7 +696,7 @@ export async function POST(request: NextRequest) {
         : []),
     ];
 
-    const { supabase: authClient, session, role } = await getSessionWithRole(request);
+    const { supabase: authClient, session, role } = await getSessionWithRole(request as any);
     if (!session) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
@@ -1080,7 +1080,7 @@ export async function PUT(request: NextRequest) {
       });
     }
 
-    const { supabase: authClient, session, role } = await getSessionWithRole(request);
+    const { supabase: authClient, session, role } = await getSessionWithRole(request as any);
     if (!session) {
       logger.warn('product_update_unauthenticated', { correlationId });
       return NextResponse.json({ error: 'Authentication required' }, { status: 401, headers: { 'x-correlation-id': correlationId } });
@@ -1337,7 +1337,7 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'Product ID is required' }, { status: 400 });
     }
 
-    const { supabase: authClient, session, role } = await getSessionWithRole(request);
+    const { supabase: authClient, session, role } = await getSessionWithRole(request as any);
     if (!session) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }

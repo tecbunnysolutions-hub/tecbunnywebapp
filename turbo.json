@@ -52,7 +52,7 @@
         "src/**",
         "package.json",
         "tsconfig.json",
-        "eslint.config.js",
+        "eslint.config.*",
         "!../../apps/**"
       ],
       "outputs": [".next/**", "!.next/cache/**", "dist/**", "build/**"]
@@ -63,7 +63,7 @@
         "src/**",
         "package.json",
         "tsconfig.json",
-        "eslint.config.js",
+        "eslint.config.*",
         "!../../apps/**"
       ]
     },

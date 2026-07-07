@@ -44,7 +44,7 @@ const getSupabaseForRole = (authClient: SupabaseClient, role: string | null) => 
 };
 
 export async function GET(request: NextRequest) {
-  const { supabase: authClient, session, role } = await getSessionWithRole(request);
+  const { supabase: authClient, session, role } = await getSessionWithRole(request as any);
   const errorResponse = ensureAdmin(session, role);
   if (errorResponse) {
     return errorResponse;
@@ -129,7 +129,7 @@ const validateDiscountPayload = (payload: Record<string, any>) => {
 };
 
 export async function POST(request: NextRequest) {
-  const { supabase: authClient, session, role } = await getSessionWithRole(request);
+  const { supabase: authClient, session, role } = await getSessionWithRole(request as any);
   const errorResponse = ensureAdmin(session, role);
   if (errorResponse) {
     return errorResponse;
@@ -185,7 +185,7 @@ export async function POST(request: NextRequest) {
 }
 
 export async function PUT(request: NextRequest) {
-  const { supabase: authClient, session, role } = await getSessionWithRole(request);
+  const { supabase: authClient, session, role } = await getSessionWithRole(request as any);
   const errorResponse = ensureAdmin(session, role);
   if (errorResponse) {
     return errorResponse;
@@ -219,7 +219,7 @@ export async function PUT(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
-  const { supabase: authClient, session, role } = await getSessionWithRole(request);
+  const { supabase: authClient, session, role } = await getSessionWithRole(request as any);
   const errorResponse = ensureAdmin(session, role);
   if (errorResponse) {
     return errorResponse;

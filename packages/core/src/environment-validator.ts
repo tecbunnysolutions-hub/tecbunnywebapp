@@ -201,6 +201,13 @@ class EnvironmentValidator {
   getWarnings(): string[] {
     return this.warnings;
   }
+
+  getFeatureStatus(): Record<string, boolean> {
+    return {
+      email: Boolean(this.config.smtp?.host && this.config.smtp?.user && this.config.smtp?.pass),
+      whatsapp: Boolean(this.config.whatsapp?.apiKey && this.config.whatsapp?.baseUrl),
+    };
+  }
 }
 
 // Export singleton instance

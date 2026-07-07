@@ -57,7 +57,7 @@ export async function PATCH(
     }
 
     // Get session and check permissions
-    const { supabase: authClient, role, session } = await getSessionWithRole(request);
+    const { supabase: authClient, role, session } = await getSessionWithRole(request as any);
     
     if (!session?.user || !role || !ADMIN_ROLES.has(role)) {
       return NextResponse.json(
@@ -244,7 +244,7 @@ export async function GET(
       );
     }
 
-    const { supabase: authClient, role } = await getSessionWithRole(request);
+    const { supabase: authClient, role } = await getSessionWithRole(request as any);
     const isPrivilegedRequest = Boolean(role && ADMIN_ROLES.has(role));
     const supabase = role && ADMIN_ROLES.has(role) && isSupabaseServiceConfigured
       ? createSupabaseServiceClient()

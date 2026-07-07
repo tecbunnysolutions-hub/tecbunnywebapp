@@ -6,7 +6,7 @@ import { handleEmailPost } from "@tecbunny/core/api-email-route";
 interface WelcomePayload { to: string; userName: string }
 
 export async function POST(request: NextRequest) {
-  return handleEmailPost<WelcomePayload>(request, {
+  return handleEmailPost<WelcomePayload>(request as any, {
     rate: { bucket: 'email_welcome', limit: 5, windowMs: 60 * 60 * 1000 },
     validate(body: any) {
       const { to, userName } = body || {};

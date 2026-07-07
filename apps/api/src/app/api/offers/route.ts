@@ -273,7 +273,7 @@ export async function GET(request: NextRequest) {
     const homepageOnly = searchParams.get('homepage') === 'true';
     const includeExpired = searchParams.get('include_expired') === 'true';
 
-    const { supabase: authClient, role } = await getSessionWithRole(request);
+    const { supabase: authClient, role } = await getSessionWithRole(request as any);
     const supabase = role && ADMIN_ROLES.has(role) && isSupabaseServiceConfigured
       ? createSupabaseServiceClient()
       : authClient ?? await createClient();
@@ -335,7 +335,7 @@ export async function GET(request: NextRequest) {
 // POST /api/offers - Create new offer (Admin only)
 export async function POST(request: NextRequest) {
   try {
-    const { supabase: authClient, session, role } = await getSessionWithRole(request);
+    const { supabase: authClient, session, role } = await getSessionWithRole(request as any);
     if (!session) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
@@ -422,7 +422,7 @@ export async function POST(request: NextRequest) {
 // PUT /api/offers - Update offer (Admin only)
 export async function PUT(request: NextRequest) {
   try {
-    const { supabase: authClient, session, role } = await getSessionWithRole(request);
+    const { supabase: authClient, session, role } = await getSessionWithRole(request as any);
     if (!session) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
@@ -528,7 +528,7 @@ export async function PUT(request: NextRequest) {
 // DELETE /api/offers - Delete offer (Admin only)
 export async function DELETE(request: NextRequest) {
   try {
-    const { supabase: authClient, session, role } = await getSessionWithRole(request);
+    const { supabase: authClient, session, role } = await getSessionWithRole(request as any);
     if (!session) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }

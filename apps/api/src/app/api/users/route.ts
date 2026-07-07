@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { logger } from "@tecbunny/core";
 import { BaseSupabaseClient, SupabaseUserRepository } from "@tecbunny/infra";
 import { verifySuperadminSessionToken } from "@tecbunny/core/server";
+import { UserService } from "@tecbunny/core";
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY;
@@ -90,7 +91,7 @@ export async function GET(request: NextRequest) {
     const page = Number.isFinite(pageParam) && pageParam > 0 ? Math.floor(pageParam) : 1;
     const pageSize = Number.isFinite(pageSizeParam) && pageSizeParam > 0 ? Math.min(Math.floor(pageSizeParam), 100) : 25;
     const search = (searchParams.get('search') || '').trim();
-    let roles = parseCsvParam(searchParams.get('role'));
+    const roles = parseCsvParam(searchParams.get('role'));
     const sortFieldParam = searchParams.get('sortField') || 'name';
     const sortDirectionParam = searchParams.get('sortDirection') === 'desc' ? 'desc' : 'asc';
     const includeCounts = searchParams.get('includeCounts') !== 'false';
@@ -107,34 +108,24 @@ export async function GET(request: NextRequest) {
 
     const baseClient = getAdminBaseClient();
     const userRepository = new SupabaseUserRepository(baseClient);
+    const userService = new UserService(userRepository);
 
-    if (role !== 'superadmin') {
-      roles = ['customer'];
-    }
-
-    const result = await userRepository.getUsers({
+    const result = await userService.getUsers({
       page,
       pageSize,
       search,
       roles,
       sortColumn,
-      sortDirection: sortDirectionParam
+      sortDirection: sortDirectionParam,
+      operatorRole: role
     });
 
-    if (includeCounts) {
-      if (role === 'superadmin') {
-        result.totals = await userRepository.getTotals();
-      } else {
-        result.totals = {
-          total: result.total,
-          staff: 0,
-          customers: result.total,
-          sales: 0
-        };
-      }
+    if (includeCounts && result.success) {
+      const totalsResult = await userService.getTotals(role);
+      result.data.totals = totalsResult.success ? totalsResult.data : null;
     }
 
-    return NextResponse.json(result);
+    return NextResponse.json(result.success ? result.data : { error: result.error.message }, { status: result.success ? 200 : 400 });
   } catch (error) {
     logger.error('Error in GET /api/users:', { error });
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
@@ -159,21 +150,19 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
 
-    if (role !== 'superadmin' && body.role !== undefined) {
-      return NextResponse.json({ error: 'Forbidden: Only Superadmin can assign roles' }, { status: 403 });
-    }
-
     const baseClient = getAdminBaseClient();
     const userRepository = new SupabaseUserRepository(baseClient);
+    const userService = new UserService(userRepository);
 
     try {
-      const user = await userRepository.createUser({
+      const user = await userService.createUser({
         email: body.email,
         name: body.name,
         role: body.role,
         mobile: body.mobile,
         password: body.password,
-        createdBy: session.user.id
+        operatorRole: role,
+        operatorId: session.user.id
       });
 
       return NextResponse.json({
@@ -212,26 +201,14 @@ export async function PUT(request: NextRequest) {
 
     const baseClient = getAdminBaseClient();
     const userRepository = new SupabaseUserRepository(baseClient);
+    const userService = new UserService(userRepository);
 
     try {
-      const targetProfile = await userRepository.getUserProfile(userId);
-      if (targetProfile.role === 'superadmin') {
-        return NextResponse.json({ error: 'The root Superadmin role cannot be modified here' }, { status: 403 });
-      }
-
-      if (role !== 'superadmin') {
-        if (updates.role !== undefined) {
-          return NextResponse.json({ error: 'Forbidden: Only Superadmin can change roles and permissions' }, { status: 403 });
-        }
-        if (targetProfile.role !== 'customer') {
-          return NextResponse.json({ error: 'Forbidden: Admins cannot update non-customer profiles' }, { status: 403 });
-        }
-      }
-
-      await userRepository.updateUser({
+      await userService.updateUser({
         userId,
         updates,
-        updatedBy: session.user.id
+        operatorRole: role,
+        operatorId: session.user.id
       });
 
       return NextResponse.json({ message: 'User updated successfully' });
@@ -268,23 +245,16 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'User ID is required' }, { status: 400 });
     }
 
-    if (userId === session.user.id) {
-      return NextResponse.json({ error: 'Cannot delete your own account' }, { status: 400 });
-    }
-
     const baseClient = getAdminBaseClient();
     const userRepository = new SupabaseUserRepository(baseClient);
+    const userService = new UserService(userRepository);
 
     try {
-      const targetProfile = await userRepository.getUserProfile(userId);
-
-      if (role !== 'superadmin') {
-        if (targetProfile.role !== 'customer') {
-          return NextResponse.json({ error: 'Forbidden: Admins cannot delete non-customer profiles' }, { status: 403 });
-        }
-      }
-
-      await userRepository.deleteUser(userId);
+      await userService.deleteUser({
+        userId,
+        operatorRole: role,
+        operatorId: session.user.id
+      });
       return NextResponse.json({ message: 'User deleted successfully' });
     } catch (e: any) {
       return NextResponse.json({ error: e.message }, { status: 400 });

@@ -18,7 +18,7 @@ const ADMIN_ROLES = new Set(['superadmin']);
 export async function GET(request: NextRequest) {
   try {
     const correlationId = request.headers.get('x-correlation-id') || null;
-    const { supabase: authClient, session, role } = await getSessionWithRole(request);
+    const { supabase: authClient, session, role } = await getSessionWithRole(request as any);
     if (!session) {
       return apiError('UNAUTHORIZED', { correlationId });
     }
@@ -75,7 +75,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const correlationId = request.headers.get('x-correlation-id') || null;
-    const { supabase: authClient, session, role } = await getSessionWithRole(request);
+    const { supabase: authClient, session, role } = await getSessionWithRole(request as any);
     if (!session) {
       return apiError('UNAUTHORIZED', { correlationId });
     }

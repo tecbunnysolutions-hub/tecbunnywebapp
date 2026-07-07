@@ -6,7 +6,7 @@ import { handleEmailPost } from "@tecbunny/core/api-email-route";
 interface PaymentPendingPayload { to: string; orderData: any; paymentData?: any }
 
 export async function POST(request: NextRequest) {
-  return handleEmailPost<PaymentPendingPayload>(request, {
+  return handleEmailPost<PaymentPendingPayload>(request as any, {
     rate: { bucket: 'email_payment_pending', limit: 5, windowMs: 10 * 60 * 1000 },
     validate(body: any) {
       const { to, orderData, paymentData } = body || {};

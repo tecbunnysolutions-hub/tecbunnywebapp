@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
 
 import { AdminAuthError, requireAdminContext } from "@tecbunny/core/auth/admin-guard";
 import { logger } from "@tecbunny/core";
+import { getAdminDb, DatabaseError } from "@tecbunny/core";
 
 const PUBLIC_PAGE_CONTENT_CACHE_CONTROL = 'no-store, max-age=0';
 const PAGE_CONTENT_PUBLIC_SELECTS = {
@@ -13,37 +13,6 @@ const PAGE_CONTENT_PUBLIC_SELECTS = {
   keyMinimal: 'id,key,title,content,created_at,updated_at',
 };
 
-function getSupabaseClient() {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  // Use service role if available, else anon for read operations (GET)
-  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  if (!supabaseUrl || !supabaseKey) {
-    return null;
-  }
-  return createClient(supabaseUrl, supabaseKey);
-}
-
-function isFetchFailure(err: any) {
-  if (!err) return false;
-  const message = String(err.message || '').toLowerCase();
-  return message.includes('fetch failed');
-}
-
-function isUndefinedColumn(err: any) {
-  if (!err) return false;
-  const code = String(err.code || '');
-  const combined = `${err.message || ''} ${err.hint || ''} ${err.details || ''}`.toLowerCase();
-  return (
-    code === '42703' ||
-    /^pgrst\d+$/i.test(code) && (
-      combined.includes('schema cache') ||
-      combined.includes('could not find') ||
-      combined.includes('does not exist') ||
-      combined.includes('unknown column')
-    ) ||
-    /column .* does not exist/i.test(combined)
-  );
-}
 
 function normalizePage(row: any | null) {
   if (!row) return null;
@@ -105,7 +74,7 @@ function extractPayload(body: any): ContentPayload {
   return { pageKey, title, content, metaDescription, metaKeywords, status };
 }
 
-async function upsertPageContent(supabase: any, payload: ContentPayload) {
+async function upsertPageContent(db: any, payload: ContentPayload) {
   const timestamp = new Date().toISOString();
 
   const strategies: Array<{
@@ -161,63 +130,61 @@ async function upsertPageContent(supabase: any, payload: ContentPayload) {
     }
   ];
 
-  let lastResult: any = null;
-
   for (const strategy of strategies) {
-    const baseQuery = supabase
-      .from('page_content')
+    const baseQuery = db.from('page_content')
       .upsert(strategy.data, { onConflict: strategy.conflict })
       .select();
 
-    const result = strategy.select === 'single'
-      ? await baseQuery.single()
-      : await baseQuery.maybeSingle();
-    lastResult = result;
-
-    if (!result.error) {
-      return result;
-    }
-
-    if (!isUndefinedColumn(result.error)) {
-      return result;
+    try {
+      const result = await (strategy.select === 'single'
+        ? db.execute(baseQuery.single())
+        : db.executeMaybe(baseQuery.maybeSingle(), true));
+        
+      if (result) return { data: result, error: null };
+    } catch (error) {
+      if (error instanceof DatabaseError && error.isSchemaError()) {
+        continue;
+      }
+      return { data: null, error };
     }
   }
 
-  return lastResult;
+  return { data: null, error: new Error('Failed to upsert using any schema strategy') };
 }
 
-async function getPageByKey(pageKey: string, supabase: any) {
+async function getPageByKey(pageKey: string, db: any) {
   // Try a sequence of strategies to accommodate different schemas
   const tries: Array<() => PromiseLike<any>> = [
     // Modern: page_key + status
-    () => supabase.from('page_content').select(PAGE_CONTENT_PUBLIC_SELECTS.pageKeyStatus).eq('page_key', pageKey).eq('status', 'published').maybeSingle(),
+    () => db.executeMaybe(db.from('page_content').select(PAGE_CONTENT_PUBLIC_SELECTS.pageKeyStatus).eq('page_key', pageKey).eq('status', 'published').maybeSingle(), true),
     // Mixed: key + status
-    () => supabase.from('page_content').select(PAGE_CONTENT_PUBLIC_SELECTS.keyStatus).eq('key', pageKey).eq('status', 'published').maybeSingle(),
+    () => db.executeMaybe(db.from('page_content').select(PAGE_CONTENT_PUBLIC_SELECTS.keyStatus).eq('key', pageKey).eq('status', 'published').maybeSingle(), true),
     // Legacy: key + is_active
-    () => supabase.from('page_content').select(PAGE_CONTENT_PUBLIC_SELECTS.keyActive).eq('key', pageKey).eq('is_active', true).maybeSingle(),
+    () => db.executeMaybe(db.from('page_content').select(PAGE_CONTENT_PUBLIC_SELECTS.keyActive).eq('key', pageKey).eq('is_active', true).maybeSingle(), true),
     // Minimal: page_key only
-    () => supabase.from('page_content').select(PAGE_CONTENT_PUBLIC_SELECTS.pageKeyMinimal).eq('page_key', pageKey).maybeSingle(),
+    () => db.executeMaybe(db.from('page_content').select(PAGE_CONTENT_PUBLIC_SELECTS.pageKeyMinimal).eq('page_key', pageKey).maybeSingle(), true),
     // Minimal legacy: key only
-    () => supabase.from('page_content').select(PAGE_CONTENT_PUBLIC_SELECTS.keyMinimal).eq('key', pageKey).maybeSingle(),
+    () => db.executeMaybe(db.from('page_content').select(PAGE_CONTENT_PUBLIC_SELECTS.keyMinimal).eq('key', pageKey).maybeSingle(), true),
   ];
 
   for (const run of tries) {
-  const { data, error } = await run();
-    if (!error) return { data, error: null };
-    if (isUndefinedColumn(error)) {
-      continue;
+    try {
+      const data = await run();
+      if (data) return { data, error: null };
+    } catch (error) {
+      if (error instanceof DatabaseError && error.isSchemaError()) {
+        continue;
+      }
+      return { data: null, error };
     }
-    // Non-undefined-column error: stop and surface it
-    return { data: null, error };
   }
-  // Only undefined-column errors encountered: treat as not found (no 500)
   return { data: null, error: null };
 }
 
 // Get page content by key
 export async function GET(request: NextRequest) {
   try {
-    const supabase = getSupabaseClient();
+    const db = getAdminDb();
     const { searchParams } = new URL(request.url);
     const pageKey = searchParams.get('key');
 
@@ -225,14 +192,10 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Page key is required' }, { status: 400 });
     }
 
-    if (!supabase) {
-      logger.warn('page_content_supabase_not_configured', { pageKey });
-      return jsonWithCache({ success: true, data: null, warning: 'Supabase not configured' }, PUBLIC_PAGE_CONTENT_CACHE_CONTROL);
-    }
-    const { data: pageContent, error } = await getPageByKey(pageKey, supabase);
+    const { data: pageContent, error } = await getPageByKey(pageKey, db);
 
     if (error) {
-      if (isFetchFailure(error)) {
+      if (error instanceof DatabaseError && error.isFetchFailure()) {
         logger.warn('page_content_fetch_failed', { error, pageKey });
         return jsonWithCache({ success: true, data: null, warning: 'Content service unavailable' }, PUBLIC_PAGE_CONTENT_CACHE_CONTROL);
       }
@@ -252,7 +215,8 @@ export async function GET(request: NextRequest) {
 // Update page content (admin only)
 export async function PUT(request: NextRequest) {
   try {
-    const { serviceSupabase: supabase } = await requireAdminContext();
+    await requireAdminContext();
+    const db = getAdminDb();
 
     const body = await request.json();
     let payload: ContentPayload;
@@ -262,12 +226,12 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: (err as Error).message }, { status: 400 });
     }
 
-    const upsert = await upsertPageContent(supabase, payload);
+    const upsert = await upsertPageContent(db, payload);
 
     if (upsert.error) {
       logger.error('page_content_update_failed', { error: upsert.error, payload });
       return NextResponse.json({
-        error: upsert.error.message || 'Failed to update page content',
+        error: (upsert.error as Error).message || 'Failed to update page content',
         details: upsert.error
       }, { status: 500 });
     }
@@ -290,44 +254,30 @@ export async function PUT(request: NextRequest) {
 // Get all page contents (admin only)
 export async function POST(request: NextRequest) {
   try {
-    const { serviceSupabase: supabase } = await requireAdminContext();
+    await requireAdminContext();
+    const db = getAdminDb();
 
     const body = await request.json();
 
     if (body?.action === 'list_all') {
-
-      // Get all page contents, try modern order then legacy
-      let { data: pages, error } = await supabase
-        .from('page_content')
-        .select('*')
-        .order('page_key');
-
-      if (error && isUndefinedColumn(error)) {
-        const fallback = await supabase
-          .from('page_content')
-          .select('*')
-          .order('key');
-        pages = fallback.data || [];
-        error = fallback.error;
-
-        if (error && isUndefinedColumn(error)) {
-          // Final fallback: no order
-          const noOrder = await supabase
-            .from('page_content')
-            .select('*');
-          pages = noOrder.data || [];
-          error = noOrder.error;
+      let pages: any[] = [];
+      
+      try {
+        pages = await db.executeMaybe(db.from('page_content').select('*').order('page_key'), true) || [];
+        if (pages.length === 0) {
+          pages = await db.executeMaybe(db.from('page_content').select('*').order('key'), true) || [];
         }
-      }
-
-      if (error) {
+        if (pages.length === 0) {
+          pages = await db.executeMaybe(db.from('page_content').select('*'), true) || [];
+        }
+      } catch (error) {
         logger.error('page_content_list_failed', { error });
         return NextResponse.json({ error: 'Failed to fetch page contents' }, { status: 500 });
       }
 
       return NextResponse.json({
         success: true,
-        data: (pages || []).map(normalizePage)
+        data: pages.map(normalizePage)
       });
     }
 
@@ -337,12 +287,12 @@ export async function POST(request: NextRequest) {
     } catch (err) {
       return NextResponse.json({ error: (err as Error).message }, { status: 400 });
     }
-    const upsert = await upsertPageContent(supabase, payload);
+    const upsert = await upsertPageContent(db, payload);
 
     if (upsert.error) {
       logger.error('page_content_create_failed', { error: upsert.error, payload });
       return NextResponse.json({
-        error: upsert.error.message || 'Failed to save page content',
+        error: (upsert.error as Error).message || 'Failed to save page content',
         details: upsert.error
       }, { status: 500 });
     }
@@ -364,7 +314,8 @@ export async function POST(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
-    const { serviceSupabase: supabase } = await requireAdminContext();
+    await requireAdminContext();
+    const db = getAdminDb();
 
     const url = new URL(request.url);
     let pageKey = url.searchParams.get('key') || url.searchParams.get('pageKey');
@@ -388,20 +339,10 @@ export async function DELETE(request: NextRequest) {
 
     for (const column of attempts) {
       try {
-        const { data, error } = await supabase
-          .from('page_content')
-          .delete()
-          .eq(column, pageKey)
-          .select()
-          .maybeSingle();
-
-        if (error) {
-          if (isUndefinedColumn(error)) {
-            continue;
-          }
-          lastError = error;
-          break;
-        }
+        const data = await db.executeMaybe(
+          db.from('page_content').delete().eq(column, pageKey).select().maybeSingle(),
+          true
+        );
 
         if (data) {
           removed = true;

@@ -1,16 +1,12 @@
 import { isSupabasePublicConfigured } from "@tecbunny/core";
-import { isSupabaseServiceConfigured } from "@tecbunny/core/server";;
-import { createClient as createAdminClient } from '@supabase/supabase-js';
+import { isSupabaseServiceConfigured } from "@tecbunny/core/server";
+import { getAdminDb, DatabaseError } from "@tecbunny/core";
 import { NextRequest, NextResponse } from 'next/server';
 
 import { getSessionWithRole } from "@tecbunny/core/auth/server-role";
 import { verifySuperadminSessionToken } from "@tecbunny/core/server";
 
 import { logger } from "@tecbunny/core";
-
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY;
-
 const PUBLIC_DEFAULTS: Record<string, unknown> = {
   site_branding: 'TecBunny',
   siteName: 'TecBunny - Your Tech Store',
@@ -31,12 +27,6 @@ const PUBLIC_DEFAULTS: Record<string, unknown> = {
 const PUBLIC_SETTINGS_CACHE_CONTROL = 'no-store, max-age=0';
 const PUBLIC_SETTINGS_SELECT = 'key,value,description,updated_at';
 
-function getSupabaseAdmin() {
-  if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
-    throw new Error('Supabase admin environment variables are not configured');
-  }
-  return createAdminClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
-}
 
 async function getSessionAndRole(request: NextRequest) {
   try {
@@ -55,7 +45,7 @@ async function getSessionAndRole(request: NextRequest) {
       return { session: null, role: null };
     }
 
-    const { session, role } = await getSessionWithRole(request);
+    const { session, role } = await getSessionWithRole(request as any);
     return { session, role };
   } catch {
     return { session: null, role: null }
@@ -131,7 +121,7 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    const supabaseAdmin = getSupabaseAdmin();
+    const db = getAdminDb();
 
     if (key) {
       // Get single setting by key
@@ -142,22 +132,22 @@ export async function GET(request: NextRequest) {
           return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
         }
       }
-      const { data, error } = await (supabaseAdmin
-        .from('settings') as any)
-        .select(isAllowedPublicKey(key) ? PUBLIC_SETTINGS_SELECT : '*')
-        .eq('key', key)
-        .single()
+      
+      try {
+        const data = await db.execute(db.from('settings')
+          .select(isAllowedPublicKey(key) ? PUBLIC_SETTINGS_SELECT : '*')
+          .eq('key', key)
+          .single());
 
-      if (error) {
+        return isAllowedPublicKey(key)
+          ? jsonWithCache(data, PUBLIC_SETTINGS_CACHE_CONTROL)
+          : NextResponse.json(data);
+      } catch (error: any) {
         if (isAllowedPublicKey(key)) {
           return jsonWithCache({ key, value: PUBLIC_DEFAULTS[key] ?? null }, PUBLIC_SETTINGS_CACHE_CONTROL)
         }
         return NextResponse.json({ error: error.message }, { status: 404 })
       }
-
-      return isAllowedPublicKey(key)
-        ? jsonWithCache(data, PUBLIC_SETTINGS_CACHE_CONTROL)
-        : NextResponse.json(data)
     } else if (keys) {
       // Get multiple settings by comma-separated keys
       const keyArray = keys.split(',').map(k => k.trim())
@@ -169,12 +159,29 @@ export async function GET(request: NextRequest) {
           return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
         }
       }
-      const { data, error } = await (supabaseAdmin
-        .from('settings') as any)
-        .select(protectedKeys.length === 0 ? PUBLIC_SETTINGS_SELECT : '*')
-        .in('key', keyArray)
+      try {
+        const data = await db.execute(db.from('settings')
+          .select(protectedKeys.length === 0 ? PUBLIC_SETTINGS_SELECT : '*')
+          .in('key', keyArray));
 
-      if (error) {
+        // Convert to key-value object
+        const settings = (data as any as Array<{ key: string; value: unknown }>).reduce<Record<string, unknown>>((acc, setting) => {
+          acc[setting.key] = setting.value
+          return acc
+        }, {})
+
+        if (protectedKeys.length === 0) {
+          keyArray.forEach((currentKey) => {
+            if (!(currentKey in settings)) {
+              settings[currentKey] = PUBLIC_DEFAULTS[currentKey] ?? null
+            }
+          })
+        }
+
+        return protectedKeys.length === 0
+          ? jsonWithCache(settings, PUBLIC_SETTINGS_CACHE_CONTROL)
+          : NextResponse.json(settings)
+      } catch (error: any) {
         if (protectedKeys.length === 0) {
           const payload = keyArray.reduce<Record<string, unknown>>((acc, currentKey) => {
             acc[currentKey] = PUBLIC_DEFAULTS[currentKey] ?? null
@@ -184,40 +191,20 @@ export async function GET(request: NextRequest) {
         }
         return NextResponse.json({ error: error.message }, { status: 500 })
       }
-
-      // Convert to key-value object
-      const settings = (data as Array<{ key: string; value: unknown }>).reduce<Record<string, unknown>>((acc, setting) => {
-        acc[setting.key] = setting.value
-        return acc
-      }, {})
-
-      if (protectedKeys.length === 0) {
-        keyArray.forEach((currentKey) => {
-          if (!(currentKey in settings)) {
-            settings[currentKey] = PUBLIC_DEFAULTS[currentKey] ?? null
-          }
-        })
-      }
-
-      return protectedKeys.length === 0
-        ? jsonWithCache(settings, PUBLIC_SETTINGS_CACHE_CONTROL)
-        : NextResponse.json(settings)
     } else {
       // Get all settings - superadmin only
       const { role } = await getSessionAndRole(request)
       if (!role || role !== 'superadmin') {
         return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
       }
-      const { data, error } = await supabaseAdmin
-        .from('settings')
-        .select('*')
-        .order('key')
-
-      if (error) {
+      try {
+        const data = await db.execute(db.from('settings')
+          .select('*')
+          .order('key'));
+        return NextResponse.json(data)
+      } catch (error: any) {
         return NextResponse.json({ error: error.message }, { status: 500 })
       }
-
-      return NextResponse.json(data)
     }
   } catch (error) {
     logger.error('Settings API error:', { error });
@@ -240,7 +227,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const supabaseAdmin = getSupabaseAdmin();
+    const db = getAdminDb();
     const { role } = await getSessionAndRole(request)
     if (!role || role !== 'superadmin') {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
@@ -248,24 +235,23 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { key, value, description } = body
 
-  if (!key || value === undefined) {
+    if (!key || value === undefined) {
       return NextResponse.json(
         { error: 'Key and value are required' },
         { status: 400 }
       )
     }
 
-  const { data, error } = await supabaseAdmin
-      .from('settings')
-      .upsert({ key, value, description, updated_at: new Date().toISOString() }, { onConflict: 'key' })
-      .select()
-      .single()
-
-    if (error) {
+    try {
+      const data = await db.execute(db.from('settings')
+        .upsert({ key, value, description, updated_at: new Date().toISOString() }, { onConflict: 'key' })
+        .select()
+        .single());
+      
+      return NextResponse.json(data)
+    } catch (error: any) {
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
-
-    return NextResponse.json(data)
   } catch (error) {
     logger.error('Settings POST error:', { error });
     return NextResponse.json(
@@ -287,7 +273,7 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    const supabaseAdmin = getSupabaseAdmin();
+    const db = getAdminDb();
     const { role } = await getSessionAndRole(request)
     if (!role || role !== 'superadmin') {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
@@ -302,22 +288,21 @@ export async function PUT(request: NextRequest) {
       )
     }
 
-    const { data, error } = await supabaseAdmin
-      .from('settings')
-      .update({
-        value,
-        description,
-        updated_at: new Date().toISOString()
-      })
-      .eq('key', key)
-      .select()
-      .single()
+    try {
+      const data = await db.execute(db.from('settings')
+        .update({
+          value,
+          description,
+          updated_at: new Date().toISOString()
+        })
+        .eq('key', key)
+        .select()
+        .single());
 
-    if (error) {
+      return NextResponse.json(data)
+    } catch (error: any) {
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
-
-    return NextResponse.json(data)
   } catch (error) {
     logger.error('Settings PUT error:', { error });
     return NextResponse.json(
@@ -339,7 +324,7 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    const supabaseAdmin = getSupabaseAdmin();
+    const db = getAdminDb();
     const { searchParams } = new URL(request.url)
     const key = searchParams.get('key')
     const { role } = await getSessionAndRole(request)
@@ -354,16 +339,15 @@ export async function DELETE(request: NextRequest) {
       )
     }
 
-    const { error } = await supabaseAdmin
-      .from('settings')
-      .delete()
-      .eq('key', key)
+    try {
+      await db.execute(db.from('settings')
+        .delete()
+        .eq('key', key));
 
-    if (error) {
+      return NextResponse.json({ success: true })
+    } catch (error: any) {
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
-
-    return NextResponse.json({ success: true })
   } catch (error) {
     logger.error('Settings DELETE error:', { error });
     return NextResponse.json(

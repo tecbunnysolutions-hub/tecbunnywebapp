@@ -1,5 +1,5 @@
 // Environment variable validation and configuration
-import { logger } from '@tecbunny/core';
+import { logger } from './logger';
 import { requireSupabasePublicEnv, requireSupabaseServiceEnv } from './supabase/env';
 class EnvironmentValidator {
     config = {};
@@ -17,7 +17,9 @@ class EnvironmentValidator {
                 url: publicEnv.url,
                 anonKey: publicEnv.publicKey,
                 serviceRoleKey: serviceEnv.serviceKey,
-                publicKeySource: publicEnv.keySource
+                publicKeySource: publicEnv.keySource,
+                dbPassword: this.optionalEnv('SUPABASE_DB_PASSWORD', 'Database password'),
+                dbUrl: this.optionalEnv('DATABASE_URL', 'Prisma DB connection URL'),
             };
         }
         catch (error) {
@@ -31,27 +33,54 @@ class EnvironmentValidator {
         }
         // SMTP Configuration
         this.config.smtp = {
-            host: this.getEnv('SMTP_HOST', 'smtp.gmail.com'),
-            port: parseInt(this.getEnv('SMTP_PORT', '587')),
+            host: this.requireEnv('SMTP_HOST', 'SMTP Host'),
+            port: parseInt(this.requireEnv('SMTP_PORT', 'SMTP Port')),
             secure: this.getEnv('SMTP_SECURE', 'false') === 'true',
-            user: this.optionalEnv('SMTP_USER', 'SMTP User'),
-            pass: this.optionalEnv('SMTP_PASS', 'SMTP Password'),
-            from: this.getEnv('SMTP_FROM', 'noreply@tecbunny.com'),
+            user: this.requireEnv('SMTP_USER', 'SMTP User'),
+            pass: this.requireEnv('SMTP_PASS', 'SMTP Password'),
+            from: this.requireEnv('SMTP_FROM', 'SMTP From Address'),
             fromName: this.getEnv('SMTP_FROM_NAME', 'TecBunny Solutions')
         };
         // Infobip WhatsApp Configuration
         this.config.whatsapp = {
-            apiKey: this.getEnv('INFOBIP_API_KEY', 'Infobip API Key'),
-            senderNumber: this.getEnv('INFOBIP_WHATSAPP_FROM', 'Infobip Sender Number'),
-            baseUrl: this.getEnv('INFOBIP_BASE_URL', 'Infobip Base URL'),
+            apiKey: this.requireEnv('INFOBIP_API_KEY', 'Infobip API Key'),
+            senderNumber: this.requireEnv('INFOBIP_WHATSAPP_FROM', 'Infobip Sender Number'),
+            baseUrl: this.requireEnv('INFOBIP_BASE_URL', 'Infobip Base URL'),
             templateName: this.optionalEnv('INFOBIP_WHATSAPP_TEMPLATE_NAME', 'Infobip Template Name'),
-            templateLanguage: this.optionalEnv('INFOBIP_WHATSAPP_TEMPLATE_LANGUAGE', 'Infobip Template Language')
+            templateLanguage: this.optionalEnv('INFOBIP_WHATSAPP_TEMPLATE_LANGUAGE', 'Infobip Template Language'),
+            webhookVerifyToken: this.requireEnv('WHATSAPP_WEBHOOK_VERIFY_TOKEN', 'WhatsApp Webhook Verify Token')
         };
         // App Configuration
         this.config.app = {
-            siteUrl: this.getEnv('NEXT_PUBLIC_SITE_URL', 'http://localhost:3000'),
+            siteUrl: this.requireEnv('NEXT_PUBLIC_SITE_URL', 'Site URL'),
+            baseDomain: this.requireEnv('NEXT_PUBLIC_BASE_DOMAIN', 'Base Domain'),
+            apiUrl: this.requireEnv('NEXT_PUBLIC_API_URL', 'API URL'),
+            mgmtUrl: this.requireEnv('NEXT_PUBLIC_MGMT_URL', 'Management App URL'),
+            superadminUrl: this.requireEnv('NEXT_PUBLIC_SUPERADMIN_URL', 'Superadmin App URL'),
+            wabaUrl: this.requireEnv('NEXT_PUBLIC_WABA_URL', 'WABA App URL'),
             appName: this.getEnv('NEXT_PUBLIC_APP_NAME', 'TecBunny Solutions'),
             nodeEnv: this.getEnv('NODE_ENV', 'development')
+        };
+        // Security
+        this.config.security = {
+            otpSecretPepper: this.requireEnv('OTP_SECRET_PEPPER', 'OTP Secret Pepper'),
+            superadminSessionSecret: this.requireEnv('SUPERADMIN_SESSION_SECRET', 'Superadmin Session Secret'),
+            totpSecretEncryptionKey: this.requireEnv('TOTP_SECRET_ENCRYPTION_KEY', 'TOTP Secret Encryption Key'),
+            sessionSecret: this.requireEnv('SESSION_SECRET', 'Session Secret'),
+            superadminUserId: this.requireEnv('SUPERADMIN_USER_ID', 'Superadmin User ID')
+        };
+        // PayU
+        this.config.payu = {
+            merchantKey: this.requireEnv('PAYU_MERCHANT_KEY', 'PayU Merchant Key'),
+            merchantSalt: this.requireEnv('PAYU_MERCHANT_SALT', 'PayU Merchant Salt'),
+            clientSecret: this.requireEnv('PAYU_CLIENT_SECRET', 'PayU Client Secret'),
+            environment: this.requireEnv('PAYU_ENVIRONMENT', 'PayU Environment'),
+            clientId: this.requireEnv('PAYU_CLIENT_ID', 'PayU Client ID')
+        };
+        // Turnstile
+        this.config.turnstile = {
+            siteKey: this.requireEnv('NEXT_PUBLIC_TURNSTILE_SITE_KEY', 'Turnstile Site Key'),
+            secretKey: this.requireEnv('TURNSTILE_SECRET_KEY', 'Turnstile Secret Key')
         };
         this.reportValidationResults();
     }
@@ -65,7 +94,6 @@ class EnvironmentValidator {
     }
     optionalEnv(key, _description) {
         const value = process.env[key];
-        // Silently return empty for optional env vars - no warnings needed
         return value || '';
     }
     getEnv(key, defaultValue) {
@@ -73,15 +101,15 @@ class EnvironmentValidator {
     }
     reportValidationResults() {
         if (this.errors.length > 0) {
-            logger.error('Environment validation failed', {
-                errors: this.errors
-            });
+            // Avoid logging using external logger if running as script
+            if (!process.argv[1]?.endsWith('environment-validator.ts')) {
+                logger.error('Environment validation failed', { errors: this.errors });
+            }
             if (process.env.STRICT_ENV_VALIDATION === 'true') {
                 throw new Error(`Environment validation failed: ${this.errors.join(', ')}`);
             }
         }
-        // Only log validation completion in development mode
-        if (process.env.NODE_ENV !== 'production') {
+        else if (process.env.NODE_ENV !== 'production' && !process.argv[1]?.endsWith('environment-validator.ts')) {
             logger.info('Environment validation completed', {
                 errorsCount: this.errors.length,
                 nodeEnv: this.config.app?.nodeEnv
@@ -100,22 +128,10 @@ class EnvironmentValidator {
     getWarnings() {
         return this.warnings;
     }
-    // Feature availability checks
-    isEmailEnabled() {
-        return !!(this.config.smtp?.user && this.config.smtp?.pass);
-    }
-    isWhatsAppEnabled() {
-        return !!(this.config.whatsapp?.apiKey && this.config.whatsapp?.senderNumber);
-    }
-    isSupabaseEnabled() {
-        return !!(this.config.supabase?.url && this.config.supabase?.serviceRoleKey);
-    }
     getFeatureStatus() {
         return {
-            email: this.isEmailEnabled(),
-            whatsapp: this.isWhatsAppEnabled(),
-            database: this.isSupabaseEnabled(),
-            notifications: this.isWhatsAppEnabled() || this.isEmailEnabled()
+            email: Boolean(this.config.smtp?.host && this.config.smtp?.user && this.config.smtp?.pass),
+            whatsapp: Boolean(this.config.whatsapp?.apiKey && this.config.whatsapp?.baseUrl),
         };
     }
 }
@@ -123,3 +139,27 @@ class EnvironmentValidator {
 export const environmentValidator = new EnvironmentValidator();
 export const envConfig = environmentValidator.getConfig();
 export default environmentValidator;
+// If executed directly as a script
+if (typeof process !== 'undefined' && process.argv && process.argv[1] && process.argv[1].endsWith('environment-validator.ts')) {
+    // We explicitly load dotenv in the script context since the monorepo root might have the .env
+    const fs = require('fs');
+    const path = require('path');
+    const envPath = path.resolve(process.cwd(), '.env');
+    if (fs.existsSync(envPath)) {
+        require('dotenv').config({ path: envPath });
+        // Re-run validation with loaded envs
+        const validator = new EnvironmentValidator();
+        if (!validator.isValid()) {
+            console.error('❌ Environment validation failed. Missing variables:');
+            console.error(validator.getErrors().map(e => `   - ${e}`).join('\n'));
+            process.exit(1);
+        }
+        else {
+            console.log('✅ Environment validation passed successfully.');
+        }
+    }
+    else {
+        console.error(`❌ Cannot find .env at ${envPath}`);
+        process.exit(1);
+    }
+}

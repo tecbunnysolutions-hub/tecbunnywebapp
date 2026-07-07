@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
     const correlationId = `cleanup-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     
     // Get session and check permissions
-    const { role, session } = await getSessionWithRole(request);
+    const { role, session } = await getSessionWithRole(request as any);
     
     if (!session?.user || !role || !ADMIN_ROLES.has(role)) {
       return NextResponse.json(

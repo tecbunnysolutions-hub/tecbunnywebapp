@@ -1,0 +1,10 @@
+import React from 'react';
+interface ModalProps {
+    isOpen: boolean;
+    onClose: () => void;
+    children: React.ReactNode;
+}
+declare const Modal: React.FC<ModalProps>;
+export { Modal };
+export default Modal;
+//# sourceMappingURL=modal.d.ts.map

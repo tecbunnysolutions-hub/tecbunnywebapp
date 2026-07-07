@@ -6,7 +6,7 @@ import { handleEmailPost } from "@tecbunny/core/api-email-route";
 interface EmailChangePayload { to: string; userName: string; otp: string }
 
 export async function POST(request: NextRequest) {
-  return handleEmailPost<EmailChangePayload>(request, {
+  return handleEmailPost<EmailChangePayload>(request as any, {
     rate: { bucket: 'email_change_otp', limit: 5, windowMs: 30 * 60 * 1000 },
     validate(body: any) {
       const { to, userName, otp } = body || {};

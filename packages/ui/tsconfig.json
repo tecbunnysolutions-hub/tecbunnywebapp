@@ -2,7 +2,7 @@
   "extends": "@tecbunny/config-typescript/base.json",
   "compilerOptions": {
     "outDir": "dist",
-    "rootDir": "src",
+    "rootDir": ".",
     "composite": true,
     "jsx": "react-jsx",
     "tsBuildInfoFile": "dist/.tsbuildinfo"

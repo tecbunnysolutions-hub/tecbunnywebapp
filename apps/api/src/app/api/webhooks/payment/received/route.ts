@@ -1,5 +1,5 @@
 import { createClient } from "@tecbunny/core/supabase/client";
-import { NextRequest, NextResponse, after } from 'next/server';
+import { NextRequest, NextResponse, unstable_after as after } from 'next/server';
 import crypto from 'crypto';
 
 import { sendWhatsAppNotification } from "@tecbunny/core/whatsapp-service";
