@@ -65,7 +65,7 @@ export class InboundTriageAgent extends BaseAgent<any, TriagedPayload | null> {
       // Upsert Conversation and set to PROCESSING
       const { data: existingConv } = await supabase
         .from('Conversation')
-        .select('id, contact_name')
+        .select('id, contact_name, address, pincode')
         .eq('sender_number', senderNumber)
         .single();
         
@@ -115,7 +115,7 @@ export class InboundTriageAgent extends BaseAgent<any, TriagedPayload | null> {
         const history = (historyData || []).reverse();
         
         // Extract structured JSON payload using Gemini
-        const triageResult = await this.extractStructuredIntent(textContent, history, existingConv?.contact_name || null, senderNumber);
+        const triageResult = await this.extractStructuredIntent(textContent, history, existingConv || null, senderNumber);
         
         // Inject metadata
         const fullPayload: TriagedPayload = {
@@ -143,7 +143,7 @@ export class InboundTriageAgent extends BaseAgent<any, TriagedPayload | null> {
   private async extractStructuredIntent(
     userMessage: string,
     history: { direction: string; message_content: string }[],
-    contactName: string | null,
+    existingConv: any | null,
     senderNumber: string
   ): Promise<Omit<TriagedPayload, 'messageId' | 'senderNumber' | 'history'> & { notes: string | null }> {
     const defaultFallback: Omit<TriagedPayload, 'messageId' | 'senderNumber' | 'history'> & { notes: string | null } = {
@@ -168,25 +168,36 @@ export class InboundTriageAgent extends BaseAgent<any, TriagedPayload | null> {
         analog_camera_5mp: pricingCatalog.analog.camera['5mp']?.standard?.sale || 2200,
         ip_camera_2mp: pricingCatalog.ip.camera['2mp']?.standard?.sale || 2500,
         ip_camera_5mp: pricingCatalog.ip.camera['5mp']?.standard?.sale || 3500,
-        analog_dvr_4ch: pricingCatalog.analog.dvr.find(d => d.capacity === 4)?.sale || 2800,
-        ip_nvr_4ch: pricingCatalog.ip.nvr.find(d => d.capacity === 4)?.sale || 3500,
-        hard_drive_1tb: pricingCatalog.hddOptions.find(h => h.label.includes('1TB'))?.sale || 3500,
-        installation_fee_per_camera: pricingCatalog.installationOption?.sale || 500,
-        cable_fee_per_meter: pricingCatalog.analog.cable[0]?.salePerUnit || 25,
+        dvr_4ch: pricingCatalog.analog.dvr['4_channel']?.sale || 3000,
+        dvr_8ch: pricingCatalog.analog.dvr['8_channel']?.sale || 4500,
+        nvr_4ch: pricingCatalog.ip.nvr['4_channel']?.sale || 4000,
+        nvr_8ch: pricingCatalog.ip.nvr['8_channel']?.sale || 5500,
+        hard_drive_1tb: pricingCatalog.storage['1tb']?.sale || 3000,
+        cable_bundle: pricingCatalog.cable_bundle['90m']?.sale || 1200,
+        installation_fee_per_camera: pricingCatalog.installation_fee_per_camera?.sale || 500,
       };
 
-      // 2. Fetch Customer File (Memory)
-      const { data: existingLead } = await supabase
-        .from('Lead')
-        .select('address, pincode')
-        .eq('sender_number', senderNumber)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
+      // 2. Format memory context from previous leads or conversations
+      let memoryContext = '';
+      let hasAddressData = false;
+      
+      if (existingConv?.contact_name) {
+        memoryContext += `- You already know the customer's name is ${existingConv.contact_name}. DO NOT ASK FOR THEIR NAME.\n`;
+      }
+      if (existingConv?.address) {
+        memoryContext += `- You already know the customer's address is ${existingConv.address}. DO NOT ASK FOR THEIR ADDRESS.\n`;
+        hasAddressData = true;
+      }
+      if (existingConv?.pincode) {
+        memoryContext += `- You already know the customer's pincode is ${existingConv.pincode}. DO NOT ASK FOR THEIR PINCODE.\n`;
+        hasAddressData = true;
+      }
 
-      const memoryContext = existingLead && (existingLead.address || existingLead.pincode) 
-        ? `[CUSTOMER FILE MEMORY]\nWe ALREADY HAVE the following details for this customer on file:\nAddress: ${existingLead.address || 'Unknown'}\nPincode: ${existingLead.pincode || 'Unknown'}\nDO NOT ASK THE CUSTOMER FOR THESE DETAILS AGAIN. YOU ALREADY HAVE THEM.`
-        : `[CUSTOMER FILE MEMORY]\nWe DO NOT have this customer's address or pincode on file yet. You MUST ask for their full address before processing their request.`;
+      if (hasAddressData) {
+        memoryContext = `[CUSTOMER FILE MEMORY]\nWe ALREADY HAVE the following details for this customer on file:\n${memoryContext}\nDO NOT ASK THE CUSTOMER FOR THESE DETAILS AGAIN. YOU ALREADY HAVE THEM.`;
+      } else {
+        memoryContext = `[CUSTOMER FILE MEMORY]\nWe DO NOT have this customer's address or pincode on file yet. You MUST ask for their full address before processing their request (UNLESS they ask for a quotation, in which case give quotation first).`;
+      }
 
       const model = genAI.getGenerativeModel({ 
         model: "gemini-2.5-flash",

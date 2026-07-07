@@ -25,6 +25,8 @@ export class AssignmentOrchestrator extends BaseAgent<TriagedPayload, void> {
       .from('Conversation')
       .update({
         contact_name: data.customer_name || undefined,
+        address: data.address || undefined,
+        pincode: data.pincode || undefined,
         department: data.domain === 'PRODUCT_SALES' ? 'SALES' : (data.domain === 'TECHNICAL_SERVICE' ? 'SUPPORT' : undefined),
         notes: data.notes || undefined,
         status: data.is_actionable || data.escalate_to_human ? (data.escalate_to_human ? 'NEW' : 'LEAD') : 'PROCESSING',
