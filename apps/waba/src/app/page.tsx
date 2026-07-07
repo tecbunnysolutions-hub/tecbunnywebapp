@@ -379,7 +379,7 @@ export default function Dashboard() {
                             Sent by {msg.sent_by === 'AI' ? 'AI Agent' : 'Admin'}
                           </span>
                         )}
-                        <span className="time" style={{ margin: 0 }}>{new Date(msg.timestamp.endsWith('Z') ? msg.timestamp : msg.timestamp + 'Z').toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                        <span className="time" style={{ margin: 0 }}>{new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                         {msg.direction === 'OUTBOUND' && (
                           <span style={{ fontSize: '0.8rem', color: msg.status === 'READ' ? '#3b82f6' : '#94a3b8' }}>
                             {msg.status === 'READ' ? '✓✓' : msg.status === 'DELIVERED' ? '✓✓' : msg.status === 'FAILED' ? '❌' : '✓'}

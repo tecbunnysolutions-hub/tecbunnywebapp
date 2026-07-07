@@ -2,12 +2,13 @@ import { supabase } from '@/lib/supabase';
 
 const INFOBIP_BASE_URL = process.env.INFOBIP_BASE_URL || 'w4pz8r.api.infobip.com';
 const INFOBIP_API_KEY = process.env.INFOBIP_API_KEY || '5fc59d2ed3c46876ecd2914f4c4686af-b1ebcd6b-ce8e-47f5-b56f-340c9d041c4c';
-const SYSTEM_NUMBER = process.env.SYSTEM_NUMBER || '15558835946';
-const TEMPLATE_NAME = process.env.TEMPLATE_NAME || 'hello_world';
+const SYSTEM_NUMBER = process.env.INFOBIP_WHATSAPP_FROM || process.env.SYSTEM_NUMBER || '15558835946';
+const TEMPLATE_NAME = process.env.INFOBIP_WHATSAPP_TEMPLATE_NAME || process.env.TEMPLATE_NAME || 'hello_world';
 const TEMPLATE_LANGUAGE = process.env.INFOBIP_WHATSAPP_TEMPLATE_LANGUAGE || 'en';
 
 async function sendInfobipRequest(endpoint: string, payload: any) {
-  const url = `https://${INFOBIP_BASE_URL}${endpoint}`;
+  const baseUrl = INFOBIP_BASE_URL.replace(/^https?:\/\//, '');
+  const url = `https://${baseUrl}${endpoint}`;
   
   let attempt = 0;
   const maxRetries = 3;
@@ -43,6 +44,7 @@ async function sendInfobipRequest(endpoint: string, payload: any) {
       }
       
       // Client error (4xx) or other non-retriable error
+      await logFailedCall(payload, `Status: ${response.status} - ${JSON.stringify(data)}`);
       return { success: false, error: data, status: response.status };
 
     } catch (error: any) {
@@ -61,7 +63,7 @@ async function logFailedCall(payload: any, errorMsg: string) {
     await supabase.from('FailedApiCall').insert({
       payload: JSON.stringify(payload),
       error: errorMsg,
-      timestamp: new Date().toISOString()
+      created_at: new Date().toISOString()
     });
   } catch (err) {
     console.error('Failed to log API call', err);
