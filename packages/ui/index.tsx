@@ -33,3 +33,5 @@ export * from "./src/components/ui/toast";
 export * from "./src/components/ui/toaster";
 export * from "./src/components/ui/ViralWarrantyModal";
 export * from "./src/components/ui/WarrantyTelemetryBadge";
+export * from "./src/hooks/use-feature-flags";
+export * from "./theme";

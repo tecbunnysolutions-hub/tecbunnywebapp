@@ -22,6 +22,7 @@
     "./catalogue-pdf-generator": "./src/catalogue-pdf-generator.ts",
     "./checkout-engine": "./src/checkout-engine.ts",
     "./client": "./src/client.ts",
+    "./db/client": "./src/db/client.ts",
     "./config-db": "./src/config-db.ts",
     "./config-service": "./src/config-service.ts",
     "./constants": "./src/constants.ts",

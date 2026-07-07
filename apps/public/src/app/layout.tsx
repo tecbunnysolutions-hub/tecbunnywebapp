@@ -13,7 +13,8 @@ import {OrderProvider} from "@tecbunny/core/context/OrderProvider";
 import {ThemeProvider} from '@/components/providers/ThemeProvider';
 import {DeferredFloatingAIAssistant} from '@/components/layout/DeferredFloatingAIAssistant';
 import {DeferredRuntimeServices} from '@/components/layout/DeferredRuntimeServices';
-
+import {TRPCProvider} from '@/components/providers/TRPCProvider';
+import {FeatureFlagProviderLoader} from '@/components/providers/FeatureFlagProviderLoader';
 
 import { Analytics } from '@vercel/analytics/react';
 
@@ -318,23 +319,27 @@ export default function RootLayout({
       </head>
       <body className={`${outfit.variable} font-body antialiased overflow-x-hidden w-full`}>
         <ThemeProvider>
-          <AppProvider>
-            <OrderProvider>
-              <TechShell>
-                <div className="site-shell flex min-h-[100dvh] flex-col bg-background text-foreground w-full">
-                  <Suspense fallback={<div className="h-16 border-b" />}>
-                    <Header />
-                  </Suspense>
-                  <main className="flex-1">{children}</main>
-                  <Footer />
-                </div>
-              </TechShell>
-              <DeferredFloatingAIAssistant />
+          <TRPCProvider>
+            <FeatureFlagProviderLoader>
+              <AppProvider>
+                <OrderProvider>
+                  <TechShell>
+                    <div className="site-shell flex min-h-[100dvh] flex-col bg-background text-foreground w-full">
+                      <Suspense fallback={<div className="h-16 border-b" />}>
+                        <Header />
+                      </Suspense>
+                      <main className="flex-1">{children}</main>
+                      <Footer />
+                    </div>
+                  </TechShell>
+                  <DeferredFloatingAIAssistant />
 
-              <DeferredRuntimeServices gaId={gaId} metaPixelId={metaPixelId} />
-              <Analytics />
-            </OrderProvider>
-          </AppProvider>
+                  <DeferredRuntimeServices gaId={gaId} metaPixelId={metaPixelId} />
+                  <Analytics />
+                </OrderProvider>
+              </AppProvider>
+            </FeatureFlagProviderLoader>
+          </TRPCProvider>
         </ThemeProvider>
       </body>
     </html>

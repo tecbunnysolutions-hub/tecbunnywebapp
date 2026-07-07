@@ -11,7 +11,7 @@ import { useCart, useAuth } from "@tecbunny/core/hooks";
 import { useOrder } from "@tecbunny/core/context/OrderProvider";
 import { usePaymentMethods } from '../../hooks/use-payment-methods';
 import { logger } from '@tecbunny/core';
-import { Button } from "@tecbunny/ui";
+import { Button, useFeatureFlags } from "@tecbunny/ui";
 import { calculateCartTotals } from "@tecbunny/core/order-utils";
 import { LoginDialog } from '@/components/auth/LoginDialog';
 import { Badge } from "@tecbunny/ui";
@@ -43,6 +43,7 @@ export default function CheckoutPage() {
   const searchParams = useSearchParams();
   const quoteId = searchParams.get('quoteId');
   const pickupStores = PICKUP_STORES;
+  const { isEnabled } = useFeatureFlags();
   
   const [quote, setQuote] = useState<any>(null);
   const [isPartPayment, setIsPartPayment] = useState(false);
@@ -593,6 +594,24 @@ export default function CheckoutPage() {
           <p className="text-muted-foreground mb-6">Design your infrastructure or add hardware before finalizing your deployment.</p>
           <Button onClick={() => window.location.href = '/products'} className="bg-primary text-white hover:bg-primary/90 font-semibold font-medium">
             Build My Setup
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  const isCheckoutEnabled = isEnabled('checkout_enabled');
+  if (!isCheckoutEnabled) {
+    return (
+      <div className="min-h-screen bg-background py-16 text-foreground">
+        <div className="max-w-4xl mx-auto px-4 text-center">
+          <div className="mx-auto w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center mb-4 border border-red-500/20">
+            <Shield className="h-8 w-8 text-red-500" />
+          </div>
+          <h2 className="text-2xl font-bold tech-heading mb-2 text-red-500">Checkout is Currently Disabled</h2>
+          <p className="text-muted-foreground mb-6">We are performing scheduled maintenance on our payment systems. Please try again later or contact support if you need immediate assistance.</p>
+          <Button onClick={() => window.location.href = '/contact'} className="bg-primary text-white hover:bg-primary/90 font-semibold font-medium">
+            Contact Support
           </Button>
         </div>
       </div>

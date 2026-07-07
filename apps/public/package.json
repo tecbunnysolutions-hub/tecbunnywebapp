@@ -27,6 +27,12 @@
   },
   "dependencies": {
     "@tecbunny/core": "*",
+    "@tecbunny/config": "*",
+    "@tecbunny/rpc": "*",
+    "@trpc/client": "^10.45.2",
+    "@trpc/react-query": "^10.45.2",
+    "@tanstack/react-query": "^4.36.1",
+    "superjson": "^2.2.1",
     "@aws-sdk/client-s3": "3.1024.0",
     "@aws-sdk/s3-request-presigner": "3.1024.0",
     "@google/genai": "^2.10.0",

@@ -10,6 +10,8 @@
     { "path": "./apps/mgmt" },
     { "path": "./apps/public" },
     { "path": "./apps/superadmin" },
-    { "path": "./apps/waba" }
+    { "path": "./apps/waba" },
+    { "path": "./packages/config" },
+    { "path": "./packages/rpc" }
   ]
 }

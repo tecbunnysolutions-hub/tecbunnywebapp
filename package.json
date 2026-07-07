@@ -12,7 +12,8 @@
     "dev": "turbo run dev",
     "lint": "turbo run lint",
     "clean": "turbo run clean",
-    "prepare": "husky"
+    "prepare": "husky",
+    "reset-db": "npm run reset-db --workspace=@tecbunny/infra"
   },
   "devDependencies": {
     "eslint": "^9.39.4",
