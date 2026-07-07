@@ -6,11 +6,7 @@ import { z } from "zod";
 import { rateLimit } from "@tecbunny/core/rate-limit";
 import { logger } from "@tecbunny/core";
 
-const claimSchema = z.object({
-  phone: z.string().min(10).max(15),
-  serialNumber: z.string().min(3).max(64),
-  action: z.string().min(1).max(64),
-});
+import { claimViralPromotionSchema } from "@tecbunny/core/schemas/api";
 
 const CLAIM_RATE_LIMIT = { limit: 10, windowMs: 15 * 60 * 1000 };
 
@@ -26,7 +22,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const parsed = claimSchema.safeParse(body);
+    const parsed = claimViralPromotionSchema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json({ error: "Invalid request payload." }, { status: 400 });
     }

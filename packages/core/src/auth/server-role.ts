@@ -95,7 +95,7 @@ export const getEffectiveUserRole = async (user: SupabaseUser | null): Promise<U
 };
 
 
-const verifySuperadminRequest = async (request: NextRequest): Promise<Session | null> => {
+const verifySuperadminRequest = async (request: NextRequest | any): Promise<Session | null> => {
   const superadminCookie = request.cookies.get('superadmin-session')?.value;
   const payload = await verifySuperadminSessionToken(superadminCookie);
   if (!payload) return null;
@@ -116,7 +116,7 @@ const verifySuperadminRequest = async (request: NextRequest): Promise<Session | 
   } as Session;
 };
 
-export const getSessionWithRole = async (request: NextRequest): Promise<{
+export const getSessionWithRole = async (request: NextRequest | any): Promise<{
   supabase: Awaited<ReturnType<typeof createServerClient>>;
   session: Session | null;
   role: UserRole | null;

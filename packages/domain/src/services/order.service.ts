@@ -1,3 +1,4 @@
+import { withTrace } from '@tecbunny/core/telemetry/tracer';
 import { IOrderService, CreateOrderParams } from '@tecbunny/types';
 import { IOrderRepository } from '@tecbunny/types';
 import { INotificationService } from '@tecbunny/types';
@@ -17,12 +18,15 @@ export class OrderService implements IOrderService {
   ) {}
 
   async getCustomerOrders(userId: string, userEmail?: string, userPhone?: string): Promise<any[]> {
-    const rawOrders = await this.orderRepo.getCustomerOrders(userId, userEmail, userPhone);
-    return rawOrders.map(deserializeOrder);
+    return withTrace('OrderService.getCustomerOrders', async () => {
+      const rawOrders = await this.orderRepo.getCustomerOrders(userId, userEmail, userPhone);
+      return rawOrders.map(deserializeOrder);
+    });
   }
 
   async createOrder(params: CreateOrderParams): Promise<any> {
-    const { effectiveUserId, orderData } = params;
+    return withTrace('OrderService.createOrder', async () => {
+      const { effectiveUserId, orderData } = params;
 
     logger.info('order_create_attempt', { userId: effectiveUserId });
 
@@ -263,5 +267,6 @@ export class OrderService implements IOrderService {
     }
 
     return fullOrder;
+    });
   }
 }

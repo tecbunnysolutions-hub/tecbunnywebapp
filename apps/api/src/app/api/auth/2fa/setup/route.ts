@@ -1,5 +1,6 @@
 import { createClient } from "@tecbunny/core/supabase/client";
 import { NextRequest, NextResponse } from 'next/server';
+import { enableTwoFactorSchema } from "@tecbunny/core/schemas/api";
 
 
 import { twoFactorManager } from "@tecbunny/core/two-factor-manager";
@@ -62,14 +63,17 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    const { secret, backupCodes, verificationCode } = await request.json();
+    const body = await request.json();
+    const parsed = enableTwoFactorSchema.safeParse(body);
 
-    if (!secret || !backupCodes || !verificationCode) {
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: 'Missing required fields' },
+        { error: 'Missing or invalid required fields', details: parsed.error.flatten() },
         { status: 400 }
       );
     }
+
+    const { secret, backupCodes, verificationCode } = parsed.data;
 
     // Verify the TOTP code to ensure setup is correct
     if (!twoFactorManager.verifyToken(secret, verificationCode)) {

@@ -1,5 +1,5 @@
 import { createClient } from "@tecbunny/core/supabase/client";
-import { NextRequest, NextResponse, after } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 
 import { sendWhatsAppNotification } from "@tecbunny/core/whatsapp-service";
@@ -85,8 +85,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: true, message: 'Event already processed (duplicate)' }, { status: 200 });
     }
 
-    // Use Next.js after() to process the webhook asynchronously
-    after(async () => {
+    // Use Promise.resolve().then to process the webhook asynchronously
+    Promise.resolve().then(async () => {
       try {
         const backgroundSupabase = await createClient();
         await processPaymentReceived(backgroundSupabase, body, source);

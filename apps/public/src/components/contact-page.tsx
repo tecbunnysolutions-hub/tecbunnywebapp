@@ -158,27 +158,17 @@ export default function ContactPage() {
         utm_campaign: searchParams.get('utm_campaign') ?? undefined,
       };
 
-      const response = await fetch('/api/contact-messages', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      });
+      const { validatedFetch } = await import('@tecbunny/core/apiClient');
+      const { genericSuccessResponseSchema } = await import('@tecbunny/core/schemas/api');
 
-      if (!response.ok) {
-        let errorMessage = 'We could not send your message. Please try again later.';
-        try {
-          const data = await response.json();
-          if (typeof data?.error === 'string' && data.error.length > 0) {
-            errorMessage = data.error;
-          }
-        } catch (parseError) {
-          logger.warn('contact_message_response_parse_failed', {
-            error: parseError instanceof Error ? parseError.message : String(parseError),
-          });
-        }
-        throw new Error(errorMessage);
+      try {
+        await validatedFetch('/api/contact-messages', genericSuccessResponseSchema, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+      } catch (error) {
+        throw new Error(error instanceof Error ? error.message : 'We could not send your message. Please try again later.');
       }
 
       toast({

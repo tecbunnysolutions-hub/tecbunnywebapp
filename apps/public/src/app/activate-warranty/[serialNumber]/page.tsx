@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { ViralWarrantyModal } from "@tecbunny/ui";
+import { validatedFetch } from "@tecbunny/core/apiClient";
+import { activateWarrantyResponseSchema } from "@tecbunny/core/schemas/api";
 
 function normalizeMobile(value: string) {
   return value.replace(/\D/g, "");
@@ -70,14 +72,13 @@ export default function WarrantyActivationPage() {
     setSubmitting(true);
     setError(null);
     try {
-      const response = await fetch("/api/warranty/activate", {
+      const data = await validatedFetch("/api/warranty/activate", activateWarrantyResponseSchema, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ serialNumber, mobile, otp, otpId }),
       });
-      const data = await response.json().catch(() => ({}));
-      if (!response.ok) {
-        throw new Error(data?.error || "Activation failed");
+      if (!data.success) {
+        throw new Error("Activation failed");
       }
       if (data?.device) {
         setDeviceDetails(data.device);

@@ -7,16 +7,7 @@ import { sendWhatsAppNotification } from "@tecbunny/core/whatsapp-service";
 
 import { z } from 'zod';
 
-const bidSchema = z.object({
-  quoteId: z.string().uuid().optional().nullable(),
-  name: z.string().min(1, 'Name is required'),
-  email: z.string().email('Invalid email').optional().nullable(),
-  phone: z.string().min(10, 'Invalid phone'),
-  address: z.string().optional().nullable(),
-  biddedPrice: z.number().positive('Bid must be strictly greater than 0'),
-  summary: z.string().max(1000).optional().nullable(),
-  customSetupConfig: z.any().optional().nullable()
-});
+import { quoteBidSchema } from "@tecbunny/core/schemas/api";
 
 export async function POST(req: Request) {
   try {
@@ -25,7 +16,7 @@ export async function POST(req: Request) {
     const serviceClient = createSupabaseServiceClient();
     
     const json = await req.json();
-    const validatedData = bidSchema.parse(json);
+    const validatedData = quoteBidSchema.parse(json);
     const { quoteId, name, email, phone, address, biddedPrice, summary, customSetupConfig } = validatedData;
 
 
