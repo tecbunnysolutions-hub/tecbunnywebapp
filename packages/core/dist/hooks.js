@@ -1,0 +1,120 @@
+'use client';
+import { useContext, useEffect, useCallback, useMemo } from 'react';
+import { AuthContext } from "./context/AuthProvider";
+import { useWishlistStore } from "./store/wishlistStore";
+import { useCartStore } from "./store/cartStore";
+import { useAnalytics } from './hooks/use-analytics';
+import { calculateCartTotals } from './order-utils';
+export const useWishlist = () => {
+    const { wishlistItems, toggleWishlist, isInWishlist, wishlistCount, setWishlistOwner } = useWishlistStore();
+    const { user } = useAuth();
+    useEffect(() => {
+        setWishlistOwner(user?.id ? `user_${user.id}` : 'guest');
+    }, [setWishlistOwner, user?.id]);
+    // Return the same interface as the old WishlistContext
+    return {
+        wishlistItems,
+        toggleWishlist,
+        isInWishlist,
+        wishlistCount,
+        isHydrated: useWishlistStore.getState()._hasHydrated,
+    };
+};
+export const useAuth = () => {
+    const context = useContext(AuthContext);
+    if (context === undefined) {
+        throw new Error('useAuth must be used within an AuthProvider');
+    }
+    return context;
+};
+export const useCart = () => {
+    const { cartItems, pricing, isSessionExpired, isHydrated, loadCartFromStorage, checkSessionExpiry, saveCartToStorage, refreshPricing: storeRefreshPricing, checkAbandonedCart, addToCart: storeAddToCart, removeFromCart: storeRemoveFromCart, updateQuantity: storeUpdateQuantity, clearCart: storeClearCart, applyCoupon: storeApplyCoupon, removeCoupon: storeRemoveCoupon, resetGuestSession, } = useCartStore();
+    const { user } = useAuth();
+    const { trackEvent } = useAnalytics();
+    // Run initialization logic exactly once or when user changes
+    useEffect(() => {
+        if (typeof window === 'undefined')
+            return;
+        const handleStorageEvent = (e) => {
+            const cartKey = user ? `tecbunny_cart_user_${user.id}` : 'tecbunny_cart_guest';
+            if (e.key === cartKey) {
+                loadCartFromStorage(user);
+            }
+        };
+        window.addEventListener('storage', handleStorageEvent);
+        loadCartFromStorage(user);
+        return () => {
+            window.removeEventListener('storage', handleStorageEvent);
+        };
+    }, [user, loadCartFromStorage]);
+    useEffect(() => {
+        checkSessionExpiry(user);
+        const interval = setInterval(() => checkSessionExpiry(user), 60 * 1000);
+        return () => clearInterval(interval);
+    }, [user, isHydrated, checkSessionExpiry]);
+    useEffect(() => {
+        if (isHydrated && !isSessionExpired) {
+            saveCartToStorage(user);
+            if (cartItems.length > 0) {
+                storeRefreshPricing(undefined, user);
+            }
+            else if (pricing.appliedCoupon) {
+                storeRefreshPricing(null, user);
+            }
+        }
+    }, [cartItems, isHydrated, isSessionExpired, pricing.appliedCoupon, user, saveCartToStorage, storeRefreshPricing]);
+    useEffect(() => {
+        checkAbandonedCart(user);
+        const interval = setInterval(() => checkAbandonedCart(user), 5 * 60 * 1000);
+        return () => clearInterval(interval);
+    }, [cartItems, isHydrated, user, isSessionExpired, checkAbandonedCart]);
+    // Bind actions to user and trackEvent
+    const addToCart = useCallback((item, quantity) => {
+        storeAddToCart(item, quantity || 1, user, trackEvent);
+    }, [storeAddToCart, user, trackEvent]);
+    const removeFromCart = useCallback((itemId) => {
+        storeRemoveFromCart(itemId, user, trackEvent);
+    }, [storeRemoveFromCart, user, trackEvent]);
+    const updateQuantity = useCallback((itemId, quantity) => {
+        storeUpdateQuantity(itemId, quantity, user);
+    }, [storeUpdateQuantity, user]);
+    const clearCart = useCallback(() => {
+        storeClearCart(user);
+    }, [storeClearCart, user]);
+    const applyCoupon = useCallback((coupon) => {
+        return storeApplyCoupon(coupon, user);
+    }, [storeApplyCoupon, user]);
+    const removeCoupon = useCallback(() => {
+        storeRemoveCoupon(user);
+    }, [storeRemoveCoupon, user]);
+    const refreshPricing = useCallback((currentAppliedCoupon, customerCategory, customerState) => {
+        return storeRefreshPricing(currentAppliedCoupon, user, customerCategory, customerState);
+    }, [storeRefreshPricing, user]);
+    // Compute legacy values
+    const cartTotals = useMemo(() => calculateCartTotals(cartItems), [cartItems]);
+    const cartCount = useMemo(() => cartItems.reduce((count, item) => count + item.quantity, 0), [cartItems]);
+    const cartTotal = cartTotals.total;
+    const cartSubtotal = cartTotals.subtotal;
+    const cartGst = cartTotals.gstAmount;
+    return {
+        cartItems,
+        pricing,
+        addToCart,
+        removeFromCart,
+        updateQuantity,
+        clearCart,
+        applyCoupon,
+        removeCoupon,
+        refreshPricing,
+        cartCount,
+        cartSubtotal,
+        cartGst,
+        cartTotal,
+        isSessionExpired,
+        resetGuestSession,
+        isHydrated,
+    };
+};
+export * from './hooks/use-debounce';
+export * from './hooks/use-page-content';
+export * from './hooks/use-payment-methods';

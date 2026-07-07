@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient, Role } from '@/generated/client';
+import { PrismaClient, Role } from '@tecbunny/types';
 import { LeadService } from '@/services/leadService';
 
 const prisma = new PrismaClient();

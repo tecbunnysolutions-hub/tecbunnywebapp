@@ -10,9 +10,13 @@
   },
   "dependencies": {
     "@tecbunny/core": "*",
-    "next": "16.2.10",
-    "react": "19.2.4",
-    "react-dom": "19.2.4"
+    "@tecbunny/domain": "*",
+    "@tecbunny/infra": "*",
+    "@tecbunny/types": "*",
+    "next": "15.0.0-rc.0",
+    "react": "19.0.0-rc-f994737d14-20240522",
+    "react-dom": "19.0.0-rc-f994737d14-20240522",
+    "uuid": "^10.0.0"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

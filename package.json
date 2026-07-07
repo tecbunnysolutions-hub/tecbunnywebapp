@@ -7,12 +7,14 @@
     "packages/*"
   ],
   "scripts": {
+    "prebuild": "tsx packages/core/src/environment-validator.ts",
     "build": "turbo run build",
     "dev": "turbo run dev",
     "lint": "turbo run lint",
     "clean": "turbo run clean"
   },
   "devDependencies": {
+    "tsx": "^4.23.0",
     "turbo": "latest"
   }
 }

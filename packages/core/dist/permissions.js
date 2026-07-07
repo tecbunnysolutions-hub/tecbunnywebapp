@@ -1,0 +1,124 @@
+import { cookies } from 'next/headers';
+import { createSupabaseClient as createClient } from './supabase/server';
+import { logger } from './logger';
+import { isAtLeast, normalizeRole } from './roles';
+import { verifySuperadminSessionToken } from './auth/superadmin-session';
+/**
+ * Validates the Edge Superadmin session cookie.
+ */
+export async function isSuperadminSession() {
+    try {
+        const cookieStore = await cookies();
+        const superadminCookie = cookieStore.get('superadmin-session')?.value;
+        return Boolean(await verifySuperadminSessionToken(superadminCookie));
+    }
+    catch (error) {
+        console.error('Error verifying superadmin session on server:', error);
+        return false;
+    }
+}
+/**
+ * Fetches the role for a given user from the database.
+ * This is the centralized function for determining a user's role.
+ * @param user The Supabase user object.
+ * @returns The user's role, or null if not found or an error occurs.
+ */
+async function getUserRole(user) {
+    if (await isSuperadminSession()) {
+        return 'superadmin';
+    }
+    if (!user)
+        return null;
+    // app_metadata is the secure source of truth (set via service_role/admin only)
+    let metadataRole = normalizeRole(user.app_metadata?.role);
+    // Security check: only the root superadmin ID can have the superadmin role via metadata
+    // All other users claiming superadmin/admin via metadata are downgraded to customer if not verified
+    const STAFF_ROLES = ['admin', 'manager', 'accounts', 'sales', 'sales-staff', 'sales-external', 'service_engineer'];
+    if (metadataRole === 'superadmin' && user.id !== process.env.SUPERADMIN_ROOT_ID) {
+        logger.warn('Unauthorized superadmin claim detected in metadata', { userId: user.id });
+        metadataRole = 'customer';
+    }
+    if (metadataRole) {
+        return metadataRole;
+    }
+    // Fallback to profiles table for customer categories or if metadata is missing
+    const supabase = await createClient();
+    const { data, error } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+    if (error) {
+        if (error.code !== 'PGRST116') {
+            logger.error('Error fetching user role from DB', { message: error.message, code: error.code });
+        }
+        return 'customer'; // Default to lowest privilege
+    }
+    let dbRole = normalizeRole(data?.role);
+    // STRICT SECURITY: Do NOT allow staff roles to be set via profiles table 
+    // unless we are absolutely sure the profiles table is protected by RLS.
+    // We assume only 'customer' roles should be in the profiles table.
+    if (dbRole && dbRole !== 'customer') {
+        logger.warn('Staff role detected in profiles table; ignoring for security', { userId: user.id, role: dbRole });
+        return 'customer';
+    }
+    return dbRole || 'customer';
+}
+// Check if user has a specific role or higher
+export async function hasRole(user, requiredRole) {
+    const userRole = await getUserRole(user);
+    if (!userRole)
+        return false;
+    return isAtLeast(userRole, requiredRole);
+}
+// Check if user is admin
+export async function isAdmin(user) {
+    if (await isSuperadminSession()) {
+        return true;
+    }
+    if (!user)
+        return false;
+    // First check app_metadata (secure, admin-only editable)
+    const appMetadataRole = normalizeRole(user.app_metadata?.role);
+    if (appMetadataRole && isAtLeast(appMetadataRole, 'admin')) {
+        return true;
+    }
+    // Fallback: check profiles table
+    const role = await getUserRole(user);
+    return !!role && isAtLeast(role, 'admin');
+}
+// Check if user is superadmin
+export async function isSuperadmin(user) {
+    if (await isSuperadminSession()) {
+        return true;
+    }
+    if (!user)
+        return false;
+    if (user.id !== 'superadmin-root-id')
+        return false;
+    const appMetadataRole = normalizeRole(user.app_metadata?.role);
+    if (appMetadataRole && appMetadataRole === 'superadmin') {
+        return true;
+    }
+    const role = await getUserRole(user);
+    return role === 'superadmin';
+}
+// Check if user is manager or higher
+export async function isManager(user) {
+    return hasRole(user, 'manager');
+}
+// Check if user is sales or higher
+export async function isSales(user) {
+    return hasRole(user, 'sales');
+}
+// Check if user is accounts or higher
+export async function isAccounts(user) {
+    return hasRole(user, 'accounts');
+}
+// Check if user is service engineer
+export async function isServiceEngineer(user) {
+    if (!user)
+        return false;
+    const role = await getUserRole(user);
+    return role === 'service_engineer';
+}

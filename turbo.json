@@ -42,12 +42,30 @@
     "WHATSAPP_WEBHOOK_VERIFY_TOKEN"
   ],
   "tasks": {
+    "//#build": {
+      "dependsOn": [],
+      "outputs": []
+    },
     "build": {
       "dependsOn": ["^build"],
-      "outputs": [".next/**", "!.next/cache/**"]
+      "inputs": [
+        "src/**",
+        "package.json",
+        "tsconfig.json",
+        "eslint.config.js",
+        "!../../apps/**"
+      ],
+      "outputs": [".next/**", "!.next/cache/**", "dist/**", "build/**"]
     },
     "lint": {
-      "dependsOn": ["^lint"]
+      "dependsOn": ["^lint"],
+      "inputs": [
+        "src/**",
+        "package.json",
+        "tsconfig.json",
+        "eslint.config.js",
+        "!../../apps/**"
+      ]
     },
     "dev": {
       "cache": false,

@@ -1,5 +1,5 @@
 import { supabase } from '@/lib/supabase';
-import { PrismaClient, Role, Lead } from '@/generated/client';
+import { PrismaClient, Role, Lead } from '@tecbunny/types';
 
 const prisma = new PrismaClient();
 
