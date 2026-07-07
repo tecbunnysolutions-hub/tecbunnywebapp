@@ -1,4 +1,3 @@
-export * from "./src/components/telemetry-error-boundary";
 export * from "./src/components/ui/accordion";
 export * from "./src/components/ui/alert-dialog";
 export * from "./src/components/ui/alert";

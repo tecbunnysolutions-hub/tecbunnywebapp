@@ -78,18 +78,23 @@ export function TwoFactorSetup({ onComplete, onCancel }: TwoFactorSetupProps) {
 
     setIsLoading(true);
     try {
-      const { validatedFetch } = await import('@tecbunny/core/apiClient');
-      const { enableTwoFactorConfirmResponseSchema } = await import('@tecbunny/core/schemas/api');
-
-      await validatedFetch('/api/auth/2fa/setup', enableTwoFactorConfirmResponseSchema, {
+      const response = await fetch('/api/auth/2fa/setup', {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({
           secret: setupData.secret,
           backupCodes: setupData.backupCodes,
-          verificationCode: verificationCode.trim()
+          verificationCode,
         }),
       });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to enable 2FA');
+      }
 
       setStep('complete');
       toast({

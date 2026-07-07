@@ -29,12 +29,8 @@ const allowedImageHosts = Array.from(new Set([
 const nextConfig = {
   ...(isStaticExport ? { output: 'export' } : {}),
   transpilePackages: ["@tecbunny/core", "@tecbunny/ui"],
-  typescript: {
-    ignoreBuildErrors: true,
-  },
   experimental: {
     optimizeCss: true,
-    instrumentationHook: true,
   },
   serverExternalPackages: ['pdfkit'],
   poweredByHeader: false,

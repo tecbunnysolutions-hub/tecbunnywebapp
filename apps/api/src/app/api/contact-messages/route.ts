@@ -15,7 +15,38 @@ const CONTACT_RATE_LIMIT = {
   windowMs: 15 * 60 * 1000, // 15 minutes
 };
 
-import { createContactMessageSchema, contactMessageStatusFilterSchema } from "@tecbunny/core/schemas/api";
+const createMessageSchema = z.object({
+  name: z.string().min(2).max(120),
+  email: z.string().email().min(5).max(160),
+  phone: z.string().min(6).max(32).optional().or(z.literal('').transform(() => undefined)),
+  subject: z.string().min(2).max(160).optional().or(z.literal('').transform(() => undefined)),
+  message: z.string().min(10).max(5000),
+  company_name: z.string().max(160).optional().or(z.literal('').transform(() => undefined)),
+  origin_path: z.string().max(240).optional(),
+  form_identifier: z.string().max(100).optional(),
+  utm_source: z.string().max(160).optional(),
+  utm_medium: z.string().max(160).optional(),
+  utm_campaign: z.string().max(160).optional(),
+});
+
+const statusFilterSchema = z.object({
+  status: z
+    .union([
+      z.enum(['New', 'Assigned', 'Contacted', 'In Progress', 'Resolved', 'Closed', 'Rejected']),
+      z.literal('all'),
+      z.literal('ALL'),
+    ])
+    .optional()
+    .transform(value => {
+      if (!value) return undefined;
+      return value.toLowerCase() === 'all' ? undefined : value;
+    }),
+  limit: z
+    .string()
+    .transform(value => Number.parseInt(value, 10))
+    .pipe(z.number().min(1).max(200))
+    .optional(),
+});
 
 function isMissingRelationError(error: unknown) {
   const candidate = error as { code?: string; message?: string } | null | undefined;
@@ -83,7 +114,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const parsed = createContactMessageSchema.safeParse(body);
+    const parsed = createMessageSchema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json({ error: 'Invalid input', details: parsed.error.flatten() }, { status: 400 });
     }
@@ -147,7 +178,7 @@ export async function GET(request: NextRequest) {
 
     const url = new URL(request.url);
     const params = Object.fromEntries(url.searchParams.entries());
-    const parsedFilters = contactMessageStatusFilterSchema.safeParse(params);
+    const parsedFilters = statusFilterSchema.safeParse(params);
 
     if (!parsedFilters.success) {
       return NextResponse.json({ error: 'Invalid query parameters' }, { status: 400 });

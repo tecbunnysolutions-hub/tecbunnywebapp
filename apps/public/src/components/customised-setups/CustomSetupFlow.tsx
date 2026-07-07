@@ -829,24 +829,20 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
         totals,
       };
 
-      const { validatedFetch } = await import('@tecbunny/core/apiClient');
-      const { quoteBidResponseSchema } = await import('@tecbunny/core/schemas/api');
-      
-      const payload = {
+      const res = await fetch('/api/quotes/bid', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
           ...bidForm,
           biddedPrice: bidPrice,
           summary: inlineQuoteSummary,
           customSetupConfig
-      };
-
-      const data = await validatedFetch('/api/quotes/bid', quoteBidResponseSchema, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+        })
       });
 
-      if (!data.success) throw new Error('Submission failed');
+      if (!res.ok) throw new Error('Submission failed');
       
+      const data = await res.json();
       const quoteId = data.quoteId;
       
       toast({ 

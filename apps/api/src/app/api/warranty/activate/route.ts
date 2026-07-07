@@ -9,7 +9,12 @@ import { logger } from "@tecbunny/core";
 
 const ACTIVATE_RATE_LIMIT = { limit: 8, windowMs: 15 * 60 * 1000 };
 
-import { activateWarrantySchema } from "@tecbunny/core/schemas/api";
+const activateSchema = z.object({
+  serialNumber: z.string().min(3).max(64),
+  mobile: z.string().min(10).max(15),
+  otp: z.string().regex(/^\d{6}$/),
+  otpId: z.string().min(1),
+});
 
 function normalizeMobile(value: string) {
   return value.replace(/\D/g, '');
@@ -27,7 +32,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const parsed = activateWarrantySchema.safeParse(body);
+    const parsed = activateSchema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json({ error: 'Serial number, mobile, and 6-digit OTP are required.' }, { status: 400 });
     }

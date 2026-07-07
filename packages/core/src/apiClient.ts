@@ -64,39 +64,3 @@ export async function resilientFetch(url: string, options: ResilientFetchOptions
   
   throw new Error("Unreachable");
 }
-
-/**
- * Validated API Client
- * Wraps resilientFetch and validates the JSON response body against a provided Zod schema.
- */
-import { z } from "zod";
-
-export async function validatedFetch<T>(
-  url: string,
-  schema: z.ZodSchema<T>,
-  options: ResilientFetchOptions = {}
-): Promise<T> {
-  const response = await resilientFetch(url, options);
-
-  // Read response text to allow for helpful error messages on parse failure
-  const responseText = await response.text();
-  let json: any;
-  try {
-    json = JSON.parse(responseText);
-  } catch (err) {
-    throw new Error(`Failed to parse response as JSON. Received: ${responseText.substring(0, 100)}...`);
-  }
-
-  const parsed = schema.safeParse(json);
-  
-  if (!parsed.success) {
-    console.error(`[API Schema Error] Validating response from ${url}`, parsed.error.flatten());
-    if (process.env.NODE_ENV === "development") {
-      throw new Error(`API Validation Error at ${url}: ${JSON.stringify(parsed.error.flatten())}`);
-    }
-    // In production, we might want to return the raw data or throw a generic error depending on strictness
-    throw new Error(`API Validation Error at ${url}`);
-  }
-
-  return parsed.data;
-}

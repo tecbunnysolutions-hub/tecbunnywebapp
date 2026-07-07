@@ -13,7 +13,7 @@ export interface EmailHandlerConfig<T, R = { success: true }> {
   rate: { bucket: string; limit: number; windowMs: number };
 }
 
-export async function handleEmailPost<T, R = { success: true }>(request: NextRequest | any, cfg: EmailHandlerConfig<T, R>) {
+export async function handleEmailPost<T, R = { success: true }>(request: NextRequest, cfg: EmailHandlerConfig<T, R>) {
   try {
     const ct = request.headers.get('content-type') || '';
     if (!ct.includes('application/json')) {
