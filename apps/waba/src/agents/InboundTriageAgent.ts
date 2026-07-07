@@ -168,13 +168,11 @@ export class InboundTriageAgent extends BaseAgent<any, TriagedPayload | null> {
         analog_camera_5mp: pricingCatalog.analog.camera['5mp']?.standard?.sale || 2200,
         ip_camera_2mp: pricingCatalog.ip.camera['2mp']?.standard?.sale || 2500,
         ip_camera_5mp: pricingCatalog.ip.camera['5mp']?.standard?.sale || 3500,
-        dvr_4ch: pricingCatalog.analog.dvr['4_channel']?.sale || 3000,
-        dvr_8ch: pricingCatalog.analog.dvr['8_channel']?.sale || 4500,
-        nvr_4ch: pricingCatalog.ip.nvr['4_channel']?.sale || 4000,
-        nvr_8ch: pricingCatalog.ip.nvr['8_channel']?.sale || 5500,
-        hard_drive_1tb: pricingCatalog.storage['1tb']?.sale || 3000,
-        cable_bundle: pricingCatalog.cable_bundle['90m']?.sale || 1200,
-        installation_fee_per_camera: pricingCatalog.installation_fee_per_camera?.sale || 500,
+        analog_dvr_4ch: pricingCatalog.analog.dvr.find(d => d.capacity === 4)?.sale || 2800,
+        ip_nvr_4ch: pricingCatalog.ip.nvr.find(d => d.capacity === 4)?.sale || 3500,
+        hard_drive_1tb: pricingCatalog.hddOptions.find(h => h.label.includes('1TB'))?.sale || 3500,
+        installation_fee_per_camera: pricingCatalog.installationOption?.sale || 500,
+        cable_fee_per_meter: pricingCatalog.analog.cable[0]?.salePerUnit || 25,
       };
 
       // 2. Format memory context from previous leads or conversations
@@ -274,9 +272,9 @@ Latest Message:
       const parsed = JSON.parse(cleanText);
       
       return {
-        customer_name: parsed.customer_name || contactName || null,
-        pincode: parsed.pincode || existingLead?.pincode || null,
-        address: parsed.address || existingLead?.address || null,
+        customer_name: parsed.customer_name || existingConv?.contact_name || null,
+        pincode: parsed.pincode || existingConv?.pincode || null,
+        address: parsed.address || existingConv?.address || null,
         domain: parsed.domain || 'UNKNOWN',
         sub_category: parsed.sub_category || 'OTHER',
         is_actionable: typeof parsed.is_actionable === 'boolean' ? parsed.is_actionable : false,
