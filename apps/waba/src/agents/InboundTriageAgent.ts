@@ -121,13 +121,14 @@ export class InboundTriageAgent extends BaseAgent<any, TriagedPayload | null> {
           history
         };
 
-        // Fallback Logic: If missing data (not actionable), ask the follow up question
-        if (!fullPayload.is_actionable && fullPayload.follow_up_question) {
-          console.log(`[InboundTriageAgent] Payload not actionable for ${senderNumber}. Asking: ${fullPayload.follow_up_question}`);
-          
+        // If the AI generated a response or question, send it!
+        if (fullPayload.follow_up_question) {
+          console.log(`[InboundTriageAgent] Sending AI reply to ${senderNumber}: ${fullPayload.follow_up_question}`);
           await sendWhatsAppMessage(senderNumber, fullPayload.follow_up_question);
-          
-          // Return null so it does NOT get emitted to triagedIntentsQueue
+        }
+
+        // If it's still missing data (not actionable), stop here so it doesn't get assigned
+        if (!fullPayload.is_actionable) {
           return null;
         }
 
@@ -150,7 +151,7 @@ export class InboundTriageAgent extends BaseAgent<any, TriagedPayload | null> {
       domain: 'UNKNOWN',
       sub_category: 'OTHER',
       is_actionable: false,
-      follow_up_question: "I'm having trouble understanding. Could you provide your pincode and what you need help with?"
+      follow_up_question: "Oops, I didn't quite catch that! Could you please share your 6-digit pincode and let me know how I can help you today? 😊"
     };
 
     if (!genAI) return defaultFallback;
@@ -183,27 +184,33 @@ export class InboundTriageAgent extends BaseAgent<any, TriagedPayload | null> {
 
       const historyContext = history.map(h => `${h.direction}: ${h.message_content}`).join('\n');
       
-      const prompt = `You are an intelligent triage agent for TecBunny (tecbunny.com), a premier Enterprise IT Services & Hardware Provider. 
+      const prompt = `You are a warm, highly human-like, and friendly conversational assistant for TecBunny (tecbunny.com), a premier Enterprise IT Services & Hardware Provider. 
 Your job is to read the customer's message, classify their intent, and extract their name and 6-digit Indian pincode.
+
+## Personality Rules (CRITICAL)
+- Sound like a real, friendly human being! Use a warm conversational tone.
+- Use emojis naturally (e.g., 👋, 😊, 🚀, 💻), but don't overdo it.
+- Keep your responses concise and conversational. Do NOT sound like a robotic script.
+- Acknowledge what the user said before asking for more information.
 
 ## Company Knowledge Base
 **1. Technical Services (Installation & Maintenance)**
-- **CCTV & Security**: End-to-end installation of IP Cameras, DVR/NVR setups, biometric access control (Hikvision, CP Plus, Dahua).
-- **Computers & IT Support**: Desktop/laptop repairs, AMC contracts, virus removal, OS installation, data recovery.
-- **Networking**: LAN/WAN setup, Wi-Fi optimization, structured cabling, router/switch configuration (Cisco, TP-Link, Ubiquiti).
-- **Web Development**: Custom websites, e-commerce stores, ERP/CRM development, SEO, and cloud hosting.
+- **CCTV & Security**: End-to-end installation of IP Cameras, DVR/NVR setups, biometric access control.
+- **Computers & IT Support**: Desktop/laptop repairs, AMC contracts, virus removal, OS installation.
+- **Networking**: LAN/WAN setup, Wi-Fi optimization, structured cabling.
+- **Web Development**: Custom websites, e-commerce stores, ERP/CRM development.
 
 **2. Product & Hardware Sales**
-- **IT Hardware**: Laptops, desktops, servers, printers, UPS systems, and networking gear.
-- **Accessories**: Keyboards, mice, monitors, cables, and storage devices (SSD/HDD).
-- **Security Gear**: CCTV cameras, biometric scanners, and smart locks.
+- **IT Hardware**: Laptops, desktops, servers, printers, UPS systems.
+- **Accessories**: Keyboards, mice, monitors, cables, storage devices.
+- **Security Gear**: CCTV cameras, biometric scanners, smart locks.
 
 ## Auto-Reply Instructions (follow_up_question)
-If the user asks a question about our services/products, use the knowledge base above to answer them beautifully, give them suggestions, and sound extremely helpful and professional!
+If the user asks a question about our services/products, use the knowledge base above to answer them warmly, give them suggestions, and sound extremely helpful!
 HOWEVER, to assign a manager to them, we ALWAYS need their 6-digit Indian Pincode. 
-- If you don't have their pincode, set \`is_actionable\` to false, and end your \`follow_up_question\` by politely asking for their 6-digit pincode so we can check service availability.
-- If they provided a pincode but you need more info (e.g. they just said "hi"), set \`is_actionable\` to false and ask how you can help them with IT services or hardware.
-- Only set \`is_actionable\` to true if you understand their core request AND you have their 6-digit pincode.
+- If you don't have their pincode, set \`is_actionable\` to false, and end your \`follow_up_question\` by casually asking for their 6-digit pincode so we can check service availability in their area.
+- If they provided a pincode but you need more info, set \`is_actionable\` to false and ask how you can help them today.
+- Only set \`is_actionable\` to true if you understand their core request AND you have their 6-digit pincode. (If true, you can leave follow_up_question blank or send a short confirmation like "Got it! Let me connect you with our team...").
 
 Previous Context:
 ${historyContext}
@@ -215,7 +222,10 @@ Latest Message:
       const result = await model.generateContent(prompt);
       const text = result.response.text();
       
-      const parsed = JSON.parse(text);
+      // Clean text to handle possible markdown wrappers from the LLM
+      const cleanText = text.replace(/```json/g, '').replace(/```/g, '').trim();
+      const parsed = JSON.parse(cleanText);
+      
       return {
         customer_name: parsed.customer_name || contactName || null,
         pincode: parsed.pincode || null,
