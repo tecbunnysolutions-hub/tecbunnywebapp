@@ -49,6 +49,7 @@ model Lead {
   domain       DomainType
   sub_category String     // e.g., CCTV, COMPUTERS, NETWORKING, WEB_DEV, HARDWARE_SALES, OTHER
   pincode      String
+  address      String?
   status       String     @default("NEW")
   assigned_to  String?
   created_at   DateTime   @default(now())

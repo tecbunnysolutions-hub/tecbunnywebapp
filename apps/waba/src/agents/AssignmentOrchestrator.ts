@@ -53,6 +53,7 @@ export class AssignmentOrchestrator extends BaseAgent<TriagedPayload, void> {
         domain: data.domain,
         sub_category: data.sub_category,
         pincode: data.pincode,
+        address: data.address,
         status: 'NEW',
         assigned_to: assignedUserId,
         updated_at: new Date().toISOString()
