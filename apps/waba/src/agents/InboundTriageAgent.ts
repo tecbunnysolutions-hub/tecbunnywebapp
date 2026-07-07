@@ -167,11 +167,11 @@ export class InboundTriageAgent extends BaseAgent<any, TriagedPayload | null> {
               pincode: { type: SchemaType.STRING, nullable: true },
               domain: { 
                 type: SchemaType.STRING, 
-                enum: ['TECHNICAL_SERVICE', 'PRODUCT_SALES', 'UNKNOWN']
+                description: "Must be exactly one of: 'TECHNICAL_SERVICE', 'PRODUCT_SALES', 'UNKNOWN'"
               },
               sub_category: { 
                 type: SchemaType.STRING, 
-                enum: ['CCTV', 'COMPUTERS', 'NETWORKING', 'WEB_DEV', 'HARDWARE_SALES', 'OTHER']
+                description: "Must be exactly one of: 'CCTV', 'COMPUTERS', 'NETWORKING', 'WEB_DEV', 'HARDWARE_SALES', 'OTHER'"
               },
               is_actionable: { type: SchemaType.BOOLEAN },
               follow_up_question: { type: SchemaType.STRING, nullable: true },
