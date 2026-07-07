@@ -180,8 +180,24 @@ export default function Dashboard() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ to: activeConversation, text: textToSend })
       });
-      if (res.ok) fetchMessages(activeConversation);
-    } catch (err) { console.error(err); }
+      if (res.ok) {
+        fetchMessages(activeConversation);
+      } else {
+        const data = await res.json();
+        // Remove the temporary message since it failed to send
+        setMessages(prev => prev.filter(m => m.id !== tempMsg.id));
+        
+        if (data.is_ai_clarification) {
+          alert(`🤖 AI Editor needs clarification:\n\n"${data.error}"\n\nPlease add more details to your draft!`);
+          setInputText(textToSend); // Restore their draft so they don't have to retype it
+        } else {
+          alert(`Error sending message: ${data.error || 'Unknown error'}`);
+        }
+      }
+    } catch (err) { 
+      console.error(err);
+      setMessages(prev => prev.filter(m => m.id !== tempMsg.id));
+    }
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'image' | 'document') => {

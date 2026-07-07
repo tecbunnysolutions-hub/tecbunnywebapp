@@ -75,19 +75,34 @@ export async function POST(req: Request) {
       // Auto-Draft / Rewrite Feature using Gemini
       if (genAI) {
         try {
-          const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+          const model = genAI.getGenerativeModel({ 
+            model: "gemini-2.5-flash",
+            generationConfig: { responseMimeType: "application/json" }
+          });
           const prompt = `You are an expert AI editor for TecBunny's sales and support managers. 
 The manager has written a draft message to a customer. Your job is to rewrite it to be extremely professional, warm, polite, and grammatically perfect.
 - Do NOT change the factual meaning, prices, or details.
 - Make it sound like a premium enterprise IT services company.
 - Use a warm, human-like tone with occasional natural emojis.
-- Output ONLY the rewritten message. Do not include any quotes, intro text, or extra commentary.
+
+CRITICAL RULE:
+If the manager's draft is extremely vague, confusing, or lacks enough context to form a coherent professional sentence (e.g., "send it", "no", "idk"), you MUST ask the manager for clarification.
+To do this, set "needs_clarification" to true, and provide your question in "question".
+
+If the draft is understandable and you can rewrite it, set "needs_clarification" to false, and provide the rewritten message in "rewritten_message".
 
 Manager's Draft:
 "${text}"
 `;
           const aiResult = await model.generateContent(prompt);
-          finalMessage = aiResult.response.text().trim();
+          const aiText = aiResult.response.text().trim();
+          const parsed = JSON.parse(aiText);
+
+          if (parsed.needs_clarification) {
+            return NextResponse.json({ error: parsed.question, is_ai_clarification: true }, { status: 400 });
+          }
+
+          finalMessage = parsed.rewritten_message || text;
           console.log(`[AI Draft] Original: ${text} | Rewritten: ${finalMessage}`);
         } catch (err) {
           console.error("AI Draft Rewrite failed, falling back to original message:", err);
