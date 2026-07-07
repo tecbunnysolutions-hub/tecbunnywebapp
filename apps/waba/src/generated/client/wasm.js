@@ -139,6 +139,7 @@ exports.Prisma.UserScalarFieldEnum = {
   id: 'id',
   email: 'email',
   name: 'name',
+  phone_number: 'phone_number',
   role: 'role',
   managed_pincodes: 'managed_pincodes',
   createdAt: 'createdAt'
@@ -149,6 +150,7 @@ exports.Prisma.LeadScalarFieldEnum = {
   domain: 'domain',
   sub_category: 'sub_category',
   pincode: 'pincode',
+  address: 'address',
   status: 'status',
   assigned_to: 'assigned_to',
   created_at: 'created_at',

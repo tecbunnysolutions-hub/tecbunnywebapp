@@ -2428,6 +2428,7 @@ export namespace Prisma {
     id: string | null
     email: string | null
     name: string | null
+    phone_number: string | null
     role: $Enums.Role | null
     createdAt: Date | null
   }
@@ -2436,6 +2437,7 @@ export namespace Prisma {
     id: string | null
     email: string | null
     name: string | null
+    phone_number: string | null
     role: $Enums.Role | null
     createdAt: Date | null
   }
@@ -2444,6 +2446,7 @@ export namespace Prisma {
     id: number
     email: number
     name: number
+    phone_number: number
     role: number
     managed_pincodes: number
     createdAt: number
@@ -2455,6 +2458,7 @@ export namespace Prisma {
     id?: true
     email?: true
     name?: true
+    phone_number?: true
     role?: true
     createdAt?: true
   }
@@ -2463,6 +2467,7 @@ export namespace Prisma {
     id?: true
     email?: true
     name?: true
+    phone_number?: true
     role?: true
     createdAt?: true
   }
@@ -2471,6 +2476,7 @@ export namespace Prisma {
     id?: true
     email?: true
     name?: true
+    phone_number?: true
     role?: true
     managed_pincodes?: true
     createdAt?: true
@@ -2553,6 +2559,7 @@ export namespace Prisma {
     id: string
     email: string
     name: string
+    phone_number: string | null
     role: $Enums.Role
     managed_pincodes: JsonValue | null
     createdAt: Date
@@ -2579,6 +2586,7 @@ export namespace Prisma {
     id?: boolean
     email?: boolean
     name?: boolean
+    phone_number?: boolean
     role?: boolean
     managed_pincodes?: boolean
     createdAt?: boolean
@@ -2590,6 +2598,7 @@ export namespace Prisma {
     id?: boolean
     email?: boolean
     name?: boolean
+    phone_number?: boolean
     role?: boolean
     managed_pincodes?: boolean
     createdAt?: boolean
@@ -2599,6 +2608,7 @@ export namespace Prisma {
     id?: boolean
     email?: boolean
     name?: boolean
+    phone_number?: boolean
     role?: boolean
     managed_pincodes?: boolean
     createdAt?: boolean
@@ -2619,6 +2629,7 @@ export namespace Prisma {
       id: string
       email: string
       name: string
+      phone_number: string | null
       role: $Enums.Role
       managed_pincodes: Prisma.JsonValue | null
       createdAt: Date
@@ -3019,6 +3030,7 @@ export namespace Prisma {
     readonly id: FieldRef<"User", 'String'>
     readonly email: FieldRef<"User", 'String'>
     readonly name: FieldRef<"User", 'String'>
+    readonly phone_number: FieldRef<"User", 'String'>
     readonly role: FieldRef<"User", 'Role'>
     readonly managed_pincodes: FieldRef<"User", 'Json'>
     readonly createdAt: FieldRef<"User", 'DateTime'>
@@ -3385,6 +3397,7 @@ export namespace Prisma {
     domain: $Enums.DomainType | null
     sub_category: string | null
     pincode: string | null
+    address: string | null
     status: string | null
     assigned_to: string | null
     created_at: Date | null
@@ -3396,6 +3409,7 @@ export namespace Prisma {
     domain: $Enums.DomainType | null
     sub_category: string | null
     pincode: string | null
+    address: string | null
     status: string | null
     assigned_to: string | null
     created_at: Date | null
@@ -3407,6 +3421,7 @@ export namespace Prisma {
     domain: number
     sub_category: number
     pincode: number
+    address: number
     status: number
     assigned_to: number
     created_at: number
@@ -3420,6 +3435,7 @@ export namespace Prisma {
     domain?: true
     sub_category?: true
     pincode?: true
+    address?: true
     status?: true
     assigned_to?: true
     created_at?: true
@@ -3431,6 +3447,7 @@ export namespace Prisma {
     domain?: true
     sub_category?: true
     pincode?: true
+    address?: true
     status?: true
     assigned_to?: true
     created_at?: true
@@ -3442,6 +3459,7 @@ export namespace Prisma {
     domain?: true
     sub_category?: true
     pincode?: true
+    address?: true
     status?: true
     assigned_to?: true
     created_at?: true
@@ -3526,6 +3544,7 @@ export namespace Prisma {
     domain: $Enums.DomainType
     sub_category: string
     pincode: string
+    address: string | null
     status: string
     assigned_to: string | null
     created_at: Date
@@ -3554,6 +3573,7 @@ export namespace Prisma {
     domain?: boolean
     sub_category?: boolean
     pincode?: boolean
+    address?: boolean
     status?: boolean
     assigned_to?: boolean
     created_at?: boolean
@@ -3566,6 +3586,7 @@ export namespace Prisma {
     domain?: boolean
     sub_category?: boolean
     pincode?: boolean
+    address?: boolean
     status?: boolean
     assigned_to?: boolean
     created_at?: boolean
@@ -3578,6 +3599,7 @@ export namespace Prisma {
     domain?: boolean
     sub_category?: boolean
     pincode?: boolean
+    address?: boolean
     status?: boolean
     assigned_to?: boolean
     created_at?: boolean
@@ -3601,6 +3623,7 @@ export namespace Prisma {
       domain: $Enums.DomainType
       sub_category: string
       pincode: string
+      address: string | null
       status: string
       assigned_to: string | null
       created_at: Date
@@ -4003,6 +4026,7 @@ export namespace Prisma {
     readonly domain: FieldRef<"Lead", 'DomainType'>
     readonly sub_category: FieldRef<"Lead", 'String'>
     readonly pincode: FieldRef<"Lead", 'String'>
+    readonly address: FieldRef<"Lead", 'String'>
     readonly status: FieldRef<"Lead", 'String'>
     readonly assigned_to: FieldRef<"Lead", 'String'>
     readonly created_at: FieldRef<"Lead", 'DateTime'>
@@ -7159,6 +7183,7 @@ export namespace Prisma {
     id: 'id',
     email: 'email',
     name: 'name',
+    phone_number: 'phone_number',
     role: 'role',
     managed_pincodes: 'managed_pincodes',
     createdAt: 'createdAt'
@@ -7172,6 +7197,7 @@ export namespace Prisma {
     domain: 'domain',
     sub_category: 'sub_category',
     pincode: 'pincode',
+    address: 'address',
     status: 'status',
     assigned_to: 'assigned_to',
     created_at: 'created_at',
@@ -7461,6 +7487,7 @@ export namespace Prisma {
     id?: StringFilter<"User"> | string
     email?: StringFilter<"User"> | string
     name?: StringFilter<"User"> | string
+    phone_number?: StringNullableFilter<"User"> | string | null
     role?: EnumRoleFilter<"User"> | $Enums.Role
     managed_pincodes?: JsonNullableFilter<"User">
     createdAt?: DateTimeFilter<"User"> | Date | string
@@ -7471,6 +7498,7 @@ export namespace Prisma {
     id?: SortOrder
     email?: SortOrder
     name?: SortOrder
+    phone_number?: SortOrderInput | SortOrder
     role?: SortOrder
     managed_pincodes?: SortOrderInput | SortOrder
     createdAt?: SortOrder
@@ -7484,6 +7512,7 @@ export namespace Prisma {
     OR?: UserWhereInput[]
     NOT?: UserWhereInput | UserWhereInput[]
     name?: StringFilter<"User"> | string
+    phone_number?: StringNullableFilter<"User"> | string | null
     role?: EnumRoleFilter<"User"> | $Enums.Role
     managed_pincodes?: JsonNullableFilter<"User">
     createdAt?: DateTimeFilter<"User"> | Date | string
@@ -7494,6 +7523,7 @@ export namespace Prisma {
     id?: SortOrder
     email?: SortOrder
     name?: SortOrder
+    phone_number?: SortOrderInput | SortOrder
     role?: SortOrder
     managed_pincodes?: SortOrderInput | SortOrder
     createdAt?: SortOrder
@@ -7509,6 +7539,7 @@ export namespace Prisma {
     id?: StringWithAggregatesFilter<"User"> | string
     email?: StringWithAggregatesFilter<"User"> | string
     name?: StringWithAggregatesFilter<"User"> | string
+    phone_number?: StringNullableWithAggregatesFilter<"User"> | string | null
     role?: EnumRoleWithAggregatesFilter<"User"> | $Enums.Role
     managed_pincodes?: JsonNullableWithAggregatesFilter<"User">
     createdAt?: DateTimeWithAggregatesFilter<"User"> | Date | string
@@ -7522,6 +7553,7 @@ export namespace Prisma {
     domain?: EnumDomainTypeFilter<"Lead"> | $Enums.DomainType
     sub_category?: StringFilter<"Lead"> | string
     pincode?: StringFilter<"Lead"> | string
+    address?: StringNullableFilter<"Lead"> | string | null
     status?: StringFilter<"Lead"> | string
     assigned_to?: StringNullableFilter<"Lead"> | string | null
     created_at?: DateTimeFilter<"Lead"> | Date | string
@@ -7534,6 +7566,7 @@ export namespace Prisma {
     domain?: SortOrder
     sub_category?: SortOrder
     pincode?: SortOrder
+    address?: SortOrderInput | SortOrder
     status?: SortOrder
     assigned_to?: SortOrderInput | SortOrder
     created_at?: SortOrder
@@ -7549,6 +7582,7 @@ export namespace Prisma {
     domain?: EnumDomainTypeFilter<"Lead"> | $Enums.DomainType
     sub_category?: StringFilter<"Lead"> | string
     pincode?: StringFilter<"Lead"> | string
+    address?: StringNullableFilter<"Lead"> | string | null
     status?: StringFilter<"Lead"> | string
     assigned_to?: StringNullableFilter<"Lead"> | string | null
     created_at?: DateTimeFilter<"Lead"> | Date | string
@@ -7561,6 +7595,7 @@ export namespace Prisma {
     domain?: SortOrder
     sub_category?: SortOrder
     pincode?: SortOrder
+    address?: SortOrderInput | SortOrder
     status?: SortOrder
     assigned_to?: SortOrderInput | SortOrder
     created_at?: SortOrder
@@ -7578,6 +7613,7 @@ export namespace Prisma {
     domain?: EnumDomainTypeWithAggregatesFilter<"Lead"> | $Enums.DomainType
     sub_category?: StringWithAggregatesFilter<"Lead"> | string
     pincode?: StringWithAggregatesFilter<"Lead"> | string
+    address?: StringNullableWithAggregatesFilter<"Lead"> | string | null
     status?: StringWithAggregatesFilter<"Lead"> | string
     assigned_to?: StringNullableWithAggregatesFilter<"Lead"> | string | null
     created_at?: DateTimeWithAggregatesFilter<"Lead"> | Date | string
@@ -7861,6 +7897,7 @@ export namespace Prisma {
     id?: string
     email: string
     name: string
+    phone_number?: string | null
     role?: $Enums.Role
     managed_pincodes?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
@@ -7871,6 +7908,7 @@ export namespace Prisma {
     id?: string
     email: string
     name: string
+    phone_number?: string | null
     role?: $Enums.Role
     managed_pincodes?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
@@ -7881,6 +7919,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    phone_number?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     managed_pincodes?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -7891,6 +7930,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    phone_number?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     managed_pincodes?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -7901,6 +7941,7 @@ export namespace Prisma {
     id?: string
     email: string
     name: string
+    phone_number?: string | null
     role?: $Enums.Role
     managed_pincodes?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
@@ -7910,6 +7951,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    phone_number?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     managed_pincodes?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -7919,6 +7961,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    phone_number?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     managed_pincodes?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -7929,6 +7972,7 @@ export namespace Prisma {
     domain: $Enums.DomainType
     sub_category: string
     pincode: string
+    address?: string | null
     status?: string
     created_at?: Date | string
     updated_at?: Date | string
@@ -7940,6 +7984,7 @@ export namespace Prisma {
     domain: $Enums.DomainType
     sub_category: string
     pincode: string
+    address?: string | null
     status?: string
     assigned_to?: string | null
     created_at?: Date | string
@@ -7951,6 +7996,7 @@ export namespace Prisma {
     domain?: EnumDomainTypeFieldUpdateOperationsInput | $Enums.DomainType
     sub_category?: StringFieldUpdateOperationsInput | string
     pincode?: StringFieldUpdateOperationsInput | string
+    address?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -7962,6 +8008,7 @@ export namespace Prisma {
     domain?: EnumDomainTypeFieldUpdateOperationsInput | $Enums.DomainType
     sub_category?: StringFieldUpdateOperationsInput | string
     pincode?: StringFieldUpdateOperationsInput | string
+    address?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     assigned_to?: NullableStringFieldUpdateOperationsInput | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -7973,6 +8020,7 @@ export namespace Prisma {
     domain: $Enums.DomainType
     sub_category: string
     pincode: string
+    address?: string | null
     status?: string
     assigned_to?: string | null
     created_at?: Date | string
@@ -7984,6 +8032,7 @@ export namespace Prisma {
     domain?: EnumDomainTypeFieldUpdateOperationsInput | $Enums.DomainType
     sub_category?: StringFieldUpdateOperationsInput | string
     pincode?: StringFieldUpdateOperationsInput | string
+    address?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -7994,6 +8043,7 @@ export namespace Prisma {
     domain?: EnumDomainTypeFieldUpdateOperationsInput | $Enums.DomainType
     sub_category?: StringFieldUpdateOperationsInput | string
     pincode?: StringFieldUpdateOperationsInput | string
+    address?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     assigned_to?: NullableStringFieldUpdateOperationsInput | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -8421,6 +8471,7 @@ export namespace Prisma {
     id?: SortOrder
     email?: SortOrder
     name?: SortOrder
+    phone_number?: SortOrder
     role?: SortOrder
     managed_pincodes?: SortOrder
     createdAt?: SortOrder
@@ -8430,6 +8481,7 @@ export namespace Prisma {
     id?: SortOrder
     email?: SortOrder
     name?: SortOrder
+    phone_number?: SortOrder
     role?: SortOrder
     createdAt?: SortOrder
   }
@@ -8438,6 +8490,7 @@ export namespace Prisma {
     id?: SortOrder
     email?: SortOrder
     name?: SortOrder
+    phone_number?: SortOrder
     role?: SortOrder
     createdAt?: SortOrder
   }
@@ -8494,6 +8547,7 @@ export namespace Prisma {
     domain?: SortOrder
     sub_category?: SortOrder
     pincode?: SortOrder
+    address?: SortOrder
     status?: SortOrder
     assigned_to?: SortOrder
     created_at?: SortOrder
@@ -8505,6 +8559,7 @@ export namespace Prisma {
     domain?: SortOrder
     sub_category?: SortOrder
     pincode?: SortOrder
+    address?: SortOrder
     status?: SortOrder
     assigned_to?: SortOrder
     created_at?: SortOrder
@@ -8516,6 +8571,7 @@ export namespace Prisma {
     domain?: SortOrder
     sub_category?: SortOrder
     pincode?: SortOrder
+    address?: SortOrder
     status?: SortOrder
     assigned_to?: SortOrder
     created_at?: SortOrder
@@ -9078,6 +9134,7 @@ export namespace Prisma {
     domain: $Enums.DomainType
     sub_category: string
     pincode: string
+    address?: string | null
     status?: string
     created_at?: Date | string
     updated_at?: Date | string
@@ -9088,6 +9145,7 @@ export namespace Prisma {
     domain: $Enums.DomainType
     sub_category: string
     pincode: string
+    address?: string | null
     status?: string
     created_at?: Date | string
     updated_at?: Date | string
@@ -9127,6 +9185,7 @@ export namespace Prisma {
     domain?: EnumDomainTypeFilter<"Lead"> | $Enums.DomainType
     sub_category?: StringFilter<"Lead"> | string
     pincode?: StringFilter<"Lead"> | string
+    address?: StringNullableFilter<"Lead"> | string | null
     status?: StringFilter<"Lead"> | string
     assigned_to?: StringNullableFilter<"Lead"> | string | null
     created_at?: DateTimeFilter<"Lead"> | Date | string
@@ -9137,6 +9196,7 @@ export namespace Prisma {
     id?: string
     email: string
     name: string
+    phone_number?: string | null
     role?: $Enums.Role
     managed_pincodes?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
@@ -9146,6 +9206,7 @@ export namespace Prisma {
     id?: string
     email: string
     name: string
+    phone_number?: string | null
     role?: $Enums.Role
     managed_pincodes?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
@@ -9171,6 +9232,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    phone_number?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     managed_pincodes?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -9180,6 +9242,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    phone_number?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     managed_pincodes?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -9300,6 +9363,7 @@ export namespace Prisma {
     domain: $Enums.DomainType
     sub_category: string
     pincode: string
+    address?: string | null
     status?: string
     created_at?: Date | string
     updated_at?: Date | string
@@ -9310,6 +9374,7 @@ export namespace Prisma {
     domain?: EnumDomainTypeFieldUpdateOperationsInput | $Enums.DomainType
     sub_category?: StringFieldUpdateOperationsInput | string
     pincode?: StringFieldUpdateOperationsInput | string
+    address?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -9320,6 +9385,7 @@ export namespace Prisma {
     domain?: EnumDomainTypeFieldUpdateOperationsInput | $Enums.DomainType
     sub_category?: StringFieldUpdateOperationsInput | string
     pincode?: StringFieldUpdateOperationsInput | string
+    address?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -9330,6 +9396,7 @@ export namespace Prisma {
     domain?: EnumDomainTypeFieldUpdateOperationsInput | $Enums.DomainType
     sub_category?: StringFieldUpdateOperationsInput | string
     pincode?: StringFieldUpdateOperationsInput | string
+    address?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string

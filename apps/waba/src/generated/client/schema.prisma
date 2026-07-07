@@ -33,6 +33,7 @@ model User {
   id               String   @id @default(uuid())
   email            String   @unique
   name             String
+  phone_number     String?
   role             Role     @default(SERVICE_MANAGER)
   managed_pincodes Json? // PostgreSQL JSONB array of strings e.g., ["403512", "403513"]
   createdAt        DateTime @default(now())
@@ -49,6 +50,7 @@ model Lead {
   domain       DomainType
   sub_category String // e.g., CCTV, COMPUTERS, NETWORKING, WEB_DEV, HARDWARE_SALES, OTHER
   pincode      String
+  address      String?
   status       String     @default("NEW")
   assigned_to  String?
   created_at   DateTime   @default(now())
