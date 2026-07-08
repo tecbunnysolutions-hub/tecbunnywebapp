@@ -1,9 +1,7 @@
-
 'use client';
 
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
-
 import { logger } from '@tecbunny/core';
 import sanitizeHtml from "@tecbunny/core/sanitize-html";
 
