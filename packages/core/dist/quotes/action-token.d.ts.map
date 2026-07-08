@@ -1,1 +1,0 @@
-{"version":3,"file":"action-token.d.ts","sourceRoot":"","sources":["../../src/quotes/action-token.ts"],"names":[],"mappings":"AAEA,KAAK,gBAAgB,GAAG,gBAAgB,GAAG,iBAAiB,CAAC;AAqD7D,wBAAgB,sBAAsB,CACpC,OAAO,EAAE,MAAM,EACf,KAAK,EAAE,gBAAgB,EACvB,UAAU,SAAsB,UAajC;AAED,wBAAgB,sBAAsB,CACpC,KAAK,EAAE,OAAO,EACd,OAAO,EAAE,MAAM,EACf,aAAa,EAAE,gBAAgB,EAAE,WA6BlC"}

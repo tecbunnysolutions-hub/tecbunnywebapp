@@ -1,1 +1,0 @@
-{"version":3,"file":"fetch-retry.d.ts","sourceRoot":"","sources":["../src/fetch-retry.ts"],"names":[],"mappings":"AAAA;;;;GAIG;AAEH,UAAU,iBAAkB,SAAQ,WAAW;IAC7C,OAAO,CAAC,EAAE,MAAM,CAAC;IACjB,YAAY,CAAC,EAAE,MAAM,CAAC;CACvB;AAED,wBAAsB,cAAc,CAClC,GAAG,EAAE,MAAM,GAAG,GAAG,GAAG,OAAO,EAC3B,OAAO,GAAE,iBAAsB,GAC9B,OAAO,CAAC,QAAQ,CAAC,CA8BnB"}

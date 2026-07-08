@@ -120,3 +120,6 @@ temp/
 
 .env*.local
 /scratch/
+dist/
+packages/*/dist
+packages/*/dist/
