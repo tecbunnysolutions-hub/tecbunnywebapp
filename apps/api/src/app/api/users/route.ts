@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { logger } from "@tecbunny/core";
 import { BaseSupabaseClient, SupabaseUserRepository } from "@tecbunny/infra";
 import { verifySuperadminSessionToken } from "@tecbunny/core/server";
-import { UserService } from "@tecbunny/core";
+import { UserService } from "@tecbunny/core/server";
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY;

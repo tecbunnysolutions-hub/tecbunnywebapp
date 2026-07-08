@@ -4,7 +4,7 @@ import { logger } from "@tecbunny/core";
 import { rateLimit } from "@tecbunny/core/rate-limit";
 import { verifySuperadminSessionToken } from "@tecbunny/core/server";
 import { BaseSupabaseClient, SupabaseOrderRepository, NotificationServiceImpl } from "@tecbunny/infra";
-import { OrderService } from "@tecbunny/core";
+import { OrderService } from "@tecbunny/core/server";
 import { createClient as createServerClient } from "@tecbunny/core/supabase/server";
 
 const RATE_LIMIT = 5; // 5 orders

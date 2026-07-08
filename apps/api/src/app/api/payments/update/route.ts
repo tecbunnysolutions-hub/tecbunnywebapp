@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { logger } from "@tecbunny/core";
 import { apiError, apiSuccess } from "@tecbunny/core";
 import { rateLimit } from "@tecbunny/core/rate-limit";
-import { PaymentService } from "@tecbunny/core";
+import { PaymentService } from "@tecbunny/core/server";
 
 interface PaymentUpdateData {
   order_id: string;

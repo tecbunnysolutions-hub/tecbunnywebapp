@@ -1,6 +1,6 @@
 import { isSupabasePublicConfigured } from "@tecbunny/core";
 import { isSupabaseServiceConfigured } from "@tecbunny/core/server";
-import { getAdminDb, DatabaseError } from "@tecbunny/core";
+import { getAdminDb, DatabaseError } from "@tecbunny/core/server";
 import { NextRequest, NextResponse } from 'next/server';
 
 import { getSessionWithRole } from "@tecbunny/core/auth/server-role";
