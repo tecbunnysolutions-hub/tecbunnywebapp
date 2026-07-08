@@ -4,6 +4,7 @@ import crypto from 'crypto';
 import { GoogleGenerativeAI, SchemaType } from '@google/generative-ai';
 import { sendWhatsAppMessage } from '../services/infobipService';
 import { buildPricingCatalog } from '@tecbunny/core/custom-setup-pricing-server';
+import { CustomerService } from '@tecbunny/core';
 
 const apiKey = process.env.GEMINI_API_KEY || "";
 const genAI = apiKey ? new GoogleGenerativeAI(apiKey) : null;
@@ -17,6 +18,7 @@ export interface TriagedPayload {
   sub_category: 'CCTV' | 'COMPUTERS' | 'NETWORKING' | 'WEB_DEV' | 'HARDWARE_SALES' | 'OTHER';
   is_actionable: boolean;
   escalate_to_human: boolean;
+  intent_level: 'HIGH_INTENT' | 'GENERAL';
   follow_up_question: string | null;
   notes: string | null;
   
@@ -104,18 +106,21 @@ export class InboundTriageAgent extends BaseAgent<any, TriagedPayload | null> {
       }
 
       if (textContent) {
-        // Fetch history for context
-        const { data: historyData } = await supabase
-          .from('Message')
-          .select('direction, message_content')
-          .eq('sender_number', senderNumber)
-          .order('timestamp', { ascending: false })
-          .limit(5);
+        // Use optimized CustomerContext service for memory and data
+        const customerContext = await CustomerService.getCustomerContext({ phone: senderNumber });
+        const history = customerContext.messages;
+        const ordersData = customerContext.orders;
+        const ticketsData = customerContext.service_tickets;
           
-        const history = (historyData || []).reverse();
-        
         // Extract structured JSON payload using Gemini
-        const triageResult = await this.extractStructuredIntent(textContent, history, existingConv || null, senderNumber);
+        const triageResult = await this.extractStructuredIntent(
+          textContent, 
+          history.map(m => ({ direction: m.direction, message_content: m.message_content })), 
+          existingConv || null, 
+          senderNumber,
+          ordersData,
+          ticketsData
+        );
         
         // Inject metadata
         const fullPayload: TriagedPayload = {
@@ -129,6 +134,25 @@ export class InboundTriageAgent extends BaseAgent<any, TriagedPayload | null> {
         if (fullPayload.follow_up_question) {
           console.log(`[InboundTriageAgent] Sending AI reply to ${senderNumber}: ${fullPayload.follow_up_question}`);
           await sendWhatsAppMessage(senderNumber, fullPayload.follow_up_question);
+          
+          // Sync AI response back to CRM (Message table)
+          await supabase.from('Message').insert({
+            id: crypto.randomUUID(),
+            message_id: crypto.randomUUID(),
+            sender_number: senderNumber,
+            direction: 'OUTBOUND',
+            message_content: fullPayload.follow_up_question,
+            timestamp: new Date().toISOString()
+          });
+        }
+
+        // Handle Handoff Status
+        if (fullPayload.is_actionable && fullPayload.escalate_to_human) {
+          console.log(`[HANDOFF_TO_HUMAN] Triggered for user ${senderNumber}. Last message: "${textContent}"`);
+          await supabase
+            .from('Conversation')
+            .update({ status: 'PENDING_HUMAN_AGENT' })
+            .eq('sender_number', senderNumber);
         }
 
         // Always return the payload so AssignmentOrchestrator can update the CRM dashboard (Conversation table)
@@ -144,7 +168,9 @@ export class InboundTriageAgent extends BaseAgent<any, TriagedPayload | null> {
     userMessage: string,
     history: { direction: string; message_content: string }[],
     existingConv: any | null,
-    senderNumber: string
+    senderNumber: string,
+    orders: any[] = [],
+    tickets: any[] = []
   ): Promise<Omit<TriagedPayload, 'messageId' | 'senderNumber' | 'history'> & { notes: string | null }> {
     const defaultFallback: Omit<TriagedPayload, 'messageId' | 'senderNumber' | 'history'> & { notes: string | null } = {
       customer_name: null,
@@ -154,6 +180,7 @@ export class InboundTriageAgent extends BaseAgent<any, TriagedPayload | null> {
       sub_category: 'OTHER',
       is_actionable: false,
       escalate_to_human: true,
+      intent_level: 'GENERAL',
       notes: null,
       follow_up_question: "Oops, I didn't quite catch that! I'm transferring you to a human manager to assist you further."
     };
@@ -201,6 +228,18 @@ export class InboundTriageAgent extends BaseAgent<any, TriagedPayload | null> {
         memoryContext = `[CUSTOMER FILE MEMORY]\nWe DO NOT have this customer's address or pincode on file yet. You MUST ask for their full address before processing their request (UNLESS they ask for a quotation, in which case give quotation first).`;
       }
 
+      if (orders.length > 0) {
+        memoryContext += `\n\n[LAST ORDER STATUS]\n${orders.map(o => `- Order ${o.id.slice(0, 8)} (${new Date(o.created_at).toLocaleDateString()}): ${o.status}`).join('\n')}`;
+      } else {
+        memoryContext += `\n\n[LAST ORDER STATUS]\nNo previous orders.`;
+      }
+
+      if (tickets.length > 0) {
+        memoryContext += `\n\n[PENDING SERVICE TICKETS]\n${tickets.map(t => `- Ticket ${t.id.slice(0, 8)} (${t.title}): ${t.status}`).join('\n')}`;
+      } else {
+        memoryContext += `\n\n[PENDING SERVICE TICKETS]\nNo pending service tickets.`;
+      }
+
       const model = genAI.getGenerativeModel({ 
         model: "gemini-2.5-flash",
         generationConfig: {
@@ -222,47 +261,38 @@ export class InboundTriageAgent extends BaseAgent<any, TriagedPayload | null> {
               notes: { type: SchemaType.STRING, nullable: true, description: "A brief summary of the customer's request for our CRM dashboard." },
               is_actionable: { type: SchemaType.BOOLEAN, description: "Set to true ONLY if you are done processing the user or need to escalate to human." },
               escalate_to_human: { type: SchemaType.BOOLEAN, description: "Set to true if you are confused, the customer is angry, or they ask for something not in the knowledge base." },
+              intent_level: { type: SchemaType.STRING, description: "Set to 'HIGH_INTENT' if the customer asks for a quotation, setup costs, or pricing. Otherwise, set to 'GENERAL'." },
               follow_up_question: { type: SchemaType.STRING, nullable: true, description: "Your response to the customer." },
             },
-            required: ['domain', 'sub_category', 'is_actionable', 'escalate_to_human']
+            required: ['domain', 'sub_category', 'is_actionable', 'escalate_to_human', 'intent_level']
           }
         }
       });
 
       const historyContext = history.map(h => `${h.direction}: ${h.message_content}`).join('\n');
       
-      const prompt = `You are a warm, highly human-like, and friendly autonomous conversational sales agent for TecBunny (tecbunny.com), a premier Enterprise IT Services & Hardware Provider. 
-Your job is to read the customer's message, classify their intent, extract their info, and handle their queries (including providing quotations) by yourself without human intervention whenever possible.
+      const prompt = `You are the advanced AI Customer Success Agent for TecBunny Solutions. Your goal is to provide instantaneous, accurate, and empathetic support via WhatsApp.
 
-## Personality Rules (CRITICAL)
-- Sound like a real, friendly human being! Use a warm conversational tone.
-- Use emojis naturally (e.g., 👋, 😊, 🚀, 💻).
-- Acknowledge what the user said before answering.
+## Core Guidelines
 
-## Autonomous Quotation System
-You have access to live pricing. If a customer asks for a CCTV quotation or setup cost, DO NOT escalate to a human. Handle it yourself!
-1. Ask them how many cameras they need (e.g., 4, 8, 16) and if they prefer Analog or IP cameras.
-2. Provide the quotation IMMEDIATELY once you know the camera count and type. Calculate it using this live data:
+1. Context-First: Before answering, check the provided 'CustomerContext' (Name, Last Order Status, Pending Service Tickets). Reference this data to make responses personal (e.g., 'I see you're still waiting on your CCTV installation').
+2. RAG Integration: Always prioritize information from the internal 'Knowledge Base'. If a query involves pricing or technical specs, search the database first.
+3. Structured Response:
+   - If the user asks for info: Provide a concise, bulleted answer.
+   - If the user has a problem: Use the 'Empathy-Action-Resolution' framework. Acknowledge the issue, explain the steps to fix it, and provide a clear timeline.
+4. Handoff Triggers: If the confidence score of your answer is below 80%, or if the customer expresses frustration/anger, stop the AI flow and trigger a human-agent handoff via the mgmt CRM (by setting escalate_to_human: true).
+5. Actionable CTAs: End every support interaction with a relevant CTA, such as 'Would you like to track your order?' or 'Should I connect you to a technician?'.
+6. Style: Use professional yet conversational language suitable for WhatsApp. Use emojis sparingly to maintain readability.
+
+## Knowledge Base (Pricing Catalog)
 ${JSON.stringify(simplifiedPricing, null, 2)}
-(Remember to include the DVR/NVR, the Power Supply (SMPS or POE), a 500GB Hard Drive, the installation_and_setup_total fee, and 1 cable bundle per 4 cameras).
-- DO NOT multiply the installation_and_setup_total per camera. It is a flat fee for the entire standard setup.
-- If the setup is larger than 8 cameras, you can add 500 per extra camera to the installation fee.
-3. Present the quotation to the customer in a beautifully formatted message.
-4. DO NOT tell the customer you are transferring them to a sales team. YOU are the salesperson. Handle the quotation yourself.
 
-## General Operations & Memory
-- To register a service request or order, we ALWAYS need their full address.
+## CustomerContext & Memory
 ${memoryContext}
-- CRITICAL EXCEPTION: If the user is asking for a quotation, give them the quotation FIRST. Only ask for their address AFTER you have provided the price and they show interest in proceeding.
-- IMPORTANT INTENT RULE: If the user's latest message is JUST a pincode or address, LOOK at the older messages in the Previous Context to remember what they wanted (e.g. if they asked for a quotation earlier, give them the quotation now!). Do NOT say "how can I help you today" if they already told you!
 
-## Actionable & Escalation Rules
-- Set \`is_actionable: true\` ONLY IF the customer has agreed to purchase/proceed AND you have their full address. Otherwise, keep it false.
-- Set \`escalate_to_human: true\` ONLY if:
-  1. You completely do not understand the situation.
-  2. The customer is angry or demands to speak to a manager.
-  3. They want to heavily negotiate the price beyond standard discounts.
-If you escalate, set \`is_actionable: true\` and leave \`follow_up_question\` blank or write a short message saying you are transferring them to a manager.
+## Escalation & Actionable Output
+- Set \`is_actionable: true\` if you are resolving their query fully.
+- Set \`escalate_to_human: true\` if the user is angry, frustrated, or you are below 80% confident.
 
 Previous Context:
 ${historyContext}
@@ -285,6 +315,7 @@ Latest Message:
         sub_category: parsed.sub_category || 'OTHER',
         is_actionable: typeof parsed.is_actionable === 'boolean' ? parsed.is_actionable : false,
         escalate_to_human: typeof parsed.escalate_to_human === 'boolean' ? parsed.escalate_to_human : false,
+        intent_level: parsed.intent_level || 'GENERAL',
         notes: parsed.notes || null,
         follow_up_question: parsed.follow_up_question || null
       };

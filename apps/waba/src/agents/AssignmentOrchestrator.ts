@@ -3,6 +3,7 @@ import { TriagedPayload } from './InboundTriageAgent';
 import { supabase } from '@/lib/supabase';
 import nodemailer from 'nodemailer';
 import { sendWhatsAppMessage } from '../services/infobipService';
+import { LeadService } from '../services/leadService';
 
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST || 'smtp.gmail.com',
@@ -82,23 +83,24 @@ export class AssignmentOrchestrator extends BaseAgent<TriagedPayload, void> {
       }
     }
 
-    // Insert the new Lead record via Supabase
-    const { error } = await supabase
-      .from('Lead')
-      .insert({
-        domain: data.domain === 'UNKNOWN' ? 'TECHNICAL_SERVICE' : data.domain, // Fallback for enum
+    // Determine Lead Status
+    let leadStatus = data.escalate_to_human ? 'PENDING_HUMAN_AGENT' : 'LEAD';
+    if (data.intent_level === 'HIGH_INTENT' && !data.escalate_to_human) {
+      leadStatus = 'HIGH_INTENT';
+    }
+
+    try {
+      // Insert the new Lead record via LeadService
+      await LeadService.createLead({
+        domain: data.domain === 'UNKNOWN' ? 'TECHNICAL_SERVICE' : data.domain as any, // Fallback for enum
         sub_category: data.sub_category,
         pincode: data.pincode || 'UNKNOWN',
-        address: data.address,
-        status: data.escalate_to_human ? 'NEW' : 'LEAD',
+        address: data.address || '',
+        status: leadStatus,
         assigned_to: assignedUserId,
-        updated_at: new Date().toISOString()
-      });
+      } as any);
 
-    if (error) {
-      console.error(`[AssignmentOrchestrator] Failed to save lead:`, error);
-    } else {
-      console.log(`[AssignmentOrchestrator] Successfully saved lead to DB for ${data.senderNumber}`);
+      console.log(`[AssignmentOrchestrator] Successfully saved lead to DB for ${data.senderNumber} with status ${leadStatus}`);
       
       // Handle Escalation
       if (data.escalate_to_human && managerDetails) {
@@ -125,6 +127,8 @@ export class AssignmentOrchestrator extends BaseAgent<TriagedPayload, void> {
           }
         }
       }
+    } catch (error) {
+      console.error(`[AssignmentOrchestrator] Failed to save lead:`, error);
     }
   }
 }

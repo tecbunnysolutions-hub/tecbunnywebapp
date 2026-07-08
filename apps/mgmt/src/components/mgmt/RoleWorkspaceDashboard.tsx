@@ -21,9 +21,13 @@ import {
   Users,
   Wrench,
   Zap,
+  AlertTriangle,
+  MessageSquare
 } from 'lucide-react';
 
 import { useAuth } from "@tecbunny/core/hooks";
+import { createClient } from "@tecbunny/core/supabase/client";
+import { useEffect, useState } from 'react';
 
 type WorkspaceKind =
   | 'sales-manager'
@@ -157,6 +161,53 @@ export function RoleWorkspaceDashboard({ kind }: RoleWorkspaceDashboardProps) {
   const role = (user?.role ?? 'customer') as UserRole;
   const PrimaryIcon = config.primaryAction.icon;
 
+  const [needsAttentionQueue, setNeedsAttentionQueue] = useState<any[]>([]);
+  const supabase = createClient();
+
+  useEffect(() => {
+    // 1. Initial Fetch
+    const fetchQueue = async () => {
+      const { data } = await supabase
+        .from('Conversation')
+        .select('*')
+        .eq('status', 'PENDING_HUMAN_AGENT')
+        .order('last_interaction_timestamp', { ascending: false });
+      
+      if (data) setNeedsAttentionQueue(data);
+    };
+    
+    void fetchQueue();
+
+    // 2. Real-time Subscription
+    const channel = supabase
+      .channel('needs-attention')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'Conversation',
+          filter: "status=eq.PENDING_HUMAN_AGENT"
+        },
+        (payload: any) => {
+          if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
+            setNeedsAttentionQueue(prev => {
+              const exists = prev.find(p => p.id === payload.new.id);
+              if (exists) return prev.map(p => p.id === payload.new.id ? payload.new : p);
+              return [payload.new, ...prev];
+            });
+          } else if (payload.eventType === 'DELETE') {
+            setNeedsAttentionQueue(prev => prev.filter(p => p.id !== payload.old.id));
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
   return (
     <div className="space-y-6 sm:space-y-8">
       <section className="overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900/60">
@@ -195,6 +246,42 @@ export function RoleWorkspaceDashboard({ kind }: RoleWorkspaceDashboardProps) {
           </Link>
         </div>
       </section>
+
+      {/* Real-Time "Needs Attention" Queue */}
+      {needsAttentionQueue.length > 0 && (
+        <section className="rounded-xl border border-red-500/30 bg-red-500/5 p-4 sm:p-6 shadow-sm">
+          <div className="mb-4 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-red-500" />
+              <h2 className="text-lg font-bold text-red-500">Needs Attention Queue</h2>
+            </div>
+            <span className="rounded-full bg-red-500/20 px-3 py-1 text-xs font-bold text-red-400">
+              {needsAttentionQueue.length} Active Escalat{needsAttentionQueue.length === 1 ? 'ion' : 'ions'}
+            </span>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {needsAttentionQueue.map((conv) => (
+              <div key={conv.id} className="group relative flex flex-col justify-between overflow-hidden rounded-lg border border-red-500/20 bg-zinc-900 p-4 transition-colors hover:border-red-500/50">
+                <div>
+                  <div className="flex items-start justify-between">
+                    <p className="font-bold text-white">{conv.contact_name || conv.sender_number}</p>
+                    <MessageSquare className="h-4 w-4 text-zinc-500" />
+                  </div>
+                  <p className="mt-1 text-xs text-zinc-400">{conv.address || 'No address provided'}</p>
+                </div>
+                <div className="mt-4">
+                  <Link
+                    href={`/mgmt/manager/leads?chat=${conv.id}`}
+                    className="inline-flex items-center gap-2 text-sm font-semibold text-red-400 hover:text-red-300"
+                  >
+                    Take over chat <ArrowUpRight className="h-4 w-4" />
+                  </Link>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       <section aria-label="Access summary" className="grid gap-3 sm:grid-cols-3">
         {config.focus.map((item) => {

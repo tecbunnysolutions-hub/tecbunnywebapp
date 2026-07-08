@@ -22,3 +22,4 @@ export * from './hooks/use-analytics';
 export * from './validation';
 // export * from './telemetry';
 export * from './hooks/use-customer-workspace';
+export * from './services/customer.service';

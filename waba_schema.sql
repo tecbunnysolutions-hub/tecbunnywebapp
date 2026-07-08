@@ -17,10 +17,14 @@ CREATE TABLE IF NOT EXISTS public."Conversation" (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     sender_number TEXT UNIQUE NOT NULL,
     contact_name TEXT,
+    address TEXT,
+    pincode TEXT,
     active_flow TEXT,
     ai_active BOOLEAN DEFAULT true,
     unread_count INTEGER DEFAULT 0,
+    status TEXT DEFAULT 'PROCESSING',
     last_message_at TIMESTAMPTZ DEFAULT NOW(),
+    last_interaction_timestamp TIMESTAMPTZ DEFAULT NOW(),
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
