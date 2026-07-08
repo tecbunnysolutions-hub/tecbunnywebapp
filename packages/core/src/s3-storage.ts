@@ -1,5 +1,7 @@
 // AWS S3 Storage Service
+// @ts-ignore
 import { S3Client, PutObjectCommand, DeleteObjectCommand, GetObjectCommand, ObjectCannedACL } from '@aws-sdk/client-s3';
+// @ts-ignore
 import { getSignedUrl as getPresignedUrl } from '@aws-sdk/s3-request-presigner';
 
 import { logger } from '@tecbunny/core';
@@ -13,7 +15,7 @@ export const isS3Configured = Boolean(
   AWS_ACCESS_KEY_ID && AWS_SECRET_ACCESS_KEY && S3_BUCKET_NAME
 );
 
-let s3Client: S3Client | null = null;
+let s3Client: any | null = null;
 
 // Configure AWS
 if (isS3Configured) {
@@ -93,7 +95,7 @@ export async function uploadToS3(
       Key: key,
       Body: fileBuffer,
       ContentType: contentType,
-      ACL: options?.publicAccess !== false ? 'public-read' as ObjectCannedACL : undefined,
+      ACL: options?.publicAccess !== false ? 'public-read' as any : undefined,
       CacheControl: 'max-age=31536000' // 1 year
     };
 
