@@ -194,10 +194,12 @@ function ProductGridImage({
   src,
   alt,
   fallbackText,
+  priority = false,
 }: {
   src: string | null | undefined;
   alt: string;
   fallbackText: string;
+  priority?: boolean;
 }) {
   const [hasImageError, setHasImageError] = React.useState(false);
   const initial = fallbackText.trim().charAt(0).toUpperCase() || 'P';
@@ -224,7 +226,8 @@ function ProductGridImage({
           width={400}
           height={400}
           className="h-full w-full object-contain transition-all duration-500 ease-out group-hover:scale-[1.04]"
-          loading="lazy"
+          priority={priority}
+          loading={priority ? undefined : "lazy"}
           decoding="async"
           onError={() => setHasImageError(true)}
         />
@@ -984,6 +987,7 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
                                 src={imageUrl}
                                 alt={displayName}
                                 fallbackText={displayName}
+                                priority={index < 8}
                               />
                               {/* Discount Badge */}
                               {product.discount_percentage && product.discount_percentage > 0 ? (

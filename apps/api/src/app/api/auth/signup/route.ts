@@ -1,10 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-import { verifyCaptcha } from "@tecbunny/core/captcha/captcha-service";
 import { logger } from "@tecbunny/core";
 import { rateLimit } from "@tecbunny/core/rate-limit";
-import { OTPManager, type OTPChannel } from "@tecbunny/core/otp-manager";
+import { AuthService } from "@tecbunny/core/server";
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY;
@@ -30,22 +29,21 @@ function getSupabaseAdmin() {
     }
   });
 }
-const otpService = new OTPManager();
 
 export async function POST(request: NextRequest) {
   try {
     if (!isSupabaseConfigured) {
       logger.error('signup.supabase_config_missing');
       return NextResponse.json(
-        {
-          error: 'Supabase configuration missing. Please set NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY.'
-        },
+        { error: 'Supabase configuration missing. Please set NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY.' },
         { status: 503 }
       );
     }
 
-    const { email, password, name, mobile: _mobile, captchaToken, channel: requestedChannel } = await request.json();
+    const payload = await request.json();
     const clientIp = getClientIp(request);
+    const { email, mobile: _mobile } = payload;
+    
     const normalizedEmail = typeof email === 'string' ? email.trim().toLowerCase() : '';
     const normalizedMobile = typeof _mobile === 'string' ? _mobile.replace(/\D/g, '') : '';
 
@@ -69,157 +67,29 @@ export async function POST(request: NextRequest) {
     const supabaseAdmin = getSupabaseAdmin();
     // Test Supabase admin connection
     try {
-      const { data: _testData, error: testError } = await supabaseAdmin.auth.admin.listUsers({ page: 1, perPage: 1 });
+      const { error: testError } = await supabaseAdmin.auth.admin.listUsers({ page: 1, perPage: 1 });
       if (testError) {
         logger.error('signup.supabase_admin_connection_test_failed', { error: testError });
-        return NextResponse.json(
-          { error: 'Database connection error. Please check your configuration.' },
-          { status: 503 }
-        );
+        return NextResponse.json({ error: 'Database connection error. Please check your configuration.' }, { status: 503 });
       }
     } catch (connError) {
       logger.error('signup.supabase_admin_connection_error', { error: connError });
-      return NextResponse.json(
-        { error: 'Database connection error. Please try again.' },
-        { status: 503 }
-      );
+      return NextResponse.json({ error: 'Database connection error. Please try again.' }, { status: 503 });
     }
 
-    // CAPTCHA verification (conditional if configured)
     const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
-    if (siteKey) {
-      const captcha = await verifyCaptcha(captchaToken, clientIp);
-      if (!captcha.success) {
-        logger.warn('signup.captcha_failed', { email: normalizedEmail || email, ip: clientIp, error: captcha.error || captcha.errorCodes });
-        return NextResponse.json(
-          { error: `Captcha verification failed: ${captcha.error || captcha.errorCodes?.join(', ') || 'Invalid captcha token'}` },
-          { status: 400 }
-        );
-      }
-    }
-
-    // Validate required fields
-    if (!password || !name || !normalizedEmail || !normalizedMobile) {
-      return NextResponse.json(
-        { error: 'Name, email address, mobile number, and password are required' },
-        { status: 400 }
-      );
-    }
-
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
-      return NextResponse.json(
-        { error: 'Please enter a valid email address' },
-        { status: 400 }
-      );
-    }
-
-    if (password.length < 8) {
-      return NextResponse.json(
-        { error: 'Password must be at least 8 characters long' },
-        { status: 400 }
-      );
-    }
+    const authService = new AuthService(supabaseAdmin);
     
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-    if (!passwordRegex.test(password)) {
-      return NextResponse.json(
-        { error: 'Password must contain at least one uppercase letter, one lowercase letter, one number and one special character' },
-        { status: 400 }
-      );
+    const result = await authService.signup(payload, clientIp, siteKey);
+
+    if (!result.success) {
+      return NextResponse.json({ error: result.error.message }, { status: result.error.statusCode || 400 });
     }
 
-    // Validate mobile if provided
-    let mobile = normalizedMobile;
-    mobile = mobile.replace(/\D/g, ''); // Remove non-digits
-    if (mobile.length < 10 || mobile.length > 15) {
-      return NextResponse.json(
-        { error: 'Mobile number must be between 10-15 digits' },
-        { status: 400 }
-      );
-    }
+    return NextResponse.json(result.data);
 
-    // Check if user already exists
-    try {
-      const orConditions: string[] = [];
-      if (normalizedEmail) {
-        orConditions.push(`email.eq.${normalizedEmail}`);
-      }
-      if (mobile) {
-        orConditions.push(`mobile.eq.${mobile}`);
-      }
-
-      if (orConditions.length > 0) {
-        const { data: existingProfiles, error: checkError } = await supabaseAdmin
-          .from('profiles')
-          .select('id, email, mobile')
-          .or(orConditions.join(','));
-
-        if (checkError) {
-          logger.error('signup.check_existing_users_failed', { email: normalizedEmail || email, error: checkError.message });
-        } else if (existingProfiles && existingProfiles.length > 0) {
-          return NextResponse.json(
-            { 
-              error: 'An account with this email address or mobile number already exists',
-              code: 'USER_ALREADY_EXISTS'
-            },
-            { status: 409 }
-          );
-        }
-      }
-    } catch (checkError) {
-      logger.error('signup.check_existing_users_failed', { email: normalizedEmail || email, error: checkError });
-      // Continue with signup attempt
-    }
-
-    // DO NOT CREATE USER YET - Only send OTP for verification
-    // The user will be created AFTER OTP verification
-    logger.info('signup.sending_otp', { email: normalizedEmail || email, mobile: !!mobile, clientIp });
-
-    const otpMobile = mobile || undefined;
-    const preferredChannel: OTPChannel = (requestedChannel && ['email', 'whatsapp'].includes(requestedChannel)) 
-      ? requestedChannel as OTPChannel 
-      : 'whatsapp';
-    const enforcePreferredChannel = true;
-
-    const otpResult = await otpService.generateOTP({
-      email: normalizedEmail || undefined,
-      phone: otpMobile,
-      purpose: 'registration',
-      preferredChannel,
-      enforcePreferredChannel,
-    });
-
-    if (!otpResult.success || !otpResult.otpId) {
-      logger.error('signup.otp_generation_failed', { email: normalizedEmail || email, mobile: otpMobile, message: otpResult.message });
-      return NextResponse.json(
-        { error: otpResult.message || 'Failed to send verification code' },
-        { status: 500 }
-      );
-    }
-
-    logger.info('signup.otp_dispatch_complete', {
-      email: normalizedEmail || email,
-      mobile: !!otpMobile,
-      otpId: otpResult.otpId,
-      channel: otpResult.channel,
-      fallbackAvailable: otpResult.fallbackAvailable,
-    });
-
-    return NextResponse.json({
-      message: otpResult.message ?? `Verification code sent via ${otpResult.channel}.`,
-      otpSent: true,
-      verificationRequired: true,
-      otpId: otpResult.otpId,
-      channel: otpResult.channel,
-      fallbackAvailable: otpResult.fallbackAvailable,
-      fallbackProvider: otpResult.provider,
-      preferredChannel,
-    });
   } catch (error) {
     logger.error('signup.internal_error', { error });
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

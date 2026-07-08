@@ -91,7 +91,15 @@ function parsePartnerBrands(value: unknown) {
     .filter((brand) => brand.name.length > 0);
 }
 
-export default async function Page() {
+export default function Page() {
+  return (
+    <Suspense fallback={<HomePageSkeleton />}>
+      <HomePageDataLoader />
+    </Suspense>
+  );
+}
+
+async function HomePageDataLoader() {
   let initialProducts = undefined;
   let initialPartnerBrands = undefined;
   let initialHeroCarousel = undefined;
@@ -135,12 +143,10 @@ export default async function Page() {
   }
 
   return (
-    <Suspense fallback={<HomePageSkeleton />}>
-      <HomePage 
-        initialProducts={initialProducts} 
-        initialPartnerBrands={initialPartnerBrands} 
-        initialHeroCarousel={initialHeroCarousel}
-      />
-    </Suspense>
+    <HomePage 
+      initialProducts={initialProducts} 
+      initialPartnerBrands={initialPartnerBrands} 
+      initialHeroCarousel={initialHeroCarousel}
+    />
   );
 }

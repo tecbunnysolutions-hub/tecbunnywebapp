@@ -710,3 +710,53 @@ export interface ServiceRequest {
     updated_at: string;
     service?: Service;
 }
+
+// WhatsApp Conversation Types
+export type ConversationStatus = 'NEW' | 'PROCESSING' | 'WAITING_ON_CUSTOMER' | 'CLOSED' | 'ESCALATED';
+
+export interface Conversation {
+  id: string;
+  sender_number: string;
+  contact_name?: string | null;
+  address?: string | null;
+  pincode?: string | null;
+  status: ConversationStatus;
+  last_interaction_timestamp: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export type MessageDirection = 'INBOUND' | 'OUTBOUND';
+
+export interface Message {
+  id: string;
+  message_id: string;
+  sender_number: string;
+  direction: MessageDirection;
+  message_content: string;
+  timestamp: string;
+  status?: 'SENT' | 'DELIVERED' | 'READ' | 'FAILED' | null;
+}
+
+// Unified Customer Workspace
+export interface CustomerWorkspaceData {
+  customer_id?: string;
+  phone?: string;
+  orders: Order[];
+  service_tickets: ServiceTicket[];
+  conversations: Conversation[];
+  messages: Message[];
+}
+
+// Security & Audit Types
+export type AuditAction = 'insert' | 'update' | 'upsert' | 'delete';
+
+export interface AuditLog {
+  id: string;
+  user_id: string;
+  action: AuditAction;
+  table_name: string;
+  payload: any;
+  created_at: string;
+}
+

@@ -58,7 +58,15 @@ function ProductsPageSkeleton() {
   );
 }
 
-export default async function Page() {
+export default function Page() {
+  return (
+    <Suspense fallback={<ProductsPageSkeleton />}>
+      <ShopPageDataLoader />
+    </Suspense>
+  );
+}
+
+async function ShopPageDataLoader() {
   const supabase = await createClient();
   
   const [productsRes, offersRes] = await Promise.all([
@@ -70,8 +78,6 @@ export default async function Page() {
   const rawOffers = offersRes.data || [];
 
   return (
-    <Suspense fallback={<ProductsPageSkeleton />}>
-      <ShopPageContent initialRawProducts={rawProducts} initialRawAutoOffers={rawOffers} />
-    </Suspense>
+    <ShopPageContent initialRawProducts={rawProducts} initialRawAutoOffers={rawOffers} />
   );
 }

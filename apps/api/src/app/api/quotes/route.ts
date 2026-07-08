@@ -73,7 +73,7 @@ export async function POST(req: NextRequest) {
 
     let customerName = anonName;
     let customerPhone = anonPhone;
-    let customerAddress = anonAddress;
+    const customerAddress = anonAddress;
     let customerEmail = anonEmail;
 
     if (user) {

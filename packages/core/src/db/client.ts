@@ -3,6 +3,7 @@ import { requireSupabaseServiceEnv } from '../supabase/env';
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import { createSupabaseClient as createServerClient } from '../supabase/server';
 import { DatabaseError } from './errors';
+import { withAuditLogging } from '../security/audit-middleware';
 
 export class DbClient {
   constructor(private client: SupabaseClient) {}
@@ -66,7 +67,8 @@ export function getAdminDb(): DbClient {
   if (!adminDbInstance) {
     const { url, serviceKey } = requireSupabaseServiceEnv();
     const supabase = createSupabaseClient(url, serviceKey);
-    adminDbInstance = new DbClient(supabase);
+    const auditedSupabase = withAuditLogging(supabase, 'system-admin');
+    adminDbInstance = new DbClient(auditedSupabase);
   }
   return adminDbInstance;
 }
@@ -77,5 +79,7 @@ export function getAdminDb(): DbClient {
  */
 export async function getUserDb(): Promise<DbClient> {
   const supabase = await createServerClient();
-  return new DbClient(supabase);
+  const { data: { user } } = await supabase.auth.getUser();
+  const auditedSupabase = withAuditLogging(supabase, user?.id || 'anonymous');
+  return new DbClient(auditedSupabase);
 }

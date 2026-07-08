@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import crypto from 'crypto';
-import { InboundTriageAgent } from '@/agents/InboundTriageAgent';
-import { AssignmentOrchestrator } from '@/agents/AssignmentOrchestrator';
+import { getWabaWebhookQueue } from '@tecbunny/core/server';
 
 const INFOBIP_HMAC_SECRET = process.env.INFOBIP_HMAC_SECRET || 'bunny@6010';
 
@@ -42,17 +41,17 @@ export async function POST(req: Request) {
 
     const body = JSON.parse(rawBody);
     
-    // Execute agents synchronously since Vercel is serverless and cannot run background BullMQ workers
-    const triageAgent = new InboundTriageAgent();
-    const orchestrator = new AssignmentOrchestrator();
-
-    // 1. Process incoming message and triage
-    const triageResult = await triageAgent.execute(body);
-
-    // 2. If the message was actionable and actionable payload was returned, assign to manager
-    if (triageResult) {
-      await orchestrator.execute(triageResult);
+    // Enqueue payload to BullMQ
+    const queue = getWabaWebhookQueue();
+    if (!queue) {
+      console.error('Webhook queue not available');
+      return NextResponse.json({ error: 'Queue unavailable' }, { status: 503 });
     }
+
+    await queue.add('process-webhook', body, {
+      removeOnComplete: true,
+      removeOnFail: false
+    });
 
     return NextResponse.json({ status: 'success' }, { status: 200 });
 
@@ -61,3 +60,4 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
+

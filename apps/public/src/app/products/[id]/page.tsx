@@ -4,7 +4,7 @@ import { ProductDetailPage } from '@/components/products/ProductDetailPage';
 import { Metadata } from 'next';
 import { cookies } from 'next/headers';
 import { cleanMetadataDescription, cleanMetadataTitle, createPageMetadata } from "@tecbunny/core/metadata";
-
+import { Suspense } from 'react';
 import { createSupabaseClient as createPublicSupabaseClient } from "@tecbunny/core/supabase-server";
 import { BRAND_LOGO_URL } from "@tecbunny/ui";
 import { stripHtmlToPlainText } from "@tecbunny/core/strings";
@@ -99,8 +99,38 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
   };
 }
 
+function ProductPageSkeleton() {
+  return (
+    <div className="tech-main-content bg-background text-foreground">
+      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+        <div className="animate-pulse">
+          <div className="h-6 w-40 rounded bg-white/10 mb-8"></div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div className="h-[420px] rounded-2xl bg-white/5"></div>
+            <div className="space-y-4">
+              <div className="h-8 rounded bg-white/10 w-3/4"></div>
+              <div className="h-4 rounded bg-white/10 w-1/2"></div>
+              <div className="h-12 rounded bg-white/10 w-2/3"></div>
+              <div className="h-32 rounded bg-white/5"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default async function ProductPage({ params }: ProductPageProps) {
   const { id } = await params;
+  
+  return (
+    <Suspense fallback={<ProductPageSkeleton />}>
+      <ProductDataLoader id={id} />
+    </Suspense>
+  );
+}
+
+async function ProductDataLoader({ id }: { id: string }) {
   const cookieStore = await cookies();
   const sourceCookie = cookieStore.get('tb_source_context')?.value;
 
@@ -213,5 +243,4 @@ export default async function ProductPage({ params }: ProductPageProps) {
     </>
   );
 }
-
 
