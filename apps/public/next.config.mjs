@@ -31,8 +31,9 @@ const nextConfig = {
   transpilePackages: ["@tecbunny/core", "@tecbunny/ui"],
   experimental: {
     optimizeCss: true,
+    optimizePackageImports: ['@tecbunny/core', '@tecbunny/ui'],
   },
-  serverExternalPackages: ['pdfkit'],
+  serverExternalPackages: ['pdfkit', 'nodemailer', 'bullmq', 'ioredis'],
   poweredByHeader: false,
   images: {
     unoptimized: isStaticExport,
