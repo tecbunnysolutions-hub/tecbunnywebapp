@@ -83,18 +83,22 @@ ALTER TABLE public."FailedApiCall" ENABLE ROW LEVEL SECURITY;
 -- Service role keys bypass RLS automatically. 
 -- However, for authenticated front-end agents viewing the dashboard:
 
+DROP POLICY IF EXISTS "Agents can view all conversations" ON public."Conversation";
 CREATE POLICY "Agents can view all conversations" 
     ON public."Conversation" FOR SELECT 
     USING (auth.role() = 'authenticated');
 
+DROP POLICY IF EXISTS "Agents can view all messages" ON public."Message";
 CREATE POLICY "Agents can view all messages" 
     ON public."Message" FOR SELECT 
     USING (auth.role() = 'authenticated');
 
+DROP POLICY IF EXISTS "Agents can view templates" ON public."Template";
 CREATE POLICY "Agents can view templates" 
     ON public."Template" FOR SELECT 
     USING (auth.role() = 'authenticated');
 
+DROP POLICY IF EXISTS "Agents can view users" ON public."User";
 CREATE POLICY "Agents can view users" 
     ON public."User" FOR SELECT 
     USING (auth.role() = 'authenticated');

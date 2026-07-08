@@ -537,7 +537,11 @@ CREATE POLICY "Staff can manage commissions" ON public.sales_agent_commissions F
 CREATE POLICY "Agents can view their own commissions" ON public.sales_agent_commissions FOR SELECT USING (agent_id IN (SELECT id FROM public.sales_agents WHERE user_id = auth.uid()) OR public.is_admin_or_staff());
 
 -- WABA
+DROP POLICY IF EXISTS "Agents can view all conversations" ON public."Conversation";
 CREATE POLICY "Agents can view all conversations" ON public."Conversation" FOR SELECT USING (auth.role() = 'authenticated');
+DROP POLICY IF EXISTS "Agents can view all messages" ON public."Message";
 CREATE POLICY "Agents can view all messages" ON public."Message" FOR SELECT USING (auth.role() = 'authenticated');
+DROP POLICY IF EXISTS "Agents can view templates" ON public."Template";
 CREATE POLICY "Agents can view templates" ON public."Template" FOR SELECT USING (auth.role() = 'authenticated');
+DROP POLICY IF EXISTS "Agents can view users" ON public."User";
 CREATE POLICY "Agents can view users" ON public."User" FOR SELECT USING (auth.role() = 'authenticated');
