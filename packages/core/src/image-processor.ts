@@ -1,3 +1,4 @@
+// @ts-ignore
 import sharp from 'sharp';
 import { logger } from './logger';
 import { SupabaseClient } from '@supabase/supabase-js';
@@ -50,7 +51,7 @@ export async function optimizeImage(
  */
 export function createOptimizeImageStream(
   options: { maxWidth?: number; maxHeight?: number } = { maxWidth: 1920, maxHeight: 1920 }
-): sharp.Sharp {
+): any {
   return sharp()
     .resize({
       width: options.maxWidth,

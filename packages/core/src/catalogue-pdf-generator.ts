@@ -1,3 +1,4 @@
+// @ts-ignore
 import PDFDocument from 'pdfkit';
 import { getGlobalConfig } from './config-service';
 import { logger } from '@tecbunny/core';
