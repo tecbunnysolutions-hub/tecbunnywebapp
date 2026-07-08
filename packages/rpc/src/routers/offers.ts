@@ -11,7 +11,7 @@ interface OfferFilters {
   includeExpired: boolean;
 }
 
-interface NormalizedOffer {
+export interface NormalizedOffer {
   id: string;
   title: string;
   description: string;

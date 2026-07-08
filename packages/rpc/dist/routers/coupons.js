@@ -1,8 +1,8 @@
 import { z } from 'zod';
-import { createTRPCRouter, publicProcedure, adminProcedure } from '../trpc';
-import { getSupabaseAdmin, isSupabaseServiceConfigured } from '@tecbunny/core/server';
+import { router, publicProcedure, protectedProcedure } from '../trpc';
+import { createSupabaseServiceClient, isSupabaseServiceConfigured } from '@tecbunny/core/server';
 import { TRPCError } from '@trpc/server';
-export const couponsRouter = createTRPCRouter({
+export const couponsRouter = router({
     getAll: publicProcedure.query(async () => {
         if (!isSupabaseServiceConfigured) {
             throw new TRPCError({
@@ -10,7 +10,7 @@ export const couponsRouter = createTRPCRouter({
                 message: 'Supabase configuration missing',
             });
         }
-        const supabaseAdmin = getSupabaseAdmin();
+        const supabaseAdmin = createSupabaseServiceClient();
         const { data, error } = await supabaseAdmin
             .from('coupons')
             .select('*')
@@ -33,7 +33,7 @@ export const couponsRouter = createTRPCRouter({
                 message: 'Supabase configuration missing',
             });
         }
-        const supabaseAdmin = getSupabaseAdmin();
+        const supabaseAdmin = createSupabaseServiceClient();
         const { data, error } = await supabaseAdmin
             .from('coupons')
             .select('*')
@@ -70,7 +70,7 @@ export const couponsRouter = createTRPCRouter({
                 message: 'Supabase configuration missing',
             });
         }
-        const supabaseAdmin = getSupabaseAdmin();
+        const supabaseAdmin = createSupabaseServiceClient();
         const { data, error } = await supabaseAdmin
             .from('coupons')
             .select('*')
@@ -84,7 +84,7 @@ export const couponsRouter = createTRPCRouter({
         }
         return data;
     }),
-    create: adminProcedure
+    create: protectedProcedure
         .input(z.object({
         code: z.string(),
         title: z.string().optional(),
@@ -108,7 +108,7 @@ export const couponsRouter = createTRPCRouter({
                 message: 'Supabase configuration missing',
             });
         }
-        const supabaseAdmin = getSupabaseAdmin();
+        const supabaseAdmin = createSupabaseServiceClient();
         const now = new Date().toISOString();
         const record = {
             code: input.code.toUpperCase(),
@@ -141,7 +141,7 @@ export const couponsRouter = createTRPCRouter({
         }
         return { coupon: data, message: 'Coupon created successfully' };
     }),
-    update: adminProcedure
+    update: protectedProcedure
         .input(z.object({
         id: z.string(),
         code: z.string().optional(),
@@ -197,7 +197,7 @@ export const couponsRouter = createTRPCRouter({
             updateData.start_date = input.start_date;
         if (input.expiry_date !== undefined)
             updateData.expiry_date = input.expiry_date;
-        const supabaseAdmin = getSupabaseAdmin();
+        const supabaseAdmin = createSupabaseServiceClient();
         const { data, error } = await supabaseAdmin
             .from('coupons')
             .update(updateData)
@@ -212,7 +212,7 @@ export const couponsRouter = createTRPCRouter({
         }
         return { coupon: data, message: 'Coupon updated successfully' };
     }),
-    delete: adminProcedure
+    delete: protectedProcedure
         .input(z.object({ id: z.string() }))
         .mutation(async ({ input }) => {
         if (!isSupabaseServiceConfigured) {
@@ -221,7 +221,7 @@ export const couponsRouter = createTRPCRouter({
                 message: 'Supabase configuration missing',
             });
         }
-        const supabaseAdmin = getSupabaseAdmin();
+        const supabaseAdmin = createSupabaseServiceClient();
         const { error } = await supabaseAdmin
             .from('coupons')
             .delete()

@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { createTRPCRouter, publicProcedure, adminProcedure } from '../trpc';
-import { getAdminDb, isSupabaseServiceConfigured } from '@tecbunny/core/server';
+import { router, publicProcedure, protectedProcedure } from '../trpc';
+import { createSupabaseServiceClient, isSupabaseServiceConfigured } from '@tecbunny/core/server';
 import { logger } from '@tecbunny/core';
 import { TRPCError } from '@trpc/server';
 function toNumber(value) {
@@ -196,7 +196,7 @@ const validateOfferBusinessRules = (payload) => {
     }
     return null;
 };
-export const offersRouter = createTRPCRouter({
+export const offersRouter = router({
     getAll: publicProcedure
         .input(z.object({
         activeOnly: z.boolean().default(false),
@@ -211,8 +211,8 @@ export const offersRouter = createTRPCRouter({
             homepageOnly: false,
             includeExpired: false,
         };
-        const supabase = getAdminDb(); // Using admin db for simplicity since ctx.supabase might not have admin rights for fetching all offers, but let's assume public can read active ones. Actually, the original code used service client if admin, else auth client. We will just use the context's supabase if possible. But ctx.supabase is available.
-        const fetchResult = await ctx.supabase
+        const supabase = createSupabaseServiceClient();
+        const fetchResult = await supabase
             .from('offers')
             .select('*')
             .order('priority', { ascending: false })
@@ -224,7 +224,7 @@ export const offersRouter = createTRPCRouter({
                 message: fetchResult.error.message,
                 details: fetchResult.error.details
             });
-            const legacyResult = await ctx.supabase
+            const legacyResult = await supabase
                 .from('offers')
                 .select('id,title,description,type,discount_percentage,discount_amount,start_date,end_date,is_active,category,customer_tier,minimum_order_amount,created_at,updated_at')
                 .order('start_date', { ascending: false });
@@ -250,13 +250,13 @@ export const offersRouter = createTRPCRouter({
             count: filteredOffers.length
         };
     }),
-    create: adminProcedure
+    create: protectedProcedure
         .input(z.any()) // Using z.any() for simplicity, can type strictly later
         .mutation(async ({ input, ctx }) => {
         if (!isSupabaseServiceConfigured) {
             throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Supabase config missing' });
         }
-        const supabaseAdmin = getAdminDb();
+        const supabaseAdmin = createSupabaseServiceClient();
         const offerData = input;
         const requiredFields = ['title', 'discount_type', 'start_date', 'end_date'];
         for (const field of requiredFields) {
@@ -296,13 +296,13 @@ export const offersRouter = createTRPCRouter({
         }
         return { offer: newOffer, message: 'Offer created successfully' };
     }),
-    update: adminProcedure
+    update: protectedProcedure
         .input(z.any())
         .mutation(async ({ input, ctx }) => {
         if (!isSupabaseServiceConfigured) {
             throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Supabase config missing' });
         }
-        const supabaseAdmin = getAdminDb();
+        const supabaseAdmin = createSupabaseServiceClient();
         const { id, ...updateData } = input;
         if (!id) {
             throw new TRPCError({ code: 'BAD_REQUEST', message: 'Offer ID is required' });
@@ -357,13 +357,13 @@ export const offersRouter = createTRPCRouter({
         }
         return { offer: updatedOffer, message: 'Offer updated successfully' };
     }),
-    delete: adminProcedure
+    delete: protectedProcedure
         .input(z.object({ id: z.string() }))
         .mutation(async ({ input, ctx }) => {
         if (!isSupabaseServiceConfigured) {
             throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Supabase config missing' });
         }
-        const supabaseAdmin = getAdminDb();
+        const supabaseAdmin = createSupabaseServiceClient();
         const { id } = input;
         const { data: usageData } = await supabaseAdmin
             .from('offer_usage')
