@@ -164,15 +164,19 @@ export class InboundTriageAgent extends BaseAgent<any, TriagedPayload | null> {
       // 1. Fetch live pricing context from the database
       const pricingCatalog = await buildPricingCatalog(null);
       const simplifiedPricing = {
-        analog_camera_2_4mp: pricingCatalog.analog.camera['2.4mp']?.standard?.sale || 1500,
+        analog_camera_2_4mp: pricingCatalog.analog.camera['2.4mp']?.standard?.sale || 1699,
         analog_camera_5mp: pricingCatalog.analog.camera['5mp']?.standard?.sale || 2200,
         ip_camera_2mp: pricingCatalog.ip.camera['2mp']?.standard?.sale || 2500,
         ip_camera_5mp: pricingCatalog.ip.camera['5mp']?.standard?.sale || 3500,
-        analog_dvr_4ch: pricingCatalog.analog.dvr.find(d => d.capacity === 4)?.sale || 2800,
-        ip_nvr_4ch: pricingCatalog.ip.nvr.find(d => d.capacity === 4)?.sale || 3500,
-        hard_drive_1tb: pricingCatalog.hddOptions.find(h => h.label.includes('1TB'))?.sale || 3500,
-        installation_fee_per_camera: pricingCatalog.installationOption?.sale || 500,
-        cable_fee_per_meter: pricingCatalog.analog.cable[0]?.salePerUnit || 25,
+        analog_dvr_4ch: pricingCatalog.analog.dvr.find(d => d.capacity >= 4)?.sale || 3999,
+        analog_dvr_8ch: pricingCatalog.analog.dvr.find(d => d.capacity >= 8)?.sale || 5500,
+        ip_nvr_4ch: pricingCatalog.ip.nvr.find(d => d.capacity >= 4)?.sale || 3500,
+        ip_nvr_8ch: pricingCatalog.ip.nvr.find(d => d.capacity >= 8)?.sale || 5000,
+        smps_power_supply_analog: pricingCatalog.analog.smps[0]?.sale || 1499,
+        poe_switch_ip: pricingCatalog.ip.poe[0]?.sale || 2500,
+        hard_drive_500gb: pricingCatalog.hddOptions.find(h => h.label.includes('500'))?.sale || 5999,
+        cable_bundle_100m: pricingCatalog.analog.cable[0]?.salePerUnit || 1000,
+        installation_and_setup_total: 2999, // Flat fee used in the web app calculator
       };
 
       // 2. Format memory context from previous leads or conversations
@@ -240,7 +244,9 @@ You have access to live pricing. If a customer asks for a CCTV quotation or setu
 1. Ask them how many cameras they need (e.g., 4, 8, 16) and if they prefer Analog or IP cameras.
 2. Provide the quotation IMMEDIATELY once you know the camera count and type. Calculate it using this live data:
 ${JSON.stringify(simplifiedPricing, null, 2)}
-(Remember to include the DVR/NVR, a 1TB Hard Drive, Installation fee per camera, and roughly 90 meters of cable).
+(Remember to include the DVR/NVR, the Power Supply (SMPS or POE), a 500GB Hard Drive, the installation_and_setup_total fee, and 1 cable bundle per 4 cameras).
+- DO NOT multiply the installation_and_setup_total per camera. It is a flat fee for the entire standard setup.
+- If the setup is larger than 8 cameras, you can add 500 per extra camera to the installation fee.
 3. Present the quotation to the customer in a beautifully formatted message.
 4. DO NOT tell the customer you are transferring them to a sales team. YOU are the salesperson. Handle the quotation yourself.
 
