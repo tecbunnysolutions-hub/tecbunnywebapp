@@ -4,7 +4,7 @@ import crypto from 'crypto';
 import { GoogleGenerativeAI, SchemaType } from '@google/generative-ai';
 import { sendWhatsAppMessage } from '../services/infobipService';
 import { buildPricingCatalog } from '@tecbunny/core/custom-setup-pricing-server';
-import { CustomerService } from '@tecbunny/core';
+import { CustomerService } from '@tecbunny/core/services/customer.service';
 
 const apiKey = process.env.GEMINI_API_KEY || "";
 const genAI = apiKey ? new GoogleGenerativeAI(apiKey) : null;

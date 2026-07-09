@@ -15,7 +15,7 @@ export const useBehavioralCRO = () => {
   const [showAssistance, setShowAssistance] = useState(false);
   const scrollCount = useRef(0);
   const lastScrollPos = useRef(0);
-  const lastScrollTime = useRef(Date.now());
+  const lastScrollTime = useRef(0);
   const dwellTimer = useRef<NodeJS.Timeout | null>(null);
 
   const handleScroll = useCallback(() => {

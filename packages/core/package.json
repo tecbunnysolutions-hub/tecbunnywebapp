@@ -108,7 +108,8 @@
     "./email": "./src/email/index.ts",
     "./context/AppProvider": "./src/context/AppProvider.tsx",
     "./context/OrderProvider": "./src/context/OrderProvider.tsx",
-    "./context/AuthProvider": "./src/context/AuthProvider.tsx"
+    "./context/AuthProvider": "./src/context/AuthProvider.tsx",
+    "./services/customer.service": "./src/services/customer.service.ts"
   },
   "types": "./src/index.ts",
   "dependencies": {
