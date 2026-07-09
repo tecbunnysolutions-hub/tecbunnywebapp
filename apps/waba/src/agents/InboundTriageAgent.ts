@@ -107,7 +107,8 @@ export class InboundTriageAgent extends BaseAgent<any, TriagedPayload | null> {
 
       if (textContent) {
         // Use optimized CustomerContext service for memory and data
-        const customerContext = await CustomerService.getCustomerContext({ phone: senderNumber });
+        const { getAdminDb } = require('@tecbunny/core/db/client');
+        const customerContext = await CustomerService.getCustomerContext({ phone: senderNumber, dbClient: getAdminDb() });
         const history = customerContext.messages;
         const ordersData = customerContext.orders;
         const ticketsData = customerContext.service_tickets;

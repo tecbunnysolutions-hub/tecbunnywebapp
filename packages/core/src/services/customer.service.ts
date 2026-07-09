@@ -15,8 +15,8 @@ export class CustomerService {
    * Retrieves a unified workspace snapshot for a customer by their phone number or customer ID.
    * This query is optimized with Promise.all and cached in-memory for sub-millisecond retrieval.
    */
-  static async getCustomerContext(params: { customerId?: string; phone?: string }): Promise<CustomerWorkspaceData> {
-    const { customerId, phone } = params;
+  static async getCustomerContext(params: { customerId?: string; phone?: string; dbClient?: any }): Promise<CustomerWorkspaceData> {
+    const { customerId, phone, dbClient } = params;
     
     if (!customerId && !phone) {
       throw new Error('Must provide either customerId or phone to fetch workspace data.');
@@ -29,7 +29,7 @@ export class CustomerService {
       return cached.data;
     }
 
-    const db = await getUserDb();
+    const db = dbClient || await getUserDb();
     
     const ordersPromise = (async () => {
       let query = db.from('orders').select('*').order('created_at', { ascending: false });
