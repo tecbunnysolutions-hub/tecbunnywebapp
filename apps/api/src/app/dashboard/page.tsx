@@ -13,8 +13,8 @@ type ApiStatus = {
 };
 
 const INITIAL_ENDPOINTS: ApiStatus[] = [
-  { name: 'Core System Health', path: '/api/health/live', status: 'loading' },
-  { name: 'Database Readiness', path: '/api/health/ready', status: 'loading' },
+  { name: 'Core System Health', path: '/health/live', status: 'loading' },
+  { name: 'Database Readiness', path: '/health/ready', status: 'loading' },
   { name: 'Metadata Config', path: '/api/metadata', status: 'loading' },
   { name: 'Auth Session', path: '/api/auth/session', status: 'loading' },
   { name: 'Settings Public', path: '/api/settings?key=phone', status: 'loading' },
