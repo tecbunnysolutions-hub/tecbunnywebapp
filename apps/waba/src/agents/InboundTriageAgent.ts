@@ -5,6 +5,7 @@ import { GoogleGenerativeAI, SchemaType } from '@google/generative-ai';
 import { sendWhatsAppMessage } from '../services/infobipService';
 import { buildPricingCatalog } from '@tecbunny/core/custom-setup-pricing-server';
 import { CustomerService } from '@tecbunny/core/services/customer.service';
+import { getAdminDb } from '@tecbunny/core/db/client';
 
 const apiKey = process.env.GEMINI_API_KEY || "";
 const genAI = apiKey ? new GoogleGenerativeAI(apiKey) : null;
@@ -107,7 +108,6 @@ export class InboundTriageAgent extends BaseAgent<any, TriagedPayload | null> {
 
       if (textContent) {
         // Use optimized CustomerContext service for memory and data
-        const { getAdminDb } = require('@tecbunny/core/db/client');
         const customerContext = await CustomerService.getCustomerContext({ phone: senderNumber, dbClient: getAdminDb() });
         const history = customerContext.messages;
         const ordersData = customerContext.orders;
