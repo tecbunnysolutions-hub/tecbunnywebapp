@@ -192,19 +192,21 @@ export class InboundTriageAgent extends BaseAgent<any, TriagedPayload | null> {
       // 1. Fetch live pricing context from the database
       const pricingCatalog = await buildPricingCatalog(null);
       const simplifiedPricing = {
-        analog_camera_2_4mp: pricingCatalog.analog.camera['2.4mp']?.standard?.sale || 1699,
-        analog_camera_5mp: pricingCatalog.analog.camera['5mp']?.standard?.sale || 2200,
-        ip_camera_2mp: pricingCatalog.ip.camera['2mp']?.standard?.sale || 2500,
-        ip_camera_5mp: pricingCatalog.ip.camera['5mp']?.standard?.sale || 3500,
-        analog_dvr_4ch: pricingCatalog.analog.dvr.find(d => d.capacity >= 4)?.sale || 3999,
-        analog_dvr_8ch: pricingCatalog.analog.dvr.find(d => d.capacity >= 8)?.sale || 5500,
-        ip_nvr_4ch: pricingCatalog.ip.nvr.find(d => d.capacity >= 4)?.sale || 3500,
-        ip_nvr_8ch: pricingCatalog.ip.nvr.find(d => d.capacity >= 8)?.sale || 5000,
-        smps_power_supply_analog: pricingCatalog.analog.smps[0]?.sale || 1499,
-        poe_switch_ip: pricingCatalog.ip.poe[0]?.sale || 2500,
-        hard_drive_500gb: pricingCatalog.hddOptions.find(h => h.label.includes('500'))?.sale || 5999,
-        cable_bundle_100m: pricingCatalog.analog.cable[0]?.salePerUnit || 1000,
-        installation_and_setup_total: 2999, // Flat fee used in the web app calculator
+        cameras: {
+          analog_2_4mp: pricingCatalog.analog.camera['2.4mp']?.standard?.sale || 1699,
+          analog_5mp: pricingCatalog.analog.camera['5mp']?.standard?.sale || 2200,
+          ip_2mp: pricingCatalog.ip.camera['2mp']?.standard?.sale || 2500,
+          ip_4mp: pricingCatalog.ip.camera['5mp']?.standard?.sale || 3500,
+        },
+        dvrs: pricingCatalog.analog.dvr.map(d => ({ channels: d.capacity, price: d.sale })),
+        nvrs: pricingCatalog.ip.nvr.map(n => ({ channels: n.capacity, price: n.sale })),
+        storage: pricingCatalog.hddOptions.map(h => ({ capacity: h.label, price: h.sale })),
+        networking: {
+          smps_power_supply_analog: pricingCatalog.analog.smps[0]?.sale || 1499,
+          poe_switch_ip: pricingCatalog.ip.poe[0]?.sale || 2500,
+          cable_bundle_100m: pricingCatalog.analog.cable[0]?.salePerUnit || 1000,
+        },
+        installation_and_setup_total: 2999, // Flat fee
       };
 
       // 2. Format memory context from previous leads or conversations
@@ -241,6 +243,20 @@ export class InboundTriageAgent extends BaseAgent<any, TriagedPayload | null> {
         memoryContext += `\n\n[PENDING SERVICE TICKETS]\nNo pending service tickets.`;
       }
 
+      // Check if user is returning after ghosting (e.g. > 24 hours since last interaction)
+      let timeSinceLastInteractionHours = 0;
+      if (existingConv?.last_interaction_timestamp) {
+         const lastInteraction = new Date(existingConv.last_interaction_timestamp);
+         const now = new Date();
+         timeSinceLastInteractionHours = (now.getTime() - lastInteraction.getTime()) / (1000 * 60 * 60);
+      }
+      const isGhostingReturn = timeSinceLastInteractionHours > 12;
+
+      memoryContext += `\n\n[BEHAVIORAL CONTEXT]\nTime since last interaction: ${timeSinceLastInteractionHours.toFixed(1)} hours. `;
+      if (isGhostingReturn) {
+         memoryContext += `The user left the chat and is returning. This is a prime opportunity to use your 10% discount tactic to win them back!`;
+      }
+
       const model = genAI.getGenerativeModel({ 
         model: "gemini-2.5-flash",
         generationConfig: {
@@ -272,18 +288,19 @@ export class InboundTriageAgent extends BaseAgent<any, TriagedPayload | null> {
 
       const historyContext = history.map(h => `${h.direction}: ${h.message_content}`).join('\n');
       
-      const prompt = `You are the advanced AI Customer Success Agent for TecBunny Solutions. Your goal is to provide instantaneous, accurate, and empathetic support via WhatsApp.
+      const prompt = `You are an elite AI Sales Representative and Customer Success Agent for TecBunny Solutions. Your goal is to close sales, provide instantaneous, accurate, and persuasive support via WhatsApp. Use best marketing tactics to convince the customer to buy our CCTV and IT solutions.
 
 ## Core Guidelines
 
-1. Context-First: Before answering, check the provided 'CustomerContext' (Name, Last Order Status, Pending Service Tickets). Reference this data to make responses personal (e.g., 'I see you're still waiting on your CCTV installation').
-2. RAG Integration: Always prioritize information from the internal 'Knowledge Base'. If a query involves pricing or technical specs, search the database first.
-3. Structured Response:
-   - If the user asks for info: Provide a concise, bulleted answer.
-   - If the user has a problem: Use the 'Empathy-Action-Resolution' framework. Acknowledge the issue, explain the steps to fix it, and provide a clear timeline.
-4. Handoff Triggers: If the confidence score of your answer is below 80%, or if the customer expresses frustration/anger, stop the AI flow and trigger a human-agent handoff via the mgmt CRM (by setting escalate_to_human: true).
-5. Actionable CTAs: End every support interaction with a relevant CTA, such as 'Would you like to track your order?' or 'Should I connect you to a technician?'.
-6. Style & Formatting: Use professional yet conversational language suitable for WhatsApp. Use emojis sparingly. ALWAYS format monetary amounts in Indian Rupees (e.g., ₹22,042). DO NOT output any HTML tags (like <ul>, <li>, <b>). Instead, use ONLY WhatsApp native markdown (e.g. *bold*, _italic_, and standard bullet points like - ).
+1. Context-First: Before answering, check the 'CustomerContext' and 'Behavioral Context'. Reference this data to make responses personal.
+2. RAG Integration & Sales Pitch: Always prioritize information from the internal 'Knowledge Base' for pricing. When quoting prices, calculate the total accurately (cameras + DVR/NVR + storage + networking + installation fee) and highlight the value they are getting. Upsell where appropriate (e.g., 'For just a bit more, you can get IP cameras with much better clarity').
+3. Cart Abandonment & Discount Strategy: If the user has left the chat in between (returning after a delay) OR is hesitating heavily on the price, you are authorized to offer a limited-time 10% discount to close the deal immediately. DO NOT offer this discount to everyone upfront. Use it strategically as a marketing tactic.
+4. Structured Response:
+   - If the user asks for info/pricing: Provide a concise, bulleted answer emphasizing premium quality. Include the total price.
+   - If the user has a problem: Use Empathy-Action-Resolution.
+5. Handoff Triggers: If the confidence score is below 80%, or the customer asks for a discount higher than 10%, or expresses frustration, trigger a human handoff (escalate_to_human: true).
+6. Actionable CTAs: End every interaction with a strong sales CTA, such as 'Shall we proceed with booking a site survey?' or 'Would you like me to lock in this 10% discount for you today?'.
+7. Style & Formatting: Use professional, persuasive, conversational language suitable for WhatsApp. Use emojis to make it engaging (🚀, 🔒, 🛡️). ALWAYS format monetary amounts in Indian Rupees (e.g., ₹22,042). DO NOT output HTML. Use ONLY WhatsApp native markdown (*bold*, _italic_, - bullets).
 
 ## Knowledge Base (Pricing Catalog)
 ${JSON.stringify(simplifiedPricing, null, 2)}
