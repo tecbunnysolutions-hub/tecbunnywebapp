@@ -4,7 +4,7 @@ import * as React from 'react';
 import dynamic from 'next/dynamic';
 
 const CustomSetupFlow = dynamic(
-  () => import('./WizardCustomSetupFlow').then(mod => mod.CustomSetupFlow),
+  () => import('./CustomSetupFlow'),
   {
     ssr: false,
     loading: () => (
