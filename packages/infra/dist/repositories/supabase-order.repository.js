@@ -26,4 +26,18 @@ export class SupabaseOrderRepository {
         const { data } = await this.baseClient.executeQuery(this.baseClient.rawClient.from('sales_agents').select('user_id').eq('id', agentId).maybeSingle(), 'get_agent_user_id');
         return data?.user_id || null;
     }
+    async getOrderForUpdate(orderId) {
+        const { data } = await this.baseClient.executeQuery(this.baseClient.rawClient
+            .from('orders')
+            .select('id, type, payment_status, payment_method, status, customer_phone, customer_name, customer_email, total, customer_id, created_at, delivery_address')
+            .eq('id', orderId)
+            .maybeSingle(), 'get_order_for_update');
+        return data || null;
+    }
+    async updateOrderStatusRpc(params) {
+        const { error } = await this.baseClient.rawClient.rpc('update_order_status_v1', params);
+        if (error) {
+            throw new Error(error.message);
+        }
+    }
 }

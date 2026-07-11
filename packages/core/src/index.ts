@@ -15,7 +15,7 @@ export * from './image-utils';
 export * from './product-visibility';
 export * from './indian-tax';
 export * from './hooks/use-analytics';
-export * from './services/order.service';
+
 // export * from './services/user.service';
 // export * from './services/payment.service';
 // export * from './db';
