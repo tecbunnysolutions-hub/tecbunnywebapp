@@ -37,10 +37,34 @@ export class OtpService {
   }
 
   /**
-   * Generate a 6-digit OTP code using cryptographically strong pseudo-random numbers
+   * Bug #7 fix: OTP codes are now stored as a scrypt hash, not plaintext.
+   * A DB breach no longer exposes usable OTPs.
+   *
+   * Generate a 6-digit OTP and return both the plaintext (for delivery) and
+   * the hash (for storage). Verification compares the submitted code against
+   * the stored hash using timingSafeEqual.
    */
   private generateOtpCode(): string {
     return crypto.randomInt(100000, 999999).toString();
+  }
+
+  private hashOtpCode(plaintext: string): string {
+    const salt = crypto.randomBytes(16);
+    const hash = crypto.scryptSync(plaintext, salt, 32);
+    return `${salt.toString('hex')}:${hash.toString('hex')}`;
+  }
+
+  private verifyOtpHash(plaintext: string, stored: string): boolean {
+    try {
+      const [saltHex, hashHex] = stored.split(':');
+      if (!saltHex || !hashHex) return false;
+      const salt = Buffer.from(saltHex, 'hex');
+      const expected = Buffer.from(hashHex, 'hex');
+      const actual = crypto.scryptSync(plaintext, salt, 32);
+      return actual.length === expected.length && crypto.timingSafeEqual(actual, expected);
+    } catch {
+      return false;
+    }
   }
 
   /**
@@ -65,10 +89,13 @@ export class OtpService {
         return { success: false, error: 'Please wait 60 seconds before requesting another OTP.' };
       }
 
-      // Check if there's already a pending OTP for this order
+      // Check if there's already a pending OTP for this order.
+      // Bug #6 fix: We no longer return the stored otp_code in the response.
+      // The plaintext OTP is only available at generation time and is never
+      // re-exposed from the database (which now stores only the hash).
       const { data: existingOtp } = await this.supabase
         .from('order_otp_verifications')
-        .select('*')
+        .select('id, expires_at')
         .eq('order_id', request.order_id)
         .eq('customer_phone', request.customer_phone)
         .eq('verified', false)
@@ -76,21 +103,18 @@ export class OtpService {
         .single();
 
       if (existingOtp) {
-        if (!skipPhoneDelivery) {
-          // Resend existing OTP
-          await this.sendOtpWhatsApp(request.customer_phone, existingOtp.otp_code, request.otp_type);
-        }
-        
-        return {
-          success: true,
-          otp_id: existingOtp.id,
-          expires_at: existingOtp.expires_at,
-          otp_code: existingOtp.otp_code
-        };
+        // Cannot resend the original OTP because we only store the hash.
+        // Expire the old record and fall through to generate a fresh OTP.
+        await this.supabase
+          .from('order_otp_verifications')
+          .update({ expires_at: new Date().toISOString() })
+          .eq('id', existingOtp.id);
       }
 
       // Generate new OTP
       const otpCode = this.generateOtpCode();
+      // Bug #7 fix: Store the hash, not the plaintext.
+      const otpHash = this.hashOtpCode(otpCode);
       const expiresAt = new Date(Date.now() + this.OTP_EXPIRY_MINUTES * 60 * 1000);
 
       const { data: otpRecord, error } = await this.supabase
@@ -99,7 +123,7 @@ export class OtpService {
           order_id: request.order_id,
           agent_id: request.agent_id,
           customer_phone: request.customer_phone,
-          otp_code: otpCode,
+          otp_code: otpHash,          // store hash only
           otp_type: request.otp_type,
           expires_at: expiresAt.toISOString(),
           created_by: request.created_by
@@ -143,11 +167,12 @@ export class OtpService {
         }
       }
 
+      // Bug #6 fix: otp_code is NOT returned in the response. The plaintext OTP
+      // is only used for delivery (WhatsApp/email) and is never stored or returned.
       return {
         success: true,
         otp_id: otpRecord.id,
         expires_at: expiresAt.toISOString(),
-        otp_code: otpCode
       };
 
     } catch (error) {
@@ -160,7 +185,10 @@ export class OtpService {
   }
 
   /**
-   * Verify OTP code
+   * Verify OTP code.
+   * Bug #7 fix: Verification now uses hash comparison (verifyOtpHash) instead
+   * of passing the plaintext to the DB RPC. The RPC fetches the stored hash and
+   * the application layer compares using timingSafeEqual.
    */
   async verifyOtp(verification: OtpVerification): Promise<{
     success: boolean;
@@ -173,50 +201,87 @@ export class OtpService {
         return { success: false, error: 'Supabase service client is not configured' };
       }
 
-      // SECURITY: Use atomic RPC to prevent brute-force race conditions (TOCTOU)
-      const { data, error: rpcError } = await this.supabase.rpc('verify_order_otp_atomic', {
+      // Fetch the pending OTP record (increment attempts atomically via RPC)
+      const { data, error: rpcError } = await this.supabase.rpc('fetch_and_increment_otp_attempt', {
         p_order_id: verification.order_id,
         p_customer_phone: verification.customer_phone,
-        p_otp_code: verification.otp_code,
-        p_max_attempts: this.MAX_ATTEMPTS
+        p_max_attempts: this.MAX_ATTEMPTS,
       });
 
       if (rpcError) {
-        logger.error('Error verifying OTP via RPC', { error: rpcError, verification });
+        logger.error('Error fetching OTP record via RPC', { error: rpcError, verification });
         return { success: false, error: 'Internal server error during verification' };
       }
 
-      const result = data as { success: boolean; verified?: boolean; error?: string; attempts_left?: number };
-      
-      if (result.success && result.verified) {
-        return { success: true, verified: true };
+      const result = data as {
+        found: boolean;
+        expired: boolean;
+        locked: boolean;
+        otp_code_hash: string;
+        record_id: string;
+        attempts_left: number;
+      } | null;
+
+      if (!result || !result.found) {
+        return { success: false, error: 'OTP not found or already verified' };
+      }
+      if (result.expired) {
+        return { success: false, error: 'OTP has expired. Please request a new one.' };
+      }
+      if (result.locked) {
+        return { success: false, error: 'Too many incorrect attempts. Please request a new OTP.', attempts_left: 0 };
       }
 
-      return {
-        success: false,
-        error: result.error || 'Invalid OTP',
-        attempts_left: result.attempts_left
-      };
+      // Application-layer hash comparison — plaintext never stored or sent to DB
+      const isValid = this.verifyOtpHash(verification.otp_code, result.otp_code_hash);
+
+      if (!isValid) {
+        return {
+          success: false,
+          error: 'Invalid OTP',
+          attempts_left: result.attempts_left,
+        };
+      }
+
+      // Mark as verified
+      await this.supabase
+        .from('order_otp_verifications')
+        .update({ verified: true })
+        .eq('id', result.record_id);
+
+      return { success: true, verified: true };
 
     } catch (error) {
       logger.error('Error in verifyOtp service', { error, verification });
-      return {
-        success: false,
-        error: 'Internal server error'
-      };
+      return { success: false, error: 'Internal server error' };
     }
   }
 
   /**
-   * Send OTP via Meta WhatsApp API
+   * Bug #22 fix: sendOtpWhatsApp was a no-op that always returned success,
+   * silently failing to deliver OTPs. It now sends via the Infobip service.
+   * The OTP is delivered as a WhatsApp template message so it works outside
+   * the 24h messaging window.
    */
   private async sendOtpWhatsApp(
-    phone: string, 
-    otpCode: string, 
-    otpType: OtpType
+    phone: string,
+    otpCode: string,
+    otpType: OtpType,
   ): Promise<{ success: boolean; error?: string }> {
-    logger.info('OTP WhatsApp skipped due to service removal', { phone });
-    return { success: true };
+    try {
+      // Dynamically import to avoid circular dependency issues at module load
+      const { sendTemplateMessage } = await import('./whatsapp-service');
+      const result = await sendTemplateMessage(phone, process.env.OTP_WHATSAPP_TEMPLATE_NAME ?? 'otp_verification', [otpCode]);
+      if (!result?.success) {
+        logger.error('OTP WhatsApp delivery failed', { phone, otpType, error: result?.error });
+        return { success: false, error: 'WhatsApp delivery failed' };
+      }
+      logger.info('OTP delivered via WhatsApp', { phone, otpType });
+      return { success: true };
+    } catch (err) {
+      logger.error('OTP WhatsApp delivery threw', { phone, error: err });
+      return { success: false, error: 'WhatsApp delivery error' };
+    }
   }
 
   /**

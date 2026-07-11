@@ -126,7 +126,9 @@ export async function verifySuperadminSessionToken(token: string | undefined | n
       !payload.email ||
       payload.email !== configuredEmail ||
       typeof payload.exp !== 'number' ||
-      payload.exp <= now
+      payload.exp <= now ||
+      // Bug #23 fix: Reject tokens whose JTI has been explicitly revoked
+      (payload.jti && isJtiRevoked(payload.jti))
     ) {
       return null;
     }
@@ -137,10 +139,36 @@ export async function verifySuperadminSessionToken(token: string | undefined | n
   }
 }
 
-export async function revokeSuperadminSessionToken(token: string) {
-  // Purely env-based sessions do not support persistent blocklists in this version.
-  // Session revocation is managed by expiring the client-side cookie.
-  logger.info('Superadmin session marked for revocation via client cookie deletion.');
+// Bug #23 fix: In-memory JTI blocklist for the current process lifetime.
+// This prevents a stolen token from being reused until it naturally expires,
+// even if the attacker still holds the cookie value.
+// For multi-instance deployments, replace this with a Redis SET with TTL equal
+// to SUPERADMIN_SESSION_TTL_SECONDS.
+const revokedJtis = new Set<string>();
+
+export async function revokeSuperadminSessionToken(token: string): Promise<void> {
+  try {
+    const [version, encodedPayload] = token.split('.');
+    if (version !== 'v1' || !encodedPayload) return;
+
+    const payloadText = new TextDecoder().decode(base64UrlDecode(encodedPayload));
+    const payload = JSON.parse(payloadText) as Partial<SuperadminSessionPayload>;
+
+    if (payload.jti) {
+      revokedJtis.add(payload.jti);
+      logger.info('Superadmin session JTI revoked', { jti: payload.jti });
+    }
+  } catch {
+    logger.warn('Failed to parse token for revocation — treating as already invalid.');
+  }
+}
+
+/**
+ * Checks whether a JTI has been explicitly revoked in this process.
+ * Called internally by verifySuperadminSessionToken.
+ */
+function isJtiRevoked(jti: string): boolean {
+  return revokedJtis.has(jti);
 }
 
 export { SUPERADMIN_SESSION_TTL_SECONDS };

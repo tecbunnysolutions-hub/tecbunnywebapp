@@ -87,51 +87,42 @@ export async function requireRole(minRole: UserRole) {
     return { error: 'Forbidden', status: 403 } as const;
   }
 
-  // Opportunistically synchronize app_metadata.role so future checks are fast
-  if (isSupabaseServiceConfigured && role !== metadataRole) {
-    try {
-      const service = createServiceClient();
-      await service.auth.admin.updateUserById(user.id, {
-        app_metadata: { ...(user.app_metadata || {}), role }
-      });
-    } catch (syncError) {
-      logger.warn('requireRole.metadata_sync_failed', {
-        userId: user.id,
-        error: syncError instanceof Error ? syncError.message : String(syncError)
-      });
-    }
-  }
-
-  // Ensure profiles table reflects authoritative role for downstream RLS checks
-  if (isSupabaseServiceConfigured) {
+  // Bug #5 fix: The previous code synced the profile role back to app_metadata.
+  // Since profiles table roles are untrusted (any user could manipulate their
+  // profile row), this created a privilege escalation path: manipulate profile →
+  // get promoted to app_metadata on next login.
+  //
+  // Safe sync rules:
+  // - We ONLY write to app_metadata when the authoritative source is app_metadata
+  //   itself (i.e. metadataRole was already set). We never promote a profile role
+  //   to app_metadata.
+  // - We DO sync app_metadata → profiles (downward only) to keep RLS consistent.
+  if (isSupabaseServiceConfigured && metadataRole && metadataRole !== profileRole) {
+    // Sync authoritative metadata role DOWN to profiles table for RLS consistency.
+    // This direction is safe: app_metadata is admin-only writable.
     try {
       const service = createServiceClient();
       if (profileExists) {
-        if (profileRole && profileRole !== role) {
-          await service
-            .from('profiles')
-            .update({ role })
-            .eq('id', user.id);
-        }
+        await service.from('profiles').update({ role: metadataRole }).eq('id', user.id);
       } else {
-        const name = (user.user_metadata as Record<string, unknown> | undefined)?.name
-          || (user.user_metadata as Record<string, unknown> | undefined)?.full_name
-          || user.email?.split('@')[0]
-          || 'User';
+        const name =
+          (user.user_metadata as Record<string, unknown> | undefined)?.name ||
+          (user.user_metadata as Record<string, unknown> | undefined)?.full_name ||
+          user.email?.split('@')[0] ||
+          'User';
         const mobile = (user.user_metadata as Record<string, unknown> | undefined)?.mobile ?? null;
-
         await service.from('profiles').insert({
           id: user.id,
           name,
           email: user.email ?? '',
           mobile,
-          role
+          role: metadataRole,
         });
       }
     } catch (profileSyncError) {
       logger.warn('requireRole.profile_sync_failed', {
         userId: user.id,
-        error: profileSyncError instanceof Error ? profileSyncError.message : String(profileSyncError)
+        error: profileSyncError instanceof Error ? profileSyncError.message : String(profileSyncError),
       });
     }
   }

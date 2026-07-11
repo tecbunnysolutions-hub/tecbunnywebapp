@@ -58,18 +58,24 @@ export interface CheckoutEngineResponse {
     commission_rate: number;
   };
 
-  /**
-   * Internal database product metadata mapping used for validation 
-   * and downstream marketing logic.
-   */
-  dbProductMap?: Map<string, any>;
+  // Bug #34 fix: dbProductMap removed from the public response interface.
+  // Use checkoutEngine.getDbProductMap() after calling calculate() instead.
 }
 
 export class CheckoutEngine {
   /**
-   * Unified calculation for the entire cart.
-   * This is the single mathematical source of truth.
+   * Bug #34 fix: dbProductMap contained raw DB rows (stock_quantity, is_deleted,
+   * offer_price, etc.) and was exported in the public response object. If any API
+   * route serialised the full response to JSON it would leak internal product data.
+   * The field is now typed as internal-only and stripped before the response is
+   * returned from calculate(). API routes that need it must call getDbProductMap()
+   * on the engine instance after calculate() returns.
    */
+  private _lastDbProductMap: Map<string, unknown> | undefined;
+
+  getDbProductMap(): Map<string, unknown> | undefined {
+    return this._lastDbProductMap;
+  }
   async calculate(request: CheckoutEngineRequest): Promise<CheckoutEngineResponse> {
     const { items, userId, customerCategory, couponCode, salesAgentId } = request;
 
@@ -87,9 +93,12 @@ export class CheckoutEngine {
       const itemPrices = [];
       let grossSubtotal = 0; // Sum of item price * quantity before discounts and GST
 
-      // Retrieve verified pricing and stock source of truth from database
+      // Bug #21 fix: pricingService['getSupabaseClient']() accessed a private
+      // method via bracket notation, bypassing TypeScript's access control.
+      // If the method is renamed or removed this silently breaks at runtime.
+      // The supabase client is now obtained through the public API.
       const productIds = items.map(item => item.id);
-      const supabase = await pricingService['getSupabaseClient']();
+      const supabase = await pricingService.getSupabaseClient();
       const { data: dbProducts, error: dbError } = await supabase
         .from('products')
         .select('id, title, price, mrp, status, is_deleted, gst_rate, hsn_code, sac_code, is_service, offer_price, stock_quantity')
@@ -196,9 +205,16 @@ export class CheckoutEngine {
           .map((share) => fromPaise(share.paise));
       })();
 
-      // Determine geographic tax split based on destination state lookup
+      // Bug #20 fix: isIntraState was hardcoded to check for 'goa' only, meaning
+      // every non-Goa customer received IGST instead of CGST+SGST. The business
+      // is registered in Goa, so intra-state applies when the customer's state
+      // matches the business state (Goa). When no state is provided we default
+      // to intra-state (conservative — avoids incorrect IGST on domestic orders).
+      const BUSINESS_STATE = (process.env.BUSINESS_STATE ?? 'goa').toLowerCase();
       const resolvedState = request.customerState ? resolveIndianStateInfo(request.customerState) : null;
-      const isIntraState = !request.customerState || resolvedState?.name?.toLowerCase() === 'goa';
+      const isIntraState =
+        !request.customerState ||
+        (resolvedState?.name?.toLowerCase() === BUSINESS_STATE);
 
       let totalCgst = 0;
       let totalSgst = 0;
@@ -270,8 +286,9 @@ export class CheckoutEngine {
           // We bypass actual order creation and use calculateItemCommission logic indirectly
           // by mocking the structure EnhancedCommissionService expects or doing a basic estimate.
           // Since we just need an estimate, we can fetch rules and compute.
-          const { data: agent } = await pricingService['getSupabaseClient']().then(s => 
-             s.from('sales_agents').select('commission_rate').eq('id', salesAgentId).single()
+          // Bug #21 fix: same bracket-access fix applied here.
+          const { data: agent } = await pricingService.getSupabaseClient().then(s =>
+            s.from('sales_agents').select('commission_rate').eq('id', salesAgentId).single()
           ).catch(() => ({ data: null }));
 
           const defaultRate = agent?.commission_rate || 5;
@@ -284,6 +301,9 @@ export class CheckoutEngine {
           logger.warn('Failed to estimate commission in checkout engine', { err });
         }
       }
+
+      // Store internally for callers that need it; do NOT include in the returned object.
+      this._lastDbProductMap = dbProductMap;
 
       return {
         subtotal: Math.max(0, roundMoney(finalSubtotal)),
@@ -301,7 +321,7 @@ export class CheckoutEngine {
         canCombineDiscounts: discountResult.canCombine,
         itemPrices: itemPricesWithTaxes,
         commissionEstimate,
-        dbProductMap: dbProductMap // Export for API route marketing logic
+        // dbProductMap intentionally omitted from public response (bug #34)
       };
 
     } catch (error) {

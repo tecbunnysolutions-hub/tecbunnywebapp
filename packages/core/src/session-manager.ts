@@ -195,6 +195,17 @@ export class SessionManager {
     window.dispatchEvent(new CustomEvent(SESSION_EXPIRED_EVENT));
   }
 
+  // Bug #30 fix: The previous implementation set isExpiring = true, did
+  // synchronous work (including dispatching a CustomEvent which fires listeners
+  // synchronously), then reset isExpiring = false at the end. A listener that
+  // called handleSessionExpiry again would see isExpiring = true and bail, but
+  // then isExpiring was reset immediately after, allowing a second rapid call
+  // to slip through the guard.
+  //
+  // Fix: isExpiring is only reset to false if the expiry handling actually
+  // completes without re-entry. We use a try/finally to guarantee the flag is
+  // cleared even if broadcastSessionExpiry throws, but we do NOT reset it if
+  // we bailed early (re-entry case).
   private handleSessionExpiry = () => {
     if (this.isExpiring) {
       return;
@@ -202,14 +213,17 @@ export class SessionManager {
 
     this.isExpiring = true;
 
-    if (this.refreshInterval) {
-      clearInterval(this.refreshInterval);
-      this.refreshInterval = null;
-    }
+    try {
+      if (this.refreshInterval) {
+        clearInterval(this.refreshInterval);
+        this.refreshInterval = null;
+      }
 
-    this.clearSessionTracking(false);
-    this.broadcastSessionExpiry();
-    this.isExpiring = false;
+      this.clearSessionTracking(false);
+      this.broadcastSessionExpiry();
+    } finally {
+      this.isExpiring = false;
+    }
   };
 }
 

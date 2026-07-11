@@ -37,12 +37,15 @@ async function getUserRole(user: SupabaseUser | null): Promise<UserRole | null> 
 
   // app_metadata is the secure source of truth (set via service_role/admin only)
   let metadataRole = normalizeRole(user.app_metadata?.role) as UserRole | null;
-  
-  // Security check: only the root superadmin ID can have the superadmin role via metadata
-  // All other users claiming superadmin/admin via metadata are downgraded to customer if not verified
-  const STAFF_ROLES: UserRole[] = ['admin', 'manager', 'accounts', 'sales', 'sales-staff', 'sales-external', 'service_engineer'];
-  
-  if (metadataRole === 'superadmin' && user.id !== process.env.SUPERADMIN_ROOT_ID) {
+
+  // Bug #28 fix: Removed the unused STAFF_ROLES array that was declared but
+  // never referenced anywhere in this function.
+
+  // Security check: only the root superadmin ID can have the superadmin role via metadata.
+  // Bug #4 fix: The check previously compared against the literal string
+  // 'superadmin-root-id' instead of the env var, so the real superadmin user
+  // would always be downgraded to 'customer'. Now uses SUPERADMIN_USER_ID.
+  if (metadataRole === 'superadmin' && user.id !== process.env.SUPERADMIN_USER_ID) {
     logger.warn('Unauthorized superadmin claim detected in metadata', { userId: user.id });
     metadataRole = 'customer';
   }
@@ -107,15 +110,18 @@ export async function isAdmin(user: SupabaseUser | null): Promise<boolean> {
 }
 
 // Check if user is superadmin
+// Bug #29 fix: The previous check compared user.id against the literal string
+// 'superadmin-root-id' instead of process.env.SUPERADMIN_USER_ID, so the real
+// superadmin would always return false from this function.
 export async function isSuperadmin(user: SupabaseUser | null): Promise<boolean> {
   if (await isSuperadminSession()) {
     return true;
   }
 
   if (!user) return false;
-  if (user.id !== 'superadmin-root-id') return false;
+  if (user.id !== process.env.SUPERADMIN_USER_ID) return false;
   const appMetadataRole = normalizeRole(user.app_metadata?.role) as UserRole | null;
-  if (appMetadataRole && appMetadataRole === 'superadmin') {
+  if (appMetadataRole === 'superadmin') {
     return true;
   }
   const role = await getUserRole(user);

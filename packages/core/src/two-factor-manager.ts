@@ -341,22 +341,26 @@ class TwoFactorManager {
       const backupCodes = Array.isArray(profile.two_factor_backup_codes) ? profile.two_factor_backup_codes : [];
       const usedCodes = Array.isArray(profile.two_factor_backup_codes_used) ? profile.two_factor_backup_codes_used : [];
 
-      if (backupCodes.length > 0 &&
-          this.verifyBackupCode(backupCodes, usedCodes, token)) {
-
-        // Mark backup code as used
+      if (backupCodes.length > 0 && this.verifyBackupCode(backupCodes, usedCodes, token)) {
+        // Bug #24 fix: Mark the backup code as used in the DB BEFORE returning
+        // success. If the DB update fails we return failure so the code is not
+        // consumed without being recorded, preventing indefinite reuse.
         const updatedUsedCodes = this.markBackupCodeUsed(backupCodes, usedCodes, token);
 
-        // Update database
-        await (client as any)
+        const { error: updateError } = await (client as any)
           .from('profiles')
           .update({ two_factor_backup_codes_used: updatedUsedCodes } as any)
           .eq('id', userId);
 
+        if (updateError) {
+          logger.error('2FA backup code DB update failed — rejecting to prevent reuse', { error: updateError, userId });
+          return { success: false, message: 'Verification failed due to a server error. Please try again.' };
+        }
+
         return {
           success: true,
           message: 'Backup code verified successfully',
-          backupCodeUsed: true
+          backupCodeUsed: true,
         };
       }
 
