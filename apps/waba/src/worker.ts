@@ -2,6 +2,7 @@ import { Worker, Job } from 'bullmq';
 import { getRedis, logger, WABA_WEBHOOK_QUEUE_NAME } from '@tecbunny/core/server';
 import { InboundTriageAgent } from './agents/InboundTriageAgent';
 import { AssignmentOrchestrator } from './agents/AssignmentOrchestrator';
+import { startEmailWorker, startWebhookWorker } from './workers';
 
 async function startWorker() {
   const redisConnection = getRedis();
@@ -10,6 +11,11 @@ async function startWorker() {
     logger.error('waba_worker_failed', { reason: 'Redis connection is not available' });
     process.exit(1);
   }
+
+  // Initialize Background Workers
+  console.log('Starting Background BullMQ Workers...');
+  const emailWorker = startEmailWorker();
+  const webhookWorker = startWebhookWorker();
 
   const worker = new Worker(WABA_WEBHOOK_QUEUE_NAME, async (job: Job) => {
     try {
@@ -49,17 +55,16 @@ async function startWorker() {
   });
   
   // Handle graceful shutdown
-  process.on('SIGTERM', async () => {
+  const gracefulShutdown = async () => {
     logger.info('waba_worker_shutting_down');
     await worker.close();
+    await emailWorker.close();
+    await webhookWorker.close();
     process.exit(0);
-  });
-  
-  process.on('SIGINT', async () => {
-    logger.info('waba_worker_shutting_down');
-    await worker.close();
-    process.exit(0);
-  });
+  };
+
+  process.on('SIGTERM', gracefulShutdown);
+  process.on('SIGINT', gracefulShutdown);
 }
 
 startWorker().catch((error) => {

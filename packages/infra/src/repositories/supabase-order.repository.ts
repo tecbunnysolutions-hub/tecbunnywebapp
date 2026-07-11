@@ -42,4 +42,23 @@ export class SupabaseOrderRepository implements IOrderRepository {
     );
     return data?.user_id || null;
   }
+
+  async getOrderForUpdate(orderId: string): Promise<any> {
+    const { data } = await this.baseClient.executeQuery(
+      this.baseClient.rawClient
+        .from('orders')
+        .select('id, type, payment_status, payment_method, status, customer_phone, customer_name, customer_email, total, customer_id, created_at, delivery_address')
+        .eq('id', orderId)
+        .maybeSingle(),
+      'get_order_for_update'
+    );
+    return data || null;
+  }
+
+  async updateOrderStatusRpc(params: any): Promise<void> {
+    const { error } = await this.baseClient.rawClient.rpc('update_order_status_v1', params);
+    if (error) {
+      throw new Error(error.message);
+    }
+  }
 }

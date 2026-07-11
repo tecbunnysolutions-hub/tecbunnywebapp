@@ -8,6 +8,7 @@ import { logger } from "@tecbunny/core";
 import { resolveSiteUrl } from "@tecbunny/core/site-url";
 import { requireSupabaseServiceEnv } from "@tecbunny/core/supabase/env";
 import { normalisePayuEnvironment, verifyPayuHash, type PayuConfig, type PayuEnvironment } from "@tecbunny/core/payu-service";
+import { enqueuePaymentRecoveryWebhook } from "@tecbunny/core/queue";
 
 let supabaseAdmin: any = null;
 
@@ -228,70 +229,27 @@ export async function POST(request: NextRequest) {
       return NextResponse.redirect(failureUrl, 303);
     }
 
-    const transactionUpsert = {
-      order_id: orderId,
-      transaction_id: txnId,
-      payment_method: 'payu',
-      status: isSuccess ? 'success' : 'failed',
-      gateway_response: { ...payload, hash_verified: true },
-      updated_at: new Date().toISOString(),
-    };
+    const { error: rpcError } = await supabase.rpc('complete_payment_transaction', {
+      p_order_id: orderId,
+      p_transaction_id: txnId,
+      p_payment_method: 'payu',
+      p_status: isSuccess ? 'success' : 'failed',
+      p_gateway_response: { ...payload, hash_verified: true },
+      p_is_success: isSuccess
+    });
 
-    const { error: txnUpdateError } = await supabase
-      .from('payment_transactions')
-      .upsert(transactionUpsert, { onConflict: 'transaction_id' });
-
-    if (txnUpdateError) {
-      logger.error('payu_callback.transaction_update_failed', {
+    if (rpcError) {
+      logger.error('payu_callback.transaction_atomic_update_failed', {
         correlationId,
         orderId,
         txnId,
-        error: txnUpdateError.message,
+        error: rpcError.message,
       });
     }
 
-    if (orderId) {
-      if (isSuccess) {
-        const { error: orderUpdateError } = await supabase
-          .from('orders')
-          .update({
-            status: 'Payment Confirmed',
-            payment_status: 'Payment Confirmed',
-            updated_at: new Date().toISOString(),
-          })
-          .eq('id', orderId)
-          .not('status', 'in', '(Cancelled,Rejected,Completed,Delivered)');
-
-        if (orderUpdateError) {
-          logger.error('payu_callback.order_update_failed', {
-            correlationId,
-            orderId,
-            txnId,
-            error: orderUpdateError.message,
-          });
-        }
-      } else {
-        const { error: orderUpdateError } = await supabase
-          .from('orders')
-          .update({
-            payment_status: 'Payment Failed',
-            updated_at: new Date().toISOString(),
-          })
-          .eq('id', orderId)
-          .not('status', 'in', '(Cancelled,Rejected,Completed,Delivered)');
-
-        if (orderUpdateError) {
-          logger.error('payu_callback.order_mark_failed_failed', {
-            correlationId,
-            orderId,
-            txnId,
-            error: orderUpdateError.message,
-          });
-        }
-
-        // High-Velocity Recovery Logic
-        await triggerPaymentRecovery(supabase, orderId, payload, new URL(siteUrl));
-      }
+    if (!isSuccess) {
+      // High-Velocity Recovery Logic
+      await triggerPaymentRecovery(supabase, orderId, payload, new URL(siteUrl));
     }
 
     if (!orderId) {
@@ -360,8 +318,7 @@ async function triggerPaymentRecovery(supabase: any, orderId: string, payload: a
       .select()
       .single();
 
-    // 2. Immediate Webhook Dispatch for Outreach (Simulated)
-    // In production, this would hit a CRM or high-priority support queue
+    // 2. Dispatch Background Job (BullMQ)
     const outreachPayload = {
       orderId,
       customer: { email: order.customer_email, phone: order.customer_phone },
@@ -370,14 +327,16 @@ async function triggerPaymentRecovery(supabase: any, orderId: string, payload: a
       timestamp: new Date().toISOString()
     };
 
-    // Fast-track bypass dispatch
-    fetch(process.env.RECOVERY_OUTREACH_WEBHOOK_URL || '', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-Priority': 'high' },
-      body: JSON.stringify(outreachPayload)
-    }).catch(e => logger.warn('recovery_webhook.dispatch_failed', { error: e }));
-
-    logger.info('payment_recovery.initiated', { orderId, recoveryId: recovery?.id });
+    if (process.env.RECOVERY_OUTREACH_WEBHOOK_URL) {
+      await enqueuePaymentRecoveryWebhook({
+        url: process.env.RECOVERY_OUTREACH_WEBHOOK_URL,
+        payload: outreachPayload,
+        headers: { 'X-Priority': 'high' }
+      });
+      logger.info('payment_recovery.webhook_enqueued', { orderId, recoveryId: recovery?.id });
+    } else {
+      logger.info('payment_recovery.initiated_no_webhook', { orderId, recoveryId: recovery?.id });
+    }
   } catch (err) {
     logger.error('payment_recovery.trigger_failed', { error: err, orderId });
   }

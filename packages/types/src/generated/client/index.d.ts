@@ -43,6 +43,11 @@ export type FailedApiCall = $Result.DefaultSelection<Prisma.$FailedApiCallPayloa
  * 
  */
 export type Template = $Result.DefaultSelection<Prisma.$TemplatePayload>
+/**
+ * Model PageContent
+ * 
+ */
+export type PageContent = $Result.DefaultSelection<Prisma.$PageContentPayload>
 
 /**
  * Enums
@@ -268,6 +273,16 @@ export class PrismaClient<
     * ```
     */
   get template(): Prisma.TemplateDelegate<ExtArgs>;
+
+  /**
+   * `prisma.pageContent`: Exposes CRUD operations for the **PageContent** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more PageContents
+    * const pageContents = await prisma.pageContent.findMany()
+    * ```
+    */
+  get pageContent(): Prisma.PageContentDelegate<ExtArgs>;
 }
 
 export namespace Prisma {
@@ -714,7 +729,8 @@ export namespace Prisma {
     Lead: 'Lead',
     Message: 'Message',
     FailedApiCall: 'FailedApiCall',
-    Template: 'Template'
+    Template: 'Template',
+    PageContent: 'PageContent'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -730,7 +746,7 @@ export namespace Prisma {
 
   export type TypeMap<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, ClientOptions = {}> = {
     meta: {
-      modelProps: "conversation" | "user" | "lead" | "message" | "failedApiCall" | "template"
+      modelProps: "conversation" | "user" | "lead" | "message" | "failedApiCall" | "template" | "pageContent"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1151,6 +1167,76 @@ export namespace Prisma {
           count: {
             args: Prisma.TemplateCountArgs<ExtArgs>
             result: $Utils.Optional<TemplateCountAggregateOutputType> | number
+          }
+        }
+      }
+      PageContent: {
+        payload: Prisma.$PageContentPayload<ExtArgs>
+        fields: Prisma.PageContentFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.PageContentFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PageContentPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.PageContentFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PageContentPayload>
+          }
+          findFirst: {
+            args: Prisma.PageContentFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PageContentPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.PageContentFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PageContentPayload>
+          }
+          findMany: {
+            args: Prisma.PageContentFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PageContentPayload>[]
+          }
+          create: {
+            args: Prisma.PageContentCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PageContentPayload>
+          }
+          createMany: {
+            args: Prisma.PageContentCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.PageContentCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PageContentPayload>[]
+          }
+          delete: {
+            args: Prisma.PageContentDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PageContentPayload>
+          }
+          update: {
+            args: Prisma.PageContentUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PageContentPayload>
+          }
+          deleteMany: {
+            args: Prisma.PageContentDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.PageContentUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.PageContentUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PageContentPayload>
+          }
+          aggregate: {
+            args: Prisma.PageContentAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregatePageContent>
+          }
+          groupBy: {
+            args: Prisma.PageContentGroupByArgs<ExtArgs>
+            result: $Utils.Optional<PageContentGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.PageContentCountArgs<ExtArgs>
+            result: $Utils.Optional<PageContentCountAggregateOutputType> | number
           }
         }
       }
@@ -7186,6 +7272,948 @@ export namespace Prisma {
 
 
   /**
+   * Model PageContent
+   */
+
+  export type AggregatePageContent = {
+    _count: PageContentCountAggregateOutputType | null
+    _min: PageContentMinAggregateOutputType | null
+    _max: PageContentMaxAggregateOutputType | null
+  }
+
+  export type PageContentMinAggregateOutputType = {
+    key: string | null
+    page_key: string | null
+    title: string | null
+    meta_description: string | null
+    meta_keywords: string | null
+    status: string | null
+    is_active: boolean | null
+    updated_at: Date | null
+    created_at: Date | null
+  }
+
+  export type PageContentMaxAggregateOutputType = {
+    key: string | null
+    page_key: string | null
+    title: string | null
+    meta_description: string | null
+    meta_keywords: string | null
+    status: string | null
+    is_active: boolean | null
+    updated_at: Date | null
+    created_at: Date | null
+  }
+
+  export type PageContentCountAggregateOutputType = {
+    key: number
+    page_key: number
+    title: number
+    content: number
+    data: number
+    meta_description: number
+    meta_keywords: number
+    status: number
+    is_active: number
+    updated_at: number
+    created_at: number
+    _all: number
+  }
+
+
+  export type PageContentMinAggregateInputType = {
+    key?: true
+    page_key?: true
+    title?: true
+    meta_description?: true
+    meta_keywords?: true
+    status?: true
+    is_active?: true
+    updated_at?: true
+    created_at?: true
+  }
+
+  export type PageContentMaxAggregateInputType = {
+    key?: true
+    page_key?: true
+    title?: true
+    meta_description?: true
+    meta_keywords?: true
+    status?: true
+    is_active?: true
+    updated_at?: true
+    created_at?: true
+  }
+
+  export type PageContentCountAggregateInputType = {
+    key?: true
+    page_key?: true
+    title?: true
+    content?: true
+    data?: true
+    meta_description?: true
+    meta_keywords?: true
+    status?: true
+    is_active?: true
+    updated_at?: true
+    created_at?: true
+    _all?: true
+  }
+
+  export type PageContentAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which PageContent to aggregate.
+     */
+    where?: PageContentWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PageContents to fetch.
+     */
+    orderBy?: PageContentOrderByWithRelationInput | PageContentOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: PageContentWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PageContents from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PageContents.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned PageContents
+    **/
+    _count?: true | PageContentCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: PageContentMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: PageContentMaxAggregateInputType
+  }
+
+  export type GetPageContentAggregateType<T extends PageContentAggregateArgs> = {
+        [P in keyof T & keyof AggregatePageContent]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregatePageContent[P]>
+      : GetScalarType<T[P], AggregatePageContent[P]>
+  }
+
+
+
+
+  export type PageContentGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: PageContentWhereInput
+    orderBy?: PageContentOrderByWithAggregationInput | PageContentOrderByWithAggregationInput[]
+    by: PageContentScalarFieldEnum[] | PageContentScalarFieldEnum
+    having?: PageContentScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: PageContentCountAggregateInputType | true
+    _min?: PageContentMinAggregateInputType
+    _max?: PageContentMaxAggregateInputType
+  }
+
+  export type PageContentGroupByOutputType = {
+    key: string
+    page_key: string | null
+    title: string | null
+    content: JsonValue | null
+    data: JsonValue | null
+    meta_description: string | null
+    meta_keywords: string | null
+    status: string
+    is_active: boolean
+    updated_at: Date
+    created_at: Date
+    _count: PageContentCountAggregateOutputType | null
+    _min: PageContentMinAggregateOutputType | null
+    _max: PageContentMaxAggregateOutputType | null
+  }
+
+  type GetPageContentGroupByPayload<T extends PageContentGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<PageContentGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof PageContentGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], PageContentGroupByOutputType[P]>
+            : GetScalarType<T[P], PageContentGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type PageContentSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    key?: boolean
+    page_key?: boolean
+    title?: boolean
+    content?: boolean
+    data?: boolean
+    meta_description?: boolean
+    meta_keywords?: boolean
+    status?: boolean
+    is_active?: boolean
+    updated_at?: boolean
+    created_at?: boolean
+  }, ExtArgs["result"]["pageContent"]>
+
+  export type PageContentSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    key?: boolean
+    page_key?: boolean
+    title?: boolean
+    content?: boolean
+    data?: boolean
+    meta_description?: boolean
+    meta_keywords?: boolean
+    status?: boolean
+    is_active?: boolean
+    updated_at?: boolean
+    created_at?: boolean
+  }, ExtArgs["result"]["pageContent"]>
+
+  export type PageContentSelectScalar = {
+    key?: boolean
+    page_key?: boolean
+    title?: boolean
+    content?: boolean
+    data?: boolean
+    meta_description?: boolean
+    meta_keywords?: boolean
+    status?: boolean
+    is_active?: boolean
+    updated_at?: boolean
+    created_at?: boolean
+  }
+
+
+  export type $PageContentPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "PageContent"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      key: string
+      page_key: string | null
+      title: string | null
+      content: Prisma.JsonValue | null
+      data: Prisma.JsonValue | null
+      meta_description: string | null
+      meta_keywords: string | null
+      status: string
+      is_active: boolean
+      updated_at: Date
+      created_at: Date
+    }, ExtArgs["result"]["pageContent"]>
+    composites: {}
+  }
+
+  type PageContentGetPayload<S extends boolean | null | undefined | PageContentDefaultArgs> = $Result.GetResult<Prisma.$PageContentPayload, S>
+
+  type PageContentCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
+    Omit<PageContentFindManyArgs, 'select' | 'include' | 'distinct'> & {
+      select?: PageContentCountAggregateInputType | true
+    }
+
+  export interface PageContentDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['PageContent'], meta: { name: 'PageContent' } }
+    /**
+     * Find zero or one PageContent that matches the filter.
+     * @param {PageContentFindUniqueArgs} args - Arguments to find a PageContent
+     * @example
+     * // Get one PageContent
+     * const pageContent = await prisma.pageContent.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends PageContentFindUniqueArgs>(args: SelectSubset<T, PageContentFindUniqueArgs<ExtArgs>>): Prisma__PageContentClient<$Result.GetResult<Prisma.$PageContentPayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
+
+    /**
+     * Find one PageContent that matches the filter or throw an error with `error.code='P2025'` 
+     * if no matches were found.
+     * @param {PageContentFindUniqueOrThrowArgs} args - Arguments to find a PageContent
+     * @example
+     * // Get one PageContent
+     * const pageContent = await prisma.pageContent.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends PageContentFindUniqueOrThrowArgs>(args: SelectSubset<T, PageContentFindUniqueOrThrowArgs<ExtArgs>>): Prisma__PageContentClient<$Result.GetResult<Prisma.$PageContentPayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
+
+    /**
+     * Find the first PageContent that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PageContentFindFirstArgs} args - Arguments to find a PageContent
+     * @example
+     * // Get one PageContent
+     * const pageContent = await prisma.pageContent.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends PageContentFindFirstArgs>(args?: SelectSubset<T, PageContentFindFirstArgs<ExtArgs>>): Prisma__PageContentClient<$Result.GetResult<Prisma.$PageContentPayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
+
+    /**
+     * Find the first PageContent that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PageContentFindFirstOrThrowArgs} args - Arguments to find a PageContent
+     * @example
+     * // Get one PageContent
+     * const pageContent = await prisma.pageContent.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends PageContentFindFirstOrThrowArgs>(args?: SelectSubset<T, PageContentFindFirstOrThrowArgs<ExtArgs>>): Prisma__PageContentClient<$Result.GetResult<Prisma.$PageContentPayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
+
+    /**
+     * Find zero or more PageContents that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PageContentFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all PageContents
+     * const pageContents = await prisma.pageContent.findMany()
+     * 
+     * // Get first 10 PageContents
+     * const pageContents = await prisma.pageContent.findMany({ take: 10 })
+     * 
+     * // Only select the `key`
+     * const pageContentWithKeyOnly = await prisma.pageContent.findMany({ select: { key: true } })
+     * 
+     */
+    findMany<T extends PageContentFindManyArgs>(args?: SelectSubset<T, PageContentFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PageContentPayload<ExtArgs>, T, "findMany">>
+
+    /**
+     * Create a PageContent.
+     * @param {PageContentCreateArgs} args - Arguments to create a PageContent.
+     * @example
+     * // Create one PageContent
+     * const PageContent = await prisma.pageContent.create({
+     *   data: {
+     *     // ... data to create a PageContent
+     *   }
+     * })
+     * 
+     */
+    create<T extends PageContentCreateArgs>(args: SelectSubset<T, PageContentCreateArgs<ExtArgs>>): Prisma__PageContentClient<$Result.GetResult<Prisma.$PageContentPayload<ExtArgs>, T, "create">, never, ExtArgs>
+
+    /**
+     * Create many PageContents.
+     * @param {PageContentCreateManyArgs} args - Arguments to create many PageContents.
+     * @example
+     * // Create many PageContents
+     * const pageContent = await prisma.pageContent.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends PageContentCreateManyArgs>(args?: SelectSubset<T, PageContentCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many PageContents and returns the data saved in the database.
+     * @param {PageContentCreateManyAndReturnArgs} args - Arguments to create many PageContents.
+     * @example
+     * // Create many PageContents
+     * const pageContent = await prisma.pageContent.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many PageContents and only return the `key`
+     * const pageContentWithKeyOnly = await prisma.pageContent.createManyAndReturn({ 
+     *   select: { key: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends PageContentCreateManyAndReturnArgs>(args?: SelectSubset<T, PageContentCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PageContentPayload<ExtArgs>, T, "createManyAndReturn">>
+
+    /**
+     * Delete a PageContent.
+     * @param {PageContentDeleteArgs} args - Arguments to delete one PageContent.
+     * @example
+     * // Delete one PageContent
+     * const PageContent = await prisma.pageContent.delete({
+     *   where: {
+     *     // ... filter to delete one PageContent
+     *   }
+     * })
+     * 
+     */
+    delete<T extends PageContentDeleteArgs>(args: SelectSubset<T, PageContentDeleteArgs<ExtArgs>>): Prisma__PageContentClient<$Result.GetResult<Prisma.$PageContentPayload<ExtArgs>, T, "delete">, never, ExtArgs>
+
+    /**
+     * Update one PageContent.
+     * @param {PageContentUpdateArgs} args - Arguments to update one PageContent.
+     * @example
+     * // Update one PageContent
+     * const pageContent = await prisma.pageContent.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends PageContentUpdateArgs>(args: SelectSubset<T, PageContentUpdateArgs<ExtArgs>>): Prisma__PageContentClient<$Result.GetResult<Prisma.$PageContentPayload<ExtArgs>, T, "update">, never, ExtArgs>
+
+    /**
+     * Delete zero or more PageContents.
+     * @param {PageContentDeleteManyArgs} args - Arguments to filter PageContents to delete.
+     * @example
+     * // Delete a few PageContents
+     * const { count } = await prisma.pageContent.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends PageContentDeleteManyArgs>(args?: SelectSubset<T, PageContentDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more PageContents.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PageContentUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many PageContents
+     * const pageContent = await prisma.pageContent.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends PageContentUpdateManyArgs>(args: SelectSubset<T, PageContentUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one PageContent.
+     * @param {PageContentUpsertArgs} args - Arguments to update or create a PageContent.
+     * @example
+     * // Update or create a PageContent
+     * const pageContent = await prisma.pageContent.upsert({
+     *   create: {
+     *     // ... data to create a PageContent
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the PageContent we want to update
+     *   }
+     * })
+     */
+    upsert<T extends PageContentUpsertArgs>(args: SelectSubset<T, PageContentUpsertArgs<ExtArgs>>): Prisma__PageContentClient<$Result.GetResult<Prisma.$PageContentPayload<ExtArgs>, T, "upsert">, never, ExtArgs>
+
+
+    /**
+     * Count the number of PageContents.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PageContentCountArgs} args - Arguments to filter PageContents to count.
+     * @example
+     * // Count the number of PageContents
+     * const count = await prisma.pageContent.count({
+     *   where: {
+     *     // ... the filter for the PageContents we want to count
+     *   }
+     * })
+    **/
+    count<T extends PageContentCountArgs>(
+      args?: Subset<T, PageContentCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], PageContentCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a PageContent.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PageContentAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends PageContentAggregateArgs>(args: Subset<T, PageContentAggregateArgs>): Prisma.PrismaPromise<GetPageContentAggregateType<T>>
+
+    /**
+     * Group by PageContent.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PageContentGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends PageContentGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: PageContentGroupByArgs['orderBy'] }
+        : { orderBy?: PageContentGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, PageContentGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetPageContentGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the PageContent model
+   */
+  readonly fields: PageContentFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for PageContent.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__PageContentClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the PageContent model
+   */ 
+  interface PageContentFieldRefs {
+    readonly key: FieldRef<"PageContent", 'String'>
+    readonly page_key: FieldRef<"PageContent", 'String'>
+    readonly title: FieldRef<"PageContent", 'String'>
+    readonly content: FieldRef<"PageContent", 'Json'>
+    readonly data: FieldRef<"PageContent", 'Json'>
+    readonly meta_description: FieldRef<"PageContent", 'String'>
+    readonly meta_keywords: FieldRef<"PageContent", 'String'>
+    readonly status: FieldRef<"PageContent", 'String'>
+    readonly is_active: FieldRef<"PageContent", 'Boolean'>
+    readonly updated_at: FieldRef<"PageContent", 'DateTime'>
+    readonly created_at: FieldRef<"PageContent", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * PageContent findUnique
+   */
+  export type PageContentFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PageContent
+     */
+    select?: PageContentSelect<ExtArgs> | null
+    /**
+     * Filter, which PageContent to fetch.
+     */
+    where: PageContentWhereUniqueInput
+  }
+
+  /**
+   * PageContent findUniqueOrThrow
+   */
+  export type PageContentFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PageContent
+     */
+    select?: PageContentSelect<ExtArgs> | null
+    /**
+     * Filter, which PageContent to fetch.
+     */
+    where: PageContentWhereUniqueInput
+  }
+
+  /**
+   * PageContent findFirst
+   */
+  export type PageContentFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PageContent
+     */
+    select?: PageContentSelect<ExtArgs> | null
+    /**
+     * Filter, which PageContent to fetch.
+     */
+    where?: PageContentWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PageContents to fetch.
+     */
+    orderBy?: PageContentOrderByWithRelationInput | PageContentOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for PageContents.
+     */
+    cursor?: PageContentWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PageContents from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PageContents.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of PageContents.
+     */
+    distinct?: PageContentScalarFieldEnum | PageContentScalarFieldEnum[]
+  }
+
+  /**
+   * PageContent findFirstOrThrow
+   */
+  export type PageContentFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PageContent
+     */
+    select?: PageContentSelect<ExtArgs> | null
+    /**
+     * Filter, which PageContent to fetch.
+     */
+    where?: PageContentWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PageContents to fetch.
+     */
+    orderBy?: PageContentOrderByWithRelationInput | PageContentOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for PageContents.
+     */
+    cursor?: PageContentWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PageContents from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PageContents.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of PageContents.
+     */
+    distinct?: PageContentScalarFieldEnum | PageContentScalarFieldEnum[]
+  }
+
+  /**
+   * PageContent findMany
+   */
+  export type PageContentFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PageContent
+     */
+    select?: PageContentSelect<ExtArgs> | null
+    /**
+     * Filter, which PageContents to fetch.
+     */
+    where?: PageContentWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PageContents to fetch.
+     */
+    orderBy?: PageContentOrderByWithRelationInput | PageContentOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing PageContents.
+     */
+    cursor?: PageContentWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PageContents from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PageContents.
+     */
+    skip?: number
+    distinct?: PageContentScalarFieldEnum | PageContentScalarFieldEnum[]
+  }
+
+  /**
+   * PageContent create
+   */
+  export type PageContentCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PageContent
+     */
+    select?: PageContentSelect<ExtArgs> | null
+    /**
+     * The data needed to create a PageContent.
+     */
+    data: XOR<PageContentCreateInput, PageContentUncheckedCreateInput>
+  }
+
+  /**
+   * PageContent createMany
+   */
+  export type PageContentCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many PageContents.
+     */
+    data: PageContentCreateManyInput | PageContentCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * PageContent createManyAndReturn
+   */
+  export type PageContentCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PageContent
+     */
+    select?: PageContentSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * The data used to create many PageContents.
+     */
+    data: PageContentCreateManyInput | PageContentCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * PageContent update
+   */
+  export type PageContentUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PageContent
+     */
+    select?: PageContentSelect<ExtArgs> | null
+    /**
+     * The data needed to update a PageContent.
+     */
+    data: XOR<PageContentUpdateInput, PageContentUncheckedUpdateInput>
+    /**
+     * Choose, which PageContent to update.
+     */
+    where: PageContentWhereUniqueInput
+  }
+
+  /**
+   * PageContent updateMany
+   */
+  export type PageContentUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update PageContents.
+     */
+    data: XOR<PageContentUpdateManyMutationInput, PageContentUncheckedUpdateManyInput>
+    /**
+     * Filter which PageContents to update
+     */
+    where?: PageContentWhereInput
+  }
+
+  /**
+   * PageContent upsert
+   */
+  export type PageContentUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PageContent
+     */
+    select?: PageContentSelect<ExtArgs> | null
+    /**
+     * The filter to search for the PageContent to update in case it exists.
+     */
+    where: PageContentWhereUniqueInput
+    /**
+     * In case the PageContent found by the `where` argument doesn't exist, create a new PageContent with this data.
+     */
+    create: XOR<PageContentCreateInput, PageContentUncheckedCreateInput>
+    /**
+     * In case the PageContent was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<PageContentUpdateInput, PageContentUncheckedUpdateInput>
+  }
+
+  /**
+   * PageContent delete
+   */
+  export type PageContentDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PageContent
+     */
+    select?: PageContentSelect<ExtArgs> | null
+    /**
+     * Filter which PageContent to delete.
+     */
+    where: PageContentWhereUniqueInput
+  }
+
+  /**
+   * PageContent deleteMany
+   */
+  export type PageContentDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which PageContents to delete
+     */
+    where?: PageContentWhereInput
+  }
+
+  /**
+   * PageContent without action
+   */
+  export type PageContentDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PageContent
+     */
+    select?: PageContentSelect<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -7281,6 +8309,23 @@ export namespace Prisma {
   };
 
   export type TemplateScalarFieldEnum = (typeof TemplateScalarFieldEnum)[keyof typeof TemplateScalarFieldEnum]
+
+
+  export const PageContentScalarFieldEnum: {
+    key: 'key',
+    page_key: 'page_key',
+    title: 'title',
+    content: 'content',
+    data: 'data',
+    meta_description: 'meta_description',
+    meta_keywords: 'meta_keywords',
+    status: 'status',
+    is_active: 'is_active',
+    updated_at: 'updated_at',
+    created_at: 'created_at'
+  };
+
+  export type PageContentScalarFieldEnum = (typeof PageContentScalarFieldEnum)[keyof typeof PageContentScalarFieldEnum]
 
 
   export const SortOrder: {
@@ -7417,6 +8462,13 @@ export namespace Prisma {
    * Reference to a field of type 'Direction[]'
    */
   export type ListEnumDirectionFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Direction[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'Boolean'
+   */
+  export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
     
 
 
@@ -7853,6 +8905,88 @@ export namespace Prisma {
     content?: StringWithAggregatesFilter<"Template"> | string
     status?: StringWithAggregatesFilter<"Template"> | string
     created_at?: DateTimeWithAggregatesFilter<"Template"> | Date | string
+  }
+
+  export type PageContentWhereInput = {
+    AND?: PageContentWhereInput | PageContentWhereInput[]
+    OR?: PageContentWhereInput[]
+    NOT?: PageContentWhereInput | PageContentWhereInput[]
+    key?: StringFilter<"PageContent"> | string
+    page_key?: StringNullableFilter<"PageContent"> | string | null
+    title?: StringNullableFilter<"PageContent"> | string | null
+    content?: JsonNullableFilter<"PageContent">
+    data?: JsonNullableFilter<"PageContent">
+    meta_description?: StringNullableFilter<"PageContent"> | string | null
+    meta_keywords?: StringNullableFilter<"PageContent"> | string | null
+    status?: StringFilter<"PageContent"> | string
+    is_active?: BoolFilter<"PageContent"> | boolean
+    updated_at?: DateTimeFilter<"PageContent"> | Date | string
+    created_at?: DateTimeFilter<"PageContent"> | Date | string
+  }
+
+  export type PageContentOrderByWithRelationInput = {
+    key?: SortOrder
+    page_key?: SortOrderInput | SortOrder
+    title?: SortOrderInput | SortOrder
+    content?: SortOrderInput | SortOrder
+    data?: SortOrderInput | SortOrder
+    meta_description?: SortOrderInput | SortOrder
+    meta_keywords?: SortOrderInput | SortOrder
+    status?: SortOrder
+    is_active?: SortOrder
+    updated_at?: SortOrder
+    created_at?: SortOrder
+  }
+
+  export type PageContentWhereUniqueInput = Prisma.AtLeast<{
+    key?: string
+    page_key?: string
+    AND?: PageContentWhereInput | PageContentWhereInput[]
+    OR?: PageContentWhereInput[]
+    NOT?: PageContentWhereInput | PageContentWhereInput[]
+    title?: StringNullableFilter<"PageContent"> | string | null
+    content?: JsonNullableFilter<"PageContent">
+    data?: JsonNullableFilter<"PageContent">
+    meta_description?: StringNullableFilter<"PageContent"> | string | null
+    meta_keywords?: StringNullableFilter<"PageContent"> | string | null
+    status?: StringFilter<"PageContent"> | string
+    is_active?: BoolFilter<"PageContent"> | boolean
+    updated_at?: DateTimeFilter<"PageContent"> | Date | string
+    created_at?: DateTimeFilter<"PageContent"> | Date | string
+  }, "key" | "page_key">
+
+  export type PageContentOrderByWithAggregationInput = {
+    key?: SortOrder
+    page_key?: SortOrderInput | SortOrder
+    title?: SortOrderInput | SortOrder
+    content?: SortOrderInput | SortOrder
+    data?: SortOrderInput | SortOrder
+    meta_description?: SortOrderInput | SortOrder
+    meta_keywords?: SortOrderInput | SortOrder
+    status?: SortOrder
+    is_active?: SortOrder
+    updated_at?: SortOrder
+    created_at?: SortOrder
+    _count?: PageContentCountOrderByAggregateInput
+    _max?: PageContentMaxOrderByAggregateInput
+    _min?: PageContentMinOrderByAggregateInput
+  }
+
+  export type PageContentScalarWhereWithAggregatesInput = {
+    AND?: PageContentScalarWhereWithAggregatesInput | PageContentScalarWhereWithAggregatesInput[]
+    OR?: PageContentScalarWhereWithAggregatesInput[]
+    NOT?: PageContentScalarWhereWithAggregatesInput | PageContentScalarWhereWithAggregatesInput[]
+    key?: StringWithAggregatesFilter<"PageContent"> | string
+    page_key?: StringNullableWithAggregatesFilter<"PageContent"> | string | null
+    title?: StringNullableWithAggregatesFilter<"PageContent"> | string | null
+    content?: JsonNullableWithAggregatesFilter<"PageContent">
+    data?: JsonNullableWithAggregatesFilter<"PageContent">
+    meta_description?: StringNullableWithAggregatesFilter<"PageContent"> | string | null
+    meta_keywords?: StringNullableWithAggregatesFilter<"PageContent"> | string | null
+    status?: StringWithAggregatesFilter<"PageContent"> | string
+    is_active?: BoolWithAggregatesFilter<"PageContent"> | boolean
+    updated_at?: DateTimeWithAggregatesFilter<"PageContent"> | Date | string
+    created_at?: DateTimeWithAggregatesFilter<"PageContent"> | Date | string
   }
 
   export type ConversationCreateInput = {
@@ -8314,6 +9448,104 @@ export namespace Prisma {
     language?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PageContentCreateInput = {
+    key: string
+    page_key?: string | null
+    title?: string | null
+    content?: NullableJsonNullValueInput | InputJsonValue
+    data?: NullableJsonNullValueInput | InputJsonValue
+    meta_description?: string | null
+    meta_keywords?: string | null
+    status?: string
+    is_active?: boolean
+    updated_at?: Date | string
+    created_at?: Date | string
+  }
+
+  export type PageContentUncheckedCreateInput = {
+    key: string
+    page_key?: string | null
+    title?: string | null
+    content?: NullableJsonNullValueInput | InputJsonValue
+    data?: NullableJsonNullValueInput | InputJsonValue
+    meta_description?: string | null
+    meta_keywords?: string | null
+    status?: string
+    is_active?: boolean
+    updated_at?: Date | string
+    created_at?: Date | string
+  }
+
+  export type PageContentUpdateInput = {
+    key?: StringFieldUpdateOperationsInput | string
+    page_key?: NullableStringFieldUpdateOperationsInput | string | null
+    title?: NullableStringFieldUpdateOperationsInput | string | null
+    content?: NullableJsonNullValueInput | InputJsonValue
+    data?: NullableJsonNullValueInput | InputJsonValue
+    meta_description?: NullableStringFieldUpdateOperationsInput | string | null
+    meta_keywords?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    is_active?: BoolFieldUpdateOperationsInput | boolean
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PageContentUncheckedUpdateInput = {
+    key?: StringFieldUpdateOperationsInput | string
+    page_key?: NullableStringFieldUpdateOperationsInput | string | null
+    title?: NullableStringFieldUpdateOperationsInput | string | null
+    content?: NullableJsonNullValueInput | InputJsonValue
+    data?: NullableJsonNullValueInput | InputJsonValue
+    meta_description?: NullableStringFieldUpdateOperationsInput | string | null
+    meta_keywords?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    is_active?: BoolFieldUpdateOperationsInput | boolean
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PageContentCreateManyInput = {
+    key: string
+    page_key?: string | null
+    title?: string | null
+    content?: NullableJsonNullValueInput | InputJsonValue
+    data?: NullableJsonNullValueInput | InputJsonValue
+    meta_description?: string | null
+    meta_keywords?: string | null
+    status?: string
+    is_active?: boolean
+    updated_at?: Date | string
+    created_at?: Date | string
+  }
+
+  export type PageContentUpdateManyMutationInput = {
+    key?: StringFieldUpdateOperationsInput | string
+    page_key?: NullableStringFieldUpdateOperationsInput | string | null
+    title?: NullableStringFieldUpdateOperationsInput | string | null
+    content?: NullableJsonNullValueInput | InputJsonValue
+    data?: NullableJsonNullValueInput | InputJsonValue
+    meta_description?: NullableStringFieldUpdateOperationsInput | string | null
+    meta_keywords?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    is_active?: BoolFieldUpdateOperationsInput | boolean
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PageContentUncheckedUpdateManyInput = {
+    key?: StringFieldUpdateOperationsInput | string
+    page_key?: NullableStringFieldUpdateOperationsInput | string | null
+    title?: NullableStringFieldUpdateOperationsInput | string | null
+    content?: NullableJsonNullValueInput | InputJsonValue
+    data?: NullableJsonNullValueInput | InputJsonValue
+    meta_description?: NullableStringFieldUpdateOperationsInput | string | null
+    meta_keywords?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    is_active?: BoolFieldUpdateOperationsInput | boolean
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -8786,6 +10018,57 @@ export namespace Prisma {
     created_at?: SortOrder
   }
 
+  export type BoolFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolFilter<$PrismaModel> | boolean
+  }
+
+  export type PageContentCountOrderByAggregateInput = {
+    key?: SortOrder
+    page_key?: SortOrder
+    title?: SortOrder
+    content?: SortOrder
+    data?: SortOrder
+    meta_description?: SortOrder
+    meta_keywords?: SortOrder
+    status?: SortOrder
+    is_active?: SortOrder
+    updated_at?: SortOrder
+    created_at?: SortOrder
+  }
+
+  export type PageContentMaxOrderByAggregateInput = {
+    key?: SortOrder
+    page_key?: SortOrder
+    title?: SortOrder
+    meta_description?: SortOrder
+    meta_keywords?: SortOrder
+    status?: SortOrder
+    is_active?: SortOrder
+    updated_at?: SortOrder
+    created_at?: SortOrder
+  }
+
+  export type PageContentMinOrderByAggregateInput = {
+    key?: SortOrder
+    page_key?: SortOrder
+    title?: SortOrder
+    meta_description?: SortOrder
+    meta_keywords?: SortOrder
+    status?: SortOrder
+    is_active?: SortOrder
+    updated_at?: SortOrder
+    created_at?: SortOrder
+  }
+
+  export type BoolWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedBoolFilter<$PrismaModel>
+    _max?: NestedBoolFilter<$PrismaModel>
+  }
+
   export type ConversationCreatetagsInput = {
     set: string[]
   }
@@ -8939,6 +10222,10 @@ export namespace Prisma {
     upsert?: ConversationUpsertWithoutMessagesInput
     connect?: ConversationWhereUniqueInput
     update?: XOR<XOR<ConversationUpdateToOneWithWhereWithoutMessagesInput, ConversationUpdateWithoutMessagesInput>, ConversationUncheckedUpdateWithoutMessagesInput>
+  }
+
+  export type BoolFieldUpdateOperationsInput = {
+    set?: boolean
   }
 
   export type NestedIntFilter<$PrismaModel = never> = {
@@ -9148,6 +10435,19 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumDirectionFilter<$PrismaModel>
     _max?: NestedEnumDirectionFilter<$PrismaModel>
+  }
+
+  export type NestedBoolFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolFilter<$PrismaModel> | boolean
+  }
+
+  export type NestedBoolWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedBoolFilter<$PrismaModel>
+    _max?: NestedBoolFilter<$PrismaModel>
   }
 
   export type MessageCreateWithoutConversationInput = {
@@ -9538,6 +10838,10 @@ export namespace Prisma {
      * @deprecated Use TemplateDefaultArgs instead
      */
     export type TemplateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = TemplateDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use PageContentDefaultArgs instead
+     */
+    export type PageContentArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = PageContentDefaultArgs<ExtArgs>
 
   /**
    * Batch Payload for updateMany & deleteMany & createMany

@@ -214,4 +214,148 @@ export class AuthService {
       requiresSignIn: type === 'signup'
     });
   }
+
+  async resetPassword(params: any): Promise<Result<any>> {
+    const { otp, otpId, email, mobile, password } = params;
+
+    const normalizedRequestEmail = email ? email.trim().toLowerCase() : null;
+    const normalizedRequestMobile = mobile ? mobile.trim().replace(/\D/g, '') : null;
+
+    if (!otp || !otpId || (!normalizedRequestEmail && !normalizedRequestMobile) || !password) {
+      return failure(AppError.badRequest('OTP, otpId, email or mobile, and password are required'));
+    }
+
+    if (password.length < 8) return failure(AppError.badRequest('Password must be at least 8 characters long'));
+    if (!/(?=.*[a-z])/.test(password)) return failure(AppError.badRequest('Password must contain at least one lowercase letter'));
+    if (!/(?=.*[A-Z])/.test(password)) return failure(AppError.badRequest('Password must contain at least one uppercase letter'));
+    if (!/(?=.*\d)/.test(password)) return failure(AppError.badRequest('Password must contain at least one number'));
+    if (!/(?=.*[@$!%*?&])/.test(password)) return failure(AppError.badRequest('Password must contain at least one special character'));
+
+    const { data: otpRecord, error: otpError } = await this.supabaseAdmin
+      .from('otp_verifications')
+      .select('*')
+      .eq('id', otpId)
+      .maybeSingle();
+
+    if (otpError || !otpRecord) {
+      return failure(AppError.badRequest('Invalid or expired OTP reference'));
+    }
+
+    if (otpRecord.purpose !== 'password_reset') {
+      return failure(AppError.badRequest('OTP type mismatch. Please request a new reset code.'));
+    }
+
+    const normalizedOtpEmail = otpRecord.email ? otpRecord.email.trim().toLowerCase() : null;
+    const normalizedOtpPhone = otpRecord.phone ? otpRecord.phone.trim().replace(/\D/g, '') : null;
+
+    const isEmailValidMatch = normalizedRequestEmail && normalizedOtpEmail && normalizedRequestEmail === normalizedOtpEmail;
+    const isMobileValidMatch = normalizedRequestMobile && normalizedOtpPhone && normalizedRequestMobile === normalizedOtpPhone;
+
+    if (!isEmailValidMatch && !isMobileValidMatch) {
+      return failure(AppError.badRequest('Security verification failed: OTP reference mismatch.'));
+    }
+
+    const verify = await this.otpService.verifyOTP({ otpId, code: otp, channel: otpRecord.channel || undefined });
+    if (!verify.success) {
+      return failure(AppError.badRequest(verify.message || 'Invalid or expired OTP'));
+    }
+
+    let user: any = null;
+    try {
+      if (normalizedRequestEmail) {
+        const { data: profile } = await this.supabaseAdmin.from('profiles').select('id').eq('email', normalizedRequestEmail).maybeSingle();
+        if (profile) {
+          const { data: userData } = await this.supabaseAdmin.auth.admin.getUserById(profile.id);
+          user = userData?.user;
+        }
+      } else if (normalizedRequestMobile) {
+        const { data: profile } = await this.supabaseAdmin.from('profiles').select('id').eq('mobile', normalizedRequestMobile).maybeSingle();
+        if (profile) {
+          const { data: userData } = await this.supabaseAdmin.auth.admin.getUserById(profile.id);
+          user = userData?.user;
+        }
+      }
+    } catch (err) {
+      logger.error('auth.reset_password.lookup_failed', { error: err });
+    }
+    
+    if (!user) {
+      return failure(AppError.notFound('User not found'));
+    }
+
+    const { error: updateError } = await this.supabaseAdmin.auth.admin.updateUserById(
+      user.id,
+      { password }
+    );
+
+    if (updateError) {
+      return failure(AppError.internal('Failed to update password'));
+    }
+
+    return success({
+      message: 'Password has been reset successfully'
+    });
+  }
+
+  async requestOtp(params: any, clientIp: string, siteKey?: string): Promise<Result<any>> {
+    const { email, mobile, type = 'signup', captchaToken } = params;
+
+    if ((!email || !email.includes('@')) && (!mobile || mobile.length < 10)) {
+      return failure(AppError.badRequest('Valid email address or mobile number is required'));
+    }
+    if (!['signup', 'recovery'].includes(type)) {
+      return failure(AppError.badRequest('Invalid OTP type. Must be either "signup" or "recovery"'));
+    }
+
+    const normalizedEmail = typeof email === 'string' ? email.trim().toLowerCase() : undefined;
+    const normalizedMobile = mobile ? String(mobile).replace(/\D/g, '') : undefined;
+
+    const searchVal = normalizedEmail || normalizedMobile;
+    if (searchVal) {
+      let query = this.supabaseAdmin.from('profiles').select('role');
+      if (normalizedEmail) {
+        query = query.eq('email', normalizedEmail);
+      } else {
+        query = query.eq('mobile', normalizedMobile);
+      }
+      
+      const { data: profile } = await query.maybeSingle();
+      if (profile?.role) {
+        const role = profile.role.trim().toLowerCase();
+        const isStaff = ['superadmin', 'admin', 'manager', 'sales', 'service_engineer', 'accounts'].includes(role);
+        if (isStaff) {
+          return failure(new AppError('FORBIDDEN', 'High-privilege account detected. Please log in through the Staff Portal.', 403, { redirectTo: '/staff/login' }));
+        }
+      }
+    }
+
+    if (siteKey) {
+      const captcha = await verifyCaptcha(captchaToken, clientIp);
+      if (!captcha.success) {
+        return failure(AppError.badRequest(`Captcha verification failed: ${captcha.error || captcha.errorCodes?.join(', ') || 'Please retry.'}`));
+      }
+    }
+
+    const purpose = type === 'recovery' ? 'password_reset' : 'registration';
+    const preferredChannel = normalizedMobile ? 'whatsapp' : 'email';
+
+    const result = await this.otpService.generateOTP({
+      phone: normalizedMobile,
+      email: normalizedEmail,
+      purpose,
+      preferredChannel,
+      ipAddress: clientIp
+    });
+
+    if (!result.success) {
+      return failure(AppError.internal(result.message || 'Failed to send OTP'));
+    }
+
+    return success({
+      message: result.message || 'OTP sent successfully',
+      otpId: result.otpId,
+      channel: result.channel,
+      provider: result.provider
+    });
+  }
 }

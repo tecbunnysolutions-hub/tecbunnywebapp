@@ -7,4 +7,9 @@ export interface CreateOrderParams {
 export interface IOrderService {
   getCustomerOrders(userId: string, userEmail?: string, userPhone?: string): Promise<any[]>;
   createOrder(params: CreateOrderParams): Promise<any>;
+  updateOrderStatus(
+    userId: string,
+    userRole: string,
+    payload: any
+  ): Promise<{ orderId: string; status: string }>;
 }

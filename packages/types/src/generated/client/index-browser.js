@@ -188,6 +188,20 @@ exports.Prisma.TemplateScalarFieldEnum = {
   created_at: 'created_at'
 };
 
+exports.Prisma.PageContentScalarFieldEnum = {
+  key: 'key',
+  page_key: 'page_key',
+  title: 'title',
+  content: 'content',
+  data: 'data',
+  meta_description: 'meta_description',
+  meta_keywords: 'meta_keywords',
+  status: 'status',
+  is_active: 'is_active',
+  updated_at: 'updated_at',
+  created_at: 'created_at'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -235,7 +249,8 @@ exports.Prisma.ModelName = {
   Lead: 'Lead',
   Message: 'Message',
   FailedApiCall: 'FailedApiCall',
-  Template: 'Template'
+  Template: 'Template',
+  PageContent: 'PageContent'
 };
 
 /**

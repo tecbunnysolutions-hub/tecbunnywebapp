@@ -1,6 +1,5 @@
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
-import { verifySuperadminSessionToken } from '@tecbunny/core/auth/superadmin-session';
+import { NextResponse, type NextRequest } from 'next/server';
+import { updateSession } from '@tecbunny/core/supabase/middleware';
 
 const allowedOrigins = [
   'https://tecbunny.com',
@@ -20,59 +19,58 @@ export async function middleware(request: NextRequest) {
   const isM2MAuth = authHeader === `Bearer ${process.env.INTERNAL_SERVICE_KEY}`;
   const pathname = request.nextUrl.pathname;
 
-  // Protect Dashboard Routes
+  // Protect Dashboard Routes using Centralized Auth
   if (pathname.startsWith('/dashboard') || pathname.startsWith('/login')) {
-    const superadminCookie = request.cookies.get('superadmin-session')?.value;
-    const isSuperadmin = Boolean(await verifySuperadminSessionToken(superadminCookie));
+    // We defer to updateSession to check authentication and role.
+    const sessionResponse = await updateSession(request, {
+      allowedRoles: ['superadmin'], // Assuming /dashboard in api is only for superadmin based on old code
+      loginRoute: '/login',
+      publicRoutes: [],
+      onUnauthorized: (req: NextRequest) => {
+         const loginUrl = new URL('/login', req.url);
+         return NextResponse.redirect(loginUrl);
+      },
+      onForbidden: (req: NextRequest) => {
+         const loginUrl = new URL('/login', req.url);
+         return NextResponse.redirect(loginUrl);
+      }
+    });
 
-    if (pathname.startsWith('/dashboard') && !isSuperadmin) {
-      const loginUrl = new URL('/login', request.url);
-      return NextResponse.redirect(loginUrl);
+    // updateSession returns a redirect or forbidden response if checks fail.
+    if (sessionResponse.status !== 200) {
+      // Except if they are already on /login and have a session, we redirect to dashboard
+       if (pathname.startsWith('/login') && sessionResponse.status === 200) {
+          const dashboardUrl = new URL('/dashboard', request.url);
+          return NextResponse.redirect(dashboardUrl);
+       }
+       return sessionResponse;
     }
-
-    if (pathname.startsWith('/login') && isSuperadmin) {
-      const dashboardUrl = new URL('/dashboard', request.url);
-      return NextResponse.redirect(dashboardUrl);
+    
+    if (pathname.startsWith('/login')) {
+       // If updateSession returned 200, user is authenticated and authorized. Redirect away from login.
+       const dashboardUrl = new URL('/dashboard', request.url);
+       return NextResponse.redirect(dashboardUrl);
     }
-
-    return NextResponse.next();
   }
 
-  // Allow M2M Auth directly (e.g., from WABA worker)
-  if (isM2MAuth) {
-    return NextResponse.next();
-  }
-  
-  // Create a base response
+  // Handle CORS
   const response = NextResponse.next();
-  
-  // If the origin is in our allowed list, append the CORS headers
   if (origin && allowedOrigins.includes(origin)) {
     response.headers.set('Access-Control-Allow-Origin', origin);
+  } else if (!origin && isM2MAuth) {
+    // Allow M2M
   } else if (!origin) {
-    // Allow non-browser requests (like server-to-server) without origin
-    // Since M2M is checked above, any other server-to-server might be rejected or allowed depending on strictness
-    // We'll allow it through, but it won't have the M2M auth. Endpoints should validate Auth!
+    // Allow non-browser requests
   } else {
-    // Return forbidden for unauthorized origins
-    return new NextResponse(null, {
-      status: 403,
-      statusText: 'Forbidden',
-      headers: { 'Content-Type': 'text/plain' },
-    });
+    return new NextResponse(null, { status: 403, statusText: 'Forbidden', headers: { 'Content-Type': 'text/plain' } });
   }
 
-  // Common CORS headers
   response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
   response.headers.set('Access-Control-Max-Age', '86400');
 
-  // Handle preflight requests
   if (request.method === 'OPTIONS') {
-    return new NextResponse(null, {
-      status: 200,
-      headers: response.headers,
-    });
+    return new NextResponse(null, { status: 200, headers: response.headers });
   }
 
   return response;

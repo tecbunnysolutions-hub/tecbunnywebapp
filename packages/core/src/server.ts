@@ -18,6 +18,7 @@ export * from './services/user.service';
 export * from './services/payment.service';
 export * from './services/auth.service';
 export * from './services/agent.service';
+export * from './services/inventory.service';
 export * from './db';
 export * from './telemetry';
 export * from './queue/waba-webhook';
