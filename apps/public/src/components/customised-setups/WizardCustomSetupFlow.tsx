@@ -15,7 +15,7 @@ import { Label } from "@tecbunny/ui";
 import { RadioGroup, RadioGroupItem } from "@tecbunny/ui";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@tecbunny/ui";
 import { useToast } from "@tecbunny/ui";
-import type { CustomSetupBlueprintComponentSummary, CustomSetupBlueprintSummary } from "@tecbunny/core/custom-setup-service";
+import { CustomSetupBlueprintComponentSummary, CustomSetupBlueprintSummary } from "@tecbunny/core/custom-setup-service";
 import { useAuth, useCart } from "@tecbunny/core/hooks";
 import { cn } from "@tecbunny/core/utils";
 import { ROICostEfficiencyBanner } from './ROICostEfficiencyBanner';
@@ -31,17 +31,17 @@ export interface CustomSetupFlowProps {
 
 
 import {
-  type SetupSystem,
-  type PriceEntry,
-  type CapacityPriceEntry,
-  type CameraPriceMatrix,
-  type CablePriceEntry,
-  type AnalogPricing,
-  type IpPricing,
-  type Totals,
-  type ActiveOffer,
-  type AnalogSelections,
-  type IpSelections,
+  SetupSystem,
+  PriceEntry,
+  CapacityPriceEntry,
+  CameraPriceMatrix,
+  CablePriceEntry,
+  AnalogPricing,
+  IpPricing,
+  Totals,
+  ActiveOffer,
+  AnalogSelections,
+  IpSelections,
   FALLBACK_ANALOG_PRICING,
   FALLBACK_IP_PRICING,
   FALLBACK_HDD_OPTIONS,
@@ -862,11 +862,7 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
     }
   };
 
-  const activeAnalog = system === 'analog';
 
-  const renderAnalogControls = () => {
-    const recommendedDvrCapacity = recommendedAnalogDvrCapacity(cameraCount);
-    const recommendedSmpsCapacity = recommendedAnalogSmpsCapacity(cameraCount);
 
     // --- WIZARD UI IMPLEMENTATION START ---
   const [currentStep, setCurrentStep] = useState(1);
