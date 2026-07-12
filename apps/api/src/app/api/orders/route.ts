@@ -45,17 +45,17 @@ export async function GET(request: NextRequest) {
   }
 }
 
-export async function POST(request: NextRequest) {
-  const correlationId = request.headers.get('x-correlation-id') || null;
+import { withApiHandler, APIResponseBuilder, createOrderSchema, CreateOrderInput } from "@tecbunny/core";
 
-  try {
+export const POST = withApiHandler(
+  createOrderSchema,
+  async (request: NextRequest, validatedData: CreateOrderInput) => {
+    const correlationId = request.headers.get('x-correlation-id') || null;
+
     // Check superadmin session cookie first to block order placements
     const superadminCookie = request.cookies.get('superadmin-session')?.value;
     if (await verifySuperadminSessionToken(superadminCookie)) {
-      return apiError('FORBIDDEN', {
-        correlationId,
-        overrideMessage: '403 Forbidden - System Configuration Accounts Cannot Place Orders.'
-      });
+      return APIResponseBuilder.forbidden('403 Forbidden - System Configuration Accounts Cannot Place Orders.');
     }
 
     let user = null;
@@ -77,10 +77,8 @@ export async function POST(request: NextRequest) {
     const limitCheck = await rateLimit(rateLimitKey, RATE_LIMIT, RATE_WINDOW_MS);
     if (!limitCheck.allowed) {
       logger.warn('orders_rate_limited', { userId: effectiveUserId, rateLimitKey });
-      return apiError('RATE_LIMITED', { correlationId });
+      return APIResponseBuilder.tooManyRequests();
     }
-
-    const orderData = await request.json();
 
     const baseClient = getServiceBaseClient();
     const orderRepo = new SupabaseOrderRepository(baseClient);
@@ -90,26 +88,9 @@ export async function POST(request: NextRequest) {
     const fullOrder = await orderService.createOrder({
       effectiveUserId,
       correlationId,
-      orderData
+      orderData: validatedData
     });
 
-    return apiSuccess({ order: fullOrder }, correlationId);
-
-  } catch (error) {
-    const isValidationError = error instanceof Error && (
-      error.message.includes('stock') || 
-      error.message.includes('invalid') || 
-      error.message.includes('available') ||
-      error.message.includes('Product') ||
-      error.message.includes('Missing required')
-    );
-
-    if (isValidationError) {
-      logger.warn('order_api_validation_error', { error: (error as Error).message });
-      return apiError('VALIDATION_ERROR', { correlationId, overrideMessage: (error as Error).message });
-    }
-
-    logger.error('order_api_uncaught', { error: error instanceof Error ? error.message : 'unknown' });
-    return apiError('INTERNAL_ERROR', { correlationId, details: { error: error instanceof Error ? error.message : 'Unknown error' } });
+    return APIResponseBuilder.created({ order: fullOrder });
   }
-}
+);

@@ -23,3 +23,4 @@ export * from './validation';
 // export * from './telemetry';
 export * from './hooks/use-customer-workspace';
 // export * from './services/customer.service';
+export * from './schemas/order.schema';

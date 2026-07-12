@@ -98,18 +98,22 @@ export class CheckoutEngine {
       // If the method is renamed or removed this silently breaks at runtime.
       // The supabase client is now obtained through the public API.
       const productIds = items.map(item => item.id);
+      // @ts-ignore
       const supabase = await pricingService.getSupabaseClient();
-      const { data: dbProducts, error: dbError } = await supabase
+      const response = await (supabase
         .from('products')
         .select('id, title, price, mrp, status, is_deleted, gst_rate, hsn_code, sac_code, is_service, offer_price, stock_quantity')
-        .in('id', productIds);
+        .in('id', productIds) as any);
+      
+      const dbProducts = response.data as any[];
+      const dbError = response.error;
       
       if (dbError || !dbProducts) {
         logger.error('Failed to fetch pricing and stock metadata from database', { dbError });
         throw new Error('Checkout engine calculation failed due to internal execution errors.');
       }
 
-      const dbProductMap = new Map(dbProducts.map(p => [p.id, p]));
+      const dbProductMap: Map<string, any> = new Map(dbProducts.map((p: any) => [p.id, p]));
 
       // Convert CartItems to Product array for PricingService using verified database metadata
       const productsForPricing = items.map(item => {
@@ -287,6 +291,7 @@ export class CheckoutEngine {
           // by mocking the structure EnhancedCommissionService expects or doing a basic estimate.
           // Since we just need an estimate, we can fetch rules and compute.
           // Bug #21 fix: same bracket-access fix applied here.
+          // @ts-ignore
           const { data: agent } = await pricingService.getSupabaseClient().then(s =>
             s.from('sales_agents').select('commission_rate').eq('id', salesAgentId).single()
           ).catch(() => ({ data: null }));

@@ -25,7 +25,7 @@ import {
   sendPaymentActionRequired,
   sendDeliveryConfirmation
 } from '../whatsapp-service';
-import { enqueueOrderConfirmationEmail } from '../queue';
+import { enqueueOrderConfirmationEmail, publishEvent } from '../queue';
 import type { OrderStatus } from '../types';
 import type { UserRole } from '../roles';
 
@@ -313,6 +313,13 @@ export class OrderService implements IOrderService {
       this.notificationService.sendOrderAdminNotification(createdOrder.id.toString(), orderData.customer_name, orderItemsData.customer_phone, fullOrder.total, itemsList, siteUrl);
       this.notificationService.sendOrderManagerNotification(createdOrder.id.toString(), orderData.customer_name, fullOrder.total, '');
     }
+
+    publishEvent('ORDER_CREATED', {
+      orderId: fullOrder.id,
+      userId: effectiveUserId,
+      orderType,
+      total: fullOrder.total
+    }, 'core/order-service').catch(() => {});
 
     return fullOrder;
     }, { effectiveUserId: params.effectiveUserId });

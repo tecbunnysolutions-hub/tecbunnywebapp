@@ -270,8 +270,8 @@ export class OtpService {
   ): Promise<{ success: boolean; error?: string }> {
     try {
       // Dynamically import to avoid circular dependency issues at module load
-      const { sendTemplateMessage } = await import('./whatsapp-service');
-      const result = await sendTemplateMessage(phone, process.env.OTP_WHATSAPP_TEMPLATE_NAME ?? 'otp_verification', [otpCode]);
+      const whatsappService = await import('./whatsapp-service') as any;
+      const result = await whatsappService.sendTemplateMessage(phone, process.env.OTP_WHATSAPP_TEMPLATE_NAME ?? 'otp_verification', [otpCode]);
       if (!result?.success) {
         logger.error('OTP WhatsApp delivery failed', { phone, otpType, error: result?.error });
         return { success: false, error: 'WhatsApp delivery failed' };
