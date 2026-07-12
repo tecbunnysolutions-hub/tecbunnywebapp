@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 
-import { logger, loggerContext } from './logger';
+import { logger } from './logger';
 
 export interface APIResponse<T = unknown> {
   success: boolean;
@@ -296,47 +296,46 @@ export function withApiHandler<T>(
   return async (request: NextRequest, context: any) => {
     const requestId = request.headers.get('x-correlation-id') || crypto.randomUUID();
     
-    return loggerContext.run({ requestId }, async () => {
-      try {
-        let validatedData = null;
-        if (schema) {
-          let dataToValidate: any = {};
-          try {
-            dataToValidate = await request.clone().json();
-          } catch (e) {
-            // Body might be empty or invalid JSON
-          }
-          
-          const parseResult = schema.safeParse(dataToValidate);
-          
-          if (!parseResult.success) {
-            return APIResponseBuilder.badRequest('Validation failed', {
-              errors: parseResult.error.format()
-            });
-          }
-          validatedData = parseResult.data;
+    try {
+      let validatedData = null;
+      if (schema) {
+        let dataToValidate: any = {};
+        try {
+          dataToValidate = await request.clone().json();
+        } catch (e) {
+          // Body might be empty or invalid JSON
         }
         
-        return await handler(request, validatedData as T, context);
-      } catch (error: any) {
-        const isValidationError = error instanceof Error && (
-          error.message.includes('stock') || 
-          error.message.includes('invalid') || 
-          error.message.includes('available') ||
-          error.message.includes('Product') ||
-          error.message.includes('Missing required')
-        );
-
-        if (isValidationError) {
-          logger.warn('api_handler_validation_error', { error: error.message });
-          return APIResponseBuilder.badRequest(error.message);
+        const parseResult = schema.safeParse(dataToValidate);
+        
+        if (!parseResult.success) {
+          logger.warn('api_handler_validation_failed', { requestId, errors: parseResult.error.format() });
+          return APIResponseBuilder.badRequest('Validation failed', {
+            errors: parseResult.error.format()
+          });
         }
-
-        logger.error('api_handler_uncaught_error', { error: error instanceof Error ? error.message : String(error) });
-        return APIResponseBuilder.internalServerError(
-          error instanceof Error ? error.message : 'Unknown Error'
-        );
+        validatedData = parseResult.data;
       }
-    });
+      
+      return await handler(request, validatedData as T, context);
+    } catch (error: any) {
+      const isValidationError = error instanceof Error && (
+        error.message.includes('stock') || 
+        error.message.includes('invalid') || 
+        error.message.includes('available') ||
+        error.message.includes('Product') ||
+        error.message.includes('Missing required')
+      );
+
+      if (isValidationError) {
+        logger.warn('api_handler_validation_error', { requestId, error: error.message });
+        return APIResponseBuilder.badRequest(error.message);
+      }
+
+      logger.error('api_handler_uncaught_error', { requestId, error: error instanceof Error ? error.message : String(error) });
+      return APIResponseBuilder.internalServerError(
+        error instanceof Error ? error.message : 'Unknown Error'
+      );
+    }
   };
 }
