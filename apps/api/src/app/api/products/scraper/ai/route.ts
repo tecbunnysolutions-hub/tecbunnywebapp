@@ -16,9 +16,23 @@ export async function POST(request: NextRequest) {
   const correlationId = request.headers.get('x-correlation-id') || crypto.randomUUID();
 
   try {
-    // 1. Authenticate Request using Unified Policy Middleware
-    // The request has already been validated by executeUnifiedPolicyMiddleware
-    // It requires a valid Supabase JWT Bearer token
+    // 1. Authenticate Request Manually
+    // Since /api/products is public in middleware, we must verify the token here.
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return NextResponse.json({ error: 'Unauthorized: Missing token' }, { status: 401, headers: corsHeaders });
+    }
+    const token = authHeader.substring(7);
+    const { verifySuperadminSessionToken } = await import('@tecbunny/core/auth/superadmin-session');
+    const ip = request.headers.get('x-forwarded-for') || 'unknown';
+    const ua = request.headers.get('user-agent') || 'unknown';
+    
+    const superadminPayload = await verifySuperadminSessionToken(token, ip, ua);
+    if (!superadminPayload) {
+      return NextResponse.json({ error: 'Forbidden: Invalid superadmin token' }, { status: 403, headers: corsHeaders });
+    }
+
+    // 2. Extract Data from Request Body
     const body = await request.json();
     const { rawText } = body;
 

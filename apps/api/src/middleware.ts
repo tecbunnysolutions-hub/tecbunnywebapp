@@ -28,11 +28,28 @@ export async function middleware(request: NextRequest) {
       appType: 'api',
       loginRoute: '/login',
       publicRoutes: [
-        '/api/auth',          // Includes /api/auth/extension, signup, login, OTP
-        '/api/admin-auth',    // Includes /api/admin-auth/login and logout
-        '/api/webhooks',      // Stripe/custom webhooks
-        '/api/payment/payu',  // Payment callbacks
-        '/api/health'         // Health checks
+        '/api/auth',
+        '/api/admin-auth',
+        '/api/webhooks',
+        '/api/payment/payu',
+        '/api/health',
+        '/api/settings',
+        '/api/metadata',
+        '/api/page-content',
+        '/api/auto-offers',
+        '/api/offers',
+        '/api/coupons',
+        '/api/products',
+        '/api/projects',
+        '/api/checkout/calculate',
+        '/api/analytics/track',
+        '/api/captcha',
+        '/api/contact-messages',
+        '/api/free-installation-slots',
+        '/api/promotions',
+        '/api/warranty',
+        '/api/quotes',
+        '/api/uploads'
       ],
     });
   }

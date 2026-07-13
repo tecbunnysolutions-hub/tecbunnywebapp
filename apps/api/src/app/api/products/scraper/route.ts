@@ -14,10 +14,21 @@ export async function OPTIONS() {
 
 export async function POST(request: NextRequest) {
   try {
-    // 1. Authenticate Request using Unified Policy Middleware + getServerAuthState
-    // The request has already been validated by executeUnifiedPolicyMiddleware
-    // We just retrieve the user ID if needed (though the Service Role client bypasses RLS for insertion).
-
+    // 1. Authenticate Request Manually
+    // Since /api/products is public in middleware, we must verify the token here.
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return NextResponse.json({ error: 'Unauthorized: Missing token' }, { status: 401, headers: corsHeaders });
+    }
+    const token = authHeader.substring(7);
+    const { verifySuperadminSessionToken } = await import('@tecbunny/core/auth/superadmin-session');
+    const ip = request.headers.get('x-forwarded-for') || 'unknown';
+    const ua = request.headers.get('user-agent') || 'unknown';
+    
+    const superadminPayload = await verifySuperadminSessionToken(token, ip, ua);
+    if (!superadminPayload) {
+      return NextResponse.json({ error: 'Forbidden: Invalid superadmin token' }, { status: 403, headers: corsHeaders });
+    }
     // 2. Validate Supabase Configuration
     if (!isSupabaseServiceConfigured) {
       return NextResponse.json(
