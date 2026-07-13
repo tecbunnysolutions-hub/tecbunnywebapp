@@ -31,15 +31,20 @@ function safeCache<T extends (...args: any[]) => Promise<any>>(
  */
 export const getAppSettings = safeCache(
   async () => {
-    const supabase = createServiceClient();
-    const { data } = await supabase.from('app_settings').select('key, value');
-    const settings: Record<string, any> = {};
-    if (data) {
-      data.forEach((row) => {
-        settings[row.key] = row.value;
-      });
+    try {
+      const supabase = createServiceClient();
+      const { data } = await supabase.from('app_settings').select('key, value');
+      const settings: Record<string, any> = {};
+      if (data) {
+        data.forEach((row) => {
+          settings[row.key] = row.value;
+        });
+      }
+      return settings;
+    } catch (e) {
+      console.warn('[config-db] Supabase client missing or fetch failed. Returning default settings.');
+      return {};
     }
-    return settings;
   },
   ['db_app_settings'],
   { revalidate: 3600, tags: ['app_settings'] }
@@ -50,15 +55,19 @@ export const getAppSettings = safeCache(
  */
 export const getGstRatesFromDb = safeCache(
   async () => {
-    const supabase = createServiceClient();
-    const { data } = await supabase.from('gst_rates').select('category, rate');
-    const rates: Record<string, number> = {};
-    if (data) {
-      data.forEach((row) => {
-        rates[row.category] = Number(row.rate);
-      });
+    try {
+      const supabase = createServiceClient();
+      const { data } = await supabase.from('gst_rates').select('category, rate');
+      const rates: Record<string, number> = {};
+      if (data) {
+        data.forEach((row) => {
+          rates[row.category] = Number(row.rate);
+        });
+      }
+      return rates;
+    } catch (e) {
+      return {};
     }
-    return rates;
   },
   ['db_gst_rates'],
   { revalidate: 3600, tags: ['gst_rates'] }
@@ -69,15 +78,19 @@ export const getGstRatesFromDb = safeCache(
  */
 export const getRolePermissionsFromDb = safeCache(
   async () => {
-    const supabase = createServiceClient();
-    const { data } = await supabase.from('roles_permissions').select('role, permissions');
-    const perms: Record<string, Record<string, boolean>> = {};
-    if (data) {
-      data.forEach((row) => {
-        perms[row.role] = row.permissions;
-      });
+    try {
+      const supabase = createServiceClient();
+      const { data } = await supabase.from('roles_permissions').select('role, permissions');
+      const perms: Record<string, Record<string, boolean>> = {};
+      if (data) {
+        data.forEach((row) => {
+          perms[row.role] = row.permissions;
+        });
+      }
+      return perms;
+    } catch (e) {
+      return {};
     }
-    return perms;
   },
   ['db_roles_permissions'],
   { revalidate: 3600, tags: ['roles_permissions'] }
@@ -88,9 +101,13 @@ export const getRolePermissionsFromDb = safeCache(
  */
 export const getCustomerCategoriesFromDb = safeCache(
   async () => {
-    const supabase = createServiceClient();
-    const { data } = await supabase.from('customer_categories').select('*');
-    return data || [];
+    try {
+      const supabase = createServiceClient();
+      const { data } = await supabase.from('customer_categories').select('*');
+      return data || [];
+    } catch (e) {
+      return [];
+    }
   },
   ['db_customer_categories'],
   { revalidate: 3600, tags: ['customer_categories'] }
@@ -101,15 +118,19 @@ export const getCustomerCategoriesFromDb = safeCache(
  */
 export const getCustomSetupConstantsFromDb = safeCache(
   async () => {
-    const supabase = createServiceClient();
-    const { data } = await supabase.from('custom_setup_constants').select('key, value');
-    const constants: Record<string, number> = {};
-    if (data) {
-      data.forEach((row) => {
-        constants[row.key] = Number(row.value);
-      });
+    try {
+      const supabase = createServiceClient();
+      const { data } = await supabase.from('custom_setup_constants').select('key, value');
+      const constants: Record<string, number> = {};
+      if (data) {
+        data.forEach((row) => {
+          constants[row.key] = Number(row.value);
+        });
+      }
+      return constants;
+    } catch (e) {
+      return {};
     }
-    return constants;
   },
   ['db_custom_setup_constants'],
   { revalidate: 3600, tags: ['custom_setup_constants'] }
@@ -120,9 +141,13 @@ export const getCustomSetupConstantsFromDb = safeCache(
  */
 export const getCustomSetupInventoryFromDb = safeCache(
   async () => {
-    const supabase = createServiceClient();
-    const { data } = await supabase.from('custom_setup_inventory').select('*').eq('is_active', true);
-    return data || [];
+    try {
+      const supabase = createServiceClient();
+      const { data } = await supabase.from('custom_setup_inventory').select('*').eq('is_active', true);
+      return data || [];
+    } catch (e) {
+      return [];
+    }
   },
   ['db_custom_setup_inventory'],
   { revalidate: 3600, tags: ['custom_setup_inventory'] }

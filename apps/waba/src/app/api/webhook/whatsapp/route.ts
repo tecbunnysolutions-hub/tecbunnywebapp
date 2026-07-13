@@ -3,10 +3,7 @@ import crypto from 'crypto';
 import { getWabaWebhookQueue } from '@tecbunny/core/server';
 
 // Bug #1 fix: Remove hardcoded secret fallback. Throw at startup if missing.
-const INFOBIP_HMAC_SECRET = process.env.INFOBIP_HMAC_SECRET;
-if (!INFOBIP_HMAC_SECRET) {
-  throw new Error('INFOBIP_HMAC_SECRET environment variable is required but not set.');
-}
+// Moving the check to runtime to prevent Vercel build failures when secret is not set.
 
 /**
  * Bug #3 fix: Use timing-safe comparison (crypto.timingSafeEqual) to prevent
@@ -18,8 +15,13 @@ if (!INFOBIP_HMAC_SECRET) {
  * the "sha256=" prefix before comparing.
  */
 function verifySignature(payload: string, signature: string): boolean {
+  const secret = process.env.INFOBIP_HMAC_SECRET;
+  if (!secret) {
+    throw new Error('INFOBIP_HMAC_SECRET environment variable is required but not set.');
+  }
+
   const expected = crypto
-    .createHmac('sha256', INFOBIP_HMAC_SECRET!)
+    .createHmac('sha256', secret)
     .update(payload)
     .digest('hex');
 
