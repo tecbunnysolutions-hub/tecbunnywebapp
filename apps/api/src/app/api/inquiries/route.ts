@@ -79,6 +79,39 @@ export async function POST(request: NextRequest) {
       logger.error('Failed to send admin alert whatsapp', { error: waError.message });
     }
 
+    // Send data to HubSpot CRM directly
+    try {
+      const hubspotToken = process.env.HUBSPOT_ACCESS_TOKEN;
+      if (hubspotToken && hubspotToken !== 'your-hubspot-access-token-here') {
+        const hubspotResponse = await fetch('https://api.hubapi.com/crm/v3/objects/contacts', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${hubspotToken}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            properties: {
+              firstname: name,
+              email: email || '',
+              phone: phone,
+              hs_lead_status: 'NEW',
+              message: message || '',
+              product_id: productId || ''
+            }
+          })
+        });
+        
+        if (!hubspotResponse.ok) {
+          const errorData = await hubspotResponse.text();
+          logger.error('Failed to create HubSpot contact', { error: errorData });
+        } else {
+          logger.info('Successfully created HubSpot contact');
+        }
+      }
+    } catch (hubspotError: any) {
+      logger.error('Failed to connect to HubSpot', { error: hubspotError.message });
+    }
+
     return NextResponse.json({ success: true, inquiry: savedInquiry }, { status: 200 });
 
   } catch (error: any) {
