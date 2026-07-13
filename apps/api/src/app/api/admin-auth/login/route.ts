@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createSuperadminSessionToken } from '@tecbunny/core/server';
+import { createSuperadminSessionToken } from '@tecbunny/core/auth/superadmin-session';
 
 export async function POST(request: Request) {
   try {
