@@ -1,5 +1,5 @@
 import { createClient } from "@tecbunny/core/supabase/client";
-import { createSupabaseServiceClient, isSupabaseServiceConfigured } from "@tecbunny/core/server";;
+import { createSupabaseServiceClient, isSupabaseServiceConfigured } from "@tecbunny/core/supabase/server";
 import crypto from 'crypto';
 
 import { NextRequest, NextResponse } from 'next/server';

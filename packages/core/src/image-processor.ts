@@ -1,5 +1,3 @@
-// @ts-ignore
-import sharp from 'sharp';
 import { logger } from './logger';
 import { SupabaseClient } from '@supabase/supabase-js';
 import crypto from 'crypto';
@@ -20,6 +18,7 @@ export async function optimizeImage(
   options: { maxWidth?: number; maxHeight?: number } = { maxWidth: 1920, maxHeight: 1920 }
 ): Promise<ProcessedImage> {
   try {
+    const sharp = require('sharp');
     const image = sharp(inputBuffer);
     const metadata = await image.metadata();
 
@@ -52,6 +51,7 @@ export async function optimizeImage(
 export function createOptimizeImageStream(
   options: { maxWidth?: number; maxHeight?: number } = { maxWidth: 1920, maxHeight: 1920 }
 ): any {
+  const sharp = require('sharp');
   return sharp()
     .resize({
       width: options.maxWidth,
