@@ -99,12 +99,12 @@ export async function POST(request: NextRequest) {
       price: parsedPrice,
       mrp: parsedMrp,
       category: category || null,
+      brand: brand || null,
       image: finalImageUrl,
       images: finalImageUrl ? [finalImageUrl] : [],
       status: 'active', // Saved as active directly
       product_type: 'physical',
       specifications: {
-        ...(brand && { 'Brand': brand }),
         ...(modelNo && { 'Model No.': modelNo }),
         ...(warrantyPeriod && { 'Warranty Period': warrantyPeriod }),
         ...(warrantyType && { 'Warranty Type': warrantyType }),
