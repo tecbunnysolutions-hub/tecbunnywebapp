@@ -74,7 +74,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Invalid superadmin credentials.' }, { status: 401 });
     }
 
-    const token = await createSuperadminSessionToken(correctUserId.trim());
+    const token = await createSuperadminSessionToken(correctUserId.trim(), request);
 
     logger.info('superadmin_login.success', { userId: submittedUserId, ip });
 

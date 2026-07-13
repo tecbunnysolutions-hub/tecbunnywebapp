@@ -1,12 +1,11 @@
-import { NextResponse, type NextRequest } from 'next/server';
-import { updateSession } from '@tecbunny/core/supabase/middleware';
+import { type NextRequest } from 'next/server';
+import { executeUnifiedPolicyMiddleware } from '@tecbunny/core/auth/unified-middleware';
 
 export async function middleware(request: NextRequest) {
-  return await updateSession(request, {
-    allowedRoles: ['admin', 'sales_manager', 'service_manager', 'sales_executive', 'store_executive', 'superadmin'],
+  return await executeUnifiedPolicyMiddleware(request, {
+    appType: 'mgmt',
     loginRoute: '/auth/login',
     publicRoutes: [],
-    onForbidden: () => new NextResponse('Forbidden: Insufficient Privileges', { status: 403 }),
   });
 }
 
@@ -19,6 +18,6 @@ export const config = {
      * - favicon.ico (favicon file)
      * - auth/login (the login page itself to prevent redirect loops)
      */
-    '/((?!_next/static|_next/image|favicon.ico|auth/login|api/).*)',
+    '/((?!_next/static|_next/image|favicon.ico|auth/login).*)',
   ],
 };

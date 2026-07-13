@@ -8,11 +8,11 @@ type SuperadminSessionPayload = {
   iat: number;
   exp: number;
   jti: string;
+  fp: string; // Fingerprint
 };
 
 const textEncoder = new TextEncoder();
 
-// Cache variables for cryptographic keys to prevent GC thrashing and CPU overhead
 let cachedKeySecret: string | null = null;
 let cachedCryptoKey: CryptoKey | null = null;
 
@@ -45,7 +45,6 @@ function getSessionSecret() {
 }
 
 async function hmacSha256(data: string, secret: string) {
-  // Lazily import and cache the key using standard Web Crypto API
   if (!cachedCryptoKey || cachedKeySecret !== secret) {
     cachedCryptoKey = await crypto.subtle.importKey(
       'raw',
@@ -68,38 +67,55 @@ function timingSafeEqual(a: Uint8Array, b: Uint8Array) {
   return diff === 0;
 }
 
-export async function createSuperadminSessionToken(email: string) {
+// Generate a request fingerprint hash combining IP and User-Agent
+async function generateFingerprint(requestOrIp: Request | string | null, uaStr?: string | null): Promise<string> {
+  let ip = 'unknown';
+  let ua = 'unknown';
+
+  if (requestOrIp && typeof requestOrIp === 'object' && 'headers' in requestOrIp) {
+    ip = requestOrIp.headers.get('x-forwarded-for') || 'unknown';
+    ua = requestOrIp.headers.get('user-agent') || 'unknown';
+  } else {
+    if (typeof requestOrIp === 'string') ip = requestOrIp;
+    if (typeof uaStr === 'string') ua = uaStr;
+  }
+
+  const rawFp = `${ip.split(',')[0].trim()}|${ua}`;
+  const hashBuffer = await crypto.subtle.digest('SHA-256', textEncoder.encode(rawFp));
+  return base64UrlEncode(new Uint8Array(hashBuffer)).substring(0, 16);
+}
+
+export async function createSuperadminSessionToken(email: string, requestOrIp: Request | string, ua?: string) {
   const secret = getSessionSecret();
   if (!secret) {
     throw new Error('SUPERADMIN_SESSION_SECRET or SUPERADMIN_PASSWORD is required');
   }
 
   const now = Math.floor(Date.now() / 1000);
+  const fp = await generateFingerprint(requestOrIp, ua);
+  
   const payload: SuperadminSessionPayload = {
     sub: 'superadmin-root-id',
     email,
     iat: now,
     exp: now + SUPERADMIN_SESSION_TTL_SECONDS,
     jti: crypto.randomUUID(),
+    fp,
   };
 
   const encodedPayload = base64UrlEncode(textEncoder.encode(JSON.stringify(payload)));
   const signature = base64UrlEncode(await hmacSha256(encodedPayload, secret));
-  return `v1.${encodedPayload}.${signature}`;
+  return `v2.${encodedPayload}.${signature}`;
 }
 
-export async function verifySuperadminSessionToken(token: string | undefined | null) {
-  if (!token) {
-    return null;
-  }
-
+export async function verifySuperadminSessionToken(token: string | undefined | null, requestOrIp?: Request | string | null, uaStr?: string | null) {
+  if (!token) return null;
   const secret = getSessionSecret();
-  if (!secret) {
-    return null;
-  }
+  if (!secret) return null;
 
   const [version, encodedPayload, encodedSignature] = token.split('.');
-  if (version !== 'v1' || !encodedPayload || !encodedSignature) {
+  // Support v1 tokens during migration, but ideally only accept v2
+  if ((version !== 'v1' && version !== 'v2') || !encodedPayload || !encodedSignature) {
     return null;
   }
 
@@ -111,9 +127,7 @@ export async function verifySuperadminSessionToken(token: string | undefined | n
     return null;
   }
 
-  if (!timingSafeEqual(expectedSignature, actualSignature)) {
-    return null;
-  }
+  if (!timingSafeEqual(expectedSignature, actualSignature)) return null;
 
   try {
     const payloadText = new TextDecoder().decode(base64UrlDecode(encodedPayload));
@@ -127,10 +141,22 @@ export async function verifySuperadminSessionToken(token: string | undefined | n
       payload.email !== configuredEmail ||
       typeof payload.exp !== 'number' ||
       payload.exp <= now ||
-      // Bug #23 fix: Reject tokens whose JTI has been explicitly revoked
       (payload.jti && isJtiRevoked(payload.jti))
     ) {
       return null;
+    }
+
+    // Fingerprint verification for v2 tokens
+    if (version === 'v2' && (requestOrIp || uaStr)) {
+      const currentFp = await generateFingerprint(requestOrIp || null, uaStr);
+      if (payload.fp !== currentFp) {
+        logger.warn('superadmin_session_fingerprint_mismatch', { 
+          reason: 'Token was generated for a different IP or User-Agent',
+          expectedFp: payload.fp,
+          actualFp: currentFp
+        });
+        return null;
+      }
     }
 
     return payload as SuperadminSessionPayload;

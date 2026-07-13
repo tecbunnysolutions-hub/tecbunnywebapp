@@ -80,12 +80,24 @@ export interface ServerAuthState {
 export async function getServerAuthState(): Promise<ServerAuthState> {
   try {
     const { cookies } = await import('next/headers');
-    const { verifySuperadminSessionToken } = await import('./auth/superadmin-session');
     const cookieStore = await cookies();
     const superadminCookie = cookieStore.get('superadmin-session')?.value;
+    let isSuperadmin = false;
     if (superadminCookie) {
-      const isSuperadmin = await verifySuperadminSessionToken(superadminCookie);
-      if (isSuperadmin) {
+      try {
+        const { verifySuperadminSessionToken } = await import('./auth/superadmin-session');
+        const { headers } = await import('next/headers');
+        const headersList = await headers();
+        const ip = headersList.get('x-forwarded-for') || 'unknown';
+        const ua = headersList.get('user-agent') || 'unknown';
+        
+        isSuperadmin = Boolean(await verifySuperadminSessionToken(superadminCookie, ip, ua));
+      } catch {
+        // Ignored
+      }
+    }
+    
+    if (isSuperadmin) {
         const { createServiceClient, isSupabaseServiceConfigured } = await import('./supabase/server');
         const supabase = isSupabaseServiceConfigured ? createServiceClient() : await createClient();
         return {
@@ -109,7 +121,6 @@ export async function getServerAuthState(): Promise<ServerAuthState> {
           permissions: ['*'],
         };
       }
-    }
   } catch (cookieError) {
     // Ignore and fallback
   }
@@ -165,17 +176,44 @@ export const roleMatches = (role: UserRole, options: RoleCheckOptions): boolean 
 };
 
 export async function requireApiRole(options: RoleCheckOptions = {}) {
-  const { supabase, session, role, permissions } = await getServerAuthState();
+  const { withTelemetry } = await import('./telemetry');
+  
+  return withTelemetry('auth.requireApiRole', async () => {
+    const { supabase, session, role, permissions } = await getServerAuthState();
 
-  if (!session) {
-    return { error: NextResponse.json({ error: 'Unauthorized' }, { status: 401 }) } as const;
-  }
+    if (!session) {
+      const error = NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      const { telemetry } = await import('./telemetry');
+      telemetry.getTracer().startActiveSpan('auth.failure', (span) => {
+        span.setAttributes({
+          'auth.failure_reason': 'No active session',
+        });
+        span.setStatus({ code: 2, message: 'Unauthorized' }); // 2 is ERROR
+        span.end();
+      });
+      return { error } as const;
+    }
 
-  if (!roleMatches(role, options)) {
-    return { error: NextResponse.json({ error: 'Forbidden' }, { status: 403 }) } as const;
-  }
+    if (!roleMatches(role, options)) {
+      const error = NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+      const { telemetry } = await import('./telemetry');
+      telemetry.getTracer().startActiveSpan('auth.failure', (span) => {
+        span.setAttributes({
+          'auth.user_id': session.user.id,
+          'auth.role': role,
+          'auth.failure_reason': 'Insufficient role',
+          'auth.required_options': JSON.stringify(options),
+        });
+        span.setStatus({ code: 2, message: 'Forbidden' });
+        span.end();
+      });
+      return { error } as const;
+    }
 
-  return { supabase, session, role, permissions } as const;
+    return { supabase, session, role, permissions } as const;
+  }, {
+    'auth.check_type': 'role_match',
+  });
 }
 
 // New utility to evaluate specific permissions
@@ -187,12 +225,38 @@ export async function hasServerPermission(requiredPermission: string): Promise<b
 
 // Guard for Route Handlers and Server Actions
 export async function requirePermission(requiredPermission: string) {
-  const isAllowed = await hasServerPermission(requiredPermission);
-  if (!isAllowed) {
-    return { error: NextResponse.json({ error: 'Forbidden: Insufficient permissions' }, { status: 403 }) } as const;
-  }
+  const { withTelemetry } = await import('./telemetry');
   
-  return { success: true } as const;
+  return withTelemetry('auth.requirePermission', async () => {
+    const isAllowed = await hasServerPermission(requiredPermission);
+    if (!isAllowed) {
+      const error = NextResponse.json({ error: 'Forbidden: Insufficient permissions' }, { status: 403 });
+      const { telemetry } = await import('./telemetry');
+      
+      try {
+        const { session, role } = await getServerAuthState();
+        telemetry.getTracer().startActiveSpan('auth.failure', (span) => {
+          span.setAttributes({
+            'auth.user_id': session?.user?.id || 'unknown',
+            'auth.role': role || 'unknown',
+            'auth.attempted_resource': requiredPermission,
+            'auth.failure_reason': 'Insufficient permissions',
+          });
+          span.setStatus({ code: 2, message: 'Forbidden' });
+          span.end();
+        });
+      } catch (e) {
+        // Fallback if getServerAuthState fails
+      }
+      
+      return { error } as const;
+    }
+    
+    return { success: true } as const;
+  }, {
+    'auth.attempted_resource': requiredPermission,
+    'auth.check_type': 'permission_check',
+  });
 }
 
 const REGION_SCOPED_ROLES = new Set<UserRole>([

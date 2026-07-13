@@ -16,7 +16,7 @@ export async function POST(request: Request) {
     }
 
     if (userId === expectedUserId && password === expectedPassword) {
-      const token = await createSuperadminSessionToken(userId);
+      const token = await createSuperadminSessionToken(userId, request);
 
       const response = NextResponse.json({ success: true });
       

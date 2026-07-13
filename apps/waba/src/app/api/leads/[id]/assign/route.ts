@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { PrismaClient, Role } from '@tecbunny/types';
 import { LeadService } from '@/services/leadService';
+import { requireApiRole, hasServerPermission } from '@tecbunny/core/server-role-guard';
+import { PERMS } from '@tecbunny/core/roles';
 
 const prisma = new PrismaClient();
 
@@ -12,22 +14,16 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     const body = await req.json();
     const { assigned_to } = body;
 
-    // In a real app, you would extract the acting user's ID from the auth session (e.g., Supabase Auth)
-    // For this demonstration, we'll extract it from the headers or assume a SUPERADMIN is calling it.
-    const actingUserId = req.headers.get('x-user-id');
-    
-    if (!actingUserId) {
-      return NextResponse.json({ error: 'Unauthorized: Missing x-user-id header' }, { status: 401 });
-    }
+    // Extract user session via proper server-side authentication
+    const { session, error } = await requireApiRole();
+    if (error) return error;
 
-    // Verify acting user is SUPERADMIN
-    const actingUser = await prisma.user.findUnique({
-      where: { id: actingUserId },
-      select: { role: true }
-    });
+    const actingUserId = session.user.id;
 
-    if (!actingUser || actingUser.role !== Role.SUPERADMIN) {
-      return NextResponse.json({ error: 'Forbidden: Only SUPERADMIN can manually reassign leads' }, { status: 403 });
+    // Verify acting user has the right permission via policy engine
+    const isAllowed = await hasServerPermission(PERMS.LEADS_ASSIGN_AREA);
+    if (!isAllowed) {
+      return NextResponse.json({ error: 'Forbidden: Insufficient permissions to reassign leads' }, { status: 403 });
     }
 
     // Validate the target user exists and is a manager
@@ -41,7 +37,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       }
     }
 
-    // Update the lead
+    // Update the lead (LeadService now assumes the identity check was performed)
     const updatedLead = await LeadService.updateLead(actingUserId, leadId, { assigned_to });
 
     return NextResponse.json({ status: 'success', data: updatedLead }, { status: 200 });
