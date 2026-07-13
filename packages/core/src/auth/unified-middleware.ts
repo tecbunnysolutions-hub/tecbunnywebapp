@@ -96,7 +96,7 @@ export async function executeUnifiedPolicyMiddleware(
       }
       
       if (pathname.startsWith('/api')) {
-         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+         return NextResponse.json({ error: 'Unauthorized middleware' }, { status: 401 });
       }
       return NextResponse.redirect(new URL(loginRoute, req.url));
     },
