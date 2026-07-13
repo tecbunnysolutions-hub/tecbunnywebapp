@@ -78,6 +78,7 @@ export async function executeUnifiedPolicyMiddleware(
     allowedRoles: undefined, // Role enforcement is now handled by Prisma Extension and Route Guards
     loginRoute,
     publicRoutes,
+    enforceMfaRoles: (appType === 'mgmt' || appType === 'superadmin') ? ['admin', 'superadmin'] : undefined,
     onUnauthorized: (req: NextRequest) => {
       // Instrument authorization failure (No Session)
       try {
@@ -119,6 +120,27 @@ export async function executeUnifiedPolicyMiddleware(
          return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
       }
       return NextResponse.redirect(new URL(loginRoute, req.url));
+    },
+    onMfaRequired: (req: NextRequest) => {
+      // Instrument MFA requirement
+      try {
+        const { telemetry } = require('@tecbunny/core/telemetry');
+        telemetry.getTracer().startActiveSpan('auth.mfa_required', (span: any) => {
+          span.setAttributes({
+            'auth.attempted_resource': pathname,
+          });
+          span.setStatus({ code: 1, message: 'MFA Required' });
+          span.end();
+        });
+      } catch (e) {}
+
+      if (pathname.startsWith('/api')) {
+        return NextResponse.json({ error: 'MFA Required' }, { status: 403 });
+      }
+      
+      const mfaSetupUrl = new URL(appType === 'superadmin' ? '/superadmin/mfa-setup' : '/mfa-setup', req.url);
+      mfaSetupUrl.searchParams.set('next', pathname);
+      return NextResponse.redirect(mfaSetupUrl);
     }
   });
 

@@ -75,6 +75,7 @@ export interface ServerAuthState {
   session: Session | null;
   role: UserRole;
   permissions: string[];
+  mfaLevel: string | null;
 }
 
 export async function getServerAuthState(): Promise<ServerAuthState> {
@@ -119,6 +120,7 @@ export async function getServerAuthState(): Promise<ServerAuthState> {
           },
           role: 'superadmin' as UserRole,
           permissions: ['*'],
+          mfaLevel: 'aal2', // Assumed secure for legacy cookie stub
         };
       }
   } catch (cookieError) {
@@ -131,7 +133,7 @@ export async function getServerAuthState(): Promise<ServerAuthState> {
   const { data: { user }, error } = await supabase.auth.getUser();
 
   if (error || !user) {
-    return { supabase, session: null, role: DEFAULT_ROLE, permissions: [] };
+    return { supabase, session: null, role: DEFAULT_ROLE, permissions: [], mfaLevel: null };
   }
 
   // Reconstruct a minimal session-like object for compatibility
@@ -152,7 +154,13 @@ export async function getServerAuthState(): Promise<ServerAuthState> {
   // a deliberately set app_metadata role. Prefer app_metadata first, DB second.
   const resolvedRole: UserRole = metadataRole ?? (await fetchProfileRole(supabase, user.id)) ?? DEFAULT_ROLE;
 
-  return { supabase, session, role: resolvedRole, permissions };
+  let mfaLevel: string | null = null;
+  if (resolvedRole === 'admin' || resolvedRole === 'superadmin') {
+    const { data } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+    mfaLevel = data?.currentLevel ?? 'aal1';
+  }
+
+  return { supabase, session, role: resolvedRole, permissions, mfaLevel };
 }
 
 export const roleMatches = (role: UserRole, options: RoleCheckOptions): boolean => {
@@ -179,7 +187,7 @@ export async function requireApiRole(options: RoleCheckOptions = {}) {
   const { withTelemetry } = await import('./telemetry');
   
   return withTelemetry('auth.requireApiRole', async () => {
-    const { supabase, session, role, permissions } = await getServerAuthState();
+    const { supabase, session, role, permissions, mfaLevel } = await getServerAuthState();
 
     if (!session) {
       const error = NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -210,6 +218,20 @@ export async function requireApiRole(options: RoleCheckOptions = {}) {
       return { error } as const;
     }
 
+    if ((role === 'admin' || role === 'superadmin') && mfaLevel !== 'aal2') {
+      const error = NextResponse.json({ error: 'MFA Required' }, { status: 403 });
+      const { telemetry } = await import('./telemetry');
+      telemetry.getTracer().startActiveSpan('auth.mfa_required', (span) => {
+        span.setAttributes({
+          'auth.user_id': session.user.id,
+          'auth.role': role,
+        });
+        span.setStatus({ code: 1, message: 'MFA Required' });
+        span.end();
+      });
+      return { error } as const;
+    }
+
     return { supabase, session, role, permissions } as const;
   }, {
     'auth.check_type': 'role_match',
@@ -229,12 +251,13 @@ export async function requirePermission(requiredPermission: string) {
   
   return withTelemetry('auth.requirePermission', async () => {
     const isAllowed = await hasServerPermission(requiredPermission);
+    const { session, role, mfaLevel } = await getServerAuthState();
+
     if (!isAllowed) {
       const error = NextResponse.json({ error: 'Forbidden: Insufficient permissions' }, { status: 403 });
       const { telemetry } = await import('./telemetry');
       
       try {
-        const { session, role } = await getServerAuthState();
         telemetry.getTracer().startActiveSpan('auth.failure', (span) => {
           span.setAttributes({
             'auth.user_id': session?.user?.id || 'unknown',
@@ -246,8 +269,26 @@ export async function requirePermission(requiredPermission: string) {
           span.end();
         });
       } catch (e) {
-        // Fallback if getServerAuthState fails
+        // Fallback if telemetry fails
       }
+      
+      return { error } as const;
+    }
+
+    if ((role === 'admin' || role === 'superadmin') && mfaLevel !== 'aal2') {
+      const error = NextResponse.json({ error: 'MFA Required' }, { status: 403 });
+      const { telemetry } = await import('./telemetry');
+      try {
+        telemetry.getTracer().startActiveSpan('auth.mfa_required', (span) => {
+          span.setAttributes({
+            'auth.user_id': session?.user?.id || 'unknown',
+            'auth.role': role,
+            'auth.attempted_resource': requiredPermission,
+          });
+          span.setStatus({ code: 1, message: 'MFA Required' });
+          span.end();
+        });
+      } catch (e) {}
       
       return { error } as const;
     }

@@ -13,8 +13,10 @@ export async function updateSession(
   options?: RoleCheckOptions & { 
     publicRoutes?: string[]; 
     loginRoute?: string;
+    enforceMfaRoles?: string[];
     onUnauthorized?: (req: NextRequest) => NextResponse;
     onForbidden?: (req: NextRequest) => NextResponse;
+    onMfaRequired?: (req: NextRequest) => NextResponse;
   }
 ) {
   let response = NextResponse.next({
@@ -86,6 +88,17 @@ export async function updateSession(
     if (!roleMatches(userRole, { allowedRoles: options.allowedRoles, minimumRole: options.minimumRole })) {
       if (options?.onForbidden) return options.onForbidden(request);
       return new NextResponse(`Forbidden: Insufficient Privileges. Role '${userRole}' is not authorized.`, { status: 403 });
+    }
+  }
+
+  // Enforce MFA for specific roles
+  if (options?.enforceMfaRoles && options.enforceMfaRoles.includes(userRole)) {
+    const { data } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+    if (data?.currentLevel !== 'aal2') {
+      if (options?.onMfaRequired) {
+        return options.onMfaRequired(request);
+      }
+      return NextResponse.redirect(new URL('/mfa-setup', request.url));
     }
   }
 
