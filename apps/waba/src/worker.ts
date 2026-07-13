@@ -42,7 +42,7 @@ async function startWorker() {
       throw error;
     }
   }, {
-    connection: redisConnection as any,
+    connection: redisConnection as never,
     concurrency: 5,
   });
 

@@ -44,10 +44,10 @@ export default function OnlineOrdersPage({ orderType = 'Delivery' }: { orderType
         setOrders(data as Order[]);
     }
     setLoading(false);
-  }, [supabase, toast]);
+  }, [supabase, toast, orderType]);
 
   React.useEffect(() => {
-    fetchOrders();
+    setTimeout(() => { fetchOrders(); }, 0);
   }, [fetchOrders]);
 
   const getBadgeVariant = (status: string) => {

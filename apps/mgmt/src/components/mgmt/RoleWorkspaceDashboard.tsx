@@ -191,6 +191,7 @@ export function RoleWorkspaceDashboard({ kind }: RoleWorkspaceDashboardProps) {
           table: 'Conversation',
           filter: "status=eq.PENDING_HUMAN_AGENT"
         },
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (payload: any) => {
           if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
             setNeedsAttentionQueue(prev => {
@@ -215,6 +216,7 @@ export function RoleWorkspaceDashboard({ kind }: RoleWorkspaceDashboardProps) {
           table: 'Conversation',
           filter: "status=eq.PROCESSING"
         },
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (payload: any) => {
           if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
             setLiveLeadCaptureQueue(prev => {
@@ -233,7 +235,7 @@ export function RoleWorkspaceDashboard({ kind }: RoleWorkspaceDashboardProps) {
       supabase.removeChannel(channel);
       supabase.removeChannel(processingChannel);
     };
-  }, []);
+  }, [config, supabase, user]);
 
   return (
     <div className="space-y-6 sm:space-y-8">

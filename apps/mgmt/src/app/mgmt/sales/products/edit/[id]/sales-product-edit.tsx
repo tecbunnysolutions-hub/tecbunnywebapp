@@ -212,6 +212,7 @@ export default function EditProductPage() {
             if (additionalImagesArray && typeof additionalImagesArray === 'string') {
               try {
                 additionalImagesArray = JSON.parse(additionalImagesArray);
+                       // eslint-disable-next-line @typescript-eslint/no-unused-vars
               } catch (_e) {
                 additionalImagesArray = [];
               }
@@ -302,11 +303,11 @@ export default function EditProductPage() {
             description: `${data.name} has been updated successfully.`,
         });
         router.push(`/mgmt/sales/products?refresh=${Date.now()}`);
-    } catch(e: any) {
+    } catch(e: unknown) {
         toast({
             variant: "destructive",
             title: "Failed to update product",
-            description: e.message || "An unexpected error occurred.",
+            description: (e as Error).message || "An unexpected error occurred.",
         });
     }
   };
@@ -368,6 +369,7 @@ export default function EditProductPage() {
                                   variant="outline"
                                   size="sm"
                                   onClick={handleFetchProductDetails}
+                                  // eslint-disable-next-line react-hooks/incompatible-library
                                   disabled={isFetchingAiDetails || !form.watch('product_url')?.trim()}
                                 >
                                   {isFetchingAiDetails ? (
@@ -416,6 +418,7 @@ export default function EditProductPage() {
                               <div className="flex items-center gap-4">
                                 {imagePreview && (
                                   <div className="relative group w-32 h-32 border rounded-lg overflow-hidden shrink-0">
+                                    {/* eslint-disable-next-line @next/next/no-img-element */}
                                     <img src={imagePreview} alt="Product preview" className="w-full h-full object-cover" />
                                     <button
                                       type="button"
@@ -465,6 +468,7 @@ export default function EditProductPage() {
                                 <div className="grid grid-cols-3 md:grid-cols-4 gap-2 mb-2">
                                   {additionalImages.map((image, index) => (
                                     <div key={index} className="relative">
+                                      {/* eslint-disable-next-line @next/next/no-img-element */}
                                       <img 
                                         src={image} 
                                         alt={`Additional ${index + 1}`} 

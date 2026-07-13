@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
@@ -58,7 +59,7 @@ export function useLeadCaptureTrigger(delayMs: number = 45000) {
         window.removeEventListener(event, resetTimer);
       });
     };
-  }, [hasTriggered]);
+  }, [hasTriggered, resetTimer]);
 
   return { hasTriggered };
 }

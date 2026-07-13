@@ -90,7 +90,7 @@ export class AssignmentOrchestrator extends BaseAgent<TriagedPayload, void> {
       const matchedManager = (managers || []).find(user => {
         if (!user.managed_pincodes) return false;
         try {
-          const pincodes = Array.isArray(user.managed_pincodes) ? user.managed_pincodes : JSON.parse(user.managed_pincodes as any);
+          const pincodes = Array.isArray(user.managed_pincodes) ? user.managed_pincodes : JSON.parse(user.managed_pincodes as string);
           return Array.isArray(pincodes) && data.pincode && pincodes.includes(data.pincode as string);
         } catch {
           return false;
@@ -127,14 +127,14 @@ export class AssignmentOrchestrator extends BaseAgent<TriagedPayload, void> {
         console.log(`[AssignmentOrchestrator] Updated existing lead ${existingLead.id} for ${data.senderNumber} to status ${leadStatus}`);
       } else {
         await LeadService.createLead({
-          domain: data.domain === 'UNKNOWN' ? 'TECHNICAL_SERVICE' : (data.domain as any),
+          domain: data.domain === 'UNKNOWN' ? 'TECHNICAL_SERVICE' : (data.domain as 'TECHNICAL_SERVICE' | 'PRODUCT_SALES'),
           sub_category: data.sub_category,
           sender_number: data.senderNumber,
           pincode: data.pincode || 'UNKNOWN',
           address: data.address || '',
           status: leadStatus,
           assigned_to: assignedUserId,
-        } as any);
+        } as Parameters<typeof LeadService.createLead>[0]);
         console.log(`[AssignmentOrchestrator] Created new lead for ${data.senderNumber} with status ${leadStatus}`);
       }
 

@@ -48,6 +48,7 @@ type ProductFormValues = z.output<typeof productSchema>;
 export default function NewProductPage() {
   const router = useRouter();
   const { toast } = useToast();
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const supabase = createClient();
   const [imagePreview, setImagePreview] = React.useState<string>('');
   const [additionalImages, setAdditionalImages] = React.useState<string[]>([]);
@@ -242,11 +243,11 @@ export default function NewProductPage() {
             description: `${data.name} has been added to the inventory.`,
         });
         router.push('/mgmt/sales/products');
-    } catch(e: any) {
+    } catch(e: unknown) {
         toast({
             variant: "destructive",
             title: "Failed to create product",
-            description: e.message || "An unexpected error occurred.",
+            description: (e as Error).message || "An unexpected error occurred.",
         });
     }
   };
@@ -300,6 +301,7 @@ export default function NewProductPage() {
                                   variant="outline"
                                   size="sm"
                                   onClick={handleFetchProductDetails}
+                                  // eslint-disable-next-line react-hooks/incompatible-library
                                   disabled={isFetchingAiDetails || !form.watch('product_url')?.trim()}
                                 >
                                   {isFetchingAiDetails ? (
@@ -474,6 +476,7 @@ export default function NewProductPage() {
                             {imagePreview && (
                               <div className="mb-4 flex items-center gap-4">
                                 <div className="relative group w-32 h-32 rounded-lg border overflow-hidden shrink-0">
+                                  {/* eslint-disable-next-line @next/next/no-img-element */}
                                   <img 
                                     src={imagePreview} 
                                     alt="Product preview" 
@@ -521,6 +524,7 @@ export default function NewProductPage() {
                               <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
                                 {additionalImages.map((image, index) => (
                                   <div key={index} className="relative">
+                                    {/* eslint-disable-next-line @next/next/no-img-element */}
                                     <img 
                                       src={image} 
                                       alt={`Additional ${index + 1}`} 

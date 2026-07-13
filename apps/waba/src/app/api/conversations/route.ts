@@ -13,7 +13,7 @@ export async function PATCH(req: Request) {
     }
 
     // Build the update object dynamically
-    const updateData: any = {};
+    const updateData: Record<string, unknown> = {};
     if (contact_name !== undefined) updateData.contact_name = contact_name;
     if (status !== undefined) updateData.status = status;
     if (tags !== undefined) updateData.tags = tags;

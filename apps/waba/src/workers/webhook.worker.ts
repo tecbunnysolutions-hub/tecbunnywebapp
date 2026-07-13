@@ -24,7 +24,7 @@ export function startWebhookWorker() {
         logger.info('Webhook dispatched successfully via background worker', { url });
       }
     },
-    { connection: getRedisConnection() as any }
+    { connection: getRedisConnection() as never }
   );
 
   worker.on('failed', (job, err) => {

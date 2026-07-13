@@ -38,7 +38,7 @@ export function ServiceTicketWorkspace({ mode }: ServiceTicketWorkspaceProps) {
   }, [supabase]);
 
   React.useEffect(() => {
-    void loadTickets();
+    setTimeout(() => { void loadTickets(); }, 0);
   }, [loadTickets]);
 
   return (

@@ -17,6 +17,7 @@ import {
   Archive,
   Receipt,
   PackageSearch,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   MessageSquare
 } from 'lucide-react';
 

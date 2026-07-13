@@ -48,7 +48,6 @@ type User = {
 export default function Dashboard() {
   const router = useRouter();
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [users, setUsers] = useState<User[]>([]);
   
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [activeConversation, setActiveConversation] = useState<string | null>(null);
@@ -79,54 +78,7 @@ export default function Dashboard() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const docInputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    // 1. Authenticate Agent
-    fetch('/api/auth/me').then(res => res.json()).then(data => {
-      if (!data.user) {
-        router.push('/login');
-      } else {
-        setCurrentUser(data.user);
-        fetchUsers();
-        fetchConversations();
-        fetchTemplates();
-        const interval = setInterval(fetchConversations, 5000);
-        return () => clearInterval(interval);
-      }
-    });
-  }, []);
-
-  useEffect(() => {
-    if (activeConversation) {
-      fetchMessages(activeConversation);
-      const interval = setInterval(() => fetchMessages(activeConversation), 3000);
-      
-      const activeObj = conversations.find(c => c.sender_number === activeConversation);
-      if (activeObj) {
-        setCrmName(activeObj.contact_name || "");
-        setCrmStatus(activeObj.status || "NEW");
-        setCrmNotes(activeObj.notes || "");
-        setCrmAssignedTo(activeObj.assigned_to || "");
-        setCrmDepartment(activeObj.department || "UNASSIGNED");
-        setCrmAiActive(activeObj.ai_active !== false); // default true
-        setCrmDealValue(activeObj.deal_value || "");
-        setCrmActiveFlow(activeObj.active_flow || "");
-      }
-      return () => clearInterval(interval);
-    }
-  }, [activeConversation]);
-
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
-
-  const fetchUsers = async () => {
-    try {
-      const res = await fetch('/api/users'); // we need to make this endpoint or just mock it for now. Actually we can do it via a new endpoint, but wait, I didn't create /api/users yet!
-      // Let's create it later or just show a text input for assigned_to for now.
-    } catch (e) {}
-  };
-
-  const fetchConversations = async () => {
+  async function fetchConversations() {
     try {
       const res = await fetch('/api/messages');
       const data = await res.json();
@@ -138,23 +90,67 @@ export default function Dashboard() {
     } finally {
       setLoading(false);
     }
-  };
+  }
 
-  const fetchMessages = async (sender: string) => {
+  async function fetchMessages(sender: string) {
     try {
       const res = await fetch(`/api/messages?conversation=${sender}`);
       const data = await res.json();
       if (data.messages) setMessages(data.messages);
     } catch (err) { console.error(err); }
-  };
+  }
 
-  const fetchTemplates = async () => {
+  async function fetchTemplates() {
     try {
       const res = await fetch('/api/templates');
       const data = await res.json();
       if (data.templates) setTemplates(data.templates);
     } catch (err) { console.error(err); }
-  };
+  }
+
+  useEffect(() => {
+    // 1. Authenticate Agent
+    fetch('/api/auth/me').then(res => res.json()).then(data => {
+      if (!data.user) {
+        router.push('/login');
+      } else {
+        setCurrentUser(data.user);
+        fetchConversations();
+        fetchTemplates();
+        const interval = setInterval(fetchConversations, 5000);
+        return () => clearInterval(interval);
+      }
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (activeConversation) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      fetchMessages(activeConversation);
+      const interval = setInterval(() => fetchMessages(activeConversation), 3000);
+      
+      const activeObj = conversations.find(c => c.sender_number === activeConversation);
+      if (activeObj) {
+        setTimeout(() => {
+          setCrmName(activeObj.contact_name || "");
+          setCrmStatus(activeObj.status || "NEW");
+          setCrmNotes(activeObj.notes || "");
+          setCrmAssignedTo(activeObj.assigned_to || "");
+          setCrmDepartment(activeObj.department || "UNASSIGNED");
+          setCrmAiActive(activeObj.ai_active !== false); // default true
+          setCrmDealValue(activeObj.deal_value || "");
+          setCrmActiveFlow(activeObj.active_flow || "");
+        }, 0);
+      }
+      return () => clearInterval(interval);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeConversation]);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   const handleSendMessage = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -217,7 +213,7 @@ export default function Dashboard() {
       });
       if (res.ok) fetchMessages(activeConversation);
       else alert("Failed to send media.");
-    } catch (err) {
+    } catch {
       alert("Upload error.");
     }
     setIsUploading(false);
@@ -364,6 +360,7 @@ export default function Dashboard() {
                   <div key={msg.id} className={`message-wrapper ${msg.direction.toLowerCase()}`}>
                     <div className="message-bubble">
                       {msg.media_url && msg.media_type === 'IMAGE' && (
+                        // eslint-disable-next-line @next/next/no-img-element
                         <img src={msg.media_url} alt="Attached image" style={{ maxWidth: '100%', borderRadius: '8px', marginBottom: '8px' }} />
                       )}
                       {msg.media_url && msg.media_type === 'VIDEO' && (

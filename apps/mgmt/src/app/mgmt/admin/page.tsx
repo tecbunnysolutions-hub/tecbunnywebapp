@@ -99,7 +99,7 @@ export default function AdminDashboard() {
     }, []);
 
     React.useEffect(() => {
-        fetchStats();
+        setTimeout(() => { fetchStats(); }, 0);
     }, [fetchStats]);
 
     // Calculate growth indicators

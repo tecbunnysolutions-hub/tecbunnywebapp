@@ -49,8 +49,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Failed to send media to Infobip', details: response?.error }, { status: 500 });
     }
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Media upload error:', error);
-    return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json({ error: error instanceof Error ? error.message : 'Internal Server Error' }, { status: 500 });
   }
 }

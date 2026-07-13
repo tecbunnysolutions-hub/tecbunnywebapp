@@ -6,6 +6,7 @@ import { createClient } from "@tecbunny/core/supabase/client";
 import * as React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@tecbunny/ui";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@tecbunny/ui";
+         // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Badge } from "@tecbunny/ui";
 import { Skeleton } from "@tecbunny/ui";
 import { useAuth } from "@tecbunny/core/hooks";

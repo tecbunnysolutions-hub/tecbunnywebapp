@@ -633,7 +633,7 @@ export default function AdminCustomSetupManager() {
   }, []);
 
   useEffect(() => {
-    fetchAccessoryPricing();
+    setTimeout(() => { fetchAccessoryPricing(); }, 0);
   }, [fetchAccessoryPricing]);
 
   const handleAccessoryPriceChange = (id: string, field: 'mrp' | 'sale', value: string) => {
@@ -688,6 +688,7 @@ export default function AdminCustomSetupManager() {
   const deferredSalePricingDraft = useDeferredValue(salePricingDraft);
 
   const [pendingOptionUpdates, setPendingOptionUpdates] = useState<PendingOptionState>({});
+         // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_selectionDraft, setSelectionDraft] = useState<SelectionDraft>({
     componentDefaultQuantities: {},
     systemBaseFees: {},
@@ -798,12 +799,12 @@ export default function AdminCustomSetupManager() {
   }, [toast]);
 
   useEffect(() => {
-    fetchTemplates();
+    setTimeout(() => { fetchTemplates(); }, 0);
   }, [fetchTemplates]);
 
   useEffect(() => {
     if (selectedSlug) {
-      fetchTemplateDetails(selectedSlug);
+      setTimeout(() => { fetchTemplateDetails(selectedSlug); }, 0);
     }
   }, [selectedSlug, fetchTemplateDetails]);
 

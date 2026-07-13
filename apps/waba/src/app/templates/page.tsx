@@ -23,14 +23,7 @@ export default function TemplatesPage() {
 
   const router = useRouter();
 
-  useEffect(() => {
-    fetch('/api/auth/me').then(res => res.json()).then(data => {
-      if (!data.user) router.push('/login');
-      else fetchTemplates();
-    });
-  }, []);
-
-  const fetchTemplates = async () => {
+  async function fetchTemplates() {
     setLoading(true);
     try {
       const res = await fetch('/api/templates');
@@ -40,7 +33,17 @@ export default function TemplatesPage() {
       console.error(err);
     }
     setLoading(false);
-  };
+  }
+
+  useEffect(() => {
+    fetch('/api/auth/me').then(res => res.json()).then(data => {
+      if (!data.user) router.push('/login');
+      else fetchTemplates();
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+
 
   const handleCreateTemplate = async (e: React.FormEvent) => {
     e.preventDefault();

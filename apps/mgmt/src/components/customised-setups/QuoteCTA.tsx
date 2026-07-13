@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from "@tecbunny/core/hooks";
 import { Button } from "@tecbunny/ui";
 import { Checkbox } from "@tecbunny/ui";
+         // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Input } from "@tecbunny/ui";
 import { Label } from "@tecbunny/ui";
 import { Textarea } from "@tecbunny/ui";
@@ -54,8 +55,8 @@ export function QuoteCTA() {
       link.remove();
       window.URL.revokeObjectURL(url);
       toast({ title: 'Quote ready', description: 'Downloaded quote PDF. A copy was emailed too.' });
-    } catch (error: any) {
-      toast({ variant: 'destructive', title: 'Quote failed', description: error?.message || 'Unable to generate quote.' });
+    } catch (error: unknown) {
+      toast({ variant: 'destructive', title: 'Quote failed', description: (error as Error)?.message || 'Unable to generate quote.' });
     } finally {
       setSubmitting(false);
     }

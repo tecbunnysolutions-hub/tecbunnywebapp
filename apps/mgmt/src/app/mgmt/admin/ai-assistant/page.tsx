@@ -11,7 +11,7 @@ import { Badge } from "@tecbunny/ui";
 type Message = {
   role: 'user' | 'assistant';
   content: string;
-  data?: any;
+  data?: unknown;
 };
 
 export default function AIAssistantPage() {
@@ -200,7 +200,7 @@ export default function AIAssistantPage() {
                     <div className={`rounded-lg px-4 py-2 ${msg.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
                       {msg.content}
                     </div>
-                    {msg.data && (
+                    {!!msg.data && (
                       <div className="w-full max-w-md">
                         {renderData(msg.data)}
                       </div>

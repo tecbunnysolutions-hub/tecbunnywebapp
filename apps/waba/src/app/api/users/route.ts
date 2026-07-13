@@ -3,7 +3,7 @@ import { supabase } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET(req: Request) {
+export async function GET() {
   try {
     const { data: users, error } = await supabase
       .from('User')
@@ -15,8 +15,8 @@ export async function GET(req: Request) {
     }
 
     return NextResponse.json({ users: users || [] });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Failed to fetch users', error);
-    return NextResponse.json({ error: error.message || 'Failed to fetch users' }, { status: 500 });
+    return NextResponse.json({ error: error instanceof Error ? error.message : 'Failed to fetch users' }, { status: 500 });
   }
 }

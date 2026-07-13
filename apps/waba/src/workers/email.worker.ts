@@ -14,7 +14,7 @@ export function startEmailWorker() {
         logger.info('Order confirmation email sent successfully via background worker', { recipient, orderId: orderData.id });
       }
     },
-    { connection: getRedisConnection() as any }
+    { connection: getRedisConnection() as never }
   );
 
   worker.on('failed', (job, err) => {

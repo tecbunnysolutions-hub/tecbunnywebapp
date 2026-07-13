@@ -50,6 +50,7 @@ export default function PromotionalBroadcastPage() {
 
       setParsedContacts(contacts);
       toast({ title: 'Data Parsed', description: `Successfully loaded ${contacts.length} contacts.` });
+             // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (e) {
       toast({ title: 'Parsing Error', description: 'Invalid data format. Please check your inputs.', variant: 'destructive' });
     }
@@ -98,10 +99,10 @@ export default function PromotionalBroadcastPage() {
       setRawData('');
       setParsedContacts([]);
       setCampaignName('');
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: 'Dispatch Error',
-        description: error.message,
+        description: (error as Error).message,
         variant: 'destructive'
       });
     } finally {

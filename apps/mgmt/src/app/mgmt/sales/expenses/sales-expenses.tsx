@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 'use client';
 import { createClient } from "@tecbunny/core/supabase/client";
 

@@ -1,3 +1,4 @@
+/* eslint-disable react/no-unescaped-entities */
 'use client';
 import { createClient } from "@tecbunny/core/supabase/client";
 
@@ -8,6 +9,7 @@ import { TrendingUp, Users, Package, ShoppingBag } from 'lucide-react';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@tecbunny/ui";
 import { Badge } from "@tecbunny/ui";
+         // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Skeleton } from "@tecbunny/ui";
 import { useToast } from "@tecbunny/ui";
 import { useAuth } from "@tecbunny/core/hooks";

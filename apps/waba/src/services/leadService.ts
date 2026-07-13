@@ -8,7 +8,6 @@ import { PrismaClient, Role, Lead } from '@tecbunny/types';
 // quickly exhausting the Postgres connection limit. We use a global singleton so
 // the same client is reused across hot reloads and concurrent invocations.
 declare global {
-  // eslint-disable-next-line no-var
   var __prismaLeadService: PrismaClient | undefined;
 }
 

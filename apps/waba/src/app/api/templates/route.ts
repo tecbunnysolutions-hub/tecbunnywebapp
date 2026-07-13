@@ -3,7 +3,7 @@ import { supabase } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET(req: Request) {
+export async function GET() {
   try {
     const { data: templates, error } = await supabase.from('Template').select('*').order('created_at', { ascending: false });
     if (error) throw error;
@@ -20,8 +20,8 @@ export async function GET(req: Request) {
     }
 
     return NextResponse.json({ templates });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    return NextResponse.json({ error: error instanceof Error ? error.message : String(error) }, { status: 500 });
   }
 }
 
@@ -32,7 +32,7 @@ export async function POST(req: Request) {
     const { data, error } = await supabase.from('Template').insert({ id, name, content, language: language || 'en' }).select().single();
     if (error) throw error;
     return NextResponse.json({ success: true, template: data });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    return NextResponse.json({ error: error instanceof Error ? error.message : String(error) }, { status: 500 });
   }
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 
 export default function CampaignsPage() {
   const [targetStatus, setTargetStatus] = useState("ALL");
@@ -29,8 +30,8 @@ export default function CampaignsPage() {
       } else {
         setResultMessage(`❌ Failed: ${data.error}`);
       }
-    } catch (err: any) {
-      setResultMessage(`❌ Error: ${err.message}`);
+    } catch (err: unknown) {
+      setResultMessage(`❌ Error: ${err instanceof Error ? err.message : String(err)}`);
     }
 
     setIsSending(false);
@@ -100,7 +101,7 @@ export default function CampaignsPage() {
         )}
         
         <div style={{ textAlign: 'center', marginTop: '1rem' }}>
-          <a href="/" style={{ color: '#60a5fa', textDecoration: 'none', fontSize: '0.9rem' }}>← Back to CRM Inbox</a>
+          <Link href="/" style={{ color: '#60a5fa', textDecoration: 'none', fontSize: '0.9rem' }}>← Back to CRM Inbox</Link>
         </div>
       </div>
     </div>

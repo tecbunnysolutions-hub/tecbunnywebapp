@@ -39,6 +39,7 @@ export function useViralAttribution() {
       
       const parentBlueprintId = cookieRow.split('=')[1];
       return { parentBlueprintId, converted: false }; // converted state is managed server-side now
+             // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (err) {
       return null;
     }

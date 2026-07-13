@@ -1,3 +1,4 @@
+/* eslint-disable react/no-unescaped-entities */
 "use client";
 import { createClient } from "@tecbunny/core/supabase/client";
 

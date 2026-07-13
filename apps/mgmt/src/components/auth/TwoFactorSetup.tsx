@@ -1,3 +1,4 @@
+/* eslint-disable react/no-unescaped-entities */
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -294,6 +295,7 @@ export function TwoFactorSetup({ onComplete, onCancel }: TwoFactorSetupProps) {
 
               <div className="flex justify-center">
                 <div className="p-4 bg-muted border border-border rounded-lg">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={setupData.qrCode}
                     alt="2FA QR Code"

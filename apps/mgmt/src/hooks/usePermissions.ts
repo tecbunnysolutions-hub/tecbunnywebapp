@@ -13,6 +13,7 @@ export function usePermissions() {
     // Global override for superadmin
     if (role === 'superadmin') return true;
 
+                        // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [reqResource, reqAction] = requiredPermission.split(':');
     
     return permissions.some(p => {

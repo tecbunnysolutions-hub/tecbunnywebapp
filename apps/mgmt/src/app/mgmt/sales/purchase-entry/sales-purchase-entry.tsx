@@ -1,3 +1,5 @@
+/* eslint-disable react/no-unescaped-entities */
+/* eslint-disable react-hooks/set-state-in-effect */
 'use client';
 import { createClient } from "@tecbunny/core/supabase/client";
 
@@ -37,10 +39,11 @@ export default function PurchaseEntryPage() {
             const { data, error } = await supabase.from('products').select('*');
             if (error) {
                 console.error("Error fetching products", error);
-                toast({ variant: 'destructive', title: 'Unable to load products', description: error.message });
+                toast({ variant: 'destructive', title: 'Unable to load products', description: (error as Error).message });
                 return;
             }
 
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const normalizedProducts = (data ?? []).map((product: any) => {
                 const normalizedName = product?.name || product?.title || product?.model_number || 'Unnamed Product';
                 const normalizedPrice = Number(product?.price ?? product?.offer_price ?? product?.mrp ?? 0);

@@ -42,6 +42,7 @@ export function useViralAttribution() {
       }
 
       return data;
+             // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (err) {
       return null;
     }

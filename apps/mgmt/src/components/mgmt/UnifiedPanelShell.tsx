@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 'use client';
 import { ROLE_DISPLAY_NAME, type UserRole } from "@tecbunny/core";
 

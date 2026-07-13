@@ -29,12 +29,22 @@ export interface TriagedPayload {
   history: { direction: string; message_content: string }[];
 }
 
-export class InboundTriageAgent extends BaseAgent<any, TriagedPayload | null> {
+interface WebhookData {
+  results?: Array<{
+    from?: string;
+    sender?: string;
+    messageId?: string;
+    message?: { text?: string };
+    content?: { text?: string } | Array<{ type?: string; text?: string }>;
+  }>;
+}
+
+export class InboundTriageAgent extends BaseAgent<WebhookData, TriagedPayload | null> {
   constructor() {
     super('inbound-whatsapp-events');
   }
 
-  protected async process(data: any): Promise<TriagedPayload | null> {
+  protected async process(data: WebhookData): Promise<TriagedPayload | null> {
     const results = data.results || [];
 
     // Bug #8 fix: The original code returned on the first actionable message,
@@ -51,7 +61,7 @@ export class InboundTriageAgent extends BaseAgent<any, TriagedPayload | null> {
       let textContent = '';
       if (msg.message?.text) {
         textContent = msg.message.text;
-      } else if (msg.content?.text) {
+      } else if (msg.content && !Array.isArray(msg.content) && msg.content.text) {
         textContent = msg.content.text;
       } else if (Array.isArray(msg.content) && msg.content.length > 0) {
         const content = msg.content[0];
@@ -119,8 +129,8 @@ export class InboundTriageAgent extends BaseAgent<any, TriagedPayload | null> {
       // Use optimized CustomerContext service for memory and data
       const customerContext = await CustomerService.getCustomerContext({ phone: senderNumber, dbClient: getAdminDb() });
       const history = customerContext.messages;
-      const ordersData = customerContext.orders;
-      const ticketsData = customerContext.service_tickets;
+      const ordersData = customerContext.orders as Array<{id: string, created_at: string | Date, status: string}>;
+      const ticketsData = customerContext.service_tickets as Array<{id: string, title?: string, status: string}>;
 
       // Bug #27 fix: pricing catalog is fetched inside extractStructuredIntent
       // on every message. That is handled there; no change needed here, but
@@ -185,10 +195,10 @@ export class InboundTriageAgent extends BaseAgent<any, TriagedPayload | null> {
   private async extractStructuredIntent(
     userMessage: string,
     history: { direction: string; message_content: string }[],
-    existingConv: any | null,
+    existingConv: { contact_name?: string | null, address?: string | null, pincode?: string | null, last_interaction_timestamp?: string | null } | null,
     senderNumber: string,
-    orders: any[] = [],
-    tickets: any[] = []
+    orders: Array<{id: string, created_at: string | Date, status: string}> = [],
+    tickets: Array<{id: string, title?: string, status: string}> = []
   ): Promise<Omit<TriagedPayload, 'messageId' | 'senderNumber' | 'history'> & { notes: string | null }> {
     const defaultFallback: Omit<TriagedPayload, 'messageId' | 'senderNumber' | 'history'> & { notes: string | null } = {
       customer_name: null,

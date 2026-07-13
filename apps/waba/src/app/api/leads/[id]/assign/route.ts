@@ -42,8 +42,8 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 
     return NextResponse.json({ status: 'success', data: updatedLead }, { status: 200 });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('[API] Manual lead assignment failed:', error);
-    return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json({ error: error instanceof Error ? error.message : 'Internal Server Error' }, { status: 500 });
   }
 }

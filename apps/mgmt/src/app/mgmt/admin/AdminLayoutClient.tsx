@@ -61,6 +61,7 @@ export default function AdminLayoutClient({ children }: AdminLayoutClientProps) 
 
   const authorized = !!user && isAtLeast(user.role || 'customer', 'admin');
 
+  // eslint-disable-next-line react-hooks/refs
   if (redirectRef.current) {
     // Use dynamic viewport height (100dvh) for seamless mobile browser bar integration.
     // Overflow hidden prevents accidental horizontal scrolling on mobile viewports.

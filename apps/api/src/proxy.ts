@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { executeUnifiedPolicyMiddleware } from '@tecbunny/core/auth/unified-middleware';
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
   // Protect Dashboard Routes and API routes

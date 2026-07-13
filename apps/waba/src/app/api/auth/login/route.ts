@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 
 export async function POST(req: Request) {
   try {
-    const { email, password, isSuperadmin } = await req.json();
+    const { password, isSuperadmin } = await req.json();
 
     if (isSuperadmin) {
       const expectedUserId = process.env.SUPERADMIN_USER_ID;
@@ -25,8 +25,8 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json({ error: 'Staff should use Supabase auth directly' }, { status: 400 });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Login error:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: error instanceof Error ? error.message : String(error) }, { status: 500 });
   }
 }

@@ -18,6 +18,18 @@ const TEMPLATE_LANGUAGE = process.env.INFOBIP_WHATSAPP_TEMPLATE_LANGUAGE ?? 'en'
 // yielding undefined and silently swallowing errors.
 // Bug #25 fix: Removed all `require('crypto')` calls — crypto is now imported
 // at the top of the file as an ES module import.
+async function logFailedCall(payload: unknown, errorMsg: string) {
+  try {
+    await supabase.from('FailedApiCall').insert({
+      payload: JSON.stringify(payload),
+      error: errorMsg,
+      created_at: new Date().toISOString()
+    });
+  } catch (err) {
+    console.error('Failed to log API call', err);
+  }
+}
+
 async function sendInfobipRequest(
   endpoint: string,
   payload: unknown,
@@ -76,18 +88,6 @@ async function sendInfobipRequest(
   return { success: false, error: 'Max retries exhausted' };
 }
 
-async function logFailedCall(payload: any, errorMsg: string) {
-  try {
-    await supabase.from('FailedApiCall').insert({
-      payload: JSON.stringify(payload),
-      error: errorMsg,
-      created_at: new Date().toISOString()
-    });
-  } catch (err) {
-    console.error('Failed to log API call', err);
-  }
-}
-
 /**
  * Bug #10 fix: The 24h window check previously read last_interaction_timestamp
  * AFTER InboundTriageAgent had already updated it to now(), so the check always
@@ -104,6 +104,29 @@ async function logFailedCall(payload: any, errorMsg: string) {
  *
  * Bug #25 fix: All `require('crypto')` calls replaced with the top-level import.
  */
+export async function sendTemplateMessage(
+  to: string,
+  templateName: string,
+  placeholders: string[] = [],
+): Promise<{ success: boolean; data?: unknown; error?: unknown; status?: number }> {
+  const payload = {
+    messages: [
+      {
+        from: SYSTEM_NUMBER,
+        to,
+        content: {
+          templateName,
+          templateData: { body: { placeholders } },
+          language: TEMPLATE_LANGUAGE,
+        },
+      },
+    ],
+  };
+
+  const response = await sendInfobipRequest('/whatsapp/1/message/template', payload);
+  return response ?? { success: false, error: 'No response from Infobip' };
+}
+
 export async function sendWhatsAppMessage(
   to: string,
   text: string,
@@ -131,29 +154,6 @@ export async function sendWhatsAppMessage(
   return response ?? { success: false, error: 'No response from Infobip' };
 }
 
-export async function sendTemplateMessage(
-  to: string,
-  templateName: string,
-  placeholders: string[] = [],
-): Promise<{ success: boolean; data?: unknown; error?: unknown; status?: number }> {
-  const payload = {
-    messages: [
-      {
-        from: SYSTEM_NUMBER,
-        to,
-        content: {
-          templateName,
-          templateData: { body: { placeholders } },
-          language: TEMPLATE_LANGUAGE,
-        },
-      },
-    ],
-  };
-
-  const response = await sendInfobipRequest('/whatsapp/1/message/template', payload);
-  return response ?? { success: false, error: 'No response from Infobip' };
-}
-
 export async function sendWhatsAppMedia(
   to: string,
   type: 'image' | 'video' | 'audio' | 'document',
@@ -173,7 +173,7 @@ export async function sendWhatsAppMedia(
   const response = await sendInfobipRequest(`/whatsapp/1/message/${type}`, payload);
 
   if (response?.success) {
-    const msgId = (response.data as any)?.messages?.[0]?.messageId;
+    const msgId = (response.data as { messages?: Array<{ messageId?: string }> })?.messages?.[0]?.messageId;
     await supabase.from('Message').insert({
       id: crypto.randomUUID(),
       message_id: msgId,
@@ -208,7 +208,7 @@ export async function sendWhatsAppLocation(
   const response = await sendInfobipRequest('/whatsapp/1/message/location', payload);
 
   if (response?.success) {
-    const msgId = (response.data as any)?.messages?.[0]?.messageId;
+    const msgId = (response.data as { messages?: Array<{ messageId?: string }> })?.messages?.[0]?.messageId;
     await supabase.from('Message').insert({
       id: crypto.randomUUID(),
       message_id: msgId,

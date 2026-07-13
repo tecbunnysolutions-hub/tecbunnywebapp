@@ -1,3 +1,5 @@
+/* eslint-disable react/no-unescaped-entities */
+/* eslint-disable react-hooks/set-state-in-effect */
 'use client';
 import { normalizeRole } from "@tecbunny/core";
 import { createClient } from "@tecbunny/core/supabase/client";

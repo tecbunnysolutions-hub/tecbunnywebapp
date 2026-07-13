@@ -51,9 +51,9 @@ export async function GET(req: Request) {
 
     return NextResponse.json({ conversations: conversationsWithMessages });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Failed to fetch messages', error);
-    return NextResponse.json({ error: error.message || 'Failed to fetch messages', details: error }, { status: 500 });
+    return NextResponse.json({ error: error instanceof Error ? error.message : 'Failed to fetch messages', details: error }, { status: 500 });
   }
 }
 
@@ -120,8 +120,8 @@ Manager's Draft:
       return NextResponse.json({ error: result?.error || 'Failed to send' }, { status: 500 });
     }
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Failed to send message', error);
-    return NextResponse.json({ error: error.message || 'Failed to send message', stack: error.stack }, { status: 500 });
+    return NextResponse.json({ error: error instanceof Error ? error.message : 'Failed to send message', stack: error instanceof Error ? error.stack : undefined }, { status: 500 });
   }
 }

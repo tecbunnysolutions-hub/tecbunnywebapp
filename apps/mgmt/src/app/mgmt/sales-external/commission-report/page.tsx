@@ -41,8 +41,8 @@ export default function CommissionReportPage() {
       try {
         // Query sales_agent_commissions table.
         // If the table doesn't exist or column is named user_id, it will be handled.
-        let data: any[] | null = null;
-        let queryError: any = null;
+        let data: unknown[] | null = null;
+        let queryError: unknown = null;
 
         // Try querying using agent_id first
         const attempt1 = await supabase

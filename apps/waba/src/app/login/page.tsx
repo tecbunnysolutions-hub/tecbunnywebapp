@@ -51,7 +51,7 @@ export default function LoginPage() {
       if (data.user) {
         window.location.href = "/";
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
       setError("An unexpected error occurred");
     }
