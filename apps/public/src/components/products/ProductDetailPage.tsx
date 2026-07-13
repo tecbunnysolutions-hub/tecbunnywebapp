@@ -10,8 +10,7 @@ import Image from 'next/image';
 import { sanitizeHtml } from "@tecbunny/core/sanitize-html";
 
 import { AddToCartButton } from '@/components/cart/AddToCartButton';
-import { Button } from "@tecbunny/ui";
-import { Card, CardContent } from "@tecbunny/ui";
+import { Button, Card, CardContent, Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Input, Label } from "@tecbunny/ui";
 import { WishlistButton } from '@/components/wishlist/WishlistButton';
 import { logger } from '@tecbunny/core';
 
@@ -40,6 +39,36 @@ export function ProductDetailPage({ productId, initialProduct, sourceContext }: 
   const { toast } = useToast();
   const { showAssistance, triggerContext, dismissAssistance } = useBehavioralCRO();
   const isMountedRef = useRef(true);
+
+  const [inquiryType, setInquiryType] = useState<'b2b' | 'installation' | null>(null);
+  const [inquiryData, setInquiryData] = useState({ name: '', phone: '', email: '', message: '' });
+  const [isSubmittingInquiry, setIsSubmittingInquiry] = useState(false);
+
+  const submitInquiry = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmittingInquiry(true);
+    try {
+      const res = await fetch('/api/inquiries', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...inquiryData,
+          type: inquiryType,
+          productId
+        })
+      });
+      if (res.ok) {
+        toast({ title: 'Success', description: 'We have received your inquiry! Our team will contact you shortly.' });
+        setInquiryType(null);
+        setInquiryData({ name: '', phone: '', email: '', message: '' });
+      } else {
+        toast({ title: 'Error', description: 'Failed to submit. Please try again.', variant: 'destructive' });
+      }
+    } catch (err) {
+      toast({ title: 'Error', description: 'Failed to submit. Please try again.', variant: 'destructive' });
+    }
+    setIsSubmittingInquiry(false);
+  };
 
   const [pincode, setPincode] = useState<string>('');
   const [showPincodeInput, setShowPincodeInput] = useState<boolean>(false);
@@ -625,22 +654,24 @@ export function ProductDetailPage({ productId, initialProduct, sourceContext }: 
                   <Button
                     variant="outline"
                     className="flex-1 h-12 border border-border bg-muted/20 hover:bg-muted/40 hover:border-border/80 text-muted-foreground hover:text-foreground rounded-xl transition-all duration-300 cursor-pointer"
-                    onClick={() => trackEvent('installation_inquiry', { productId: product.id, productName: displayName })}
+                    onClick={() => {
+                      trackEvent('installation_inquiry', { productId: product.id, productName: displayName });
+                      setInquiryType('installation');
+                    }}
                   >
                     <Truck className="mr-2 h-4 w-4 text-primary" />
                     Installation Inquiry
                   </Button>
-                  <a
-                    href={`https://wa.me/919604136010?text=Hi%20TecBunny,%20I%20would%20like%20to%20request%20a%20corporate%20B2B%20quotation%20for%20the%20following%20hardware%20setup:%0A%0A-%20Product:%20${encodeURIComponent(displayName)}%0A-%20SKU:%20${encodeURIComponent((product as any).sku || product.barcode || product.id)}%0A%0AMy%20Company%20Details:%0A-%20Company%20Name:%20%0A-%20GSTIN:%20%0A-%20Deployment%20Location:%20%0A-%20Requirements:%20`}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                  <Button
+                    variant="outline"
                     className="flex-1 h-12 border border-emerald-500/35 bg-emerald-500/5 hover:bg-emerald-500/10 hover:border-emerald-500/50 text-emerald-450 hover:text-emerald-400 rounded-xl transition-all duration-300 flex items-center justify-center gap-2 text-sm font-semibold uppercase tracking-wider cursor-pointer"
+                    onClick={() => setInquiryType('b2b')}
                   >
                     <svg viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4 text-emerald-500 fill-emerald-500 shrink-0">
                       <path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38c1.45.79 3.08 1.21 4.79 1.21 5.46 0 9.91-4.45 9.91-9.91S17.5 2 12.04 2m.01 1.67c4.56 0 8.25 3.69 8.25 8.25 0 4.56-3.69 8.25-8.25 8.25-1.53 0-3-.42-4.29-1.19l-.3-.18-3.18.83.85-3.11-.2-.32a8.182 8.182 0 0 1-1.25-4.38c0-4.56 3.69-8.25 8.25-8.25M9.42 7.72l-.12.02c-.15.03-.3.06-.44.09-.15.03-.28.06-.41.1-.39.12-.76.3-1.09.56-.33.27-.63.6-.88.97-.27.41-.43.85-.43 1.32 0 .5.16.98.48 1.41.32.43.72.84 1.2 1.24.48.4 1 1.03 1.63 1.28.63.25 1.22.4 1.84.4.45 0 .86-.08 1.23-.25.37-.17.63-.38.83-.63.2-.25.32-.54.4-.85.08-.31.13-.64.13-1s-.05-.72-.13-1.03c-.08-.31-.2-.59-.4-.84-.2-.25-.46-.46-.83-.63-.37-.17-.78-.25-1.23-.25-.62 0-1.21.15-1.84.4-.05.02-.1.04-.15.07-.1.03-.18.07-.27.1-.1.03-.18.05-.28.07l-.17.04c-.06.01-.1.02-.12.02-.02 0-.04.01-.06.01-.02 0-.03 0-.03-.01s0-.01 0-.01l-.01-.01c0-.01.01-.02.01-.04 0-.02 0-.04.01-.06.01-.02.01-.04.02-.06a.7.7 0 0 1 .05-.12c.04-.08.08-.15.14-.23.06-.08.12-.15.2-.22.07-.07.15-.14.23-.2.08-.06.16-.12.25-.17.09-.05.18-.09.28-.13.05-.02.1-.04.13-.05.28-.11.53-.17.75-.17.22 0 .43.03.62.09.19.06.37.14.53.25.16.11.3.25.41.41s.19.34.24.54c.05.2.07.4.07.61 0 .02 0 .03 0 .03s0 .02 0 .02l-.01.03c0 .01-.01.02-.01.03 0 .01-.01.02-.02.03-.01.01-.02.02-.04.03l-.05.03-.06.03c-.02.01-.05.02-.08.03-.03.01-.06.02-.1.04-.04.01-.07.02-.11.04-.04.01-.07.03-.11.04-.04.02-.07.03-.1.05s-.07.04-.1.06-.06.04-.1.07c-.03.02-.06.04-.1.07l-.07.05c-.01 0-.01.01-.01.01s0 .01 0 .01l.01.01c.22-.12.44-.24.67-.35.23-.11.45-.24.67-.35.22-.11.44-.22.65-.33.21-.11.42-.22.62-.33l.2-.1c.14-.07.26-.15.39-.22.13-.07.25-.15.36-.24.11-.09.22-.18.31-.29s.18-.23.25-.36a2.64 2.64 0 0 0 .28-1.38c0-.52-.13-1-.39-1.44a3.17 3.17 0 0 0-1.08-1.21c-.4-.33-.86-.57-1.36-.72s-1.02-.22-1.56-.22c-.54 0-1.06.07-1.56.22s-.96.39-1.36.72c-.4.34-.72.75-.97 1.21-.25.46-.38.96-.38 1.51 0 .42.09.82.26 1.17.17.35.4.66.68.92.28.26.59.47.92.62.33.15.68.25 1.04.28h.1c.02 0 .03 0 .03-.01s0-.01 0-.01l-.01-.01c0-.01 0-.01.01-.02l.01-.02c0-.01.01-.02.01-.03l.01-.03c.01-.02.01-.03.01-.05 0-.02 0-.04.01-.06 0-.02.01-.04.01-.06a.71.71 0 0 0 0-.1c0-.04 0-.08-.02-.13s-.04-.1-.07-.15a.43.43 0 0 0-.1-.13c-.04-.04-.08-.08-.13-.11-.05-.03-.1-.06-.17-.08-.07-.02-.13-.04-.2-.06-.07-.02-.15-.03-.22-.04-.04-.01-.07-.01-.11-.02l-.11-.02h-.04z" />
                     </svg>
                     Request B2B Quote
-                  </a>
+                  </Button>
                 </div>
 
                 <div className="border border-border/40 bg-muted/5 rounded-2xl p-4 mt-2">
@@ -830,6 +861,62 @@ export function ProductDetailPage({ productId, initialProduct, sourceContext }: 
           </div>
         </div>
       )}
+      <Dialog open={inquiryType !== null} onOpenChange={(open) => !open && setInquiryType(null)}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>{inquiryType === 'b2b' ? 'Request B2B Quote' : 'Installation Inquiry'}</DialogTitle>
+            <DialogDescription>
+              Provide your details below and our team will get in touch with you shortly.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={submitInquiry} className="space-y-4 pt-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">Name / Company Name *</Label>
+              <Input
+                id="name"
+                required
+                value={inquiryData.name}
+                onChange={(e) => setInquiryData({ ...inquiryData, name: e.target.value })}
+                placeholder="Enter your name"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="phone">Phone Number *</Label>
+              <Input
+                id="phone"
+                required
+                type="tel"
+                value={inquiryData.phone}
+                onChange={(e) => setInquiryData({ ...inquiryData, phone: e.target.value })}
+                placeholder="10-digit mobile number"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="email">Email Address</Label>
+              <Input
+                id="email"
+                type="email"
+                value={inquiryData.email}
+                onChange={(e) => setInquiryData({ ...inquiryData, email: e.target.value })}
+                placeholder="Optional"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="message">Requirements</Label>
+              <textarea
+                id="message"
+                className="flex min-h-[80px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                value={inquiryData.message}
+                onChange={(e) => setInquiryData({ ...inquiryData, message: e.target.value })}
+                placeholder="Tell us what you need..."
+              />
+            </div>
+            <Button type="submit" className="w-full" disabled={isSubmittingInquiry}>
+              {isSubmittingInquiry ? 'Submitting...' : 'Submit Inquiry'}
+            </Button>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

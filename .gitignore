@@ -123,3 +123,4 @@ temp/
 dist/
 packages/*/dist
 packages/*/dist/
+n8n/

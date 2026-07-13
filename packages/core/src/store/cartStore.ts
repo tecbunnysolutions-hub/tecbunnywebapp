@@ -87,6 +87,7 @@ export interface CartState {
   checkSessionExpiry: (user: any) => void;
   checkAbandonedCart: (user: any) => void;
   mergeGuestCartWithUserCart: (userId: string, supabaseClient: any) => Promise<void>;
+  syncCartToBackend: (user: any) => void;
 }
 
 const defaultPricing: CartPricing = {
@@ -253,6 +254,36 @@ export const useCartStore = create<CartState>((set, get) => ({
     }
   },
 
+  syncCartToBackend: (user: any) => {
+    const state = get();
+    if (state.isMergingAccountCart || !state.isHydrated) return;
+    
+    let guestId = localStorage.getItem(`${CART_STORAGE_PREFIX}_guestId`);
+    if (!guestId) {
+      guestId = typeof crypto !== 'undefined' && crypto.randomUUID 
+        ? crypto.randomUUID() 
+        : Math.random().toString(36).substring(2, 15);
+      localStorage.setItem(`${CART_STORAGE_PREFIX}_guestId`, guestId);
+    }
+
+    try {
+      fetch('/api/cart/sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: user?.id,
+          guestId: user?.id ? null : guestId,
+          cartItems: state.cartItems,
+          pricing: state.pricing
+        })
+      }).catch(err => {
+        logger.warn("Failed to sync cart to backend API", { error: err.message });
+      });
+    } catch (error) {
+      logger.error("Failed to sync cart to backend", { error });
+    }
+  },
+
   checkSessionExpiry: (user: any) => {
     if (user || !get().isHydrated) return;
     if (isGuestSessionExpired(user)) {
@@ -354,6 +385,9 @@ export const useCartStore = create<CartState>((set, get) => ({
         }
       });
     }
+    
+    // Sync to backend after pricing is updated
+    get().syncCartToBackend(user);
   },
 
   checkAbandonedCart: (user: any) => {
@@ -518,6 +552,9 @@ export const useCartStore = create<CartState>((set, get) => ({
       title: "Cart cleared",
       description: "All items have been removed from your cart.",
     });
+
+    // Sync empty cart to backend
+    get().syncCartToBackend(user);
   },
 
   applyCoupon: async (coupon, user, customerCategory) => {

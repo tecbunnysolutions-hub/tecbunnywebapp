@@ -91,6 +91,19 @@ export const POST = withApiHandler(
       orderData: validatedData
     });
 
+    try {
+      if (effectiveUserId) {
+        const { getAdminDb } = await import('@tecbunny/core/server');
+        const db = getAdminDb();
+        await db.from('carts')
+          .update({ status: 'converted', updated_at: new Date().toISOString() })
+          .eq('user_id', effectiveUserId)
+          .eq('status', 'active');
+      }
+    } catch (e: any) {
+      logger.warn('Failed to mark cart as converted', { error: e.message });
+    }
+
     return APIResponseBuilder.created({ order: fullOrder });
   }
 );
