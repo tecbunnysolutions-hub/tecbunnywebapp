@@ -60,29 +60,36 @@ export async function updateSession(
     return response;
   }
 
-  // Check for Custom Superadmin Bearer Token
+  // Check for Custom Superadmin Token (via Header OR Cookie)
   const authHeader = request.headers.get('authorization');
-  if (authHeader && authHeader.startsWith('Bearer ')) {
+  const superadminCookie = request.cookies.get('superadmin-session')?.value;
+  let superadminToken = superadminCookie;
+  
+  if (!superadminToken && authHeader && authHeader.startsWith('Bearer ')) {
     const token = authHeader.substring(7);
     if (token.startsWith('v1.') || token.startsWith('v2.')) {
-      const { verifySuperadminSessionToken } = await import('../auth/superadmin-session');
-      const ip = request.headers.get('x-forwarded-for') || 'unknown';
-      const ua = request.headers.get('user-agent') || 'unknown';
-      const superadminPayload = await verifySuperadminSessionToken(token, ip, ua);
+      superadminToken = token;
+    }
+  }
+
+  if (superadminToken) {
+    const { verifySuperadminSessionToken } = await import('../auth/superadmin-session');
+    const ip = request.headers.get('x-forwarded-for') || 'unknown';
+    const ua = request.headers.get('user-agent') || 'unknown';
+    const superadminPayload = await verifySuperadminSessionToken(superadminToken, ip, ua);
+    
+    if (superadminPayload) {
+      // Token is a valid Superadmin session. Inject role and bypass Supabase Auth check.
+      const userRole: UserRole = 'superadmin';
       
-      if (superadminPayload) {
-        // Token is a valid Superadmin session. Inject role and bypass Supabase Auth check.
-        const userRole: UserRole = 'superadmin';
-        
-        if (options && (options.allowedRoles || options.minimumRole)) {
-          if (!roleMatches(userRole, { allowedRoles: options.allowedRoles, minimumRole: options.minimumRole })) {
-            if (options?.onForbidden) return options.onForbidden(request);
-            return new NextResponse(`Forbidden: Insufficient Privileges. Role '${userRole}' is not authorized.`, { status: 403 });
-          }
+      if (options && (options.allowedRoles || options.minimumRole)) {
+        if (!roleMatches(userRole, { allowedRoles: options.allowedRoles, minimumRole: options.minimumRole })) {
+          if (options?.onForbidden) return options.onForbidden(request);
+          return new NextResponse(`Forbidden: Insufficient Privileges. Role '${userRole}' is not authorized.`, { status: 403 });
         }
-        
-        return response; // Authorize the request
       }
+      
+      return response; // Authorize the request
     }
   }
 
