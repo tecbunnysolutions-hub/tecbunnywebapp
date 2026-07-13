@@ -12,9 +12,9 @@ export default function MFASetupPage() {
   const [success, setSuccess] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Note: Replace with proper env usage in production
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+  // Safe instantiation during Next.js prerendering without throwing env errors
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co';
+  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder';
   const supabase = createBrowserClient(supabaseUrl, supabaseKey);
 
   useEffect(() => {
