@@ -19,38 +19,35 @@ export async function middleware(request: NextRequest) {
   const isM2MAuth = authHeader === `Bearer ${process.env.INTERNAL_SERVICE_KEY}`;
   const pathname = request.nextUrl.pathname;
 
-  // Protect Dashboard Routes using Centralized Auth
   if (pathname.startsWith('/dashboard') || pathname.startsWith('/login')) {
-    // We defer to updateSession to check authentication and role.
+    if (pathname.startsWith('/login')) {
+      // Check session manually since updateSession short-circuits for the login route.
+      const { requireSupabasePublicEnv } = await import('@tecbunny/core/supabase/env');
+      const { createServerClient } = await import('@supabase/ssr');
+      const { url, publicKey } = requireSupabasePublicEnv();
+      const supabase = createServerClient(url, publicKey, {
+        cookies: {
+          get: (name) => request.cookies.get(name)?.value,
+        }
+      });
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (user) {
+        return NextResponse.redirect(new URL('/dashboard', request.url));
+      }
+      return NextResponse.next();
+    }
+
+    // For /dashboard, defer to updateSession to check authentication and role.
     const sessionResponse = await updateSession(request, {
       allowedRoles: ['superadmin'], // Assuming /dashboard in api is only for superadmin based on old code
       loginRoute: '/login',
       publicRoutes: [],
-      onUnauthorized: (req: NextRequest) => {
-         const loginUrl = new URL('/login', req.url);
-         return NextResponse.redirect(loginUrl);
-      },
-      onForbidden: (req: NextRequest) => {
-         const loginUrl = new URL('/login', req.url);
-         return NextResponse.redirect(loginUrl);
-      }
+      onUnauthorized: (req: NextRequest) => NextResponse.redirect(new URL('/login', req.url)),
+      onForbidden: (req: NextRequest) => NextResponse.redirect(new URL('/login', req.url))
     });
 
-    // updateSession returns a redirect or forbidden response if checks fail.
-    if (sessionResponse.status !== 200) {
-      // Except if they are already on /login and have a session, we redirect to dashboard
-       if (pathname.startsWith('/login') && sessionResponse.status === 200) {
-          const dashboardUrl = new URL('/dashboard', request.url);
-          return NextResponse.redirect(dashboardUrl);
-       }
-       return sessionResponse;
-    }
-    
-    if (pathname.startsWith('/login')) {
-       // If updateSession returned 200, user is authenticated and authorized. Redirect away from login.
-       const dashboardUrl = new URL('/dashboard', request.url);
-       return NextResponse.redirect(dashboardUrl);
-    }
+    return sessionResponse;
   }
 
   // Handle CORS
