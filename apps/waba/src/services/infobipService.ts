@@ -3,15 +3,27 @@
 import crypto from 'crypto';
 import { supabase } from '@/lib/supabase';
 
-if (!process.env.INFOBIP_BASE_URL) throw new Error('INFOBIP_BASE_URL is required');
-if (!process.env.INFOBIP_API_KEY) throw new Error('INFOBIP_API_KEY is required');
-if (!process.env.INFOBIP_WHATSAPP_FROM) throw new Error('INFOBIP_WHATSAPP_FROM is required');
+// Bug #1 fix: Remove all hardcoded credential fallbacks. Missing required env
+// vars throw at runtime so the problem is caught immediately on use, without
+// breaking Next.js static build pre-evaluation.
 
-const INFOBIP_BASE_URL = process.env.INFOBIP_BASE_URL;
-const INFOBIP_API_KEY = process.env.INFOBIP_API_KEY;
-const SYSTEM_NUMBER = process.env.INFOBIP_WHATSAPP_FROM;
-const TEMPLATE_NAME = process.env.INFOBIP_WHATSAPP_TEMPLATE_NAME ?? 'hello_world';
-const TEMPLATE_LANGUAGE = process.env.INFOBIP_WHATSAPP_TEMPLATE_LANGUAGE ?? 'en';
+const getInfobipConfig = () => {
+  const baseUrl = process.env.INFOBIP_BASE_URL;
+  const apiKey = process.env.INFOBIP_API_KEY;
+  const systemNumber = process.env.INFOBIP_WHATSAPP_FROM;
+
+  if (!baseUrl) throw new Error('INFOBIP_BASE_URL is required');
+  if (!apiKey) throw new Error('INFOBIP_API_KEY is required');
+  if (!systemNumber) throw new Error('INFOBIP_WHATSAPP_FROM is required');
+
+  return {
+    baseUrl,
+    apiKey,
+    systemNumber,
+    templateName: process.env.INFOBIP_WHATSAPP_TEMPLATE_NAME ?? 'hello_world',
+    templateLanguage: process.env.INFOBIP_WHATSAPP_TEMPLATE_LANGUAGE ?? 'en'
+  };
+};
 
 // Bug #13 fix: Always returns a value. The previous implementation could fall
 // off the end of the while loop after exhausting 5xx retries without returning,
@@ -34,7 +46,8 @@ async function sendInfobipRequest(
   endpoint: string,
   payload: unknown,
 ): Promise<{ success: boolean; data?: unknown; error?: unknown; status?: number }> {
-  const baseUrl = INFOBIP_BASE_URL.replace(/^https?:\/\//, '');
+  const { baseUrl: rawBaseUrl, apiKey } = getInfobipConfig();
+  const baseUrl = rawBaseUrl.replace(/^https?:\/\//, '');
   const url = `https://${baseUrl}${endpoint}`;
 
   let attempt = 0;
@@ -45,7 +58,7 @@ async function sendInfobipRequest(
       const response = await fetch(url, {
         method: 'POST',
         headers: {
-          Authorization: `App ${INFOBIP_API_KEY}`,
+          Authorization: `App ${apiKey}`,
           'Content-Type': 'application/json',
           Accept: 'application/json',
         },
@@ -109,15 +122,16 @@ export async function sendTemplateMessage(
   templateName: string,
   placeholders: string[] = [],
 ): Promise<{ success: boolean; data?: unknown; error?: unknown; status?: number }> {
+  const { systemNumber, templateLanguage } = getInfobipConfig();
   const payload = {
     messages: [
       {
-        from: SYSTEM_NUMBER,
+        from: systemNumber,
         to,
         content: {
           templateName,
           templateData: { body: { placeholders } },
-          language: TEMPLATE_LANGUAGE,
+          language: templateLanguage,
         },
       },
     ],
@@ -141,11 +155,13 @@ export async function sendWhatsAppMessage(
     now.getTime() - new Date(lastInteractionTimestamp).getTime() > 24 * 60 * 60 * 1000;
 
   if (isOutside24h) {
-    return sendTemplateMessage(to, TEMPLATE_NAME);
+    const { templateName } = getInfobipConfig();
+    return sendTemplateMessage(to, templateName);
   }
 
+  const { systemNumber } = getInfobipConfig();
   const payload = {
-    from: SYSTEM_NUMBER,
+    from: systemNumber,
     to,
     content: { text },
   };
@@ -160,8 +176,9 @@ export async function sendWhatsAppMedia(
   mediaUrl: string,
   caption?: string,
 ): Promise<{ success: boolean; data?: unknown; error?: unknown; status?: number }> {
+  const { systemNumber } = getInfobipConfig();
   const payload: Record<string, unknown> = {
-    from: SYSTEM_NUMBER,
+    from: systemNumber,
     to,
     content: { mediaUrl },
   };
@@ -196,8 +213,9 @@ export async function sendWhatsAppLocation(
   name?: string,
   address?: string,
 ): Promise<{ success: boolean; data?: unknown; error?: unknown; status?: number }> {
+  const { systemNumber } = getInfobipConfig();
   const payload: Record<string, unknown> = {
-    from: SYSTEM_NUMBER,
+    from: systemNumber,
     to,
     content: { latitude, longitude },
   };
