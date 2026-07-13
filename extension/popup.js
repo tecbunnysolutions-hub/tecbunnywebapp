@@ -232,9 +232,38 @@ document.addEventListener('DOMContentLoaded', () => {
         
         if (scrapedRawText) {
           aiBtn.style.display = 'block';
+          showStatus('Extracting full details using AI...', 'info');
+          
+          // Auto-trigger AI enhancement
+          chrome.runtime.sendMessage({ action: 'enhanceProduct', rawText: scrapedRawText }, (response) => {
+            if (chrome.runtime.lastError) {
+              showStatus(`Product scraped (AI unavailable: ${chrome.runtime.lastError.message})`, 'info');
+            } else if (response && response.success && response.data) {
+              const d = response.data;
+              if (d.title) titleInput.value = d.title;
+              if (d.price) priceInput.value = d.price;
+              if (d.mrp) mrpInput.value = d.mrp;
+              if (d.category) categoryInput.value = d.category;
+              if (d.brand) brandInput.value = d.brand;
+              if (d.shortDescription) shortDescInput.value = d.shortDescription;
+              if (d.seoTitle) seoTitleInput.value = d.seoTitle;
+              if (d.seoDescription) seoDescInput.value = d.seoDescription;
+              if (d.htmlDescription) descInput.value = d.htmlDescription;
+              if (d.modelNo) modelInput.value = d.modelNo;
+              if (d.warrantyPeriod) warrantyPeriodInput.value = d.warrantyPeriod;
+              if (d.warrantyType) warrantyTypeInput.value = d.warrantyType;
+              if (d.additional1) add1Input.value = d.additional1;
+              if (d.additional2) add2Input.value = d.additional2;
+              if (d.additional3) add3Input.value = d.additional3;
+              
+              showStatus('✨ Product scraped and fully enhanced with AI!', 'success');
+            } else {
+              showStatus(`Product scraped (AI enhancement failed: ${response?.error || 'Unknown error'})`, 'info');
+            }
+          });
+        } else {
+          showStatus('Product scraped successfully! You can review and edit fields before sending.', 'success');
         }
-        
-        showStatus('Product scraped successfully! You can review and edit fields before sending.', 'success');
       } else {
         throw new Error('Scraping returned no data.');
       }
