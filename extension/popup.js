@@ -132,23 +132,49 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // Save Credentials Click
-  saveSettingsBtn.addEventListener('click', () => {
+  saveSettingsBtn.addEventListener('click', async () => {
     clearSettingsStatus();
-    const user = superadminUser.value.trim();
+    const email = superadminUser.value.trim();
     const pass = superadminPass.value.trim();
 
-    if (!user || !pass) {
-      showSettingsStatus('Please fill in both username and password fields.', 'error');
+    if (!email || !pass) {
+      showSettingsStatus('Please fill in both email and password fields.', 'error');
       return;
     }
+    
+    saveSettingsBtn.disabled = true;
+    saveSettingsBtn.textContent = 'Authenticating...';
 
-    chrome.storage.local.set({ superadminUser: user, superadminPass: pass }, () => {
-      showSettingsStatus('Credentials saved successfully!', 'success');
-      setTimeout(() => {
-        settingsScreen.classList.remove('active');
-        scraperScreen.classList.add('active');
-      }, 500);
-    });
+    try {
+      const response = await fetch('https://www.tecbunny.com/api/auth/extension', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password: pass })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || 'Authentication failed');
+      }
+
+      chrome.storage.local.set({ 
+        superadminUser: email, 
+        superadminPass: pass, // Optional: keeping for legacy/re-auth
+        accessToken: data.access_token 
+      }, () => {
+        showSettingsStatus('Authenticated successfully!', 'success');
+        setTimeout(() => {
+          settingsScreen.classList.remove('active');
+          scraperScreen.classList.add('active');
+        }, 800);
+      });
+    } catch (error) {
+      showSettingsStatus(error.message || 'Network error during login.', 'error');
+    } finally {
+      saveSettingsBtn.disabled = false;
+      saveSettingsBtn.textContent = 'Save Credentials';
+    }
   });
 
   // Update preview image when user types in URL

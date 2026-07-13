@@ -27,19 +27,17 @@ async function sendProductData(productData) {
   
   // Retrieve saved credentials from local storage
   const credentials = await new Promise(resolve => {
-    chrome.storage.local.get(['superadminUser', 'superadminPass'], resolve);
+    chrome.storage.local.get(['accessToken'], resolve);
   });
 
-  const username = credentials.superadminUser || '';
-  const password = credentials.superadminPass || '';
+  const token = credentials.accessToken || '';
   
   try {
     const response = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-superadmin-username': username,
-        'x-superadmin-password': password
+        'Authorization': `Bearer ${token}`
       },
       body: JSON.stringify(productData)
     });
@@ -77,19 +75,17 @@ async function enhanceProductWithAI(rawText) {
   const url = 'https://www.tecbunny.com/api/products/scraper/ai';
   // Retrieve saved credentials from local storage
   const credentials = await new Promise(resolve => {
-    chrome.storage.local.get(['superadminUser', 'superadminPass'], resolve);
+    chrome.storage.local.get(['accessToken'], resolve);
   });
 
-  const username = credentials.superadminUser || '';
-  const password = credentials.superadminPass || '';
+  const token = credentials.accessToken || '';
   
   try {
     const response = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-superadmin-username': username,
-        'x-superadmin-password': password
+        'Authorization': `Bearer ${token}`
       },
       body: JSON.stringify({ rawText })
     });

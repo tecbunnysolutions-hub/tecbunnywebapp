@@ -14,19 +14,9 @@ export async function OPTIONS() {
 
 export async function POST(request: NextRequest) {
   try {
-    // 1. Authenticate Request using Superadmin credentials
-    const usernameHeader = request.headers.get('x-superadmin-username') || '';
-    const passwordHeader = request.headers.get('x-superadmin-password') || '';
-
-    const expectedUsername = process.env.SUPERADMIN_USER_ID || 'Shubham6010';
-    const expectedPassword = process.env.SUPERADMIN_PASSWORD || 'Bunny@6010';
-
-    if (usernameHeader !== expectedUsername || passwordHeader !== expectedPassword) {
-      return NextResponse.json(
-        { error: 'Forbidden: Invalid Superadmin credentials.' },
-        { status: 403, headers: corsHeaders }
-      );
-    }
+    // 1. Authenticate Request using Unified Policy Middleware + getServerAuthState
+    // The request has already been validated by executeUnifiedPolicyMiddleware
+    // We just retrieve the user ID if needed (though the Service Role client bypasses RLS for insertion).
 
     // 2. Validate Supabase Configuration
     if (!isSupabaseServiceConfigured) {

@@ -16,19 +16,9 @@ export async function POST(request: NextRequest) {
   const correlationId = request.headers.get('x-correlation-id') || crypto.randomUUID();
 
   try {
-    const usernameHeader = request.headers.get('x-superadmin-username') || '';
-    const passwordHeader = request.headers.get('x-superadmin-password') || '';
-
-    const expectedUsername = process.env.SUPERADMIN_USER_ID || 'Shubham6010';
-    const expectedPassword = process.env.SUPERADMIN_PASSWORD || 'Bunny@6010';
-
-    if (usernameHeader !== expectedUsername || passwordHeader !== expectedPassword) {
-      return NextResponse.json(
-        { error: 'Forbidden: Invalid Superadmin credentials.' },
-        { status: 403, headers: corsHeaders }
-      );
-    }
-
+    // 1. Authenticate Request using Unified Policy Middleware
+    // The request has already been validated by executeUnifiedPolicyMiddleware
+    // It requires a valid Supabase JWT Bearer token
     const body = await request.json();
     const { rawText } = body;
 

@@ -27,7 +27,7 @@ export async function middleware(request: NextRequest) {
     return await executeUnifiedPolicyMiddleware(request, {
       appType: 'api',
       loginRoute: '/login',
-      publicRoutes: [],
+      publicRoutes: ['/api/auth/extension'],
     });
   }
 
