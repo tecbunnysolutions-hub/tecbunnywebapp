@@ -33,5 +33,5 @@ export * from "./src/components/ui/toast.tsx";
 export * from "./src/components/ui/toaster.tsx";
 export * from "./src/components/ui/ViralWarrantyModal.tsx";
 export * from "./src/components/ui/WarrantyTelemetryBadge.tsx";
-export * from "./src/hooks/use-feature-flags";
+export * from "./src/hooks/use-feature-flags.ts";
 export * from "./theme";
