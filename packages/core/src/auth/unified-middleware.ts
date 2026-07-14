@@ -8,7 +8,7 @@ export interface UnifiedMiddlewareOptions {
 }
 
 function generateCSP() {
-  const scriptSrc = "script-src 'self' https://challenges.cloudflare.com https://cs.iubenda.com https://cdn.iubenda.com https://static.cloudflareinsights.com https://www.googletagmanager.com https://www.google-analytics.com https://va.vercel-scripts.com https://connect.facebook.net";
+  const scriptSrc = "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com https://cs.iubenda.com https://cdn.iubenda.com https://static.cloudflareinsights.com https://www.googletagmanager.com https://www.google-analytics.com https://va.vercel-scripts.com https://connect.facebook.net";
   return [
     "default-src 'self'",
     scriptSrc,
