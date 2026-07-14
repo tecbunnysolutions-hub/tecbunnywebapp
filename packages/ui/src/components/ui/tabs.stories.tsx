@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from './tabs';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from './card';
-import { Input } from './input';
-import { Label } from './label';
-import { Button } from './button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from './tabs.tsx';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from './card.tsx';
+import { Input } from './input.tsx';
+import { Label } from './label.tsx';
+import { Button } from './button.tsx';
 
 const meta = {
   title: 'UI/Tabs',

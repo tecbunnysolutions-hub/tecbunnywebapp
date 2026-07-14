@@ -1,6 +1,6 @@
 import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, TableCaption } from './table';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, TableCaption } from './table.tsx';
 
 const meta: Meta<typeof Table> = {
   title: 'UI/Table',

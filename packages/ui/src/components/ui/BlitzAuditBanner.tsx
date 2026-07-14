@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { ChevronDown, ChevronUp, X } from "lucide-react";
-import { useToast } from "../../hooks/use-toast";
+import { useToast } from '../../hooks/use-toast.ts';
 
 const DISMISS_STORAGE_KEY = "tecbunny_promo_dismissed_until";
 const CONSENT_STORAGE_KEY = "tecbunny_analytics_consent";

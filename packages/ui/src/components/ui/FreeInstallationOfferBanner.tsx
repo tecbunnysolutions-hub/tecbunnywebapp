@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Zap, Check, Loader } from 'lucide-react';
-import { Badge } from './badge';
+import { Badge } from './badge.tsx';
 
 interface FreeInstallationOfferBannerProps {
   installationPrice?: number;

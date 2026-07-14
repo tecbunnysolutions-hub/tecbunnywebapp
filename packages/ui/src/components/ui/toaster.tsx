@@ -2,7 +2,7 @@
 
 import React from "react";
 
-import { useToast } from "../../hooks/use-toast"
+import { useToast } from '../../hooks/use-toast.ts'
 import {
   Toast,
   ToastClose,
@@ -10,7 +10,7 @@ import {
   ToastProvider,
   ToastTitle,
   ToastViewport,
-} from "./toast"
+} from './toast.tsx'
 
 export function Toaster() {
   const { toasts } = useToast()
