@@ -9,8 +9,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from './alert-dialog.tsx';
-import { Button } from './button.tsx';
+} from './alert-dialog';
+import { Button } from './button';
 
 const meta = {
   title: 'UI/AlertDialog',

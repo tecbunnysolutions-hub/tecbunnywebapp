@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { Table } from './table';
+import { Table } from './table.tsx';
 declare const meta: Meta<typeof Table>;
 export default meta;
 type Story = StoryObj<typeof Table>;

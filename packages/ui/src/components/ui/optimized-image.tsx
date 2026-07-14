@@ -3,7 +3,7 @@
 import * as React from 'react';
 import Image, { type ImageProps } from 'next/image';
 
-import { cn } from '../../lib/utils.ts';
+import { cn } from '../../lib/utils';
 
 import { logger } from '@tecbunny/core/logger';
 

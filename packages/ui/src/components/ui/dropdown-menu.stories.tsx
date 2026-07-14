@@ -7,8 +7,8 @@ import {
   DropdownMenuItem, 
   DropdownMenuLabel, 
   DropdownMenuSeparator 
-} from './dropdown-menu.tsx';
-import { Button } from './button.tsx';
+} from './dropdown-menu';
+import { Button } from './button';
 
 const meta: Meta<typeof DropdownMenu> = {
   title: 'UI/DropdownMenu',

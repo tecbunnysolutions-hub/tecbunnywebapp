@@ -1,7 +1,7 @@
 import type { StoryObj } from '@storybook/react-vite';
 declare const meta: {
     title: string;
-    component: ({ user, onLogin, onLogout, onCreateAccount }: import("./Header").HeaderProps) => import("react/jsx-runtime").JSX.Element;
+    component: ({ user, onLogin, onLogout, onCreateAccount }: import("./Header.tsx").HeaderProps) => import("react/jsx-runtime").JSX.Element;
     tags: string[];
     parameters: {
         layout: string;
