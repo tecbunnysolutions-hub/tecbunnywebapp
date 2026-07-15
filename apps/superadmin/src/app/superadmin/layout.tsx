@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import { GlobalShell, NavSection } from '@tecbunny/admin-ui';
 import { Shield, LayoutDashboard, Users, Settings, Database, Server, Briefcase, Boxes, HardHat } from 'lucide-react';
