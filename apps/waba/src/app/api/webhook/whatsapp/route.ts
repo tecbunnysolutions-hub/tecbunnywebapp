@@ -55,18 +55,26 @@ export async function POST(req: Request) {
     const rawBodyBuffer = Buffer.from(await req.arrayBuffer());
     const rawBody = rawBodyBuffer.toString('utf8');
 
-    // Bug #2 fix: Removed URL token authentication entirely. Tokens in query
-    // parameters appear in server logs, CDN logs, and browser history, leaking
-    // the secret. HMAC signature verification is the only accepted auth method.
+    const url = new URL(req.url);
+    const token = url.searchParams.get('token');
+
+    // Bug #2 fix: We previously removed URL token auth, but Infobip is currently
+    // configured to send `?token=...` instead of HMAC headers for this specific webhook.
+    // Adding it back as a fallback while keeping HMAC as the primary secure method.
     const signature = req.headers.get('x-hub-signature-256') || req.headers.get('x-hub-signature') || req.headers.get('authorization');
 
-    if (!signature) {
-      console.error('Missing signature header.');
-      return NextResponse.json({ error: 'Missing HMAC signature' }, { status: 401 });
-    }
-
-    if (!verifySignature(rawBodyBuffer, signature)) {
-      return NextResponse.json({ error: 'Invalid HMAC signature' }, { status: 401 });
+    if (signature) {
+      if (!verifySignature(rawBodyBuffer, signature)) {
+        return NextResponse.json({ error: 'Invalid HMAC signature' }, { status: 401 });
+      }
+    } else if (token) {
+      if (token !== process.env.INFOBIP_HMAC_SECRET) {
+        console.error('Invalid URL token.');
+        return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
+      }
+    } else {
+      console.error('Missing signature header and no URL token provided.');
+      return NextResponse.json({ error: 'Missing authentication' }, { status: 401 });
     }
 
     const body = JSON.parse(rawBody);
