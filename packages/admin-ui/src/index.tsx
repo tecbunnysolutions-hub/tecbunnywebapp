@@ -17,6 +17,8 @@ export { default as AdminSettings } from './components/admin-settings';
 export * from './components/admin-users';
 export { default as AdminUsers } from './components/admin-users';
 export * from './components/AdminSidebar';
+export * from './components/GlobalShell';
+export * from './components/FloatingAIAssistant';
 export * from './components/AutoOffersManagement';
 export { default as AutoOffersManagement } from './components/AutoOffersManagement';
 export * from './components/CreateDiscountDialog';

@@ -11,8 +11,15 @@ export const CANONICAL_ROLES = [
   'store_executive',
   'sales_agent',
   'service_engineer',
+  'support',
+  'delivery',
+  'warehouse',
+  'hr',
+  'marketing_executive',
+  'accounts',
   'sales_manager',
   'service_manager',
+  'marketing_manager',
   'admin',
   'superadmin',
 ] as const;
@@ -24,9 +31,15 @@ export const STAFF_ASSIGNABLE_ROLES = [
   'store_executive',
   'sales_agent',
   'service_engineer',
+  'support',
+  'delivery',
+  'warehouse',
+  'hr',
+  'marketing_executive',
+  'accounts',
   'sales_manager',
   'service_manager',
-  'accounts',
+  'marketing_manager',
   'admin',
 ] as const;
 
@@ -38,7 +51,7 @@ export const USER_ASSIGNABLE_ROLES = [
 export type AssignableRole = (typeof USER_ASSIGNABLE_ROLES)[number];
 
 /** @deprecated Accepted during the staged migration to canonical role names. */
-export type LegacyRole = 'sales' | 'sales-staff' | 'sales-external' | 'manager' | 'accounts';
+export type LegacyRole = 'sales' | 'sales-staff' | 'sales-external' | 'manager';
 export type UserRole = CanonicalRole | LegacyRole;
 
 export const ALL_ROLES: UserRole[] = [
@@ -47,7 +60,6 @@ export const ALL_ROLES: UserRole[] = [
   'sales-staff',
   'sales-external',
   'manager',
-  'accounts',
 ];
 
 const ROLE_ALIASES: Readonly<Record<string, UserRole>> = {
@@ -66,15 +78,14 @@ const ROLE_ALIASES: Readonly<Record<string, UserRole>> = {
   'service engineer': 'service_engineer',
 };
 
-const LEGACY_EQUIVALENTS: Readonly<Record<LegacyRole, CanonicalRole | 'accounts'>> = {
+const LEGACY_EQUIVALENTS: Readonly<Record<LegacyRole, CanonicalRole>> = {
   sales: 'sales_executive',
   'sales-staff': 'store_executive',
   'sales-external': 'sales_agent',
   manager: 'sales_manager',
-  accounts: 'accounts',
 };
 
-type AuthorizationRole = CanonicalRole | 'accounts';
+type AuthorizationRole = CanonicalRole;
 
 function authorizationRole(role: UserRole): AuthorizationRole {
   return role in LEGACY_EQUIVALENTS
@@ -99,9 +110,15 @@ export const ROLE_HIERARCHY: Record<UserRole, number> = {
   store_executive: 1,
   sales_agent: 1,
   service_engineer: 1,
+  support: 1,
+  delivery: 1,
+  warehouse: 1,
+  hr: 2,
+  marketing_executive: 1,
   accounts: 2,
   sales_manager: 2,
   service_manager: 2,
+  marketing_manager: 2,
   admin: 3,
   superadmin: 4,
   sales: 1,
@@ -116,10 +133,16 @@ const ROLE_PARENTS: Readonly<Record<AuthorizationRole, readonly AuthorizationRol
   store_executive: ['customer'],
   sales_agent: ['customer'],
   service_engineer: ['customer'],
+  support: ['customer'],
+  delivery: ['customer'],
+  warehouse: ['customer'],
+  hr: ['customer'],
+  marketing_executive: ['customer'],
   accounts: ['customer'],
   sales_manager: ['sales_executive', 'store_executive', 'sales_agent'],
   service_manager: ['service_engineer'],
-  admin: ['sales_manager', 'service_manager', 'accounts'],
+  marketing_manager: ['marketing_executive'],
+  admin: ['sales_manager', 'service_manager', 'accounts', 'hr', 'marketing_manager', 'warehouse', 'delivery', 'support'],
   superadmin: ['admin'],
 };
 
@@ -136,83 +159,133 @@ export function isAtLeast(actual: UserRole, required: UserRole): boolean {
 }
 
 export const PERMS = {
-  PRODUCT_VIEW: 'product:view',
-  ORDER_VIEW_SELF: 'order:view:self',
-  USER_ALL: 'user:all',
-  SYSTEM_CONFIG: 'system:config',
-  AI_CONFIG: 'ai:config',
-  CATALOG_ALL: 'catalog:all',
-  ORDERS_ALL: 'orders:all',
-  CRM_ALL: 'crm:all',
-  REPORTS_ALL: 'reports:all',
-  ADMIN_USERS: 'admin:users',
-  ADMIN_INVENTORY: 'admin:inventory',
-  ADMIN_CRM: 'admin:crm',
-  ADMIN_ORDERS: 'admin:orders',
-  ADMIN_SERVICES: 'admin:services',
-  ADMIN_REPORTS: 'admin:reports',
-  /** @deprecated Use ADMIN_INVENTORY. */
-  INVENTORY_MANAGE: 'admin:inventory',
-  TEAM_READ_AREA: 'team:read:area',
-  ORDERS_DISPATCH_AREA: 'orders:dispatch:area',
-  LEADS_ASSIGN_AREA: 'leads:assign:area',
-  LEADS_WRITE: 'leads:write',
+  PRODUCTS_READ: 'products:read',
+  PRODUCTS_CREATE: 'products:create',
+  PRODUCTS_UPDATE: 'products:update',
+  PRODUCTS_DELETE: 'products:delete',
+  PRODUCTS_ALL: 'products:all',
+  
+  ORDERS_READ: 'orders:read',
+  ORDERS_READ_OWN: 'orders:read:own',
   ORDERS_CREATE: 'orders:create',
-  ORDERS_PROCESS: 'orders:process',
-  BILLING_QUICK: 'billing:quick',
   ORDERS_CREATE_DELEGATE: 'orders:create:delegate',
-  COMMISSION_READ: 'commission:read',
-  SERVICE_ORDERS_DISPATCH: 'service_orders:dispatch',
-  ENGINEERS_ASSIGN: 'engineers:assign',
-  SERVICE_ORDERS_UPDATE_OWN: 'service_orders:update:own',
+  ORDERS_UPDATE: 'orders:update',
+  ORDERS_DELETE: 'orders:delete',
+  ORDERS_DISPATCH: 'orders:dispatch',
+  ORDERS_DISPATCH_AREA: 'orders:dispatch:area',
+  ORDERS_ALL: 'orders:all',
+
+  INVENTORY_READ: 'inventory:read',
+  INVENTORY_CREATE: 'inventory:create',
+  INVENTORY_UPDATE: 'inventory:update',
+  INVENTORY_DELETE: 'inventory:delete',
+  INVENTORY_ALL: 'inventory:all',
+
+  CRM_READ: 'crm:read',
+  CRM_WRITE: 'crm:write',
+  CRM_ASSIGN_AREA: 'crm:assign:area',
+  CRM_DELETE: 'crm:delete',
+  CRM_ALL: 'crm:all',
+
+  USERS_READ: 'users:read',
+  USERS_READ_TEAM: 'users:read:team',
+  USERS_CREATE: 'users:create',
+  USERS_UPDATE: 'users:update',
+  USERS_DELETE: 'users:delete',
+  USERS_MANAGE: 'users:manage',
+  USERS_ALL: 'users:all',
+
+  BILLING_READ: 'billing:read',
+  BILLING_QUICK: 'billing:quick',
+  BILLING_INVOICE_MANAGE: 'billing:invoice:manage',
+  BILLING_ALL: 'billing:all',
+
+  REPORTS_READ: 'reports:read',
   REPORTS_SUBMIT: 'reports:submit',
-  INVOICE_MANAGE: 'invoice:manage',
-  REPORT_VIEW: 'report:view',
-  AUDIT_LOG_VIEW: 'system:audit-logs',
-  ROLE_MANAGE: 'system:roles',
-  /** @deprecated Use SYSTEM_CONFIG. */
-  SETTINGS_MANAGE: 'system:config',
-  /** @deprecated Use AI_CONFIG. */
-  AI_ORCHESTRATION: 'ai:config',
+  REPORTS_ALL: 'reports:all',
+
+  COMMISSION_READ: 'commission:read',
+
+  SERVICES_READ: 'services:read',
+  SERVICES_UPDATE_OWN: 'services:update:own',
+  SERVICES_DISPATCH: 'services:dispatch',
+  SERVICES_ENGINEERS_ASSIGN: 'services:engineers:assign',
+  SERVICES_ALL: 'services:all',
+
+  SUPPORT_TICKETS_READ: 'support:tickets:read',
+  SUPPORT_TICKETS_WRITE: 'support:tickets:write',
+  SUPPORT_ALL: 'support:all',
+
+  DELIVERY_READ: 'delivery:read',
+  DELIVERY_UPDATE: 'delivery:update',
+  DELIVERY_ALL: 'delivery:all',
+
+  SYSTEM_CONFIG: 'system:config',
+  SYSTEM_ROLES: 'system:roles',
+  SYSTEM_AUDIT_LOGS: 'system:audit-logs',
+  SYSTEM_ALL: 'system:all',
+  
+  AI_CONFIG: 'ai:config',
+  AI_ALL: 'ai:all',
+
+  MARKETING_READ: 'marketing:read',
+  MARKETING_WRITE: 'marketing:write',
+  MARKETING_APPROVE: 'marketing:approve',
+  MARKETING_ALL: 'marketing:all',
 } as const;
 
 export type Permission = (typeof PERMS)[keyof typeof PERMS];
 
 const DIRECT_PERMISSIONS: Record<AuthorizationRole, readonly Permission[]> = {
-  customer: [PERMS.PRODUCT_VIEW, PERMS.ORDER_VIEW_SELF],
-  sales_executive: [PERMS.LEADS_WRITE, PERMS.ORDERS_CREATE],
-  store_executive: [PERMS.ORDERS_PROCESS, PERMS.BILLING_QUICK],
+  customer: [PERMS.PRODUCTS_READ, PERMS.ORDERS_READ_OWN],
+  sales_executive: [PERMS.CRM_WRITE, PERMS.ORDERS_CREATE],
+  store_executive: [PERMS.ORDERS_UPDATE, PERMS.BILLING_QUICK],
   sales_agent: [PERMS.ORDERS_CREATE_DELEGATE, PERMS.COMMISSION_READ],
-  service_engineer: [PERMS.SERVICE_ORDERS_UPDATE_OWN, PERMS.REPORTS_SUBMIT],
-  accounts: [PERMS.INVOICE_MANAGE, PERMS.REPORT_VIEW],
+  service_engineer: [PERMS.SERVICES_UPDATE_OWN, PERMS.REPORTS_SUBMIT],
+  support: [PERMS.SUPPORT_TICKETS_READ, PERMS.SUPPORT_TICKETS_WRITE],
+  delivery: [PERMS.DELIVERY_READ, PERMS.DELIVERY_UPDATE],
+  warehouse: [PERMS.INVENTORY_READ, PERMS.INVENTORY_UPDATE, PERMS.ORDERS_DISPATCH],
+  hr: [PERMS.USERS_MANAGE],
+  marketing_executive: [PERMS.PRODUCTS_UPDATE, PERMS.CRM_READ, PERMS.MARKETING_READ, PERMS.MARKETING_WRITE],
+  marketing_manager: [PERMS.MARKETING_APPROVE, PERMS.REPORTS_READ],
+  accounts: [PERMS.BILLING_INVOICE_MANAGE, PERMS.REPORTS_READ],
   sales_manager: [
-    PERMS.TEAM_READ_AREA,
+    PERMS.USERS_READ_TEAM,
     PERMS.ORDERS_DISPATCH_AREA,
-    PERMS.LEADS_ASSIGN_AREA,
+    PERMS.CRM_ASSIGN_AREA,
+    PERMS.REPORTS_READ,
   ],
   service_manager: [
-    PERMS.TEAM_READ_AREA,
-    PERMS.SERVICE_ORDERS_DISPATCH,
-    PERMS.ENGINEERS_ASSIGN,
+    PERMS.USERS_READ_TEAM,
+    PERMS.SERVICES_DISPATCH,
+    PERMS.SERVICES_ENGINEERS_ASSIGN,
+    PERMS.REPORTS_READ,
   ],
   admin: [
-    PERMS.ADMIN_USERS,
-    PERMS.ADMIN_INVENTORY,
-    PERMS.ADMIN_CRM,
-    PERMS.ADMIN_ORDERS,
-    PERMS.ADMIN_SERVICES,
-    PERMS.ADMIN_REPORTS,
+    PERMS.USERS_MANAGE,
+    PERMS.INVENTORY_CREATE,
+    PERMS.INVENTORY_UPDATE,
+    PERMS.INVENTORY_DELETE,
+    PERMS.CRM_DELETE,
+    PERMS.ORDERS_DELETE,
+    PERMS.PRODUCTS_CREATE,
+    PERMS.PRODUCTS_DELETE,
+    PERMS.REPORTS_ALL,
   ],
   superadmin: [
-    PERMS.USER_ALL,
-    PERMS.SYSTEM_CONFIG,
-    PERMS.AI_CONFIG,
-    PERMS.CATALOG_ALL,
+    PERMS.PRODUCTS_ALL,
     PERMS.ORDERS_ALL,
+    PERMS.INVENTORY_ALL,
     PERMS.CRM_ALL,
+    PERMS.USERS_ALL,
+    PERMS.BILLING_ALL,
     PERMS.REPORTS_ALL,
-    PERMS.AUDIT_LOG_VIEW,
-    PERMS.ROLE_MANAGE,
+    PERMS.SERVICES_ALL,
+    PERMS.SUPPORT_ALL,
+    PERMS.DELIVERY_ALL,
+    PERMS.MARKETING_ALL,
+    PERMS.SYSTEM_ALL,
+    PERMS.AI_ALL,
   ],
 };
 
@@ -246,6 +319,13 @@ export const ROLE_DISPLAY_NAME: Record<UserRole, string> = {
   store_executive: 'Store Executive',
   sales_agent: 'Sales Agent',
   service_engineer: 'Service Engineer',
+  support: 'Customer Support',
+  delivery: 'Delivery Agent',
+  warehouse: 'Warehouse Staff',
+  hr: 'HR Manager',
+  marketing_executive: 'Marketing Executive',
+  marketing_manager: 'Marketing Manager',
+  accounts: 'Accounts',
   sales_manager: 'Sales Manager',
   service_manager: 'Service Manager',
   admin: 'Administrator',
@@ -254,18 +334,23 @@ export const ROLE_DISPLAY_NAME: Record<UserRole, string> = {
   'sales-staff': 'Store Executive (Legacy)',
   'sales-external': 'Sales Agent (Legacy)',
   manager: 'Sales Manager (Legacy)',
-  accounts: 'Accounts (Legacy)',
 };
 
-export const ROLE_DESCRIPTION: Record<CanonicalRole | 'accounts', string> = {
+export const ROLE_DESCRIPTION: Record<CanonicalRole, string> = {
   customer: 'Customer storefront access and own-order visibility.',
   sales_executive: 'Regional lead capture and product-order creation.',
   store_executive: 'Store order processing and quick billing.',
   sales_agent: 'Delegated customer orders and own commission reporting.',
   service_engineer: 'Assigned service jobs and field-report submission.',
+  support: 'Customer support ticket and query resolution.',
+  delivery: 'Order delivery management and updates.',
+  warehouse: 'Stock management, packing, and dispatch.',
+  hr: 'Human resources and staff management.',
+  marketing_executive: 'Create campaigns, manage templates, view analytics.',
+  marketing_manager: 'Approve campaigns, audience management, team analytics.',
+  accounts: 'Invoice management and financial report visibility.',
   sales_manager: 'Regional sales team, order dispatch, and lead assignment.',
   service_manager: 'Regional service dispatch and engineer assignment.',
-  accounts: 'Invoice management and financial report visibility.',
   admin: 'Day-to-day user, inventory, CRM, order, service, and report operations.',
   superadmin: 'Root system governance, role management, configuration, and unrestricted oversight.',
 };

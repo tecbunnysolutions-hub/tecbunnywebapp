@@ -7,9 +7,11 @@ import type { User as CustomUser } from './types';
 import { logger } from './logger';
 import { EFFECTIVE_PERMISSIONS, isAtLeast, normalizeRole, type UserRole } from './roles';
 import { verifySuperadminSessionToken } from './auth/superadmin-session';
+import { prisma } from './db/prisma';
 
 /**
  * Validates the Edge Superadmin session cookie.
+
  */
 export async function isSuperadminSession(): Promise<boolean> {
   try {
@@ -149,4 +151,66 @@ export async function isServiceEngineer(user: SupabaseUser | null): Promise<bool
   const role = await getUserRole(user);
   return role === 'service_engineer';
 }
+
+// Check if user is HR or higher
+export async function isHR(user: SupabaseUser | null): Promise<boolean> {
+  return hasRole(user, 'hr');
+}
+
+// Check if user is marketing or higher
+export async function isMarketing(user: SupabaseUser | null): Promise<boolean> {
+  return hasRole(user, 'marketing_executive');
+}
+
+// Check if user is warehouse or higher
+export async function isWarehouse(user: SupabaseUser | null): Promise<boolean> {
+  return hasRole(user, 'warehouse');
+}
+
+// Check if user is delivery or higher
+export async function isDelivery(user: SupabaseUser | null): Promise<boolean> {
+  return hasRole(user, 'delivery');
+}
+
+// Check if user is support or higher
+export async function isSupport(user: SupabaseUser | null): Promise<boolean> {
+  return hasRole(user, 'support');
+}
+
+/**
+ * NEW DYNAMIC RBAC: Checks if a user has a specific module action via the new DB-driven roles.
+ * Example: checkDynamicPermission(user, 'orders', 'create')
+ */
+export async function checkDynamicPermission(user: SupabaseUser | null, module: string, action: string): Promise<boolean> {
+  if (await isSuperadminSession() || await isSuperadmin(user)) {
+    return true; // Superadmins always have full access
+  }
+
+  if (!user) return false;
+
+  try {
+    // We check if the user has this permission mapped through their assigned role
+    const hasPerm = await prisma.user.findFirst({
+      where: {
+        id: user.id,
+        role: {
+          permissions: {
+            some: {
+              permission: {
+                module: module,
+                action: action,
+              }
+            }
+          }
+        }
+      }
+    });
+
+    return !!hasPerm;
+  } catch (error) {
+    logger.error('Error checking dynamic permission', { error });
+    return false;
+  }
+}
+
 

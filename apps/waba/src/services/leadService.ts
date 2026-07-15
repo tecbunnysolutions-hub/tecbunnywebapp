@@ -1,7 +1,7 @@
 // Bug #17 fix: Removed the unused `supabase` import. The service was importing
 // both Supabase and Prisma clients, creating two separate connection pools to
 // the same database. All operations now go through a single Prisma client.
-import { PrismaClient, Role, Lead } from '@tecbunny/types';
+import { PrismaClient, Lead } from '@tecbunny/types';
 
 // Bug #16 fix: PrismaClient was instantiated at module level (`new PrismaClient()`).
 // In serverless/edge environments each cold start creates a new connection pool,
@@ -35,7 +35,7 @@ export class LeadService {
       throw new Error('User not found');
     }
 
-    if (user.role === Role.SUPERADMIN) {
+    if (user.role?.name === 'superadmin') {
       return prisma.lead.findMany({ orderBy: { created_at: 'desc' } });
     }
 
@@ -101,7 +101,7 @@ export class LeadService {
     const lead = await prisma.lead.findUnique({ where: { id: leadId } });
     if (!lead) throw new Error('Lead not found');
 
-    if (user.role !== Role.SUPERADMIN && lead.assigned_to !== userId) {
+    if (user.role?.name !== 'superadmin' && lead.assigned_to !== userId) {
       throw new Error('Forbidden: You do not have permission to update this lead');
     }
 

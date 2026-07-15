@@ -17,29 +17,102 @@ model Conversation {
   address                    String?
   pincode                    String?
   status                     String    @default("NEW")
+  priority                   String    @default("NORMAL")
   tags                       String[]  @default([])
   notes                      String?
   ad_source                  String?
   assigned_to                String?
   department                 String    @default("UNASSIGNED")
+  sla_breach_at              DateTime?
   messages                   Message[]
+  orders                     Order[]
+
+  assignedUser User? @relation("AssignedConversations", fields: [assigned_to], references: [id])
 }
 
-enum Role {
-  SUPERADMIN
-  SERVICE_MANAGER
-  SALES_MANAGER
+model Organization {
+  id         String   @id @default(uuid())
+  name       String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  
+  branches   Branch[]
+  roles      Role[]
+  users      User[]
+}
+
+model Branch {
+  id              String       @id @default(uuid())
+  organization_id String
+  name            String
+  location        String?
+  created_at      DateTime     @default(now())
+  updated_at      DateTime     @updatedAt
+
+  organization    Organization @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+  users           User[]
+}
+
+model Role {
+  id              String       @id @default(uuid())
+  organization_id String?
+  name            String
+  description     String?
+  is_system_role  Boolean      @default(false)
+  created_at      DateTime     @default(now())
+  updated_at      DateTime     @updatedAt
+
+  organization    Organization? @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+  permissions     RolePermission[]
+  users           User[]
+
+  @@unique([organization_id, name])
+}
+
+model Permission {
+  id          String   @id @default(uuid())
+  module      String
+  action      String
+  description String?
+  created_at  DateTime @default(now())
+
+  roles       RolePermission[]
+
+  @@unique([module, action])
+}
+
+model RolePermission {
+  role_id       String
+  permission_id String
+
+  role          Role       @relation(fields: [role_id], references: [id], onDelete: Cascade)
+  permission    Permission @relation(fields: [permission_id], references: [id], onDelete: Cascade)
+
+  @@id([role_id, permission_id])
 }
 
 model User {
-  id               String   @id @default(uuid())
-  email            String   @unique
-  name             String
-  phone_number     String?
-  role             Role     @default(SERVICE_MANAGER)
+  id              String   @id @default(uuid())
+  email           String   @unique
+  name            String
+  phone_number    String?
+  
+  organization_id String?
+  branch_id       String?
+  role_id         String?
+
   managed_pincodes Json? // PostgreSQL JSONB array of strings e.g., ["403512", "403513"]
-  createdAt        DateTime @default(now())
+  createdAt       DateTime @default(now())
+  
+  organization    Organization? @relation(fields: [organization_id], references: [id], onDelete: SetNull)
+  branch          Branch?       @relation(fields: [branch_id], references: [id], onDelete: SetNull)
+  role            Role?         @relation(fields: [role_id], references: [id], onDelete: SetNull)
+
   leads            Lead[]
+
+  assigned_conversations Conversation[] @relation("AssignedConversations")
+  assigned_tickets       Ticket[]       @relation("AssignedTickets")
+  created_campaigns      Campaign[]
 }
 
 enum DomainType {
@@ -95,6 +168,7 @@ model Template {
   content    String
   status     String   @default("APPROVED")
   created_at DateTime @default(now())
+  campaigns  Campaign[]
 }
 
 model PageContent {
@@ -112,3 +186,110 @@ model PageContent {
 
   @@map("page_content")
 }
+
+model Ticket {
+  id            String    @id @default(uuid())
+  title         String
+  description   String?
+  status        String    @default("OPEN")
+  priority      String    @default("NORMAL")
+  department    String    @default("SUPPORT")
+  assigned_to   String?
+  sender_number String?
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+  sla_breach_at DateTime?
+
+  assignedUser User? @relation("AssignedTickets", fields: [assigned_to], references: [id])
+}
+
+// ----------------------------------------
+// E-Commerce Models
+// ----------------------------------------
+model Product {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  price       Float
+  stock       Int      @default(0)
+  category    String?
+  imageUrl    String?
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  orderItems OrderItem[]
+}
+
+model Order {
+  id             String      @id @default(uuid())
+  customer_phone String
+  total_amount   Float
+  status         String      @default("PENDING") // PENDING, PAID, DELIVERED, CANCELLED
+  created_at     DateTime    @default(now())
+  updated_at     DateTime    @updatedAt
+
+  items          OrderItem[]
+  conversation   Conversation? @relation(fields: [customer_phone], references: [sender_number])
+}
+
+model OrderItem {
+  id         String  @id @default(uuid())
+  order_id   String
+  product_id String
+  quantity   Int
+  price      Float
+
+  order      Order   @relation(fields: [order_id], references: [id])
+  product    Product @relation(fields: [product_id], references: [id])
+}
+
+// ----------------------------------------
+// Marketing Hub Models
+// ----------------------------------------
+model Campaign {
+  id          String   @id @default(uuid())
+  name        String
+  status      String   @default("DRAFT") // DRAFT, SCHEDULED, RUNNING, COMPLETED
+  template_id String?
+  schedule_at DateTime?
+  created_by  String?
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+  
+  targetAudience CampaignAudience?
+  logs           CampaignLog[]
+
+  creator     User?     @relation(fields: [created_by], references: [id])
+  template    Template? @relation(fields: [template_id], references: [id])
+}
+
+model CampaignAudience {
+  id          String   @id @default(uuid())
+  campaign_id String   @unique
+  criteria    Json     // e.g. { "status": "LEAD", "last_active": "<90days" }
+  size        Int      @default(0)
+
+  campaign    Campaign @relation(fields: [campaign_id], references: [id])
+}
+
+model CampaignLog {
+  id          String   @id @default(uuid())
+  campaign_id String
+  phone       String
+  status      String   @default("SENT") // SENT, DELIVERED, READ, REPLIED
+  sent_at     DateTime @default(now())
+
+  campaign    Campaign @relation(fields: [campaign_id], references: [id])
+}
+
+model Coupon {
+  id          String   @id @default(uuid())
+  code        String   @unique
+  discount    Float
+  type        String   @default("PERCENTAGE") // PERCENTAGE, FIXED
+  expires_at  DateTime?
+  usage_limit Int?
+  usage_count Int      @default(0)
+  created_at  DateTime @default(now())
+}
+
