@@ -14,41 +14,59 @@ import { getWabaWebhookQueue } from '@tecbunny/core/server';
  * which always failed against a hex signature. Now we digest as hex and strip
  * the "sha256=" prefix before comparing.
  */
-function verifySignature(payload: string, signature: string): boolean {
+function verifySignature(payload: Buffer | string, signature: string): boolean {
   const secret = process.env.INFOBIP_HMAC_SECRET;
   if (!secret) {
-    throw new Error('INFOBIP_HMAC_SECRET environment variable is required but not set.');
-  }
-
-  const expected = crypto
-    .createHmac('sha256', secret)
-    .update(payload)
-    .digest('hex');
-
-  // Strip optional "sha256=" prefix sent by some providers
-  const clean = signature.startsWith('sha256=') ? signature.slice(7) : signature;
-
-  try {
-    const expectedBuf = Buffer.from(expected, 'hex');
-    const actualBuf = Buffer.from(clean, 'hex');
-    if (expectedBuf.length !== actualBuf.length) return false;
-    return crypto.timingSafeEqual(expectedBuf, actualBuf);
-  } catch {
+    console.error('INFOBIP_HMAC_SECRET environment variable is required but not set.');
     return false;
   }
+
+  const clean = signature.startsWith('sha256=') ? signature.slice(7) : signature;
+
+  const expectedHex = crypto.createHmac('sha256', secret).update(payload).digest('hex');
+  const expectedBase64 = crypto.createHmac('sha256', secret).update(payload).digest('base64');
+  const expectedBase64Url = crypto.createHmac('sha256', secret).update(payload).digest('base64url');
+
+  const validSignatures = [expectedHex, expectedBase64, expectedBase64Url];
+  
+  let isValid = false;
+  for (const validSig of validSignatures) {
+    try {
+      const expectedBuf = Buffer.from(validSig, 'utf8');
+      const actualBuf = Buffer.from(clean, 'utf8');
+      if (expectedBuf.length === actualBuf.length && crypto.timingSafeEqual(expectedBuf, actualBuf)) {
+        isValid = true;
+        break;
+      }
+    } catch {
+      // ignore
+    }
+  }
+
+  if (!isValid) {
+    console.error('Signature mismatch. Received:', signature, 'Expected Hex:', expectedHex, 'Expected Base64:', expectedBase64);
+  }
+
+  return isValid;
 }
 
 export async function POST(req: Request) {
   try {
-    const rawBody = await req.text();
+    const rawBodyBuffer = Buffer.from(await req.arrayBuffer());
+    const rawBody = rawBodyBuffer.toString('utf8');
 
     // Bug #2 fix: Removed URL token authentication entirely. Tokens in query
     // parameters appear in server logs, CDN logs, and browser history, leaking
     // the secret. HMAC signature verification is the only accepted auth method.
-    const signature = req.headers.get('x-hub-signature-256') || req.headers.get('x-hub-signature');
+    const signature = req.headers.get('x-hub-signature-256') || req.headers.get('x-hub-signature') || req.headers.get('authorization');
 
-    if (!signature || !verifySignature(rawBody, signature)) {
-      return NextResponse.json({ error: 'Invalid or missing HMAC signature' }, { status: 401 });
+    if (!signature) {
+      console.error('Missing signature header.');
+      return NextResponse.json({ error: 'Missing HMAC signature' }, { status: 401 });
+    }
+
+    if (!verifySignature(rawBodyBuffer, signature)) {
+      return NextResponse.json({ error: 'Invalid HMAC signature' }, { status: 401 });
     }
 
     const body = JSON.parse(rawBody);
