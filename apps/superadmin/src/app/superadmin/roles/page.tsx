@@ -27,10 +27,6 @@ export default function RolesPage() {
   const [newRoleDesc, setNewRoleDesc] = useState('');
   const [selectedPerms, setSelectedPerms] = useState<Set<string>>(new Set());
 
-  useEffect(() => {
-    fetchData();
-  }, []);
-
   const fetchData = async () => {
     setLoading(true);
     try {
@@ -46,6 +42,10 @@ export default function RolesPage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
 
   const togglePermission = (id: string) => {
     const next = new Set(selectedPerms);

@@ -9,7 +9,6 @@
     "lint": "eslint"
   },
   "dependencies": {
-    "@prisma/client": "^5.22.0",
     "@tecbunny/admin-ui": "*",
     "@tecbunny/core": "*",
     "next": "16.2.10",
