@@ -58,34 +58,28 @@ export async function POST(req: Request) {
     const url = new URL(req.url);
     const token = url.searchParams.get('token');
 
-    // Bug #2 fix: We previously removed URL token auth, but Infobip is currently
-    // configured to send `?token=...` instead of HMAC headers for this specific webhook.
-    // Adding it back as a fallback while keeping HMAC as the primary secure method.
-    const signature = req.headers.get('x-hub-signature-256') || req.headers.get('x-hub-signature') || req.headers.get('authorization');
-
-    if (signature) {
-      if (!verifySignature(rawBodyBuffer, signature)) {
-        return NextResponse.json({ error: 'Invalid HMAC signature' }, { status: 401 });
-      }
-    } else if (token) {
-      const envSecret = process.env.INFOBIP_HMAC_SECRET?.replace(/["']/g, ""); // Strip quotes if user pasted them in Vercel by accident
+    // Bug #2 fix / Revert: Infobip uses the URL token for this integration.
+    // If the token is present in the URL, prioritize validating it.
+    if (token) {
+      const envSecret = process.env.INFOBIP_HMAC_SECRET?.replace(/["']/g, "");
       if (!envSecret) {
          console.error('INFOBIP_HMAC_SECRET is missing in Vercel environment variables!');
-         return NextResponse.json({ error: 'Server configuration error: INFOBIP_HMAC_SECRET is missing in Vercel Environment Variables.' }, { status: 500 });
+         return NextResponse.json({ error: 'Server configuration error: INFOBIP_HMAC_SECRET is missing.' }, { status: 500 });
       }
       if (token !== envSecret) {
         console.error(`Invalid URL token. Received: ${token}, Expected: ${envSecret}`);
-        return NextResponse.json({ 
-          error: 'Invalid token mismatch.', 
-          debug: { 
-            receivedToken: token, 
-            expectedMatches: token === envSecret 
-          } 
-        }, { status: 401 });
+        return NextResponse.json({ error: 'Invalid URL token mismatch.' }, { status: 401 });
       }
     } else {
-      console.error('Missing signature header and no URL token provided.');
-      return NextResponse.json({ error: 'Missing authentication' }, { status: 401 });
+      // Fallback to HMAC Signature Verification if token is not in URL
+      const signature = req.headers.get('x-hub-signature-256') || req.headers.get('x-hub-signature');
+      if (!signature) {
+        console.error('Missing signature header and no URL token provided.');
+        return NextResponse.json({ error: 'Missing authentication' }, { status: 401 });
+      }
+      if (!verifySignature(rawBodyBuffer, signature)) {
+        return NextResponse.json({ error: 'Invalid HMAC signature' }, { status: 401 });
+      }
     }
 
     const body = JSON.parse(rawBody);
