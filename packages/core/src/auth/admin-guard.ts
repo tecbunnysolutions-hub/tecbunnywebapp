@@ -1,5 +1,6 @@
 import { ALL_ROLES, normalizeRole as normalizeKnownRole, type UserRole } from '..';
-import { createSupabaseClient, createSupabaseServiceClient, isSupabaseServiceConfigured } from '@tecbunny/database';
+import { createSupabaseServiceClient, isSupabaseServiceConfigured } from '@tecbunny/database/admin';
+import { createSupabaseClient } from '@tecbunny/database/server';
 import type { User } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
 

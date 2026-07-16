@@ -3,7 +3,7 @@ import crypto from 'crypto';
 import { z } from 'zod';
 
 import { logger } from "@tecbunny/core/logger";
-import { getAdminClient } from '@tecbunny/database';
+import {  getAdminClient  } from '@tecbunny/database/admin';
 
 const getSupabaseAdmin = (): any => {
   return getAdminClient();

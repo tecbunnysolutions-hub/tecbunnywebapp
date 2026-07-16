@@ -1,4 +1,4 @@
-import { createServiceClient, isSupabaseServiceConfigured } from '@tecbunny/database';
+import {  createServiceClient, isSupabaseServiceConfigured  } from '@tecbunny/database/admin';
 /**
  * OTP Verification Service for Agent Orders and Customer Verification
  * Handles OTP generation, validation, and management

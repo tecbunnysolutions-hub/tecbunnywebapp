@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { logger } from "@tecbunny/core/logger";
 import { sendWhatsAppNotification } from "@tecbunny/core/whatsapp-service";
-import { getAdminClient } from '@tecbunny/database';
+import {  getAdminClient  } from '@tecbunny/database/admin';
 import { createQuoteActionToken, verifyQuoteActionToken } from "@tecbunny/core/quotes/action-token";
 
 function getSupabase(): any {

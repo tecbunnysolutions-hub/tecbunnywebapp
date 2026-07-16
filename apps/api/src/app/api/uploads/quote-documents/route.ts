@@ -1,6 +1,6 @@
 import { createSupabaseServiceClient } from "@tecbunny/core/server";
 import { NextRequest, NextResponse } from 'next/server';
-import { uploadToSupabase } from "@tecbunny/database";
+import {  uploadToSupabase  } from '@tecbunny/database/storage';
 import { logger } from "@tecbunny/core";
 
 import { verifyQuoteActionToken } from "@tecbunny/core/quotes/action-token";

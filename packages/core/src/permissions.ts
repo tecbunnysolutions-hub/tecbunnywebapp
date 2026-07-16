@@ -1,7 +1,7 @@
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
 
-import { createSupabaseClient as createClient } from '@tecbunny/database';
+import {  createSupabaseClient as createClient  } from '@tecbunny/database/server';
 
 import type { User as CustomUser } from './types';
 import { logger } from './logger';

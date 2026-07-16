@@ -1,5 +1,7 @@
 import { getAdminClient } from './admin';
 import { isSupabaseServiceConfigured } from './env';
+export * from './env';
+export * from './types';
 import { logger } from '@tecbunny/core/logger';
 import { optimizeImage, createOptimizeImageStream } from '@tecbunny/core/image-processor';
 import { Readable } from 'stream';

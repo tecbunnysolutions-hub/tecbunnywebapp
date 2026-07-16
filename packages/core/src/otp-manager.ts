@@ -1,7 +1,7 @@
 import { randomBytes, randomUUID, randomInt, createHash } from 'crypto';
 import nodemailer from 'nodemailer';
 import { logger } from '@tecbunny/core';
-import { getAdminClient, isSupabaseServiceConfigured } from '@tecbunny/database';
+import {  getAdminClient, isSupabaseServiceConfigured  } from '@tecbunny/database/admin';
 import { getRedis } from './redis';
 import improvedEmailService from './improved-email-service';
 

@@ -31,7 +31,7 @@ const nextConfig = {
   transpilePackages: ["@tecbunny/core", "@tecbunny/ui", "@tecbunny/database"],
   experimental: {
     optimizeCss: true,
-    optimizePackageImports: ['@tecbunny/core', '@tecbunny/ui', 'lucide-react']
+    optimizePackageImports: ['lucide-react']
   },
   serverExternalPackages: ['pdfkit', 'nodemailer', 'bullmq', 'ioredis', 'pino', 'pino-pretty', 'thread-stream'],
   poweredByHeader: false,

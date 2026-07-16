@@ -1,6 +1,6 @@
 import { Queue, Worker, Job } from 'bullmq';
 import Redis from 'ioredis';
-import { createServiceClient, isSupabaseServiceConfigured } from '@tecbunny/database';
+import {  createServiceClient, isSupabaseServiceConfigured  } from '@tecbunny/database/admin';
 import { logger } from '../logger';
 import { isValidImageUrl } from '../image-utils';
 

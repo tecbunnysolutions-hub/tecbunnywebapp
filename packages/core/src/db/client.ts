@@ -1,5 +1,5 @@
 import { SupabaseClient } from '@supabase/supabase-js';
-import { requireSupabaseServiceEnv, createSupabaseClient as createServerClient } from '@tecbunny/database';
+import { requireSupabaseServiceEnv } from '@tecbunny/database';
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import { DatabaseError } from './errors';
 import { withAuditLogging } from '../security/audit-middleware';
@@ -77,6 +77,7 @@ export function getAdminDb(): DbClient {
  * This MUST be called dynamically per-request, not cached globally.
  */
 export async function getUserDb(): Promise<DbClient> {
+  const { createServerClient } = await import('@tecbunny/database/server');
   const supabase = await createServerClient();
   const { data: { user } } = await supabase.auth.getUser();
   const auditedSupabase = withAuditLogging(supabase, user?.id || 'anonymous');

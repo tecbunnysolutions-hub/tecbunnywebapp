@@ -1,4 +1,4 @@
-import { createSupabaseClient } from '@tecbunny/database';
+import { createClient } from '@tecbunny/database';
 import { logger } from '@tecbunny/core';
 
 export interface PageContent {
@@ -23,7 +23,7 @@ const PAGE_CONTENT_SELECTS = [
 
 export async function getPageContentServer(pageKey: string): Promise<PageContent | null> {
   try {
-    const supabase = await createSupabaseClient();
+    const supabase = createClient();
     
     // Try modern and legacy schemas dynamically
     const attempts = [

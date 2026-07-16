@@ -330,7 +330,7 @@ function SiteSettingsPageContent() {
           .select('id, name, price, image'),
         12000,
         'Loading products timed out.'
-      );
+      ) as any;
 
       if (productsError) {
         logger.error('Products error:', { error: productsError });

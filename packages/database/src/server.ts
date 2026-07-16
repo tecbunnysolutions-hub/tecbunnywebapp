@@ -1,12 +1,13 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
-import { cookies } from 'next/headers';
 import { requireSupabasePublicEnv } from './env';
-import type { Database } from './types';
+export * from './env';
+export * from './types';
 
 const isLocal = process.env.NODE_ENV === 'development';
 
 export async function getServerClient() {
   const { url, publicKey } = requireSupabasePublicEnv();
+  const { cookies } = await import('next/headers');
   const cookieStore = await cookies();
 
   return createServerClient(url, publicKey, {

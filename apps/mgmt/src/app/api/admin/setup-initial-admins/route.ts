@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { rateLimit } from "@tecbunny/core/rate-limit";
-import { getAdminClient } from '@tecbunny/database';
+import {  getAdminClient  } from '@tecbunny/database/admin';
 
 const getSupabaseAdmin = (): any => {
   return getAdminClient();

@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { updateSession } from '@tecbunny/database';
+import {  updateSession  } from '@tecbunny/database/middleware';
 
 export interface UnifiedMiddlewareOptions {
   appType: 'api' | 'public' | 'superadmin' | 'mgmt';

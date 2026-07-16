@@ -2,7 +2,6 @@ import type { Session, SupabaseClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
 
 import { ALL_ROLES, hasPermission, isAtLeast, normalizeRole, permissionImplies, type UserRole } from './roles';
-import { createServerClient } from '@tecbunny/database';
 
 const DEFAULT_ROLE: UserRole = 'customer';
 type NullableRole = UserRole | null;
@@ -79,6 +78,7 @@ export interface ServerAuthState {
 }
 
 export async function getServerAuthState(): Promise<ServerAuthState> {
+  const { createServerClient } = await import('@tecbunny/database/server');
   try {
     const { cookies, headers } = await import('next/headers');
     const cookieStore = await cookies();

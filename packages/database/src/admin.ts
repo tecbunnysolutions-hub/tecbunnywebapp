@@ -1,5 +1,7 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { requireSupabaseServiceEnv } from './env';
+export * from './env';
+export * from './types';
 
 let adminClientInstance: SupabaseClient<any> | null = null;
 

@@ -1,6 +1,7 @@
 import type { UserRole } from '../roles';
 import { isAtLeast, normalizeRole as normalizeKnownRole } from '../roles';
-import { createClient, createServiceClient, isSupabaseServiceConfigured } from '@tecbunny/database';
+import { createServiceClient, isSupabaseServiceConfigured } from '@tecbunny/database/admin';
+import { createServerClient } from '@tecbunny/database/server';
 import { logger } from '../logger';
 import { cookies } from 'next/headers';
 import { verifySuperadminSessionToken } from './superadmin-session';
@@ -28,7 +29,7 @@ export async function requireRole(minRole: UserRole) {
             created_at: new Date().toISOString(),
           } as any,
           role: 'superadmin' as UserRole,
-          supabase: service || await createClient(),
+          supabase: service || await createServerClient(),
           service,
         } as const;
       }
@@ -39,7 +40,7 @@ export async function requireRole(minRole: UserRole) {
     });
   }
 
-  const supabase = await createClient();
+  const supabase = await createServerClient();
   const { data: { user }, error } = await supabase.auth.getUser();
   if (error || !user) {
     return { error: 'Unauthorized', status: 401 } as const;

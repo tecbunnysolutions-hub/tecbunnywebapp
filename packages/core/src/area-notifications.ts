@@ -1,4 +1,4 @@
-import { createServiceClient, isSupabaseServiceConfigured } from '@tecbunny/database';
+import {  createServiceClient, isSupabaseServiceConfigured  } from '@tecbunny/database/admin';
 import { resolveSiteUrl } from './site-url';
 
 import improvedEmailService from './improved-email-service';

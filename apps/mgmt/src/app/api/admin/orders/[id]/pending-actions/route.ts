@@ -1,7 +1,7 @@
 import { createClient as createServerClient } from "@tecbunny/core";
 import { NextRequest, NextResponse } from 'next/server';
 
-import { uploadToSupabase } from "@tecbunny/database";
+import {  uploadToSupabase  } from '@tecbunny/database/storage';
 import { logger } from "@tecbunny/core/logger";
 import { envConfig } from "@tecbunny/core/environment-validator";
 import { sendPaymentActionRequired, sendPaymentConfirmationNotification, sendWhatsAppNotification } from "@tecbunny/core/whatsapp-service";

@@ -1,6 +1,8 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 import { requireSupabasePublicEnv } from './env';
+export * from './env';
+export * from './types';
 import { normalizeRole, type UserRole } from '@tecbunny/core/roles';
 import { roleMatches, type RoleCheckOptions } from '@tecbunny/core/server-role-guard';
 

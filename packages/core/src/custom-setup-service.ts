@@ -1,7 +1,8 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 import { logger } from '@tecbunny/core';
-import { createClient, createServiceClient, isSupabaseServiceConfigured } from '@tecbunny/database';
+import { createServiceClient, isSupabaseServiceConfigured } from '@tecbunny/database/admin';
+import { createClient } from '@tecbunny/database';
 import { getRedis } from './redis';
 
 export type JsonRecord = Record<string, unknown>;

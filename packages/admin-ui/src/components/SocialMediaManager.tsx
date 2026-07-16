@@ -185,7 +185,7 @@ export default function SocialMediaManager() {
           ]),
         12000,
         'Loading social media settings timed out.'
-      );
+      ) as any;
 
       if (error) {
         logger.error('Error loading settings in SocialMediaManager', { error });
