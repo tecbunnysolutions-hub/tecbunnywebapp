@@ -213,7 +213,7 @@ export class PricingService {
       .select('id, price, mrp, status, is_deleted, gst_rate, offer_price')
       .in('id', productIds);
       
-    const dbProductMap = new Map(dbProducts?.map(p => [p.id, p]) || []);
+    const dbProductMap = new Map((dbProducts as any[])?.map((p: any) => [p.id, p]) || []);
 
     for (const item of items) {
       const dbProduct = dbProductMap.get(item.product.id);

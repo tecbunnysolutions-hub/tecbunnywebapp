@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
-import { requireSupabasePublicEnv } from "@tecbunny/core/supabase/env";
+import { requireSupabasePublicEnv } from "@tecbunny/database";
 import { cookies } from 'next/headers';
 
 export async function GET(request: Request) {

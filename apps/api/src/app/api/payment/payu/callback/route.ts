@@ -6,7 +6,7 @@ import { createClient } from '@supabase/supabase-js';
 import { apiError } from "@tecbunny/core";
 import { logger } from "@tecbunny/core";
 import { resolveSiteUrl } from "@tecbunny/core/site-url";
-import { requireSupabaseServiceEnv } from "@tecbunny/core/supabase/env";
+import { requireSupabaseServiceEnv } from "@tecbunny/database";
 import { normalisePayuEnvironment, verifyPayuHash, type PayuConfig, type PayuEnvironment } from "@tecbunny/core/payu-service";
 import { enqueuePaymentRecoveryWebhook } from "@tecbunny/core/queue";
 

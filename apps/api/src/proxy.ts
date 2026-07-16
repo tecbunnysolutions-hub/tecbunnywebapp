@@ -8,7 +8,7 @@ export async function proxy(request: NextRequest) {
   if (pathname.startsWith('/dashboard') || pathname.startsWith('/login') || pathname.startsWith('/api')) {
     if (pathname.startsWith('/login')) {
       // Check session manually since updateSession short-circuits for the login route.
-      const { requireSupabasePublicEnv } = await import('@tecbunny/core/supabase/env');
+      const { requireSupabasePublicEnv } = await import('@tecbunny/database');
       const { createServerClient } = await import('@supabase/ssr');
       const { url, publicKey } = requireSupabasePublicEnv();
       const supabase = createServerClient(url, publicKey, {

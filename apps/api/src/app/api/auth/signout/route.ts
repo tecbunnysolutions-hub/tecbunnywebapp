@@ -2,7 +2,7 @@ import { createServerClient } from '@supabase/ssr'
 import { NextRequest, NextResponse } from 'next/server'
 
 import { logger } from "@tecbunny/core"
-import { requireSupabasePublicEnv } from "@tecbunny/core/supabase/env"
+import { requireSupabasePublicEnv } from "@tecbunny/database";
 
 export async function POST(request: NextRequest) {
   try {

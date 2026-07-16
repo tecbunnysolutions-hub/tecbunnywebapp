@@ -4,7 +4,7 @@ import { createClient } from '@supabase/supabase-js';
 import { logger } from "@tecbunny/core";
 import { apiError, apiSuccess } from "@tecbunny/core";
 import { rateLimit } from "@tecbunny/core/rate-limit";
-import { requireSupabaseServiceEnv } from "@tecbunny/core/supabase/env";
+import { requireSupabaseServiceEnv } from "@tecbunny/database";
 import { AuthService } from "@tecbunny/core/server";
 
 const VERIFY_OTP_IP_LIMIT = { limit: 15, windowMs: 15 * 60 * 1000 };

@@ -12,7 +12,7 @@ import { requireAdmin } from "@tecbunny/core/admin-auth";
 export const runtime = 'nodejs';
 // Allow more time for larger uploads on serverless
 export const maxDuration = 60;
-import { uploadToSupabase, uploadFavicon, uploadLogo, uploadProductImage } from "@tecbunny/core/supabase-storage";
+import { uploadToSupabase, uploadFavicon, uploadLogo, uploadProductImage } from "@tecbunny/database";
 import { uploadHeroBanner, isS3Configured } from "@tecbunny/core/s3-storage";
 import sharp from 'sharp';
 

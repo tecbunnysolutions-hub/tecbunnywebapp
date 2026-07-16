@@ -18,7 +18,7 @@ export const featureFlagsRouter = router({
             flags[FeatureFlags.CHECKOUT_ENABLED] = true;
             flags[FeatureFlags.NEW_PAYMENT_GATEWAY] = false;
             if (data) {
-                data.forEach(flag => {
+                data.forEach((flag) => {
                     flags[flag.key] = flag.enabled;
                 });
             }

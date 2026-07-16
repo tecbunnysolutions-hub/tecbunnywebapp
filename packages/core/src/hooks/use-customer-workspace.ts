@@ -75,27 +75,27 @@ export function useCustomerWorkspace(customerId?: string, phone?: string) {
     
     const channel = supabase.channel(channelId)
       // Listen to Orders
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, (payload) => {
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, (payload: any) => {
         if ((customerId && payload.new && (payload.new as any).customer_id === customerId) ||
             (phone && payload.new && (payload.new as any).customer_phone === phone)) {
           fetchInitialData(); // Or optimistically update the state
         }
       })
       // Listen to Tickets
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'service_tickets' }, (payload) => {
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'service_tickets' }, (payload: any) => {
         if ((customerId && payload.new && (payload.new as any).customer_id === customerId) ||
             (phone && payload.new && (payload.new as any).customer_phone === phone)) {
           fetchInitialData();
         }
       })
       // Listen to Conversations
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'Conversation' }, (payload) => {
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'Conversation' }, (payload: any) => {
         if (phone && payload.new && (payload.new as any).sender_number === phone) {
           fetchInitialData();
         }
       })
       // Listen to Messages
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'Message' }, (payload) => {
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'Message' }, (payload: any) => {
         if (phone && payload.new && (payload.new as any).sender_number === phone) {
           fetchInitialData();
         }

@@ -5,4 +5,5 @@ export * from './server';
 export * from './admin';
 export * from './secure';
 export * from './middleware';
+export * from './storage';
 export { SupabaseClient } from '@supabase/supabase-js';

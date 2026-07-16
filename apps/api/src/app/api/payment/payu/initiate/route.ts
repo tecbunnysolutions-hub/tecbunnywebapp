@@ -6,7 +6,7 @@ import { rateLimit } from "@tecbunny/core/rate-limit";
 import { getEffectiveUserRole } from "@tecbunny/core/auth/server-role";
 import { apiError, apiSuccess } from "@tecbunny/core";
 import { logger } from "@tecbunny/core";
-import { requireSupabaseServiceEnv } from "@tecbunny/core/supabase/env";
+import { requireSupabaseServiceEnv } from "@tecbunny/database";
 import { PaymentService } from "@tecbunny/core/server";
 
 let supabaseAdmin: any = null;

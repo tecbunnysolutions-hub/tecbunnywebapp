@@ -2,7 +2,7 @@ import { createClient } from '@tecbunny/database';
 import { NextRequest } from 'next/server';
 
 import { apiSuccess, apiError } from "@tecbunny/core";
-import { uploadProductImage, uploadToSupabase } from "@tecbunny/core/supabase-storage";
+import { uploadProductImage, uploadToSupabase } from "@tecbunny/database";
 import { uploadHeroBanner, isS3Configured } from "@tecbunny/core/s3-storage";
 import { logger } from "@tecbunny/core";
 import { requireAdmin } from "@tecbunny/core/admin-auth";

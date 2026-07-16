@@ -4,7 +4,7 @@ import { createClient } from '@supabase/supabase-js';
 import { logger } from "@tecbunny/core";
 import { rateLimit } from "@tecbunny/core/rate-limit";
 import { AuthService } from "@tecbunny/core/server";
-import { requireSupabaseServiceEnv } from "@tecbunny/core/supabase/env";
+import { requireSupabaseServiceEnv } from "@tecbunny/database";
 
 const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
 
