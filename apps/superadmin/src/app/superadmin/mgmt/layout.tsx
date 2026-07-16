@@ -20,11 +20,13 @@ export default async function SuperadminLayout({ children }: { children: React.R
   const navItems = [
     { href: '/superadmin/mgmt/dashboard', label: 'Root Console', icon: ShieldCheck },
     { href: '/superadmin/mgmt/users', label: 'User Governance', icon: Users },
+    { href: '/superadmin/mgmt/roles', label: 'RBAC (Roles)', icon: ShieldCheck },
     { href: '/superadmin/mgmt/products', label: 'Product Catalogue', icon: Package },
     { href: '/superadmin/mgmt/services', label: 'Service Catalogue', icon: Settings },
     { href: '/superadmin/mgmt/payment-settings', label: 'Payment Settings', icon: CreditCard },
     { href: '/superadmin/mgmt/marketing', label: 'Marketing Target', icon: Activity },
     { href: '/superadmin/mgmt/ai-config', label: 'AI Configuration', icon: Bot },
+    { href: '/superadmin/mgmt/audit-logs', label: 'Audit Logs', icon: Activity },
   ];
 
   return (
