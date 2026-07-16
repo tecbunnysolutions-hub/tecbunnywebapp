@@ -17,6 +17,7 @@ import {
   Settings,
   ClipboardList,
   Menu,
+  X,
   Search,
   Sparkles,
   Bell,
@@ -70,91 +71,70 @@ const NAV_SECTIONS: NavSection[] = [
   },
 ];
 
-function classNames(...classes: (string | boolean | undefined)[]) {
-  return classes.filter(Boolean).join(' ');
-}
-
 export function SuperadminShell({ children }: { children: React.ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
 
   return (
-    <div style={{ display: 'flex', height: '100vh', overflow: 'hidden', fontFamily: 'inherit', backgroundColor: '#f8fafc' }}>
+    <div className="flex h-screen bg-slate-50 overflow-hidden font-sans">
       {/* Mobile backdrop */}
       {mobileOpen && (
         <div
+          className="fixed inset-0 z-40 bg-slate-900/50 backdrop-blur-sm lg:hidden"
           onClick={() => setMobileOpen(false)}
-          style={{
-            position: 'fixed', inset: 0, zIndex: 40, background: 'rgba(15,23,42,0.5)',
-            backdropFilter: 'blur(4px)',
-          }}
         />
       )}
 
       {/* ── Sidebar ── */}
       <aside
-        style={{
-          position: 'fixed',
-          inset: '0 auto 0 0',
-          zIndex: 50,
-          width: '256px',
-          backgroundColor: '#ffffff',
-          borderRight: '1px solid #e2e8f0',
-          display: 'flex',
-          flexDirection: 'column',
-          transform: mobileOpen ? 'translateX(0)' : 'translateX(-100%)',
-          transition: 'transform 0.3s',
-        }}
-        className="lg:static lg:translate-x-0"
+        className={`fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-slate-200 flex flex-col transition-transform duration-300 lg:static lg:translate-x-0 ${
+          mobileOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}
       >
         {/* Logo */}
-        <div style={{ height: '64px', display: 'flex', alignItems: 'center', gap: '12px', padding: '0 20px', borderBottom: '1px solid #f1f5f9', flexShrink: 0 }}>
-          {/* Inline SVG logo mark */}
-          <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'linear-gradient(135deg, #dc2626, #991b1b)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 900, fontSize: '14px', flexShrink: 0 }}>
+        <div className="h-16 flex items-center gap-3 px-5 border-b border-slate-100 shrink-0">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-red-600 to-red-800 flex items-center justify-center text-white font-black text-sm shrink-0">
             T
           </div>
           <div>
-            <p style={{ fontSize: '13px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#0f172a', lineHeight: 1.2 }}>
+            <p className="text-sm font-black uppercase tracking-tight text-slate-900 leading-tight">
               TecBunny
             </p>
-            <p style={{ fontSize: '9px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.2em', color: '#dc2626', lineHeight: 1.2 }}>
+            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-red-500 leading-tight">
               Superadmin
             </p>
           </div>
         </div>
 
         {/* Nav */}
-        <nav style={{ flex: 1, overflowY: 'auto', padding: '16px 12px' }}>
+        <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-5">
           {NAV_SECTIONS.map((section) => (
-            <div key={section.title} style={{ marginBottom: '20px' }}>
-              <p style={{ padding: '0 12px', marginBottom: '4px', fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.15em', color: '#94a3b8' }}>
+            <div key={section.title}>
+              <p className="px-3 mb-1 text-[10px] font-bold uppercase tracking-widest text-slate-450 text-slate-400">
                 {section.title}
               </p>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+              <div className="space-y-0.5">
                 {section.items.map((item) => {
-                  const isActive = item.exact ? pathname === item.href : pathname.startsWith(item.href);
+                  const isActive = item.exact
+                    ? pathname === item.href
+                    : pathname.startsWith(item.href);
                   const Icon = item.icon;
                   return (
                     <Link
                       key={item.href}
                       href={item.href}
                       onClick={() => setMobileOpen(false)}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '10px',
-                        padding: '8px 12px',
-                        borderRadius: '6px',
-                        fontSize: '14px',
-                        fontWeight: 500,
-                        textDecoration: 'none',
-                        transition: 'all 0.15s',
-                        backgroundColor: isActive ? '#fef2f2' : 'transparent',
-                        color: isActive ? '#b91c1c' : '#475569',
-                        border: isActive ? '1px solid #fee2e2' : '1px solid transparent',
-                      }}
+                      className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-all ${
+                        isActive
+                          ? 'bg-red-50 text-red-700 border border-red-100'
+                          : 'text-slate-650 text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                      }`}
                     >
-                      <Icon style={{ width: '16px', height: '16px', flexShrink: 0, color: isActive ? '#dc2626' : '#94a3b8' }} />
+                      <Icon
+                        className={`h-4 w-4 shrink-0 ${
+                          isActive ? 'text-red-600' : 'text-slate-400'
+                        }`}
+                      />
                       {item.label}
                     </Link>
                   );
@@ -165,86 +145,67 @@ export function SuperadminShell({ children }: { children: React.ReactNode }) {
         </nav>
 
         {/* Sign out */}
-        <div style={{ borderTop: '1px solid #f1f5f9', padding: '12px', flexShrink: 0 }}>
+        <div className="border-t border-slate-100 p-3 shrink-0">
           <Link
             href="/api/admin-auth/logout"
             prefetch={false}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '10px',
-              padding: '8px 12px',
-              borderRadius: '6px',
-              fontSize: '14px',
-              fontWeight: 500,
-              textDecoration: 'none',
-              color: '#64748b',
-            }}
+            className="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition-colors"
           >
-            <LogOut style={{ width: '16px', height: '16px' }} />
+            <LogOut className="h-4 w-4 shrink-0 text-slate-400" />
             Sign out
           </Link>
         </div>
       </aside>
 
       {/* ── Main area ── */}
-      <div className="lg:ml-64" style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'hidden' }}>
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Topbar */}
-        <header style={{ height: '64px', backgroundColor: '#ffffff', borderBottom: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 16px', flexShrink: 0, zIndex: 10 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flex: 1 }}>
-            {/* Hamburger */}
+        <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 sm:px-6 shrink-0 z-10">
+          <div className="flex items-center gap-4 flex-1">
+            {/* Mobile hamburger */}
             <button
-              className="lg:hidden"
+              className="lg:hidden p-2 -ml-2 text-slate-500 hover:text-slate-700 rounded-md"
               onClick={() => setMobileOpen(true)}
-              style={{ padding: '8px', background: 'none', border: 'none', cursor: 'pointer', color: '#64748b' }}
             >
-              <Menu style={{ width: '20px', height: '20px' }} />
+              <Menu className="h-5 w-5" />
             </button>
 
             {/* Search */}
-            <button
-              className="hidden md:flex"
-              style={{ alignItems: 'center', gap: '8px', padding: '8px 16px', backgroundColor: '#f1f5f9', borderRadius: '8px', maxWidth: '400px', width: '100%', cursor: 'pointer', border: 'none', color: '#94a3b8', fontSize: '14px' }}
-            >
-              <Search style={{ width: '16px', height: '16px' }} />
+            <button className="hidden md:flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-400 rounded-lg max-w-md w-full transition-colors text-sm text-left">
+              <Search className="h-4 w-4 shrink-0" />
               Search anywhere… (Cmd+K)
             </button>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div className="flex items-center gap-3">
             {/* AI Command */}
-            <button
-              className="hidden sm:flex"
-              style={{ alignItems: 'center', gap: '6px', padding: '6px 12px', borderRadius: '999px', fontSize: '13px', fontWeight: 500, background: 'linear-gradient(to right, #eef2ff, #f5f3ff)', color: '#4338ca', border: '1px solid #e0e7ff', cursor: 'pointer' }}
-            >
-              <Sparkles style={{ width: '14px', height: '14px', color: '#7c3aed' }} />
+            <button className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium bg-gradient-to-r from-indigo-50 to-purple-50 text-indigo-700 border border-indigo-100 hover:shadow-md transition-all">
+              <Sparkles className="h-3.5 w-3.5 text-purple-500 shrink-0" />
               AI Command
             </button>
 
-            {/* Bell */}
-            <button style={{ padding: '8px', borderRadius: '50%', background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8', position: 'relative' }}>
-              <Bell style={{ width: '20px', height: '20px' }} />
-              <span style={{ position: 'absolute', top: '8px', right: '8px', width: '8px', height: '8px', background: '#ef4444', borderRadius: '50%', border: '2px solid white' }} />
+            {/* Notifications */}
+            <button className="p-2 text-slate-400 hover:text-slate-600 relative rounded-full hover:bg-slate-100">
+              <Bell className="h-5 w-5" />
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full ring-2 ring-white" />
             </button>
 
             {/* Profile */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: '#dc2626', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 700, fontSize: '14px' }}>
+            <div className="flex items-center gap-2 pl-1">
+              <div className="h-8 w-8 rounded-full bg-red-650 bg-red-600 flex items-center justify-center text-white font-bold text-sm shrink-0">
                 S
               </div>
-              <div className="hidden sm:block" style={{ textAlign: 'left' }}>
-                <p style={{ fontSize: '13px', fontWeight: 600, color: '#0f172a', lineHeight: 1.3 }}>System Super Administrator</p>
-                <p style={{ fontSize: '11px', color: '#94a3b8', lineHeight: 1.3 }}>Superadmin</p>
+              <div className="hidden sm:block text-left text-sm leading-tight">
+                <p className="font-semibold text-slate-900">System Super Administrator</p>
+                <p className="text-xs text-slate-400">Superadmin</p>
               </div>
             </div>
           </div>
         </header>
 
         {/* Page content */}
-        <main style={{ flex: 1, overflowY: 'auto', backgroundColor: '#f8fafc' }}>
-          <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '24px 32px' }}>
-            {children}
-          </div>
+        <main className="flex-1 overflow-y-auto bg-slate-50">
+          <div className="mx-auto max-w-7xl p-4 sm:p-6 lg:p-8">{children}</div>
         </main>
       </div>
     </div>
