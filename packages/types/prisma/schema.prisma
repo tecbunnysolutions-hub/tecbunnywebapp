@@ -28,45 +28,52 @@ model Conversation {
   orders                     Order[]
 
   assignedUser User? @relation("AssignedConversations", fields: [assigned_to], references: [id])
+
+  @@map("Conversation")
 }
 
 model Organization {
   id         String   @id @default(uuid())
   name       String
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  created_at DateTime @default(now()) @map("created_at")
+  updated_at DateTime @updatedAt @map("updated_at")
   
   branches   Branch[]
   roles      Role[]
   users      User[]
+
+  @@map("org_organizations")
 }
 
 model Branch {
   id              String       @id @default(uuid())
-  organization_id String
+  organization_id String       @map("org_id")
   name            String
   location        String?
-  created_at      DateTime     @default(now())
-  updated_at      DateTime     @updatedAt
+  created_at      DateTime     @default(now()) @map("created_at")
+  updated_at      DateTime     @updatedAt @map("updated_at")
 
   organization    Organization @relation(fields: [organization_id], references: [id], onDelete: Cascade)
   users           User[]
+
+  @@map("org_branches")
 }
 
 model Role {
   id              String       @id @default(uuid())
-  organization_id String?
+  organization_id String?      @map("org_id")
   name            String
   description     String?
-  is_system_role  Boolean      @default(false)
-  created_at      DateTime     @default(now())
-  updated_at      DateTime     @updatedAt
+  is_system_role  Boolean      @default(false) @map("is_system")
+  created_at      DateTime     @default(now()) @map("created_at")
+  updated_at      DateTime     @updatedAt @map("updated_at")
 
   organization    Organization? @relation(fields: [organization_id], references: [id], onDelete: Cascade)
   permissions     RolePermission[]
   users           User[]
 
   @@unique([organization_id, name])
+  @@map("sys_roles")
 }
 
 model Permission {
@@ -74,11 +81,12 @@ model Permission {
   module      String
   action      String
   description String?
-  created_at  DateTime @default(now())
+  created_at  DateTime @default(now()) @map("created_at")
 
   roles       RolePermission[]
 
   @@unique([module, action])
+  @@map("sys_permissions")
 }
 
 model RolePermission {
@@ -89,6 +97,7 @@ model RolePermission {
   permission    Permission @relation(fields: [permission_id], references: [id], onDelete: Cascade)
 
   @@id([role_id, permission_id])
+  @@map("sys_role_permissions")
 }
 
 model User {
@@ -113,6 +122,8 @@ model User {
   assigned_conversations Conversation[] @relation("AssignedConversations")
   assigned_tickets       Ticket[]       @relation("AssignedTickets")
   created_campaigns      Campaign[]
+
+  @@map("sys_users_prisma")
 }
 
 enum DomainType {
@@ -129,10 +140,12 @@ model Lead {
   address       String?
   status        String     @default("NEW")
   assigned_to   String?
-  created_at    DateTime   @default(now())
-  updated_at    DateTime   @updatedAt
+  created_at    DateTime   @default(now()) @map("created_at")
+  updated_at    DateTime   @updatedAt @map("updated_at")
 
   assignedUser User? @relation(fields: [assigned_to], references: [id])
+
+  @@map("sls_leads")
 }
 
 model Message {
@@ -147,6 +160,8 @@ model Message {
   media_type      String?
 
   conversation Conversation @relation(fields: [sender_number], references: [sender_number])
+
+  @@map("Message")
 }
 
 model FailedApiCall {
@@ -154,6 +169,8 @@ model FailedApiCall {
   payload    String
   error      String
   created_at DateTime @default(now())
+
+  @@map("FailedApiCall")
 }
 
 enum Direction {
@@ -169,6 +186,8 @@ model Template {
   status     String   @default("APPROVED")
   created_at DateTime @default(now())
   campaigns  Campaign[]
+
+  @@map("Template")
 }
 
 model PageContent {
@@ -196,11 +215,13 @@ model Ticket {
   department    String    @default("SUPPORT")
   assigned_to   String?
   sender_number String?
-  created_at    DateTime  @default(now())
-  updated_at    DateTime  @updatedAt
-  sla_breach_at DateTime?
+  created_at    DateTime  @default(now()) @map("created_at")
+  updated_at    DateTime  @updatedAt @map("updated_at")
+  sla_breach_at DateTime? @map("sla_breach_at")
 
   assignedUser User? @relation("AssignedTickets", fields: [assigned_to], references: [id])
+
+  @@map("sup_tickets")
 }
 
 // ----------------------------------------
@@ -218,6 +239,8 @@ model Product {
   updated_at  DateTime @updatedAt
 
   orderItems OrderItem[]
+
+  @@map("products")
 }
 
 model Order {
@@ -230,6 +253,8 @@ model Order {
 
   items          OrderItem[]
   conversation   Conversation? @relation(fields: [customer_phone], references: [sender_number])
+
+  @@map("orders")
 }
 
 model OrderItem {
@@ -241,6 +266,8 @@ model OrderItem {
 
   order      Order   @relation(fields: [order_id], references: [id])
   product    Product @relation(fields: [product_id], references: [id])
+
+  @@map("order_items")
 }
 
 // ----------------------------------------
@@ -261,6 +288,8 @@ model Campaign {
 
   creator     User?     @relation(fields: [created_by], references: [id])
   template    Template? @relation(fields: [template_id], references: [id])
+
+  @@map("mkt_campaigns")
 }
 
 model CampaignAudience {
@@ -270,6 +299,8 @@ model CampaignAudience {
   size        Int      @default(0)
 
   campaign    Campaign @relation(fields: [campaign_id], references: [id])
+
+  @@map("mkt_audience_members")
 }
 
 model CampaignLog {
@@ -280,6 +311,8 @@ model CampaignLog {
   sent_at     DateTime @default(now())
 
   campaign    Campaign @relation(fields: [campaign_id], references: [id])
+
+  @@map("mkt_campaign_analytics")
 }
 
 model Coupon {
@@ -291,5 +324,6 @@ model Coupon {
   usage_limit Int?
   usage_count Int      @default(0)
   created_at  DateTime @default(now())
-}
 
+  @@map("oms_coupons")
+}

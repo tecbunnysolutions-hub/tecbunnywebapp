@@ -6,26 +6,50 @@ export const dynamic = 'force-dynamic';
 export async function GET() {
   const prisma = new PrismaClient();
   try {
-    const results: any[] = [];
+    const results = [];
     
-    // 1. Create public.products view mapped to prd_products with fallback column names
+    // 1. Create public.products view mapped to prd_products, prd_variants, prd_categories, and prd_tax_classes
     console.log("Creating public.products view...");
     const productsViewSql = `
-      CREATE OR REPLACE VIEW public.products AS 
+      CREATE OR REPLACE VIEW public.products WITH (security_invoker = true) AS 
       SELECT 
-        id,
-        org_id,
-        title,
-        slug,
-        description,
-        status::text as status,
-        created_at,
-        updated_at,
-        deleted_at,
-        title as name,
-        slug as handle,
-        slug as permalink
-      FROM public.prd_products;
+        p.id,
+        p.org_id,
+        p.title,
+        p.slug,
+        p.description,
+        p.status::text as status,
+        p.created_at,
+        p.updated_at,
+        p.deleted_at,
+        p.title as name,
+        p.slug as handle,
+        p.slug as permalink,
+        coalesce(pr.base_price, 0)::numeric as price,
+        coalesce(pr.compare_at_price, 0)::numeric as mrp,
+        v.sku,
+        coalesce(s.qty, 0)::integer as stock,
+        coalesce(s.qty, 0)::integer as stock_quantity,
+        c.name as category,
+        m.url as imageUrl,
+        m.url as image,
+        t.gst_rate as gst_rate,
+        t.hsn_sac_code as hsn_code
+      FROM public.prd_products p
+      LEFT JOIN public.prd_variants v ON p.id = v.product_id
+      LEFT JOIN public.prd_pricing pr ON v.id = pr.variant_id
+      LEFT JOIN (
+        SELECT variant_id, sum(quantity_on_hand) as qty 
+        FROM public.inv_stock 
+        GROUP BY variant_id
+      ) s ON v.id = s.variant_id
+      LEFT JOIN public.prd_categories c ON p.category_id = c.id
+      LEFT JOIN public.prd_tax_classes t ON p.tax_class_id = t.id
+      LEFT JOIN (
+        SELECT DISTINCT ON (product_id) product_id, url 
+        FROM public.prd_media 
+        ORDER BY product_id, display_order ASC
+      ) m ON p.id = m.product_id;
     `;
     results.push({
       step: 'products_view',
@@ -35,7 +59,7 @@ export async function GET() {
     // 2. Create public.settings view mapped to cms_settings
     console.log("Creating public.settings view...");
     const settingsViewSql = `
-      CREATE OR REPLACE VIEW public.settings AS 
+      CREATE OR REPLACE VIEW public.settings WITH (security_invoker = true) AS 
       SELECT 
         key,
         value,
@@ -47,7 +71,29 @@ export async function GET() {
       result: await prisma.$executeRawUnsafe(settingsViewSql)
     });
 
-    // 3. Grant schema usage
+    // 3. Create public.sys_users_prisma view mapped to sys_users + auth.users
+    console.log("Creating public.sys_users_prisma view...");
+    const usersViewSql = `
+      CREATE OR REPLACE VIEW public.sys_users_prisma WITH (security_invoker = true) AS
+      SELECT 
+        u.id,
+        au.email,
+        coalesce(u.first_name || ' ' || u.last_name, u.first_name, u.last_name, '') as name,
+        u.phone as phone_number,
+        u.org_id as organization_id,
+        u.branch_id,
+        (SELECT role_id FROM public.sys_user_roles ur WHERE ur.user_id = u.id LIMIT 1) as role_id,
+        u.metadata as managed_pincodes,
+        u.created_at as "createdAt"
+      FROM public.sys_users u
+      JOIN auth.users au ON u.id = au.id;
+    `;
+    results.push({
+      step: 'users_view',
+      result: await prisma.$executeRawUnsafe(usersViewSql)
+    });
+
+    // 4. Grant schema usage
     console.log("Granting usage on public schema...");
     results.push({
       step: 'schema_usage',
@@ -56,7 +102,7 @@ export async function GET() {
       `)
     });
 
-    // 4. Grant select on the new views
+    // 5. Grant select on the views
     console.log("Granting select on views...");
     results.push({
       step: 'grant_products_view',
@@ -72,7 +118,14 @@ export async function GET() {
       `)
     });
 
-    // 5. Grant access to all tables for service_role
+    results.push({
+      step: 'grant_users_view',
+      result: await prisma.$executeRawUnsafe(`
+        GRANT SELECT ON public.sys_users_prisma TO service_role;
+      `)
+    });
+
+    // 6. Grant access to all tables for service_role
     console.log("Granting full access to all tables in public schema for service_role...");
     results.push({
       step: 'grant_all_tables_service_role',
@@ -81,7 +134,7 @@ export async function GET() {
       `)
     });
 
-    // 6. Grant select access to all tables for public/anon
+    // 7. Grant select access to all tables for public/anon
     console.log("Granting select access to all tables in public schema for anon and authenticated...");
     results.push({
       step: 'grant_all_tables_public',
@@ -91,9 +144,10 @@ export async function GET() {
     });
 
     return NextResponse.json({ success: true, results });
-  } catch (error: any) {
+  } catch (error) {
     console.error("SQL execution error:", error);
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    const message = error instanceof Error ? error.message : String(error);
+    return NextResponse.json({ success: false, error: message }, { status: 500 });
   } finally {
     await prisma.$disconnect();
   }
