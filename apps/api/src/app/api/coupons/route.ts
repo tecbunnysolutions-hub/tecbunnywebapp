@@ -1,4 +1,4 @@
-import { createClient as createServerClient } from "@tecbunny/core/supabase/server";
+import { createClient as createServerClient } from '@tecbunny/database';
 import {  isSupabasePublicConfigured } from "@tecbunny/core";
 import { isSupabaseServiceConfigured } from "@tecbunny/core/server";;
 import { createClient as createAdminClient } from '@supabase/supabase-js';

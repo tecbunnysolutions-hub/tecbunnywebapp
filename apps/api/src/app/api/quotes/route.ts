@@ -1,4 +1,4 @@
-import { createSupabaseClient as createClient } from "@tecbunny/core/supabase/server";
+import { createSupabaseClient as createClient } from '@tecbunny/database';
 import { createSupabaseServiceClient } from "@tecbunny/core/server";
 import { NextRequest, NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';

@@ -5,8 +5,6 @@ export const dynamic = 'force-dynamic';
 
 export async function GET() {
   const prisma = new PrismaClient();
-  const dbUrl = process.env.DATABASE_URL || '';
-  const maskedDbUrl = dbUrl.replace(/(:\/\/.*?):(.*?)@/, '$1:***@');
   try {
     const results = [];
     
@@ -145,11 +143,11 @@ export async function GET() {
       `)
     });
 
-    return NextResponse.json({ success: true, results, dbUrl: maskedDbUrl });
+    return NextResponse.json({ success: true, results });
   } catch (error) {
     console.error("SQL execution error:", error);
     const message = error instanceof Error ? error.message : String(error);
-    return NextResponse.json({ success: false, error: message, dbUrl: maskedDbUrl }, { status: 500 });
+    return NextResponse.json({ success: false, error: message }, { status: 500 });
   } finally {
     await prisma.$disconnect();
   }

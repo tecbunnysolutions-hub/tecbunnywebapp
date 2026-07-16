@@ -5,7 +5,7 @@ import { rateLimit } from "@tecbunny/core/rate-limit";
 import { verifySuperadminSessionToken } from "@tecbunny/core/server";
 import { BaseSupabaseClient, SupabaseOrderRepository, NotificationServiceImpl } from "@tecbunny/infra";
 import { OrderService } from "@tecbunny/core/server";
-import { createClient as createServerClient } from "@tecbunny/core/supabase/server";
+import { createClient as createServerClient } from '@tecbunny/database';
 
 const RATE_LIMIT = 5; // 5 orders
 const RATE_WINDOW_MS = 60 * 1000; // per minute

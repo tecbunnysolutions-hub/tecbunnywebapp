@@ -5,7 +5,7 @@ import { Metadata } from 'next';
 import { cookies } from 'next/headers';
 import { cleanMetadataDescription, cleanMetadataTitle, createPageMetadata } from "@tecbunny/core/metadata";
 import { Suspense } from 'react';
-import { createSupabaseClient as createPublicSupabaseClient } from "@tecbunny/core/supabase-server";
+import { createSupabaseClient as createPublicSupabaseClient } from '@tecbunny/database';
 import { BRAND_LOGO_URL } from "@tecbunny/ui";
 import { stripHtmlToPlainText } from "@tecbunny/core/strings";
 import { isPubliclyVisibleProduct } from "@tecbunny/core/product-visibility";

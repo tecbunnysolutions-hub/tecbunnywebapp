@@ -2,7 +2,7 @@ import type { Session, SupabaseClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
 
 import { ALL_ROLES, hasPermission, isAtLeast, normalizeRole, permissionImplies, type UserRole } from './roles';
-import { createClient } from './supabase/server';
+import { createClient } from '@tecbunny/database';
 
 const DEFAULT_ROLE: UserRole = 'customer';
 type NullableRole = UserRole | null;

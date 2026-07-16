@@ -2,7 +2,7 @@ import type { NextRequest } from 'next/server';
 import type { Session, User as SupabaseUser } from '@supabase/supabase-js';
 
 import { normalizeRole as normalizeKnownRole, type UserRole } from '../roles';
-import { createClient as createServerClient, createServiceClient, isSupabaseServiceConfigured } from '../supabase/server';
+import { createClient as createServerClient, createServiceClient, isSupabaseServiceConfigured } from '@tecbunny/database';
 import { logger } from '../logger';
 import { verifySuperadminSessionToken } from './superadmin-session';
 

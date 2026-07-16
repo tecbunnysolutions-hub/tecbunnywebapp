@@ -1,7 +1,7 @@
 /* eslint-disable react/no-unescaped-entities */
 /* eslint-disable react-hooks/set-state-in-effect */
 'use client';
-import { createClient } from "@tecbunny/core/supabase/client";
+import { createClient } from '@tecbunny/database';
 
 
 import * as React from 'react';

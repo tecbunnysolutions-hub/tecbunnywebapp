@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { createClient } from "@tecbunny/core/supabase/client";
+import { createClient } from '@tecbunny/database';
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");

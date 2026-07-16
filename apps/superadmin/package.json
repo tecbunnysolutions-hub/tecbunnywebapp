@@ -11,6 +11,7 @@
   "dependencies": {
     "@tecbunny/admin-ui": "*",
     "@tecbunny/core": "*",
+    "@tecbunny/database": "*",
     "next": "16.2.10",
     "qrcode.react": "^4.2.0",
     "react": "19.2.6",

@@ -13,6 +13,7 @@
     "@google/generative-ai": "^0.24.1",
     "@supabase/supabase-js": "^2.110.0",
     "@tecbunny/core": "*",
+    "@tecbunny/database": "*",
     "@tecbunny/types": "*",
     "bullmq": "^5.80.1",
     "ioredis": "^5.7.0",

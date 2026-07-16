@@ -1,4 +1,4 @@
-import { createClient } from "@tecbunny/core/supabase/client";
+import { createClient } from '@tecbunny/database';
 import { NextRequest } from 'next/server';
 
 import { apiSuccess, apiError } from "@tecbunny/core";

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 
-import { createSupabaseServiceClient } from "@tecbunny/core/supabase-server";
+import { createSupabaseServiceClient } from '@tecbunny/database';
 import { logger } from "@tecbunny/core/logger";
 
 // Simple admin guard via header token (set in Vercel env)

@@ -3,7 +3,7 @@
 import React, { createContext, useState, useCallback, useContext, useRef } from 'react';
 
 import type { CartItem, Order, OrderItem, OrderStatus } from '../types';
-import { createClient } from '../supabase/client';
+import { createClient } from '@tecbunny/database';
 import { useToast } from "@tecbunny/ui";
 import { AuthContext } from './AuthProvider';
 import { useCartStore } from '../store/cartStore';

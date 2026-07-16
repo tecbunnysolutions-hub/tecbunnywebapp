@@ -1,6 +1,6 @@
-import { createClient as createServerClient } from "@tecbunny/core/supabase/server";
+import { createClient as createServerClient } from '@tecbunny/database';
 import { isAtLeast, normalizeRole } from "@tecbunny/core";
-import { createClient } from "@tecbunny/core/supabase/client";
+import { createClient } from '@tecbunny/database';
 import { createSupabaseServiceClient, isSupabaseServiceConfigured } from "@tecbunny/core/server";;
 import { NextRequest, NextResponse } from 'next/server';
 

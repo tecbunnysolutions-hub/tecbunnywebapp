@@ -1,4 +1,4 @@
-import { createSupabaseServiceClient } from '@tecbunny/core/supabase-server';
+import { createSupabaseServiceClient } from '@tecbunny/database';
 
 let clientInstance: ReturnType<typeof createSupabaseServiceClient> | null = null;
 

@@ -1,6 +1,6 @@
 import { createSupabaseServiceClient, isSupabaseServiceConfigured } from "@tecbunny/core/server";;
 import { NextRequest, NextResponse } from 'next/server';
-import { createSupabaseClient as createPublicSupabaseClient } from "@tecbunny/core/supabase/server";
+import { createSupabaseClient as createPublicSupabaseClient } from '@tecbunny/database';
 import { logger } from "@tecbunny/core";
 import PDFDocument from 'pdfkit';
 

@@ -1,5 +1,5 @@
 'use client';
-import { createClient } from './supabase/client';
+import { createClient } from '@tecbunny/database';
 
 
 

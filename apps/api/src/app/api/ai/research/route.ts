@@ -1,4 +1,4 @@
-import { createClient } from "@tecbunny/core/supabase/client";
+import { createClient } from '@tecbunny/database';
 import crypto from 'crypto';
 import { NextRequest, NextResponse } from 'next/server';
 

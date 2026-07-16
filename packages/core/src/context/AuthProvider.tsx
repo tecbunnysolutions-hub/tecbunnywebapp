@@ -6,7 +6,7 @@ import type { SupabaseClient, User as SupabaseUser } from '@supabase/supabase-js
 
 import type { UserRole } from '../roles';
 import type { User } from '../types';
-import { createClient } from '../supabase/client';
+import { createClient } from '@tecbunny/database';
 import { logger } from '../logger';
 import { SessionManager, SESSION_EXPIRED_EVENT } from '../session-manager';
 import { useAnalytics } from '../hooks/use-analytics';

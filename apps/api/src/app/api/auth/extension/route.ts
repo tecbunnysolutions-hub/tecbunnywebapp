@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@tecbunny/core/supabase/server';
+import { createClient } from '@tecbunny/database';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',

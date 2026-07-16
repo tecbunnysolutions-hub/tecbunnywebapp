@@ -5,7 +5,7 @@ import { Metadata } from 'next';
 import ServicesPage from '@/components/services-page';
 import { logger } from '@tecbunny/core';
 
-import { createSupabaseClient as createPublicSupabaseClient } from "@tecbunny/core/supabase-server";
+import { createSupabaseClient as createPublicSupabaseClient } from '@tecbunny/database';
 import { createPageMetadata } from "@tecbunny/core/metadata";
 import { BRAND_LOGO_URL } from "@tecbunny/ui";
 import { stripHtmlToPlainText } from "@tecbunny/core/strings";

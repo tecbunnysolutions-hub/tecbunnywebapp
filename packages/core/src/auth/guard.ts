@@ -1,6 +1,6 @@
 import type { UserRole } from '../roles';
 import { isAtLeast, normalizeRole as normalizeKnownRole } from '../roles';
-import { createClient, createServiceClient, isSupabaseServiceConfigured } from '../supabase/server';
+import { createClient, createServiceClient, isSupabaseServiceConfigured } from '@tecbunny/database';
 import { logger } from '../logger';
 import { cookies } from 'next/headers';
 import { verifySuperadminSessionToken } from './superadmin-session';

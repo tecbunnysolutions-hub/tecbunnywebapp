@@ -1,4 +1,4 @@
-import { createClient } from '../supabase/client';
+import { createClient } from '@tecbunny/database';
 
 type SupabaseClient = ReturnType<typeof createClient>;
 

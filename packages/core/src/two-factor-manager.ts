@@ -5,7 +5,7 @@ import qrcode from 'qrcode';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 import { logger } from '@tecbunny/core';
-import { createServiceClient, isSupabaseServiceConfigured } from './supabase/server';
+import { createServiceClient, isSupabaseServiceConfigured } from '@tecbunny/database';
 
 export interface TwoFactorSetup {
   secret: string;

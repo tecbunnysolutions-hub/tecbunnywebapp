@@ -1,4 +1,4 @@
-import { createServiceClient, isSupabaseServiceConfigured } from './supabase/server';
+import { createServiceClient, isSupabaseServiceConfigured } from '@tecbunny/database';
 /**
  * Service Management System
  * Handles service engineer assignments, ticket management, and service billing

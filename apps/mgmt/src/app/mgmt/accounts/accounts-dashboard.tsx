@@ -1,5 +1,5 @@
 'use client';
-import { createClient } from "@tecbunny/core/supabase/client";
+import { createClient } from '@tecbunny/database';
 import * as React from 'react';
 import { FileText, IndianRupee, PieChart, TrendingDown, CheckCircle2, Clock } from 'lucide-react';
 import { useAuth } from "@tecbunny/core/hooks";

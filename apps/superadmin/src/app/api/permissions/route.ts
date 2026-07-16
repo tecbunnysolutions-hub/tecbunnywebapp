@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import { isSuperadminSession, isSuperadmin } from '@tecbunny/core/permissions';
-import { createSupabaseClient } from '@tecbunny/core/supabase/server';
+import { createSupabaseClient } from '@tecbunny/database';
 
 const prisma = new PrismaClient();
 

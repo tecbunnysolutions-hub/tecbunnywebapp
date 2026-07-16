@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@tecbunny/types": "*",
-    "@tecbunny/core": "*"
+    "@tecbunny/core": "*",
+    "@tecbunny/database": "*"
   }
 }

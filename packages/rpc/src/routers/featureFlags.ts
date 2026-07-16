@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { router, publicProcedure, protectedProcedure } from '../trpc';
-import { createClient } from '@tecbunny/core/supabase/client';
+import { createClient } from '@tecbunny/database';
 import { FeatureFlags, FeatureFlagDictionary } from '@tecbunny/config';
 
 export const featureFlagsRouter = router({

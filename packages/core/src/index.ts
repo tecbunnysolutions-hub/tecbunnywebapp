@@ -1,4 +1,4 @@
-export * from './supabase/client';
+export * from '@tecbunny/database';
 
 export * from './roles';
 export * from './panel-routing';

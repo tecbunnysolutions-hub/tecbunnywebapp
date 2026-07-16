@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createSupabaseClient } from '@tecbunny/core/supabase-server';
+import { createSupabaseClient } from '@tecbunny/database';
 import { supabase } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';

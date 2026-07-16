@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from 'react';
-import { createClient } from '../supabase/client';
+import { createClient } from '@tecbunny/database';
 import { CustomerWorkspaceData, Order, ServiceTicket, Conversation, Message } from '../types';
 
 export function useCustomerWorkspace(customerId?: string, phone?: string) {

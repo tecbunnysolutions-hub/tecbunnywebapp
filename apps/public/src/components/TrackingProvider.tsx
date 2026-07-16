@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import { usePathname } from 'next/navigation';
-import { createClient } from '@tecbunny/core/supabase/client';
+import { createClient } from '@tecbunny/database';
 // @ts-ignore
 import { v4 as uuidv4 } from 'uuid';
 

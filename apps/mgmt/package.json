@@ -12,6 +12,7 @@
     "@tanstack/react-query": "^4.36.1",
     "@tecbunny/admin-ui": "*",
     "@tecbunny/core": "*",
+    "@tecbunny/database": "*",
     "@tecbunny/rpc": "*",
     "@trpc/client": "^10.45.2",
     "@trpc/react-query": "^10.45.2",

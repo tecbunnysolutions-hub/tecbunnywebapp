@@ -27,7 +27,7 @@ import {
 } from 'lucide-react';
 
 import { useAuth } from "@tecbunny/core/hooks";
-import { createClient } from "@tecbunny/core/supabase/client";
+import { createClient } from '@tecbunny/database';
 import { useEffect, useState } from 'react';
 
 type WorkspaceKind =

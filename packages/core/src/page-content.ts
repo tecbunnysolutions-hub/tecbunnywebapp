@@ -1,4 +1,4 @@
-import { createSupabaseClient } from "@tecbunny/core/supabase-server";
+import { createSupabaseClient } from '@tecbunny/database';
 import { logger } from '@tecbunny/core';
 
 export interface PageContent {

@@ -28,7 +28,7 @@ const allowedImageHosts = Array.from(new Set([
 
 const nextConfig = {
   ...(isStaticExport ? { output: 'export' } : {}),
-  transpilePackages: ["@tecbunny/core", "@tecbunny/ui"],
+  transpilePackages: ["@tecbunny/core", "@tecbunny/ui", "@tecbunny/database"],
   experimental: {
     optimizeCss: true,
     optimizePackageImports: ['@tecbunny/core', '@tecbunny/ui', 'lucide-react']

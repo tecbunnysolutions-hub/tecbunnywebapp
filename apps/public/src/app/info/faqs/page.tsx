@@ -1,4 +1,4 @@
-import { createClient } from "@tecbunny/core/supabase/client";
+import { createClient } from '@tecbunny/database';
 import { Suspense } from 'react';
 
 import FaqsClient from '@/components/FaqsClient';
