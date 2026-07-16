@@ -123,7 +123,7 @@ export function resolveSupabasePublicEnv(): PublicSupabaseEnv {
   return { url, publicKey, keySource, runtimeEnv };
 }
 
-export const isSupabasePublicConfigured = (() => {
+const isSupabasePublicConfiguredConstant = (() => {
   try {
     resolveSupabasePublicEnv();
     return true;

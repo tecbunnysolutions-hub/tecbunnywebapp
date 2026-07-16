@@ -2,7 +2,7 @@ import type { Session, SupabaseClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
 
 import { ALL_ROLES, hasPermission, isAtLeast, normalizeRole, permissionImplies, type UserRole } from './roles';
-import { createClient } from '@tecbunny/database';
+import { createServerClient } from '@tecbunny/database';
 
 const DEFAULT_ROLE: UserRole = 'customer';
 type NullableRole = UserRole | null;
@@ -109,8 +109,8 @@ export async function getServerAuthState(): Promise<ServerAuthState> {
     }
     
     if (isSuperadmin) {
-        const { createServiceClient, isSupabaseServiceConfigured } = await import('./supabase/server');
-        const supabase = isSupabaseServiceConfigured ? createServiceClient() : await createClient();
+        const { createServiceClient, isSupabaseServiceConfigured } = await import('@tecbunny/database');
+        const supabase = isSupabaseServiceConfigured ? createServiceClient() : await createServerClient();
         return {
           supabase,
           session: {
@@ -137,7 +137,7 @@ export async function getServerAuthState(): Promise<ServerAuthState> {
     // Ignore and fallback
   }
 
-  const supabase = await createClient();
+  const supabase = await createServerClient();
   // Security: use getUser() not getSession(). getSession() only reads from cookies
   // without server-side JWT validation. getUser() verifies the token with Supabase auth server.
   const { data: { user }, error } = await supabase.auth.getUser();

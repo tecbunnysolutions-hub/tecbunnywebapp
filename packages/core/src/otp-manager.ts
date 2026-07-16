@@ -1,17 +1,11 @@
 import { randomBytes, randomUUID, randomInt, createHash } from 'crypto';
-import { createClient } from '@supabase/supabase-js';
 import nodemailer from 'nodemailer';
 import { logger } from '@tecbunny/core';
+import { getAdminClient, isSupabaseServiceConfigured } from '@tecbunny/database';
 import { getRedis } from './redis';
 import improvedEmailService from './improved-email-service';
 
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY || '';
-const isSupabaseConfigured = Boolean(SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY);
-
-const supabase = isSupabaseConfigured
-  ? createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
-  : null;
+const supabase = isSupabaseServiceConfigured ? getAdminClient() : null;
 
 if (!supabase) {
   logger.warn('Supabase environment variables missing; using in-memory OTP storage fallback');

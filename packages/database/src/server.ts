@@ -9,7 +9,7 @@ export async function getServerClient() {
   const { url, publicKey } = requireSupabasePublicEnv();
   const cookieStore = await cookies();
 
-  return createServerClient<Database>(url, publicKey, {
+  return createServerClient(url, publicKey, {
     cookies: {
       get(name: string) {
         return cookieStore.get(name)?.value;
@@ -47,5 +47,4 @@ export async function getServerClient() {
 // Aliases for compatibility
 export { getServerClient as createServerClient };
 export { getServerClient as createSupabaseClient };
-export { getServerClient as getClient };
-export { getServerClient as createClient };
+

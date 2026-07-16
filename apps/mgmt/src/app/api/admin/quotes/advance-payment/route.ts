@@ -1,17 +1,11 @@
-import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
 import { logger } from "@tecbunny/core/logger";
 import { sendWhatsAppNotification } from "@tecbunny/core/whatsapp-service";
-import { requireSupabaseServiceEnv } from "@tecbunny/core/supabase/env";
+import { getAdminClient } from '@tecbunny/database';
 import { createQuoteActionToken, verifyQuoteActionToken } from "@tecbunny/core/quotes/action-token";
 
-let supabaseInstance: any = null;
 function getSupabase(): any {
-  if (!supabaseInstance) {
-    const { url, serviceKey } = requireSupabaseServiceEnv();
-    supabaseInstance = createClient(url, serviceKey);
-  }
-  return supabaseInstance;
+  return getAdminClient();
 }
 
 interface AdvancePaymentPayload {

@@ -1,13 +1,12 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { requireSupabaseServiceEnv } from './env';
-import type { Database } from './types';
 
-let adminClientInstance: ReturnType<typeof createClient<Database>> | null = null;
+let adminClientInstance: SupabaseClient<any> | null = null;
 
-export function getAdminClient() {
+export function getAdminClient(): SupabaseClient<any> {
   if (!adminClientInstance) {
     const { url, serviceKey } = requireSupabaseServiceEnv();
-    adminClientInstance = createClient<Database>(url, serviceKey, {
+    adminClientInstance = createClient(url, serviceKey, {
       auth: {
         autoRefreshToken: false,
         persistSession: false,
@@ -16,9 +15,7 @@ export function getAdminClient() {
   }
   return adminClientInstance;
 }
-
 // Aliases for compatibility
 export { getAdminClient as createAdminClient };
 export { getAdminClient as createSupabaseServiceClient };
 export { getAdminClient as createServiceClient };
-export { getAdminClient as getAdminDb };

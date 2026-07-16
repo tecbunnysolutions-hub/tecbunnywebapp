@@ -1,17 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
 import { rateLimit } from "@tecbunny/core/rate-limit";
-import { requireSupabaseServiceEnv } from "@tecbunny/core/supabase/env";
-
-let supabaseAdmin: any = null;
+import { getAdminClient } from '@tecbunny/database';
 
 const getSupabaseAdmin = (): any => {
-  if (!supabaseAdmin) {
-    const { url, serviceKey } = requireSupabaseServiceEnv();
-    supabaseAdmin = createClient(url, serviceKey, { auth: { autoRefreshToken: false, persistSession: false } });
-  }
-
-  return supabaseAdmin;
+  return getAdminClient();
 };
 
 function getClientIp(request: NextRequest) {

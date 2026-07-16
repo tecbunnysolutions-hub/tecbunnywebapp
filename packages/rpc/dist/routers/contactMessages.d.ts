@@ -53,8 +53,8 @@ export declare const contactMessagesRouter: import("@trpc/server").CreateRouterI
             name: string;
             email: string;
             message: string;
-            subject?: string | undefined;
             phone?: string | undefined;
+            subject?: string | undefined;
             company_name?: string | undefined;
             origin_path?: string | undefined;
             form_identifier?: string | undefined;
@@ -66,8 +66,8 @@ export declare const contactMessagesRouter: import("@trpc/server").CreateRouterI
             name: string;
             email: string;
             message: string;
-            subject?: string | undefined;
             phone?: string | undefined;
+            subject?: string | undefined;
             company_name?: string | undefined;
             origin_path?: string | undefined;
             form_identifier?: string | undefined;

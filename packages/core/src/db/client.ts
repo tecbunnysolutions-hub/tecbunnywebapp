@@ -1,7 +1,6 @@
 import { SupabaseClient } from '@supabase/supabase-js';
-import { requireSupabaseServiceEnv } from '../supabase/env';
+import { requireSupabaseServiceEnv, createSupabaseClient as createServerClient } from '@tecbunny/database';
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
-import { createSupabaseClient as createServerClient } from '@tecbunny/database';
 import { DatabaseError } from './errors';
 import { withAuditLogging } from '../security/audit-middleware';
 

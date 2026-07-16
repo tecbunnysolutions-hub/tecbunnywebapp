@@ -1,5 +1,4 @@
 export * from '@tecbunny/database';
-export * from './supabase/env';
 export * from './permissions';
 export * from './admin-auth';
 export * from './auth/admin-guard';

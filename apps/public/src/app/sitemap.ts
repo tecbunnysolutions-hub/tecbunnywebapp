@@ -1,7 +1,7 @@
 import type { MetadataRoute } from 'next';
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import { filterPubliclyVisibleProducts } from "@tecbunny/core/product-visibility";
-import { isSupabasePublicConfigured, requireSupabasePublicEnv } from "@tecbunny/core/supabase/env";
+import { isSupabasePublicConfigured, requireSupabasePublicEnv } from "@tecbunny/database";
 
 export const revalidate = 3600;
 
@@ -11,7 +11,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   let productRoutes: Array<{ url: string; lastModified: Date; changeFrequency: 'weekly'; priority: number }> = [];
   let blueprintRoutes: Array<{ url: string; lastModified: Date; changeFrequency: 'weekly'; priority: number }> = [];
 
-  if (isSupabasePublicConfigured) {
+  if (isSupabasePublicConfigured()) {
     try {
       const { url, publicKey } = requireSupabasePublicEnv();
       const supabase = createSupabaseClient(url, publicKey, {

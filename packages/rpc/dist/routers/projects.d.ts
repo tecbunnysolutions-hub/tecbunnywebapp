@@ -96,8 +96,8 @@ export declare const projectsRouter: import("@trpc/server").CreateRouterInner<im
             target_amount: number;
             motive: string;
             detailed_information: string;
-            status?: string | undefined;
             amount_raised?: number | undefined;
+            status?: string | undefined;
         };
         _input_out: {
             name: string;
@@ -105,8 +105,8 @@ export declare const projectsRouter: import("@trpc/server").CreateRouterInner<im
             target_amount: number;
             motive: string;
             detailed_information: string;
-            status?: string | undefined;
             amount_raised?: number | undefined;
+            status?: string | undefined;
         };
         _output_in: typeof import("@trpc/server").unsetMarker;
         _output_out: typeof import("@trpc/server").unsetMarker;

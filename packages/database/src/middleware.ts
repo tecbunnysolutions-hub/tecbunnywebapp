@@ -1,8 +1,8 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 import { requireSupabasePublicEnv } from './env';
-import { normalizeRole, type UserRole } from '../roles';
-import { roleMatches, type RoleCheckOptions } from '../server-role-guard';
+import { normalizeRole, type UserRole } from '@tecbunny/core/roles';
+import { roleMatches, type RoleCheckOptions } from '@tecbunny/core/server-role-guard';
 
 /**
  * Shared middleware for verifying Supabase Auth sessions and enforcing Role-Based Access Control (RBAC).
@@ -73,7 +73,7 @@ export async function updateSession(
   }
 
   if (superadminToken) {
-    const { verifySuperadminSessionToken } = await import('../auth/superadmin-session');
+    const { verifySuperadminSessionToken } = await import('@tecbunny/core/auth/superadmin-session');
     const ip = request.headers.get('x-forwarded-for') || 'unknown';
     const ua = request.headers.get('user-agent') || 'unknown';
     const superadminPayload = await verifySuperadminSessionToken(superadminToken, ip, ua);
