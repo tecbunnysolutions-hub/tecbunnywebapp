@@ -1,7 +1,6 @@
 'use client';
 
 import * as React from 'react';
-import Image from 'next/image';
 
 export const BRAND_LOGO_URL = '/logo.png';
 
@@ -79,13 +78,12 @@ export function Logo({ className, width = 40, height = 40, alt = 'TecBunny Logo'
   }, []);
 
   return (
-    <Image
+    <img
       src={logoSrc}
       alt={alt}
       width={width}
       height={height}
       className={`object-contain ${className ?? ''}`}
-      priority
       onError={() => {
         if (logoSrc !== BRAND_LOGO_URL) {
           setLogoSrc(BRAND_LOGO_URL);
