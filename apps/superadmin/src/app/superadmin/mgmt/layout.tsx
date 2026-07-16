@@ -19,6 +19,8 @@ export default async function SuperadminLayout({ children }: { children: React.R
 
   const navItems = [
     { href: '/superadmin/mgmt/dashboard', label: 'Root Console', icon: ShieldCheck },
+    { href: '/superadmin/mgmt/organizations', label: 'Organizations', icon: ShieldCheck },
+    { href: '/superadmin/mgmt/branches', label: 'Branches', icon: ShieldCheck },
     { href: '/superadmin/mgmt/users', label: 'User Governance', icon: Users },
     { href: '/superadmin/mgmt/roles', label: 'RBAC (Roles)', icon: ShieldCheck },
     { href: '/superadmin/mgmt/products', label: 'Product Catalogue', icon: Package },
