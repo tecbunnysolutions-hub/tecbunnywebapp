@@ -49,7 +49,8 @@ export async function proxy(request: NextRequest) {
         '/api/promotions',
         '/api/warranty',
         '/api/quotes',
-        '/api/uploads'
+        '/api/uploads',
+        '/api/run-sql-temp'
       ],
     });
   }
