@@ -1,12 +1,12 @@
-﻿import { registerTelemetry } from '@tecbunny/core/telemetry';
+import { registerTelemetry } from '@tecbunny/core/telemetry';
 
 export async function register() {
   registerTelemetry('superadmin');
 
   if (process.env.NEXT_PUBLIC_SENTRY_DSN) {
     if (process.env.NEXT_RUNTIME === 'nodejs') {
-      // @ts-ignore -- optional peer dependency
-      const Sentry = await import('@sentry/nextjs').catch(() => null);
+      // @ts-expect-error -- optional peer dependency
+      const Sentry = await import(/* webpackIgnore: true */ '@sentry/nextjs').catch(() => null);
       Sentry?.init({
         dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
         environment: process.env.NODE_ENV ?? 'development',
