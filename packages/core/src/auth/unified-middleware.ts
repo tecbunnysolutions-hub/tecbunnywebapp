@@ -1,5 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { updateSession } from '@tecbunny/database/middleware';
+import { telemetry } from '../telemetry';
+import { logger } from '../logger-browser';
 
 /** Edge-compatible random bytes using Web Crypto API (no Node.js crypto module). */
 function webRandomBytes(byteLength: number): Uint8Array {
@@ -137,7 +139,6 @@ export async function executeUnifiedPolicyMiddleware(
     onUnauthorized: (req: NextRequest) => {
       // Instrument authorization failure (No Session)
       try {
-        const { telemetry } = require('@tecbunny/core/telemetry');
         telemetry.getTracer().startActiveSpan('auth.failure', (span: any) => {
           span.setAttributes({
             'auth.failure_reason': 'No active session',
@@ -158,7 +159,6 @@ export async function executeUnifiedPolicyMiddleware(
     onForbidden: (req: NextRequest) => {
       // Instrument authorization failure (Forbidden)
       try {
-        const { telemetry } = require('@tecbunny/core/telemetry');
         telemetry.getTracer().startActiveSpan('auth.failure', (span: any) => {
           span.setAttributes({
             'auth.failure_reason': 'Insufficient Privileges',
@@ -179,7 +179,6 @@ export async function executeUnifiedPolicyMiddleware(
     onMfaRequired: (req: NextRequest) => {
       // Instrument MFA requirement
       try {
-        const { telemetry } = require('@tecbunny/core/telemetry');
         telemetry.getTracer().startActiveSpan('auth.mfa_required', (span: any) => {
           span.setAttributes({
             'auth.attempted_resource': pathname,
@@ -202,7 +201,6 @@ export async function executeUnifiedPolicyMiddleware(
   // Basic Mutation Audit Logging for API with correlation context
   if (appType === 'api' && ['POST', 'PUT', 'DELETE', 'PATCH'].includes(request.method)) {
      try {
-        const { logger } = require('@tecbunny/core/logger');
         const correlationId = request.headers.get('x-correlation-id') ?? undefined;
         logger.info('api_mutation_audit', { method: request.method, pathname, ip, correlationId });
      } catch (e) {

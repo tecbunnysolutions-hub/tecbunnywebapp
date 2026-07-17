@@ -1,5 +1,17 @@
-import { logger } from '../logger';
-import { getRedis } from '../redis';
+async function logMessage(level: 'info' | 'warn' | 'error', message: string, meta?: any) {
+  if (typeof process !== 'undefined' && process.env.NEXT_RUNTIME === 'edge') {
+    const { logger: browserLogger } = await import('../logger-browser');
+    browserLogger[level](message, meta);
+  } else {
+    try {
+      const { logger: nodeLogger } = await import('../logger');
+      nodeLogger[level](message, meta);
+    } catch {
+      const { logger: browserLogger } = await import('../logger-browser');
+      browserLogger[level](message, meta);
+    }
+  }
+}
 
 const SUPERADMIN_SESSION_TTL_SECONDS = 60 * 60 * 24;
 
@@ -39,7 +51,7 @@ function base64UrlDecode(value: string) {
 function getSessionSecret() {
   const secret = process.env.SUPERADMIN_SESSION_SECRET || process.env.SESSION_SECRET;
   if (!secret) {
-    logger.error('SUPERADMIN_SESSION_SECRET or SESSION_SECRET is not configured. Superadmin session operations will fail.');
+    console.error('SUPERADMIN_SESSION_SECRET or SESSION_SECRET is not configured. Superadmin session operations will fail.');
     return null;
   }
   return secret;
@@ -151,7 +163,7 @@ export async function verifySuperadminSessionToken(token: string | undefined | n
     if (version === 'v2' && (requestOrIp || uaStr)) {
       const currentFp = await generateFingerprint(requestOrIp || null, uaStr);
       if (payload.fp !== currentFp) {
-        logger.warn('superadmin_session_fingerprint_mismatch', { 
+        await logMessage('warn', 'superadmin_session_fingerprint_mismatch', { 
           reason: 'Token was generated for a different IP or User-Agent',
           expectedFp: payload.fp,
           actualFp: currentFp
@@ -174,23 +186,26 @@ const revokedJtisMemory = new Set<string>();
 const REVOKED_JTI_KEY_PREFIX = 'superadmin_revoked_jti:';
 
 async function addRevokedJti(jti: string): Promise<void> {
-  const redis = getRedis();
-  if (redis) {
+  if (typeof process === 'undefined' || process.env.NEXT_RUNTIME !== 'edge') {
     try {
-      await redis.set(
-        `${REVOKED_JTI_KEY_PREFIX}${jti}`,
-        '1',
-        'EX',
-        SUPERADMIN_SESSION_TTL_SECONDS
-      );
-      return;
+      const { getRedis } = await import('../redis');
+      const redis = getRedis();
+      if (redis) {
+        await redis.set(
+          `${REVOKED_JTI_KEY_PREFIX}${jti}`,
+          '1',
+          'EX',
+          SUPERADMIN_SESSION_TTL_SECONDS
+        );
+        return;
+      }
     } catch (err) {
-      logger.error('superadmin_jti_revoke_redis_failed', { jti, error: (err as Error).message });
+      await logMessage('error', 'superadmin_jti_revoke_redis_failed', { jti, error: (err as Error).message });
       // fall through to memory
     }
   }
   if (process.env.NODE_ENV === 'production') {
-    logger.warn('superadmin_jti_revoke_memory_fallback', {
+    await logMessage('warn', 'superadmin_jti_revoke_memory_fallback', {
       reason: 'Redis unavailable; JTI revocation is NOT durable across cold starts',
     });
   }
@@ -198,11 +213,14 @@ async function addRevokedJti(jti: string): Promise<void> {
 }
 
 async function checkJtiRevoked(jti: string): Promise<boolean> {
-  const redis = getRedis();
-  if (redis) {
+  if (typeof process === 'undefined' || process.env.NEXT_RUNTIME !== 'edge') {
     try {
-      const val = await redis.get(`${REVOKED_JTI_KEY_PREFIX}${jti}`);
-      return val !== null;
+      const { getRedis } = await import('../redis');
+      const redis = getRedis();
+      if (redis) {
+        const val = await redis.get(`${REVOKED_JTI_KEY_PREFIX}${jti}`);
+        return val !== null;
+      }
     } catch {
       // Redis error — fall through to memory check
     }
@@ -220,10 +238,10 @@ export async function revokeSuperadminSessionToken(token: string): Promise<void>
 
     if (payload.jti) {
       await addRevokedJti(payload.jti);
-      logger.info('Superadmin session JTI revoked', { jti: payload.jti });
+      await logMessage('info', 'Superadmin session JTI revoked', { jti: payload.jti });
     }
   } catch {
-    logger.warn('Failed to parse token for revocation — treating as already invalid.');
+    await logMessage('warn', 'Failed to parse token for revocation — treating as already invalid.');
   }
 }
 

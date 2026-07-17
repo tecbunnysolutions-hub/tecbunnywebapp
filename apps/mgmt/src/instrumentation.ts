@@ -1,12 +1,13 @@
-﻿import { registerTelemetry } from '@tecbunny/core/telemetry';
+import { registerTelemetry } from '@tecbunny/core/telemetry';
 
 export async function register() {
   registerTelemetry('mgmt');
 
   if (process.env.NEXT_PUBLIC_SENTRY_DSN) {
     if (process.env.NEXT_RUNTIME === 'nodejs') {
-      // @ts-ignore -- optional peer dependency
-      const Sentry = await import('@sentry/nextjs').catch(() => null);
+      // optional peer dependency
+      const sentryModule = ['@sentry', 'nextjs'].join('/');
+      const Sentry = await import(sentryModule).catch(() => null);
       Sentry?.init({
         dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
         environment: process.env.NODE_ENV ?? 'development',
