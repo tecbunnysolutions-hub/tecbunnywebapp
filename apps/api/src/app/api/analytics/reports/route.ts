@@ -52,7 +52,7 @@ export async function GET(request: NextRequest) {
     const startDate = from ?? new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
     const endDate   = to   ?? new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59).toISOString();
 
-    let query = supabase
+    const query = supabase
       .from('orders')
       .select(
         'id, total, gst_amount, subtotal, discount_amount, payment_status, payment_method, status, created_at, customer_state, items'

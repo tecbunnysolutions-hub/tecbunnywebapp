@@ -1,6 +1,18 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { updateSession } from '@tecbunny/database/middleware';
-import { randomBytes } from 'crypto';
+
+/** Edge-compatible random bytes using Web Crypto API (no Node.js crypto module). */
+function webRandomBytes(byteLength: number): Uint8Array {
+  const arr = new Uint8Array(byteLength);
+  crypto.getRandomValues(arr);
+  return arr;
+}
+function randomHex(byteLength: number): string {
+  return Array.from(webRandomBytes(byteLength)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+function randomBase64(byteLength: number): string {
+  return btoa(String.fromCharCode(...webRandomBytes(byteLength)));
+}
 
 export interface UnifiedMiddlewareOptions {
   appType: 'api' | 'public' | 'superadmin' | 'mgmt';
@@ -10,7 +22,7 @@ export interface UnifiedMiddlewareOptions {
 
 /** Generate a fresh cryptographic nonce per request. */
 function generateNonce(): string {
-  return randomBytes(16).toString('base64');
+  return randomBase64(16);
 }
 
 function generateCSP(nonce: string) {
@@ -199,7 +211,7 @@ export async function executeUnifiedPolicyMiddleware(
   }
 
   // Propagate correlation ID and nonce to response
-  const correlationId = request.headers.get('x-correlation-id') ?? randomBytes(8).toString('hex');
+  const correlationId = request.headers.get('x-correlation-id') ?? randomHex(8);
   sessionResponse.headers.set('x-correlation-id', correlationId);
 
   // Apply security headers to the response (use the same nonce generated above)
