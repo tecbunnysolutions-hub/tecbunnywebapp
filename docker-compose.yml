@@ -1,0 +1,122 @@
+version: '3.9'
+
+# ─── Local development services ────────────────────────────────────────────────
+# Supabase is cloud-hosted. This compose file provides Redis for caching/queues
+# and a local SMTP server for email testing.
+
+services:
+  # ─── Redis ──────────────────────────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: tecbunny-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ─── MailHog (local SMTP testing) ───────────────────────────────────────────
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: tecbunny-mailhog
+    restart: unless-stopped
+    ports:
+      - "1025:1025"   # SMTP
+      - "8025:8025"   # Web UI
+    environment:
+      MH_STORAGE: maildir
+      MH_MAILDIR_PATH: /home/mailhog/mail
+
+  # ─── API App ────────────────────────────────────────────────────────────────
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+      args:
+        APP: api
+    container_name: tecbunny-api
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    env_file:
+      - .env.local
+    environment:
+      - PORT=3001
+      - REDIS_URL=redis://redis:6379
+      - SMTP_HOST=mailhog
+      - SMTP_PORT=1025
+      - SMTP_SECURE=false
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3001/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ─── Public App ─────────────────────────────────────────────────────────────
+  public:
+    build:
+      context: .
+      dockerfile: apps/public/Dockerfile
+      args:
+        APP: public
+    container_name: tecbunny-public
+    restart: unless-stopped
+    ports:
+      - "9003:9003"
+    env_file:
+      - .env.local
+    environment:
+      - PORT=9003
+      - NEXT_PUBLIC_API_URL=http://api:3001
+    depends_on:
+      - api
+
+  # ─── Management App ─────────────────────────────────────────────────────────
+  mgmt:
+    build:
+      context: .
+      dockerfile: apps/mgmt/Dockerfile
+      args:
+        APP: mgmt
+    container_name: tecbunny-mgmt
+    restart: unless-stopped
+    ports:
+      - "3003:3003"
+    env_file:
+      - .env.local
+    environment:
+      - PORT=3003
+    depends_on:
+      - api
+
+  # ─── WABA App ───────────────────────────────────────────────────────────────
+  waba:
+    build:
+      context: .
+      dockerfile: apps/waba/Dockerfile
+      args:
+        APP: waba
+    container_name: tecbunny-waba
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env.local
+    environment:
+      - PORT=3000
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      redis:
+        condition: service_healthy
+
+volumes:
+  redis_data:

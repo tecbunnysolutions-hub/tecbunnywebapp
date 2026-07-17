@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  output: process.env.DOCKER_BUILD === 'true' ? 'standalone' : undefined,
   transpilePackages: ["@tecbunny/core", "@tecbunny/ui", "@tecbunny/admin-ui", "@tecbunny/database"],
   generateBuildId: async () => `superadmin-${Date.now()}`,
   async rewrites() {

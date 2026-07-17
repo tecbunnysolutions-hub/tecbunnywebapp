@@ -27,7 +27,7 @@ const allowedImageHosts = Array.from(new Set([
 ].filter(Boolean)));
 
 const nextConfig = {
-  ...(isStaticExport ? { output: 'export' } : {}),
+  ...(isStaticExport ? { output: 'export' } : process.env.DOCKER_BUILD === 'true' ? { output: 'standalone' } : {}),
   transpilePackages: ["@tecbunny/core", "@tecbunny/ui", "@tecbunny/database"],
   experimental: {
     optimizeCss: true,

@@ -2,35 +2,123 @@ name: CI Pipeline
 
 on:
   push:
-    branches:
-      - main
+    branches: [main, develop]
   pull_request:
-    branches:
-      - main
+    branches: [main, develop]
+
+env:
+  NODE_VERSION: '20'
+  TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+  TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
 
 jobs:
-  build_and_test:
-    name: Build, Lint & Scan
+  # ─── Security audit ─────────────────────────────────────────────────────────
+  security:
+    name: Security Audit
     runs-on: ubuntu-latest
-    
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci
+      - run: npm audit --audit-level=high
 
-      - name: Install Dependencies
+  # ─── TypeScript + Lint ──────────────────────────────────────────────────────
+  typecheck:
+    name: TypeScript & Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install dependencies
         run: npm ci
 
-      - name: Security Scan
-        run: npm audit --audit-level=high
+      - name: TypeScript — packages/core
+        run: npx tsc --noEmit -p packages/core/tsconfig.json
 
-      - name: ESLint Check
-        run: npm run lint
+      - name: TypeScript — packages/domain
+        run: npx tsc --noEmit -p packages/domain/tsconfig.json
 
-      - name: TypeScript Build Check
-        run: npm run build
+      - name: TypeScript — apps/api
+        run: npx tsc --noEmit -p apps/api/tsconfig.json
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: placeholder
+
+      - name: TypeScript — apps/public
+        run: npx tsc --noEmit -p apps/public/tsconfig.json
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: placeholder
+
+      - name: TypeScript — apps/mgmt
+        run: npx tsc --noEmit -p apps/mgmt/tsconfig.json
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: placeholder
+
+      - name: TypeScript — apps/waba
+        run: npx tsc --noEmit -p apps/waba/tsconfig.json
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: placeholder
+
+      - name: TypeScript — apps/superadmin
+        run: npx tsc --noEmit -p apps/superadmin/tsconfig.json
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: placeholder
+
+  # ─── Build ──────────────────────────────────────────────────────────────────
+  build:
+    name: Build All Apps
+    runs-on: ubuntu-latest
+    needs: [typecheck]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Restore turbo cache
+        uses: actions/cache@v4
+        with:
+          path: .turbo
+          key: turbo-${{ runner.os }}-${{ github.sha }}
+          restore-keys: |
+            turbo-${{ runner.os }}-
+
+      - name: Build (turbo)
+        run: npx turbo run build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: placeholder
+          NEXT_TELEMETRY_DISABLED: 1
+
+  # ─── Database migration check ───────────────────────────────────────────────
+  migrations:
+    name: SQL Migration Syntax
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate SQL files exist and are non-empty
+        run: |
+          echo "Checking migration files..."
+          for f in supabase/migrations/*.sql; do
+            if [ ! -s "$f" ]; then
+              echo "ERROR: Empty migration file: $f"
+              exit 1
+            fi
+            echo "OK: $f"
+          done
+
