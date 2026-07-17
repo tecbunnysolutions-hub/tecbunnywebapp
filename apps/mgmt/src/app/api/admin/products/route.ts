@@ -84,6 +84,14 @@ export async function GET(request: NextRequest) {
       query = query.eq('status', 'active');
     }
 
+    // P3-9: Exclude soft-deleted products from admin listing
+    if (availableColumns.has('is_deleted')) {
+      query = query.eq('is_deleted', false);
+    }
+    if (availableColumns.has('deleted_at')) {
+      query = query.is('deleted_at', null);
+    }
+
     if (search) {
       if (availableColumns.has('title')) {
         query = query.ilike('title', `%${search}%`);

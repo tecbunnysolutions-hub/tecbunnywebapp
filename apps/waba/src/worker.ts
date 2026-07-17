@@ -3,6 +3,7 @@ import { getRedis, logger, WABA_WEBHOOK_QUEUE_NAME } from '@tecbunny/core/server
 import { InboundTriageAgent } from './agents/InboundTriageAgent';
 import { AssignmentOrchestrator } from './agents/AssignmentOrchestrator';
 import { startEmailWorker, startWebhookWorker, startNurtureScheduler, startNurtureWorker } from './workers';
+import { RuleEngineService } from './services/RuleEngineService';
 
 async function startWorker() {
   const redisConnection = getRedis();
@@ -33,7 +34,6 @@ async function startWorker() {
       // 2. Evaluate Rule Engine to see if an automated workflow should take over
       let ruleEngineHandled = false;
       if (triageResult) {
-        const { RuleEngineService } = require('./services/RuleEngineService');
         ruleEngineHandled = await RuleEngineService.evaluateRules(triageResult);
       }
 

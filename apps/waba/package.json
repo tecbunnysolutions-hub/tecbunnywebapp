@@ -23,6 +23,7 @@
     "react-dom": "19.2.6"
   },
   "devDependencies": {
+    "@next/bundle-analyzer": "^16.2.10",
     "@types/node": "^24.13.2",
     "@types/nodemailer": "^8.0.1",
     "@types/react": "^19.0.0",

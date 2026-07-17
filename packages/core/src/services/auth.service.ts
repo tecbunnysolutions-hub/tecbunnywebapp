@@ -181,7 +181,7 @@ export class AuthService {
           const role = profileRole.trim().toLowerCase();
           const isStaff = ['superadmin', 'admin', 'manager', 'sales', 'service_engineer', 'accounts'].includes(role);
           if (isStaff) {
-            return failure(new AppError('FORBIDDEN', 'High-privilege account detected. Please use the Staff Portal to authenticate.', 403, { redirectTo: '/staff/login' }));
+            return failure(new AppError('FORBIDDEN', 'High-privilege account detected. Please use the Staff Portal to authenticate.', 403, false, { redirectTo: '/staff/login' }));
           }
         }
         
@@ -324,7 +324,7 @@ export class AuthService {
         const role = profile.role.trim().toLowerCase();
         const isStaff = ['superadmin', 'admin', 'manager', 'sales', 'service_engineer', 'accounts'].includes(role);
         if (isStaff) {
-          return failure(new AppError('FORBIDDEN', 'High-privilege account detected. Please log in through the Staff Portal.', 403, { redirectTo: '/staff/login' }));
+          return failure(new AppError('FORBIDDEN', 'High-privilege account detected. Please log in through the Staff Portal.', 403, false, { redirectTo: '/staff/login' }));
         }
       }
     }

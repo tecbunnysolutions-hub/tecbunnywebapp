@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Image from 'next/image';
 import { Send, Bot, User, Loader2, Sparkles, Lock, ShieldCheck } from 'lucide-react';
 import { MarkdownRenderer } from "@tecbunny/ui";
 import { TechStackAudit } from '@/components/ai-research/TechStackAudit';
@@ -298,7 +299,7 @@ export default function AiResearchPage() {
                               <div className="flex gap-3">
                                 <div className="h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-muted">
                                   {product.image ? (
-                                    <img src={product.image} alt={product.title} className="h-full w-full object-cover" />
+                                    <Image src={product.image} alt={product.title} width={64} height={64} className="h-full w-full object-cover" />
                                   ) : (
                                     <div className="flex h-full w-full items-center justify-center text-muted-foreground/60">
                                       <Bot className="h-6 w-6" />

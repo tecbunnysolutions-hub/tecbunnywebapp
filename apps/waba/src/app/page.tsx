@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { createBrowserClient } from '@supabase/ssr';
 
 import { Sidebar } from '../components/waba/Sidebar';
 import { ChatMain } from '../components/waba/ChatMain';
@@ -80,19 +81,52 @@ export default function Dashboard() {
         setCurrentUser(data.user);
         fetchConversations();
         fetchTemplates();
-        const interval = setInterval(fetchConversations, 5000);
-        return () => clearInterval(interval);
       }
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // 2. Realtime subscription: replace conversation polling (was setInterval 5 s)
+  useEffect(() => {
+    const supabaseRt = createBrowserClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
+    const channel = supabaseRt
+      .channel('waba-conversations')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'Conversation' },
+        () => { fetchConversations(); }
+      )
+      .subscribe();
+    return () => { supabaseRt.removeChannel(channel); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // 3. Realtime subscription: replace message polling (was setInterval 3 s)
+  useEffect(() => {
+    if (!activeConversation) return;
+    const supabaseRt = createBrowserClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
+    const channel = supabaseRt
+      .channel(`waba-messages-${activeConversation}`)
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'Message', filter: `sender_number=eq.${activeConversation}` },
+        () => { fetchMessages(activeConversation); }
+      )
+      .subscribe();
+    return () => { supabaseRt.removeChannel(channel); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeConversation]);
+
   useEffect(() => {
     if (activeConversation) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       fetchMessages(activeConversation);
-      const interval = setInterval(() => fetchMessages(activeConversation), 3000);
-      
+
       const activeObj = conversations.find(c => c.sender_number === activeConversation);
       if (activeObj) {
         setTimeout(() => {
@@ -106,7 +140,6 @@ export default function Dashboard() {
           setCrmActiveFlow(activeObj.active_flow || "");
         }, 0);
       }
-      return () => clearInterval(interval);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeConversation]);

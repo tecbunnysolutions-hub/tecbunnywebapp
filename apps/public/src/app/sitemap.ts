@@ -188,9 +188,30 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
   ];
 
+  // Blog routes
+  let blogRoutes: Array<{ url: string; lastModified: Date; changeFrequency: 'weekly'; priority: number }> = [];
+  if (isSupabasePublicConfigured()) {
+    try {
+      const { url, publicKey } = requireSupabasePublicEnv();
+      const supabase = createSupabaseClient(url, publicKey, { auth: { persistSession: false, autoRefreshToken: false } });
+      const { data: posts } = await supabase
+        .from('blog_posts')
+        .select('slug, updated_at')
+        .eq('status', 'published')
+        .order('published_at', { ascending: false });
+      blogRoutes = (posts ?? []).map((p: any) => ({
+        url: `${baseUrl}/blog/${p.slug}`,
+        lastModified: p.updated_at ? new Date(p.updated_at) : now,
+        changeFrequency: 'weekly' as const,
+        priority: 0.7,
+      }));
+    } catch { /* non-fatal */ }
+  }
+
   return [
     ...staticRoutes,
     ...productRoutes,
     ...blueprintRoutes,
+    ...blogRoutes,
   ];
 }

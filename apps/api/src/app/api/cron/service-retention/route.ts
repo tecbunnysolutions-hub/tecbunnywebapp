@@ -1,8 +1,8 @@
 import { createSupabaseServiceClient } from "@tecbunny/core/server";
 import { NextRequest, NextResponse } from 'next/server';
-
 import { WhatsAppService } from "@tecbunny/core/whatsapp-service";
 import { logger } from "@tecbunny/core";
+import { verifyCronSecret } from '@tecbunny/core/cron-guard';
 
 /**
  * SLA Re-engagement Loop: Automated background evaluation worker
@@ -13,14 +13,8 @@ import { logger } from "@tecbunny/core";
  * Action: Dispatch WhatsApp voucher for localized maintenance
  */
 export async function GET(request: NextRequest) {
-  // Simple auth check for cron (in production use a secret header)
-  const authHeader = request.headers.get('authorization');
-  if (process.env.CRON_SECRET && authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-  if (!process.env.CRON_SECRET && process.env.NODE_ENV === 'production') {
-    return NextResponse.json({ error: 'Cron secret is not configured' }, { status: 503 });
-  }
+  const deny = verifyCronSecret(request);
+  if (deny) return deny;
 
   try {
     const supabase = createSupabaseServiceClient();

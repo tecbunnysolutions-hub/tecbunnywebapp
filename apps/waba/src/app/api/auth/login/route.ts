@@ -1,22 +1,26 @@
 import { NextResponse } from 'next/server';
+import { createSuperadminSessionToken, SUPERADMIN_SESSION_TTL_SECONDS } from '@tecbunny/core/server';
 
 export async function POST(req: Request) {
   try {
     const { password, isSuperadmin } = await req.json();
 
     if (isSuperadmin) {
-      const expectedUserId = process.env.SUPERADMIN_USER_ID;
+      const expectedEmail = process.env.SUPERADMIN_USER_ID || process.env.SUPERADMIN_EMAIL;
       const expectedPassword = process.env.SUPERADMIN_PASSWORD;
 
-      if (expectedUserId && expectedPassword && password === expectedPassword) {
-        const response = NextResponse.json({ success: true, user: { id: 'superadmin-id', email: 'superadmin' } });
-        
+      if (expectedEmail && expectedPassword && password === expectedPassword) {
+        const token = await createSuperadminSessionToken(expectedEmail, req as unknown as Request);
+        const response = NextResponse.json({ success: true, user: { id: 'superadmin-root-id', email: expectedEmail } });
+
         response.cookies.set({
-          name: 'waba_agent_id',
-          value: 'superadmin-id',
+          name: 'superadmin-session',
+          value: token,
           httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'lax',
           path: '/',
-          maxAge: 60 * 60 * 24 * 7 // 1 week
+          maxAge: SUPERADMIN_SESSION_TTL_SECONDS
         });
 
         return response;
@@ -27,6 +31,6 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Staff should use Supabase auth directly' }, { status: 400 });
   } catch (error: unknown) {
     console.error('Login error:', error);
-    return NextResponse.json({ error: error instanceof Error ? error.message : String(error) }, { status: 500 });
+    return NextResponse.json({ error: 'Login failed' }, { status: 500 });
   }
 }

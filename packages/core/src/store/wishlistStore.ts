@@ -10,6 +10,7 @@ export interface WishlistState {
   isInWishlist: (itemId: string) => boolean;
   setWishlistOwner: (ownerKey: string) => void;
   clearWishlistMemory: () => void;
+  syncFromServer: (apiBase?: string) => Promise<void>;
   _hasHydrated: boolean;
   setHasHydrated: (state: boolean) => void;
 }
@@ -64,6 +65,7 @@ export const useWishlistStore = create<WishlistState>()((set, get) => ({
     const existingItem = state.wishlistItems.find((wItem) => wItem.id === item.id);
     const itemName = item.name || item.title || 'Product';
     let newItems: Product[];
+    const action = existingItem ? 'remove' : 'add';
 
     if (existingItem) {
       toast({
@@ -81,8 +83,35 @@ export const useWishlistStore = create<WishlistState>()((set, get) => ({
 
     writeWishlist(state.ownerKey, newItems);
     set({ wishlistItems: newItems, wishlistCount: newItems.length });
+
+    // Fire-and-forget API sync (only runs in browser when logged in)
+    if (typeof window !== 'undefined' && state.ownerKey !== 'guest') {
+      fetch('/api/user/wishlist', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ product_id: item.id, action }),
+      }).catch(() => { /* silently ignore network errors */ });
+    }
   },
   isInWishlist: (itemId) => {
     return get().wishlistItems.some((item) => item.id === itemId);
+  },
+  syncFromServer: async (apiBase = '') => {
+    try {
+      const res = await fetch(`${apiBase}/api/user/wishlist`, { credentials: 'include' });
+      if (!res.ok) return;
+      const { wishlist } = await res.json();
+      if (!Array.isArray(wishlist)) return;
+      // Merge server list with local — server is authoritative
+      const serverProducts: Product[] = wishlist
+        .map((entry: any) => entry.products)
+        .filter(Boolean);
+      const state = get();
+      writeWishlist(state.ownerKey, serverProducts);
+      set({ wishlistItems: serverProducts, wishlistCount: serverProducts.length });
+    } catch {
+      // Silently fail — local state remains in tact
+    }
   },
 }));

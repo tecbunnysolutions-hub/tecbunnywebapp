@@ -1,17 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAdminDb, logger, improvedEmailService } from '@tecbunny/core/server';
+import { verifyCronSecret } from '@tecbunny/core/cron-guard';
 
 export async function GET(request: NextRequest) {
-  try {
-    // Optionally secure this endpoint with a cron secret token
-    const authHeader = request.headers.get('authorization');
-    if (process.env.CRON_SECRET && authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+  const deny = verifyCronSecret(request);
+  if (deny) return deny;
 
+  try {
     const db = getAdminDb();
-    
-    // Calculate timestamp for 2 hours ago
     const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString();
 
     // Query for carts that are 'active', have a user_id, and haven't been updated in 2 hours

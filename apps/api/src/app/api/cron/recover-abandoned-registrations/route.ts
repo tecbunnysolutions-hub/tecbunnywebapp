@@ -1,18 +1,16 @@
 import { createSupabaseServiceClient } from "@tecbunny/core/server";
 import { NextRequest, NextResponse } from 'next/server';
-
 import { WhatsAppService } from "@tecbunny/core/whatsapp-service";
 import { logger } from "@tecbunny/core";
+import { verifyCronSecret } from '@tecbunny/core/cron-guard';
 
 /**
  * Cron route to recover users who dropped off after OTP generation
  * Checks for records exactly ~2 hours old that haven't been verified
  */
 export async function GET(request: NextRequest) {
-  const authHeader = request.headers.get('authorization');
-  if (process.env.CRON_SECRET && authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-    return new Response('Unauthorized', { status: 401 });
-  }
+  const deny = verifyCronSecret(request);
+  if (deny) return deny;
   if (!process.env.CRON_SECRET && process.env.NODE_ENV === 'production') {
     return NextResponse.json({ error: 'Cron secret is not configured' }, { status: 503 });
   }

@@ -1,12 +1,33 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import { sendTemplateMessage } from '@/services/infobipService';
+import { requireApiRole } from '@tecbunny/core/server-role-guard';
+import { getRedis } from '@tecbunny/core/redis';
 import crypto from 'crypto';
+
+const BROADCAST_PER_RECIPIENT_TTL_SECS = 86_400; // 24 h — prevent same number twice in one day
+
+/**
+ * Returns true if the phone number is allowed to receive a broadcast today.
+ * Marks the number as sent when allowed.
+ */
+async function checkAndMarkBroadcastQuota(phone: string): Promise<boolean> {
+  const redis = getRedis();
+  if (!redis) return true; // fallback: allow if Redis unavailable
+  const key = `waba_broadcast:${phone}`;
+  // NX = only set if not exists, EX = TTL in seconds
+  const result = await redis.set(key, '1', 'EX', BROADCAST_PER_RECIPIENT_TTL_SECS, 'NX');
+  // result is 'OK' when key was set (first broadcast today), null when key already existed
+  return result === 'OK';
+}
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request) {
   try {
+    const auth = await requireApiRole({ allowedRoles: ['admin', 'sales_manager', 'marketing_manager', 'superadmin', 'manager'] });
+    if (auth.error) return auth.error;
+
     const { targetStatus, templateName } = await req.json();
 
     if (!targetStatus || !templateName) {
@@ -32,12 +53,20 @@ export async function POST(req: Request) {
     // For MVP, we will iterate and send them asynchronously in batches.
     
     let successCount = 0;
+    let skippedCount = 0;
     
-    // Broadcast the template to everyone
+    // Broadcast the template to everyone — per-recipient rate limit (1 per 24h)
     for (const contact of contacts) {
       try {
         const to = contact.sender_number;
         const name = contact.contact_name || to;
+
+        // Guard: skip if this number already received a broadcast today
+        const allowed = await checkAndMarkBroadcastQuota(to);
+        if (!allowed) {
+          skippedCount++;
+          continue;
+        }
         
         // Use the Infobip Template API
         // For MVP we just use the hardcoded 'registration_confirmation' 
@@ -62,7 +91,7 @@ export async function POST(req: Request) {
       }
     }
 
-    return NextResponse.json({ success: true, count: successCount });
+    return NextResponse.json({ success: true, count: successCount, skipped: skippedCount });
   } catch (error) {
     console.error('Campaign Error:', error);
     return NextResponse.json({ error: 'Failed to execute campaign' }, { status: 500 });

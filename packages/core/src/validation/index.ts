@@ -13,7 +13,7 @@ export function validatePayload<T>(schema: z.ZodType<T>, data: unknown): Result<
   const parsed = schema.safeParse(data);
   if (!parsed.success) {
     const formattedErrors = parsed.error.format();
-    return failure(AppError.badRequest('Validation failed', formattedErrors));
+    return failure(AppError.badRequest('Validation failed', JSON.stringify(formattedErrors)));
   }
   return success(parsed.data);
 }

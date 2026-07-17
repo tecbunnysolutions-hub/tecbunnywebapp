@@ -66,8 +66,13 @@ export async function POST(req: Request) {
          console.error('INFOBIP_HMAC_SECRET is missing in Vercel environment variables!');
          return NextResponse.json({ error: 'Server configuration error: INFOBIP_HMAC_SECRET is missing.' }, { status: 500 });
       }
-      if (token !== envSecret) {
-        console.error(`Invalid URL token. Received: ${token}, Expected: ${envSecret}`);
+      const tokenBuf = Buffer.from(token, 'utf8');
+      const secretBuf = Buffer.from(envSecret, 'utf8');
+      const isTokenValid =
+        tokenBuf.length === secretBuf.length &&
+        crypto.timingSafeEqual(tokenBuf, secretBuf);
+      if (!isTokenValid) {
+        console.error('Invalid URL token: timing-safe comparison failed.');
         return NextResponse.json({ error: 'Invalid URL token mismatch.' }, { status: 401 });
       }
     } else {
@@ -83,6 +88,18 @@ export async function POST(req: Request) {
     }
 
     const body = JSON.parse(rawBody);
+
+    // P6-2: Replay attack prevention — reject payloads older than 5 minutes
+    // Infobip includes a `timestamp` field in the webhook payload.
+    const REPLAY_WINDOW_MS = 5 * 60 * 1000; // 5 minutes
+    const payloadTs = body?.timestamp || body?.results?.[0]?.receivedAt;
+    if (payloadTs) {
+      const ts = new Date(payloadTs).getTime();
+      if (!isNaN(ts) && Date.now() - ts > REPLAY_WINDOW_MS) {
+        console.warn('[webhook] Rejected stale payload (replay protection). Age:', Date.now() - ts, 'ms');
+        return NextResponse.json({ error: 'Payload timestamp too old' }, { status: 400 });
+      }
+    }
 
     // Enqueue payload to BullMQ
     const queue = getWabaWebhookQueue();

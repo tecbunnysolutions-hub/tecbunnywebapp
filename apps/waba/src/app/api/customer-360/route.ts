@@ -7,8 +7,9 @@ const prisma = new PrismaClient();
 // GET /api/customer-360?phone=1234567890
 export async function GET(req: Request) {
   try {
-    const { session, error } = await requireApiRole();
-    if (error) return error;
+    const auth = await requireApiRole();
+    if (auth.error) return auth.error;
+    if (auth.role === 'customer') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
     const url = new URL(req.url);
     const phone = url.searchParams.get('phone');

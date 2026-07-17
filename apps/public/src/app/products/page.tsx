@@ -11,6 +11,8 @@ import { filterPubliclyVisibleProducts } from "@tecbunny/core/product-visibility
 // ISR: revalidate every 5 minutes (300 seconds)
 export const revalidate = 300;
 
+const PRODUCTS_PAGE_SIZE = 48;
+
 export async function generateMetadata(): Promise<Metadata> {
   return createPageMetadata({
   title: 'Buy CCTV, IT Hardware & Security Systems | TecBunny',
@@ -66,11 +68,21 @@ export default function Page() {
   );
 }
 
-async function ShopPageDataLoader() {
+async function ShopPageDataLoader({ searchParams }: { searchParams?: Record<string, string> }) {
   const supabase = await createClient();
-  
+  const page = Math.max(1, Number(searchParams?.page ?? '1'));
+  const from = (page - 1) * PRODUCTS_PAGE_SIZE;
+  const to = from + PRODUCTS_PAGE_SIZE - 1;
+
   const [productsRes, offersRes] = await Promise.all([
-    supabase.from('products').select('*').eq('status', 'active').limit(200),
+    supabase
+      .from('products')
+      .select('*', { count: 'estimated' })
+      .eq('status', 'active')
+      .eq('is_deleted', false)
+      .order('prioritized', { ascending: false, nullsFirst: false })
+      .order('created_at', { ascending: false })
+      .range(from, to),
     supabase.from('auto_offers').select('*').eq('is_active', true)
   ]);
 

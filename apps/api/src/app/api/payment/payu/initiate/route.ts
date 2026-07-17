@@ -62,7 +62,9 @@ export async function POST(request: NextRequest) {
     const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
     const rateKey = userId ? `user:${userId}` : `ip:${ip}`;
 
-    if (!rateLimit(rateKey, 'payment_payu_initiate', { limit: LIMIT, windowMs: WINDOW_MS })) {
+    // Use async rate limiter so Redis is used when available (shared across all instances)
+    const rateLimitResult = await rateLimit(rateKey, LIMIT, WINDOW_MS);
+    if (!rateLimitResult.allowed) {
       logger.warn('payu_init.rate_limited', { rateKey, correlationId });
       return apiError('RATE_LIMITED', { correlationId });
     }

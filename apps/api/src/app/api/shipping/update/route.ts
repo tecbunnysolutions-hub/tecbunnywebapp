@@ -28,7 +28,8 @@ export async function POST(request: NextRequest) {
 
     // Rate limiting
     const clientIP = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
-    if (!rateLimit(clientIP, 'shipping_updates', { limit: 10, windowMs: 60000 })) {
+    const rl = await rateLimit(clientIP, 10, 60000);
+    if (!rl.allowed) {
       return apiError('RATE_LIMITED', { correlationId });
     }
 

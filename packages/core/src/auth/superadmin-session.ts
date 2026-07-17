@@ -1,4 +1,5 @@
 import { logger } from '../logger';
+import { getRedis } from '../redis';
 
 const SUPERADMIN_SESSION_TTL_SECONDS = 60 * 60 * 24;
 
@@ -141,7 +142,7 @@ export async function verifySuperadminSessionToken(token: string | undefined | n
       payload.email !== configuredEmail ||
       typeof payload.exp !== 'number' ||
       payload.exp <= now ||
-      (payload.jti && isJtiRevoked(payload.jti))
+      (payload.jti && await isJtiRevoked(payload.jti))
     ) {
       return null;
     }
@@ -165,23 +166,60 @@ export async function verifySuperadminSessionToken(token: string | undefined | n
   }
 }
 
-// Bug #23 fix: In-memory JTI blocklist for the current process lifetime.
-// This prevents a stolen token from being reused until it naturally expires,
-// even if the attacker still holds the cookie value.
-// For multi-instance deployments, replace this with a Redis SET with TTL equal
-// to SUPERADMIN_SESSION_TTL_SECONDS.
-const revokedJtis = new Set<string>();
+// JTI blocklist backed by Redis for multi-instance deployments.
+// Falls back to in-memory for single-instance / development use.
+// In production, REDIS_URL must be set so revoked tokens are shared across
+// all serverless instances and survive cold starts.
+const revokedJtisMemory = new Set<string>();
+const REVOKED_JTI_KEY_PREFIX = 'superadmin_revoked_jti:';
+
+async function addRevokedJti(jti: string): Promise<void> {
+  const redis = getRedis();
+  if (redis) {
+    try {
+      await redis.set(
+        `${REVOKED_JTI_KEY_PREFIX}${jti}`,
+        '1',
+        'EX',
+        SUPERADMIN_SESSION_TTL_SECONDS
+      );
+      return;
+    } catch (err) {
+      logger.error('superadmin_jti_revoke_redis_failed', { jti, error: (err as Error).message });
+      // fall through to memory
+    }
+  }
+  if (process.env.NODE_ENV === 'production') {
+    logger.warn('superadmin_jti_revoke_memory_fallback', {
+      reason: 'Redis unavailable; JTI revocation is NOT durable across cold starts',
+    });
+  }
+  revokedJtisMemory.add(jti);
+}
+
+async function checkJtiRevoked(jti: string): Promise<boolean> {
+  const redis = getRedis();
+  if (redis) {
+    try {
+      const val = await redis.get(`${REVOKED_JTI_KEY_PREFIX}${jti}`);
+      return val !== null;
+    } catch {
+      // Redis error — fall through to memory check
+    }
+  }
+  return revokedJtisMemory.has(jti);
+}
 
 export async function revokeSuperadminSessionToken(token: string): Promise<void> {
   try {
     const [version, encodedPayload] = token.split('.');
-    if (version !== 'v1' || !encodedPayload) return;
+    if ((version !== 'v1' && version !== 'v2') || !encodedPayload) return;
 
     const payloadText = new TextDecoder().decode(base64UrlDecode(encodedPayload));
     const payload = JSON.parse(payloadText) as Partial<SuperadminSessionPayload>;
 
     if (payload.jti) {
-      revokedJtis.add(payload.jti);
+      await addRevokedJti(payload.jti);
       logger.info('Superadmin session JTI revoked', { jti: payload.jti });
     }
   } catch {
@@ -190,11 +228,11 @@ export async function revokeSuperadminSessionToken(token: string): Promise<void>
 }
 
 /**
- * Checks whether a JTI has been explicitly revoked in this process.
- * Called internally by verifySuperadminSessionToken.
+ * Checks whether a JTI has been explicitly revoked.
+ * Checks Redis first, falls back to in-memory.
  */
-function isJtiRevoked(jti: string): boolean {
-  return revokedJtis.has(jti);
+async function isJtiRevoked(jti: string): Promise<boolean> {
+  return checkJtiRevoked(jti);
 }
 
 export { SUPERADMIN_SESSION_TTL_SECONDS };

@@ -1,12 +1,17 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import { sendWhatsAppMedia } from '@/services/infobipService';
+import { requireApiRole } from '@tecbunny/core/server-role-guard';
 import crypto from 'crypto';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request) {
   try {
+    const auth = await requireApiRole();
+    if (auth.error) return auth.error;
+    if (auth.role === 'customer') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+
     const formData = await req.formData();
     const file = formData.get('file') as File;
     const to = formData.get('to') as string;

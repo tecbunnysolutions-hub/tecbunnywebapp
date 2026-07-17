@@ -84,7 +84,7 @@ export async function POST(request: Request) {
     response.cookies.set('superadmin-session', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      sameSite: 'strict',
       path: '/',
       maxAge: SUPERADMIN_SESSION_TTL_SECONDS
     });
@@ -92,7 +92,7 @@ export async function POST(request: Request) {
     response.cookies.set('tb-superadmin-active', 'true', {
       httpOnly: false,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      sameSite: 'strict',
       path: '/',
       maxAge: SUPERADMIN_SESSION_TTL_SECONDS
     });

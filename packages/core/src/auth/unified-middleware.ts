@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import {  updateSession  } from '@tecbunny/database/middleware';
+import { updateSession } from '@tecbunny/database/middleware';
+import { randomBytes } from 'crypto';
 
 export interface UnifiedMiddlewareOptions {
   appType: 'api' | 'public' | 'superadmin' | 'mgmt';
@@ -7,12 +8,19 @@ export interface UnifiedMiddlewareOptions {
   loginRoute?: string;
 }
 
-function generateCSP() {
-  const scriptSrc = "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com https://cs.iubenda.com https://cdn.iubenda.com https://static.cloudflareinsights.com https://www.googletagmanager.com https://www.google-analytics.com https://va.vercel-scripts.com https://connect.facebook.net";
+/** Generate a fresh cryptographic nonce per request. */
+function generateNonce(): string {
+  return randomBytes(16).toString('base64');
+}
+
+function generateCSP(nonce: string) {
+  // Replace 'unsafe-inline' with nonce-based approach for scripts and styles
+  const scriptSrc = `script-src 'self' 'nonce-${nonce}' https://challenges.cloudflare.com https://cs.iubenda.com https://cdn.iubenda.com https://static.cloudflareinsights.com https://www.googletagmanager.com https://www.google-analytics.com https://va.vercel-scripts.com https://connect.facebook.net`;
+  const styleSrc  = `style-src 'self' 'nonce-${nonce}' https://fonts.googleapis.com`;
   return [
     "default-src 'self'",
     scriptSrc,
-    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+    styleSrc,
     "font-src 'self' data: https://fonts.gstatic.com",
     "img-src 'self' data: blob: https:",
     "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://www.google-analytics.com https://region1.analytics.google.com https://analytics.google.com https://www.google.com https://api.postalpincode.in https://cloudflareinsights.com https://static.cloudflareinsights.com https://challenges.cloudflare.com https://vitals.vercel-insights.com https://api.tecbunny.com",
@@ -32,9 +40,14 @@ export async function executeUnifiedPolicyMiddleware(
   const { appType, publicRoutes = [], loginRoute = '/login' } = options;
   const pathname = request.nextUrl.pathname;
   const requestHeaders = new Headers(request.headers);
-  
-  // Security Headers
-  requestHeaders.set('Content-Security-Policy', generateCSP());
+
+  // Per-request CSP nonce — eliminates 'unsafe-inline' requirement
+  const nonce = generateNonce();
+  const csp = generateCSP(nonce);
+
+  // Security Headers (applied to both requestHeaders and final response)
+  requestHeaders.set('Content-Security-Policy', csp);
+  requestHeaders.set('x-nonce', nonce); // forwarded to layout/components via headers()
   requestHeaders.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
   requestHeaders.set('X-Frame-Options', 'DENY');
   requestHeaders.set('X-Content-Type-Options', 'nosniff');
@@ -174,20 +187,24 @@ export async function executeUnifiedPolicyMiddleware(
     }
   });
 
-  // Basic Mutation Audit Logging for API
+  // Basic Mutation Audit Logging for API with correlation context
   if (appType === 'api' && ['POST', 'PUT', 'DELETE', 'PATCH'].includes(request.method)) {
      try {
         const { logger } = require('@tecbunny/core/logger');
-        // Extracting user info from cookies would require decoding JWT, 
-        // relying on telemetry for now.
-        logger.info('api_mutation_audit', { method: request.method, pathname, ip });
+        const correlationId = request.headers.get('x-correlation-id') ?? undefined;
+        logger.info('api_mutation_audit', { method: request.method, pathname, ip, correlationId });
      } catch (e) {
         // Silent catch for logger missing
      }
   }
 
-  // Apply security headers to the response
-  sessionResponse.headers.set('Content-Security-Policy', generateCSP());
+  // Propagate correlation ID and nonce to response
+  const correlationId = request.headers.get('x-correlation-id') ?? randomBytes(8).toString('hex');
+  sessionResponse.headers.set('x-correlation-id', correlationId);
+
+  // Apply security headers to the response (use the same nonce generated above)
+  sessionResponse.headers.set('Content-Security-Policy', csp);
+  sessionResponse.headers.set('x-nonce', nonce); // so layout can read it server-side
   sessionResponse.headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
   sessionResponse.headers.set('X-Frame-Options', 'DENY');
   sessionResponse.headers.set('X-Content-Type-Options', 'nosniff');

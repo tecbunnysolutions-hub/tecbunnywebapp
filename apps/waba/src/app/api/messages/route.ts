@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import { sendWhatsAppMessage, sendWhatsAppLocation } from '@/services/infobipService';
+import { requireApiRole } from '@tecbunny/core/server-role-guard';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
 export const dynamic = 'force-dynamic';
@@ -10,6 +11,10 @@ const genAI = apiKey ? new GoogleGenerativeAI(apiKey) : null;
 
 export async function GET(req: Request) {
   try {
+    const auth = await requireApiRole();
+    if (auth.error) return auth.error;
+    if (auth.role === 'customer') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+
     const { searchParams } = new URL(req.url);
     const conversationId = searchParams.get('conversation');
 
@@ -32,33 +37,47 @@ export async function GET(req: Request) {
 
     if (convError) throw convError;
 
-    // Fetch the latest message for each conversation
-    const conversationsWithMessages = await Promise.all(
-      (conversations || []).map(async (conv) => {
-        const { data: latestMessages } = await supabase
-          .from('Message')
-          .select('*')
-          .eq('sender_number', conv.sender_number)
-          .order('timestamp', { ascending: false })
-          .limit(1);
+    // Fetch latest message per conversation in a SINGLE query (fix for N+1).
+    // We pull all messages for the relevant sender numbers ordered by timestamp
+    // descending, then keep only the first occurrence of each sender_number.
+    const senderNumbers = (conversations || []).map((c: any) => c.sender_number);
+    let latestMessagesBySender = new Map<string, any>();
 
-        return {
-          ...conv,
-          messages: latestMessages || []
-        };
-      })
-    );
+    if (senderNumbers.length > 0) {
+      const { data: allLatest } = await supabase
+        .from('Message')
+        .select('id, sender_number, direction, message_content, timestamp, status, media_url, media_type')
+        .in('sender_number', senderNumbers)
+        .order('timestamp', { ascending: false });
+
+      for (const msg of (allLatest || [])) {
+        if (!latestMessagesBySender.has(msg.sender_number)) {
+          latestMessagesBySender.set(msg.sender_number, msg);
+        }
+      }
+    }
+
+    const conversationsWithMessages = (conversations || []).map((conv: any) => ({
+      ...conv,
+      messages: latestMessagesBySender.has(conv.sender_number)
+        ? [latestMessagesBySender.get(conv.sender_number)]
+        : []
+    }));
 
     return NextResponse.json({ conversations: conversationsWithMessages });
 
   } catch (error: unknown) {
     console.error('Failed to fetch messages', error);
-    return NextResponse.json({ error: error instanceof Error ? error.message : 'Failed to fetch messages', details: error }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to fetch messages' }, { status: 500 });
   }
 }
 
 export async function POST(req: Request) {
   try {
+    const auth = await requireApiRole();
+    if (auth.error) return auth.error;
+    if (auth.role === 'customer') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+
     const body = await req.json();
     const { to, text, location } = body;
 
@@ -122,6 +141,6 @@ Manager's Draft:
 
   } catch (error: unknown) {
     console.error('Failed to send message', error);
-    return NextResponse.json({ error: error instanceof Error ? error.message : 'Failed to send message', stack: error instanceof Error ? error.stack : undefined }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to send message' }, { status: 500 });
   }
 }

@@ -4,10 +4,12 @@ import { createClient } from '@tecbunny/database';
 
 
 import * as React from 'react';
-import { AlertTriangle, CalendarDays, MapPin, RefreshCw, Wrench } from 'lucide-react';
+import { AlertTriangle, CalendarDays, MapPin, RefreshCw, Wrench, ChevronDown, Plus } from 'lucide-react';
 
 import { Button } from "@tecbunny/ui";
 import type { ServiceTicket } from "@tecbunny/core/types";
+
+const TICKET_STATUSES = ['PENDING', 'SCHEDULED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'] as const;
 
 interface ServiceTicketWorkspaceProps {
   mode: 'manager' | 'engineer';
@@ -18,6 +20,7 @@ export function ServiceTicketWorkspace({ mode }: ServiceTicketWorkspaceProps) {
   const [tickets, setTickets] = React.useState<ServiceTicket[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
+  const [updatingId, setUpdatingId] = React.useState<string | null>(null);
 
   const loadTickets = React.useCallback(async () => {
     setLoading(true);
@@ -41,6 +44,19 @@ export function ServiceTicketWorkspace({ mode }: ServiceTicketWorkspaceProps) {
     setTimeout(() => { void loadTickets(); }, 0);
   }, [loadTickets]);
 
+  const updateStatus = React.useCallback(async (ticketId: string, newStatus: string) => {
+    setUpdatingId(ticketId);
+    const { error: updateError } = await supabase
+      .from('service_tickets')
+      .update({ status: newStatus, updated_at: new Date().toISOString() })
+      .eq('id', ticketId);
+
+    if (!updateError) {
+      setTickets(prev => prev.map(t => t.id === ticketId ? { ...t, status: newStatus as any } : t));
+    }
+    setUpdatingId(null);
+  }, [supabase]);
+
   return (
     <div className="space-y-5">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
@@ -57,10 +73,17 @@ export function ServiceTicketWorkspace({ mode }: ServiceTicketWorkspaceProps) {
               : 'Only tickets assigned to your engineer account are visible.'}
           </p>
         </div>
-        <Button onClick={loadTickets} disabled={loading} variant="outline" className="w-full border-zinc-700 bg-zinc-900 sm:w-auto">
-          <RefreshCw className={loading ? 'animate-spin' : ''} />
-          Refresh
-        </Button>
+        <div className="flex gap-2">
+          <Button onClick={loadTickets} disabled={loading} variant="outline" className="w-full border-zinc-700 bg-zinc-900 sm:w-auto">
+            <RefreshCw className={loading ? 'animate-spin' : ''} />
+            Refresh
+          </Button>
+          {mode === 'manager' && (
+            <Button className="w-full sm:w-auto">
+              <Plus className="h-4 w-4 mr-1" /> New Ticket
+            </Button>
+          )}
+        </div>
       </div>
 
       {error ? (
@@ -100,7 +123,23 @@ export function ServiceTicketWorkspace({ mode }: ServiceTicketWorkspaceProps) {
                   <h2 className="mt-3 truncate text-base font-bold text-white">{ticket.customer_name}</h2>
                   <p className="mt-1 line-clamp-2 text-sm leading-6 text-zinc-500">{ticket.issue_description}</p>
                 </div>
-                <span className="shrink-0 font-mono text-xs text-zinc-600">#{ticket.id.slice(0, 8).toUpperCase()}</span>
+                <div className="flex items-center gap-3 shrink-0">
+                  <span className="font-mono text-xs text-zinc-600">#{ticket.id.slice(0, 8).toUpperCase()}</span>
+                  {/* Inline status updater */}
+                  <div className="relative">
+                    <select
+                      className="appearance-none text-[10px] font-bold uppercase tracking-wider rounded-full border border-zinc-700 bg-zinc-800 text-zinc-300 px-3 py-1 pr-6 cursor-pointer focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                      value={ticket.status}
+                      disabled={updatingId === ticket.id}
+                      onChange={e => updateStatus(ticket.id, e.target.value)}
+                    >
+                      {TICKET_STATUSES.map(s => (
+                        <option key={s} value={s}>{s.replaceAll('_', ' ')}</option>
+                      ))}
+                    </select>
+                    <ChevronDown className="absolute right-1.5 top-1/2 -translate-y-1/2 w-3 h-3 text-zinc-500 pointer-events-none" />
+                  </div>
+                </div>
               </div>
               <div className="mt-4 grid gap-2 border-t border-zinc-800 pt-4 text-xs text-zinc-500 sm:grid-cols-2">
                 <span className="flex items-center gap-2">

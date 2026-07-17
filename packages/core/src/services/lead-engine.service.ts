@@ -111,7 +111,7 @@ export class LeadEngineService {
     const { data: execs, error: execError } = await supabase
       .from('profiles')
       .select('id, role')
-      .in('role', ['sales', 'manager']);
+      .in('role', ['sales_executive', 'store_executive', 'sales_agent', 'sales_manager', 'sales', 'manager']);
       
     if (execError || !execs || execs.length === 0) return null;
 
@@ -121,10 +121,10 @@ export class LeadEngineService {
       .eq('is_active', true);
 
     const workload = new Map<string, number>();
-    execs.forEach(e => workload.set(e.id, 0));
+    execs.forEach((e: { id: string; role: string }) => workload.set(e.id, 0));
     
     if (assignments) {
-      assignments.forEach(a => {
+      assignments.forEach((a: { sales_executive_id: string | null }) => {
         if (a.sales_executive_id && workload.has(a.sales_executive_id)) {
           workload.set(a.sales_executive_id, workload.get(a.sales_executive_id)! + 1);
         }

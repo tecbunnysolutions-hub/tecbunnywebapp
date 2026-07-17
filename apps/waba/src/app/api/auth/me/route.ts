@@ -1,21 +1,28 @@
 import { NextResponse } from 'next/server';
-import {  createSupabaseClient  } from '@tecbunny/database/server';
+import { createSupabaseClient } from '@tecbunny/database/server';
 import { supabase } from '@/lib/supabase';
+import { verifySuperadminSessionToken } from '@tecbunny/core/server';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: Request) {
   try {
     const cookieHeader = req.headers.get('cookie') || '';
-    const match = cookieHeader.match(/waba_agent_id=([^;]+)/);
-    const agentId = match ? match[1] : null;
 
-    if (agentId === 'superadmin-id') {
-      return NextResponse.json({ user: { id: 'superadmin-id', name: 'Super Admin', email: 'superadmin', role: 'SUPERADMIN' } });
+    // Verify signed superadmin session token — no literal string comparisons
+    const superadminTokenMatch = cookieHeader.match(/superadmin-session=([^;]+)/);
+    const superadminToken = superadminTokenMatch ? decodeURIComponent(superadminTokenMatch[1]) : null;
+    if (superadminToken) {
+      const payload = await verifySuperadminSessionToken(superadminToken);
+      if (payload) {
+        return NextResponse.json({ user: { id: 'superadmin-root-id', name: 'Super Admin', email: payload.email, role: 'SUPERADMIN' } });
+      }
     }
 
+    // Legacy non-superadmin agent cookie: resolve against DB, never trust a fixed value
+    const agentMatch = cookieHeader.match(/waba_agent_id=([^;]+)/);
+    const agentId = agentMatch ? agentMatch[1] : null;
     if (agentId) {
-      // Legacy check in case some users still have this cookie
       const { data: user } = await supabase.from('User').select('*').eq('id', agentId).maybeSingle();
       if (user) {
         return NextResponse.json({ user });

@@ -1,8 +1,12 @@
 import { NextResponse } from 'next/server';
+import { requireApiRole } from '@tecbunny/core/server-role-guard';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
+  const auth = await requireApiRole({ allowedRoles: ['admin', 'superadmin'] });
+  if (auth.error) return auth.error;
+
   return NextResponse.json({
     hasInfobipUrl: !!process.env.INFOBIP_BASE_URL,
     hasInfobipKey: !!process.env.INFOBIP_API_KEY,

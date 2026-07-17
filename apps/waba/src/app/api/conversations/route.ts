@@ -1,10 +1,15 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
+import { requireApiRole } from '@tecbunny/core/server-role-guard';
 
 export const dynamic = 'force-dynamic';
 
 export async function PATCH(req: Request) {
   try {
+    const auth = await requireApiRole();
+    if (auth.error) return auth.error;
+    if (auth.role === 'customer') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+
     const body = await req.json();
     const { sender_number, contact_name, status, tags, notes, assigned_to, department } = body;
 

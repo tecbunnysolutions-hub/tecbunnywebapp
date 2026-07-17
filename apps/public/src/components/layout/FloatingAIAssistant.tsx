@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Bot, X, Sparkles, ArrowRight, ArrowUp } from 'lucide-react';
@@ -126,7 +127,7 @@ export function FloatingAIAssistant() {
           aria-label="Chat on WhatsApp"
           className="group flex h-14 w-14 items-center justify-center rounded-full shadow-[0_0_25px_rgba(37,211,102,0.45)] transition hover:shadow-[0_0_35px_rgba(37,211,102,0.65)] hover:scale-105"
         >
-          <img src="/whatsapp.svg" alt="WhatsApp" className="h-[52px] w-[52px] transition-transform group-hover:scale-110 drop-shadow-md" />
+          <Image src="/whatsapp.svg" alt="WhatsApp" width={52} height={52} className="transition-transform group-hover:scale-110 drop-shadow-md" />
         </Link>
 
         {/* AI Bot Button */}
