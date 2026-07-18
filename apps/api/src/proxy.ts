@@ -46,6 +46,7 @@ export async function proxy(request: NextRequest) {
         '/api/captcha',
         '/api/contact-messages',
         '/api/free-installation-slots',
+        '/api/custom-setup-offers',
         '/api/promotions',
         '/api/warranty',
         '/api/quotes',

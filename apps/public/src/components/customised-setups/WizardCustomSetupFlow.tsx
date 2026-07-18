@@ -1,5 +1,4 @@
 'use client';
-import { createClient } from '@tecbunny/database';
 
 
 
@@ -165,17 +164,10 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
   useEffect(() => {
     const fetchActiveOffer = async () => {
       try {
-        const supabase = createClient();
-        const { data, error } = await supabase
-          .from('custom_setup_offers')
-          .select('*')
-          .eq('is_active', true)
-          .lte('start_date', new Date().toISOString())
-          .gte('end_date', new Date().toISOString())
-          .limit(1)
-          .single();
+        const response = await fetch('/api/custom-setup-offers');
+        const { data } = await response.json();
         
-        if (data && !error) {
+        if (response.ok && data) {
           setActiveOffer({
             id: data.id,
             title: data.title,
@@ -186,7 +178,7 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
           });
         }
       } catch (err) {
-        console.error('Failed to fetch offers:', err);
+        console.error('Failed to fetch custom setup offers:', err);
       }
     };
     fetchActiveOffer();

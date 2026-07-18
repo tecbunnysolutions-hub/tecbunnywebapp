@@ -18,9 +18,10 @@ export function usePageContent(pageKey: string) {
   const [content, setContent] = useState<PageContent | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [retryCount, setRetryCount] = useState(0);
 
   useEffect(() => {
+    const controller = new AbortController();
+
     const fetchContent = async () => {
       try {
         setLoading(true);
@@ -28,6 +29,7 @@ export function usePageContent(pageKey: string) {
 
         const response = await fetch(`/api/page-content?key=${pageKey}`, {
           cache: 'no-store',
+          signal: controller.signal,
         });
         const result = await response.json();
 
@@ -37,28 +39,27 @@ export function usePageContent(pageKey: string) {
 
         // data can be null when no content exists for the key
         setContent(result.data ?? null);
-        setRetryCount(0); // Reset on success
       } catch (err) {
+        if (controller.signal.aborted) return;
+
         const errorMessage = err instanceof Error ? err.message : 'Unknown error';
         setError(errorMessage);
         logger.error('Error fetching page content:', { error: err });
-        
-        // Auto-retry with backoff and limit (max 3 retries)
-        if (err instanceof Error && err.message.includes('fetch') && retryCount < 3) {
-          const timeout = 2000 * Math.pow(2, retryCount);
-          setTimeout(() => {
-            setRetryCount(prev => prev + 1);
-          }, timeout);
-        }
       } finally {
-        setLoading(false);
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
       }
     };
 
     if (pageKey) {
       fetchContent();
+    } else {
+      setLoading(false);
     }
-  }, [pageKey, retryCount]);
+
+    return () => controller.abort();
+  }, [pageKey]);
 
   const updateContent = async (updates: {
     title?: string;

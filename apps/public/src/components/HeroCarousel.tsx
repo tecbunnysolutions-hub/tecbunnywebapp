@@ -90,10 +90,11 @@ function normalizeSlides(pageKey: HeroCarouselPageKey, raw: unknown): HeroCarous
 }
 
 export default function HeroCarousel({ pageKey, intervalMs = 6000, className, initialData }: HeroCarouselProps) {
-  const { content, loading: hookLoading } = usePageContent('hero-carousels');
+  const prefetchedContent = initialData?.content ?? initialData;
+  const { content, loading: hookLoading } = usePageContent(prefetchedContent ? '' : 'hero-carousels');
   const prefersReducedMotion = usePrefersReducedMotion();
 
-  const activeContent = initialData?.content || content?.content;
+  const activeContent = prefetchedContent ?? content?.content;
   const loading = !activeContent && hookLoading;
 
   const slides = React.useMemo(() => {

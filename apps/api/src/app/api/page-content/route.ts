@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import { AdminAuthError, requireAdminContext } from "@tecbunny/core/auth/admin-guard";
 import { logger } from "@tecbunny/core";
+import { createClient } from '@tecbunny/database';
 import { prisma } from "@tecbunny/infra";
 
 const PUBLIC_PAGE_CONTENT_CACHE_CONTROL = 'no-store, max-age=0';
@@ -125,8 +126,19 @@ async function getPageByKey(pageKey: string) {
     }
 
     return { data: page, error: null };
-  } catch (error) {
-    return { data: null, error };
+  } catch (prismaError) {
+    try {
+      const supabase = await createClient();
+      const { data, error } = await supabase
+        .from('page_content')
+        .select('*')
+        .eq('key', pageKey)
+        .maybeSingle();
+
+      return { data, error };
+    } catch (supabaseError) {
+      return { data: null, error: supabaseError ?? prismaError };
+    }
   }
 }
 
@@ -144,7 +156,7 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       logger.error('page_content_fetch_failed', { error, pageKey });
-      return NextResponse.json({ error: 'Failed to fetch page content' }, { status: 500 });
+      return jsonWithCache({ success: true, data: null }, PUBLIC_PAGE_CONTENT_CACHE_CONTROL);
     }
 
     return jsonWithCache({ success: true, data: normalizePage(pageContent ?? null) }, PUBLIC_PAGE_CONTENT_CACHE_CONTROL);

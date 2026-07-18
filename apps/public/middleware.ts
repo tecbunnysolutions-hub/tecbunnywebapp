@@ -1,4 +1,4 @@
-import { type NextRequest } from 'next/server';
+import { NextResponse, type NextRequest } from 'next/server';
 import { executeUnifiedPolicyMiddleware } from '@tecbunny/core/auth/unified-middleware';
 
 export async function middleware(request: NextRequest) {
@@ -31,9 +31,14 @@ export async function middleware(request: NextRequest) {
       '/api/webhooks',
   ];
 
-  // If the route is NOT explicitly protected, allow it as a public route
+  const isPublicRoute = publicRoutes.some(route => pathname === route || pathname.startsWith(`${route}/`));
+  if (isPublicRoute) {
+    return NextResponse.next();
+  }
+
+  // If the route is NOT explicitly protected, allow it without initializing auth middleware
   if (!isProtected) {
-    publicRoutes.push(pathname);
+    return NextResponse.next();
   }
 
   return await executeUnifiedPolicyMiddleware(request, {
