@@ -13,14 +13,29 @@ import {
   MessageSquare, 
   FileText, 
   Eye, 
-  Facebook, 
-  Instagram, 
-  Twitter, 
-  Linkedin, 
-  Youtube, 
   Globe,
   Phone
 } from 'lucide-react';
+
+function FacebookIcon(props: React.SVGProps<SVGSVGElement>) {
+  return <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" {...props}><path d="M13.5 22v-8h2.7l.4-3.1h-3.1V8.9c0-.9.3-1.5 1.6-1.5h1.7V4.6c-.3 0-1.3-.1-2.5-.1-2.5 0-4.2 1.5-4.2 4.3v2.4H7.3V14h2.8v8h3.4Z" /></svg>;
+}
+
+function XIcon(props: React.SVGProps<SVGSVGElement>) {
+  return <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" {...props}><path d="M18.9 3h3.2l-7 8 8.2 10h-6.4l-5-6.1L6.2 21H3l7.5-8.6L2.7 3h6.6l4.5 5.5L18.9 3Zm-1.1 16.2h1.8L8.3 4.7H6.4l11.4 14.5Z" /></svg>;
+}
+
+function InstagramIcon(props: React.SVGProps<SVGSVGElement>) {
+  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true" {...props}><rect x="3" y="3" width="18" height="18" rx="5" /><circle cx="12" cy="12" r="4" /><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" /></svg>;
+}
+
+function LinkedinIcon(props: React.SVGProps<SVGSVGElement>) {
+  return <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" {...props}><path d="M6.9 21H3.5V9h3.4v12ZM5.2 7.4a2 2 0 1 1 0-4 2 2 0 0 1 0 4ZM21 21h-3.4v-5.9c0-1.4 0-3.1-1.9-3.1s-2.2 1.5-2.2 3v6H10V9h3.3v1.6h.1c.5-.9 1.6-1.9 3.3-1.9 3.5 0 4.2 2.3 4.2 5.3v7Z" /></svg>;
+}
+
+function YoutubeIcon(props: React.SVGProps<SVGSVGElement>) {
+  return <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" {...props}><path d="M21.6 7.2a3 3 0 0 0-2.1-2.1C17.6 4.6 12 4.6 12 4.6s-5.6 0-7.5.5a3 3 0 0 0-2.1 2.1C2 9.1 2 12 2 12s0 2.9.4 4.8a3 3 0 0 0 2.1 2.1c1.9.5 7.5.5 7.5.5s5.6 0 7.5-.5a3 3 0 0 0 2.1-2.1c.4-1.9.4-4.8.4-4.8s0-2.9-.4-4.8ZM10 15.4V8.6l5.8 3.4L10 15.4Z" /></svg>;
+}
 
 export default function UserAnalyticsPage() {
   const params = useParams();
@@ -90,11 +105,11 @@ export default function UserAnalyticsPage() {
     if (item.event_type === 'add_to_cart') return <ShoppingCart className="h-4 w-4 text-purple-500" />;
     if (item.event_type === 'social_click') {
       const platform = item.metadata?.platform?.toLowerCase();
-      if (platform?.includes('facebook')) return <Facebook className="h-4 w-4 text-blue-600" />;
-      if (platform?.includes('instagram')) return <Instagram className="h-4 w-4 text-pink-600" />;
-      if (platform?.includes('twitter')) return <Twitter className="h-4 w-4 text-blue-400" />;
-      if (platform?.includes('linkedin')) return <Linkedin className="h-4 w-4 text-blue-700" />;
-      if (platform?.includes('youtube')) return <Youtube className="h-4 w-4 text-red-600" />;
+      if (platform?.includes('facebook')) return <FacebookIcon className="h-4 w-4 text-blue-600" />;
+      if (platform?.includes('instagram')) return <InstagramIcon className="h-4 w-4 text-pink-600" />;
+      if (platform?.includes('twitter')) return <XIcon className="h-4 w-4 text-blue-400" />;
+      if (platform?.includes('linkedin')) return <LinkedinIcon className="h-4 w-4 text-blue-700" />;
+      if (platform?.includes('youtube')) return <YoutubeIcon className="h-4 w-4 text-red-600" />;
       if (platform?.includes('whatsapp')) return <Phone className="h-4 w-4 text-green-500" />;
       return <Globe className="h-4 w-4 text-blue-500" />;
     }

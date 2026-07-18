@@ -1,22 +1,8 @@
 // Bug #17 fix: Removed the unused `supabase` import. The service was importing
 // both Supabase and Prisma clients, creating two separate connection pools to
 // the same database. All operations now go through a single Prisma client.
-import { PrismaClient, Lead } from '@tecbunny/types';
-
-// Bug #16 fix: PrismaClient was instantiated at module level (`new PrismaClient()`).
-// In serverless/edge environments each cold start creates a new connection pool,
-// quickly exhausting the Postgres connection limit. We use a global singleton so
-// the same client is reused across hot reloads and concurrent invocations.
-declare global {
-  var __prismaLeadService: PrismaClient | undefined;
-}
-
-function getPrisma(): PrismaClient {
-  if (!global.__prismaLeadService) {
-    global.__prismaLeadService = new PrismaClient();
-  }
-  return global.__prismaLeadService;
-}
+import { prisma } from '@/lib/prisma';
+import type { Lead } from '@tecbunny/types';
 
 export class LeadService {
   /**
@@ -25,7 +11,6 @@ export class LeadService {
    * SERVICE_MANAGER and SALES_MANAGER can only see leads assigned to them.
    */
   static async getLeadsForUser(userId: string): Promise<Lead[]> {
-    const prisma = getPrisma();
     const user = await prisma.user.findUnique({
       where: { id: userId },
       select: { role: true },
@@ -50,7 +35,6 @@ export class LeadService {
    * AssignmentOrchestrator can upsert instead of always inserting.
    */
   static async findLeadBySenderNumber(senderNumber: string): Promise<Lead | null> {
-    const prisma = getPrisma();
     return prisma.lead.findFirst({
       where: { sender_number: senderNumber },
       orderBy: { created_at: 'desc' },
@@ -66,7 +50,6 @@ export class LeadService {
     status: string,
     assignedTo: string | null,
   ): Promise<Lead> {
-    const prisma = getPrisma();
     return prisma.lead.update({
       where: { id: leadId },
       data: {
@@ -80,7 +63,6 @@ export class LeadService {
    * Create a new lead (internal system function, bypasses RBAC for creation).
    */
   static async createLead(data: Omit<Lead, 'id' | 'created_at' | 'updated_at'>): Promise<Lead> {
-    const prisma = getPrisma();
     return prisma.lead.create({ data });
   }
 
@@ -90,7 +72,6 @@ export class LeadService {
    * Managers can only update leads assigned to them.
    */
   static async updateLead(userId: string, leadId: string, data: Partial<Lead>): Promise<Lead> {
-    const prisma = getPrisma();
     const user = await prisma.user.findUnique({
       where: { id: userId },
       select: { role: true },

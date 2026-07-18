@@ -9,11 +9,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 
 import { 
-  Facebook, 
-  Twitter, 
-  Instagram, 
-  Linkedin, 
-  Youtube, 
   Globe, 
   Plus, 
   X, 
@@ -61,39 +56,59 @@ import {
   SelectValue,
 } from "@tecbunny/ui";
 
+function FacebookIcon(props: React.SVGProps<SVGSVGElement>) {
+  return <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" {...props}><path d="M13.5 22v-8h2.7l.4-3.1h-3.1V8.9c0-.9.3-1.5 1.6-1.5h1.7V4.6c-.3 0-1.3-.1-2.5-.1-2.5 0-4.2 1.5-4.2 4.3v2.4H7.3V14h2.8v8h3.4Z" /></svg>;
+}
+
+function XIcon(props: React.SVGProps<SVGSVGElement>) {
+  return <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" {...props}><path d="M18.9 3h3.2l-7 8 8.2 10h-6.4l-5-6.1L6.2 21H3l7.5-8.6L2.7 3h6.6l4.5 5.5L18.9 3Zm-1.1 16.2h1.8L8.3 4.7H6.4l11.4 14.5Z" /></svg>;
+}
+
+function InstagramIcon(props: React.SVGProps<SVGSVGElement>) {
+  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true" {...props}><rect x="3" y="3" width="18" height="18" rx="5" /><circle cx="12" cy="12" r="4" /><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" /></svg>;
+}
+
+function LinkedinIcon(props: React.SVGProps<SVGSVGElement>) {
+  return <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" {...props}><path d="M6.9 21H3.5V9h3.4v12ZM5.2 7.4a2 2 0 1 1 0-4 2 2 0 0 1 0 4ZM21 21h-3.4v-5.9c0-1.4 0-3.1-1.9-3.1s-2.2 1.5-2.2 3v6H10V9h3.3v1.6h.1c.5-.9 1.6-1.9 3.3-1.9 3.5 0 4.2 2.3 4.2 5.3v7Z" /></svg>;
+}
+
+function YoutubeIcon(props: React.SVGProps<SVGSVGElement>) {
+  return <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" {...props}><path d="M21.6 7.2a3 3 0 0 0-2.1-2.1C17.6 4.6 12 4.6 12 4.6s-5.6 0-7.5.5a3 3 0 0 0-2.1 2.1C2 9.1 2 12 2 12s0 2.9.4 4.8a3 3 0 0 0 2.1 2.1c1.9.5 7.5.5 7.5.5s5.6 0 7.5-.5a3 3 0 0 0 2.1-2.1c.4-1.9.4-4.8.4-4.8s0-2.9-.4-4.8ZM10 15.4V8.6l5.8 3.4L10 15.4Z" /></svg>;
+}
+
 // Define available social media platforms with their icons and colors
 const SOCIAL_PLATFORMS = {
   facebook: {
     name: 'Facebook',
-    icon: Facebook,
+    icon: FacebookIcon,
     color: '#1877F2',
     placeholder: 'https://facebook.com/yourpage',
     example: 'https://facebook.com/tecbunny'
   },
   twitter: {
     name: 'X (Twitter)',
-    icon: Twitter,
+    icon: XIcon,
     color: '#1DA1F2',
     placeholder: 'https://x.com/yourusername',
     example: 'https://x.com/tecbunny'
   },
   instagram: {
     name: 'Instagram',
-    icon: Instagram,
+    icon: InstagramIcon,
     color: '#E4405F',
     placeholder: 'https://instagram.com/yourusername',
     example: 'https://instagram.com/tecbunny'
   },
   linkedin: {
     name: 'LinkedIn',
-    icon: Linkedin,
+    icon: LinkedinIcon,
     color: '#0077B5',
     placeholder: 'https://linkedin.com/company/yourcompany',
     example: 'https://linkedin.com/company/tecbunny'
   },
   youtube: {
     name: 'YouTube',
-    icon: Youtube,
+    icon: YoutubeIcon,
     color: '#FF0000',
     placeholder: 'https://youtube.com/c/yourchannel',
     example: 'https://youtube.com/c/tecbunny'

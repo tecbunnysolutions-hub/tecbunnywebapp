@@ -3,7 +3,25 @@
 import { useState } from "react";
 import { Button } from "@tecbunny/ui";
 import { Input } from "@tecbunny/ui";
-import { Github, Chrome } from "lucide-react";
+
+function GoogleIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" {...props}>
+      <path d="M21.6 12.2c0-.7-.1-1.4-.2-2H12v3.8h5.4a4.6 4.6 0 0 1-2 3v2.5h3.3c1.9-1.8 2.9-4.3 2.9-7.3Z" />
+      <path d="M12 22c2.7 0 5-.9 6.7-2.5L15.4 17c-.9.6-2 .9-3.4.9-2.6 0-4.8-1.8-5.6-4.1H3v2.6A10 10 0 0 0 12 22Z" />
+      <path d="M6.4 13.8a6 6 0 0 1 0-3.6V7.6H3a10 10 0 0 0 0 8.8l3.4-2.6Z" />
+      <path d="M12 6.1c1.5 0 2.8.5 3.8 1.5l2.9-2.9A9.8 9.8 0 0 0 12 2a10 10 0 0 0-9 5.6l3.4 2.6C7.2 7.9 9.4 6.1 12 6.1Z" />
+    </svg>
+  );
+}
+
+function GitHubIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" {...props}>
+      <path fillRule="evenodd" clipRule="evenodd" d="M12 2a10 10 0 0 0-3.2 19.5c.5.1.7-.2.7-.5v-1.9c-2.8.6-3.4-1.2-3.4-1.2-.5-1.1-1.1-1.4-1.1-1.4-.9-.6.1-.6.1-.6 1 0 1.6 1.1 1.6 1.1.9 1.6 2.4 1.1 2.9.9.1-.7.4-1.1.7-1.4-2.2-.3-4.6-1.1-4.6-4.9 0-1.1.4-2 1.1-2.7-.1-.3-.5-1.3.1-2.7 0 0 .9-.3 2.8 1a9.6 9.6 0 0 1 5.2 0c2-1.3 2.8-1 2.8-1 .6 1.4.2 2.4.1 2.7.7.7 1.1 1.6 1.1 2.7 0 3.8-2.3 4.6-4.6 4.9.4.3.7 1 .7 2v2.5c0 .3.2.6.7.5A10 10 0 0 0 12 2Z" />
+    </svg>
+  );
+}
 
 export function MinimalAuth() {
   const [isLoading, setIsLoading] = useState(false);
@@ -29,10 +47,10 @@ export function MinimalAuth() {
 
       <div className="space-y-4">
         <Button variant="outline" className="w-full rounded-xl h-12 text-md font-medium" onClick={() => {}}>
-          <Chrome className="w-5 h-5 mr-3" /> Continue with Google
+          <GoogleIcon className="w-5 h-5 mr-3" /> Continue with Google
         </Button>
         <Button variant="outline" className="w-full rounded-xl h-12 text-md font-medium" onClick={() => {}}>
-          <Github className="w-5 h-5 mr-3" /> Continue with GitHub
+          <GitHubIcon className="w-5 h-5 mr-3" /> Continue with GitHub
         </Button>
 
         <div className="relative py-4">

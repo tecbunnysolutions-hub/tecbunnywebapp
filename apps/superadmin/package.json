@@ -4,27 +4,30 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "next build --webpack",
     "start": "next start",
     "lint": "eslint"
   },
   "dependencies": {
+    "@prisma/adapter-pg": "^7.8.0",
     "@tecbunny/admin-ui": "*",
     "@tecbunny/core": "*",
     "@tecbunny/database": "*",
+    "@tecbunny/types": "*",
     "next": "16.2.10",
+    "pg": "^8.22.0",
     "qrcode.react": "^4.2.0",
-    "react": "19.2.6",
-    "react-dom": "19.2.6"
+    "react": "19.2.7",
+    "react-dom": "19.2.7"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4.1.0",
-    "@types/node": "^24.13.2",
-    "@types/react": "^19.0.0",
+    "@tailwindcss/postcss": "^4.3.3",
+    "@types/node": "^26.1.1",
+    "@types/react": "^19.2.17",
     "@types/react-dom": "^19",
-    "eslint": "^9.39.4",
+    "eslint": "^9.39.5",
     "eslint-config-next": "16.2.10",
     "tailwindcss": "^4",
-    "typescript": "5.9.2"
+    "typescript": "5.9.3"
   }
 }

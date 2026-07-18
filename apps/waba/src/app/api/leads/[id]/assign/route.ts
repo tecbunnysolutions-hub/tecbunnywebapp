@@ -1,10 +1,8 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@tecbunny/types';
+import { prisma } from '@/lib/prisma';
 import { LeadService } from '@/services/leadService';
 import { requireApiRole, hasServerPermission } from '@tecbunny/core/server-role-guard';
 import { PERMS } from '@tecbunny/core/roles';
-
-const prisma = new PrismaClient();
 
 // PATCH /api/leads/:id/assign
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {

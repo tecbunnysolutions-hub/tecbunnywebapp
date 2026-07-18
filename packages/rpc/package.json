@@ -10,17 +10,17 @@
     "clean": "rm -rf .turbo node_modules dist"
   },
   "dependencies": {
-    "@trpc/server": "^10.45.2",
-    "@trpc/client": "^10.45.2",
-    "@trpc/react-query": "^10.45.2",
-    "@tanstack/react-query": "^4.36.1",
-    "zod": "^4.1.5",
-    "superjson": "^2.2.1",
+    "@trpc/server": "^11.18.0",
+    "@trpc/client": "^11.18.0",
+    "@trpc/react-query": "^11.18.0",
+    "@tanstack/react-query": "^5.101.2",
+    "zod": "^4.4.3",
+    "superjson": "^2.2.6",
     "@tecbunny/core": "*",
     "@tecbunny/config": "*"
   },
   "devDependencies": {
     "@tecbunny/config-typescript": "*",
-    "typescript": "5.9.2"
+    "typescript": "5.9.3"
   }
 }

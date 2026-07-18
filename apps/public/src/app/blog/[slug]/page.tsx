@@ -7,14 +7,15 @@ import { sanitizeHtml } from '@tecbunny/core/sanitize-html';
 
 export const revalidate = 300;
 
-interface Props { params: { slug: string } }
+interface Props { params: Promise<{ slug: string }> }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slug } = await params;
   const supabase = await createClient();
   const { data: post } = await supabase
     .from('blog_posts')
     .select('title, seo_title, excerpt, seo_description, cover_image')
-    .eq('slug', params.slug)
+    .eq('slug', slug)
     .eq('status', 'published')
     .maybeSingle();
 
@@ -28,11 +29,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function BlogPostPage({ params }: Props) {
+  const { slug } = await params;
   const supabase = await createClient();
   const { data: post } = await supabase
     .from('blog_posts')
     .select('*, profiles(first_name, last_name, avatar_url)')
-    .eq('slug', params.slug)
+    .eq('slug', slug)
     .eq('status', 'published')
     .maybeSingle();
 

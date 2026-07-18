@@ -1,8 +1,6 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@tecbunny/types';
+import { prisma } from '@/lib/prisma';
 import { requireApiRole } from '@tecbunny/core/server-role-guard';
-
-const prisma = new PrismaClient();
 
 // GET /api/customer-360?phone=1234567890
 export async function GET(req: Request) {

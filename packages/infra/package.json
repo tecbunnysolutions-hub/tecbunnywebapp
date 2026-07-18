@@ -11,12 +11,14 @@
     ".": "./src/index.ts"
   },
   "devDependencies": {
-    "@faker-js/faker": "^8.4.1",
-    "tsx": "^4.23.0"
+    "@faker-js/faker": "^10.5.0",
+    "tsx": "^4.23.1"
   },
   "dependencies": {
-    "@tecbunny/types": "*",
+    "@prisma/adapter-pg": "^7.8.0",
     "@tecbunny/core": "*",
-    "@tecbunny/database": "*"
+    "@tecbunny/database": "*",
+    "@tecbunny/types": "*",
+    "pg": "^8.22.0"
   }
 }

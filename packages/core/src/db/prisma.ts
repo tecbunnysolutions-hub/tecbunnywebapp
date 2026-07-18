@@ -1,4 +1,5 @@
 import { PrismaClient } from '@tecbunny/types';
+import { PrismaPg } from '@prisma/adapter-pg';
 import { logger } from '../logger';
 
 // PrismaClient is attached to the `global` object in development to prevent
@@ -11,7 +12,10 @@ import { checkPolicy, type Resource, type Action } from '../auth/policy';
 
 const globalForPrisma = globalThis as unknown as { prisma: PrismaClient | undefined };
 
+const adapter = new PrismaPg(process.env.DATABASE_URL ?? '');
+
 const basePrisma = globalForPrisma.prisma ?? new PrismaClient({
+  adapter,
   log: ['query', 'error', 'info', 'warn'],
 });
 

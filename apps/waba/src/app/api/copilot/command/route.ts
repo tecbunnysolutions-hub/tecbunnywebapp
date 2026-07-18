@@ -1,9 +1,8 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@tecbunny/types';
+import { prisma } from '@/lib/prisma';
 import { requireApiRole } from '@tecbunny/core/server-role-guard';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
-const prisma = new PrismaClient();
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
 const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 

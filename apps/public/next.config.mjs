@@ -1,4 +1,8 @@
 import { cpus } from 'os';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 /** @type {import('next').NextConfig} */
 const isStaticExport = process.env.NEXT_OUTPUT_MODE === 'export';
@@ -33,7 +37,7 @@ const nextConfig = {
     optimizeCss: true,
     optimizePackageImports: ['lucide-react']
   },
-  serverExternalPackages: ['pdfkit', 'nodemailer', 'bullmq', 'ioredis', 'pino', 'pino-pretty', 'thread-stream'],
+  serverExternalPackages: ['pdfkit', 'nodemailer', 'bullmq', 'ioredis', 'pino', 'pino-pretty', 'thread-stream', 'sharp', '@img/sharp-win32-x64'],
   poweredByHeader: false,
   images: {
     unoptimized: isStaticExport,
@@ -51,6 +55,19 @@ const nextConfig = {
     ],
   },
   reactStrictMode: true,
+  webpack(config, { isServer }) {
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      '@': path.resolve(__dirname, 'src'),
+    };
+    if (isServer) {
+      config.externals.push({
+        sharp: 'commonjs sharp',
+        '@img/sharp-win32-x64': 'commonjs @img/sharp-win32-x64',
+      });
+    }
+    return config;
+  },
   async headers() {
     return [
       {
