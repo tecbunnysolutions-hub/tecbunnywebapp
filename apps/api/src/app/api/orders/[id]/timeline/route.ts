@@ -7,16 +7,17 @@ import { NextRequest, NextResponse } from 'next/server';
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
     const { data: order, error: orderErr } = await supabase
       .from('orders')
       .select('id, status, payment_status, customer_name, customer_phone, created_at, user_id')
-      .eq('id', params.id)
+      .eq('id', id)
       .maybeSingle();
 
     if (orderErr || !order) {

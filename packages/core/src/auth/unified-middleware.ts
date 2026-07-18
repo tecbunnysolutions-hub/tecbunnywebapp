@@ -35,6 +35,7 @@ function generateCSP(nonce: string) {
     "default-src 'self'",
     scriptSrc,
     styleSrc,
+    "style-src-attr 'unsafe-inline'",
     "font-src 'self' data: https://fonts.gstatic.com",
     "img-src 'self' data: blob: https:",
     "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://www.google-analytics.com https://region1.analytics.google.com https://analytics.google.com https://www.google.com https://api.postalpincode.in https://cloudflareinsights.com https://static.cloudflareinsights.com https://challenges.cloudflare.com https://vitals.vercel-insights.com https://api.tecbunny.com",
@@ -133,6 +134,7 @@ export async function executeUnifiedPolicyMiddleware(
   // Defer to updateSession for token validation and role checking
   const sessionResponse = await updateSession(request, {
     allowedRoles: undefined, // Role enforcement is now handled by Prisma Extension and Route Guards
+    requestHeaders,
     loginRoute,
     publicRoutes,
     enforceMfaRoles: (appType === 'mgmt' || appType === 'superadmin') ? ['admin', 'superadmin'] : undefined,

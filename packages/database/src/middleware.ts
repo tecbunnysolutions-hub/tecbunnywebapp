@@ -16,13 +16,15 @@ export async function updateSession(
     publicRoutes?: string[]; 
     loginRoute?: string;
     enforceMfaRoles?: string[];
+    requestHeaders?: Headers;
     onUnauthorized?: (req: NextRequest) => NextResponse;
     onForbidden?: (req: NextRequest) => NextResponse;
     onMfaRequired?: (req: NextRequest) => NextResponse;
   }
 ) {
+  const forwardedHeaders = options?.requestHeaders ?? request.headers;
   let response = NextResponse.next({
-    request: { headers: request.headers },
+    request: { headers: forwardedHeaders },
   });
 
   const { url, publicKey } = requireSupabasePublicEnv();
@@ -35,14 +37,14 @@ export async function updateSession(
       set(name: string, value: string, cookieOptions: CookieOptions) {
         request.cookies.set({ name, value, ...cookieOptions });
         response = NextResponse.next({
-          request: { headers: request.headers },
+          request: { headers: forwardedHeaders },
         });
         response.cookies.set({ name, value, ...cookieOptions });
       },
       remove(name: string, cookieOptions: CookieOptions) {
         request.cookies.set({ name, value: '', ...cookieOptions });
         response = NextResponse.next({
-          request: { headers: request.headers },
+          request: { headers: forwardedHeaders },
         });
         response.cookies.set({ name, value: '', ...cookieOptions });
       },

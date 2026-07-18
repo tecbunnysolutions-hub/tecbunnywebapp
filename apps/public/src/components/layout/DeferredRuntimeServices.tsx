@@ -31,6 +31,7 @@ function scheduleWhenIdle(callback: () => void, timeout = 2400) {
 type DeferredRuntimeServicesProps = {
   gaId?: string;
   metaPixelId?: string;
+  nonce?: string;
 };
 
 type RuntimeServicesBoundaryState = {
@@ -81,7 +82,7 @@ class AnalyticsBoundary extends React.Component<React.PropsWithChildren, Runtime
   }
 }
 
-export function DeferredRuntimeServices({ gaId, metaPixelId }: DeferredRuntimeServicesProps) {
+export function DeferredRuntimeServices({ gaId, metaPixelId, nonce }: DeferredRuntimeServicesProps) {
   const isActivated = useDeferredActivation({ timeout: 8000 });
   const [shouldRender, setShouldRender] = React.useState(false);
   const [analyticsConsent, setAnalyticsConsent] = React.useState<AnalyticsConsent>('unknown');
@@ -126,7 +127,7 @@ export function DeferredRuntimeServices({ gaId, metaPixelId }: DeferredRuntimeSe
       {/* Google Consent Mode v2 — must load before gtag.js so Google detects the tag */}
       {gaId ? (
         <AnalyticsBoundary>
-          <Script id="ga-consent-defaults" strategy="lazyOnload">
+          <Script id="ga-consent-defaults" strategy="lazyOnload" nonce={nonce}>
             {`window.dataLayer = window.dataLayer || [];
 function gtag(){dataLayer.push(arguments);}
 gtag('consent', 'default', {
@@ -142,6 +143,7 @@ gtag('config', '${gaId}', { anonymize_ip: true, send_page_view: false });`}
           <Script
             src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
             strategy="lazyOnload"
+            nonce={nonce}
             onError={(e) => { console.warn('GA failed to load', e); }}
           />
         </AnalyticsBoundary>
@@ -153,6 +155,7 @@ gtag('config', '${gaId}', { anonymize_ip: true, send_page_view: false });`}
           <Script
             id="meta-pixel-init"
             strategy="lazyOnload"
+            nonce={nonce}
             onError={(e) => { console.warn('Meta Pixel failed to load', e); }}
           >
             {`!function(f,b,e,v,n,t,s)

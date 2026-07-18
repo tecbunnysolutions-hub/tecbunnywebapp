@@ -1,4 +1,5 @@
 import type {Metadata, Viewport} from 'next';
+import { headers } from 'next/headers';
 
 const BRAND_LOGO_URL = 'https://fbcsagupcxheyiusjfak.supabase.co/storage/v1/object/public/TecBunny%20Solution/TECBUNNY_SOLUTIONS_PVT_LTD-removebg-preview.png';
 import { Outfit } from 'next/font/google';
@@ -297,13 +298,14 @@ const outfit = Outfit({
   variable: '--font-body',
 });
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   const gaId = process.env.NEXT_PUBLIC_GA_ID || 'G-VCCMTMSVP4';
   const metaPixelId = process.env.NEXT_PUBLIC_META_PIXEL_ID;
+  const nonce = (await headers()).get('x-nonce') ?? undefined;
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -313,12 +315,13 @@ export default function RootLayout({
         <link rel="dns-prefetch" href="https://www.instagram.com" />
         <link rel="dns-prefetch" href="https://maps.googleapis.com" />
         <script
+          nonce={nonce}
             type="application/ld+json"
             dangerouslySetInnerHTML={{ __html: serializeJsonLd(structuredData) }}
           />
       </head>
       <body className={`${outfit.variable} font-body antialiased overflow-x-hidden w-full`} suppressHydrationWarning>
-        <ThemeProvider>
+        <ThemeProvider nonce={nonce}>
           <TRPCProvider>
             <FeatureFlagProviderLoader>
               <AppProvider>
@@ -334,7 +337,7 @@ export default function RootLayout({
                   </TechShell>
                   <DeferredFloatingAIAssistant />
 
-                  <DeferredRuntimeServices gaId={gaId} metaPixelId={metaPixelId} />
+                  <DeferredRuntimeServices gaId={gaId} metaPixelId={metaPixelId} nonce={nonce} />
                   <Analytics />
                 </OrderProvider>
               </AppProvider>

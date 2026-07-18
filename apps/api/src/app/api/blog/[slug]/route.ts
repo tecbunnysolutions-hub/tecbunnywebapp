@@ -7,6 +7,8 @@ import { z } from 'zod';
 
 export const dynamic = 'force-dynamic';
 
+type BlogRouteContext = { params: Promise<{ slug: string }> };
+
 const UpdatePostSchema = z.object({
   title: z.string().min(5).max(200).optional(),
   excerpt: z.string().max(400).optional(),
@@ -19,13 +21,14 @@ const UpdatePostSchema = z.object({
 });
 
 /** GET /api/blog/[slug] — get single post by slug */
-export async function GET(_request: NextRequest, { params }: { params: { slug: string } }) {
+export async function GET(_request: NextRequest, { params }: BlogRouteContext) {
   try {
+    const { slug } = await params;
     const supabase = await createClient();
     const { data, error } = await supabase
       .from('blog_posts')
       .select('*, profiles(first_name, last_name, avatar_url)')
-      .eq('slug', params.slug)
+      .eq('slug', slug)
       .maybeSingle();
 
     if (error || !data) return NextResponse.json({ error: 'Post not found' }, { status: 404 });
@@ -38,8 +41,9 @@ export async function GET(_request: NextRequest, { params }: { params: { slug: s
 }
 
 /** PATCH /api/blog/[slug] — update a blog post */
-export async function PATCH(request: NextRequest, { params }: { params: { slug: string } }) {
+export async function PATCH(request: NextRequest, { params }: BlogRouteContext) {
   try {
+    const { slug } = await params;
     const { session, role } = await getSessionWithRole(request as any);
     if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     if (!isAtLeast(role!, 'marketing_executive')) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
@@ -61,7 +65,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { slug: 
     const { data, error } = await supabase
       .from('blog_posts')
       .update(updates)
-      .eq('slug', params.slug)
+      .eq('slug', slug)
       .select()
       .maybeSingle();
 
@@ -78,14 +82,15 @@ export async function PATCH(request: NextRequest, { params }: { params: { slug: 
 }
 
 /** DELETE /api/blog/[slug] — delete a post (admin+) */
-export async function DELETE(request: NextRequest, { params }: { params: { slug: string } }) {
+export async function DELETE(request: NextRequest, { params }: BlogRouteContext) {
   try {
+    const { slug } = await params;
     const { session, role } = await getSessionWithRole(request as any);
     if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     if (!isAtLeast(role!, 'admin')) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
     const supabase = await createClient();
-    const { error } = await supabase.from('blog_posts').delete().eq('slug', params.slug);
+    const { error } = await supabase.from('blog_posts').delete().eq('slug', slug);
     if (error) return NextResponse.json({ error: 'Failed to delete post' }, { status: 500 });
 
     return NextResponse.json({ success: true });
