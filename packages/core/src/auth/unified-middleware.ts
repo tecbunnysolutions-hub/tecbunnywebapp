@@ -61,7 +61,7 @@ export async function executeUnifiedPolicyMiddleware(
   const csp = generateCSP(nonce);
 
   // Security Headers (applied to both requestHeaders and final response)
-  requestHeaders.set('Content-Security-Policy', csp);
+  requestHeaders.set('content-security-policy', csp);
   requestHeaders.set('x-nonce', nonce); // forwarded to layout/components via headers()
   requestHeaders.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
   requestHeaders.set('X-Frame-Options', 'DENY');
