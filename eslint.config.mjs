@@ -2,6 +2,7 @@
 import storybook from "eslint-plugin-storybook";
 
 import importPlugin from 'eslint-plugin-import';
+import tseslint from 'typescript-eslint';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -28,6 +29,21 @@ export default [{
       }
     ]
   }
+}, {
+  files: ["**/*.{ts,tsx}"],
+  languageOptions: {
+    parser: tseslint.parser,
+    parserOptions: {
+      ecmaFeatures: {
+        jsx: true,
+      },
+      ecmaVersion: 'latest',
+      sourceType: 'module',
+    },
+  },
+  plugins: {
+    "@typescript-eslint": tseslint.plugin,
+  },
 }, {
   files: ["apps/**/*.tsx", "apps/**/*.jsx"],
   rules: {
