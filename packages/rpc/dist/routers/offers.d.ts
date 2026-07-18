@@ -23,7 +23,7 @@ export interface NormalizedOffer {
     created_at: string | null;
     updated_at: string | null;
 }
-export declare const offersRouter: import("@trpc/server").CreateRouterInner<import("@trpc/server").RootConfig<{
+export declare const offersRouter: import("@trpc/server").TRPCBuiltRouter<{
     ctx: {
         req: Request;
         resHeaders: Headers;
@@ -38,194 +38,46 @@ export declare const offersRouter: import("@trpc/server").CreateRouterInner<impo
         role: any;
     };
     meta: object;
-    errorShape: import("@trpc/server").DefaultErrorShape;
-    transformer: typeof import("superjson").default;
-}>, {
-    getAll: import("@trpc/server").BuildProcedure<"query", {
-        _config: import("@trpc/server").RootConfig<{
-            ctx: {
-                req: Request;
-                resHeaders: Headers;
-                session: {
-                    user: import("@supabase/auth-js").User;
-                } | {
-                    user: {
-                        id: string;
-                        email: string;
-                    };
-                } | null;
-                role: any;
-            };
-            meta: object;
-            errorShape: import("@trpc/server").DefaultErrorShape;
-            transformer: typeof import("superjson").default;
-        }>;
-        _meta: object;
-        _ctx_out: {
-            req: Request;
-            resHeaders: Headers;
-            session: {
-                user: import("@supabase/auth-js").User;
-            } | {
-                user: {
-                    id: string;
-                    email: string;
-                };
-            } | null;
-            role: any;
-        };
-        _input_in: {
+    errorShape: import("@trpc/server").TRPCDefaultErrorShape;
+    transformer: true;
+}, import("@trpc/server").TRPCDecorateCreateRouterOptions<{
+    getAll: import("@trpc/server").TRPCQueryProcedure<{
+        input: {
             activeOnly?: boolean | undefined;
             featuredOnly?: boolean | undefined;
             homepageOnly?: boolean | undefined;
             includeExpired?: boolean | undefined;
         } | undefined;
-        _input_out: {
-            activeOnly: boolean;
-            featuredOnly: boolean;
-            homepageOnly: boolean;
-            includeExpired: boolean;
-        } | undefined;
-        _output_in: typeof import("@trpc/server").unsetMarker;
-        _output_out: typeof import("@trpc/server").unsetMarker;
-    }, {
-        offers: NormalizedOffer[];
-        count: number;
-    }>;
-    create: import("@trpc/server").BuildProcedure<"mutation", {
-        _config: import("@trpc/server").RootConfig<{
-            ctx: {
-                req: Request;
-                resHeaders: Headers;
-                session: {
-                    user: import("@supabase/auth-js").User;
-                } | {
-                    user: {
-                        id: string;
-                        email: string;
-                    };
-                } | null;
-                role: any;
-            };
-            meta: object;
-            errorShape: import("@trpc/server").DefaultErrorShape;
-            transformer: typeof import("superjson").default;
-        }>;
-        _meta: object;
-        _ctx_out: {
-            session: {
-                user: import("@supabase/auth-js").User | {
-                    id: string;
-                    email: string;
-                };
-            } | {
-                user: import("@supabase/auth-js").User | {
-                    id: string;
-                    email: string;
-                };
-            };
-            role: any;
-            req: Request;
-            resHeaders: Headers;
+        output: {
+            offers: NormalizedOffer[];
+            count: number;
         };
-        _input_in: any;
-        _input_out: any;
-        _output_in: typeof import("@trpc/server").unsetMarker;
-        _output_out: typeof import("@trpc/server").unsetMarker;
-    }, {
-        offer: any;
-        message: string;
+        meta: object;
     }>;
-    update: import("@trpc/server").BuildProcedure<"mutation", {
-        _config: import("@trpc/server").RootConfig<{
-            ctx: {
-                req: Request;
-                resHeaders: Headers;
-                session: {
-                    user: import("@supabase/auth-js").User;
-                } | {
-                    user: {
-                        id: string;
-                        email: string;
-                    };
-                } | null;
-                role: any;
-            };
-            meta: object;
-            errorShape: import("@trpc/server").DefaultErrorShape;
-            transformer: typeof import("superjson").default;
-        }>;
-        _meta: object;
-        _ctx_out: {
-            session: {
-                user: import("@supabase/auth-js").User | {
-                    id: string;
-                    email: string;
-                };
-            } | {
-                user: import("@supabase/auth-js").User | {
-                    id: string;
-                    email: string;
-                };
-            };
-            role: any;
-            req: Request;
-            resHeaders: Headers;
+    create: import("@trpc/server").TRPCMutationProcedure<{
+        input: any;
+        output: {
+            offer: any;
+            message: string;
         };
-        _input_in: any;
-        _input_out: any;
-        _output_in: typeof import("@trpc/server").unsetMarker;
-        _output_out: typeof import("@trpc/server").unsetMarker;
-    }, {
-        offer: any;
-        message: string;
+        meta: object;
     }>;
-    delete: import("@trpc/server").BuildProcedure<"mutation", {
-        _config: import("@trpc/server").RootConfig<{
-            ctx: {
-                req: Request;
-                resHeaders: Headers;
-                session: {
-                    user: import("@supabase/auth-js").User;
-                } | {
-                    user: {
-                        id: string;
-                        email: string;
-                    };
-                } | null;
-                role: any;
-            };
-            meta: object;
-            errorShape: import("@trpc/server").DefaultErrorShape;
-            transformer: typeof import("superjson").default;
-        }>;
-        _meta: object;
-        _ctx_out: {
-            session: {
-                user: import("@supabase/auth-js").User | {
-                    id: string;
-                    email: string;
-                };
-            } | {
-                user: import("@supabase/auth-js").User | {
-                    id: string;
-                    email: string;
-                };
-            };
-            role: any;
-            req: Request;
-            resHeaders: Headers;
+    update: import("@trpc/server").TRPCMutationProcedure<{
+        input: any;
+        output: {
+            offer: any;
+            message: string;
         };
-        _input_in: {
+        meta: object;
+    }>;
+    delete: import("@trpc/server").TRPCMutationProcedure<{
+        input: {
             id: string;
         };
-        _input_out: {
-            id: string;
+        output: {
+            message: string;
         };
-        _output_in: typeof import("@trpc/server").unsetMarker;
-        _output_out: typeof import("@trpc/server").unsetMarker;
-    }, {
-        message: string;
+        meta: object;
     }>;
-}>;
+}>>;
 //# sourceMappingURL=offers.d.ts.map

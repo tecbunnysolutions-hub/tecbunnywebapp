@@ -1,1 +1,1 @@
-{"version":3,"file":"contactMessages.d.ts","sourceRoot":"","sources":["../../src/routers/contactMessages.ts"],"names":[],"mappings":"AA8DA,eAAO,MAAM,qBAAqB;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;EAyChC,CAAC"}
+{"version":3,"file":"contactMessages.d.ts","sourceRoot":"","sources":["../../src/routers/contactMessages.ts"],"names":[],"mappings":"AA8DA,eAAO,MAAM,qBAAqB;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;GAyChC,CAAC"}

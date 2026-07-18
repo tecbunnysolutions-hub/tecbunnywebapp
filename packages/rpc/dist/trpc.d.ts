@@ -1,6 +1,24 @@
+import { TRPCError } from '@trpc/server';
 import superjson from 'superjson';
-export declare const t: {
-    _config: import("@trpc/server").RootConfig<{
+export declare const t: import("@trpc/server").TRPCRootObject<{
+    req: Request;
+    resHeaders: Headers;
+    session: {
+        user: import("@supabase/auth-js").User;
+    } | {
+        user: {
+            id: string;
+            email: string;
+        };
+    } | null;
+    role: any;
+}, object, {
+    transformer: typeof superjson;
+    errorFormatter({ shape }: {
+        error: TRPCError;
+        type: import("@trpc/server").ProcedureType | "unknown";
+        path: string | undefined;
+        input: unknown;
         ctx: {
             req: Request;
             resHeaders: Headers;
@@ -13,139 +31,10 @@ export declare const t: {
                 };
             } | null;
             role: any;
-        };
-        meta: object;
-        errorShape: import("@trpc/server").DefaultErrorShape;
-        transformer: typeof superjson;
-    }>;
-    procedure: import("@trpc/server").ProcedureBuilder<{
-        _config: import("@trpc/server").RootConfig<{
-            ctx: {
-                req: Request;
-                resHeaders: Headers;
-                session: {
-                    user: import("@supabase/auth-js").User;
-                } | {
-                    user: {
-                        id: string;
-                        email: string;
-                    };
-                } | null;
-                role: any;
-            };
-            meta: object;
-            errorShape: import("@trpc/server").DefaultErrorShape;
-            transformer: typeof superjson;
-        }>;
-        _ctx_out: {
-            req: Request;
-            resHeaders: Headers;
-            session: {
-                user: import("@supabase/auth-js").User;
-            } | {
-                user: {
-                    id: string;
-                    email: string;
-                };
-            } | null;
-            role: any;
-        };
-        _input_in: typeof import("@trpc/server").unsetMarker;
-        _input_out: typeof import("@trpc/server").unsetMarker;
-        _output_in: typeof import("@trpc/server").unsetMarker;
-        _output_out: typeof import("@trpc/server").unsetMarker;
-        _meta: object;
-    }>;
-    middleware: <TNewParams extends import("@trpc/server").ProcedureParams<import("@trpc/server").AnyRootConfig, unknown, unknown, unknown, unknown, unknown, unknown>>(fn: import("@trpc/server").MiddlewareFunction<{
-        _config: import("@trpc/server").RootConfig<{
-            ctx: {
-                req: Request;
-                resHeaders: Headers;
-                session: {
-                    user: import("@supabase/auth-js").User;
-                } | {
-                    user: {
-                        id: string;
-                        email: string;
-                    };
-                } | null;
-                role: any;
-            };
-            meta: object;
-            errorShape: import("@trpc/server").DefaultErrorShape;
-            transformer: typeof superjson;
-        }>;
-        _ctx_out: {};
-        _input_out: typeof import("@trpc/server").unsetMarker;
-        _input_in: unknown;
-        _output_in: unknown;
-        _output_out: unknown;
-        _meta: object;
-    }, TNewParams>) => import("@trpc/server").MiddlewareBuilder<{
-        _config: import("@trpc/server").RootConfig<{
-            ctx: {
-                req: Request;
-                resHeaders: Headers;
-                session: {
-                    user: import("@supabase/auth-js").User;
-                } | {
-                    user: {
-                        id: string;
-                        email: string;
-                    };
-                } | null;
-                role: any;
-            };
-            meta: object;
-            errorShape: import("@trpc/server").DefaultErrorShape;
-            transformer: typeof superjson;
-        }>;
-        _ctx_out: {};
-        _input_out: typeof import("@trpc/server").unsetMarker;
-        _input_in: unknown;
-        _output_in: unknown;
-        _output_out: unknown;
-        _meta: object;
-    }, TNewParams>;
-    router: <TProcRouterRecord extends import("@trpc/server").ProcedureRouterRecord>(procedures: TProcRouterRecord) => import("@trpc/server").CreateRouterInner<import("@trpc/server").RootConfig<{
-        ctx: {
-            req: Request;
-            resHeaders: Headers;
-            session: {
-                user: import("@supabase/auth-js").User;
-            } | {
-                user: {
-                    id: string;
-                    email: string;
-                };
-            } | null;
-            role: any;
-        };
-        meta: object;
-        errorShape: import("@trpc/server").DefaultErrorShape;
-        transformer: typeof superjson;
-    }>, TProcRouterRecord>;
-    mergeRouters: typeof import("@trpc/server").mergeRouters;
-    createCallerFactory: <TRouter extends import("@trpc/server").Router<import("@trpc/server").AnyRouterDef<import("@trpc/server").RootConfig<{
-        ctx: {
-            req: Request;
-            resHeaders: Headers;
-            session: {
-                user: import("@supabase/auth-js").User;
-            } | {
-                user: {
-                    id: string;
-                    email: string;
-                };
-            } | null;
-            role: any;
-        };
-        meta: object;
-        errorShape: import("@trpc/server").DefaultErrorShape;
-        transformer: typeof superjson;
-    }>, any>>>(router: TRouter) => import("@trpc/server").RouterCaller<TRouter["_def"]>;
-};
-export declare const router: <TProcRouterRecord extends import("@trpc/server").ProcedureRouterRecord>(procedures: TProcRouterRecord) => import("@trpc/server").CreateRouterInner<import("@trpc/server").RootConfig<{
+        } | undefined;
+        shape: import("@trpc/server").TRPCDefaultErrorShape;
+    }): import("@trpc/server").TRPCDefaultErrorShape;
+}, {
     ctx: {
         req: Request;
         resHeaders: Headers;
@@ -160,29 +49,11 @@ export declare const router: <TProcRouterRecord extends import("@trpc/server").P
         role: any;
     };
     meta: object;
-    errorShape: import("@trpc/server").DefaultErrorShape;
-    transformer: typeof superjson;
-}>, TProcRouterRecord>;
-export declare const publicProcedure: import("@trpc/server").ProcedureBuilder<{
-    _config: import("@trpc/server").RootConfig<{
-        ctx: {
-            req: Request;
-            resHeaders: Headers;
-            session: {
-                user: import("@supabase/auth-js").User;
-            } | {
-                user: {
-                    id: string;
-                    email: string;
-                };
-            } | null;
-            role: any;
-        };
-        meta: object;
-        errorShape: import("@trpc/server").DefaultErrorShape;
-        transformer: typeof superjson;
-    }>;
-    _ctx_out: {
+    errorShape: import("@trpc/server").TRPCDefaultErrorShape;
+    transformer: true;
+}>;
+export declare const router: import("@trpc/server").TRPCRouterBuilder<{
+    ctx: {
         req: Request;
         resHeaders: Headers;
         session: {
@@ -195,51 +66,47 @@ export declare const publicProcedure: import("@trpc/server").ProcedureBuilder<{
         } | null;
         role: any;
     };
-    _input_in: typeof import("@trpc/server").unsetMarker;
-    _input_out: typeof import("@trpc/server").unsetMarker;
-    _output_in: typeof import("@trpc/server").unsetMarker;
-    _output_out: typeof import("@trpc/server").unsetMarker;
-    _meta: object;
+    meta: object;
+    errorShape: import("@trpc/server").TRPCDefaultErrorShape;
+    transformer: true;
 }>;
-export declare const protectedProcedure: import("@trpc/server").ProcedureBuilder<{
-    _config: import("@trpc/server").RootConfig<{
-        ctx: {
-            req: Request;
-            resHeaders: Headers;
-            session: {
-                user: import("@supabase/auth-js").User;
-            } | {
-                user: {
-                    id: string;
-                    email: string;
-                };
-            } | null;
-            role: any;
+export declare const publicProcedure: import("@trpc/server").TRPCProcedureBuilder<{
+    req: Request;
+    resHeaders: Headers;
+    session: {
+        user: import("@supabase/auth-js").User;
+    } | {
+        user: {
+            id: string;
+            email: string;
         };
-        meta: object;
-        errorShape: import("@trpc/server").DefaultErrorShape;
-        transformer: typeof superjson;
-    }>;
-    _meta: object;
-    _ctx_out: {
-        session: {
-            user: import("@supabase/auth-js").User | {
-                id: string;
-                email: string;
-            };
-        } | {
-            user: import("@supabase/auth-js").User | {
-                id: string;
-                email: string;
-            };
+    } | null;
+    role: any;
+}, object, object, import("@trpc/server").TRPCUnsetMarker, import("@trpc/server").TRPCUnsetMarker, import("@trpc/server").TRPCUnsetMarker, import("@trpc/server").TRPCUnsetMarker, false>;
+export declare const protectedProcedure: import("@trpc/server").TRPCProcedureBuilder<{
+    req: Request;
+    resHeaders: Headers;
+    session: {
+        user: import("@supabase/auth-js").User;
+    } | {
+        user: {
+            id: string;
+            email: string;
         };
-        role: any;
-        req: Request;
-        resHeaders: Headers;
+    } | null;
+    role: any;
+}, object, {
+    session: {
+        user: import("@supabase/auth-js").User | {
+            id: string;
+            email: string;
+        };
+    } | {
+        user: import("@supabase/auth-js").User | {
+            id: string;
+            email: string;
+        };
     };
-    _input_in: typeof import("@trpc/server").unsetMarker;
-    _input_out: typeof import("@trpc/server").unsetMarker;
-    _output_in: typeof import("@trpc/server").unsetMarker;
-    _output_out: typeof import("@trpc/server").unsetMarker;
-}>;
+    role: any;
+}, import("@trpc/server").TRPCUnsetMarker, import("@trpc/server").TRPCUnsetMarker, import("@trpc/server").TRPCUnsetMarker, import("@trpc/server").TRPCUnsetMarker, false>;
 //# sourceMappingURL=trpc.d.ts.map
