@@ -1,4 +1,4 @@
-/* eslint-disable react/no-unescaped-entities */
+
 "use client";
 import { createClient } from '@tecbunny/database';
 
@@ -21,10 +21,10 @@ export function InstantIdentity({ onSuccess }: InstantIdentityProps) {
   const handleMagicLink = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.includes('@')) return;
-    
+
     setStatus('SENDING');
     setErrorMessage("");
-    
+
     // Send magic link. By redirecting back to the current checkout/verification URL,
     // the frontend state (if stored securely in sessionStorage or via URL params) is preserved.
     // This allows the guest user to convert to a verified user without losing their cart payload.
@@ -60,11 +60,11 @@ export function InstantIdentity({ onSuccess }: InstantIdentityProps) {
     <div className="w-full max-w-md mx-auto p-8 bg-white rounded-3xl shadow-sm border border-gray-100 text-center animate-in fade-in zoom-in-95 duration-300">
       <h2 className="text-2xl font-bold text-gray-900">Where should we send your receipt?</h2>
       <p className="text-gray-500 mt-2 mb-6">Drop your email below and we'll save your progress instantly.</p>
-      
+
       <form onSubmit={handleMagicLink} className="space-y-4 text-left">
         <div className="relative">
           <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-          <input 
+          <input
             type="email"
             required
             placeholder="name@example.com"
@@ -75,12 +75,12 @@ export function InstantIdentity({ onSuccess }: InstantIdentityProps) {
             onChange={(e) => setEmail(e.target.value)}
           />
         </div>
-        
+
         {status === 'ERROR' && (
           <p className="text-sm text-red-500 animate-in slide-in-from-top-1">{errorMessage}</p>
         )}
 
-        <button 
+        <button
           type="submit"
           disabled={status === 'SENDING'}
           className="w-full rounded-xl h-14 text-lg font-bold bg-gray-900 text-white hover:bg-gray-800 transition-all duration-300 active:scale-95 disabled:opacity-50 flex items-center justify-center"

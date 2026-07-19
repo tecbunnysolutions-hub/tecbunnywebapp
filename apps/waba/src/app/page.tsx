@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { createBrowserClient } from '@supabase/ssr';
 
@@ -12,7 +12,7 @@ import { Conversation, Message, Template, User } from '../components/waba/types'
 export default function Dashboard() {
   const router = useRouter();
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  
+
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [activeConversation, setActiveConversation] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -38,9 +38,6 @@ export default function Dashboard() {
   const [crmActiveFlow, setCrmActiveFlow] = useState("");
   const [isSavingCrm, setIsSavingCrm] = useState(false);
   const [globalAiOverride, setGlobalAiOverride] = useState(false);
-  
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const docInputRef = useRef<HTMLInputElement>(null);
 
   async function fetchConversations() {
     try {
@@ -49,8 +46,8 @@ export default function Dashboard() {
       if (data.conversations) {
         setConversations(data.conversations);
       }
-    } catch (err) { 
-      console.error(err); 
+    } catch (err) {
+      console.error(err);
     } finally {
       setLoading(false);
     }
@@ -83,7 +80,6 @@ export default function Dashboard() {
         fetchTemplates();
       }
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // 2. Realtime subscription: replace conversation polling (was setInterval 5 s)
@@ -101,7 +97,7 @@ export default function Dashboard() {
       )
       .subscribe();
     return () => { supabaseRt.removeChannel(channel); };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
   }, []);
 
   // 3. Realtime subscription: replace message polling (was setInterval 3 s)
@@ -120,16 +116,15 @@ export default function Dashboard() {
       )
       .subscribe();
     return () => { supabaseRt.removeChannel(channel); };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
   }, [activeConversation]);
 
   useEffect(() => {
     if (activeConversation) {
-      fetchMessages(activeConversation);
-
       const activeObj = conversations.find(c => c.sender_number === activeConversation);
       if (activeObj) {
         setTimeout(() => {
+          fetchMessages(activeConversation);
           setCrmName(activeObj.contact_name || "");
           setCrmStatus(activeObj.status || "NEW");
           setCrmNotes(activeObj.notes || "");
@@ -141,7 +136,6 @@ export default function Dashboard() {
         }, 0);
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeConversation]);
 
   useEffect(() => {
@@ -178,7 +172,7 @@ export default function Dashboard() {
         const data = await res.json();
         // Remove the temporary message since it failed to send
         setMessages(prev => prev.filter(m => m.id !== tempMsg.id));
-        
+
         if (data.is_ai_clarification) {
           alert(`🤖 AI Editor needs clarification:\n\n"${data.error}"\n\nPlease add more details to your draft!`);
           setInputText(textToSend); // Restore their draft so they don't have to retype it
@@ -186,7 +180,7 @@ export default function Dashboard() {
           alert(`Error sending message: ${data.error || 'Unknown error'}`);
         }
       }
-    } catch (err) { 
+    } catch (err) {
       console.error(err);
       setMessages(prev => prev.filter(m => m.id !== tempMsg.id));
     }
@@ -195,7 +189,7 @@ export default function Dashboard() {
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'image' | 'document') => {
     if (!e.target.files || !e.target.files[0] || !activeConversation) return;
     const file = e.target.files[0];
-    
+
     setIsUploading(true);
     const formData = new FormData();
     formData.append('file', file);
@@ -270,7 +264,7 @@ export default function Dashboard() {
   return (
     <div className="dashboard-container">
       {/* PANE 1: Sidebar / Conversation List */}
-      <Sidebar 
+      <Sidebar
         showSidebar={showSidebar}
         setShowSidebar={setShowSidebar}
         currentUser={currentUser}
@@ -281,13 +275,13 @@ export default function Dashboard() {
         activeConversation={activeConversation}
         onSelectConversation={handleSelectConversation}
       />
-      
+
       {/* PANE 2 & 3: Chat Area + CRM Details */}
       <div className="glass-panel chat-area">
         {activeConversation ? (
           <>
             {/* PANE 2: Chat Main */}
-            <ChatMain 
+            <ChatMain
               activeConversation={activeConversation}
               activeConvObj={activeConvObj}
               displayName={displayName}
@@ -309,7 +303,7 @@ export default function Dashboard() {
             />
 
             {/* PANE 3: Customer 360 Details Panel */}
-            <Customer360Panel 
+            <Customer360Panel
               showCrm={showCrm}
               setShowCrm={setShowCrm}
               activeConvObj={activeConvObj}

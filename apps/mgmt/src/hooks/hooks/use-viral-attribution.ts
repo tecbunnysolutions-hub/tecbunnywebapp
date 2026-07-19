@@ -13,7 +13,7 @@ export function useViralAttribution() {
   const trackLanding = useCallback((blueprintId: string) => {
     try {
       const existing = localStorage.getItem(VIRAL_ATTRIBUTION_KEY);
-      
+
       if (!existing) {
         const payload = {
           parentBlueprintId: blueprintId,
@@ -42,7 +42,7 @@ export function useViralAttribution() {
       }
 
       return data;
-             // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
     } catch (err) {
       return null;
     }

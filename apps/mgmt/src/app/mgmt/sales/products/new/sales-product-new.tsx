@@ -48,13 +48,13 @@ type ProductFormValues = z.output<typeof productSchema>;
 export default function NewProductPage() {
   const router = useRouter();
   const { toast } = useToast();
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
   const supabase = createClient();
   const [imagePreview, setImagePreview] = React.useState<string>('');
   const [additionalImages, setAdditionalImages] = React.useState<string[]>([]);
   const [uploading, setUploading] = React.useState(false);
   const [isFetchingAiDetails, setIsFetchingAiDetails] = React.useState(false);
-  
+
   const form = useForm<ProductFormInput, any, ProductFormValues>({
     resolver: zodResolver(productSchema),
     defaultValues: {
@@ -80,7 +80,7 @@ export default function NewProductPage() {
   const handleImageUpload = async (file: File, isAdditional = false) => {
     try {
       setUploading(true);
-      
+
       // Show loading state
       toast({
         title: 'Uploading...',
@@ -108,7 +108,7 @@ export default function NewProductPage() {
       } else {
         setImagePreview(result.url);
       }
-      
+
       toast({
         title: 'Image uploaded successfully',
         description: 'Product image has been uploaded to cloud storage.',
@@ -227,7 +227,7 @@ export default function NewProductPage() {
             rating: 0,
             reviewCount: 0,
         };
-        
+
         const response = await fetch('/api/products', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -237,7 +237,7 @@ export default function NewProductPage() {
         if (!response.ok) {
           throw new Error(result.error || 'Failed to create product');
         }
-        
+
         toast({
             title: "Product Created",
             description: `${data.name} has been added to the inventory.`,
@@ -262,7 +262,7 @@ export default function NewProductPage() {
             </Link>
           </Button>
       </div>
-     
+
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -301,7 +301,6 @@ export default function NewProductPage() {
                                   variant="outline"
                                   size="sm"
                                   onClick={handleFetchProductDetails}
-                                  // eslint-disable-next-line react-hooks/incompatible-library
                                   disabled={isFetchingAiDetails || !form.watch('product_url')?.trim()}
                                 >
                                   {isFetchingAiDetails ? (
@@ -329,10 +328,10 @@ export default function NewProductPage() {
                             <FormItem>
                               <FormLabel>Specifications</FormLabel>
                               <FormControl>
-                                <Textarea 
-                                  placeholder="Enter specifications in format: Battery Life:24 hours, Connectivity:Bluetooth 5.0, Weight:250g" 
-                                  rows={3} 
-                                  {...field} 
+                                <Textarea
+                                  placeholder="Enter specifications in format: Battery Life:24 hours, Connectivity:Bluetooth 5.0, Weight:250g"
+                                  rows={3}
+                                  {...field}
                                 />
                               </FormControl>
                               <FormDescription>Format: Key:Value, Key2:Value2 (comma separated)</FormDescription>
@@ -476,10 +475,9 @@ export default function NewProductPage() {
                             {imagePreview && (
                               <div className="mb-4 flex items-center gap-4">
                                 <div className="relative group w-32 h-32 rounded-lg border overflow-hidden shrink-0">
-                                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                                  <img 
-                                    src={imagePreview} 
-                                    alt="Product preview" 
+                                  <img
+                                    src={imagePreview}
+                                    alt="Product preview"
                                     className="w-full h-full object-cover"
                                   />
                                   <button
@@ -524,10 +522,9 @@ export default function NewProductPage() {
                               <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
                                 {additionalImages.map((image, index) => (
                                   <div key={index} className="relative">
-                                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                                    <img 
-                                      src={image} 
-                                      alt={`Additional ${index + 1}`} 
+                                    <img
+                                      src={image}
+                                      alt={`Additional ${index + 1}`}
                                       className="w-full h-32 object-cover rounded-lg border"
                                     />
                                     <Button

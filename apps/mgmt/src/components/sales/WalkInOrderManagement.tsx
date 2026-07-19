@@ -1,10 +1,10 @@
-/* eslint-disable react/no-unescaped-entities */
-/* eslint-disable react-hooks/set-state-in-effect */
+
+
 "use client";
 
 import React, { useState, useEffect, useCallback } from 'react';
 
-import { 
+import {
   ShoppingCart,
   Plus,
   Minus,
@@ -23,23 +23,23 @@ import {
 
 import { logger } from "@tecbunny/core/logger";
 
-import { 
-  Card, 
-  CardContent, 
-  CardHeader, 
-  CardTitle 
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle
 } from "@tecbunny/ui";
 import { Button } from "@tecbunny/ui";
 import { Input } from "@tecbunny/ui";
 import { Label } from "@tecbunny/ui";
 import { Badge } from "@tecbunny/ui";
 import { Textarea } from "@tecbunny/ui";
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
 } from "@tecbunny/ui";
 import {
   Table,
@@ -99,7 +99,7 @@ interface Order {
 export default function WalkInOrderManagement() {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState<'create' | 'orders' | 'stats'>('create');
-  
+
   // Create Order State
   const [products, setProducts] = useState<Product[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -115,12 +115,12 @@ export default function WalkInOrderManagement() {
   const [discountCode, setDiscountCode] = useState('');
   const [notes, setNotes] = useState('');
   const [isCreatingOrder, setIsCreatingOrder] = useState(false);
-  
+
   // Orders State
   const [orders, setOrders] = useState<Order[]>([]);
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [isLoadingOrders, setIsLoadingOrders] = useState(false);
-  
+
   // Stats State
   const [dailyStats, setDailyStats] = useState({
     totalOrders: 0,
@@ -204,7 +204,7 @@ export default function WalkInOrderManagement() {
       setSearchedCustomers([]);
       return;
     }
-    
+
     try {
       const response = await fetch('/api/walk-in-orders', {
         method: 'POST',
@@ -222,7 +222,7 @@ export default function WalkInOrderManagement() {
 
   const addToCart = (product: Product) => {
     const existingItem = cart.find(item => item.productId === product.id);
-    
+
     if (existingItem) {
       if (existingItem.quantity >= product.stock_quantity) {
         toast({
@@ -287,16 +287,16 @@ export default function WalkInOrderManagement() {
 
   const calculateTotals = () => {
     const subtotal = cart.reduce((sum, item) => sum + item.total, 0);
-    
+
     // Customer category discount
     let categoryDiscount = 0;
     if (selectedCustomer?.customer_category) {
       const discounts = { 'Normal': 0, 'Standard': 5, 'Premium': 10 };
       categoryDiscount = subtotal * ((discounts as any)[selectedCustomer.customer_category] || 0) / 100;
     }
-    
+
     const total = subtotal - categoryDiscount;
-    
+
     return { subtotal, categoryDiscount, total };
   };
 
@@ -336,7 +336,7 @@ export default function WalkInOrderManagement() {
       });
 
       const data = await response.json();
-      
+
       if (!response.ok) {
         throw new Error(data.error || 'Failed to create order');
       }
@@ -345,7 +345,7 @@ export default function WalkInOrderManagement() {
         title: "Order Created",
         description: `Order ${data.order.order_number} created successfully!`,
       });
-      
+
       // Reset form
       setCart([]);
       setCustomerInfo({
@@ -359,14 +359,14 @@ export default function WalkInOrderManagement() {
       setPaymentMethod('cash');
       setDiscountCode('');
       setNotes('');
-      
+
       // Refresh orders and stats
       fetchOrders();
       fetchDailyStats();
-      
+
       // Switch to orders tab to show the new order
       setActiveTab('orders');
-      
+
     } catch (error) {
       logger.error('Error creating walk-in order', { error, context: 'WalkInOrderManagement.createOrder', customerInfo, cartItems: cart.length });
       toast({
@@ -446,14 +446,14 @@ export default function WalkInOrderManagement() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'Completed': 
-      case 'Payment Confirmed': 
+      case 'Completed':
+      case 'Payment Confirmed':
         return 'bg-primary/10 text-primary border border-primary/20';
-      case 'Processing': 
-      case 'Awaiting Payment': 
+      case 'Processing':
+      case 'Awaiting Payment':
         return 'bg-zinc-800/80 text-zinc-300 border border-zinc-700';
-      case 'Cancelled': 
-      case 'Payment Failed': 
+      case 'Cancelled':
+      case 'Payment Failed':
         return 'bg-zinc-950 text-zinc-400 border border-zinc-800';
       default: return 'bg-zinc-900 text-zinc-400 border border-zinc-800';
     }
@@ -636,7 +636,7 @@ export default function WalkInOrderManagement() {
                     </Button>
                   </div>
                 )}
-                
+
                 <div className="grid grid-cols-2 gap-2">
                   <div>
                     <Label htmlFor="firstName">First Name *</Label>
@@ -655,7 +655,7 @@ export default function WalkInOrderManagement() {
                     />
                   </div>
                 </div>
-                
+
                 <div>
                   <Label htmlFor="phone">Phone *</Label>
                   <Input
@@ -665,7 +665,7 @@ export default function WalkInOrderManagement() {
                     onChange={(e) => setCustomerInfo({...customerInfo, phone: e.target.value})}
                   />
                 </div>
-                
+
                 <div>
                   <Label htmlFor="email">Email</Label>
                   <Input
@@ -675,7 +675,7 @@ export default function WalkInOrderManagement() {
                     onChange={(e) => setCustomerInfo({...customerInfo, email: e.target.value})}
                   />
                 </div>
-                
+
                 <div>
                   <Label htmlFor="address">Address</Label>
                   <Textarea

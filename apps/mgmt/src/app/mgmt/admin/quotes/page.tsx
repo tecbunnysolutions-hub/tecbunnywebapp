@@ -1,4 +1,4 @@
-/* eslint-disable react/no-unescaped-entities */
+
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -153,7 +153,7 @@ export default function AdminQuotesPage() {
         <p className="text-sm text-muted-foreground">Review, negotiate, and manage customer quote requests and bids.</p>
       </div>
       <Separator className="bg-border" />
-      
+
       <Card className="border-border bg-card text-foreground">
         <CardHeader>
           <CardTitle>Generated Quotes & Bids</CardTitle>
@@ -201,8 +201,8 @@ export default function AdminQuotesPage() {
                     <TableCell className="text-right">
                       <div className="flex gap-2 justify-end">
                         {quote.status === 'bidded' && (
-                          <Button 
-                            variant="ghost" 
+                          <Button
+                            variant="ghost"
                             size="sm"
                             onClick={() => {
                               setSelectedQuote(quote);
@@ -216,8 +216,8 @@ export default function AdminQuotesPage() {
                           </Button>
                         )}
                         {['accepted', 'countered'].includes(quote.status) && !quote.advance_payment_id && (
-                          <Button 
-                            variant="ghost" 
+                          <Button
+                            variant="ghost"
                             size="sm"
                             onClick={() => {
                               setSelectedQuote(quote);
@@ -231,9 +231,9 @@ export default function AdminQuotesPage() {
                             <CreditCard className="h-4 w-4 mr-1" /> Advance Payment
                           </Button>
                         )}
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
+                        <Button
+                          variant="ghost"
+                          size="sm"
                           onClick={() => {
                             const token = quote.secure_quote_token;
                             const url = `${window.location.origin}/quotes/${quote.quote_number || quote.id}${token ? `?token=${encodeURIComponent(token)}` : ''}`;
@@ -248,9 +248,9 @@ export default function AdminQuotesPage() {
                         >
                           <Share2 className="h-4 w-4" />
                         </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
+                        <Button
+                          variant="ghost"
+                          size="sm"
                           onClick={() => {
                             const token = quote.secure_quote_token;
                             window.open(`/quotes/${quote.quote_number || quote.id}${token ? `?token=${encodeURIComponent(token)}` : ''}`, '_blank');
@@ -295,11 +295,11 @@ export default function AdminQuotesPage() {
               <div className="space-y-4">
                 <div>
                   <Label className="text-muted-foreground mb-2 block">Counter Offer Price (₹)</Label>
-                  <Input 
-                    type="number" 
-                    value={counterPrice} 
+                  <Input
+                    type="number"
+                    value={counterPrice}
                     onChange={e => setCounterPrice(e.target.value)}
-                    className="bg-muted/50 border-border text-foreground" 
+                    className="bg-muted/50 border-border text-foreground"
                     placeholder="Enter counter offer price"
                   />
                   <p className="text-xs text-muted-foreground mt-1">Leave empty to approve bid as-is</p>
@@ -307,8 +307,8 @@ export default function AdminQuotesPage() {
 
                 <div>
                   <Label className="text-muted-foreground mb-2 block">Payment Clauses & Conditions</Label>
-                  <textarea 
-                    value={clauses} 
+                  <textarea
+                    value={clauses}
                     onChange={e => setClauses(e.target.value)}
                     rows={3}
                     className="w-full bg-muted/50 border border-border rounded-lg px-3 py-2 text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary/20"
@@ -318,15 +318,15 @@ export default function AdminQuotesPage() {
               </div>
 
               <div className="flex gap-3 justify-end">
-                <Button 
-                  variant="ghost" 
+                <Button
+                  variant="ghost"
                   onClick={() => setShowBidModal(false)}
                   className="text-muted-foreground hover:text-foreground"
                   disabled={respondLoading}
                 >
                   Cancel
                 </Button>
-                <Button 
+                <Button
                   variant="destructive"
                   onClick={() => handleRespond('reject')}
                   disabled={respondLoading}
@@ -334,14 +334,14 @@ export default function AdminQuotesPage() {
                 >
                   <X className="h-4 w-4" /> Reject
                 </Button>
-                <Button 
+                <Button
                   onClick={() => handleRespond('approve')}
                   disabled={respondLoading || counterPrice !== ''}
                   className="bg-emerald-600 hover:bg-emerald-700 text-white gap-2 border-0"
                 >
                   <Check className="h-4 w-4" /> {respondLoading ? 'Approving...' : 'Approve'}
                 </Button>
-                <Button 
+                <Button
                   onClick={() => handleRespond('counter')}
                   disabled={respondLoading || !counterPrice}
                   className="bg-primary hover:bg-primary/90 text-primary-foreground gap-2"
@@ -375,11 +375,11 @@ export default function AdminQuotesPage() {
               <div className="space-y-4">
                 <div>
                   <Label className="text-muted-foreground mb-2 block">Advance Amount (₹)</Label>
-                  <Input 
-                    type="number" 
-                    value={advanceAmount} 
+                  <Input
+                    type="number"
+                    value={advanceAmount}
                     onChange={e => setAdvanceAmount(e.target.value)}
-                    className="bg-muted/50 border-border text-foreground" 
+                    className="bg-muted/50 border-border text-foreground"
                     placeholder="Enter advance amount"
                   />
                   <p className="text-xs text-muted-foreground mt-1">Typically 50-60% of total amount</p>
@@ -388,14 +388,14 @@ export default function AdminQuotesPage() {
                 <div>
                   <Label className="text-muted-foreground mb-2 block">Payment Method</Label>
                   <div className="flex gap-3">
-                    <Button 
+                    <Button
                       variant={paymentMethod === 'payu' ? 'default' : 'outline'}
                       onClick={() => setPaymentMethod('payu')}
                       className={paymentMethod === 'payu' ? 'bg-primary hover:bg-primary/90 text-primary-foreground border-0' : 'border-border'}
                     >
                       PayU Online
                     </Button>
-                    <Button 
+                    <Button
                       variant={paymentMethod === 'wire_transfer' ? 'default' : 'outline'}
                       onClick={() => setPaymentMethod('wire_transfer')}
                       className={paymentMethod === 'wire_transfer' ? 'bg-primary hover:bg-primary/90 text-primary-foreground border-0' : 'border-border'}
@@ -407,8 +407,8 @@ export default function AdminQuotesPage() {
 
                 <div>
                   <Label className="text-muted-foreground mb-2 block">Payment Terms & Conditions</Label>
-                  <textarea 
-                    value={clauses} 
+                  <textarea
+                    value={clauses}
                     onChange={e => setClauses(e.target.value)}
                     rows={3}
                     className="w-full bg-muted/50 border border-border rounded-lg px-3 py-2 text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary/20"
@@ -418,15 +418,15 @@ export default function AdminQuotesPage() {
               </div>
 
               <div className="flex gap-3 justify-end">
-                <Button 
-                  variant="ghost" 
+                <Button
+                  variant="ghost"
                   onClick={() => setShowAdvanceModal(false)}
                   className="text-muted-foreground hover:text-foreground"
                   disabled={advanceLoading}
                 >
                   Cancel
                 </Button>
-                <Button 
+                <Button
                   onClick={handleSetAdvancePayment}
                   disabled={advanceLoading || !advanceAmount}
                   className="bg-emerald-600 hover:bg-emerald-700 text-white gap-2 border-0"

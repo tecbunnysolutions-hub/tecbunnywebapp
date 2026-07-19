@@ -29,7 +29,7 @@ export default function PromotionalBroadcastPage() {
   const handleParse = () => {
     try {
       RawDataSchema.parse(rawData);
-      
+
       const lines = rawData.split('\n').filter(l => l.trim().length > 0);
       const contacts: Contact[] = lines.map((line, index) => {
         // Attempt to parse JSON block first
@@ -50,7 +50,7 @@ export default function PromotionalBroadcastPage() {
 
       setParsedContacts(contacts);
       toast({ title: 'Data Parsed', description: `Successfully loaded ${contacts.length} contacts.` });
-             // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
     } catch (e) {
       toast({ title: 'Parsing Error', description: 'Invalid data format. Please check your inputs.', variant: 'destructive' });
     }
@@ -71,7 +71,7 @@ export default function PromotionalBroadcastPage() {
     }
 
     setIsDispatching(true);
-    
+
     // Inject Coupon immediately for all, or rely on backend. Here we replace it before sending to backend for ease.
     const resolvedTemplate = template.replace(/{{COUPON_CODE}}/g, activeCoupon);
 
@@ -94,7 +94,7 @@ export default function PromotionalBroadcastPage() {
         title: 'Dispatch Initiated',
         description: `Campaign running in background. Log ID: ${data.logId}`,
       });
-      
+
       // Reset form
       setRawData('');
       setParsedContacts([]);
@@ -134,7 +134,7 @@ export default function PromotionalBroadcastPage() {
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <label className="text-sm font-medium">Campaign Name</label>
-              <input 
+              <input
                 type="text"
                 placeholder="e.g. Summer Clearance Sale"
                 value={campaignName}
@@ -145,7 +145,7 @@ export default function PromotionalBroadcastPage() {
 
             <div className="space-y-2">
               <label className="text-sm font-medium flex justify-between">
-                Raw Data List 
+                Raw Data List
                 <span className="text-xs text-slate-500 font-normal">Format: Name, Phone, Email (Line separated)</span>
               </label>
               <textarea
@@ -156,8 +156,8 @@ export default function PromotionalBroadcastPage() {
               />
             </div>
 
-            <Button 
-              onClick={handleParse} 
+            <Button
+              onClick={handleParse}
               className="w-full bg-blue-600 hover:bg-blue-700 text-white"
               variant="default"
             >
@@ -182,16 +182,16 @@ export default function PromotionalBroadcastPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
-            
+
             <div className="flex gap-4">
-              <div 
+              <div
                 onClick={() => setChannel('WhatsApp')}
                 className={`flex-1 flex flex-col items-center justify-center p-4 rounded-xl border-2 cursor-pointer transition-all ${channel === 'WhatsApp' ? 'border-emerald-500 bg-emerald-50 text-emerald-700' : 'border-slate-200 hover:border-emerald-200'}`}
               >
                 <MessageCircle className="h-6 w-6 mb-2" />
                 <span className="font-semibold">WhatsApp</span>
               </div>
-              <div 
+              <div
                 onClick={() => setChannel('Email')}
                 className={`flex-1 flex flex-col items-center justify-center p-4 rounded-xl border-2 cursor-pointer transition-all ${channel === 'Email' ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-slate-200 hover:border-blue-200'}`}
               >
@@ -202,7 +202,7 @@ export default function PromotionalBroadcastPage() {
 
             <div className="space-y-2">
               <label className="text-sm font-medium">Inject Active Coupon Code</label>
-              <select 
+              <select
                 value={activeCoupon}
                 onChange={(e) => setActiveCoupon(e.target.value)}
                 className="w-full flex h-10 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent"
@@ -225,8 +225,8 @@ export default function PromotionalBroadcastPage() {
               />
             </div>
 
-            <Button 
-              onClick={handleDispatch} 
+            <Button
+              onClick={handleDispatch}
               disabled={isDispatching || parsedContacts.length === 0}
               className="w-full h-12 text-lg font-bold bg-indigo-600 hover:bg-indigo-700 text-white"
             >

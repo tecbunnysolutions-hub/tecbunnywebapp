@@ -40,7 +40,6 @@ export default function TemplatesPage() {
       if (!data.user) router.push('/login');
       else fetchTemplates();
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
 

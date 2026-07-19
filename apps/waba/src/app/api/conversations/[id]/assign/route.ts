@@ -8,7 +8,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   try {
     const resolvedParams = await params;
     const conversationId = parseInt(resolvedParams.id, 10);
-    
+
     if (isNaN(conversationId)) {
       return NextResponse.json({ error: 'Bad Request: Invalid conversation ID' }, { status: 400 });
     }
@@ -17,7 +17,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     const { assigned_to, department, priority } = body;
 
     // Extract user session via proper server-side authentication
-    const { session, error } = await requireApiRole();
+    const { error } = await requireApiRole();
     if (error) return error;
 
     // Verify acting user has the right permission via policy engine

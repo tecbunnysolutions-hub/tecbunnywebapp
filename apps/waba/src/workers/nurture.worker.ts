@@ -1,8 +1,21 @@
-import { Worker, Job, Queue } from 'bullmq';
+import { Worker, Queue } from 'bullmq';
 import { getRedis, logger } from '@tecbunny/core/server';
 import {  createServiceClient  } from '@tecbunny/database/admin';
 
 export const NURTURE_QUEUE_NAME = 'waba_nurture_queue';
+
+type NurtureJobData = Record<string, never>;
+
+type NurtureStep = {
+  id: string;
+  delay_days: number;
+  action_type: string;
+  message_template: string;
+};
+
+type NurtureSequence = {
+  sls_nurture_steps?: NurtureStep[];
+};
 
 // Start the scheduler that queues up nurture jobs based on cron
 export function startNurtureScheduler() {
@@ -26,7 +39,7 @@ export function startNurtureWorker() {
   const redisConnection = getRedis();
   if (!redisConnection) return null;
 
-  const worker = new Worker(NURTURE_QUEUE_NAME, async (job: Job) => {
+  const worker = new Worker<NurtureJobData>(NURTURE_QUEUE_NAME, async () => {
     logger.info('Evaluating lead nurture sequences');
     const supabase = createServiceClient();
 
@@ -51,17 +64,17 @@ export function startNurtureWorker() {
     for (const lead of leads) {
       const daysSinceCreation = Math.floor((now.getTime() - new Date(lead.created_at).getTime()) / (1000 * 3600 * 24));
 
-      for (const sequence of sequences) {
+      for (const sequence of sequences as NurtureSequence[]) {
         if (!sequence.sls_nurture_steps) continue;
-        
-        for (const step of sequence.sls_nurture_steps as any[]) {
+
+        for (const step of sequence.sls_nurture_steps) {
           // If the delay perfectly matches the age of the lead, dispatch action
           if (step.delay_days === daysSinceCreation) {
-            
+
             if (step.action_type === 'SEND_WABA') {
               logger.info('Dispatching AI Follow-up (WABA)', { leadId: lead.id, stepId: step.id });
               // e.g. await sendWhatsAppMessage(lead.phone, step.message_template);
-            } 
+            }
             else if (step.action_type === 'CREATE_TASK') {
               logger.info('Dispatching Task for Sales Exec', { leadId: lead.id, stepId: step.id });
               await supabase.from('sls_activities').insert({

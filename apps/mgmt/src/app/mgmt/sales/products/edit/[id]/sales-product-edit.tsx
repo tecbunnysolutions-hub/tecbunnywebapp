@@ -52,7 +52,7 @@ export default function EditProductPage() {
   const { toast } = useToast();
   const supabase = createClient();
   const productId = params.id as string;
-  
+
   const [product, setProduct] = React.useState<Product | null>(null);
   const [imagePreview, setImagePreview] = React.useState<string>('');
   const [additionalImages, setAdditionalImages] = React.useState<string[]>([]);
@@ -84,7 +84,7 @@ export default function EditProductPage() {
   const handleImageUpload = async (file: File, isAdditional = false) => {
     try {
       setUploading(true);
-      
+
       toast({
         title: 'Uploading...',
         description: 'Uploading product image to cloud storage.',
@@ -93,14 +93,14 @@ export default function EditProductPage() {
       const formData = new FormData();
       formData.append('file', file);
       formData.append('type', 'product');
-      
+
       const response = await fetch('/api/upload', {
         method: 'POST',
         body: formData,
       });
 
       const result = await response.json();
-      
+
       if (!response.ok) {
         throw new Error(result.error || 'Upload failed');
       }
@@ -111,7 +111,7 @@ export default function EditProductPage() {
       } else {
         setImagePreview(result.url);
       }
-      
+
       toast({
         title: 'Image uploaded successfully',
         description: 'Product image has been uploaded to cloud storage.',
@@ -190,7 +190,7 @@ export default function EditProductPage() {
       setIsFetchingAiDetails(false);
     }
   };
-  
+
   React.useEffect(() => {
     const fetchProduct = async () => {
         const { data: foundProduct, error } = await supabase
@@ -206,22 +206,22 @@ export default function EditProductPage() {
             });
             router.push('/mgmt/sales/products');
         } else {
-            
+
             // Handle PostgreSQL array format if needed
             let additionalImagesArray = foundProduct.additional_images || [];
             if (additionalImagesArray && typeof additionalImagesArray === 'string') {
               try {
                 additionalImagesArray = JSON.parse(additionalImagesArray);
-                       // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
               } catch (_e) {
                 additionalImagesArray = [];
               }
             }
-            
+
             setProduct(foundProduct);
             setImagePreview(foundProduct.image || '');
             setAdditionalImages(additionalImagesArray);
-            
+
             // Convert specifications back to string format if it exists
             let specificationsString = '';
             if (foundProduct.specifications && typeof foundProduct.specifications === 'object') {
@@ -229,7 +229,7 @@ export default function EditProductPage() {
                 .map(([key, value]) => `${key}:${value}`)
                 .join(', ');
             }
-            
+
             form.reset({
                 name: foundProduct.name || '',
                 brand: foundProduct.brand || '',
@@ -272,7 +272,7 @@ export default function EditProductPage() {
             console.warn('Could not parse specifications:', e);
           }
         }
-        
+
         const updateData = {
             ...data,
             title: data.name, // Map name to title for database compatibility
@@ -286,7 +286,7 @@ export default function EditProductPage() {
           installation_applicable: data.installation_applicable,
           installation_charge: data.installation_charge ?? 0,
         };
-        
+
         const response = await fetch('/api/products', {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
@@ -297,7 +297,7 @@ export default function EditProductPage() {
         if (!response.ok) {
             throw new Error(result.error || 'Failed to update product');
         }
-        
+
         toast({
             title: "Product Updated",
             description: `${data.name} has been updated successfully.`,
@@ -330,7 +330,7 @@ export default function EditProductPage() {
             </Link>
           </Button>
       </div>
-     
+
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -369,7 +369,6 @@ export default function EditProductPage() {
                                   variant="outline"
                                   size="sm"
                                   onClick={handleFetchProductDetails}
-                                  // eslint-disable-next-line react-hooks/incompatible-library
                                   disabled={isFetchingAiDetails || !form.watch('product_url')?.trim()}
                                 >
                                   {isFetchingAiDetails ? (
@@ -397,28 +396,27 @@ export default function EditProductPage() {
                             <FormItem>
                               <FormLabel>Specifications</FormLabel>
                               <FormControl>
-                                <Textarea 
-                                  placeholder="Enter specifications in format: Battery Life:24 hours, Connectivity:Bluetooth 5.0, Weight:250g" 
-                                  rows={3} 
-                                  {...field} 
+                                <Textarea
+                                  placeholder="Enter specifications in format: Battery Life:24 hours, Connectivity:Bluetooth 5.0, Weight:250g"
+                                  rows={3}
+                                  {...field}
                                 />
                               </FormControl>
                               <FormDescription>Format: Key:Value, Key2:Value2 (comma separated)</FormDescription>
                               <FormMessage />
                             </FormItem>
                           )}/>
-                          
+
                           {/* Enhanced Image Upload Section */}
                           <div className="space-y-4">
                             <FormLabel>Product Images</FormLabel>
-                            
+
                             {/* Main Product Image */}
                             <div className="space-y-2">
                               <Label className="text-sm">Main Product Image</Label>
                               <div className="flex items-center gap-4">
                                 {imagePreview && (
                                   <div className="relative group w-32 h-32 border rounded-lg overflow-hidden shrink-0">
-                                    {/* eslint-disable-next-line @next/next/no-img-element */}
                                     <img src={imagePreview} alt="Product preview" className="w-full h-full object-cover" />
                                     <button
                                       type="button"
@@ -468,10 +466,9 @@ export default function EditProductPage() {
                                 <div className="grid grid-cols-3 md:grid-cols-4 gap-2 mb-2">
                                   {additionalImages.map((image, index) => (
                                     <div key={index} className="relative">
-                                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                                      <img 
-                                        src={image} 
-                                        alt={`Additional ${index + 1}`} 
+                                      <img
+                                        src={image}
+                                        alt={`Additional ${index + 1}`}
                                         className="w-full h-20 object-cover rounded border"
                                       />
                                       <Button

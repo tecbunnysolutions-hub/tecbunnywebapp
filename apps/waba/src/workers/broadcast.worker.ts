@@ -8,7 +8,7 @@ export interface BroadcastJobData {
   phone: string;
   template_name: string;
   language: string;
-  payload: any;
+  payload: Record<string, unknown>;
 }
 
 export function startBroadcastWorker() {
@@ -16,17 +16,17 @@ export function startBroadcastWorker() {
     BROADCAST_QUEUE_NAME,
     async (job) => {
       logger.info('Processing broadcast job', { jobId: job.id, phone: job.data.phone });
-      
-      const { campaign_id, phone, template_name, language, payload } = job.data;
-      
+
+      const { campaign_id, phone, template_name } = job.data;
+
       // Here we would integrate with the actual WhatsApp Business API provider
       // (e.g. Infobip, Twilio, or Meta Cloud API) to send the template message.
-      
+
       logger.info('Broadcast message dispatched', { campaign_id, phone, template_name });
-      
+
       // Update CampaignLog in DB would happen here
     },
-    { 
+    {
       connection: getRedisConnection() as never,
       concurrency: 5 // Rate limit compliance
     }

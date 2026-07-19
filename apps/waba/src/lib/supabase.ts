@@ -7,7 +7,7 @@ export const supabase = new Proxy({} as ReturnType<typeof createSupabaseServiceC
     if (!clientInstance) {
       clientInstance = createSupabaseServiceClient();
     }
-    const value = (clientInstance as any)[prop];
+    const value = Reflect.get(clientInstance, prop);
     return typeof value === 'function' ? value.bind(clientInstance) : value;
   }
 });

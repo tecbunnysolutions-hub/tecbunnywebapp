@@ -17,7 +17,7 @@ import {
   Archive,
   Receipt,
   PackageSearch,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
   MessageSquare
 } from 'lucide-react';
 
@@ -85,7 +85,7 @@ export function SalesSidebar() {
           </Link>
         ))}
       </nav>
-      
+
       <div className="mt-auto">
          <div className="flex items-center gap-2 p-2 rounded-lg bg-muted">
             <User className="h-8 w-8 text-primary"/>

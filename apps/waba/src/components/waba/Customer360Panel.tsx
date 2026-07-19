@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { Conversation } from './types';
 
+const CUSTOMER_360_TABS = ['PROFILE', 'FINANCIALS', 'SERVICE', 'CRM'] as const;
+type Customer360Tab = typeof CUSTOMER_360_TABS[number];
+
 interface Customer360PanelProps {
   showCrm: boolean;
   setShowCrm: (show: boolean) => void;
@@ -28,12 +31,12 @@ interface Customer360PanelProps {
 export function Customer360Panel({
   showCrm, setShowCrm, activeConvObj,
   crmName, setCrmName, crmStatus, setCrmStatus,
-  crmNotes, setCrmNotes, crmAssignedTo, setCrmAssignedTo,
+  crmAssignedTo, setCrmAssignedTo,
   crmDepartment, setCrmDepartment, crmAiActive, setCrmAiActive,
   crmDealValue, setCrmDealValue, crmActiveFlow, setCrmActiveFlow,
   isSavingCrm, saveCrmData
 }: Customer360PanelProps) {
-  const [activeTab, setActiveTab] = useState<'PROFILE' | 'FINANCIALS' | 'SERVICE' | 'CRM'>('PROFILE');
+  const [activeTab, setActiveTab] = useState<Customer360Tab>('PROFILE');
 
   return (
     <div className={`crm-panel ${!showCrm ? 'hidden' : ''}`} style={{ width: '350px', display: 'flex', flexDirection: 'column' }}>
@@ -43,15 +46,15 @@ export function Customer360Panel({
       </div>
 
       <div style={{ display: 'flex', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-        {['PROFILE', 'FINANCIALS', 'SERVICE', 'CRM'].map(tab => (
+        {CUSTOMER_360_TABS.map(tab => (
           <button
             key={tab}
-            onClick={() => setActiveTab(tab as any)}
-            style={{ 
-              flex: 1, 
-              padding: '8px 4px', 
-              background: 'transparent', 
-              border: 'none', 
+            onClick={() => setActiveTab(tab)}
+            style={{
+              flex: 1,
+              padding: '8px 4px',
+              background: 'transparent',
+              border: 'none',
               color: activeTab === tab ? '#3b82f6' : '#94a3b8',
               borderBottom: activeTab === tab ? '2px solid #3b82f6' : '2px solid transparent',
               cursor: 'pointer',
@@ -127,7 +130,7 @@ export function Customer360Panel({
               <label>Deal Value</label>
               <input type="text" className="crm-input" value={crmDealValue} onChange={e => setCrmDealValue(e.target.value)} placeholder="₹0.00"/>
             </div>
-            
+
             {/* Slack Style Internal Notes */}
             <div className="crm-field" style={{ marginTop: '12px' }}>
               <label>Internal Notes & Mentions</label>
@@ -193,11 +196,11 @@ export function Customer360Panel({
           </div>
         )}
       </div>
-      
+
       <div style={{ padding: '16px', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
-        <button 
-          className="save-btn" 
-          onClick={saveCrmData} 
+        <button
+          className="save-btn"
+          onClick={saveCrmData}
           disabled={isSavingCrm}
           style={{
             width: '100%',

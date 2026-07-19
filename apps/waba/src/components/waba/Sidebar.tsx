@@ -14,7 +14,7 @@ interface SidebarProps {
 }
 
 export function Sidebar({
-  showSidebar, setShowSidebar, currentUser, globalAiOverride, setGlobalAiOverride,
+  showSidebar, setShowSidebar, currentUser, globalAiOverride,
   loading, conversations, activeConversation, onSelectConversation
 }: SidebarProps) {
   const [activeTab, setActiveTab] = React.useState('queue'); // 'queue' or 'team'
@@ -55,16 +55,16 @@ export function Sidebar({
             <button className="mobile-toggle" onClick={() => setShowSidebar(false)}>✕</button>
           </div>
         </div>
-        
+
         {/* Workspace Navigation Tabs */}
         <div style={{ display: 'flex', gap: '4px', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-          <button 
+          <button
             onClick={() => setActiveTab('queue')}
             style={{ flex: 1, padding: '8px', background: activeTab === 'queue' ? 'rgba(255,255,255,0.1)' : 'transparent', border: 'none', color: 'white', cursor: 'pointer', borderBottom: activeTab === 'queue' ? '2px solid var(--accent)' : 'none' }}
           >
             Queues
           </button>
-          <button 
+          <button
             onClick={() => setActiveTab('team')}
             style={{ flex: 1, padding: '8px', background: activeTab === 'team' ? 'rgba(255,255,255,0.1)' : 'transparent', border: 'none', color: 'white', cursor: 'pointer', borderBottom: activeTab === 'team' ? '2px solid var(--accent)' : 'none' }}
           >
@@ -76,7 +76,7 @@ export function Sidebar({
         <div style={{ display: 'flex', gap: '4px', overflowX: 'auto', paddingBottom: '4px' }}>
           {activeTab === 'queue' ? (
             ['unassigned', 'assigned', 'waiting', 'urgent', 'vip'].map(q => (
-              <button 
+              <button
                 key={q}
                 onClick={() => setActiveQueue(q)}
                 style={{ fontSize: '0.75rem', padding: '4px 8px', borderRadius: '12px', background: activeQueue === q ? 'var(--accent)' : 'rgba(255,255,255,0.1)', border: 'none', color: 'white', cursor: 'pointer', whiteSpace: 'nowrap' }}
@@ -86,7 +86,7 @@ export function Sidebar({
             ))
           ) : (
             ['sales', 'support', 'accounts', 'engineers'].map(t => (
-              <button 
+              <button
                 key={t}
                 onClick={() => setActiveTeam(t)}
                 style={{ fontSize: '0.75rem', padding: '4px 8px', borderRadius: '12px', background: activeTeam === t ? 'var(--accent)' : 'rgba(255,255,255,0.1)', border: 'none', color: 'white', cursor: 'pointer', whiteSpace: 'nowrap' }}
@@ -97,7 +97,7 @@ export function Sidebar({
           )}
         </div>
       </div>
-      
+
       <div className="conversation-list" style={{ marginTop: '12px' }}>
         {loading ? (
           <div className="spinner"></div>
@@ -105,8 +105,8 @@ export function Sidebar({
           <div style={{ padding: '20px', textAlign: 'center', color: '#94a3b8', fontSize: '0.9rem' }}>No chats in this view</div>
         ) : (
           filteredConversations.map(conv => (
-            <div 
-              key={conv.id} 
+            <div
+              key={conv.id}
               className={`conversation-item ${activeConversation === conv.sender_number ? 'active' : ''}`}
               onClick={() => onSelectConversation(conv)}
             >
@@ -116,7 +116,7 @@ export function Sidebar({
                 <span className="last-msg">
                   {conv.messages?.[0]?.message_content || 'No messages'}
                 </span>
-                
+
                 {/* SLA / Countdown mockup */}
                 <div style={{ marginTop: '4px', fontSize: '0.7rem', color: conv.status === 'URGENT' ? '#ef4444' : '#f59e0b', fontWeight: 'bold' }}>
                   ⏳ SLA: {conv.status === 'URGENT' ? '15m' : '2h 10m'} left

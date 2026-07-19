@@ -1,7 +1,30 @@
-import { getAdminDb } from '@tecbunny/core/db/client';
 import { supabase } from '@/lib/supabase';
 import { TriagedPayload } from '../agents/InboundTriageAgent';
 import { sendWhatsAppMessage } from './infobipService';
+
+type AutomationCondition = {
+  field: string;
+  operator: string;
+  value: string;
+};
+
+type AutomationAction = {
+  id: string;
+  action_type: string;
+  action_payload?: {
+    text?: string;
+    agent_id?: string;
+    status?: string;
+  };
+  execution_order: number;
+};
+
+type AutomationRule = {
+  name: string;
+  match_type: string;
+  conditions?: AutomationCondition[];
+  actions?: AutomationAction[];
+};
 
 export class RuleEngineService {
   static async evaluateRules(payload: TriagedPayload): Promise<boolean> {
@@ -13,7 +36,7 @@ export class RuleEngineService {
 
     if (!rules || rules.length === 0) return false;
 
-    for (const rule of rules) {
+    for (const rule of rules as AutomationRule[]) {
       if (await this.evaluateConditions(rule.conditions, rule.match_type, payload)) {
         console.log(`[RuleEngine] Rule matched: ${rule.name}`);
         await this.executeActions(rule.actions, payload);
@@ -24,10 +47,10 @@ export class RuleEngineService {
     return false;
   }
 
-  private static async evaluateConditions(conditions: any[], matchType: string, payload: TriagedPayload): Promise<boolean> {
+  private static async evaluateConditions(conditions: AutomationCondition[] | undefined, matchType: string, payload: TriagedPayload): Promise<boolean> {
     if (!conditions || conditions.length === 0) return true;
 
-    const evaluateCondition = (condition: any) => {
+    const evaluateCondition = (condition: AutomationCondition) => {
       let fieldValue: string | boolean | undefined;
 
       // Extract field from payload
@@ -71,7 +94,7 @@ export class RuleEngineService {
         case 'IN':
           try {
              const arr = JSON.parse(condition.value);
-             return Array.isArray(arr) && arr.map((x: any) => String(x).toLowerCase()).includes(strFieldValue);
+             return Array.isArray(arr) && arr.map((x: unknown) => String(x).toLowerCase()).includes(strFieldValue);
           } catch {
              return false;
           }
@@ -88,9 +111,9 @@ export class RuleEngineService {
     }
   }
 
-  private static async executeActions(actions: any[], payload: TriagedPayload): Promise<void> {
+  private static async executeActions(actions: AutomationAction[] | undefined, payload: TriagedPayload): Promise<void> {
     if (!actions) return;
-    
+
     // Sort actions by execution order
     actions.sort((a, b) => a.execution_order - b.execution_order);
 

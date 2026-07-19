@@ -3,12 +3,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 interface CreateProductDialogProps {
   open: boolean;
   onClose: () => void;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   onProductCreated: (product: any) => void;
   initialName?: string;
 }
 
-                                                                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
 function CreateProductDialog({ open, onClose, onProductCreated: _onProductCreated, initialName: _initialName }: CreateProductDialogProps) {
   // ...existing code for hooks, form, and onSubmit...
   // (Assume hooks and logic are present above)

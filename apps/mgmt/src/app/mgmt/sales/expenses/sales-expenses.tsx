@@ -1,4 +1,4 @@
-/* eslint-disable react-hooks/set-state-in-effect */
+
 'use client';
 import { createClient } from '@tecbunny/database';
 
@@ -51,7 +51,7 @@ export default function ExpenseEntryPage() {
             .from('expenses')
             .select('*')
             .eq('submitted_by', user.id);
-        
+
         if (error) {
             logger.error('Error fetching expenses in sales-expenses', { error });
         } else {
@@ -90,14 +90,14 @@ export default function ExpenseEntryPage() {
             created_at: data.date,
             ...data,
         };
-        
+
         const { error } = await supabase.from('expenses').insert(expenseData);
 
         if (error) {
             toast({ variant: 'destructive', title: 'Submission Failed', description: error.message });
             return;
         }
-        
+
         await fetchExpenses();
 
         toast({
@@ -116,14 +116,14 @@ export default function ExpenseEntryPage() {
             default: return 'outline';
         }
     }
-    
+
     return (
         <div className="space-y-8">
             <div>
                 <h1 className="text-3xl font-bold">Expense Management</h1>
                 <p className="text-muted-foreground">Log your business-related expenses and view history.</p>
             </div>
-            
+
             <Card className="max-w-2xl">
                  <CardHeader>
                     <CardTitle>New Expense</CardTitle>

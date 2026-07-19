@@ -1,13 +1,13 @@
-/* eslint-disable react-hooks/set-state-in-effect */
+
 'use client';
 
 import * as React from 'react';
 import { useState, useEffect } from 'react';
 
-import { 
-  Edit2, 
-  Save, 
-  RefreshCw, 
+import {
+  Edit2,
+  Save,
+  RefreshCw,
   FileText,
   Eye,
   EyeOff,
@@ -74,8 +74,8 @@ export default function PageContentAdmin() {
     if (selectedPage) {
       setFormData({
         title: selectedPage.title,
-        content: typeof selectedPage.content === 'string' 
-          ? selectedPage.content 
+        content: typeof selectedPage.content === 'string'
+          ? selectedPage.content
           : JSON.stringify(selectedPage.content, null, 2),
         meta_description: selectedPage.meta_description || '',
         meta_keywords: selectedPage.meta_keywords || '',
@@ -122,7 +122,7 @@ export default function PageContentAdmin() {
     let contentData: unknown;
     try {
       contentData = JSON.parse(newPageForm.content);
-             // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
     } catch (_error) {
       contentData = newPageForm.content;
     }
@@ -592,8 +592,8 @@ export default function PageContentAdmin() {
                     <h4 className="font-medium mb-2">Content Preview:</h4>
                     <div className="bg-white/5 border border-white/10 p-4 rounded-lg">
                       <pre className="text-sm overflow-x-auto">
-                        {typeof selectedPage.content === 'string' 
-                          ? selectedPage.content 
+                        {typeof selectedPage.content === 'string'
+                          ? selectedPage.content
                           : JSON.stringify(selectedPage.content, null, 2)}
                       </pre>
                     </div>

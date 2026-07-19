@@ -8,10 +8,10 @@ const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
 export async function POST(req: Request) {
   try {
-    const { session, error } = await requireApiRole();
+    const { error } = await requireApiRole();
     if (error) return error;
 
-    const { conversationId, command, context } = await req.json();
+    const { conversationId, command } = await req.json();
 
     if (!conversationId || !command) {
       return NextResponse.json({ error: 'Missing conversationId or command' }, { status: 400 });
@@ -56,10 +56,10 @@ ${chatHistory}
       const result = await model.generateContent(prompt);
       aiResponse = result.response.text();
       responseType = 'SYSTEM_MESSAGE';
-      
+
     } else if (command === '/reply') {
       const prompt = `
-You are an expert customer service and sales agent. Draft a professional, empathetic, and concise reply to the customer based on the conversation history below. 
+You are an expert customer service and sales agent. Draft a professional, empathetic, and concise reply to the customer based on the conversation history below.
 Do not include subject lines or placeholder text. Keep it conversational for WhatsApp.
 
 Conversation History:
@@ -91,7 +91,7 @@ ${chatHistory}
       return NextResponse.json({ error: 'Unknown command' }, { status: 400 });
     }
 
-    // If it's a SYSTEM_MESSAGE, we can optionally save it to the DB as an internal note, 
+    // If it's a SYSTEM_MESSAGE, we can optionally save it to the DB as an internal note,
     // but for now we'll just return it to the frontend to render dynamically.
 
     return NextResponse.json({

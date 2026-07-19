@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { Message, Conversation, Template } from './types';
 
 interface ChatMainProps {
@@ -23,20 +23,20 @@ interface ChatMainProps {
 }
 
 export function ChatMain({
-  activeConversation, activeConvObj, displayName, messages, messagesEndRef,
+  activeConversation, displayName, messages, messagesEndRef,
   showSidebar, setShowSidebar, showCrm, setShowCrm, isOutsideWindow,
   templates, selectedTemplate, setSelectedTemplate, inputText, setInputText,
   isUploading, handleSendMessage, handleFileUpload
 }: ChatMainProps) {
-  
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   const docInputRef = useRef<HTMLInputElement>(null);
-  
+
   // Slash Command State
   const [showCommands, setShowCommands] = useState(false);
   const [systemMessages, setSystemMessages] = useState<Message[]>([]);
   const [isCopilotThinking, setIsCopilotThinking] = useState(false);
-  
+
   const COMMANDS = [
     { cmd: '/summary', desc: 'Summarize the conversation' },
     { cmd: '/customer', desc: 'Display customer profile summary' },
@@ -61,7 +61,7 @@ export function ChatMain({
     setShowCommands(false);
     setInputText("");
     setIsCopilotThinking(true);
-    
+
     try {
       const res = await fetch('/api/copilot/command', {
         method: 'POST',
@@ -72,7 +72,7 @@ export function ChatMain({
         })
       });
       const result = await res.json();
-      
+
       if (result.status === 'success') {
         if (result.data.type === 'INPUT_REPLACEMENT') {
           setInputText(result.data.response);
@@ -135,7 +135,6 @@ export function ChatMain({
           <div key={msg.id} className={`message-wrapper ${msg.direction.toLowerCase()}`}>
             <div className="message-bubble">
               {msg.media_url && msg.media_type === 'IMAGE' && (
-                // eslint-disable-next-line @next/next/no-img-element
                 <img src={msg.media_url} alt="Attached image" style={{ maxWidth: '100%', borderRadius: '8px', marginBottom: '8px' }} />
               )}
               {msg.media_url && msg.media_type === 'VIDEO' && (
@@ -149,7 +148,7 @@ export function ChatMain({
                   <span>📄</span> View Document
                 </a>
               )}
-              
+
               {isLocation ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', minWidth: '200px' }}>
                   <iframe width="100%" height="150" style={{ borderRadius: '8px', border: 0, backgroundColor: '#f0f0f0' }} src={`https://maps.google.com/maps?q=${locationCoords}&z=15&output=embed`} allowFullScreen loading="lazy" referrerPolicy="no-referrer-when-downgrade"/>
@@ -160,7 +159,7 @@ export function ChatMain({
               ) : (
                 msg.message_content && msg.message_content !== '[Media]' && <p>{msg.message_content}</p>
               )}
-              
+
               <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '4px', marginTop: '4px' }}>
                 {msg.direction === 'OUTBOUND' && msg.sent_by && (
                   <span style={{ fontSize: '0.7rem', color: msg.sent_by === 'AI' ? '#9ca3af' : '#60a5fa', marginRight: '4px' }}>
@@ -185,13 +184,13 @@ export function ChatMain({
       <div style={{ position: 'relative' }}>
         {isUploading && <div style={{ position: 'absolute', top: '-30px', left: '20px', background: 'rgba(59,130,246,0.8)', padding: '4px 12px', borderRadius: '12px', fontSize: '0.8rem' }}>Uploading media...</div>}
         {isCopilotThinking && <div style={{ position: 'absolute', top: '-30px', left: '20px', background: 'rgba(16,185,129,0.8)', padding: '4px 12px', borderRadius: '12px', fontSize: '0.8rem' }}>✨ Copilot is thinking...</div>}
-        
+
         {/* SLASH COMMAND PALETTE */}
         {showCommands && (
           <div style={{ position: 'absolute', bottom: '100%', left: 0, right: 0, background: '#1e293b', border: '1px solid #334155', borderRadius: '8px 8px 0 0', zIndex: 10, maxHeight: '200px', overflowY: 'auto' }}>
             <div style={{ padding: '8px', fontSize: '0.8rem', color: '#94a3b8', borderBottom: '1px solid #334155' }}>AI Copilot Commands</div>
             {COMMANDS.filter(c => c.cmd.startsWith(inputText)).map(cmd => (
-              <div 
+              <div
                 key={cmd.cmd}
                 onClick={() => executeCommand(cmd.cmd)}
                 style={{ padding: '8px 12px', cursor: 'pointer', display: 'flex', gap: '12px', alignItems: 'center' }}
@@ -209,8 +208,8 @@ export function ChatMain({
           {isOutsideWindow ? (
             <div style={{ flexGrow: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>
               <span style={{ color: '#ef4444', fontSize: '0.8rem', fontWeight: 600 }}>⚠️ Outside 24-Hour Window (Template Required)</span>
-              <select 
-                className="crm-select" 
+              <select
+                className="crm-select"
                 style={{ border: '1px solid #ef4444', background: 'rgba(255,255,255,0.05)' }}
                 value={selectedTemplate}
                 onChange={(e) => {
@@ -234,9 +233,9 @@ export function ChatMain({
                 <input type="file" ref={docInputRef} onChange={(e) => handleFileUpload(e, 'document')} accept=".pdf,.doc,.docx" style={{ display: 'none' }} />
               </div>
 
-              <input 
-                type="text" 
-                placeholder="Type a message or use / for AI commands..." 
+              <input
+                type="text"
+                placeholder="Type a message or use / for AI commands..."
                 value={inputText}
                 onChange={handleInputChange}
                 autoFocus

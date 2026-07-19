@@ -7,6 +7,14 @@ import { Skeleton } from "@tecbunny/ui";
 
 export const revalidate = 60; // Revalidate at most once every minute
 
+type FaqRow = {
+  id: string;
+  category: string | null;
+  question: string;
+  answer: string;
+  display_order: number | null;
+};
+
 async function fetchFaqs() {
   const supabase = isSupabaseServiceConfigured
     ? await createServiceClient()
@@ -21,10 +29,19 @@ async function fetchFaqs() {
     .order('display_order', { ascending: true });
 
   if (error) {
+    if (error.code === 'PGRST205') {
+      return [];
+    }
+
     console.error('Error loading FAQs from DB:', error);
     return [];
   }
-  return (faqs || []).map((faq: any) => ({ ...faq, display_order: faq.display_order ?? 0 }));
+
+  return ((faqs || []) as FaqRow[]).map((faq) => ({
+    ...faq,
+    category: faq.category ?? 'General',
+    display_order: faq.display_order ?? 0,
+  }));
 }
 
 export default async function FaqsPage() {

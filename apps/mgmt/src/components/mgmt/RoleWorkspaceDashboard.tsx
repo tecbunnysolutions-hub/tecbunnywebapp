@@ -174,10 +174,10 @@ export function RoleWorkspaceDashboard({ kind }: RoleWorkspaceDashboardProps) {
         .select('*')
         .eq('status', 'PENDING_HUMAN_AGENT')
         .order('last_interaction_timestamp', { ascending: false });
-      
+
       if (data) setNeedsAttentionQueue(data);
     };
-    
+
     void fetchQueue();
 
     // 2. Real-time Subscription
@@ -191,7 +191,7 @@ export function RoleWorkspaceDashboard({ kind }: RoleWorkspaceDashboardProps) {
           table: 'Conversation',
           filter: "status=eq.PENDING_HUMAN_AGENT"
         },
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
         (payload: any) => {
           if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
             setNeedsAttentionQueue(prev => {
@@ -216,7 +216,7 @@ export function RoleWorkspaceDashboard({ kind }: RoleWorkspaceDashboardProps) {
           table: 'Conversation',
           filter: "status=eq.PROCESSING"
         },
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
         (payload: any) => {
           if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
             setLiveLeadCaptureQueue(prev => {

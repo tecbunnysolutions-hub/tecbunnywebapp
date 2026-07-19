@@ -1,5 +1,5 @@
-/* eslint-disable react/no-unescaped-entities */
-/* eslint-disable react-hooks/set-state-in-effect */
+
+
 'use client';
 import { createClient } from '@tecbunny/database';
 
@@ -25,7 +25,7 @@ export default function PurchaseEntryPage() {
     const supabase = createClient();
     const [allProducts, setAllProducts] = React.useState<Product[]>([]);
     const [purchaseItems, setPurchaseItems] = React.useState<PurchaseItem[]>([]);
-    
+
     const [searchTerm, setSearchTerm] = React.useState('');
     const [searchResults, setSearchResults] = React.useState<Product[]>([]);
     const [isCreateProductDialogOpen, setCreateProductDialogOpen] = React.useState(false);
@@ -43,7 +43,7 @@ export default function PurchaseEntryPage() {
                 return;
             }
 
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
             const normalizedProducts = (data ?? []).map((product: any) => {
                 const normalizedName = product?.name || product?.title || product?.model_number || 'Unnamed Product';
                 const normalizedPrice = Number(product?.price ?? product?.offer_price ?? product?.mrp ?? 0);
@@ -117,7 +117,7 @@ export default function PurchaseEntryPage() {
     const handleRemoveItem = (id: string) => {
         setPurchaseItems(prev => prev.filter(item => item.id !== id));
     };
-    
+
     const handleSaveSerials = (productId: string, serials: string[]) => {
         setPurchaseItems(prev => prev.map(item => item.id === productId ? { ...item, serialNumbers: serials } : item));
         setItemForSerialEntry(null);
@@ -154,12 +154,12 @@ export default function PurchaseEntryPage() {
             })
             .select()
             .single();
-        
+
         if (purchaseError) {
             toast({ variant: 'destructive', title: 'Failed to Save Purchase', description: purchaseError.message });
             return;
         }
-        
+
         for (const item of purchaseItems) {
             const response = await fetch('/api/inventory/transactions', {
                 method: 'POST',
@@ -185,7 +185,7 @@ export default function PurchaseEntryPage() {
                 return;
             }
         }
-        
+
         toast({ title: 'Purchase Entry Saved', description: 'Inventory has been updated successfully.' });
 
         setSupplierName('');
@@ -229,8 +229,8 @@ export default function PurchaseEntryPage() {
                             <CardContent>
                                 <div className="relative mb-4">
                                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                    <Input 
-                                        placeholder="Search for products to add..." 
+                                    <Input
+                                        placeholder="Search for products to add..."
                                         className="pl-10"
                                         value={searchTerm}
                                         onChange={(e) => setSearchTerm(e.target.value)}
@@ -239,8 +239,8 @@ export default function PurchaseEntryPage() {
                                         <div className="absolute z-10 w-full bg-background border rounded-md mt-1 shadow-lg max-h-60 overflow-y-auto">
                                             {searchResults.length > 0 ? (
                                                 searchResults.map(product => (
-                                                    <div 
-                                                        key={product.id} 
+                                                    <div
+                                                        key={product.id}
                                                         className="p-2 hover:bg-muted cursor-pointer"
                                                         onClick={() => handleAddItem(product)}
                                                     >
@@ -252,7 +252,7 @@ export default function PurchaseEntryPage() {
                                                     </div>
                                                 ))
                                             ) : (
-                                                <div 
+                                                <div
                                                     className="p-2 hover:bg-muted cursor-pointer flex items-center gap-2"
                                                     onClick={() => setCreateProductDialogOpen(true)}
                                                 >
@@ -281,7 +281,7 @@ export default function PurchaseEntryPage() {
                                                 <TableRow key={item.id}>
                                                     <TableCell className="font-medium">{item.name}</TableCell>
                                                     <TableCell>
-                                                        <Input 
+                                                        <Input
                                                             type="number"
                                                             value={item.quantity}
                                                             onChange={(e) => handleUpdateItem(item.id, 'quantity', parseInt(e.target.value) || 0)}
@@ -290,7 +290,7 @@ export default function PurchaseEntryPage() {
                                                         />
                                                     </TableCell>
                                                     <TableCell>
-                                                        <Input 
+                                                        <Input
                                                             type="number"
                                                             value={item.purchase_price}
                                                             onChange={(e) => handleUpdateItem(item.id, 'purchase_price', parseFloat(e.target.value) || 0)}
@@ -352,7 +352,7 @@ export default function PurchaseEntryPage() {
                 </div>
             </div>
             {isCreateProductDialogOpen && (
-                 <CreateProductDialog 
+                 <CreateProductDialog
                     open={isCreateProductDialogOpen}
                     onClose={() => setCreateProductDialogOpen(false)}
                     onProductCreated={handleProductCreated}

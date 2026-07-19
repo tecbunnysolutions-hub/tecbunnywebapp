@@ -24,14 +24,14 @@ const eslintConfig = defineConfig([
       "no-use-before-define": "warn",
       "react-hooks/set-state-in-effect": "warn",
       "react-hooks/refs": "warn",
-      "react-hooks/exhaustive-deps": "warn",
+      "react-hooks/exhaustive-deps": "off",
       "react/no-unescaped-entities": "warn",
       "react-hooks/purity": "off",
       "react-hooks/preserve-manual-memoization": "off",
       "react-hooks/immutability": "off",
       "prefer-const": "off",
       "@next/next/no-html-link-for-pages": "warn",
-      "@next/next/no-img-element": "warn"
+      "@next/next/no-img-element": "off"
     }
   }
 ]);

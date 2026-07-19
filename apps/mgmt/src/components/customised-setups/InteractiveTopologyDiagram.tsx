@@ -1,7 +1,7 @@
-/* eslint-disable react-hooks/set-state-in-effect */
+
 'use client';
 
-                                     // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
 import React, { useEffect, useState, useRef } from 'react';
 import {
   Network,
@@ -11,7 +11,7 @@ import {
   Server,
   Activity,
   Terminal,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
   Cpu,
 } from 'lucide-react';
 import { cn } from "@tecbunny/core/utils";
@@ -46,7 +46,7 @@ interface SystemLog {
 // Sparkline Component for real-time visualization of telemetry data
 function TelemetrySparkline({ data, color }: { data: number[]; color: string }) {
   if (!data || data.length === 0) return <div className="h-6 w-24 bg-white/5 animate-pulse rounded" />;
-  
+
   const width = 120;
   const height = 24;
   const max = Math.max(...data, 1);
@@ -61,7 +61,7 @@ function TelemetrySparkline({ data, color }: { data: number[]; color: string }) 
     })
     .join(' ');
 
-  const strokeColor = 
+  const strokeColor =
     color === 'blue' ? '#2563eb' :
     color === 'indigo' ? '#818cf8' :
     color === 'emerald' ? '#34d399' :
@@ -118,14 +118,14 @@ export function InteractiveTopologyDiagram({ config }: InteractiveTopologyDiagra
 
   useEffect(() => {
     setIsMounted(true);
-    
+
     // Initialize sparkline histories with pre-filled baseline datasets
     const initialHistories: Record<string, number[]> = {};
     const nodesToInit = ['switch', 'gateway', 'storage', 'terminal', 'cam-more'];
     for (let i = 1; i <= 8; i++) {
       nodesToInit.push(`cam-${i}`);
     }
-    
+
     nodesToInit.forEach(id => {
       initialHistories[id] = Array.from({ length: 15 }, () => 20 + Math.random() * 50);
     });
@@ -134,12 +134,12 @@ export function InteractiveTopologyDiagram({ config }: InteractiveTopologyDiagra
     // Dynamic metrics fluctuation interval
     const telemetryInterval = setInterval(() => {
       setTelemetryTick((t) => t + 1);
-      
+
       setSparklineHistory((prev) => {
         const updated = { ...prev };
         nodesToInit.forEach((id) => {
           const prevHistory = prev[id] || Array.from({ length: 15 }, () => 20 + Math.random() * 50);
-          
+
           let newVal = 45;
           if (id === 'switch') {
             newVal = 20 + Math.sin(Date.now() / 2000) * 8 + Math.random() * 4 + 15;
@@ -152,7 +152,7 @@ export function InteractiveTopologyDiagram({ config }: InteractiveTopologyDiagra
           } else if (id.startsWith('cam')) {
             newVal = 4 + Math.random() * 3;
           }
-          
+
           updated[id] = [...prevHistory.slice(-14), newVal];
         });
         return updated;
@@ -441,7 +441,7 @@ export function InteractiveTopologyDiagram({ config }: InteractiveTopologyDiagra
         <div className="lg:col-span-3 bg-muted/30 rounded-2xl border border-border p-4 relative min-h-[360px] flex items-center justify-center overflow-hidden aspect-[4/3] max-w-full group">
           {/* Futuristic Grid Background Pattern */}
           <div className="absolute inset-0 pointer-events-none opacity-[0.05] bg-[radial-gradient(#2563eb_1px,transparent_1px)] [background-size:16px_16px]" />
-          
+
           {/* Subtle concentric grid lines in background */}
           <div className="absolute h-[340px] w-[340px] rounded-full border border-primary/5 pointer-events-none flex items-center justify-center">
             <div className="h-[220px] w-[220px] rounded-full border border-primary/5 flex items-center justify-center">
@@ -493,14 +493,14 @@ export function InteractiveTopologyDiagram({ config }: InteractiveTopologyDiagra
             {/* Connector Lines */}
             {allNodes.map((node) => {
               if (node.id === 'switch') return null;
-              
+
               const isSpecificActive = activeNodeId === node.id;
               const isSharedActive = activeNodeId === 'switch' || isSpecificActive;
 
-                  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
               let strokeColor = 'rgba(71, 85, 105, 0.2)'; // slate-600/20
               let activeStroke = 'rgba(37, 99, 235, 0.4)'; // blue-400/40
-              
+
               if (node.color === 'indigo') {
                 activeStroke = 'rgba(129, 140, 248, 0.5)';
               } else if (node.color === 'emerald') {
@@ -581,14 +581,14 @@ export function InteractiveTopologyDiagram({ config }: InteractiveTopologyDiagra
                 <div
                   className={cn(
                     "h-12 w-12 rounded-xl flex items-center justify-center border transition-all duration-300 relative bg-card",
-                    
+
                     // Selected glow state configurations
                     isSelected && node.color === 'blue' && "border-primary shadow-[0_0_15px_rgba(37,99,235,0.25)] text-primary",
                     isSelected && node.color === 'indigo' && "border-indigo-400 shadow-[0_0_15px_rgba(129,140,248,0.25)] text-indigo-400",
                     isSelected && node.color === 'emerald' && "border-emerald-400 shadow-[0_0_15px_rgba(52,211,153,0.25)] text-emerald-400",
                     isSelected && node.color === 'violet' && "border-violet-400 shadow-[0_0_15px_rgba(192,132,252,0.25)] text-violet-400",
                     isSelected && node.color === 'slate' && "border-slate-400 shadow-[0_0_15px_rgba(148,163,184,0.25)] text-slate-300",
-                    
+
                     // Default states
                     !isSelected && "border-border text-muted-foreground hover:border-foreground hover:text-foreground"
                   )}
@@ -676,7 +676,7 @@ export function InteractiveTopologyDiagram({ config }: InteractiveTopologyDiagra
         </div>
 
         {/* Right Side: High-Tech Monospace Console Inspector */}
-        <div 
+        <div
           id="device-inspector-panel"
           role="tabpanel"
           aria-label="Component Telemetry Details"
@@ -722,8 +722,8 @@ export function InteractiveTopologyDiagram({ config }: InteractiveTopologyDiagra
                   {/* Render sparkline if item has sparkType defined */}
                   {item.sparkType && sparklineHistory[item.sparkType] && (
                     <div className="flex justify-end pt-1 pb-1">
-                      <TelemetrySparkline 
-                        data={sparklineHistory[item.sparkType]} 
+                      <TelemetrySparkline
+                        data={sparklineHistory[item.sparkType]}
                         color={selectedNode.color}
                       />
                     </div>
@@ -745,7 +745,7 @@ export function InteractiveTopologyDiagram({ config }: InteractiveTopologyDiagra
                     onClick={() => setActiveLogTab(tab)}
                     className={cn(
                       "px-1 py-0.5 rounded transition-all",
-                      activeLogTab === tab 
+                      activeLogTab === tab
                         ? "bg-primary/20 text-primary border border-primary/20"
                         : "text-muted-foreground hover:text-foreground"
                     )}

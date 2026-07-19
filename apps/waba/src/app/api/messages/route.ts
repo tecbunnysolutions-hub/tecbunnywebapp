@@ -9,6 +9,22 @@ export const dynamic = 'force-dynamic';
 const apiKey = process.env.GEMINI_API_KEY || "";
 const genAI = apiKey ? new GoogleGenerativeAI(apiKey) : null;
 
+type ConversationRow = {
+  sender_number: string;
+  [key: string]: unknown;
+};
+
+type LatestMessageRow = {
+  id: string | number;
+  sender_number: string;
+  direction: string | null;
+  message_content: string | null;
+  timestamp: string | null;
+  status: string | null;
+  media_url: string | null;
+  media_type: string | null;
+};
+
 function getPagination(searchParams: URLSearchParams, defaults: { limit: number; maxLimit: number }) {
   const requestedLimit = Number(searchParams.get('limit') || defaults.limit);
   const requestedOffset = Number(searchParams.get('offset') || 0);
@@ -66,8 +82,9 @@ export async function GET(req: Request) {
     // Fetch latest message per conversation in a SINGLE query (fix for N+1).
     // We pull all messages for the relevant sender numbers ordered by timestamp
     // descending, then keep only the first occurrence of each sender_number.
-    const senderNumbers = (conversations || []).map((c: any) => c.sender_number);
-    let latestMessagesBySender = new Map<string, any>();
+    const conversationRows = (conversations || []) as ConversationRow[];
+    const senderNumbers = conversationRows.map((conversation) => conversation.sender_number);
+    const latestMessagesBySender = new Map<string, LatestMessageRow>();
 
     if (senderNumbers.length > 0) {
       const { data: allLatest } = await supabase
@@ -76,14 +93,14 @@ export async function GET(req: Request) {
         .in('sender_number', senderNumbers)
         .order('timestamp', { ascending: false });
 
-      for (const msg of (allLatest || [])) {
+      for (const msg of ((allLatest || []) as LatestMessageRow[])) {
         if (!latestMessagesBySender.has(msg.sender_number)) {
           latestMessagesBySender.set(msg.sender_number, msg);
         }
       }
     }
 
-    const conversationsWithMessages = (conversations || []).map((conv: any) => ({
+    const conversationsWithMessages = conversationRows.map((conv) => ({
       ...conv,
       messages: latestMessagesBySender.has(conv.sender_number)
         ? [latestMessagesBySender.get(conv.sender_number)]
@@ -123,15 +140,15 @@ export async function POST(req: Request) {
       result = await sendWhatsAppLocation(to, location.latitude, location.longitude, location.name, location.address);
     } else if (text) {
       let finalMessage = text;
-      
+
       // Auto-Draft / Rewrite Feature using Gemini
       if (genAI) {
         try {
-          const model = genAI.getGenerativeModel({ 
+          const model = genAI.getGenerativeModel({
             model: "gemini-2.5-flash",
             generationConfig: { responseMimeType: "application/json" }
           });
-          const prompt = `You are an expert AI editor for TecBunny's sales and support managers. 
+          const prompt = `You are an expert AI editor for TecBunny's sales and support managers.
 The manager has written a draft message to a customer. Your job is to rewrite it to be extremely professional, warm, polite, and grammatically perfect.
 - Do NOT change the factual meaning, prices, or details.
 - Make it sound like a premium enterprise IT services company.
@@ -165,7 +182,7 @@ Manager's Draft:
     } else {
       return NextResponse.json({ error: 'Missing "text" or "location"' }, { status: 400 });
     }
-    
+
     if (result?.success) {
       return NextResponse.json({ success: true });
     } else {

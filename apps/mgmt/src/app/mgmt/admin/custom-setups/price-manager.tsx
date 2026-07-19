@@ -683,12 +683,12 @@ export default function AdminCustomSetupManager() {
       setSavingAccessories(false);
     }
   };
-  
+
   const deferredPricingDraft = useDeferredValue(pricingDraft);
   const deferredSalePricingDraft = useDeferredValue(salePricingDraft);
 
   const [pendingOptionUpdates, setPendingOptionUpdates] = useState<PendingOptionState>({});
-         // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
   const [_selectionDraft, setSelectionDraft] = useState<SelectionDraft>({
     componentDefaultQuantities: {},
     systemBaseFees: {},

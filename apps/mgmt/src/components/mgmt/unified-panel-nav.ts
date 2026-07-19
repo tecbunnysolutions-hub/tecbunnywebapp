@@ -28,7 +28,7 @@ import {
   Users,
   Wrench,
   Zap,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
   MessageSquare,
 } from 'lucide-react';
 

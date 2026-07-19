@@ -27,13 +27,13 @@ export default function BroadcastDeskPage() {
   const [activeCoupon, setActiveCoupon] = useState('TB-CORP-15');
   const [isDispatching, setIsDispatching] = useState(false);
   const [parsedContacts, setParsedContacts] = useState<Contact[]>([]);
-         // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
   const [lastLogId, setLastLogId] = useState<string | null>(null);
 
   const handleParse = () => {
     try {
       RawDataSchema.parse(rawData);
-      
+
       const lines = rawData.split('\n').filter(l => l.trim().length > 0);
       const contacts: Contact[] = lines.map((line, index) => {
         const parts = line.split(',').map(p => p.trim());
@@ -47,7 +47,7 @@ export default function BroadcastDeskPage() {
 
       setParsedContacts(contacts);
       toast({ title: 'Data Parsed', description: `Successfully mapped ${contacts.length} rows.` });
-             // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
     } catch (e) {
       toast({ title: 'Parsing Error', description: 'Invalid data format.', variant: 'destructive' });
     }
@@ -68,7 +68,7 @@ export default function BroadcastDeskPage() {
     }
 
     setIsDispatching(true);
-    
+
     const resolvedTemplate = injectCoupon ? template.replace(/{{COUPON_CODE}}/g, activeCoupon) : template;
 
     try {
@@ -90,9 +90,9 @@ export default function BroadcastDeskPage() {
         title: 'Batch Dispatched',
         description: `Broadcast executing asynchronously. Check log ID: ${data.logId}`,
       });
-      
+
       setLastLogId(data.logId);
-      
+
       // Update UI state to show simulated dispatch start
       setParsedContacts(prev => prev.map(c => ({ ...c, status: 'success' })));
 
@@ -129,18 +129,18 @@ export default function BroadcastDeskPage() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1">
                 <label className="text-sm font-medium">Campaign Tag</label>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   value={campaignName}
                   onChange={e => setCampaignName(e.target.value)}
-                  placeholder="e.g. Q3_NORTH_GOA_BLITZ" 
+                  placeholder="e.g. Q3_NORTH_GOA_BLITZ"
                   className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 />
               </div>
               <div className="space-y-1">
                 <label className="text-sm font-medium">Channel Pipeline</label>
-                <select 
-                  value={channel} 
+                <select
+                  value={channel}
                   onChange={e => setChannel(e.target.value as "email" | "whatsapp")}
                   className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 >
@@ -152,7 +152,7 @@ export default function BroadcastDeskPage() {
 
             <div className="space-y-1">
               <label className="text-sm font-medium">Data Arrays (Name, Phone, Email)</label>
-              <textarea 
+              <textarea
                 rows={6}
                 value={rawData}
                 onChange={e => setRawData(e.target.value)}
@@ -174,18 +174,18 @@ export default function BroadcastDeskPage() {
             <CardTitle className="text-lg">Template Engineering</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <textarea 
+            <textarea
               rows={5}
               value={template}
               onChange={e => setTemplate(e.target.value)}
               className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 font-mono"
             />
-            
+
             <div className="flex items-center gap-3 p-3 bg-slate-100 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800">
               <input type="checkbox" checked={injectCoupon} onChange={e => setInjectCoupon(e.target.checked)} className="h-4 w-4" />
               <span className="text-sm font-medium">Inject Active Coupon Code:</span>
-              <input 
-                type="text" 
+              <input
+                type="text"
                 value={activeCoupon}
                 onChange={e => setActiveCoupon(e.target.value)}
                 disabled={!injectCoupon}
@@ -193,8 +193,8 @@ export default function BroadcastDeskPage() {
               />
             </div>
 
-            <Button 
-              onClick={handleDispatch} 
+            <Button
+              onClick={handleDispatch}
               disabled={isDispatching || parsedContacts.length === 0}
               className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold h-12"
             >

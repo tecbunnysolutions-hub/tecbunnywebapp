@@ -5,7 +5,7 @@ import { AuthContext } from "@tecbunny/core/context/AuthProvider";
 
 export function usePermissions() {
   const auth = useContext(AuthContext);
-  
+
   const permissions: string[] = auth?.user?.permissions || [];
   const role = auth?.user?.role;
 
@@ -13,9 +13,9 @@ export function usePermissions() {
     // Global override for superadmin
     if (role === 'superadmin') return true;
 
-                        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
     const [reqResource, reqAction] = requiredPermission.split(':');
-    
+
     return permissions.some(p => {
       if (p === requiredPermission) return true;
       const [resource, action] = p.split(':');

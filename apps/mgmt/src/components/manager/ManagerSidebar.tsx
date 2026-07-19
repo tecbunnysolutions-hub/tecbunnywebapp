@@ -11,7 +11,7 @@ import {
   Zap,
   FileSearch,
   PackageCheck,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
   ShoppingBag,
   Package,
   Archive,
@@ -41,7 +41,7 @@ export const managerNavSections = [{ title: 'Manager', items: navItems }];
 export function ManagerSidebar() {
   const pathname = usePathname();
   const { user, logout } = useAuth();
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
   const router = useRouter();
 
   const handleLogout = async () => {
@@ -77,7 +77,7 @@ export function ManagerSidebar() {
           </Link>
         ))}
       </nav>
-      
+
       <div className="mt-auto">
          <div className="flex items-center gap-2 p-2 rounded-lg bg-muted">
             <User className="h-8 w-8 text-primary"/>

@@ -1,4 +1,4 @@
-/* eslint-disable react/no-unescaped-entities */
+
 'use client';
 import { createClient } from '@tecbunny/database';
 
@@ -9,7 +9,7 @@ import { TrendingUp, Users, Package, ShoppingBag } from 'lucide-react';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@tecbunny/ui";
 import { Badge } from "@tecbunny/ui";
-         // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
 import { Skeleton } from "@tecbunny/ui";
 import { useToast } from "@tecbunny/ui";
 import { useAuth } from "@tecbunny/core/hooks";
@@ -234,7 +234,7 @@ export default function SalesDashboard() {
                     <h2 className="text-base font-semibold text-foreground tech-heading">Recent Orders</h2>
                     <p className="text-xs text-muted-foreground mt-0.5 font-light font-sans">Latest store, pickup, and delivery activity.</p>
                 </div>
-                
+
                 <div className="p-4 sm:p-6">
                     {loading ? (
                         <div className="space-y-4">
@@ -261,7 +261,7 @@ export default function SalesDashboard() {
                                     {recentOrders.map((order) => {
                                         let badgeColorClass = "bg-muted text-muted-foreground border-border";
                                         const statusStr = order.status ? String(order.status) : '';
-                                        
+
                                         if (COMPLETED_STATUSES.includes(order.status)) {
                                             badgeColorClass = "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20";
                                         } else if (PENDING_DELIVERY_STATUSES.includes(order.status) || order.status === PENDING_PICKUP_STATUS) {
@@ -269,7 +269,7 @@ export default function SalesDashboard() {
                                         } else if (['Cancelled', 'Rejected', 'Payment Failed'].includes(statusStr)) {
                                             badgeColorClass = "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20";
                                         }
-                                        
+
                                         return (
                                             <tr key={order.id} className="hover:bg-muted/20 transition-colors">
                                                 <td className="py-4">

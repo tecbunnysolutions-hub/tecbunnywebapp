@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { 
@@ -425,8 +425,8 @@ function ServiceFormDialog({ open, onOpenChange, service, onSuccess }: ServiceFo
     }
   }, [service, form, open]);
 
-  const features = form.watch('features') || [];
-  const nameValue = form.watch('name');
+  const features = useWatch({ control: form.control, name: 'features' }) || [];
+  const nameValue = useWatch({ control: form.control, name: 'name' });
 
   const addFeature = () => {
     if (featureInput.trim()) {

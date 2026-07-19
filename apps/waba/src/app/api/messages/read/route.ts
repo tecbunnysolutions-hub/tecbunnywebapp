@@ -44,8 +44,8 @@ export async function PATCH(req: NextRequest) {
     }
 
     return NextResponse.json({ success: true });
-  } catch (err: any) {
-    console.error('[read-receipts] Uncaught error:', err.message);
+  } catch (err: unknown) {
+    console.error('[read-receipts] Uncaught error:', err instanceof Error ? err.message : String(err));
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

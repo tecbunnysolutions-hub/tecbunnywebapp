@@ -1,5 +1,5 @@
-/* eslint-disable react/no-unescaped-entities */
-/* eslint-disable react-hooks/set-state-in-effect */
+
+
 'use client';
 import { normalizeRole } from "@tecbunny/core";
 import { createClient } from '@tecbunny/database';
@@ -60,8 +60,8 @@ export function LoginDialog({ children }: { children: React.ReactNode }) {
   const [captchaToken, setCaptchaToken] = React.useState<string | null>(null);
   const turnstileSiteKey = process.env.NODE_ENV === 'production' ? process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY?.trim() : undefined;
 
-  
-  
+
+
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -94,10 +94,10 @@ export function LoginDialog({ children }: { children: React.ReactNode }) {
     }
 
     if (!!turnstileSiteKey && !captchaToken) {
-      toast({ 
-        variant: 'destructive', 
-        title: 'Security Verification Required', 
-        description: 'Please complete the CAPTCHA to continue.' 
+      toast({
+        variant: 'destructive',
+        title: 'Security Verification Required',
+        description: 'Please complete the CAPTCHA to continue.'
       });
       return;
     }
@@ -105,7 +105,7 @@ export function LoginDialog({ children }: { children: React.ReactNode }) {
     setIsSubmitting(true);
     try {
       const loginResult = await login(data.identifier, data.password);
-      
+
       if (!loginResult.success) {
         toast({
           title: 'Login Failed',
@@ -124,14 +124,14 @@ export function LoginDialog({ children }: { children: React.ReactNode }) {
       setFailedAttempts(0); // Reset on successful login
       setLockoutUntil(null);
       setCaptchaToken(null);
-      
+
       // Wait for auth state to be fully updated before redirecting
       if (loginResult?.data?.user?.id) {
         try {
           // Merge guest cart/wishlist before redirecting
           const cartItems = useCartStore.getState().cartItems || [];
           const wishlistItems = useWishlistStore.getState().wishlistItems || [];
-          
+
           if (cartItems.length > 0 || wishlistItems.length > 0) {
             await fetch('/api/cart/merge', {
               method: 'POST',
@@ -143,20 +143,20 @@ export function LoginDialog({ children }: { children: React.ReactNode }) {
           const supabase = createClient();
           const userId = loginResult.data?.user?.id;
           if (!userId) return;
-          
+
           const { data: profile } = await supabase
             .from('profiles')
             .select('role')
             .eq('id', userId)
             .single();
-          
+
           const userRole = normalizeRole(profile?.role) ?? 'customer';
-          
+
           // Wait a bit longer for AuthProvider state to update
           await new Promise(resolve => setTimeout(resolve, 500));
-          
+
           let redirectUrl: string;
-          
+
           switch (userRole) {
             case 'admin':
               redirectUrl = '/mgmt/admin';
@@ -176,7 +176,7 @@ export function LoginDialog({ children }: { children: React.ReactNode }) {
               redirectUrl = '/'; // Homepage for customers
               break;
           }
-          
+
           // For customers on homepage, force refresh to update UI state
           if (userRole === 'customer' && window.location.pathname === redirectUrl) {
             window.location.reload();
@@ -193,7 +193,7 @@ export function LoginDialog({ children }: { children: React.ReactNode }) {
       }
     } catch (error) {
       const errorMessage = (error as Error).message;
-      
+
       // Increment failed attempts
       const newFailedAttempts = failedAttempts + 1;
       setFailedAttempts(newFailedAttempts);
@@ -209,7 +209,7 @@ export function LoginDialog({ children }: { children: React.ReactNode }) {
         });
         return;
       }
-      
+
       // Check if it's an account confirmation error
       if (errorMessage.includes('Email not confirmed') || errorMessage.includes('confirmation link')) {
         toast({
@@ -294,10 +294,10 @@ export function LoginDialog({ children }: { children: React.ReactNode }) {
                 </FormItem>
               )}
             />
-            
-            <Button 
-              type="submit" 
-              className="w-full" 
+
+            <Button
+              type="submit"
+              className="w-full"
               disabled={isSubmitting || isLockedOut || (!!turnstileSiteKey && !captchaToken)}
             >
                 {isSubmitting ? 'Logging in...' : isLockedOut ? `Locked (${lockoutTimeRemaining}s)` : 'Login'}
@@ -329,13 +329,13 @@ export function LoginDialog({ children }: { children: React.ReactNode }) {
             )}
           </form>
         </Form>
-        
+
         {failedAttempts > 0 && failedAttempts < 5 && (
           <div className="mt-2 text-center text-sm text-orange-600">
             {5 - failedAttempts} attempts remaining before account lockout
           </div>
         )}
-        
+
         <div className="mt-4 text-center space-y-2">
           {/* Force full reload on forgot password */}
           <a
@@ -345,7 +345,7 @@ export function LoginDialog({ children }: { children: React.ReactNode }) {
           >
             Forgot your password?
           </a>
-          
+
           <div className="text-sm text-muted-foreground">
             Don't have an account?{' '}
             <Link href="/auth/signup" className="underline text-primary hover:underline">

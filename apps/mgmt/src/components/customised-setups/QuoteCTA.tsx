@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from "@tecbunny/core/hooks";
 import { Button } from "@tecbunny/ui";
 import { Checkbox } from "@tecbunny/ui";
-         // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
 import { Input } from "@tecbunny/ui";
 import { Label } from "@tecbunny/ui";
 import { Textarea } from "@tecbunny/ui";

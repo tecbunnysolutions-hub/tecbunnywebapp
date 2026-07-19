@@ -1,4 +1,4 @@
-/* eslint-disable react-hooks/set-state-in-effect */
+
 'use client';
 import { createClient } from '@tecbunny/database';
 
@@ -16,7 +16,7 @@ import { Label } from "@tecbunny/ui";
 import { RadioGroup, RadioGroupItem } from "@tecbunny/ui";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@tecbunny/ui";
 import { useToast } from "@tecbunny/ui";
-              // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
 import type { CustomSetupBlueprintComponentSummary, CustomSetupBlueprintSummary } from "@tecbunny/core/custom-setup-service";
 import { useAuth, useCart } from "@tecbunny/core/hooks";
 import { cn } from "@tecbunny/core/utils";
@@ -36,12 +36,12 @@ import {
   type SetupSystem,
   type PriceEntry,
   type CapacityPriceEntry,
-       // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
   type CameraPriceMatrix,
   type CablePriceEntry,
   type AnalogPricing,
   type IpPricing,
-       // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
   type Totals,
   type ActiveOffer,
   type AnalogSelections,
@@ -64,9 +64,9 @@ import {
   recommendedAnalogSmpsCapacity,
   recommendedIpCapacity,
   formatCurrency,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
   buildAnalogSystemSummary,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
   buildIpSystemSummary,
   resolveAccessoryPrice,
 } from "@tecbunny/core/custom-setup-pricing";
@@ -107,7 +107,7 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
   const analogPricing = pricingCatalog.analog;
   const ipPricing = pricingCatalog.ip;
   const hddOptions = pricingCatalog.hddOptions;
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
   const monitorOption = pricingCatalog.monitorOption;
   const installationOption = pricingCatalog.installationOption;
   const selectableHddOptions = hddOptions.length ? hddOptions : FALLBACK_HDD_OPTIONS;
@@ -123,9 +123,9 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
 
   const [system, setSystem] = useState<SetupSystem>('analog');
   const [premiseType, setPremiseType] = useState<'Residential' | 'Commercial' | 'Industrial'>('Residential');
-                            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
   const [automationEnabled, setAutomationEnabled] = useState<boolean>(true);
-                       // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
   const [alarmEnabled, setAlarmEnabled] = useState<boolean>(false);
   const [cameraCount, setCameraCount] = useState<number>(4);
   const [cameraCountInput, setCameraCountInput] = useState<string>('4');
@@ -150,14 +150,14 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
   const [monitorIncluded, setMonitorIncluded] = useState<boolean>(false);
   const [monitorId, setMonitorId] = useState<string>(FALLBACK_MONITOR_OPTIONS[0]?.id ?? 'monitor-19');
   const [monitorStand, setMonitorStand] = useState<'none' | 'static' | 'movable'>('none');
-                            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
   const [wallMountIncluded, setWallMountIncluded] = useState<boolean>(false);
   const [spikeGuardIncluded, setSpikeGuardIncluded] = useState<boolean>(false);
   const [accessoryPricing, setAccessoryPricing] = useState<Record<string, { mrp: number; sale: number }> | null>(null);
   const [rackId, setRackId] = useState<string | null>(null);
   const [conduitPipeId, setConduitPipeId] = useState<string | null>(null);
   const [conduitMeters, setConduitMeters] = useState<number>(0);
-                               // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
   const [installationIncluded, setInstallationIncluded] = useState<boolean>(true);
   const [quoteDownloading, setQuoteDownloading] = useState<boolean>(false);
   const [isBidding, setIsBidding] = useState(false);
@@ -167,7 +167,7 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
   const [activeOffer, setActiveOffer] = useState<ActiveOffer | null>(null);
   const router = useRouter();
   const { toast } = useToast();
-                         // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
   const { user, loading: authLoading } = useAuth();
   const { addToCart } = useCart();
 
@@ -186,7 +186,7 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
           .gte('end_date', new Date().toISOString())
           .limit(1)
           .single();
-        
+
         if (data && !error) {
           setActiveOffer({
             id: data.id,
@@ -218,7 +218,7 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
     }
   }, [user]);
 
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
   const handleCameraRangeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const normalized = Math.min(32, Math.max(1, Number.parseInt(event.target.value, 10)));
     setCameraCount(normalized);
@@ -259,7 +259,7 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
   const handleCameraCountChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
     setCameraCountInput(value);
-    
+
     // Only update the actual count if it's a valid number
     const numValue = Number.parseInt(value, 10);
     if (!isNaN(numValue) && value !== '') {
@@ -368,7 +368,7 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
     const recommendedDvrCapacity = recommendedAnalogDvrCapacity(cameraCount);
     const recommendedDvr = pickAnalogDvrOption(analogPricing.dvr, recommendedDvrCapacity, analogSelections.resolution);
     const currentDvr = analogPricing.dvr.find((entry: CapacityPriceEntry) => entry.id === analogSelections.dvrId);
-    
+
     // If current DVR has less capacity than required, or if resolution mandates a change
     if (!currentDvr || currentDvr.capacity < recommendedDvrCapacity || (analogSelections.resolution === '5mp' && !(currentDvr.id.includes('5mp') || currentDvr.label.toLowerCase().includes('5mp')))) {
       setAnalogSelections((previous) => ({ ...previous, dvrId: recommendedDvr.id }));
@@ -443,7 +443,7 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
     const systemLabel = system === 'analog' ? 'Analog (DVR)' : 'IP (NVR)';
     const hddLabel = pricingCatalog.hddOptions.find(o => o.id === hddId)?.label || 'No HDD';
     const extrasLabel = (monitorIncluded || installationIncluded) ? ' + Extras' : '';
-    
+
     return `${systemLabel} | ${cameraCount} cameras | HDD: ${hddLabel}${extrasLabel} | Sale total ${formatCurrency(totals.overall.sale)}`;
   }, [cameraCount, hddId, installationIncluded, monitorIncluded, pricingCatalog.hddOptions, selectableHddOptions, system, totals.overall.sale]);
 
@@ -603,7 +603,7 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
     }
   };
 
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
   const handleDownloadBidQuote = async () => {
     if (!bidForm.name || !bidForm.phone || !bidForm.price || !bidForm.address) {
       toast({ variant: 'destructive', title: 'Missing fields', description: 'Name, phone, address, and bid price are required.' });
@@ -615,10 +615,10 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
     const minPrice = originalPrice * 0.7;
 
     if (bidPrice < minPrice) {
-      toast({ 
-        variant: 'destructive', 
-        title: 'Bid too low', 
-        description: `Minimum bid price is ₹${Math.round(minPrice).toLocaleString()} (70% of quoted price). Your bid: ₹${Math.round(bidPrice).toLocaleString()}` 
+      toast({
+        variant: 'destructive',
+        title: 'Bid too low',
+        description: `Minimum bid price is ₹${Math.round(minPrice).toLocaleString()} (70% of quoted price). Your bid: ₹${Math.round(bidPrice).toLocaleString()}`
       });
       return;
     }
@@ -627,7 +627,7 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
     try {
       const systemLabel = system === 'analog' ? 'Analog DVR' : 'IP NVR';
       const hddLabel = selectableHddOptions.find((entry: PriceEntry) => entry.id === hddId)?.label ?? 'Surveillance HDD';
-      
+
       const biddedTotals = {
         ...totals.overall,
         sale: bidPrice,
@@ -780,7 +780,7 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
   const handleBookNow = () => {
     if (quoteDownloading) return;
     const systemLabel = system === 'analog' ? 'Analog DVR' : 'IP NVR';
-    
+
     addToCart({
       id: `service-cctv-${Math.random().toString(36).substring(2,9)}`,
       name: `Custom CCTV Setup - ${cameraCount} Cameras (${systemLabel})`,
@@ -790,15 +790,15 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
       product_type: 'service',
       description: inlineQuoteSummary
     }, 1);
-    
+
     router.push('/checkout');
   };
 
   const handleBookSiteInspection = () => {
     if (quoteDownloading) return;
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
     const systemLabel = system === 'analog' ? 'Analog DVR' : 'IP NVR';
-    
+
     addToCart({
       id: `service-cctv-inspection-${Math.random().toString(36).substring(2,9)}`,
       name: `Site Inspection: Custom CCTV Setup (${cameraCount} Cameras)`,
@@ -808,7 +808,7 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
       product_type: 'service',
       description: `Site Inspection before confirming order. Rs. 999/- will be adjusted on the final bill if the order is confirmed. If canceled (e.g., due to pricing mismatch), this amount is treated as the visiting charge and will not be refunded. Please ensure you have finalized the quote before booking.`
     }, 1);
-    
+
     router.push('/checkout');
   };
 
@@ -823,10 +823,10 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
     const minPrice = originalPrice * 0.7; // 70% of original price
 
     if (bidPrice < minPrice) {
-      toast({ 
-        variant: 'destructive', 
-        title: 'Bid too low', 
-        description: `Minimum bid price is ₹${Math.round(minPrice).toLocaleString()} (70% of quoted price). Your bid: ₹${Math.round(bidPrice).toLocaleString()}` 
+      toast({
+        variant: 'destructive',
+        title: 'Bid too low',
+        description: `Minimum bid price is ₹${Math.round(minPrice).toLocaleString()} (70% of quoted price). Your bid: ₹${Math.round(bidPrice).toLocaleString()}`
       });
       return;
     }
@@ -856,23 +856,23 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
       });
 
       if (!res.ok) throw new Error('Submission failed');
-      
+
       const data = await res.json();
       const quoteId = data.quoteId;
-      
-      toast({ 
-        title: 'Bid Submitted Successfully!', 
-        description: 'Check your quote status to see our counter-offer.' 
+
+      toast({
+        title: 'Bid Submitted Successfully!',
+        description: 'Check your quote status to see our counter-offer.'
       });
-      
+
       setIsBidding(false);
       setBidForm({ name: '', email: '', phone: '', address: '', price: '' });
-      
+
       // Redirect to quote view page
       setTimeout(() => {
         router.push(`/quotes/${quoteId}`);
       }, 1500);
-             // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
     } catch (e: unknown) {
       toast({ variant: 'destructive', title: 'Error', description: 'Failed to submit bid.' });
     }
@@ -1554,8 +1554,8 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
 
           {totals.installation.included && !totals.appliedOffer && (
             <div className="pt-2">
-              <FreeInstallationOfferBanner 
-                installationPrice={totals.installation.sale} 
+              <FreeInstallationOfferBanner
+                installationPrice={totals.installation.sale}
                 isEligible={true}
                 variant="card"
               />
@@ -1632,37 +1632,37 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
               </p>
             </div>
             <div className="flex flex-wrap gap-3">
-              <Button 
+              <Button
                 onClick={async () => {
                   try {
                     // 1. Mock publish call (In real scenario, would save to DB)
                     const blueprintId = `BP-${Math.random().toString(36).substring(2, 9).toUpperCase()}`;
-                    
+
                     // 2. Execute secure webhook dispatch
                     const res = await fetch('/api/auto-offers', {
                       method: 'POST',
                       headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({ 
-                        action: 'issue_share_discount', 
-                        blueprintId, 
-                        platform: 'X/LinkedIn' 
+                      body: JSON.stringify({
+                        action: 'issue_share_discount',
+                        blueprintId,
+                        platform: 'X/LinkedIn'
                       })
                     });
-                    
+
                     const data = await res.json();
                     if (data.success) {
-                      toast({ 
-                        title: 'Viral Discount Applied!', 
+                      toast({
+                        title: 'Viral Discount Applied!',
                         description: 'Your 10% share-bonus has been added to the calculation.',
                         variant: 'default'
                       });
                       // Logic to trigger cart refresh would go here
                     }
-                    
+
                     // 3. Open share dialog
                     const shareUrl = `https://tecbunny.com/blueprints/${blueprintId}`;
                     window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(`Check out my custom security architecture on TecBunny! ${shareUrl}`)}`, '_blank');
-                    
+
                   } catch (err) {
                     console.error('Viral trigger failed', err);
                   }
@@ -1681,7 +1681,7 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
           <div className="bg-[#030712] border border-amber-500/30 rounded-xl max-w-md w-full p-6 shadow-2xl relative">
             <h3 className="text-xl font-bold text-white mb-2">Request Revised Price</h3>
             <p className="text-sm text-slate-400 mb-6">Enter your details and bid a price for this custom setup. Our team will review and respond shortly.</p>
-            
+
             <div className="space-y-4">
               <div>
                 <Label className="text-slate-300">Name</Label>
@@ -1719,7 +1719,7 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
           <div className="bg-[#030712] border border-amber-500/30 rounded-xl max-w-md w-full p-6 shadow-2xl relative">
             <h3 className="text-xl font-bold text-white mb-2">Download Quote</h3>
             <p className="text-sm text-slate-400 mb-6">Please provide your details to download the PDF quote.</p>
-            
+
             <div className="space-y-4">
               <div>
                 <Label className="text-slate-300">Name</Label>
@@ -1755,7 +1755,7 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
 
   const techLayout = (
     <section className="blueprint-bg bg-[#050b14] py-10">
-      
+
 
       <div className="flex items-center justify-center mb-12">
         <div className="flex items-center">
@@ -1865,21 +1865,21 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
                   <span className="text-xl font-bold text-foreground">{formatCurrency(totals.overall.sale)}</span>
                 </div>
                 <div className="flex flex-col gap-2">
-                  <Button 
-                    onClick={handleBookNow} 
+                  <Button
+                    onClick={handleBookNow}
                     className="w-full bg-primary hover:bg-primary/90 text-white font-bold uppercase tracking-wider"
                   >
                     Book Installation
                   </Button>
-                  <Button 
-                    onClick={() => setIsBidding(true)} 
+                  <Button
+                    onClick={() => setIsBidding(true)}
                     variant="outline"
                     className="w-full border-amber-500/30 text-amber-500 hover:bg-amber-500/10 font-bold uppercase tracking-wider"
                   >
                     Negotiate Price
                   </Button>
-                  <Button 
-                    onClick={handleBookSiteInspection} 
+                  <Button
+                    onClick={handleBookSiteInspection}
                     variant="secondary"
                     className="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold uppercase tracking-wider border border-slate-600"
                   >

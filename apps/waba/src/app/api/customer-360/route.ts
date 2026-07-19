@@ -2,6 +2,10 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireApiRole } from '@tecbunny/core/server-role-guard';
 
+type CustomerOrderSummary = Record<string, never>;
+type CustomerInvoiceSummary = Record<string, never>;
+type CustomerAmcSummary = null;
+
 // GET /api/customer-360?phone=1234567890
 export async function GET(req: Request) {
   try {
@@ -31,9 +35,9 @@ export async function GET(req: Request) {
     });
 
     // Future integration endpoints for Orders, Invoices, and AMC
-    const orders: any[] = [];
-    const invoices: any[] = [];
-    const amc: any = null;
+    const orders: CustomerOrderSummary[] = [];
+    const invoices: CustomerInvoiceSummary[] = [];
+    const amc: CustomerAmcSummary = null;
 
     return NextResponse.json({
       status: 'success',
