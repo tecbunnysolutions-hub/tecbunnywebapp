@@ -6,6 +6,7 @@ import { sendWhatsAppMessage } from '../services/infobipService';
 import { buildPricingCatalog } from '@tecbunny/core/custom-setup-pricing-server';
 import { CustomerService } from '@tecbunny/core/services/customer.service';
 import { getAdminDb } from '@tecbunny/core/db/client';
+import { recordInboundConsent } from '../services/consentService';
 
 const apiKey = process.env.GEMINI_API_KEY || "";
 const genAI = apiKey ? new GoogleGenerativeAI(apiKey) : null;
@@ -66,6 +67,10 @@ export class InboundTriageAgent extends BaseAgent<WebhookData, TriagedPayload | 
       } else if (Array.isArray(msg.content) && msg.content.length > 0) {
         const content = msg.content[0];
         textContent = content.type === 'TEXT' ? (content.text || '') : `[${content.type || 'Media'}]`;
+      }
+
+      if (textContent) {
+        await recordInboundConsent(senderNumber, textContent);
       }
 
       // Bug #14 fix: The idempotency check (SELECT then INSERT) is not atomic.

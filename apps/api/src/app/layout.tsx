@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import { EnterpriseAnalyticsAutoTracker } from "@tecbunny/core/components/EnterpriseAnalyticsAutoTracker";
 import "./globals.css";
 
 const inter = Inter({
@@ -23,7 +24,10 @@ export default function RootLayout({
       className={`${inter.variable} h-full antialiased`}
       suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col" suppressHydrationWarning>{children}</body>
+      <body className="min-h-full flex flex-col" suppressHydrationWarning>
+        <EnterpriseAnalyticsAutoTracker application="api" defaultModule="api-dashboard" dashboardPaths={['/dashboard', '/health']} />
+        {children}
+      </body>
     </html>
   );
 }

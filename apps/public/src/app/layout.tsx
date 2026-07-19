@@ -11,6 +11,7 @@ import {Footer} from '@/components/layout/Footer';
 import {TechShell} from '@/components/layout/TechShell';
 import {AppProvider} from "@tecbunny/core/context/AppProvider";
 import {OrderProvider} from "@tecbunny/core/context/OrderProvider";
+import {EnterpriseAnalyticsAutoTracker} from '@tecbunny/core/components/EnterpriseAnalyticsAutoTracker';
 import {ThemeProvider} from '@/components/providers/ThemeProvider';
 import {DeferredFloatingAIAssistant} from '@/components/layout/DeferredFloatingAIAssistant';
 import {DeferredRuntimeServices} from '@/components/layout/DeferredRuntimeServices';
@@ -326,6 +327,7 @@ export default async function RootLayout({
             <FeatureFlagProviderLoader>
               <AppProvider>
                 <OrderProvider>
+                  <EnterpriseAnalyticsAutoTracker application="public" defaultModule="website" dashboardPaths={['/account', '/orders', '/dashboard']} />
                   <TechShell>
                     <div className="site-shell flex min-h-[100dvh] flex-col bg-background text-foreground w-full">
                       <Suspense fallback={<div className="h-16 border-b" />}>

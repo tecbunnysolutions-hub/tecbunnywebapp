@@ -1,7 +1,6 @@
 import { isAtLeast } from "@tecbunny/core";
-import { isSupabaseServiceConfigured } from "@tecbunny/core/server";
 import { createClient } from '@tecbunny/database';
-import { createServiceClient } from "@tecbunny/core/server";
+import { createServiceClient, isSupabaseServiceConfigured } from "@tecbunny/database/admin";
 import { NextRequest, NextResponse } from 'next/server';
 
 

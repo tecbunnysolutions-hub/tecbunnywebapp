@@ -1,5 +1,5 @@
 import { createClient } from '@tecbunny/database';
-import { createServiceClient } from "@tecbunny/core/server";
+import { createServiceClient } from "@tecbunny/database/admin";
 ﻿import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { WhatsAppService } from "@tecbunny/core/whatsapp-service";

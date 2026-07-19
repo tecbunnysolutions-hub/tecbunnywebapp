@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 type Template = {
@@ -9,12 +10,17 @@ type Template = {
   language: string;
   content: string;
   status: string;
+  category?: string;
+  provider_status?: string;
+  variable_count?: number;
+  rejection_reason?: string;
 };
 
 export default function TemplatesPage() {
   const [templates, setTemplates] = useState<Template[]>([]);
   const [loading, setLoading] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
   const [notice, setNotice] = useState<{ tone: 'error' | 'success'; message: string } | null>(null);
   
   // New Template Form
@@ -60,7 +66,7 @@ export default function TemplatesPage() {
         setNewName("");
         setNewContent("");
         setIsCreating(false);
-        setNotice({ tone: 'success', message: 'Template submitted for approval.' });
+        setNotice({ tone: 'success', message: 'Template saved as pending. Sync provider approval before broadcasting.' });
         fetchTemplates();
       } else {
         setNotice({ tone: 'error', message: 'Failed to create template. Please check the details and try again.' });
@@ -71,14 +77,36 @@ export default function TemplatesPage() {
     }
   };
 
+  const handleSyncTemplates = async () => {
+    setIsSyncing(true);
+    setNotice(null);
+    try {
+      const response = await fetch('/api/templates/sync', { method: 'POST' });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        setNotice({ tone: 'error', message: payload.error || 'Provider template sync failed.' });
+      } else {
+        setNotice({ tone: 'success', message: `Provider sync complete. ${payload.synced ?? 0} templates refreshed.` });
+        fetchTemplates();
+      }
+    } catch (err) {
+      console.error(err);
+      setNotice({ tone: 'error', message: 'Provider template sync could not be started.' });
+    }
+    setIsSyncing(false);
+  };
+
   return (
     <div className="dashboard-container" style={{ padding: '2rem', display: 'flex', flexDirection: 'column', gap: '2rem', overflowY: 'auto', width: '100%' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
           <h1 style={{ fontSize: '2rem', fontWeight: 600 }}>Template Library</h1>
-          <p style={{ color: '#94a3b8' }}>Manage approved WhatsApp Message Templates</p>
+          <p style={{ color: '#94a3b8' }}>Manage WhatsApp templates and provider approval status</p>
         </div>
-        <div style={{ display: 'flex', gap: '1rem' }}>
+        <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+          <Link href="/analytics" style={{ color: '#bfdbfe', textDecoration: 'none', alignSelf: 'center' }}>Analytics</Link>
+          <Link href="/contacts" style={{ color: '#bfdbfe', textDecoration: 'none', alignSelf: 'center' }}>Consent</Link>
+          <button onClick={handleSyncTemplates} disabled={isSyncing} style={{ background: isSyncing ? 'rgba(59,130,246,0.5)' : '#3b82f6', color: 'white', padding: '0.75rem 1.5rem', borderRadius: '8px', border: 'none', cursor: isSyncing ? 'not-allowed' : 'pointer', fontWeight: 600 }}>{isSyncing ? 'Syncing...' : 'Sync Provider'}</button>
           <button onClick={() => router.push('/')} style={{ background: 'rgba(255,255,255,0.1)', color: 'white', padding: '0.75rem 1.5rem', borderRadius: '8px', border: 'none', cursor: 'pointer' }}>← Back to Inbox</button>
           <button onClick={() => setIsCreating(!isCreating)} style={{ background: '#10b981', color: 'white', padding: '0.75rem 1.5rem', borderRadius: '8px', border: 'none', cursor: 'pointer', fontWeight: 600 }}>+ New Template</button>
         </div>
@@ -133,9 +161,11 @@ export default function TemplatesPage() {
             <div key={t.id} className="glass-panel" style={{ padding: '1.5rem', position: 'relative' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
                 <h3 style={{ fontSize: '1.1rem', fontWeight: 600 }}>{t.name}</h3>
-                <span className={`crm-status-badge status-WON`} style={{ margin: 0 }}>{t.status}</span>
+                <span className={`crm-status-badge status-WON`} style={{ margin: 0 }}>{t.provider_status || t.status}</span>
               </div>
-              <p style={{ color: '#94a3b8', fontSize: '0.85rem', marginBottom: '1rem' }}>Language: {t.language}</p>
+              <p style={{ color: '#94a3b8', fontSize: '0.85rem', marginBottom: '1rem' }}>
+                Language: {t.language} · Category: {t.category || 'MARKETING'} · Variables: {t.variable_count ?? 0}
+              </p>
               <div style={{ background: 'rgba(0,0,0,0.2)', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)', fontSize: '0.95rem', lineHeight: 1.5, minHeight: '100px' }}>
                 {t.content}
               </div>

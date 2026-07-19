@@ -6,6 +6,7 @@ export type ChatNotice = { tone: 'error' | 'info'; message: string };
 type InternalNote = {
   id: string;
   text: string;
+  authorName?: string | null;
   createdAt: string;
 };
 
@@ -56,6 +57,7 @@ export function ChatMain({
   const [inlineNotice, setInlineNotice] = useState<{ tone: 'error' | 'info'; message: string } | null>(null);
   const [internalNotes, setInternalNotes] = useState<InternalNote[]>([]);
   const [noteDraft, setNoteDraft] = useState('');
+  const [isSavingNote, setIsSavingNote] = useState(false);
 
   const COMMANDS = [
     { cmd: '/summary', desc: 'Summarize the conversation' },
@@ -142,28 +144,37 @@ export function ChatMain({
   };
 
   React.useEffect(() => {
-    try {
-      const rawNotes = window.localStorage.getItem(`tecbunny.waba.internalNotes.${activeConversation}`);
-      const parsedNotes = rawNotes ? JSON.parse(rawNotes) : [];
-      setInternalNotes(Array.isArray(parsedNotes) ? parsedNotes : []);
-    } catch {
-      setInternalNotes([]);
-    }
-    setNoteDraft('');
+    const frame = window.requestAnimationFrame(() => {
+      fetch(`/api/conversations/${encodeURIComponent(activeConversation)}/notes`)
+        .then((response) => response.ok ? response.json() : Promise.reject(new Error('Unable to load notes')))
+        .then((payload) => setInternalNotes(Array.isArray(payload.notes) ? payload.notes : []))
+        .catch(() => setInternalNotes([]));
+      setNoteDraft('');
+    });
+    return () => window.cancelAnimationFrame(frame);
   }, [activeConversation]);
 
-  const saveInternalNote = () => {
+  const saveInternalNote = async () => {
     const text = noteDraft.trim();
     if (!text) return;
-    const nextNotes = [
-      { id: `${Date.now()}`, text, createdAt: new Date().toISOString() },
-      ...internalNotes,
-    ].slice(0, 5);
-    setInternalNotes(nextNotes);
-    window.localStorage.setItem(`tecbunny.waba.internalNotes.${activeConversation}`, JSON.stringify(nextNotes));
-    setNoteDraft('');
-    setInlineNotice({ tone: 'info', message: 'Internal note saved for this conversation.' });
-    onNoticeClear?.();
+    setIsSavingNote(true);
+    try {
+      const response = await fetch(`/api/conversations/${encodeURIComponent(activeConversation)}/notes`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ note: text }),
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(payload.error || 'Unable to save note');
+      setInternalNotes((notes) => [payload.note, ...notes].slice(0, 20));
+      setNoteDraft('');
+      setInlineNotice({ tone: 'info', message: 'Internal note saved for this conversation.' });
+      onNoticeClear?.();
+    } catch (error) {
+      setInlineNotice({ tone: 'error', message: error instanceof Error ? error.message : 'Unable to save note' });
+    } finally {
+      setIsSavingNote(false);
+    }
   };
 
   const allMessages = [...messages, ...systemMessages].filter(m => m.sender_number === activeConversation).sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
@@ -301,22 +312,23 @@ export function ChatMain({
             onChange={(event) => setNoteDraft(event.target.value)}
             placeholder="Add an internal note for the next agent..."
             aria-label="Internal conversation note"
+            disabled={isSavingNote}
             style={{ flex: 1, border: '1px solid rgba(148, 163, 184, 0.22)', borderRadius: '10px', background: 'rgba(2, 6, 23, 0.55)', color: '#e2e8f0', padding: '0.65rem 0.8rem', outline: 'none' }}
           />
           <button
             type="button"
             onClick={saveInternalNote}
-            disabled={!noteDraft.trim()}
-            style={{ border: '1px solid rgba(59, 130, 246, 0.35)', background: noteDraft.trim() ? 'rgba(59, 130, 246, 0.18)' : 'rgba(148, 163, 184, 0.12)', color: noteDraft.trim() ? '#bfdbfe' : '#94a3b8', borderRadius: '10px', padding: '0.65rem 0.9rem', fontSize: '0.8rem', fontWeight: 700, cursor: noteDraft.trim() ? 'pointer' : 'not-allowed' }}
+            disabled={!noteDraft.trim() || isSavingNote}
+            style={{ border: '1px solid rgba(59, 130, 246, 0.35)', background: noteDraft.trim() && !isSavingNote ? 'rgba(59, 130, 246, 0.18)' : 'rgba(148, 163, 184, 0.12)', color: noteDraft.trim() && !isSavingNote ? '#bfdbfe' : '#94a3b8', borderRadius: '10px', padding: '0.65rem 0.9rem', fontSize: '0.8rem', fontWeight: 700, cursor: noteDraft.trim() && !isSavingNote ? 'pointer' : 'not-allowed' }}
           >
-            Save Note
+            {isSavingNote ? 'Saving...' : 'Save Note'}
           </button>
         </div>
         {internalNotes.length > 0 && (
           <div style={{ marginTop: '0.65rem', display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
             {internalNotes.map((note) => (
               <span key={note.id} style={{ maxWidth: '100%', border: '1px solid rgba(148, 163, 184, 0.18)', borderRadius: '999px', background: 'rgba(2, 6, 23, 0.45)', color: '#cbd5e1', padding: '0.35rem 0.65rem', fontSize: '0.75rem' }}>
-                {new Date(note.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}: {note.text}
+                {new Date(note.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}{note.authorName ? ` · ${note.authorName}` : ''}: {note.text}
               </span>
             ))}
           </div>

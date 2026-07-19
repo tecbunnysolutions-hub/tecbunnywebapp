@@ -11,6 +11,8 @@ export * from './session-manager';
 export * from './offer-discount-service';
 export * from './order-utils';
 export * from './permissions.client';
+export * from './enterprise-analytics';
+export * from './enterprise-analytics-proxy';
 export * from './image-utils';
 export * from './product-visibility';
 export * from './indian-tax';

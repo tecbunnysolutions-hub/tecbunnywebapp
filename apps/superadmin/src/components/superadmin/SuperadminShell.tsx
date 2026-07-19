@@ -176,16 +176,15 @@ export function SuperadminShell({ children }: { children: React.ReactNode }) {
         </nav>
 
         {/* Sign out */}
-        <div className="border-t border-slate-100 p-2.5 shrink-0">
-          <Link
-            href="/api/admin-auth/logout"
-            prefetch={false}
-            className="flex items-center gap-2.5 px-3 py-1.5 rounded-md text-xs font-semibold text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition-colors"
+        <form action="/superadmin/mgmt/logout" method="post" className="border-t border-slate-100 p-2.5 shrink-0">
+          <button
+            type="submit"
+            className="flex w-full items-center gap-2.5 px-3 py-1.5 rounded-md text-xs font-semibold text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition-colors"
           >
             <LogOut className="h-4 w-4 shrink-0 text-slate-400" />
             Sign out
-          </Link>
-        </div>
+          </button>
+        </form>
       </aside>
 
       {/* ── Main area ── */}
@@ -217,17 +216,15 @@ export function SuperadminShell({ children }: { children: React.ReactNode }) {
           </div>
 
           <div className="flex items-center gap-3">
-            {/* AI Command */}
-            <button type="button" className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-gradient-to-r from-indigo-950/40 to-purple-950/40 text-indigo-300 border border-indigo-900/50 hover:shadow-lg hover:border-indigo-800/60 transition-all">
+            <Link href="/superadmin/mgmt/ai-config" className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-gradient-to-r from-indigo-950/40 to-purple-950/40 text-indigo-300 border border-indigo-900/50 hover:shadow-lg hover:border-indigo-800/60 transition-all">
               <Sparkles className="h-3.5 w-3.5 text-purple-400 shrink-0" />
               AI Command
-            </button>
+            </Link>
 
-            {/* Notifications */}
-            <button type="button" className="p-2 text-zinc-400 hover:text-zinc-200 relative rounded-full hover:bg-zinc-900/60" aria-label="View superadmin notifications">
+            <Link href="/superadmin/mgmt/audit-logs" className="p-2 text-zinc-400 hover:text-zinc-200 relative rounded-full hover:bg-zinc-900/60" aria-label="View superadmin activity log">
               <Bell className="h-5 w-5" />
               <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full ring-2 ring-zinc-900" />
-            </button>
+            </Link>
 
             {/* Profile */}
             <div className="flex items-center gap-2 pl-1">

@@ -1,6 +1,5 @@
-import { isSupabaseServiceConfigured } from "@tecbunny/core/server";
 import { createClient } from '@tecbunny/database';
-import { createServiceClient } from "@tecbunny/core/server";
+import { createServiceClient, isSupabaseServiceConfigured } from "@tecbunny/database/admin";
 /**
  * Product Archive / Soft Delete API
  * POST   /api/admin/products/archive           → Soft-delete (archive) a product

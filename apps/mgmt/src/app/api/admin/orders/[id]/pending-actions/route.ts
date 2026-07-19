@@ -3,8 +3,16 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import {  uploadToSupabase  } from '@tecbunny/database/storage';
 import { logger } from "@tecbunny/core/logger";
-import { envConfig } from "@tecbunny/core/environment-validator";
 import { sendPaymentActionRequired, sendPaymentConfirmationNotification, sendWhatsAppNotification } from "@tecbunny/core/whatsapp-service";
+
+function getPaymentBaseUrl(request: NextRequest) {
+  const configuredUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_MGMT_URL;
+  if (configuredUrl) return configuredUrl.replace(/\/$/, '');
+
+  const forwardedProto = request.headers.get('x-forwarded-proto') || 'https';
+  const forwardedHost = request.headers.get('x-forwarded-host') || request.headers.get('host');
+  return forwardedHost ? `${forwardedProto}://${forwardedHost}` : '';
+}
 
 export async function POST(
   request: NextRequest,
@@ -92,7 +100,7 @@ export async function POST(
         const cleanPhone = customerPhone.replace(/[^\d+]/g, '');
         const formattedPhone = cleanPhone.startsWith('+') ? cleanPhone : `+91${cleanPhone}`;
         
-        const siteUrl = envConfig.app.siteUrl;
+        const siteUrl = getPaymentBaseUrl(request);
         const paymentLink = `${siteUrl}/payment/upi/${id}`;
 
         try {
@@ -109,7 +117,7 @@ export async function POST(
 
       const customerEmail = itemsPayload.customer_email || order.customer_email;
       if (customerEmail) {
-        const siteUrl = envConfig.app.siteUrl;
+        const siteUrl = getPaymentBaseUrl(request);
         const paymentLink = `${siteUrl}/payment/upi/${id}`;
         
         try {

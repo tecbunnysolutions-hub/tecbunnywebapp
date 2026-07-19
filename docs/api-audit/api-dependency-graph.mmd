@@ -1,10 +1,8 @@
 graph TD
   POST__api_admin_auth_login["POST /api/admin-auth/login"]
   app_api["api"] --> POST__api_admin_auth_login
-  app_superadmin["superadmin"] --> POST__api_admin_auth_login
   POST__api_admin_auth_logout["POST /api/admin-auth/logout"]
   app_api["api"] --> POST__api_admin_auth_logout
-  app_superadmin["superadmin"] --> POST__api_admin_auth_logout
   POST__api_admin_agents_approve["POST /api/admin/agents/approve"]
   POST__api_admin_agents_approve --> db_sales_agents[("sales_agents")]
   GET__api_admin_agents_list["GET /api/admin/agents/list"]
@@ -24,6 +22,9 @@ graph TD
   POST__api_admin_ai_product_description --> db_products[("products")]
   POST__api_admin_ai_related_products["POST /api/admin/ai/related-products"]
   POST__api_admin_ai_related_products --> db_products[("products")]
+  POST__api_admin_crm_leads["POST /api/admin/crm/leads"]
+  POST__api_admin_crm_leads --> db_sls_leads[("sls_leads")]
+  app_mgmt["mgmt"] --> POST__api_admin_crm_leads
   GET__api_admin_custom_setups["GET /api/admin/custom-setups"]
   GET__api_admin_custom_setups --> db_custom_setup_component_options[("custom_setup_component_options")]
   GET__api_admin_custom_setups --> db_custom_setup_components[("custom_setup_components")]
@@ -73,6 +74,12 @@ graph TD
   POST__api_admin_marketing_broadcast --> db_marketing_broadcast_logs[("marketing_broadcast_logs")]
   POST__api_admin_marketing_broadcast --> db_profiles[("profiles")]
   app_mgmt["mgmt"] --> POST__api_admin_marketing_broadcast
+  GET__api_admin_mgmt_overview["GET /api/admin/mgmt/overview"]
+  GET__api_admin_mgmt_overview --> db_orders[("orders")]
+  GET__api_admin_mgmt_overview --> db_products[("products")]
+  GET__api_admin_mgmt_overview --> db_service_tickets[("service_tickets")]
+  GET__api_admin_mgmt_overview --> db_sls_leads[("sls_leads")]
+  app_mgmt["mgmt"] --> GET__api_admin_mgmt_overview
   GET__api_admin_orders["GET /api/admin/orders"]
   GET__api_admin_orders --> db_orders[("orders")]
   POST__api_admin_orders__id__pending_actions["POST /api/admin/orders/{id}/pending-actions"]
@@ -123,6 +130,7 @@ graph TD
   POST__api_admin_products_bulk_price --> db_products[("products")]
   POST__api_admin_products_bulk["POST /api/admin/products/bulk"]
   POST__api_admin_products_bulk --> db_products[("products")]
+  POST__api_admin_products_bulk --> db_rpc_soft_delete_product[("rpc:soft_delete_product")]
   app_admin_ui["admin-ui"] --> POST__api_admin_products_bulk
   GET__api_admin_quotes["GET /api/admin/quotes"]
   GET__api_admin_quotes --> db_quotes[("quotes")]
@@ -142,12 +150,11 @@ graph TD
   POST__api_admin_quotes_advance_payment --> db_profiles[("profiles")]
   POST__api_admin_quotes_advance_payment --> db_quotes[("quotes")]
   POST__api_admin_redemptions_approve["POST /api/admin/redemptions/approve"]
-  POST__api_admin_redemptions_approve --> db_agent_redemption_requests[("agent_redemption_requests")]
+  POST__api_admin_redemptions_approve --> db_rpc_approve_agent_redemption[("rpc:approve_agent_redemption")]
   GET__api_admin_redemptions_list["GET /api/admin/redemptions/list"]
   GET__api_admin_redemptions_list --> db_agent_redemption_requests[("agent_redemption_requests")]
   POST__api_admin_redemptions_process["POST /api/admin/redemptions/process"]
-  POST__api_admin_redemptions_process --> db_agent_redemption_requests[("agent_redemption_requests")]
-  POST__api_admin_redemptions_process --> db_rpc_increment_agent_points[("rpc:increment_agent_points")]
+  POST__api_admin_redemptions_process --> db_rpc_process_agent_redemption[("rpc:process_agent_redemption")]
   POST__api_admin_roles_set["POST /api/admin/roles/set"]
   POST__api_admin_roles_set --> db_profiles[("profiles")]
   POST__api_admin_roles_set --> db_rpc_admin_set_user_role[("rpc:admin_set_user_role")]
@@ -204,6 +211,12 @@ graph TD
   POST__api_ai_research["POST /api/ai/research"]
   POST__api_ai_research --> db_products[("products")]
   app_public["public"] --> POST__api_ai_research
+  GET__api_analytics["GET /api/analytics"]
+  GET__api_analytics --> db_Message[("Message")]
+  GET__api_analytics --> db_mkt_campaign_analytics[("mkt_campaign_analytics")]
+  GET__api_analytics --> db_waba_contact_consent[("waba_contact_consent")]
+  GET__api_analytics --> db_waba_message_status_events[("waba_message_status_events")]
+  app_waba["waba"] --> GET__api_analytics
   GET__api_analytics_dashboard["GET /api/analytics/dashboard"]
   GET__api_analytics_dashboard --> db_analytics_events[("analytics_events")]
   GET__api_analytics_dashboard --> db_leads[("leads")]
@@ -302,14 +315,14 @@ graph TD
   POST__api_blueprints_attribution_conversion["POST /api/blueprints/attribution/conversion"]
   POST__api_blueprints_attribution_conversion --> db_published_blueprints[("published_blueprints")]
   POST__api_blueprints_attribution_conversion --> db_user_milestones[("user_milestones")]
-  app_mgmt["mgmt"] --> POST__api_blueprints_attribution_conversion
   DELETE__api_branches["DELETE /api/branches"]
   app_superadmin["superadmin"] --> DELETE__api_branches
   GET__api_branches["GET /api/branches"]
   POST__api_branches["POST /api/branches"]
   POST__api_campaigns["POST /api/campaigns"]
   POST__api_campaigns --> db_Conversation[("Conversation")]
-  POST__api_campaigns --> db_Message[("Message")]
+  POST__api_campaigns --> db_Template[("Template")]
+  POST__api_campaigns --> db_mkt_campaigns[("mkt_campaigns")]
   app_waba["waba"] --> POST__api_campaigns
   GET__api_captcha_config["GET /api/captcha/config"]
   POST__api_captcha_verify["POST /api/captcha/verify"]
@@ -338,10 +351,19 @@ graph TD
   GET__api_contact_messages__id_ --> db_contact_messages[("contact_messages")]
   PATCH__api_contact_messages__id_["PATCH /api/contact-messages/{id}"]
   PATCH__api_contact_messages__id_ --> db_contact_messages[("contact_messages")]
+  GET__api_contacts_consent["GET /api/contacts/consent"]
+  GET__api_contacts_consent --> db_waba_contact_consent[("waba_contact_consent")]
+  app_waba["waba"] --> GET__api_contacts_consent
+  PATCH__api_contacts_consent["PATCH /api/contacts/consent"]
+  PATCH__api_contacts_consent --> db_waba_contact_consent[("waba_contact_consent")]
   PATCH__api_conversations["PATCH /api/conversations"]
   PATCH__api_conversations --> db_Conversation[("Conversation")]
   app_waba["waba"] --> PATCH__api_conversations
   PATCH__api_conversations__id__assign["PATCH /api/conversations/{id}/assign"]
+  GET__api_conversations__sender__notes["GET /api/conversations/{sender}/notes"]
+  GET__api_conversations__sender__notes --> db_waba_conversation_notes[("waba_conversation_notes")]
+  POST__api_conversations__sender__notes["POST /api/conversations/{sender}/notes"]
+  POST__api_conversations__sender__notes --> db_waba_conversation_notes[("waba_conversation_notes")]
   POST__api_copilot_command["POST /api/copilot/command"]
   app_waba["waba"] --> POST__api_copilot_command
   DELETE__api_coupons["DELETE /api/coupons"]
@@ -429,6 +451,31 @@ graph TD
   POST__api_email_shipping["POST /api/email/shipping"]
   POST__api_email_verification["POST /api/email/verification"]
   POST__api_email_welcome["POST /api/email/welcome"]
+  GET__api_enterprise_analytics_audit_logs["GET /api/enterprise-analytics/audit-logs"]
+  GET__api_enterprise_analytics_audit_logs --> db_enterprise_audit_logs[("enterprise_audit_logs")]
+  app_core["core"] --> GET__api_enterprise_analytics_audit_logs
+  POST__api_enterprise_analytics_audit_logs["POST /api/enterprise-analytics/audit-logs"]
+  POST__api_enterprise_analytics_audit_logs --> db_enterprise_audit_logs[("enterprise_audit_logs")]
+  GET__api_enterprise_analytics_dashboard["GET /api/enterprise-analytics/dashboard"]
+  GET__api_enterprise_analytics_dashboard --> db_enterprise_analytics_events[("enterprise_analytics_events")]
+  GET__api_enterprise_analytics_dashboard --> db_enterprise_kpi_snapshots[("enterprise_kpi_snapshots")]
+  POST__api_enterprise_analytics_exports["POST /api/enterprise-analytics/exports"]
+  POST__api_enterprise_analytics_exports --> db_enterprise_report_exports[("enterprise_report_exports")]
+  GET__api_enterprise_analytics_filters["GET /api/enterprise-analytics/filters"]
+  GET__api_enterprise_analytics_filters --> db_enterprise_saved_filters[("enterprise_saved_filters")]
+  POST__api_enterprise_analytics_filters["POST /api/enterprise-analytics/filters"]
+  POST__api_enterprise_analytics_filters --> db_enterprise_saved_filters[("enterprise_saved_filters")]
+  GET__api_enterprise_analytics_reports["GET /api/enterprise-analytics/reports"]
+  GET__api_enterprise_analytics_reports --> db_enterprise_analytics_events[("enterprise_analytics_events")]
+  GET__api_enterprise_analytics_reports --> db_enterprise_audit_logs[("enterprise_audit_logs")]
+  GET__api_enterprise_analytics_reports --> db_enterprise_kpi_snapshots[("enterprise_kpi_snapshots")]
+  GET__api_enterprise_analytics_reports --> db_enterprise_staff_activity_logs[("enterprise_staff_activity_logs")]
+  GET__api_enterprise_analytics_search["GET /api/enterprise-analytics/search"]
+  GET__api_enterprise_analytics_staff_logs["GET /api/enterprise-analytics/staff-logs"]
+  GET__api_enterprise_analytics_staff_logs --> db_enterprise_staff_activity_logs[("enterprise_staff_activity_logs")]
+  app_core["core"] --> GET__api_enterprise_analytics_staff_logs
+  POST__api_enterprise_analytics_staff_logs["POST /api/enterprise-analytics/staff-logs"]
+  POST__api_enterprise_analytics_staff_logs --> db_enterprise_staff_activity_logs[("enterprise_staff_activity_logs")]
   GET__api_faqs["GET /api/faqs"]
   GET__api_faqs --> db_faqs[("faqs")]
   GET__api_free_installation_slots["GET /api/free-installation-slots"]
@@ -710,8 +757,9 @@ graph TD
   POST__api_referral_claim --> db_referral_codes[("referral_codes")]
   POST__api_referral_claim --> db_rpc_increment_referral_code_uses[("rpc:increment_referral_code_uses")]
   GET__api_roles_public["GET /api/roles-public"]
+  DELETE__api_roles["DELETE /api/roles"]
+  app_superadmin["superadmin"] --> DELETE__api_roles
   GET__api_roles["GET /api/roles"]
-  app_superadmin["superadmin"] --> GET__api_roles
   GET__api_roles["GET /api/roles"]
   POST__api_roles["POST /api/roles"]
   POST__api_roles["POST /api/roles"]
@@ -817,12 +865,8 @@ graph TD
   PUT__api_superadmin_custom_setup_offers["PUT /api/superadmin/custom-setup-offers"]
   PUT__api_superadmin_custom_setup_offers --> db_custom_setup_offers[("custom_setup_offers")]
   GET__api_superadmin_inquiries["GET /api/superadmin/inquiries"]
-  GET__api_superadmin_inquiries --> db_contact_messages[("contact_messages")]
-  GET__api_superadmin_inquiries --> db_profiles[("profiles")]
   app_superadmin["superadmin"] --> GET__api_superadmin_inquiries
   PATCH__api_superadmin_inquiries__id__assignment["PATCH /api/superadmin/inquiries/{id}/assignment"]
-  PATCH__api_superadmin_inquiries__id__assignment --> db_contact_messages[("contact_messages")]
-  PATCH__api_superadmin_inquiries__id__assignment --> db_profiles[("profiles")]
   POST__api_superadmin_services_ai_generate["POST /api/superadmin/services/ai-generate"]
   app_superadmin["superadmin"] --> POST__api_superadmin_services_ai_generate
   GET__api_templates["GET /api/templates"]
@@ -830,6 +874,8 @@ graph TD
   app_waba["waba"] --> GET__api_templates
   POST__api_templates["POST /api/templates"]
   POST__api_templates --> db_Template[("Template")]
+  POST__api_templates_sync["POST /api/templates/sync"]
+  app_waba["waba"] --> POST__api_templates_sync
   GET__api_trpc__trpc_["GET /api/trpc/{trpc}"]
   app_mgmt["mgmt"] --> GET__api_trpc__trpc_
   app_public["public"] --> GET__api_trpc__trpc_

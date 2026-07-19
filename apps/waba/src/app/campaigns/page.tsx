@@ -29,7 +29,7 @@ export default function CampaignsPage() {
       const data = await res.json();
 
       if (data.success) {
-        setResultMessage(`✅ Campaign sent successfully to ${data.count} contacts!`);
+        setResultMessage(`✅ Campaign queued for ${data.queued ?? data.count} contacts. Skipped ${data.skipped ?? 0}.`);
       } else {
         setResultMessage(`❌ Failed: ${data.error}`);
       }
@@ -120,8 +120,10 @@ export default function CampaignsPage() {
           </div>
         )}
         
-        <div style={{ textAlign: 'center', marginTop: '1rem' }}>
-          <Link href="/" style={{ color: '#60a5fa', textDecoration: 'none', fontSize: '0.9rem' }}>← Back to CRM Inbox</Link>
+        <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', flexWrap: 'wrap', marginTop: '1rem' }}>
+          <Link href="/analytics" style={{ color: '#60a5fa', textDecoration: 'none', fontSize: '0.9rem' }}>Analytics</Link>
+          <Link href="/contacts" style={{ color: '#60a5fa', textDecoration: 'none', fontSize: '0.9rem' }}>Consent Ledger</Link>
+          <Link href="/" style={{ color: '#60a5fa', textDecoration: 'none', fontSize: '0.9rem' }}>Back to CRM Inbox</Link>
         </div>
       </div>
     </div>

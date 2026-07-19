@@ -3,7 +3,14 @@
 import * as React from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { createClient } from '@tecbunny/database';
-import { Card, Button, Badge, Input, Skeleton } from '@tecbunny/ui';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import * as z from 'zod';
+import {
+  Card, Button, Input, Skeleton, Textarea, useToast,
+  Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
+  Form, FormControl, FormField, FormItem, FormLabel, FormMessage,
+} from '@tecbunny/ui';
 import {
   Users, Search, Plus, Phone, Mail, MapPin,
   TrendingUp, UserCheck, RefreshCw, Filter,
@@ -32,6 +39,22 @@ const STATUS_BADGE: Record<string, string> = {
   DEAD: 'bg-zinc-200 text-zinc-500',
   LOST: 'bg-red-100 text-red-600',
 };
+
+const contactSchema = z.object({
+  firstName: z.string().trim().min(2, 'First name is required').max(120),
+  lastName: z.string().trim().max(120).optional(),
+  phone: z.string().trim().max(20).optional(),
+  email: z.string().trim().email('Enter a valid email').optional().or(z.literal('')),
+  companyName: z.string().trim().max(160).optional(),
+  sourceName: z.string().trim().max(120).optional(),
+  requirement: z.string().trim().max(1000).optional(),
+}).refine((value) => Boolean(value.phone?.trim() || value.email?.trim()), {
+  message: 'Add either phone or email',
+  path: ['phone'],
+});
+
+type ContactFormValues = z.infer<typeof contactSchema>;
+type CreateMode = 'lead' | 'customer';
 
 function ContactRow({ contact, onClick }: { contact: Contact; onClick: () => void }) {
   const name = [contact.first_name, contact.last_name].filter(Boolean).join(' ') || contact.phone || '—';
@@ -95,9 +118,147 @@ function ContactRowSkeleton() {
   );
 }
 
+function CreateContactDialog({
+  open,
+  mode,
+  onOpenChange,
+  onCreated,
+}: {
+  open: boolean;
+  mode: CreateMode;
+  onOpenChange: (open: boolean) => void;
+  onCreated: () => void;
+}) {
+  const { toast } = useToast();
+  const form = useForm<ContactFormValues>({
+    resolver: zodResolver(contactSchema),
+    defaultValues: {
+      firstName: '',
+      lastName: '',
+      phone: '',
+      email: '',
+      companyName: '',
+      sourceName: 'Management CRM',
+      requirement: '',
+    },
+  });
+
+  React.useEffect(() => {
+    if (!open) return;
+    form.reset({
+      firstName: '',
+      lastName: '',
+      phone: '',
+      email: '',
+      companyName: '',
+      sourceName: 'Management CRM',
+      requirement: '',
+    });
+  }, [form, open, mode]);
+
+  const onSubmit = async (values: ContactFormValues) => {
+    const response = await fetch('/api/admin/crm/leads', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...values, mode }),
+    });
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      throw new Error(payload.error || 'Unable to save contact');
+    }
+
+    toast({
+      title: payload.isNew ? `${mode === 'customer' ? 'Customer' : 'Lead'} created` : 'Existing contact updated',
+      description: `${values.firstName} is now available in CRM.`,
+    });
+    onCreated();
+    onOpenChange(false);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-[560px]">
+        <DialogHeader>
+          <DialogTitle>{mode === 'customer' ? 'Create Customer' : 'Create Lead'}</DialogTitle>
+          <DialogDescription>
+            Capture a CRM contact with enough detail for follow-up and assignment.
+          </DialogDescription>
+        </DialogHeader>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <FormField control={form.control} name="firstName" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>First name</FormLabel>
+                  <FormControl><Input placeholder="Amit" {...field} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+              <FormField control={form.control} name="lastName" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Last name</FormLabel>
+                  <FormControl><Input placeholder="Sharma" {...field} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <FormField control={form.control} name="phone" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Phone</FormLabel>
+                  <FormControl><Input placeholder="9876543210" {...field} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+              <FormField control={form.control} name="email" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email</FormLabel>
+                  <FormControl><Input placeholder="name@company.com" {...field} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <FormField control={form.control} name="companyName" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Company</FormLabel>
+                  <FormControl><Input placeholder="Acme Retail" {...field} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+              <FormField control={form.control} name="sourceName" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Source</FormLabel>
+                  <FormControl><Input placeholder="Walk-in, referral, campaign" {...field} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+            </div>
+            <FormField control={form.control} name="requirement" render={({ field }) => (
+              <FormItem>
+                <FormLabel>Requirement</FormLabel>
+                <FormControl><Textarea placeholder="What does this contact need?" rows={4} {...field} /></FormControl>
+                <FormMessage />
+              </FormItem>
+            )} />
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={form.formState.isSubmitting}>Cancel</Button>
+              <Button type="submit" disabled={form.formState.isSubmitting}>
+                {form.formState.isSubmitting ? 'Saving...' : mode === 'customer' ? 'Create Customer' : 'Create Lead'}
+              </Button>
+            </DialogFooter>
+          </form>
+        </Form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 export default function CrmDashboard() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const [createOpen, setCreateOpen] = React.useState(false);
+  const [createMode, setCreateMode] = React.useState<CreateMode>('lead');
   const [contacts, setContacts] = React.useState<Contact[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
@@ -144,9 +305,27 @@ export default function CrmDashboard() {
   React.useEffect(() => {
     const action = searchParams.get('action');
     if (action === 'new-lead' || action === 'new-customer') {
-      // TODO: open create dialog
+      setCreateMode(action === 'new-customer' ? 'customer' : 'lead');
+      setCreateOpen(true);
     }
   }, [searchParams]);
+
+  const openCreate = React.useCallback((mode: CreateMode) => {
+    setCreateMode(mode);
+    router.push(`/mgmt/crm?action=${mode === 'customer' ? 'new-customer' : 'new-lead'}`);
+  }, [router]);
+
+  const handleCreateOpenChange = React.useCallback((open: boolean) => {
+    setCreateOpen(open);
+    if (!open && searchParams.get('action')) {
+      router.replace('/mgmt/crm');
+    }
+  }, [router, searchParams]);
+
+  const handleContactCreated = React.useCallback(() => {
+    setPage(1);
+    fetchContacts(search, statusFilter, 1);
+  }, [fetchContacts, search, statusFilter]);
 
   const stats = React.useMemo(() => {
     const qualified = contacts.filter(c => c.status === 'QUALIFIED').length;
@@ -174,11 +353,21 @@ export default function CrmDashboard() {
           >
             <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} /> Refresh
           </Button>
-          <Button size="sm" onClick={() => router.push('/mgmt/crm?action=new-lead')}>
+          <Button variant="outline" size="sm" onClick={() => openCreate('customer')}>
+            <UserCheck className="w-4 h-4 mr-2" /> New Customer
+          </Button>
+          <Button size="sm" onClick={() => openCreate('lead')}>
             <Plus className="w-4 h-4 mr-2" /> New Lead
           </Button>
         </div>
       </div>
+
+      <CreateContactDialog
+        open={createOpen}
+        mode={createMode}
+        onOpenChange={handleCreateOpenChange}
+        onCreated={handleContactCreated}
+      />
 
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

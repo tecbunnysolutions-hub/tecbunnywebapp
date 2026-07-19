@@ -6,35 +6,43 @@ type GeminiGenerateParams = {
   reasoningEffort?: 'low' | 'medium' | 'high' | null;
 };
 
-const SARVAM_BASE_URL = 'https://api.sarvam.ai/v1/chat/completions';
-const DEFAULT_SARVAM_MODEL = 'sarvam-30b'; // Recommended for general tasks
+type GeminiGenerateContentResponse = {
+  candidates?: Array<{
+    content?: {
+      parts?: Array<{
+        text?: string;
+      }>;
+    };
+  }>;
+};
+
+const GEMINI_BASE_URL = 'https://generativelanguage.googleapis.com/v1beta/models';
+const DEFAULT_GEMINI_MODEL = 'gemini-2.5-flash';
 
 export async function generateGeminiText({
   prompt,
-  model = DEFAULT_SARVAM_MODEL,
+  model = DEFAULT_GEMINI_MODEL,
   temperature = 0.4,
   maxOutputTokens = 600,
-  reasoningEffort = null,
+  reasoningEffort: _reasoningEffort = null,
 }: GeminiGenerateParams): Promise<string> {
-  const apiKey = process.env.SARVAM_API_KEY || process.env.API_KEY;
+  const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
-    throw new Error('SARVAM_API_KEY or API_KEY is not set');
+    throw new Error('GEMINI_API_KEY is not set');
   }
-
-  // Ensure we use a Sarvam model instead of a Gemini model when called by existing pages
-  const actualModel = model.includes('gemini') ? DEFAULT_SARVAM_MODEL : model;
+  const modelName = model.startsWith('models/') ? model.slice('models/'.length) : model;
 
   const payload = {
-    model: actualModel,
-    messages: [
+    contents: [
       {
         role: 'user',
-        content: prompt,
+        parts: [{ text: prompt }],
       },
     ],
-    temperature,
-    max_tokens: maxOutputTokens,
-    reasoning_effort: reasoningEffort,
+    generationConfig: {
+      temperature,
+      maxOutputTokens,
+    },
   };
 
   const controller = new AbortController();
@@ -42,18 +50,17 @@ export async function generateGeminiText({
   let response: Response;
 
   try {
-    response = await fetch(SARVAM_BASE_URL, {
+    response = await fetch(`${GEMINI_BASE_URL}/${encodeURIComponent(modelName)}:generateContent?key=${encodeURIComponent(apiKey)}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'api-subscription-key': apiKey,
       },
       body: JSON.stringify(payload),
       signal: controller.signal,
     });
   } catch (error: any) {
     if (error?.name === 'AbortError') {
-      throw new Error('Request to Sarvam AI timed out. Please try again.');
+      throw new Error('Request to Gemini AI timed out. Please try again.');
     }
     throw error;
   } finally {
@@ -62,14 +69,17 @@ export async function generateGeminiText({
 
   if (!response.ok) {
     const rawBody = await response.text();
-    throw new Error(`Sarvam API error: ${response.status} - ${rawBody}`);
+    throw new Error(`Gemini API error: ${response.status} - ${rawBody}`);
   }
 
-  const data = await response.json();
-  const text = data?.choices?.[0]?.message?.content;
+  const data = (await response.json()) as GeminiGenerateContentResponse;
+  const text = data.candidates?.[0]?.content?.parts
+    ?.map((part) => part.text)
+    .filter(Boolean)
+    .join('');
 
   if (!text) {
-    throw new Error('Sarvam returned empty response');
+    throw new Error('Gemini returned empty response');
   }
 
   return text.trim();

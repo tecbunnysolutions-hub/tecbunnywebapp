@@ -86,7 +86,12 @@ export class RuleEngineService {
         case 'CONTAINS':
           return strFieldValue.includes(strConditionValue);
         case 'REGEX':
-          return new RegExp(condition.value, 'i').test(strFieldValue);
+          try {
+            return new RegExp(condition.value, 'i').test(strFieldValue);
+          } catch (error) {
+            console.warn('[RuleEngine] Invalid regex condition skipped', { value: condition.value, error });
+            return false;
+          }
         case 'IS_TRUE':
           return fieldValue === true || strFieldValue === 'true';
         case 'IS_FALSE':

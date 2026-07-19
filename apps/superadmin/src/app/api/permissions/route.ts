@@ -1,16 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { isSuperadminSession, isSuperadmin } from '@tecbunny/core/permissions';
-import {  createSupabaseClient  } from '@tecbunny/database/server';
+import { requireSuperadminApi } from '@/lib/superadmin-api';
 
 export async function GET(req: NextRequest) {
   try {
-    const supabase = await createSupabaseClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    
-    if (!await isSuperadminSession() && !await isSuperadmin(user)) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
-    }
+    const auth = await requireSuperadminApi('superadmin_permissions');
+    if (!auth.authorized) return auth.response;
 
     const permissions = await prisma.permission.findMany({
       orderBy: [

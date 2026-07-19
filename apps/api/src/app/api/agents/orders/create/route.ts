@@ -1,5 +1,5 @@
-import { createClient } from '@tecbunny/database';
-import { createSupabaseServiceClient, isSupabaseServiceConfigured } from "@tecbunny/core/server";;
+import { createClient, isSupabaseServiceConfigured, requireSupabaseServiceEnv } from '@tecbunny/database';
+import { createClient as createSupabaseServiceRoleClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server'
 
 
@@ -36,6 +36,13 @@ function computeTotals(items: OrderItem[]) {
 }
 
 function round2(n: number) { return Math.round(n * 100) / 100 }
+
+function createSupabaseServiceClient() {
+  const { url, serviceKey } = requireSupabaseServiceEnv();
+  return createSupabaseServiceRoleClient(url, serviceKey, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+}
 
 // POST /api/agents/orders/create
 // Body: { customer: { email|mobile, name? }, items: OrderItem[], notes?, type?, referralCode?, configPayload? }
@@ -101,7 +108,7 @@ export async function POST(request: Request) {
     
     if (isHighTier) {
       try {
-        const { WhatsAppService } = await import('@tecbunny/core/server');
+        const { WhatsAppService } = await import('@tecbunny/core/whatsapp-service');
         const { logger } = await import('@tecbunny/core');
         const whatsapp = new WhatsAppService();
 

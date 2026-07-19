@@ -1,133 +1,282 @@
 "use client";
 
 import React from 'react';
+import Link from 'next/link';
 import { useAuth } from "@tecbunny/core/hooks";
-import { 
-  TrendingUp, Users, ShoppingCart, Activity, AlertCircle, 
-  CheckCircle, Package, Clock, ShieldCheck
+import {
+  TrendingUp, Users, ShoppingCart, Activity, AlertCircle,
+  CheckCircle, Package, Clock, ShieldCheck, RefreshCw,
 } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 
-const KPICard = ({ title, value, icon: Icon, trend, trendValue, colorClass }: any) => (
+type MetricTone = 'blue' | 'emerald' | 'amber' | 'rose' | 'indigo' | 'slate';
+type MetricIcon = 'trending' | 'users' | 'orders' | 'package' | 'clock' | 'shield' | 'alert';
+
+type DashboardMetric = {
+  title: string;
+  value: string;
+  detail: string;
+  tone: MetricTone;
+  icon: MetricIcon;
+};
+
+type DashboardActivity = {
+  id: string;
+  title: string;
+  detail: string;
+  date: string;
+  type: 'order' | 'lead' | 'ticket';
+};
+
+type DashboardTask = {
+  label: string;
+  href: string;
+  priority: 'high' | 'medium' | 'normal';
+};
+
+type DashboardPayload = {
+  track: 'sales' | 'service' | 'general';
+  metrics: DashboardMetric[];
+  activities: DashboardActivity[];
+  tasks: DashboardTask[];
+  generatedAt: string;
+};
+
+const TONE_CLASSES: Record<MetricTone, string> = {
+  blue: 'bg-blue-50 text-blue-600',
+  emerald: 'bg-emerald-50 text-emerald-600',
+  amber: 'bg-amber-50 text-amber-600',
+  rose: 'bg-rose-50 text-rose-600',
+  indigo: 'bg-indigo-50 text-indigo-600',
+  slate: 'bg-slate-50 text-slate-600',
+};
+
+const ICONS: Record<MetricIcon, LucideIcon> = {
+  trending: TrendingUp,
+  users: Users,
+  orders: ShoppingCart,
+  package: Package,
+  clock: Clock,
+  shield: ShieldCheck,
+  alert: AlertCircle,
+};
+
+const ACTIVITY_ICONS: Record<DashboardActivity['type'], LucideIcon> = {
+  order: CheckCircle,
+  lead: Users,
+  ticket: AlertCircle,
+};
+
+const ACTIVITY_COLORS: Record<DashboardActivity['type'], string> = {
+  order: 'bg-blue-100 text-blue-600',
+  lead: 'bg-indigo-100 text-indigo-600',
+  ticket: 'bg-rose-100 text-rose-600',
+};
+
+const PRIORITY_CLASSES: Record<DashboardTask['priority'], string> = {
+  high: 'border-rose-200 bg-rose-50 text-rose-700',
+  medium: 'border-amber-200 bg-amber-50 text-amber-700',
+  normal: 'border-slate-200 bg-slate-50 text-slate-700',
+};
+
+function formatRelativeTime(value: string) {
+  const timestamp = Date.parse(value);
+  if (Number.isNaN(timestamp)) return 'Recently';
+  const seconds = Math.max(1, Math.round((Date.now() - timestamp) / 1000));
+  if (seconds < 60) return 'Just now';
+  const minutes = Math.round(seconds / 60);
+  if (minutes < 60) return `${minutes} min ago`;
+  const hours = Math.round(minutes / 60);
+  if (hours < 24) return `${hours} hr ago`;
+  const days = Math.round(hours / 24);
+  return `${days} day${days === 1 ? '' : 's'} ago`;
+}
+
+const KPICard = ({ metric }: { metric: DashboardMetric }) => {
+  const Icon = ICONS[metric.icon];
+  return (
   <div className="bg-white p-6 rounded-xl border shadow-sm hover:shadow-md transition-shadow">
     <div className="flex items-start justify-between">
       <div>
-        <p className="text-sm font-medium text-slate-500">{title}</p>
-        <h3 className="text-2xl font-bold text-slate-900 mt-1">{value}</h3>
+        <p className="text-sm font-medium text-slate-500">{metric.title}</p>
+        <h3 className="text-2xl font-bold text-slate-900 mt-1">{metric.value}</h3>
       </div>
-      <div className={`p-3 rounded-lg ${colorClass || 'bg-slate-50 text-slate-600'}`}>
+      <div className={`p-3 rounded-lg ${TONE_CLASSES[metric.tone]}`}>
         <Icon className="w-5 h-5" />
       </div>
     </div>
-    {trend && (
-      <div className="mt-4 flex items-center text-sm">
-        <span className={`flex items-center font-medium ${trend === 'up' ? 'text-emerald-600' : 'text-rose-600'}`}>
-          <TrendingUp className={`w-4 h-4 mr-1 ${trend === 'down' && 'rotate-180'}`} />
-          {trendValue}
-        </span>
-        <span className="text-slate-400 ml-2">vs last week</span>
-      </div>
-    )}
+    <p className="mt-4 text-sm text-slate-500">{metric.detail}</p>
   </div>
-);
+  );
+};
 
-// Specific Dashboards based on roles
-const SalesDashboard = () => (
-  <>
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-      <KPICard title="My Pipeline" value="₹12.5L" icon={TrendingUp} trend="up" trendValue="+18%" colorClass="bg-blue-50 text-blue-600" />
-      <KPICard title="Pending Quotations" value="14" icon={Clock} trend="down" trendValue="-2" colorClass="bg-amber-50 text-amber-600" />
-      <KPICard title="Deals Won" value="8" icon={CheckCircle} trend="up" trendValue="+3" colorClass="bg-emerald-50 text-emerald-600" />
-      <KPICard title="New Leads" value="24" icon={Users} trend="up" trendValue="+12%" colorClass="bg-indigo-50 text-indigo-600" />
-    </div>
-    <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl p-6 text-white shadow-lg mb-8">
-      <div className="flex items-start gap-4">
-        <div className="p-3 bg-white/20 rounded-lg"><Activity className="w-6 h-6" /></div>
-        <div>
-          <h3 className="text-lg font-semibold">Gemini AI Assistant</h3>
-          <p className="text-blue-100 mt-1">Focus on Quotation #QT-1029 (TechCorp). They have opened the PDF 3 times today and are highly likely to convert. Recommend offering a 5% bundle discount on accessories to close today.</p>
+function MetricSkeleton() {
+  return (
+    <div className="bg-white p-6 rounded-xl border shadow-sm">
+      <div className="flex items-start justify-between">
+        <div className="space-y-3">
+          <div className="h-4 w-28 rounded bg-slate-100" />
+          <div className="h-8 w-20 rounded bg-slate-100" />
         </div>
+        <div className="h-11 w-11 rounded-lg bg-slate-100" />
       </div>
+      <div className="mt-4 h-4 w-40 rounded bg-slate-100" />
     </div>
-  </>
-);
-
-const ServiceDashboard = () => (
-  <>
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-      <KPICard title="Open Tickets" value="32" icon={AlertCircle} trend="down" trendValue="-15%" colorClass="bg-rose-50 text-rose-600" />
-      <KPICard title="Engineers Active" value="12/15" icon={Users} colorClass="bg-blue-50 text-blue-600" />
-      <KPICard title="Today's AMCs" value="8" icon={ShieldCheck} trend="up" trendValue="+2" colorClass="bg-emerald-50 text-emerald-600" />
-      <KPICard title="Avg Resolution" value="4.2 hrs" icon={Clock} trend="up" trendValue="-30m" colorClass="bg-purple-50 text-purple-600" />
-    </div>
-    <div className="bg-gradient-to-r from-rose-500 to-orange-500 rounded-xl p-6 text-white shadow-lg mb-8">
-      <div className="flex items-start gap-4">
-        <div className="p-3 bg-white/20 rounded-lg"><Activity className="w-6 h-6" /></div>
-        <div>
-          <h3 className="text-lg font-semibold">Gemini AI Assistant</h3>
-          <p className="text-rose-100 mt-1">Engineer Rahul is currently overloaded with 5 pending visits in South Zone. Consider reassigning Ticket #SR-882 to Amit, who is finishing a job 2km away.</p>
-        </div>
-      </div>
-    </div>
-  </>
-);
+  );
+}
 
 export default function ManagementPage() {
   const { user } = useAuth();
-  
-  if (!user) return null;
+  const [dashboard, setDashboard] = React.useState<DashboardPayload | null>(null);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState<string | null>(null);
 
-  const isSales = user.role.includes('sales');
-  const isService = user.role.includes('service');
+  const loadDashboard = React.useCallback(async (signal?: AbortSignal) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await fetch('/api/admin/mgmt/overview', { signal, cache: 'no-store' });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(payload.error || 'Unable to load management overview');
+      }
+      setDashboard(payload as DashboardPayload);
+    } catch (requestError) {
+      if (requestError instanceof DOMException && requestError.name === 'AbortError') return;
+      setError(requestError instanceof Error ? requestError.message : 'Unable to load management overview');
+      setDashboard(null);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  React.useEffect(() => {
+    if (!user) return;
+    const controller = new AbortController();
+    void loadDashboard(controller.signal);
+    return () => controller.abort();
+  }, [loadDashboard, user]);
+
+  if (!user) return null;
 
   return (
     <div className="space-y-6">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-slate-900">Overview</h1>
-        <p className="text-slate-500">Here's what requires your attention today.</p>
+      <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900">Overview</h1>
+          <p className="text-slate-500">Live operational summary for your assigned workspace.</p>
+          {dashboard?.generatedAt ? (
+            <p className="mt-1 text-xs text-slate-400">Updated {formatRelativeTime(dashboard.generatedAt)}</p>
+          ) : null}
+        </div>
+        <button
+          type="button"
+          onClick={() => loadDashboard()}
+          disabled={loading}
+          className="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+          Refresh
+        </button>
       </div>
 
-      {isSales ? <SalesDashboard /> : isService ? <ServiceDashboard /> : (
-        <div className="p-12 text-center text-slate-500 bg-white rounded-xl border">
-          <Activity className="w-12 h-12 mx-auto mb-4 text-slate-300" />
-          <h3 className="text-lg font-medium text-slate-900 mb-2">Welcome to your Workspace</h3>
-          <p>Your responsibility dashboard will appear here based on your assigned modules.</p>
+      {error ? (
+        <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+          <div className="flex items-start gap-3">
+            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+            <div>
+              <p className="font-semibold">Dashboard data could not be loaded.</p>
+              <p className="mt-1">{error}</p>
+            </div>
+          </div>
         </div>
-      )}
+      ) : null}
 
-      {/* Common Feed/Activity */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {loading
+          ? Array.from({ length: 4 }, (_, index) => <MetricSkeleton key={index} />)
+          : (dashboard?.metrics ?? []).map((metric) => <KPICard key={metric.title} metric={metric} />)}
+      </div>
+
+      <div className="bg-gradient-to-r from-slate-900 to-blue-900 rounded-xl p-6 text-white shadow-lg">
+        <div className="flex items-start gap-4">
+          <div className="p-3 bg-white/15 rounded-lg"><Activity className="w-6 h-6" /></div>
+          <div>
+            <h3 className="text-lg font-semibold">Operational Focus</h3>
+            <p className="text-blue-100 mt-1">
+              {dashboard?.tasks.length
+                ? `${dashboard.tasks[0].label}. Use the action queue below to jump directly into the responsible module.`
+                : 'No urgent action queue is currently active for this workspace.'}
+            </p>
+          </div>
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 bg-white rounded-xl border shadow-sm p-6">
           <h3 className="text-lg font-semibold text-slate-800 mb-4">Recent Activity</h3>
-          <div className="space-y-4">
-            <div className="flex items-center gap-4 py-3 border-b border-slate-100">
-              <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600"><CheckCircle className="w-5 h-5"/></div>
-              <div>
-                <p className="text-sm font-medium text-slate-900">Order #ORD-2099 approved</p>
-                <p className="text-xs text-slate-500">By Admin • 10 minutes ago</p>
-              </div>
+          {loading ? (
+            <div className="space-y-4">
+              {Array.from({ length: 3 }, (_, index) => (
+                <div key={index} className="flex items-center gap-4 py-3 border-b border-slate-100">
+                  <div className="h-10 w-10 rounded-full bg-slate-100" />
+                  <div className="space-y-2">
+                    <div className="h-4 w-48 rounded bg-slate-100" />
+                    <div className="h-3 w-32 rounded bg-slate-100" />
+                  </div>
+                </div>
+              ))}
             </div>
-            <div className="flex items-center gap-4 py-3 border-b border-slate-100">
-              <div className="w-10 h-10 rounded-full bg-rose-100 flex items-center justify-center text-rose-600"><AlertCircle className="w-5 h-5"/></div>
-              <div>
-                <p className="text-sm font-medium text-slate-900">New urgent support ticket #SR-112</p>
-                <p className="text-xs text-slate-500">System • 45 minutes ago</p>
-              </div>
+          ) : dashboard?.activities.length ? (
+            <div className="space-y-4">
+              {dashboard.activities.map((activity) => {
+                const Icon = ACTIVITY_ICONS[activity.type];
+                return (
+                  <div key={activity.id} className="flex items-center gap-4 py-3 border-b border-slate-100 last:border-0">
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${ACTIVITY_COLORS[activity.type]}`}><Icon className="w-5 h-5" /></div>
+                    <div>
+                      <p className="text-sm font-medium text-slate-900">{activity.title}</p>
+                      <p className="text-xs text-slate-500">{activity.detail} · {formatRelativeTime(activity.date)}</p>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
-          </div>
+          ) : (
+            <div className="rounded-lg border border-dashed border-slate-200 p-8 text-center text-sm text-slate-500">
+              <Activity className="mx-auto mb-3 h-8 w-8 text-slate-300" />
+              No recent order, lead, or service activity was found.
+            </div>
+          )}
         </div>
-        
+
         <div className="bg-white rounded-xl border shadow-sm p-6">
-          <h3 className="text-lg font-semibold text-slate-800 mb-4">Quick Tasks</h3>
-          <div className="space-y-3">
-            <label className="flex items-start gap-3 p-3 rounded-lg hover:bg-slate-50 cursor-pointer border border-transparent hover:border-slate-200">
-              <input type="checkbox" className="mt-1" />
-              <span className="text-sm text-slate-700">Review monthly target reports</span>
-            </label>
-            <label className="flex items-start gap-3 p-3 rounded-lg hover:bg-slate-50 cursor-pointer border border-transparent hover:border-slate-200">
-              <input type="checkbox" className="mt-1" />
-              <span className="text-sm text-slate-700">Approve pending leave requests (2)</span>
-            </label>
-          </div>
+          <h3 className="text-lg font-semibold text-slate-800 mb-4">Action Queue</h3>
+          {loading ? (
+            <div className="space-y-3">
+              {Array.from({ length: 3 }, (_, index) => (
+                <div key={index} className="h-12 rounded-lg bg-slate-100" />
+              ))}
+            </div>
+          ) : dashboard?.tasks.length ? (
+            <div className="space-y-3">
+              {dashboard.tasks.map((task) => (
+                <Link
+                  key={`${task.href}-${task.label}`}
+                  href={task.href}
+                  className={`block rounded-lg border px-3 py-3 text-sm font-medium transition hover:shadow-sm ${PRIORITY_CLASSES[task.priority]}`}
+                >
+                  {task.label}
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <div className="rounded-lg border border-dashed border-slate-200 p-8 text-center">
+              <CheckCircle className="mx-auto mb-3 h-8 w-8 text-emerald-500" />
+              <p className="text-sm font-medium text-slate-800">No urgent tasks</p>
+              <p className="mt-1 text-xs text-slate-500">Open items will appear here as data changes.</p>
+            </div>
+          )}
         </div>
       </div>
     </div>

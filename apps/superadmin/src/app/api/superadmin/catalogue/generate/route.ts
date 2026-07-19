@@ -2,23 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import { generateCataloguePdf } from '@tecbunny/core/catalogue-pdf-generator';
 import { logger } from '@tecbunny/core/logger';
-import { isSuperadmin, isSuperadminSession } from '@tecbunny/core/permissions';
 import { createServiceClient } from '@tecbunny/database/admin';
-import { createSupabaseClient } from '@tecbunny/database/server';
-
-async function checkAuth() {
-  try {
-    const supabase = await createSupabaseClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    return Boolean(await isSuperadminSession() || await isSuperadmin(user));
-  } catch (error) {
-    logger.warn('superadmin_catalogue.auth_failed', { error });
-    return false;
-  }
-}
+import { requireSuperadminApi } from '@/lib/superadmin-api';
 
 export async function POST(request: NextRequest) {
-  if (!await checkAuth()) return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+  const auth = await requireSuperadminApi('superadmin_catalogue');
+  if (!auth.authorized) return auth.response;
 
   try {
     const body = await request.json().catch(() => ({}));

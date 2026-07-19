@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createSupabaseServiceClient, isSupabaseServiceConfigured } from '@tecbunny/core/server';
+import { createClient as createSupabaseServiceRoleClient } from '@supabase/supabase-js';
+import { isSupabaseServiceConfigured, requireSupabaseServiceEnv } from '@tecbunny/database';
 import { verifySuperadminSessionToken } from '@tecbunny/core/auth/superadmin-session';
 
 type ExtensionRole = 'admin' | 'superadmin';
@@ -14,6 +15,13 @@ export class ExtensionAuthError extends Error {
 }
 
 const DEFAULT_ALLOWED_ORIGINS = ['https://www.tecbunny.com', 'https://tecbunny.com'];
+
+function createSupabaseServiceClient() {
+  const { url, serviceKey } = requireSupabaseServiceEnv();
+  return createSupabaseServiceRoleClient(url, serviceKey, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+}
 
 function configuredExtensionOrigins() {
   const configured = (process.env.CHROME_EXTENSION_ALLOWED_ORIGINS || '')

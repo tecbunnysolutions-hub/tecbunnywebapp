@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createSupabaseClient } from '@tecbunny/database/server';
 import { supabase } from '@/lib/supabase';
-import { verifySuperadminSessionToken } from '@tecbunny/core/server';
+import { verifySuperadminSessionToken } from '@tecbunny/core/auth/superadmin-session';
 
 export const dynamic = 'force-dynamic';
 

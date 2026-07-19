@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { EnterpriseAnalyticsAutoTracker } from '@tecbunny/core/components/EnterpriseAnalyticsAutoTracker';
 
 export const metadata: Metadata = {
   title: 'Webmail — TecBunny',
@@ -10,6 +11,7 @@ export default function WebmailLayout({ children }: { children: React.ReactNode 
   return (
     <html lang="en">
       <body className="min-h-screen bg-slate-50 font-sans antialiased">
+        <EnterpriseAnalyticsAutoTracker application="webmail" defaultModule="mail" dashboardPaths={['/inbox']} />
         <div className="flex h-screen overflow-hidden">
           {/* Sidebar */}
           <aside className="w-56 shrink-0 bg-slate-900 text-slate-100 flex flex-col">

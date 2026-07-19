@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { headers } from "next/headers";
 import "./globals.css";
 import { AppProvider } from "@tecbunny/core/context/AppProvider";
+import { EnterpriseAnalyticsAutoTracker } from "@tecbunny/core/components/EnterpriseAnalyticsAutoTracker";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -34,6 +35,7 @@ export default async function RootLayout({
     >
       <body className="min-h-full flex flex-col" suppressHydrationWarning>
         <AppProvider>
+          <EnterpriseAnalyticsAutoTracker application="superadmin" defaultModule="root-console" dashboardPaths={['/dashboard', '/superadmin', '/analytics']} />
           {children}
         </AppProvider>
       </body>

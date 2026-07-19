@@ -1,9 +1,12 @@
 import { Worker, Job } from 'bullmq';
-import { getRedis, logger, WABA_WEBHOOK_QUEUE_NAME } from '@tecbunny/core/server';
+import { logger } from '@tecbunny/core/logger';
+import { getRedis } from '@tecbunny/core/redis';
+import { WABA_WEBHOOK_QUEUE_NAME } from '@tecbunny/core/queue';
 import { InboundTriageAgent } from './agents/InboundTriageAgent';
 import { AssignmentOrchestrator } from './agents/AssignmentOrchestrator';
-import { startEmailWorker, startWebhookWorker, startNurtureScheduler, startNurtureWorker } from './workers';
+import { startBroadcastWorker, startEmailWorker, startWebhookWorker, startNurtureScheduler, startNurtureWorker } from './workers';
 import { RuleEngineService } from './services/RuleEngineService';
+import { processWabaStatusEvents } from './services/webhookStatusService';
 
 async function startWorker() {
   const redisConnection = getRedis();
@@ -17,6 +20,7 @@ async function startWorker() {
   console.log('Starting Background BullMQ Workers...');
   const emailWorker = startEmailWorker();
   const webhookWorker = startWebhookWorker();
+  const broadcastWorker = startBroadcastWorker();
   const nurtureScheduler = startNurtureScheduler();
   const nurtureWorker = startNurtureWorker();
 
@@ -24,6 +28,11 @@ async function startWorker() {
     try {
       const body = job.data;
       logger.info('waba_worker_processing_job', { jobId: job.id });
+
+      const statusEventsProcessed = await processWabaStatusEvents(body);
+      if (statusEventsProcessed > 0) {
+        logger.info('waba_worker_status_events_processed', { jobId: job.id, count: statusEventsProcessed });
+      }
 
       const triageAgent = new InboundTriageAgent();
       const orchestrator = new AssignmentOrchestrator();
@@ -69,6 +78,7 @@ async function startWorker() {
     await worker.close();
     await emailWorker.close();
     await webhookWorker.close();
+    await broadcastWorker.close();
     if (nurtureScheduler) await nurtureScheduler.close();
     if (nurtureWorker) await nurtureWorker.close();
     process.exit(0);

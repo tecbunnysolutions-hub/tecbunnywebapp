@@ -101,6 +101,108 @@ async function sendInfobipRequest(
   return { success: false, error: 'Max retries exhausted' };
 }
 
+async function getInfobipRequest(
+  endpoint: string,
+): Promise<{ success: boolean; data?: unknown; error?: unknown; status?: number }> {
+  const { baseUrl: rawBaseUrl, apiKey } = getInfobipConfig();
+  const baseUrl = rawBaseUrl.replace(/^https?:\/\//, '');
+  const url = `https://${baseUrl}${endpoint}`;
+
+  try {
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        Authorization: `App ${apiKey}`,
+        Accept: 'application/json',
+      },
+    });
+    const data = await response.json().catch(() => ({}));
+    if (response.ok) return { success: true, data };
+    return { success: false, error: data, status: response.status };
+  } catch (error: unknown) {
+    return { success: false, error: error instanceof Error ? error.message : String(error) };
+  }
+}
+
+type ProviderTemplate = {
+  id?: string;
+  name?: string;
+  templateName?: string;
+  language?: string;
+  languageCode?: string;
+  status?: string;
+  category?: string;
+  body?: string;
+  content?: string | { text?: string; body?: { text?: string } };
+  rejectionReason?: string;
+  reason?: string;
+};
+
+function getProviderTemplates(data: unknown): ProviderTemplate[] {
+  if (!data || typeof data !== 'object') return [];
+  const record = data as Record<string, unknown>;
+  const candidate = record.templates ?? record.results ?? record.items ?? record.templateList ?? record.data;
+  return Array.isArray(candidate) ? candidate.filter((item): item is ProviderTemplate => typeof item === 'object' && item !== null) : [];
+}
+
+function getProviderTemplateContent(template: ProviderTemplate) {
+  if (typeof template.content === 'string') return template.content;
+  if (template.content?.text) return template.content.text;
+  if (template.content?.body?.text) return template.content.body.text;
+  return template.body ?? '';
+}
+
+function countTemplateVariables(content: string) {
+  const matches = content.match(/\{\{\d+\}\}/g) ?? [];
+  return new Set(matches).size;
+}
+
+export async function syncInfobipTemplates(): Promise<{
+  success: boolean;
+  synced: number;
+  error?: unknown;
+  status?: number;
+}> {
+  const { systemNumber } = getInfobipConfig();
+  const endpoint = process.env.INFOBIP_WHATSAPP_TEMPLATE_SYNC_PATH ?? `/whatsapp/2/senders/${encodeURIComponent(systemNumber)}/templates`;
+  const response = await getInfobipRequest(endpoint);
+  if (!response.success) {
+    return { success: false, synced: 0, error: response.error, status: response.status };
+  }
+
+  const templates = getProviderTemplates(response.data);
+  const now = new Date().toISOString();
+  let synced = 0;
+
+  for (const template of templates) {
+    const name = template.name ?? template.templateName;
+    if (!name) continue;
+
+    const content = getProviderTemplateContent(template);
+    const providerStatus = (template.status ?? 'UNKNOWN').toUpperCase();
+    const { error } = await supabase
+      .from('Template')
+      .upsert({
+        id: crypto.randomUUID(),
+        name,
+        language: template.language ?? template.languageCode ?? 'en',
+        content,
+        status: providerStatus === 'APPROVED' ? 'APPROVED' : 'PENDING',
+        category: template.category ?? 'MARKETING',
+        provider_name: 'infobip',
+        provider_template_id: template.id ?? name,
+        provider_status: providerStatus,
+        variable_count: countTemplateVariables(content),
+        last_synced_at: now,
+        rejection_reason: template.rejectionReason ?? template.reason ?? null,
+      }, { onConflict: 'name' });
+
+    if (!error) synced++;
+  }
+
+  return { success: true, synced };
+}
+
 /**
  * Bug #10 fix: The 24h window check previously read last_interaction_timestamp
  * AFTER InboundTriageAgent had already updated it to now(), so the check always

@@ -1,5 +1,6 @@
 import { Worker, Queue } from 'bullmq';
-import { getRedis, logger } from '@tecbunny/core/server';
+import { logger } from '@tecbunny/core/logger';
+import { getRedis } from '@tecbunny/core/redis';
 import {  createServiceClient  } from '@tecbunny/database/admin';
 
 export const NURTURE_QUEUE_NAME = 'waba_nurture_queue';

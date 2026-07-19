@@ -21,6 +21,9 @@ model Conversation {
   ad_source                  String?
   assigned_to                String?
   department                 String    @default("UNASSIGNED")
+  ai_active                  Boolean   @default(true)
+  deal_value                 String?
+  active_flow                String?
   sla_breach_at              DateTime?
   messages                   Message[]
   orders                     Order[]
@@ -182,6 +185,13 @@ model Template {
   language   String   @default("en")
   content    String
   status     String   @default("APPROVED")
+  category   String?  @default("MARKETING")
+  provider_name String? @default("infobip")
+  provider_template_id String?
+  provider_status String? @default("LOCAL_ONLY")
+  variable_count Int      @default(0)
+  last_synced_at DateTime?
+  rejection_reason String?
   created_at DateTime @default(now())
   campaigns  Campaign[]
 
@@ -305,6 +315,7 @@ model CampaignLog {
   id          String   @id @default(uuid())
   campaign_id String
   phone       String
+  message_id  String?
   status      String   @default("SENT") // SENT, DELIVERED, READ, REPLIED
   sent_at     DateTime @default(now())
 

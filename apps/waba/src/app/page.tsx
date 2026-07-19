@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createBrowserClient } from '@supabase/ssr';
 
@@ -267,6 +268,12 @@ export default function Dashboard() {
 
   return (
     <div className="dashboard-container">
+      <nav aria-label="WABA operations" style={{ position: 'fixed', top: '0.85rem', right: '1.5rem', zIndex: 20, display: 'flex', gap: '0.85rem', fontSize: '0.85rem' }}>
+        <Link href="/analytics" style={{ color: '#bfdbfe', textDecoration: 'none' }}>Analytics</Link>
+        <Link href="/contacts" style={{ color: '#bfdbfe', textDecoration: 'none' }}>Consent</Link>
+        <Link href="/campaigns" style={{ color: '#bfdbfe', textDecoration: 'none' }}>Campaigns</Link>
+        <Link href="/templates" style={{ color: '#bfdbfe', textDecoration: 'none' }}>Templates</Link>
+      </nav>
       {/* PANE 1: Sidebar / Conversation List */}
       <Sidebar
         showSidebar={showSidebar}

@@ -3,6 +3,7 @@ import { createClient } from '@tecbunny/database';
 import { NextRequest, NextResponse } from 'next/server';
 
 import { logger } from "@tecbunny/core";
+import { insertEnterpriseEvent } from '../../../../lib/enterprise-analytics';
 
 const MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_ID || 'G-VCCMTMSVP4';
 const GA_API_SECRET = process.env.GA_API_SECRET;
@@ -158,6 +159,22 @@ export async function POST(request: NextRequest) {
 
     const clientId = getClientId(request, normalizedSessionId);
     let userId: string | null = null;
+
+    try {
+      await insertEnterpriseEvent(request, {
+        ...extraFields,
+        eventName: eventType,
+        eventCategory: typeof extraFields.eventCategory === 'string' ? extraFields.eventCategory : 'feature_usage',
+        application: typeof extraFields.application === 'string' ? extraFields.application : 'public',
+        module: typeof extraFields.module === 'string' ? extraFields.module : 'website',
+        screen: normalizedPageUrl,
+        entityId: normalizedResourceId,
+        sessionId: normalizedSessionId,
+        metadata: eventMetadata,
+      });
+    } catch (enterpriseError) {
+      logger.warn('Enterprise analytics ingestion failed', { error: enterpriseError });
+    }
 
     if (isSupabasePublicConfigured()) {
       try {

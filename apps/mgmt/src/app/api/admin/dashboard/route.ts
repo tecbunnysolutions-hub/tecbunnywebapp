@@ -1,4 +1,4 @@
-import { isSupabaseServiceConfigured } from "@tecbunny/core/server";
+import { isSupabaseServiceConfigured } from "@tecbunny/database/admin";
 import { NextRequest, NextResponse } from 'next/server';
 
 import { logger } from "@tecbunny/core/logger";

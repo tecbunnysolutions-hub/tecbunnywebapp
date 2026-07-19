@@ -1,8 +1,11 @@
 import { NextResponse } from 'next/server'
 
 import { AdminAuthError, requireAdminContext } from "@tecbunny/core/auth/admin-guard"
+import { logger } from "@tecbunny/core/logger"
 
 // export const dynamic = 'force-dynamic'
+
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 
 // POST /api/admin/redemptions/process { redemption_id }
 export async function POST(request: Request) {
@@ -16,32 +19,27 @@ export async function POST(request: Request) {
 
   const { redemption_id } = await request.json().catch(() => ({}))
   if (!redemption_id) return NextResponse.json({ error: 'redemption_id required' }, { status: 400 })
+  if (typeof redemption_id !== 'string' || !UUID_PATTERN.test(redemption_id)) {
+    return NextResponse.json({ error: 'Invalid redemption_id' }, { status: 400 })
+  }
 
   const supabase = context.serviceSupabase
-
-  // Fetch redemption
-  const { data: red, error: rErr } = await supabase
-    .from('agent_redemption_requests')
-    .select('id, agent_id, points_to_redeem, status')
-    .eq('id', redemption_id)
-    .single()
-
-  if (rErr) return NextResponse.json({ error: rErr.message }, { status: 400 })
-  if (!red) return NextResponse.json({ error: 'Not found' }, { status: 404 })
-  if (red.status !== 'approved') return NextResponse.json({ error: 'Redemption must be approved first' }, { status: 400 })
-
-  // Decrement points and mark processed
-  const { error: balErr } = await supabase.rpc('increment_agent_points', {
-    agent_id: red.agent_id,
-    points_to_add: -Number(red.points_to_redeem)
+  const { data, error } = await supabase.rpc('process_agent_redemption', {
+    p_redemption_id: redemption_id,
   })
-  if (balErr) return NextResponse.json({ error: balErr.message }, { status: 400 })
 
-  const { error: updErr } = await supabase
-    .from('agent_redemption_requests')
-    .update({ status: 'processed', processed_at: new Date().toISOString() })
-    .eq('id', redemption_id)
+  if (error) {
+    logger.warn('admin_redemptions.process_failed', {
+      redemptionId: redemption_id,
+      error: error.message,
+      code: error.code,
+    })
+    const status = error.code === 'P0002' ? 404 : error.code === 'PGRST202' ? 503 : 400
+    const message = error.code === 'PGRST202'
+      ? 'Redemption transaction function is not installed. Apply the latest Supabase migrations before processing redemptions.'
+      : error.message
+    return NextResponse.json({ error: message }, { status })
+  }
 
-  if (updErr) return NextResponse.json({ error: updErr.message }, { status: 400 })
-  return NextResponse.json({ success: true })
+  return NextResponse.json({ success: true, redemption: data })
 }

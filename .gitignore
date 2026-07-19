@@ -39,6 +39,7 @@ next-env.d.ts
 
 .genkit/*
 .env*
+!.env.example
 
 # firebase
 firebase-debug.log
@@ -126,3 +127,4 @@ packages/*/dist/
 n8n/
 *.sql
 !database.sql
+!supabase/migrations/*.sql

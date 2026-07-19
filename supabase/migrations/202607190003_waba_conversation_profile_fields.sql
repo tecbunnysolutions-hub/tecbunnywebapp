@@ -1,0 +1,4 @@
+ALTER TABLE public."Conversation"
+  ADD COLUMN IF NOT EXISTS ai_active BOOLEAN NOT NULL DEFAULT true,
+  ADD COLUMN IF NOT EXISTS deal_value TEXT,
+  ADD COLUMN IF NOT EXISTS active_flow TEXT;

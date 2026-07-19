@@ -1,7 +1,9 @@
-import { NextResponse, type NextRequest } from 'next/server';
+import { NextResponse, type NextFetchEvent, type NextRequest } from 'next/server';
 import { executeUnifiedPolicyMiddleware } from '@tecbunny/core/auth/unified-middleware';
+import { emitEnterpriseProxyTelemetry } from '@tecbunny/core/enterprise-analytics-proxy';
 
-export async function proxy(request: NextRequest) {
+export async function proxy(request: NextRequest, event: NextFetchEvent) {
+  const startedAt = Date.now();
   const pathname = request.nextUrl.pathname;
 
   // Protect Dashboard Routes and API routes
@@ -24,7 +26,7 @@ export async function proxy(request: NextRequest) {
       return NextResponse.next();
     }
 
-    return await executeUnifiedPolicyMiddleware(request, {
+    const response = await executeUnifiedPolicyMiddleware(request, {
       appType: 'api',
       loginRoute: '/login',
       publicRoutes: [
@@ -66,10 +68,14 @@ export async function proxy(request: NextRequest) {
         'POST /api/uploads/quote-documents'
       ],
     });
+    emitEnterpriseProxyTelemetry(request, { application: 'api', response, startedAt, event, sameOriginIngest: true });
+    return response;
   }
 
   // Handle CORS for non-protected or custom routes
-  return await executeUnifiedPolicyMiddleware(request, { appType: 'api' });
+  const response = await executeUnifiedPolicyMiddleware(request, { appType: 'api' });
+  emitEnterpriseProxyTelemetry(request, { application: 'api', response, startedAt, event, sameOriginIngest: true });
+  return response;
 }
 
 

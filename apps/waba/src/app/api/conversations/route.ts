@@ -11,7 +11,7 @@ export async function PATCH(req: Request) {
     if (auth.role === 'customer') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
     const body = await req.json();
-    const { sender_number, contact_name, status, tags, notes, assigned_to, department } = body;
+    const { sender_number, contact_name, status, tags, notes, assigned_to, department, ai_active, deal_value, active_flow } = body;
 
     if (!sender_number) {
       return NextResponse.json({ error: 'Missing sender_number' }, { status: 400 });
@@ -25,6 +25,9 @@ export async function PATCH(req: Request) {
     if (notes !== undefined) updateData.notes = notes;
     if (assigned_to !== undefined) updateData.assigned_to = assigned_to;
     if (department !== undefined) updateData.department = department;
+    if (ai_active !== undefined) updateData.ai_active = Boolean(ai_active);
+    if (deal_value !== undefined) updateData.deal_value = deal_value;
+    if (active_flow !== undefined) updateData.active_flow = active_flow;
 
     const { data, error } = await supabase
       .from('Conversation')

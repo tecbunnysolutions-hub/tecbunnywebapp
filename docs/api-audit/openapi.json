@@ -1,4 +1,4 @@
-{
+﻿{
   "openapi": "3.1.0",
   "info": {
     "title": "Tecbunny API Surface",
@@ -40,8 +40,7 @@
         "x-route-file": "apps/api/src/app/api/admin-auth/login/route.ts",
         "x-database-tables": [],
         "x-frontend-usage": [
-          "apps/api/src/app/login/page.tsx",
-          "apps/superadmin/src/app/superadmin/login/page.tsx"
+          "apps/api/src/app/login/page.tsx"
         ]
       }
     },
@@ -77,8 +76,7 @@
         "x-route-file": "apps/api/src/app/api/admin-auth/logout/route.ts",
         "x-database-tables": [],
         "x-frontend-usage": [
-          "apps/api/src/app/dashboard/page.tsx",
-          "apps/superadmin/src/components/superadmin/SuperadminShell.tsx"
+          "apps/api/src/app/dashboard/page.tsx"
         ]
       }
     },
@@ -235,6 +233,38 @@
           "products"
         ],
         "x-frontend-usage": []
+      }
+    },
+    "/api/admin/crm/leads": {
+      "post": {
+        "description": "POST /api/admin/crm/leads",
+        "parameters": [],
+        "responses": {
+          "400": {
+            "description": "Observed or expected 400 response"
+          },
+          "401": {
+            "description": "Observed or expected 401 response"
+          },
+          "403": {
+            "description": "Observed or expected 403 response"
+          },
+          "500": {
+            "description": "Observed or expected 500 response"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-route-file": "apps/mgmt/src/app/api/admin/crm/leads/route.ts",
+        "x-database-tables": [
+          "sls_leads"
+        ],
+        "x-frontend-usage": [
+          "apps/mgmt/src/app/mgmt/crm/crm-dashboard.tsx"
+        ]
       }
     },
     "/api/admin/custom-setups": {
@@ -634,6 +664,38 @@
         "x-frontend-usage": [
           "apps/mgmt/src/app/mgmt/admin/broadcast-desk/page.tsx",
           "apps/mgmt/src/app/mgmt/admin/promotional-broadcast/page.tsx"
+        ]
+      }
+    },
+    "/api/admin/mgmt/overview": {
+      "get": {
+        "description": "GET /api/admin/mgmt/overview",
+        "parameters": [],
+        "responses": {
+          "401": {
+            "description": "Observed or expected 401 response"
+          },
+          "403": {
+            "description": "Observed or expected 403 response"
+          },
+          "500": {
+            "description": "Observed or expected 500 response"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-route-file": "apps/mgmt/src/app/api/admin/mgmt/overview/route.ts",
+        "x-database-tables": [
+          "orders",
+          "products",
+          "service_tickets",
+          "sls_leads"
+        ],
+        "x-frontend-usage": [
+          "apps/mgmt/src/app/mgmt/page.tsx"
         ]
       }
     },
@@ -1157,6 +1219,9 @@
         "description": "POST /api/admin/products/bulk",
         "parameters": [],
         "responses": {
+          "207": {
+            "description": "Observed or expected 207 response"
+          },
           "400": {
             "description": "Observed or expected 400 response"
           },
@@ -1171,7 +1236,8 @@
         ],
         "x-route-file": "apps/mgmt/src/app/api/admin/products/bulk/route.ts",
         "x-database-tables": [
-          "products"
+          "products",
+          "rpc:soft_delete_product"
         ],
         "x-frontend-usage": [
           "packages/admin-ui/src/components/admin-products-new.tsx"
@@ -1365,7 +1431,7 @@
         ],
         "x-route-file": "apps/mgmt/src/app/api/admin/redemptions/approve/route.ts",
         "x-database-tables": [
-          "agent_redemption_requests"
+          "rpc:approve_agent_redemption"
         ],
         "x-frontend-usage": []
       }
@@ -1404,9 +1470,6 @@
           },
           "401": {
             "description": "Observed or expected 401 response"
-          },
-          "404": {
-            "description": "Observed or expected 404 response"
           }
         },
         "security": [
@@ -1416,8 +1479,7 @@
         ],
         "x-route-file": "apps/mgmt/src/app/api/admin/redemptions/process/route.ts",
         "x-database-tables": [
-          "agent_redemption_requests",
-          "rpc:increment_agent_points"
+          "rpc:process_agent_redemption"
         ],
         "x-frontend-usage": []
       }
@@ -1945,6 +2007,47 @@
         ]
       }
     },
+    "/api/analytics": {
+      "get": {
+        "description": "GET /api/analytics",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Observed or expected 200 response"
+          },
+          "400": {
+            "description": "Observed or expected 400 response"
+          },
+          "401": {
+            "description": "Observed or expected 401 response"
+          },
+          "403": {
+            "description": "Observed or expected 403 response"
+          },
+          "404": {
+            "description": "Observed or expected 404 response"
+          },
+          "500": {
+            "description": "Observed or expected 500 response"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-route-file": "apps/waba/src/app/api/analytics/route.ts",
+        "x-database-tables": [
+          "Message",
+          "mkt_campaign_analytics",
+          "waba_contact_consent",
+          "waba_message_status_events"
+        ],
+        "x-frontend-usage": [
+          "apps/waba/src/app/analytics/page.tsx"
+        ]
+      }
+    },
     "/api/analytics/dashboard": {
       "get": {
         "description": "GET /api/analytics/dashboard",
@@ -2032,6 +2135,8 @@
           "leads"
         ],
         "x-frontend-usage": [
+          "packages/core/src/enterprise-analytics-proxy.ts",
+          "packages/core/src/enterprise-analytics.ts",
           "packages/core/src/hooks/use-analytics.ts"
         ]
       }
@@ -2927,9 +3032,7 @@
           "published_blueprints",
           "user_milestones"
         ],
-        "x-frontend-usage": [
-          "apps/mgmt/src/hooks/use-viral-attribution.ts"
-        ]
+        "x-frontend-usage": []
       }
     },
     "/api/branches": {
@@ -2939,9 +3042,6 @@
         "responses": {
           "400": {
             "description": "Observed or expected 400 response"
-          },
-          "403": {
-            "description": "Observed or expected 403 response"
           },
           "500": {
             "description": "Observed or expected 500 response"
@@ -2962,9 +3062,6 @@
         "description": "GET /api/branches",
         "parameters": [],
         "responses": {
-          "403": {
-            "description": "Observed or expected 403 response"
-          },
           "500": {
             "description": "Observed or expected 500 response"
           }
@@ -2984,9 +3081,6 @@
         "responses": {
           "400": {
             "description": "Observed or expected 400 response"
-          },
-          "403": {
-            "description": "Observed or expected 403 response"
           },
           "500": {
             "description": "Observed or expected 500 response"
@@ -3012,6 +3106,9 @@
           },
           "500": {
             "description": "Observed or expected 500 response"
+          },
+          "503": {
+            "description": "Observed or expected 503 response"
           }
         },
         "security": [
@@ -3022,7 +3119,8 @@
         "x-route-file": "apps/waba/src/app/api/campaigns/route.ts",
         "x-database-tables": [
           "Conversation",
-          "Message"
+          "Template",
+          "mkt_campaigns"
         ],
         "x-frontend-usage": [
           "apps/waba/src/app/campaigns/page.tsx"
@@ -3409,6 +3507,51 @@
         "x-frontend-usage": []
       }
     },
+    "/api/contacts/consent": {
+      "get": {
+        "description": "GET /api/contacts/consent",
+        "parameters": [],
+        "responses": {
+          "500": {
+            "description": "Observed or expected 500 response"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-route-file": "apps/waba/src/app/api/contacts/consent/route.ts",
+        "x-database-tables": [
+          "waba_contact_consent"
+        ],
+        "x-frontend-usage": [
+          "apps/waba/src/app/contacts/page.tsx"
+        ]
+      },
+      "patch": {
+        "description": "PATCH /api/contacts/consent",
+        "parameters": [],
+        "responses": {
+          "400": {
+            "description": "Observed or expected 400 response"
+          },
+          "500": {
+            "description": "Observed or expected 500 response"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-route-file": "apps/waba/src/app/api/contacts/consent/route.ts",
+        "x-database-tables": [
+          "waba_contact_consent"
+        ],
+        "x-frontend-usage": []
+      }
+    },
     "/api/conversations": {
       "patch": {
         "description": "PATCH /api/conversations",
@@ -3472,6 +3615,76 @@
         ],
         "x-route-file": "apps/waba/src/app/api/conversations/[id]/assign/route.ts",
         "x-database-tables": [],
+        "x-frontend-usage": []
+      }
+    },
+    "/api/conversations/{sender}/notes": {
+      "get": {
+        "description": "GET /api/conversations/{sender}/notes",
+        "parameters": [
+          {
+            "name": "sender",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Observed or expected 400 response"
+          },
+          "403": {
+            "description": "Observed or expected 403 response"
+          },
+          "500": {
+            "description": "Observed or expected 500 response"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-route-file": "apps/waba/src/app/api/conversations/[sender]/notes/route.ts",
+        "x-database-tables": [
+          "waba_conversation_notes"
+        ],
+        "x-frontend-usage": []
+      },
+      "post": {
+        "description": "POST /api/conversations/{sender}/notes",
+        "parameters": [
+          {
+            "name": "sender",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Observed or expected 400 response"
+          },
+          "403": {
+            "description": "Observed or expected 403 response"
+          },
+          "500": {
+            "description": "Observed or expected 500 response"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-route-file": "apps/waba/src/app/api/conversations/[sender]/notes/route.ts",
+        "x-database-tables": [
+          "waba_conversation_notes"
+        ],
         "x-frontend-usage": []
       }
     },
@@ -4537,6 +4750,216 @@
         "x-frontend-usage": []
       }
     },
+    "/api/enterprise-analytics/audit-logs": {
+      "get": {
+        "description": "GET /api/enterprise-analytics/audit-logs",
+        "parameters": [],
+        "responses": {
+          "500": {
+            "description": "Observed or expected 500 response"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-route-file": "apps/api/src/app/api/enterprise-analytics/audit-logs/route.ts",
+        "x-database-tables": [
+          "enterprise_audit_logs"
+        ],
+        "x-frontend-usage": [
+          "packages/core/src/enterprise-analytics.ts"
+        ]
+      },
+      "post": {
+        "description": "POST /api/enterprise-analytics/audit-logs",
+        "parameters": [],
+        "responses": {
+          "500": {
+            "description": "Observed or expected 500 response"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-route-file": "apps/api/src/app/api/enterprise-analytics/audit-logs/route.ts",
+        "x-database-tables": [
+          "enterprise_audit_logs"
+        ],
+        "x-frontend-usage": []
+      }
+    },
+    "/api/enterprise-analytics/dashboard": {
+      "get": {
+        "description": "GET /api/enterprise-analytics/dashboard",
+        "parameters": [],
+        "responses": {
+          "500": {
+            "description": "Observed or expected 500 response"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-route-file": "apps/api/src/app/api/enterprise-analytics/dashboard/route.ts",
+        "x-database-tables": [
+          "enterprise_analytics_events",
+          "enterprise_kpi_snapshots"
+        ],
+        "x-frontend-usage": []
+      }
+    },
+    "/api/enterprise-analytics/exports": {
+      "post": {
+        "description": "POST /api/enterprise-analytics/exports",
+        "parameters": [],
+        "responses": {
+          "500": {
+            "description": "Observed or expected 500 response"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-route-file": "apps/api/src/app/api/enterprise-analytics/exports/route.ts",
+        "x-database-tables": [
+          "enterprise_report_exports"
+        ],
+        "x-frontend-usage": []
+      }
+    },
+    "/api/enterprise-analytics/filters": {
+      "get": {
+        "description": "GET /api/enterprise-analytics/filters",
+        "parameters": [],
+        "responses": {
+          "500": {
+            "description": "Observed or expected 500 response"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-route-file": "apps/api/src/app/api/enterprise-analytics/filters/route.ts",
+        "x-database-tables": [
+          "enterprise_saved_filters"
+        ],
+        "x-frontend-usage": []
+      },
+      "post": {
+        "description": "POST /api/enterprise-analytics/filters",
+        "parameters": [],
+        "responses": {
+          "500": {
+            "description": "Observed or expected 500 response"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-route-file": "apps/api/src/app/api/enterprise-analytics/filters/route.ts",
+        "x-database-tables": [
+          "enterprise_saved_filters"
+        ],
+        "x-frontend-usage": []
+      }
+    },
+    "/api/enterprise-analytics/reports": {
+      "get": {
+        "description": "GET /api/enterprise-analytics/reports",
+        "parameters": [],
+        "responses": {
+          "500": {
+            "description": "Observed or expected 500 response"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-route-file": "apps/api/src/app/api/enterprise-analytics/reports/route.ts",
+        "x-database-tables": [
+          "enterprise_analytics_events",
+          "enterprise_audit_logs",
+          "enterprise_kpi_snapshots",
+          "enterprise_staff_activity_logs"
+        ],
+        "x-frontend-usage": []
+      }
+    },
+    "/api/enterprise-analytics/search": {
+      "get": {
+        "description": "GET /api/enterprise-analytics/search",
+        "parameters": [],
+        "responses": {
+          "500": {
+            "description": "Observed or expected 500 response"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-route-file": "apps/api/src/app/api/enterprise-analytics/search/route.ts",
+        "x-database-tables": [],
+        "x-frontend-usage": []
+      }
+    },
+    "/api/enterprise-analytics/staff-logs": {
+      "get": {
+        "description": "GET /api/enterprise-analytics/staff-logs",
+        "parameters": [],
+        "responses": {
+          "500": {
+            "description": "Observed or expected 500 response"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-route-file": "apps/api/src/app/api/enterprise-analytics/staff-logs/route.ts",
+        "x-database-tables": [
+          "enterprise_staff_activity_logs"
+        ],
+        "x-frontend-usage": [
+          "packages/core/src/enterprise-analytics.ts"
+        ]
+      },
+      "post": {
+        "description": "POST /api/enterprise-analytics/staff-logs",
+        "parameters": [],
+        "responses": {
+          "500": {
+            "description": "Observed or expected 500 response"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-route-file": "apps/api/src/app/api/enterprise-analytics/staff-logs/route.ts",
+        "x-database-tables": [
+          "enterprise_staff_activity_logs"
+        ],
+        "x-frontend-usage": []
+      }
+    },
     "/api/faqs": {
       "get": {
         "description": "GET /api/faqs",
@@ -5535,9 +5958,6 @@
           "400": {
             "description": "Observed or expected 400 response"
           },
-          "403": {
-            "description": "Observed or expected 403 response"
-          },
           "500": {
             "description": "Observed or expected 500 response"
           }
@@ -5558,9 +5978,6 @@
         "description": "GET /api/organizations",
         "parameters": [],
         "responses": {
-          "403": {
-            "description": "Observed or expected 403 response"
-          },
           "500": {
             "description": "Observed or expected 500 response"
           }
@@ -5580,9 +5997,6 @@
         "responses": {
           "400": {
             "description": "Observed or expected 400 response"
-          },
-          "403": {
-            "description": "Observed or expected 403 response"
           },
           "500": {
             "description": "Observed or expected 500 response"
@@ -5992,9 +6406,6 @@
         "description": "GET /api/permissions",
         "parameters": [],
         "responses": {
-          "403": {
-            "description": "Observed or expected 403 response"
-          },
           "500": {
             "description": "Observed or expected 500 response"
           }
@@ -7300,13 +7711,38 @@
       }
     },
     "/api/roles": {
+      "delete": {
+        "description": "DELETE /api/roles",
+        "parameters": [],
+        "responses": {
+          "400": {
+            "description": "Observed or expected 400 response"
+          },
+          "404": {
+            "description": "Observed or expected 404 response"
+          },
+          "409": {
+            "description": "Observed or expected 409 response"
+          },
+          "500": {
+            "description": "Observed or expected 500 response"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-route-file": "apps/superadmin/src/app/api/roles/route.ts",
+        "x-database-tables": [],
+        "x-frontend-usage": [
+          "apps/superadmin/src/app/superadmin/mgmt/roles/page.tsx"
+        ]
+      },
       "get": {
         "description": "GET /api/roles",
         "parameters": [],
         "responses": {
-          "403": {
-            "description": "Observed or expected 403 response"
-          },
           "500": {
             "description": "Observed or expected 500 response"
           }
@@ -7326,9 +7762,6 @@
         "responses": {
           "400": {
             "description": "Observed or expected 400 response"
-          },
-          "403": {
-            "description": "Observed or expected 403 response"
           },
           "500": {
             "description": "Observed or expected 500 response"
@@ -8183,9 +8616,6 @@
           "400": {
             "description": "Observed or expected 400 response"
           },
-          "403": {
-            "description": "Observed or expected 403 response"
-          },
           "500": {
             "description": "Observed or expected 500 response"
           }
@@ -8210,9 +8640,6 @@
         "description": "GET /api/superadmin/areas",
         "parameters": [],
         "responses": {
-          "403": {
-            "description": "Observed or expected 403 response"
-          },
           "500": {
             "description": "Observed or expected 500 response"
           }
@@ -8237,9 +8664,6 @@
         "responses": {
           "400": {
             "description": "Observed or expected 400 response"
-          },
-          "403": {
-            "description": "Observed or expected 403 response"
           },
           "500": {
             "description": "Observed or expected 500 response"
@@ -8271,9 +8695,6 @@
           "400": {
             "description": "Observed or expected 400 response"
           },
-          "403": {
-            "description": "Observed or expected 403 response"
-          },
           "500": {
             "description": "Observed or expected 500 response"
           }
@@ -8301,9 +8722,6 @@
           "400": {
             "description": "Observed or expected 400 response"
           },
-          "403": {
-            "description": "Observed or expected 403 response"
-          },
           "500": {
             "description": "Observed or expected 500 response"
           }
@@ -8321,9 +8739,6 @@
         "description": "GET /api/superadmin/custom-setup-offers",
         "parameters": [],
         "responses": {
-          "403": {
-            "description": "Observed or expected 403 response"
-          },
           "500": {
             "description": "Observed or expected 500 response"
           }
@@ -8345,9 +8760,6 @@
           "400": {
             "description": "Observed or expected 400 response"
           },
-          "403": {
-            "description": "Observed or expected 403 response"
-          },
           "500": {
             "description": "Observed or expected 500 response"
           }
@@ -8366,9 +8778,6 @@
           "400": {
             "description": "Observed or expected 400 response"
           },
-          "403": {
-            "description": "Observed or expected 403 response"
-          },
           "500": {
             "description": "Observed or expected 500 response"
           }
@@ -8386,19 +8795,13 @@
         "description": "GET /api/superadmin/inquiries",
         "parameters": [],
         "responses": {
-          "403": {
-            "description": "Observed or expected 403 response"
-          },
           "500": {
             "description": "Observed or expected 500 response"
           }
         },
         "security": [],
         "x-route-file": "apps/superadmin/src/app/api/superadmin/inquiries/route.ts",
-        "x-database-tables": [
-          "contact_messages",
-          "profiles"
-        ],
+        "x-database-tables": [],
         "x-frontend-usage": [
           "apps/superadmin/src/app/superadmin/mgmt/leads/inquiry-pipeline.tsx"
         ]
@@ -8418,12 +8821,6 @@
           }
         ],
         "responses": {
-          "400": {
-            "description": "Observed or expected 400 response"
-          },
-          "403": {
-            "description": "Observed or expected 403 response"
-          },
           "500": {
             "description": "Observed or expected 500 response"
           }
@@ -8434,10 +8831,7 @@
           }
         ],
         "x-route-file": "apps/superadmin/src/app/api/superadmin/inquiries/[id]/assignment/route.ts",
-        "x-database-tables": [
-          "contact_messages",
-          "profiles"
-        ],
+        "x-database-tables": [],
         "x-frontend-usage": []
       }
     },
@@ -8448,9 +8842,6 @@
         "responses": {
           "400": {
             "description": "Observed or expected 400 response"
-          },
-          "403": {
-            "description": "Observed or expected 403 response"
           },
           "500": {
             "description": "Observed or expected 500 response"
@@ -8498,6 +8889,9 @@
         "description": "POST /api/templates",
         "parameters": [],
         "responses": {
+          "400": {
+            "description": "Observed or expected 400 response"
+          },
           "403": {
             "description": "Observed or expected 403 response"
           },
@@ -8515,6 +8909,42 @@
           "Template"
         ],
         "x-frontend-usage": []
+      }
+    },
+    "/api/templates/sync": {
+      "post": {
+        "description": "POST /api/templates/sync",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Observed or expected 200 response"
+          },
+          "400": {
+            "description": "Observed or expected 400 response"
+          },
+          "401": {
+            "description": "Observed or expected 401 response"
+          },
+          "403": {
+            "description": "Observed or expected 403 response"
+          },
+          "404": {
+            "description": "Observed or expected 404 response"
+          },
+          "500": {
+            "description": "Observed or expected 500 response"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-route-file": "apps/waba/src/app/api/templates/sync/route.ts",
+        "x-database-tables": [],
+        "x-frontend-usage": [
+          "apps/waba/src/app/templates/page.tsx"
+        ]
       }
     },
     "/api/trpc/{trpc}": {

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import crypto from 'crypto';
-import { getWabaWebhookQueue } from '@tecbunny/core/server';
+import { getWabaWebhookQueue } from '@tecbunny/core/queue';
 
 // Bug #1 fix: Remove hardcoded secret fallback. Throw at startup if missing.
 // Moving the check to runtime to prevent Vercel build failures when secret is not set.

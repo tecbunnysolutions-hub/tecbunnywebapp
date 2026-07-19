@@ -53,7 +53,7 @@ function SuperadminSignInForm() {
     setError('');
 
     try {
-      const response = await fetch('/api/admin-auth/login', {
+      const response = await fetch('/superadmin/mgmt/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

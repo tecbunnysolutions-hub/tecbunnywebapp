@@ -1,20 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 import { logger } from '@tecbunny/core/logger';
-import { isSuperadmin, isSuperadminSession } from '@tecbunny/core/permissions';
 import { createServiceClient } from '@tecbunny/database/admin';
-import { createSupabaseClient } from '@tecbunny/database/server';
-
-async function checkAuth() {
-  try {
-    const supabase = await createSupabaseClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    return Boolean(await isSuperadminSession() || await isSuperadmin(user));
-  } catch (error) {
-    logger.warn('superadmin_areas.auth_failed', { error });
-    return false;
-  }
-}
+import { requireSuperadminApi } from '@/lib/superadmin-api';
 
 function normalizePincodes(value: unknown) {
   return Array.isArray(value)
@@ -43,7 +31,8 @@ async function syncAssignments(supabase: any, areaId: string, userIds: string[],
 }
 
 export async function GET() {
-  if (!await checkAuth()) return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+  const auth = await requireSuperadminApi('superadmin_areas');
+  if (!auth.authorized) return auth.response;
 
   try {
     const supabase = createServiceClient();
@@ -104,7 +93,8 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
-  if (!await checkAuth()) return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+  const auth = await requireSuperadminApi('superadmin_areas');
+  if (!auth.authorized) return auth.response;
 
   try {
     const body = await request.json().catch(() => ({}));
@@ -157,7 +147,8 @@ export async function POST(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
-  if (!await checkAuth()) return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+  const auth = await requireSuperadminApi('superadmin_areas');
+  if (!auth.authorized) return auth.response;
 
   try {
     const id = new URL(request.url).searchParams.get('id');

@@ -1,6 +1,5 @@
-import { isSupabaseServiceConfigured } from "@tecbunny/core/server";
 import { createClient } from '@tecbunny/database';
-import { createServiceClient } from "@tecbunny/core/server";
+import { createServiceClient, isSupabaseServiceConfigured } from "@tecbunny/database/admin";
 /**
  * AI-Powered Product Ingestion Pool
  * POST /api/admin/products/ai-add

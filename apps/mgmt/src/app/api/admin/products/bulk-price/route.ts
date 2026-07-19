@@ -1,6 +1,5 @@
-import { isSupabaseServiceConfigured } from "@tecbunny/core/server";
 import { createClient } from '@tecbunny/database';
-import { createServiceClient } from "@tecbunny/core/server";
+import { createServiceClient, isSupabaseServiceConfigured } from "@tecbunny/database/admin";
 /**
  * Bulk Price Calculation Engine
  * POST  /api/admin/products/bulk-price  – batch recalculate & persist prices

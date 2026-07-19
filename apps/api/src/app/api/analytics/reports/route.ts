@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server';
-import { createSupabaseServiceClient } from '@tecbunny/core/server';
+import { requireSupabaseServiceEnv } from '@tecbunny/database';
+import { createClient as createSupabaseServiceRoleClient } from '@supabase/supabase-js';
 import { getSessionWithRole } from '@tecbunny/core/auth/server-role';
 import { isAtLeast } from '@tecbunny/core/roles';
 import { logger } from '@tecbunny/core';
@@ -11,6 +12,13 @@ const QuerySchema = z.object({
   to:   z.string().datetime({ offset: true }).optional(),
   type: z.enum(['gst', 'payment_reconciliation', 'sales_summary']).default('sales_summary'),
 });
+
+function createSupabaseServiceClient() {
+  const { url, serviceKey } = requireSupabaseServiceEnv();
+  return createSupabaseServiceRoleClient(url, serviceKey, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+}
 
 /**
  * GET /api/analytics/reports

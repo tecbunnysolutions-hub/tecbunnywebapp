@@ -2,19 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import { generateGeminiText } from '@tecbunny/core/ai/gemini-service';
 import { logger } from '@tecbunny/core/logger';
-import { isSuperadmin, isSuperadminSession } from '@tecbunny/core/permissions';
-import { createSupabaseClient } from '@tecbunny/database/server';
-
-async function checkAuth() {
-  try {
-    const supabase = await createSupabaseClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    return Boolean(await isSuperadminSession() || await isSuperadmin(user));
-  } catch (error) {
-    logger.warn('superadmin_service_ai.auth_failed', { error });
-    return false;
-  }
-}
+import { requireSuperadminApi } from '@/lib/superadmin-api';
 
 function buildPrompt(name: string, field: string) {
   if (field === 'terms_and_conditions') {
@@ -25,9 +13,8 @@ function buildPrompt(name: string, field: string) {
 }
 
 export async function POST(request: NextRequest) {
-  if (!await checkAuth()) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
-  }
+  const auth = await requireSuperadminApi('superadmin_service_ai');
+  if (!auth.authorized) return auth.response;
 
   try {
     const body = await request.json().catch(() => ({}));

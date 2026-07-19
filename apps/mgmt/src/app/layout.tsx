@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AppProvider } from "@tecbunny/core/context/AppProvider";
+import { EnterpriseAnalyticsAutoTracker } from "@tecbunny/core/components/EnterpriseAnalyticsAutoTracker";
 import { TRPCProvider } from "../components/providers/TRPCProvider";
 
 const geistSans = Geist({
@@ -33,6 +34,7 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col" suppressHydrationWarning>
         <AppProvider>
           <TRPCProvider>
+            <EnterpriseAnalyticsAutoTracker application="mgmt" defaultModule="management" dashboardPaths={['/mgmt', '/admin', '/analytics']} />
             {children}
           </TRPCProvider>
         </AppProvider>

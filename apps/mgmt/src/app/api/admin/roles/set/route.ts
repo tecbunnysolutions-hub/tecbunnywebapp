@@ -1,7 +1,7 @@
 import { UserRole, normalizeRole } from "@tecbunny/core";
-import { isSupabaseServiceConfigured } from "@tecbunny/core/server";
+import { withAuditEvent } from "@tecbunny/core/enterprise-analytics";
 import { createClient } from '@tecbunny/database';
-import { createServiceClient } from "@tecbunny/core/server";
+import { createServiceClient, isSupabaseServiceConfigured } from "@tecbunny/database/admin";
 import { NextResponse } from 'next/server';
 
 import { requireRole } from "@tecbunny/core/auth/guard";
@@ -52,36 +52,56 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'The root Superadmin role cannot be modified' }, { status: 403 });
     }
 
-    // Update profiles.role via RPC for audit (preferred) else fallback
-    const { error: rpcError } = await supabase.rpc('admin_set_user_role', { p_user_id: userId, p_role: newRole, p_note: note ?? null });
-    if (rpcError) {
-      return NextResponse.json({ error: 'Role update failed', details: rpcError.message }, { status: 500 });
-    }
-
-    // Log the role alteration to security audit log
-    await supabase
-      .from('security_audit_log')
-      .insert({
-        event_type: 'role_alteration',
-        user_id: userId,
-        event_data: {
-          action: 'set',
-          previous_role: targetProfile.role,
-          new_role: newRole,
-          modified_by: ctx.user.id,
-          note: note ?? null
-        },
-        severity: 'high'
-      });
-
-    if (isSupabaseServiceConfigured) {
-      const { error: metadataError } = await supabase.auth.admin.updateUserById(userId, {
-        app_metadata: { role: newRole }
-      });
-      if (metadataError) {
-        return NextResponse.json({ error: 'Role metadata sync failed', details: metadataError.message }, { status: 500 });
+    await withAuditEvent({
+      application: 'mgmt',
+      module: 'roles',
+      screen: '/api/admin/roles/set',
+      action: 'staff_role_change',
+      description: `Changed staff role for ${userId} from ${previousRole ?? 'unknown'} to ${newRole}`,
+      entityType: 'profile',
+      entityId: userId,
+      oldValue: { role: previousRole ?? targetProfile.role },
+      newValue: { role: newRole },
+      reason: note ?? 'mgmt_staff_role_change',
+      context: { userId: ctx.user.id, userEmail: ctx.user.email, role: ctx.role },
+      apiEndpoint: '/api/admin/roles/set',
+      httpMethod: 'POST',
+      databaseTable: 'profiles',
+      priority: 'critical',
+    }, async () => {
+      // Update profiles.role via RPC for audit (preferred) else fallback
+      const { error: rpcError } = await supabase.rpc('admin_set_user_role', { p_user_id: userId, p_role: newRole, p_note: note ?? null });
+      if (rpcError) {
+        throw new Error(`Role update failed: ${rpcError.message}`);
       }
-    }
+
+      // Log the role alteration to security audit log
+      await supabase
+        .from('security_audit_log')
+        .insert({
+          event_type: 'role_alteration',
+          user_id: userId,
+          event_data: {
+            action: 'set',
+            previous_role: targetProfile.role,
+            new_role: newRole,
+            modified_by: ctx.user.id,
+            note: note ?? null
+          },
+          severity: 'high'
+        });
+
+      if (isSupabaseServiceConfigured) {
+        const { error: metadataError } = await supabase.auth.admin.updateUserById(userId, {
+          app_metadata: { role: newRole }
+        });
+        if (metadataError) {
+          throw new Error(`Role metadata sync failed: ${metadataError.message}`);
+        }
+      }
+
+      return null;
+    });
 
     return NextResponse.json({ success: true, userId, newRole });
   } catch (e: any) {
