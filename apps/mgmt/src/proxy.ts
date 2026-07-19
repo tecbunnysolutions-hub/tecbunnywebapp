@@ -1,7 +1,7 @@
 import { type NextRequest } from 'next/server';
 import { executeUnifiedPolicyMiddleware } from '@tecbunny/core/auth/unified-middleware';
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   return await executeUnifiedPolicyMiddleware(request, {
     appType: 'mgmt',
     loginRoute: '/auth/login',

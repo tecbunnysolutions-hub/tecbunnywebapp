@@ -8,7 +8,7 @@ const withBundleAnalyzer = process.env.ANALYZE === 'true'
 const nextConfig: NextConfig = {
   output: process.env.DOCKER_BUILD === 'true' ? 'standalone' : undefined,
   transpilePackages: ["@tecbunny/core", "@tecbunny/ui", "@tecbunny/database", "@tecbunny/config"],
-  serverExternalPackages: ['sharp', '@img/sharp-win32-x64'],
+  serverExternalPackages: ['sharp', '@img/sharp-win32-x64', 'bullmq', 'ioredis'],
   async rewrites() {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.tecbunny.com';
     return [
@@ -26,6 +26,8 @@ const nextConfig: NextConfig = {
       config.externals.push({
         sharp: 'commonjs sharp',
         '@img/sharp-win32-x64': 'commonjs @img/sharp-win32-x64',
+        bullmq: 'commonjs bullmq',
+        ioredis: 'commonjs ioredis',
       });
     }
     return config;
