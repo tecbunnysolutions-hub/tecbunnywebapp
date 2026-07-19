@@ -2296,7 +2296,7 @@
         - "published_blueprints"
         - "user_milestones"
       "x-frontend-usage": 
-        - "apps/mgmt/src/hooks/hooks/use-viral-attribution.ts"
+        - "apps/mgmt/src/hooks/use-viral-attribution.ts"
   "/api/branches": 
     "delete": 
       "description": "DELETE /api/branches"

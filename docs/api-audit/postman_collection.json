@@ -2235,7 +2235,7 @@
                 }
               }
             },
-            "description": "Route file: apps/api/src/app/api/blueprints/attribution/conversion/route.ts\nDatabase tables: published_blueprints, user_milestones\nFrontend usage: apps/mgmt/src/hooks/hooks/use-viral-attribution.ts"
+            "description": "Route file: apps/api/src/app/api/blueprints/attribution/conversion/route.ts\nDatabase tables: published_blueprints, user_milestones\nFrontend usage: apps/mgmt/src/hooks/use-viral-attribution.ts"
           },
           "response": [
             {

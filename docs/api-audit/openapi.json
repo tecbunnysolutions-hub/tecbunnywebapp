@@ -2928,7 +2928,7 @@
           "user_milestones"
         ],
         "x-frontend-usage": [
-          "apps/mgmt/src/hooks/hooks/use-viral-attribution.ts"
+          "apps/mgmt/src/hooks/use-viral-attribution.ts"
         ]
       }
     },
