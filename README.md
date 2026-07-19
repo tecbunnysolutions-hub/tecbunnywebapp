@@ -5,13 +5,17 @@
 
 The primary use case is to showcase technology solutions (Security Systems, IT Reliability, Automation, Incident Response), provide an interactive e-commerce catalog for hardware, and facilitate live quote negotiation. The architecture is built for maximum speed and SEO optimization, utilizing React Server Components, aggressive edge caching, optimistic UI updates, and an advanced Supabase-backed data layer.
 
+## Latest Workspace Status
+
+Latest review date: 2026-07-19. The current monorepo uses npm workspaces with Next.js 16.2.10, React 19.2.7, TypeScript 5.9.3, ESLint 9.39.5, Prisma 7.8.0, and Turbo 2.10.3. The generated API inventory contains 378 discovered API entries, 378 working static entries, 0 broken routes, 0 unmatched direct frontend callers, 0 duplicate APIs, and 0 missing validation/authentication/security/database static signals. Enterprise business capability gaps, product design posture, and software audit posture are archived in `ALL_MARKDOWN_DOCUMENTS.md`.
+
 ## 2. Tech Stack & Prerequisites
-- **Framework**: Next.js 15 (App Router)
-- **Language**: TypeScript / React 19
+- **Framework**: Next.js 16.2.10 (App Router)
+- **Language**: TypeScript 5.9.3 / React 19.2.7
 - **Styling**: Tailwind CSS 4, Lucide React (Icons)
 - **Database / Auth**: Supabase (PostgreSQL, Row Level Security, Magic Link Auth)
 - **State Management**: React `useReducer` for complex machines (e.g., Checkout), Context API
-- **Tooling**: Node.js v20+, npm, ESLint
+- **Tooling**: Node.js v20+, npm 12.0.1, ESLint 9.39.5, Turbo 2.10.3
 
 **Environment Dependencies (`.env.local` requirements):**
 ```env

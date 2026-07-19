@@ -1,6 +1,7 @@
 import { logger } from './logger';
 import { SupabaseClient } from '@supabase/supabase-js';
 import crypto from 'crypto';
+import { validatePublicRemoteUrl } from './security/network-validation';
 
 export interface ProcessedImage {
   buffer: Buffer;
@@ -63,6 +64,7 @@ export function createOptimizeImageStream(
 }
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+const EXTERNAL_IMAGE_FETCH_TIMEOUT_MS = 8000;
 
 /**
  * Downloads an external image, optimizes it, and uploads it to Supabase storage.
@@ -78,11 +80,43 @@ export async function processAndUploadExternalImage(
   }
 
   try {
+    let parsedUrl: URL;
+    try {
+      parsedUrl = new URL(url);
+    } catch {
+      throw new Error('Invalid image URL');
+    }
+
+    const isPublicTarget = await validatePublicRemoteUrl(parsedUrl);
+    if (!isPublicTarget) {
+      throw new Error('Image URL target is not allowed');
+    }
+
     logger.info('fetching_external_image', { url });
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), EXTERNAL_IMAGE_FETCH_TIMEOUT_MS);
+    let response: Response;
+    try {
+      response = await fetch(parsedUrl.href, {
+        redirect: 'manual',
+        signal: controller.signal,
+      });
+    } finally {
+      clearTimeout(timeout);
+    }
     
-    const response = await fetch(url);
+    if (response.status >= 300 && response.status < 400) {
+      throw new Error('Redirecting image URLs are not allowed');
+    }
+
     if (!response.ok) {
       throw new Error(`Failed to fetch image: ${response.status} ${response.statusText}`);
+    }
+
+    const contentType = response.headers.get('content-type') || '';
+    if (!contentType.toLowerCase().startsWith('image/')) {
+      throw new Error('Remote URL did not return an image');
     }
 
     const contentLengthStr = response.headers.get('content-length');
@@ -127,7 +161,6 @@ export async function processAndUploadExternalImage(
       url,
       error: err instanceof Error ? err.message : String(err)
     });
-    // On failure, return the original URL so we don't completely break the product
-    return url;
+    return '';
   }
 }

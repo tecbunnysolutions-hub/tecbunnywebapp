@@ -1,4 +1,25 @@
 (function () {
+  const MAX_RAW_TEXT_LENGTH = 30000;
+  const ALLOWED_HTML_TAGS = new Set(['P', 'BR', 'STRONG', 'B', 'EM', 'I', 'UL', 'OL', 'LI', 'H3', 'H4', 'SPAN', 'TABLE', 'TBODY', 'TR', 'TH', 'TD']);
+
+  function sanitizeHtml(html) {
+    const template = document.createElement('template');
+    template.innerHTML = html || '';
+
+    template.content.querySelectorAll('*').forEach((element) => {
+      if (!ALLOWED_HTML_TAGS.has(element.tagName)) {
+        element.replaceWith(document.createTextNode(element.textContent || ''));
+        return;
+      }
+
+      Array.from(element.attributes).forEach((attr) => {
+        element.removeAttribute(attr.name);
+      });
+    });
+
+    return template.innerHTML;
+  }
+
   // Helper to resolve absolute URLs
   function makeAbsoluteUrl(url) {
     if (!url) return '';
@@ -270,19 +291,19 @@
         // Strip any remaining text just in case
         html = html.replace(/›\s*See more product details/gi, '').replace(/>\s*See more product details/gi, '');
         
-        if (html) descParts.push(html.trim());
+        if (html) descParts.push(sanitizeHtml(html.trim()));
       }
       if (descEl) {
         const html = descEl.innerHTML;
-        if (html) descParts.push(html.trim());
+        if (html) descParts.push(sanitizeHtml(html.trim()));
       }
       if (techSpecsEl) {
         const html = techSpecsEl.innerHTML;
-        if (html) descParts.push("<b>Technical Specifications:</b><br />" + html.trim());
+        if (html) descParts.push("<b>Technical Specifications:</b><br />" + sanitizeHtml(html.trim()));
       }
       if (aplusEl) {
         const html = aplusEl.innerHTML;
-        if (html) descParts.push("<b>From the Manufacturer:</b><br />" + html.trim());
+        if (html) descParts.push("<b>From the Manufacturer:</b><br />" + sanitizeHtml(html.trim()));
       }
       
       const description = descParts.join('<br /><br />');
@@ -349,15 +370,15 @@
       let descParts = [];
       if (highlightEl) {
         const html = highlightEl.innerHTML;
-        if (html) descParts.push(html.trim());
+        if (html) descParts.push(sanitizeHtml(html.trim()));
       }
       if (descEl) {
         const html = descEl.innerHTML;
-        if (html) descParts.push(html.trim());
+        if (html) descParts.push(sanitizeHtml(html.trim()));
       }
       if (specsEl) {
         const html = specsEl.innerHTML;
-        if (html) descParts.push("<b>Specifications:</b><br />" + html.trim());
+        if (html) descParts.push("<b>Specifications:</b><br />" + sanitizeHtml(html.trim()));
       }
       const description = descParts.join('<br /><br />');
 
@@ -402,15 +423,15 @@
       let descParts = [];
       if (featuresEl) {
         const html = featuresEl.innerHTML;
-        if (html) descParts.push(html.trim());
+        if (html) descParts.push(sanitizeHtml(html.trim()));
       }
       if (descEl) {
         const html = descEl.innerHTML;
-        if (html) descParts.push(html.trim());
+        if (html) descParts.push(sanitizeHtml(html.trim()));
       }
       if (specsEl) {
         const html = specsEl.innerHTML;
-        if (html) descParts.push("<b>Specifications:</b><br />" + html.trim());
+        if (html) descParts.push("<b>Specifications:</b><br />" + sanitizeHtml(html.trim()));
       }
       const description = descParts.join('<br /><br />');
 
@@ -545,6 +566,6 @@
     additional1: '',
     additional2: '',
     additional3: '',
-    rawText: document.body.innerText || ''
+    rawText: (document.body.innerText || '').slice(0, MAX_RAW_TEXT_LENGTH)
   };
 })();

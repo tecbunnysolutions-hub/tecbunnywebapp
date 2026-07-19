@@ -2,6 +2,8 @@
 
 Welcome to the **TecBunny WABA Application**. This is a specialized microservice within the ecosystem dedicated entirely to handling interactions with the Meta/WhatsApp Business API.
 
+Latest status update: 2026-07-19. The generated enterprise API inventory counts 18 WABA API entries, including 12 mutating entries. Existing coverage includes authentication, conversations, messages, media, campaign create, templates, and customer 360; production gaps remain for campaign list/update/delete/schedule/cancel, Meta template sync/approval, opt-in/out consent, webhook retry/dead-letter handling, delivery analytics, and automation rule CRUD.
+
 ---
 
 ## 📖 Project Overview

@@ -1,39 +1,24 @@
 import { createSupabaseServiceClient, isSupabaseServiceConfigured } from "@tecbunny/core/server";;
 import { NextRequest, NextResponse } from 'next/server';
 import { processAndUploadExternalImage } from "@tecbunny/core/image-processor";
+import { ExtensionAuthError, extensionJson, extensionOptionsResponse, requireExtensionAdmin } from '../../extension-security';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-superadmin-username, x-superadmin-password',
-};
-
-export async function OPTIONS() {
-  return NextResponse.json({}, { headers: corsHeaders });
+export async function OPTIONS(request: NextRequest) {
+  return extensionOptionsResponse(request);
 }
 
 export async function POST(request: NextRequest) {
   try {
     // 1. Authenticate Request Manually
     // Since /api/products is public in middleware, we must verify the token here.
-    const authHeader = request.headers.get('authorization');
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return NextResponse.json({ error: 'Unauthorized: Missing token' }, { status: 401, headers: corsHeaders });
-    }
-    const token = authHeader.substring(7);
-    const { verifySuperadminSessionToken } = await import('@tecbunny/core/auth/superadmin-session');
-    const ip = request.headers.get('x-forwarded-for') || 'unknown';
-    const ua = request.headers.get('user-agent') || 'unknown';
-    
-    const superadminPayload = await verifySuperadminSessionToken(token, ip, ua);
-    if (!superadminPayload) {
-      return NextResponse.json({ error: 'Forbidden: Invalid superadmin token' }, { status: 403, headers: corsHeaders });
-    }
+    await requireExtensionAdmin(request);
+
     // 2. Validate Supabase Configuration
     if (!isSupabaseServiceConfigured) {
-      return NextResponse.json(
+      return extensionJson(
+        request,
         { error: 'Service configuration error: Supabase service role is not configured' },
-        { status: 503, headers: corsHeaders }
+        { status: 503 }
       );
     }
 
@@ -45,9 +30,10 @@ export async function POST(request: NextRequest) {
     } = body;
 
     if (!title) {
-      return NextResponse.json(
+      return extensionJson(
+        request,
         { error: 'Bad Request: Product title is required' },
-        { status: 400, headers: corsHeaders }
+        { status: 400 }
       );
     }
 
@@ -90,7 +76,7 @@ export async function POST(request: NextRequest) {
     const supabase = createSupabaseServiceClient();
 
     // 7. Process and Upload image to Supabase Storage
-    let finalImageUrl = imageUrl || null;
+    let finalImageUrl = null;
     if (imageUrl) {
       try {
         const uploadedUrl = await processAndUploadExternalImage(imageUrl, supabase);
@@ -113,7 +99,7 @@ export async function POST(request: NextRequest) {
       brand: brand || null,
       image: finalImageUrl,
       images: finalImageUrl ? [finalImageUrl] : [],
-      status: 'active', // Saved as active directly
+      status: 'draft',
       product_type: 'physical',
       specifications: {
         ...(modelNo && { 'Model No.': modelNo }),
@@ -127,7 +113,6 @@ export async function POST(request: NextRequest) {
       },
       short_description: shortDescription || null,
       tags: ['scraped'],
-      is_active: true,
       stock_quantity: 1,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
@@ -141,21 +126,24 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       console.error('[Scraper Import Error]:', error);
-      return NextResponse.json(
+      return extensionJson(
+        request,
         { error: `Database Insert Error: ${error.message}` },
-        { status: 500, headers: corsHeaders }
+        { status: 500 }
       );
     }
 
-    return NextResponse.json(
+    return extensionJson(
+      request,
       { success: true, product: data },
-      { status: 201, headers: corsHeaders }
+      { status: 201 }
     );
   } catch (error: any) {
     console.error('[Scraper API Exception]:', error);
-    return NextResponse.json(
+    return extensionJson(
+      request,
       { error: `Internal Server Error: ${error.message || error}` },
-      { status: 500, headers: corsHeaders }
+      { status: error instanceof ExtensionAuthError ? error.status : 500 }
     );
   }
 }

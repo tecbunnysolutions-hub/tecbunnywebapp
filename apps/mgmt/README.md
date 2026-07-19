@@ -2,6 +2,8 @@
 
 Welcome to the **TecBunny Management Dashboard**. This is the secure, internal portal designed for staff, sales agents, support technicians, and tenant administrators to oversee daily operations across the TecBunny ecosystem.
 
+Latest status update: 2026-07-19. The generated enterprise API inventory counts 56 Management API entries, including 43 mutating entries. Current coverage is strong for admin products, pricing, orders, quotes, inventory, marketing, users, sales agents, and selected service workflows; production gaps remain for departments/staff lifecycle, suppliers, purchases, warehouses, invoices, refunds, approvals, tasks/calendar, saved filters/views, and audit export.
+
 ---
 
 ## 📖 Project Overview

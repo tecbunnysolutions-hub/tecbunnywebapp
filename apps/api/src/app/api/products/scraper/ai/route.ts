@@ -1,15 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { logger } from "@tecbunny/core";
 import { GoogleGenAI, Type } from '@google/genai';
+import { ExtensionAuthError, extensionJson, extensionOptionsResponse, requireExtensionAdmin } from '../../../extension-security';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-superadmin-username, x-superadmin-password',
-};
-
-export async function OPTIONS() {
-  return NextResponse.json({}, { headers: corsHeaders });
+export async function OPTIONS(request: NextRequest) {
+  return extensionOptionsResponse(request);
 }
 
 export async function POST(request: NextRequest) {
@@ -18,32 +13,20 @@ export async function POST(request: NextRequest) {
   try {
     // 1. Authenticate Request Manually
     // Since /api/products is public in middleware, we must verify the token here.
-    const authHeader = request.headers.get('authorization');
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return NextResponse.json({ error: 'Unauthorized: Missing token' }, { status: 401, headers: corsHeaders });
-    }
-    const token = authHeader.substring(7);
-    const { verifySuperadminSessionToken } = await import('@tecbunny/core/auth/superadmin-session');
-    const ip = request.headers.get('x-forwarded-for') || 'unknown';
-    const ua = request.headers.get('user-agent') || 'unknown';
-    
-    const superadminPayload = await verifySuperadminSessionToken(token, ip, ua);
-    if (!superadminPayload) {
-      return NextResponse.json({ error: 'Forbidden: Invalid superadmin token' }, { status: 403, headers: corsHeaders });
-    }
+    await requireExtensionAdmin(request);
 
     // 2. Extract Data from Request Body
     const body = await request.json();
     const { rawText } = body;
 
     if (!rawText) {
-      return NextResponse.json({ error: 'rawText is required' }, { status: 400, headers: corsHeaders });
+      return extensionJson(request, { error: 'rawText is required' }, { status: 400 });
     }
 
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
       logger.error('ai_scraper.missing_api_key', { correlationId });
-      return NextResponse.json({ error: 'GEMINI_API_KEY is not configured on the server.' }, { status: 500, headers: corsHeaders });
+      return extensionJson(request, { error: 'GEMINI_API_KEY is not configured on the server.' }, { status: 500 });
     }
 
     const ai = new GoogleGenAI({ apiKey });
@@ -162,10 +145,10 @@ export async function POST(request: NextRequest) {
     const result = JSON.parse(response.text);
     
     logger.info('ai_scraper.success', { correlationId });
-    return NextResponse.json({ success: true, data: result, correlationId }, { headers: corsHeaders });
+    return extensionJson(request, { success: true, data: result, correlationId });
 
   } catch (err: any) {
     logger.error('ai_scraper.error', { correlationId: 'unknown', error: err.message, stack: err.stack });
-    return NextResponse.json({ error: err.message || 'Internal server error' }, { status: 500, headers: corsHeaders });
+    return extensionJson(request, { error: err.message || 'Internal server error' }, { status: err instanceof ExtensionAuthError ? err.status : 500 });
   }
 }

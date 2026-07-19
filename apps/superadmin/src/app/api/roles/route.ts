@@ -2,6 +2,14 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { isSuperadminSession, isSuperadmin } from '@tecbunny/core/permissions';
 import {  createSupabaseClient  } from '@tecbunny/database/server';
+import { z } from 'zod';
+
+const createRoleSchema = z.object({
+  name: z.string().min(1),
+  description: z.string().optional().nullable(),
+  organization_id: z.string().min(1).optional().nullable(),
+  permissions: z.array(z.string().min(1)).optional().default([]),
+});
 
 export async function GET(req: NextRequest) {
   try {
@@ -44,11 +52,13 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { name, description, organization_id, permissions } = body;
+    const parsed = createRoleSchema.safeParse(body);
 
-    if (!name) {
-      return NextResponse.json({ error: 'Name is required' }, { status: 400 });
+    if (!parsed.success) {
+      return NextResponse.json({ error: 'Invalid role payload' }, { status: 400 });
     }
+
+    const { name, description, organization_id, permissions } = parsed.data;
 
     const role = await prisma.role.create({
       data: {

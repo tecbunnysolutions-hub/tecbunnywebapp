@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tecbunny Product Extractor Settings</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      min-height: 100vh;
+      background: #f8fafc;
+      color: #0f172a;
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      padding: 40px 20px;
+    }
+
+    main {
+      max-width: 680px;
+      margin: 0 auto;
+    }
+
+    header {
+      margin-bottom: 28px;
+    }
+
+    h1 {
+      font-size: 1.75rem;
+      line-height: 1.2;
+      margin-bottom: 8px;
+    }
+
+    p {
+      color: #475569;
+      line-height: 1.6;
+    }
+
+    section {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 12px 32px rgba(15, 23, 42, 0.08);
+    }
+
+    dl {
+      display: grid;
+      gap: 14px;
+      margin: 18px 0;
+    }
+
+    dt {
+      color: #64748b;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    dd {
+      color: #0f172a;
+      font-weight: 600;
+      word-break: break-word;
+    }
+
+    button {
+      border: 0;
+      border-radius: 8px;
+      background: #0f172a;
+      color: #ffffff;
+      cursor: pointer;
+      font: inherit;
+      font-weight: 700;
+      padding: 10px 14px;
+    }
+
+    button:focus-visible {
+      outline: 3px solid #38bdf8;
+      outline-offset: 2px;
+    }
+
+    .status {
+      margin-top: 14px;
+      color: #047857;
+      font-weight: 600;
+      min-height: 24px;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <h1>Tecbunny Product Extractor Settings</h1>
+      <p>Review the active extension session and clear local extension state when an operator changes device or role.</p>
+    </header>
+
+    <section aria-labelledby="sessionHeading">
+      <h2 id="sessionHeading">Session</h2>
+      <dl>
+        <div>
+          <dt>Signed-in email</dt>
+          <dd id="sessionEmail">Not signed in</dd>
+        </div>
+        <div>
+          <dt>Session token</dt>
+          <dd id="sessionState">Not available</dd>
+        </div>
+      </dl>
+      <button id="clearSessionBtn" type="button">Clear Session</button>
+      <div id="status" class="status" role="status" aria-live="polite"></div>
+    </section>
+  </main>
+  <script src="options.js"></script>
+</body>
+</html>

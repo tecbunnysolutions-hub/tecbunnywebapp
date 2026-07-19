@@ -117,11 +117,11 @@ export default function AgentOrderPage() {
     }
   }
 
-  const initiatePhonePe = async () => {
+  const initiatePayu = async () => {
     if (!lastOrderId || !lastOrderAmount) return
     setLoading(true)
     try {
-      const res = await fetch('/api/payment/phonepe/initiate', {
+      const res = await fetch('/api/payment/payu/initiate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ orderId: lastOrderId, amount: lastOrderAmount, customerPhone: mobile || undefined, customerEmail: email || undefined })
@@ -208,8 +208,8 @@ export default function AgentOrderPage() {
             <div className="pt-2">
               <Button disabled={loading} onClick={submitOrder}>Submit Order</Button>
               {lastOrderId && lastOrderAmount ? (
-                <Button variant="secondary" className="ml-2" disabled={loading} onClick={initiatePhonePe}>
-                  Initiate PhonePe Payment
+                <Button variant="secondary" className="ml-2" disabled={loading} onClick={initiatePayu}>
+                  Initiate PayU Payment
                 </Button>
               ) : null}
             </div>

@@ -140,7 +140,7 @@ export default function SuperadminServicesPage() {
   const fetchServices = React.useCallback(async () => {
     try {
       setLoading(true);
-      const res = await fetch('/api/superadmin/services');
+      const res = await fetch('/api/services');
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to fetch services');
       setServices(data.services || []);
@@ -162,7 +162,7 @@ export default function SuperadminServicesPage() {
 
   const handleToggleActive = async (id: string, currentActive: boolean) => {
     try {
-      const res = await fetch(`/api/superadmin/services/${id}`, {
+      const res = await fetch(`/api/services/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ is_active: !currentActive }),
@@ -186,7 +186,7 @@ export default function SuperadminServicesPage() {
 
   const handleDeleteService = async (id: string) => {
     try {
-      const res = await fetch(`/api/superadmin/services/${id}`, {
+      const res = await fetch(`/api/services/${id}`, {
         method: 'DELETE',
       });
       const data = await res.json();
@@ -492,7 +492,7 @@ function ServiceFormDialog({ open, onOpenChange, service, onSuccess }: ServiceFo
   const onSubmit = async (values: ServiceFormValues) => {
     try {
       const method = service ? 'PUT' : 'POST';
-      const url = service ? `/api/superadmin/services/${service.id}` : '/api/superadmin/services';
+      const url = service ? `/api/services/${service.id}` : '/api/services';
       
       const res = await fetch(url, {
         method,

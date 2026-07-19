@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import { serviceManagementService } from "@tecbunny/core/service-management";
 import { logger } from "@tecbunny/core";
+import { AdminAuthError, requireAdminContext } from "@tecbunny/core/auth/admin-guard";
 
 /**
  * Update service ticket status or assign engineer
@@ -13,6 +14,8 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    await requireAdminContext();
+
     const { action, ...data } = await request.json();
     const { id } = await params;
     const ticketId = id;
@@ -179,6 +182,10 @@ export async function PUT(
     });
 
   } catch (error) {
+    if (error instanceof AdminAuthError) {
+      return NextResponse.json({ error: error.message }, { status: error.status });
+    }
+
     logger.error('Error in update ticket API:', { error });
     return NextResponse.json(
       { error: 'Internal server error' },
@@ -189,7 +196,22 @@ export async function PUT(
 
 
 
-export async function GET() { return Response.json({}) }
+export async function GET() {
+  try {
+    await requireAdminContext();
+    return Response.json({});
+  } catch (error) {
+    if (error instanceof AdminAuthError) {
+      return NextResponse.json({ error: error.message }, { status: error.status });
+    }
+
+    logger.error('Error in get ticket API:', { error });
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
 
 
 

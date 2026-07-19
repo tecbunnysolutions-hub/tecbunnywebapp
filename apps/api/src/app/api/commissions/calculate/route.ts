@@ -2,6 +2,7 @@ import { isSupabaseServiceConfigured } from "@tecbunny/core/server";
 import { NextRequest, NextResponse } from 'next/server';
 
 import { enhancedCommissionService } from "@tecbunny/core/enhanced-commission-service";
+import { AdminAuthError, requireAdminContext } from "@tecbunny/core/auth/admin-guard";
 
 import { logger } from "@tecbunny/core";
 
@@ -11,6 +12,8 @@ import { logger } from "@tecbunny/core";
  */
 export async function POST(request: NextRequest) {
   try {
+    await requireAdminContext();
+
     if (!isSupabaseServiceConfigured) {
       logger.error('commissions.calculate.post.missing_supabase_config');
       return NextResponse.json(
@@ -50,6 +53,10 @@ export async function POST(request: NextRequest) {
     });
 
   } catch (error) {
+    if (error instanceof AdminAuthError) {
+      return NextResponse.json({ error: error.message }, { status: error.status });
+    }
+
     console.error('Error in commission calculation API:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
@@ -64,6 +71,8 @@ export async function POST(request: NextRequest) {
  */
 export async function PUT(request: NextRequest) {
   try {
+    await requireAdminContext();
+
     if (!isSupabaseServiceConfigured) {
       logger.error('commissions.calculate.put.missing_supabase_config');
       return NextResponse.json(
@@ -109,6 +118,10 @@ export async function PUT(request: NextRequest) {
     });
 
   } catch (error) {
+    if (error instanceof AdminAuthError) {
+      return NextResponse.json({ error: error.message }, { status: error.status });
+    }
+
     console.error('Error in save commission API:', error);
     return NextResponse.json(
       { error: 'Internal server error' },

@@ -2,6 +2,8 @@
 
 Welcome to the **TecBunny Super Admin Dashboard**. This application is restricted exclusively to the platform owners, core engineers, and high-level system administrators. It controls the macro-level configurations for the entire TecBunny ecosystem.
 
+Latest status update: 2026-07-19. The generated enterprise API inventory counts 25 Superadmin API entries, including 21 mutating entries. Current coverage includes organizations, branches, roles, permissions, areas, and selected services/products/settings; production gaps remain for tenant lifecycle, departments, feature flags, API keys, integration registry, platform audit export, and license/plan limits.
+
 ---
 
 ## 📖 Project Overview

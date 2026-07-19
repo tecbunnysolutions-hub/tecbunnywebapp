@@ -3,8 +3,14 @@ import { supabase } from '@/lib/supabase';
 import { sendWhatsAppMedia } from '@/services/infobipService';
 import { requireApiRole } from '@tecbunny/core/server-role-guard';
 import crypto from 'crypto';
+import { z } from 'zod';
 
 export const dynamic = 'force-dynamic';
+
+const mediaMessageSchema = z.object({
+  to: z.string().min(6),
+  type: z.enum(['image', 'video', 'audio', 'document']),
+});
 
 export async function POST(req: Request) {
   try {
@@ -14,12 +20,16 @@ export async function POST(req: Request) {
 
     const formData = await req.formData();
     const file = formData.get('file') as File;
-    const to = formData.get('to') as string;
-    const type = formData.get('type') as 'image' | 'video' | 'audio' | 'document';
+    const parsed = mediaMessageSchema.safeParse({
+      to: formData.get('to'),
+      type: formData.get('type'),
+    });
 
-    if (!file || !to || !type) {
+    if (!file || !parsed.success) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
+
+    const { to, type } = parsed.data;
 
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);

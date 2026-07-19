@@ -2,6 +2,8 @@
 
 Welcome to the **TecBunny Public Store**, the primary customer-facing portal and e-commerce front-end for the entire TecBunny ecosystem. This application is responsible for driving sales, showcasing services, capturing leads, and managing user profiles.
 
+Latest status update: 2026-07-19. The generated enterprise API inventory counts 3 local Public app API entries, with most commerce/customer actions served by the central API and shared packages. Public workflow gaps still requiring production APIs include customer master profile CRUD, addresses, saved views/favorites, invoice download, returns/refunds, product reviews, stock reservation, media library, and service booking lifecycle.
+
 ---
 
 ## 📖 Project Overview

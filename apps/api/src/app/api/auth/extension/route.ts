@@ -1,25 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@tecbunny/database';
+import { assertExtensionOrigin, extensionJson, extensionOptionsResponse, getExtensionCorsHeaders } from '../../extension-security';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type',
-};
-
-export async function OPTIONS() {
-  return NextResponse.json({}, { headers: corsHeaders });
+export async function OPTIONS(request: NextRequest) {
+  return extensionOptionsResponse(request);
 }
 
 export async function POST(request: NextRequest) {
   try {
+    assertExtensionOrigin(request);
+
     const body = await request.json();
     const { email, password } = body;
 
     if (!email || !password) {
-      return NextResponse.json(
+      return extensionJson(
+        request,
         { error: 'Email and password are required' },
-        { status: 400, headers: corsHeaders }
+        { status: 400 }
       );
     }
 
@@ -31,7 +29,8 @@ export async function POST(request: NextRequest) {
       const { createSuperadminSessionToken } = await import('@tecbunny/core/auth/superadmin-session');
       const token = await createSuperadminSessionToken(email, request);
       
-      return NextResponse.json(
+      return extensionJson(
+        request,
         {
           success: true,
           access_token: token,
@@ -41,7 +40,7 @@ export async function POST(request: NextRequest) {
             role: 'superadmin'
           }
         },
-        { status: 200, headers: corsHeaders }
+        { status: 200 }
       );
     }
 
@@ -54,9 +53,10 @@ export async function POST(request: NextRequest) {
     });
 
     if (error || !data.session) {
-      return NextResponse.json(
+      return extensionJson(
+        request,
         { error: error?.message || 'Authentication failed' },
-        { status: 401, headers: corsHeaders }
+        { status: 401 }
       );
     }
 
@@ -65,29 +65,30 @@ export async function POST(request: NextRequest) {
     if (role !== 'admin' && role !== 'superadmin') {
       // Sign out since they don't have privileges
       await supabase.auth.signOut();
-      return NextResponse.json(
+      return extensionJson(
+        request,
         { error: 'Forbidden: Requires admin privileges' },
-        { status: 403, headers: corsHeaders }
+        { status: 403 }
       );
     }
 
-    return NextResponse.json(
+    return extensionJson(
+      request,
       {
         success: true,
         access_token: data.session.access_token,
-        refresh_token: data.session.refresh_token,
         user: {
           id: data.user.id,
           email: data.user.email,
           role
         }
       },
-      { status: 200, headers: corsHeaders }
+      { status: 200 }
     );
   } catch (error: any) {
     return NextResponse.json(
       { error: `Internal Server Error: ${error.message || error}` },
-      { status: 500, headers: corsHeaders }
+      { status: error?.status || 500, headers: getExtensionCorsHeaders(request) }
     );
   }
 }

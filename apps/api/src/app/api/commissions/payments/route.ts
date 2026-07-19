@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 import { enhancedCommissionService } from "@tecbunny/core/enhanced-commission-service";
+import { AdminAuthError, requireAdminContext } from "@tecbunny/core/auth/admin-guard";
 
 /**
  * Process commission payments
@@ -8,6 +9,8 @@ import { enhancedCommissionService } from "@tecbunny/core/enhanced-commission-se
  */
 export async function POST(request: NextRequest) {
   try {
+    await requireAdminContext();
+
     const { commissionIds, paymentDetails } = await request.json();
 
     // Validate required fields
@@ -45,6 +48,10 @@ export async function POST(request: NextRequest) {
     });
 
   } catch (error) {
+    if (error instanceof AdminAuthError) {
+      return NextResponse.json({ error: error.message }, { status: error.status });
+    }
+
     console.error('Error in process commission payment API:', error);
     return NextResponse.json(
       { error: 'Internal server error' },

@@ -8,8 +8,6 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import { logger } from "@tecbunny/core/logger";
 import { getProductDisplayImage } from "@tecbunny/core/image-utils";
-export async function POST(req: NextRequest) { return NextResponse.json({ error: 'Endpoint moved to API service' }, { status: 501 }); }
-export async function PUT(req: NextRequest) { return NextResponse.json({ error: 'Endpoint moved to API service' }, { status: 501 }); }
 
 // export const dynamic = 'force-dynamic';
 

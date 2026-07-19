@@ -637,13 +637,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       })
     ];
 
-    // Call superadmin logout route if superadmin
-    if (user?.role === 'superadmin') {
-      logoutTasks.push(fetch('/api/superadmin/logout', { method: 'POST' }).catch(err => {
-        logger.error('Superadmin logout error', { error: err });
-      }));
-    }
-
     try {
       await Promise.allSettled(logoutTasks);
     } catch (error) {

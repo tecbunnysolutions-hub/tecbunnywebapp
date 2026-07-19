@@ -2,6 +2,8 @@
 
 Welcome to the **TecBunny Webmail Application**. This service acts as the internal email management system and template renderer for the TecBunny platform.
 
+Latest status update: 2026-07-19. The generated enterprise API inventory counts 1 Webmail API entry: health. Webmail business APIs are still missing for account CRUD, mailbox sync, folders, threads, send/reply/forward, attachments, signatures, templates, provider webhooks, and production mailbox-provider operations.
+
 ---
 
 ## 📖 Project Overview

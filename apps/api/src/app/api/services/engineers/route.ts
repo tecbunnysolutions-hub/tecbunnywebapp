@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import { serviceManagementService } from "@tecbunny/core/service-management";
 import { logger } from "@tecbunny/core";
+import { AdminAuthError, requireAdminContext } from "@tecbunny/core/auth/admin-guard";
 
 /**
  * Create or update a service engineer
@@ -9,6 +10,8 @@ import { logger } from "@tecbunny/core";
  */
 export async function POST(request: NextRequest) {
   try {
+    await requireAdminContext();
+
     const engineerData = await request.json();
 
     // Validate required fields
@@ -44,6 +47,10 @@ export async function POST(request: NextRequest) {
     });
 
   } catch (error) {
+    if (error instanceof AdminAuthError) {
+      return NextResponse.json({ error: error.message }, { status: error.status });
+    }
+
     logger.error('Error in create/update engineer API:', { error });
     return NextResponse.json(
       { error: 'Internal server error' },
@@ -58,6 +65,8 @@ export async function POST(request: NextRequest) {
  */
 export async function GET(request: NextRequest) {
   try {
+    await requireAdminContext();
+
     const { searchParams } = new URL(request.url);
     const serviceType = searchParams.get('serviceType');
 
@@ -80,6 +89,10 @@ export async function GET(request: NextRequest) {
     });
 
   } catch (error) {
+    if (error instanceof AdminAuthError) {
+      return NextResponse.json({ error: error.message }, { status: error.status });
+    }
+
     logger.error('Error in get engineers API:', { error });
     return NextResponse.json(
       { error: 'Internal server error' },

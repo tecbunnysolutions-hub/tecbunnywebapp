@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 const root = process.cwd();
-const auditPath = join(root, 'PRODUCT_DESIGN_AUDIT_REPORT.md');
+const auditPath = join(root, 'ALL_MARKDOWN_DOCUMENTS.md');
 const packagePath = join(root, 'package.json');
 const audit = readFileSync(auditPath, 'utf8');
 const packageJson = readFileSync(packagePath, 'utf8');

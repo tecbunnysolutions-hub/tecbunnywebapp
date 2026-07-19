@@ -1,4 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
+  const ALLOWED_HTML_TAGS = new Set(['P', 'BR', 'STRONG', 'B', 'EM', 'I', 'UL', 'OL', 'LI', 'H3', 'H4', 'SPAN']);
+  const ALLOWED_HTML_ATTRS = new Set(['href', 'title']);
+
   // Screens
   const settingsScreen = document.getElementById('settingsScreen');
   const scraperScreen = document.getElementById('scraperScreen');
@@ -43,6 +46,37 @@ document.addEventListener('DOMContentLoaded', () => {
   let scrapedRawText = '';
 
   // Helpers
+  function sanitizeHtml(html) {
+    const template = document.createElement('template');
+    template.innerHTML = html || '';
+
+    template.content.querySelectorAll('*').forEach((element) => {
+      if (!ALLOWED_HTML_TAGS.has(element.tagName)) {
+        element.replaceWith(document.createTextNode(element.textContent || ''));
+        return;
+      }
+
+      Array.from(element.attributes).forEach((attr) => {
+        const name = attr.name.toLowerCase();
+        const value = attr.value.trim().toLowerCase();
+        if (!ALLOWED_HTML_ATTRS.has(name) || name.startsWith('on') || value.startsWith('javascript:')) {
+          element.removeAttribute(attr.name);
+        }
+      });
+    });
+
+    return template.innerHTML;
+  }
+
+  function normalizeHttpUrl(value) {
+    try {
+      const parsed = new URL(value);
+      return parsed.protocol === 'http:' || parsed.protocol === 'https:' ? parsed.href : '';
+    } catch (_) {
+      return '';
+    }
+  }
+
   function showStatus(message, type) {
     statusContainer.textContent = message;
     statusContainer.className = 'status-container'; // Reset
@@ -82,8 +116,9 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function updateImagePreview(url) {
-    if (url && (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:'))) {
-      imgThumbnail.src = url;
+    const normalizedUrl = normalizeHttpUrl(url);
+    if (normalizedUrl) {
+      imgThumbnail.src = normalizedUrl;
       imgThumbnail.style.display = 'block';
       imgPlaceholder.style.display = 'none';
     } else {
@@ -95,23 +130,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Navigation functions
   function checkCredentials() {
-    chrome.storage.local.get(['superadminUser', 'superadminPass', 'accessToken'], (data) => {
-      if (!data.superadminUser || !data.superadminPass || !data.accessToken) {
-        // First-time or reset credentials setup
-        superadminUser.value = data.superadminUser || '';
-        superadminPass.value = '';
-        backBtn.style.display = 'none'; // Force save
-        scraperScreen.classList.remove('active');
-        settingsScreen.classList.add('active');
-        showSettingsStatus('Please sign in to generate a secure session token.', 'info');
-      } else {
-        // Normal scrape screen
-        superadminUser.value = data.superadminUser;
-        superadminPass.value = data.superadminPass;
-        backBtn.style.display = 'block';
-        settingsScreen.classList.remove('active');
-        scraperScreen.classList.add('active');
-      }
+    chrome.storage.local.get(['superadminUser', 'accessToken'], (localData) => {
+      chrome.storage.session.get(['accessToken'], (sessionData) => {
+        const accessToken = sessionData.accessToken || localData.accessToken;
+        if (!localData.superadminUser || !accessToken) {
+          // First-time or reset credentials setup
+          superadminUser.value = localData.superadminUser || '';
+          superadminPass.value = '';
+          backBtn.style.display = 'none'; // Force save
+          scraperScreen.classList.remove('active');
+          settingsScreen.classList.add('active');
+          showSettingsStatus('Please sign in to generate a secure session token.', 'info');
+        } else {
+          // Normal scrape screen
+          superadminUser.value = localData.superadminUser;
+          superadminPass.value = '';
+          backBtn.style.display = 'block';
+          settingsScreen.classList.remove('active');
+          scraperScreen.classList.add('active');
+        }
+      });
     });
   }
 
@@ -159,16 +197,16 @@ document.addEventListener('DOMContentLoaded', () => {
         throw new Error(data.error || 'Authentication failed');
       }
 
-      chrome.storage.local.set({ 
-        superadminUser: email, 
-        superadminPass: pass, // Optional: keeping for legacy/re-auth
-        accessToken: data.access_token 
-      }, () => {
-        showSettingsStatus('Authenticated successfully!', 'success');
-        setTimeout(() => {
-          settingsScreen.classList.remove('active');
-          scraperScreen.classList.add('active');
-        }, 800);
+      chrome.storage.local.set({ superadminUser: email }, () => {
+        chrome.storage.session.set({ accessToken: data.access_token }, () => {
+          chrome.storage.local.remove(['superadminPass', 'accessToken']);
+          superadminPass.value = '';
+          showSettingsStatus('Authenticated successfully!', 'success');
+          setTimeout(() => {
+            settingsScreen.classList.remove('active');
+            scraperScreen.classList.add('active');
+          }, 800);
+        });
       });
     } catch (error) {
       showSettingsStatus(error.message || 'Network error during login.', 'error');
@@ -249,7 +287,7 @@ document.addEventListener('DOMContentLoaded', () => {
               if (d.shortDescription) shortDescInput.value = d.shortDescription;
               if (d.seoTitle) seoTitleInput.value = d.seoTitle;
               if (d.seoDescription) seoDescInput.value = d.seoDescription;
-              if (d.htmlDescription) descInput.value = d.htmlDescription;
+              if (d.htmlDescription) descInput.value = sanitizeHtml(d.htmlDescription);
               if (d.modelNo) modelInput.value = d.modelNo;
               if (d.warrantyPeriod) warrantyPeriodInput.value = d.warrantyPeriod;
               if (d.warrantyType) warrantyTypeInput.value = d.warrantyType;
@@ -307,7 +345,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (d.shortDescription) shortDescInput.value = d.shortDescription;
         if (d.seoTitle) seoTitleInput.value = d.seoTitle;
         if (d.seoDescription) seoDescInput.value = d.seoDescription;
-        if (d.htmlDescription) descInput.value = d.htmlDescription;
+        if (d.htmlDescription) descInput.value = sanitizeHtml(d.htmlDescription);
         if (d.modelNo) modelInput.value = d.modelNo;
         if (d.warrantyPeriod) warrantyPeriodInput.value = d.warrantyPeriod;
         if (d.warrantyType) warrantyTypeInput.value = d.warrantyType;
@@ -338,8 +376,8 @@ document.addEventListener('DOMContentLoaded', () => {
       mrp: mrpInput.value.trim(),
       category: categoryInput.value.trim(),
       brand: brandInput.value.trim(),
-      description: descInput.value.trim(),
-      imageUrl: imgInput.value.trim(),
+      description: sanitizeHtml(descInput.value.trim()),
+      imageUrl: normalizeHttpUrl(imgInput.value.trim()),
       sourceUrl: currentSourceUrl,
       shortDescription: shortDescInput.value.trim(),
       seoTitle: seoTitleInput.value.trim(),
