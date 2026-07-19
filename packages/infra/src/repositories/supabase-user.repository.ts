@@ -66,12 +66,21 @@ export class SupabaseUserRepository implements IUserRepository {
   }
 
   async getTotals(): Promise<UserTotals> {
-    const [totalRes, staffRes, customerRes, salesRes] = await Promise.all([
-      this.baseClient.executeQuery(this.supabaseAdmin.from('profiles').select('id', { count: 'exact', head: true }), 'totals_all'),
-      this.baseClient.executeQuery(this.supabaseAdmin.from('profiles').select('id', { count: 'exact', head: true }).in('role', STAFF_ROLES), 'totals_staff'),
-      this.baseClient.executeQuery(this.supabaseAdmin.from('profiles').select('id', { count: 'exact', head: true }).eq('role', 'customer'), 'totals_customer'),
-      this.baseClient.executeQuery(this.supabaseAdmin.from('profiles').select('id', { count: 'exact', head: true }).in('role', SALES_ROLES), 'totals_sales')
-    ]);
+    let totalRes;
+    let staffRes;
+    let customerRes;
+    let salesRes;
+    try {
+      [totalRes, staffRes, customerRes, salesRes] = await Promise.all([
+        this.baseClient.executeQuery(this.supabaseAdmin.from('profiles').select('id', { count: 'exact', head: true }), 'totals_all'),
+        this.baseClient.executeQuery(this.supabaseAdmin.from('profiles').select('id', { count: 'exact', head: true }).in('role', STAFF_ROLES), 'totals_staff'),
+        this.baseClient.executeQuery(this.supabaseAdmin.from('profiles').select('id', { count: 'exact', head: true }).eq('role', 'customer'), 'totals_customer'),
+        this.baseClient.executeQuery(this.supabaseAdmin.from('profiles').select('id', { count: 'exact', head: true }).in('role', SALES_ROLES), 'totals_sales')
+      ]);
+    } catch (error) {
+      logger.warn('users.profile_totals_falling_back_to_auth', { error });
+      return this.getAuthOnlyTotals();
+    }
 
     return {
       total: totalRes.count ?? 0,
@@ -153,6 +162,26 @@ export class SupabaseUserRepository implements IUserRepository {
     };
   }
 
+  private async getAuthOnlyTotals(): Promise<UserTotals> {
+    const users = await this.getAuthOnlyUsers({
+      page: 1,
+      pageSize: 1000,
+      search: '',
+      roles: [],
+      sortColumn: 'created_at',
+      sortDirection: 'desc',
+    });
+
+    return users.users.reduce<UserTotals>((totals, user) => {
+      const role = user.profile?.role ?? 'customer';
+      totals.total += 1;
+      if (STAFF_ROLES.includes(role)) totals.staff += 1;
+      if (role === 'customer') totals.customers += 1;
+      if (SALES_ROLES.includes(role)) totals.sales += 1;
+      return totals;
+    }, { total: 0, staff: 0, customers: 0, sales: 0 });
+  }
+
   async getUsers(params: GetUsersParams): Promise<GetUsersResult> {
     const offset = (params.page - 1) * params.pageSize;
     let roles = params.roles || [];
@@ -183,10 +212,19 @@ export class SupabaseUserRepository implements IUserRepository {
       );
     }
 
-    const { data: profiles, count } = await this.baseClient.executeQuery(
-      profileQuery.order(params.sortColumn, { ascending: params.sortDirection === 'asc', nullsFirst: params.sortDirection === 'asc' }).range(offset, offset + params.pageSize - 1),
-      'get_users_profiles'
-    );
+    let profiles: any[] | null = null;
+    let count: number | null | undefined;
+    try {
+      const profileResult = await this.baseClient.executeQuery<any[]>(
+        profileQuery.order(params.sortColumn, { ascending: params.sortDirection === 'asc', nullsFirst: params.sortDirection === 'asc' }).range(offset, offset + params.pageSize - 1),
+        'get_users_profiles'
+      );
+      profiles = profileResult.data;
+      count = profileResult.count;
+    } catch (error) {
+      logger.warn('users.profiles_query_falling_back_to_auth', { error });
+      return this.getAuthOnlyUsers(params);
+    }
 
     if ((count ?? 0) === 0 && !roles.length && !params.search) {
       return this.getAuthOnlyUsers(params);
