@@ -63,6 +63,7 @@ export const ALL_ROLES: UserRole[] = [
 ];
 
 const ROLE_ALIASES: Readonly<Record<string, UserRole>> = {
+  administrator: 'admin',
   super_admin: 'superadmin',
   'super-admin': 'superadmin',
   'super admin': 'superadmin',

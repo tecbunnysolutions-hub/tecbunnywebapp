@@ -126,4 +126,3 @@ packages/*/dist/
 n8n/
 *.sql
 !database.sql
-!supabase/migrations/*.sql

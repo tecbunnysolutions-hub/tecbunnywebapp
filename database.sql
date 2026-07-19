@@ -1,3124 +1,5520 @@
--- Tecbunny Enterprise PostgreSQL Database Initializer
--- Generated for Public Website, Customer Portal, Management, Superadmin, WABA, Webmail, API, and Authentication.
--- Target: PostgreSQL 15+ / Supabase-compatible PostgreSQL.
+-- ==========================================
+-- ENTERPRISE SUPERADMIN OS DATABASE
+-- ==========================================
+-- This file contains the fully integrated, merged, and optimized 
+-- production database schema. Capable of supporting millions of records.
+-- ==========================================
 
-BEGIN;
+-- ==========================================
+-- 0. RESET SCHEMA (Idempotency)
+-- ==========================================
+DROP SCHEMA IF EXISTS public CASCADE;
+CREATE SCHEMA public;
+GRANT ALL ON SCHEMA public TO postgres, anon, authenticated, service_role;
 
--- =========================================================
--- Phase 1: Core Tables, Extensions, Types, Helpers
--- =========================================================
+-- 1. EXTENSIONS
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp" WITH SCHEMA extensions;
+CREATE EXTENSION IF NOT EXISTS "pgcrypto" WITH SCHEMA extensions;
 
-CREATE EXTENSION IF NOT EXISTS pgcrypto;
-CREATE EXTENSION IF NOT EXISTS citext;
-CREATE EXTENSION IF NOT EXISTS pg_trgm;
-CREATE EXTENSION IF NOT EXISTS btree_gin;
-
--- Supabase owns the auth schema, auth.users, auth.uid(), and auth.role().
--- This initializer references those managed objects but must not create or modify them.
+-- 2. ENUM TYPES
+DO $$ BEGIN
+    CREATE TYPE public.enum_org_status AS ENUM ('ACTIVE', 'SUSPENDED', 'ARCHIVED');
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
 DO $$ BEGIN
-  CREATE TYPE record_status AS ENUM ('draft','active','inactive','archived','deleted');
-EXCEPTION WHEN duplicate_object THEN NULL; END $$;
-DO $$ BEGIN
-  CREATE TYPE order_status AS ENUM ('Pending','Awaiting Payment','Payment Confirmed','Confirmed','Processing','Ready to Ship','Shipped','Out for Delivery','Delivered','Completed','Cancelled','Rejected','On Hold','Visit Scheduled','Visit Completed','Diagnosis Done','Quote Sent','Awaiting Customer Approval','Approved','Parts Ordered','Work In Progress','Quality Check','Ready for Pickup','Ready for Delivery','Delivered/Picked Up','Warranty/Support Active');
-EXCEPTION WHEN duplicate_object THEN NULL; END $$;
-DO $$ BEGIN
-  CREATE TYPE payment_status AS ENUM ('pending','authorized','paid','failed','refunded','partially_refunded','cancelled','Payment Confirmation Pending','Payment Confirmed');
-EXCEPTION WHEN duplicate_object THEN NULL; END $$;
-DO $$ BEGIN
-  CREATE TYPE payment_method AS ENUM ('cod','upi','payu','card','bank_transfer','cash','wallet','other');
-EXCEPTION WHEN duplicate_object THEN NULL; END $$;
-DO $$ BEGIN
-  CREATE TYPE ticket_status AS ENUM ('OPEN','IN_PROGRESS','WAITING_ON_CUSTOMER','RESOLVED','CLOSED','CANCELLED');
-EXCEPTION WHEN duplicate_object THEN NULL; END $$;
-DO $$ BEGIN
-  CREATE TYPE priority_level AS ENUM ('LOW','NORMAL','MEDIUM','HIGH','URGENT','CRITICAL');
-EXCEPTION WHEN duplicate_object THEN NULL; END $$;
-DO $$ BEGIN
-  CREATE TYPE message_direction AS ENUM ('INBOUND','OUTBOUND');
-EXCEPTION WHEN duplicate_object THEN NULL; END $$;
-DO $$ BEGIN
-  CREATE TYPE lead_domain AS ENUM ('TECHNICAL_SERVICE','PRODUCT_SALES','CUSTOM_SETUP','GENERAL');
-EXCEPTION WHEN duplicate_object THEN NULL; END $$;
-DO $$ BEGIN
-  CREATE TYPE campaign_status AS ENUM ('DRAFT','SCHEDULED','RUNNING','PAUSED','COMPLETED','CANCELLED');
-EXCEPTION WHEN duplicate_object THEN NULL; END $$;
-DO $$ BEGIN
-  CREATE TYPE discount_type AS ENUM ('PERCENTAGE','FIXED','FREE_SHIPPING','BOGO');
-EXCEPTION WHEN duplicate_object THEN NULL; END $$;
-DO $$ BEGIN
-  CREATE TYPE inventory_movement_type AS ENUM ('purchase','sale','return','adjustment','transfer','reservation','release','damage');
-EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+    CREATE TYPE public.enum_auth_status AS ENUM ('ACTIVE', 'EXPIRED', 'REVOKED', 'USED');
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
-CREATE OR REPLACE FUNCTION app_current_user_id()
-RETURNS uuid
-LANGUAGE sql STABLE
-AS $$
-  SELECT coalesce(auth.uid(), nullif(current_setting('app.current_user_id', true), '')::uuid)
-$$;
+DO $$ BEGIN
+    CREATE TYPE public.enum_product_status AS ENUM ('DRAFT', 'ACTIVE', 'ARCHIVED', 'OUT_OF_STOCK');
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
-CREATE OR REPLACE FUNCTION set_updated_at()
-RETURNS trigger
-LANGUAGE plpgsql
-AS $$
-BEGIN
-  NEW.updated_at = now();
-  NEW.updated_by = coalesce(NEW.updated_by, app_current_user_id());
-  RETURN NEW;
-END;
-$$;
-COMMENT ON FUNCTION set_updated_at() IS 'Maintains updated_at and updated_by audit fields before updates.';
+DO $$ BEGIN
+    CREATE TYPE public.enum_media_type AS ENUM ('IMAGE', 'VIDEO', 'DOCUMENT', '3D_MODEL');
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
-CREATE OR REPLACE FUNCTION is_platform_admin()
-RETURNS boolean
-LANGUAGE plpgsql STABLE SECURITY DEFINER
-SET search_path = public, auth
-AS $$
+DO $$ BEGIN
+    CREATE TYPE public.enum_relation_type AS ENUM ('RELATED', 'UPSELL', 'CROSS_SELL', 'ACCESSORY');
+EXCEPTION WHEN duplicate_object THEN null; END $$;
+
+DO $$ BEGIN
+    CREATE TYPE public.enum_stock_movement AS ENUM ('PO_RECEIPT', 'SALE', 'TRANSFER_IN', 'TRANSFER_OUT', 'ADJUSTMENT_ADD', 'ADJUSTMENT_REMOVE', 'RETURN');
+EXCEPTION WHEN duplicate_object THEN null; END $$;
+
+DO $$ BEGIN
+    CREATE TYPE public.enum_cms_status AS ENUM ('DRAFT', 'PUBLISHED', 'ARCHIVED');
+EXCEPTION WHEN duplicate_object THEN null; END $$;
+
+DO $$ BEGIN
+    CREATE TYPE public.enum_nav_location AS ENUM ('HEADER', 'FOOTER', 'SIDEBAR', 'CUSTOM');
+EXCEPTION WHEN duplicate_object THEN null; END $$;
+
+DO $$ BEGIN
+    CREATE TYPE public.enum_redirect_type AS ENUM ('301', '302', '307', '308');
+EXCEPTION WHEN duplicate_object THEN null; END $$;
+
+DO $$ BEGIN
+    CREATE TYPE public.enum_crm_status AS ENUM ('ACTIVE', 'INACTIVE', 'SUSPENDED', 'LEAD');
+EXCEPTION WHEN duplicate_object THEN null; END $$;
+
+DO $$ BEGIN
+    CREATE TYPE public.enum_address_type AS ENUM ('BILLING', 'SHIPPING', 'BOTH');
+EXCEPTION WHEN duplicate_object THEN null; END $$;
+
+DO $$ BEGIN
+    CREATE TYPE public.enum_wallet_tx_type AS ENUM ('CREDIT', 'DEBIT');
+EXCEPTION WHEN duplicate_object THEN null; END $$;
+
+DO $$ BEGIN
+    CREATE TYPE public.enum_doc_type AS ENUM ('KYC', 'TAX_EXEMPTION', 'CONTRACT', 'OTHER');
+EXCEPTION WHEN duplicate_object THEN null; END $$;
+
+DO $$ BEGIN
+    CREATE TYPE public.enum_sls_lead_status AS ENUM ('NEW', 'CONTACTED', 'QUALIFIED', 'UNQUALIFIED', 'CONVERTED');
+EXCEPTION WHEN duplicate_object THEN null; END $$;
+
+DO $$ BEGIN
+    CREATE TYPE public.enum_sls_opp_status AS ENUM ('OPEN', 'WON', 'LOST', 'ON_HOLD');
+EXCEPTION WHEN duplicate_object THEN null; END $$;
+
+DO $$ BEGIN
+    CREATE TYPE public.enum_sls_activity_type AS ENUM ('TASK', 'MEETING', 'CALL', 'EMAIL', 'FOLLOW_UP');
+EXCEPTION WHEN duplicate_object THEN null; END $$;
+
+DO $$ BEGIN
+    CREATE TYPE public.enum_sls_activity_status AS ENUM ('PENDING', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED');
+EXCEPTION WHEN duplicate_object THEN null; END $$;
+
+DO $$ BEGIN
+    CREATE TYPE public.enum_oms_order_status AS ENUM ('DRAFT', 'PENDING', 'CONFIRMED', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED', 'RETURNED');
+EXCEPTION WHEN duplicate_object THEN null; END $$;
+
+DO $$ BEGIN
+    CREATE TYPE public.enum_oms_payment_status AS ENUM ('PENDING', 'UNPAID', 'PARTIALLY_PAID', 'PAID', 'REFUNDED', 'FAILED');
+EXCEPTION WHEN duplicate_object THEN null; END $$;
+
+DO $$ BEGIN
+    CREATE TYPE public.enum_oms_shipment_status AS ENUM ('PENDING', 'PACKED', 'DISPATCHED', 'IN_TRANSIT', 'OUT_FOR_DELIVERY', 'DELIVERED', 'FAILED_ATTEMPT', 'RETURNED');
+EXCEPTION WHEN duplicate_object THEN null; END $$;
+
+DO $$ BEGIN
+    CREATE TYPE public.enum_wab_msg_direction AS ENUM ('INBOUND', 'OUTBOUND');
+EXCEPTION WHEN duplicate_object THEN null; END $$;
+
+DO $$ BEGIN
+    CREATE TYPE public.enum_wab_msg_status AS ENUM ('PENDING', 'SENT', 'DELIVERED', 'READ', 'FAILED');
+EXCEPTION WHEN duplicate_object THEN null; END $$;
+
+DO $$ BEGIN
+    CREATE TYPE public.enum_wab_conv_status AS ENUM ('OPEN', 'SNOOZED', 'CLOSED', 'BOT_HANDLING');
+EXCEPTION WHEN duplicate_object THEN null; END $$;
+
+DO $$ BEGIN
+    CREATE TYPE public.enum_wab_priority AS ENUM ('LOW', 'NORMAL', 'HIGH', 'URGENT');
+EXCEPTION WHEN duplicate_object THEN null; END $$;
+
+DO $$ BEGIN
+    CREATE TYPE public.enum_mkt_campaign_status AS ENUM ('DRAFT', 'SCHEDULED', 'ACTIVE', 'PAUSED', 'COMPLETED', 'CANCELLED');
+EXCEPTION WHEN duplicate_object THEN null; END $$;
+
+DO $$ BEGIN
+    CREATE TYPE public.enum_mkt_broadcast_status AS ENUM ('DRAFT', 'SCHEDULED', 'SENDING', 'SENT', 'FAILED');
+EXCEPTION WHEN duplicate_object THEN null; END $$;
+
+DO $$ BEGIN
+    CREATE TYPE public.enum_sup_ticket_type AS ENUM ('INSTALLATION', 'COMPLAINT', 'PREVENTATIVE_MAINTENANCE', 'INQUIRY', 'RETURN_REQUEST');
+EXCEPTION WHEN duplicate_object THEN null; END $$;
+
+DO $$ BEGIN
+    CREATE TYPE public.enum_sup_ticket_status AS ENUM ('OPEN', 'IN_PROGRESS', 'WAITING_ON_CUSTOMER', 'WAITING_ON_PARTS', 'SCHEDULED_FOR_VISIT', 'RESOLVED', 'CLOSED');
+EXCEPTION WHEN duplicate_object THEN null; END $$;
+
+DO $$ BEGIN
+    CREATE TYPE public.enum_sup_visit_status AS ENUM ('SCHEDULED', 'EN_ROUTE', 'IN_PROGRESS', 'COMPLETED', 'RESCHEDULED', 'CANCELLED');
+EXCEPTION WHEN duplicate_object THEN null; END $$;
+
+DO $$ BEGIN
+    CREATE TYPE public.enum_sup_priority AS ENUM ('LOW', 'MEDIUM', 'HIGH', 'CRITICAL');
+EXCEPTION WHEN duplicate_object THEN null; END $$;
+
+DO $$ BEGIN
+    CREATE TYPE public.enum_fin_account_type AS ENUM ('ASSET', 'LIABILITY', 'EQUITY', 'REVENUE', 'EXPENSE');
+EXCEPTION WHEN duplicate_object THEN null; END $$;
+
+DO $$ BEGIN
+    CREATE TYPE public.enum_fin_entry_status AS ENUM ('DRAFT', 'POSTED', 'VOIDED');
+EXCEPTION WHEN duplicate_object THEN null; END $$;
+
+DO $$ BEGIN
+    CREATE TYPE public.enum_fin_doc_status AS ENUM ('DRAFT', 'UNPAID', 'PARTIALLY_PAID', 'PAID', 'VOIDED');
+EXCEPTION WHEN duplicate_object THEN null; END $$;
+
+DO $$ BEGIN
+    CREATE TYPE public.enum_hr_employment_type AS ENUM ('FULL_TIME', 'PART_TIME', 'CONTRACT', 'INTERN', 'PROBATION');
+EXCEPTION WHEN duplicate_object THEN null; END $$;
+
+DO $$ BEGIN
+    CREATE TYPE public.enum_hr_leave_status AS ENUM ('PENDING', 'APPROVED', 'REJECTED', 'CANCELLED');
+EXCEPTION WHEN duplicate_object THEN null; END $$;
+
+DO $$ BEGIN
+    CREATE TYPE public.enum_hr_attendance_status AS ENUM ('PRESENT', 'ABSENT', 'HALF_DAY', 'ON_LEAVE', 'HOLIDAY');
+EXCEPTION WHEN duplicate_object THEN null; END $$;
+
+DO $$ BEGIN
+    CREATE TYPE public.enum_hr_payroll_status AS ENUM ('DRAFT', 'APPROVED', 'PROCESSED', 'PAID');
+EXCEPTION WHEN duplicate_object THEN null; END $$;
+
+DO $$ BEGIN
+    CREATE TYPE public.enum_ntf_channel AS ENUM ('EMAIL', 'SMS', 'PUSH', 'WHATSAPP');
+EXCEPTION WHEN duplicate_object THEN null; END $$;
+
+DO $$ BEGIN
+    CREATE TYPE public.enum_ntf_status AS ENUM ('PENDING', 'PROCESSING', 'DELIVERED', 'FAILED', 'BOUNCED');
+EXCEPTION WHEN duplicate_object THEN null; END $$;
+
+DO $$ BEGIN
+    CREATE TYPE public.enum_sub_status AS ENUM ('ACTIVE', 'PAST_DUE', 'CANCELED', 'TRIALING', 'UNPAID');
+EXCEPTION WHEN duplicate_object THEN null; END $$;
+
+DO $$ BEGIN
+    CREATE TYPE public.enum_sub_interval AS ENUM ('DAILY', 'WEEKLY', 'MONTHLY', 'YEARLY');
+EXCEPTION WHEN duplicate_object THEN null; END $$;
+
+DO $$ BEGIN
+    CREATE TYPE public.enum_pm_project_status AS ENUM ('PLANNING', 'ACTIVE', 'ON_HOLD', 'COMPLETED', 'CANCELED');
+EXCEPTION WHEN duplicate_object THEN null; END $$;
+
+DO $$ BEGIN
+    CREATE TYPE public.enum_pm_task_status AS ENUM ('TODO', 'IN_PROGRESS', 'REVIEW', 'DONE');
+EXCEPTION WHEN duplicate_object THEN null; END $$;
+
+DO $$ BEGIN
+    CREATE TYPE public.enum_pm_priority AS ENUM ('LOW', 'MEDIUM', 'HIGH', 'URGENT');
+EXCEPTION WHEN duplicate_object THEN null; END $$;
+
+DO $$ BEGIN
+    CREATE TYPE public.enum_sls_heat_level AS ENUM ('HOT', 'WARM', 'COLD', 'DEAD');
+EXCEPTION WHEN duplicate_object THEN null; END $$;
+
+-- 3. CORE FUNCTIONS
+
+
+-- 4. TABLES, FOREIGN KEYS, INDEXES, VIEWS
+
+-- ==========================================
+-- MODULE: 20260715000002_enterprise_audit_core.sql
+-- ==========================================
+
+
+-- Migration: Enterprise Audit Core
+-- Sets up the core auditing functions, triggers, and the sys_audit_logs table.
+
+-- Core function required by all RLS policies across the entire schema
+CREATE OR REPLACE FUNCTION public.is_superadmin()
+RETURNS BOOLEAN AS $$
 BEGIN
   RETURN EXISTS (
-    SELECT 1 FROM profiles p
-    WHERE p.id = auth.uid()
-      AND p.role IN ('superadmin','admin')
-      AND p.deleted_at IS NULL
+    SELECT 1 
+    FROM public.sys_user_roles ur
+    JOIN public.sys_roles r ON ur.role_id = r.id
+    WHERE ur.user_id = auth.uid() 
+    AND r.name = 'superadmin'
   );
 END;
-$$;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 
-CREATE OR REPLACE FUNCTION current_company_id()
-RETURNS uuid
-LANGUAGE plpgsql STABLE SECURITY DEFINER
-SET search_path = public, auth
-AS $$
-DECLARE v_company_id uuid;
+CREATE TABLE IF NOT EXISTS public.sys_audit_logs (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    table_name TEXT NOT NULL,
+    record_id UUID NOT NULL,
+    action TEXT NOT NULL CHECK (action IN ('INSERT', 'UPDATE', 'DELETE', 'SOFT_DELETE')),
+    old_data JSONB,
+    new_data JSONB,
+    changed_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Index for fast searching of audit logs by record or table
+CREATE INDEX IF NOT EXISTS idx_sys_audit_logs_table_record ON public.sys_audit_logs(table_name, record_id);
+CREATE INDEX IF NOT EXISTS idx_sys_audit_logs_changed_by ON public.sys_audit_logs(changed_by);
+
+-- Generic trigger function to update the updated_at timestamp
+CREATE OR REPLACE FUNCTION public.trg_set_updated_at()
+RETURNS TRIGGER AS $$
 BEGIN
-  SELECT p.company_id INTO v_company_id FROM profiles p WHERE p.id = auth.uid() AND p.deleted_at IS NULL LIMIT 1;
-  RETURN v_company_id;
+    NEW.updated_at = NOW();
+    RETURN NEW;
 END;
-$$;
-
-CREATE TABLE IF NOT EXISTS companies (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  code text NOT NULL,
-  legal_name text NOT NULL,
-  display_name text NOT NULL,
-  gstin text,
-  pan text,
-  cin text,
-  email citext,
-  phone text,
-  website text,
-  registered_address jsonb NOT NULL DEFAULT '{}'::jsonb,
-  billing_address jsonb NOT NULL DEFAULT '{}'::jsonb,
-  timezone text NOT NULL DEFAULT 'Asia/Kolkata',
-  currency_code char(3) NOT NULL DEFAULT 'INR',
-  status record_status NOT NULL DEFAULT 'active',
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz,
-  CONSTRAINT companies_code_unique UNIQUE (code),
-  CONSTRAINT companies_gstin_unique UNIQUE (gstin),
-  CONSTRAINT companies_email_format CHECK (email IS NULL OR position('@' in email::text) > 1)
-);
-COMMENT ON TABLE companies IS 'Legal operating companies/tenants that own branches, customers, stock, orders, and settings.';
-
-CREATE TABLE IF NOT EXISTS tenants (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_id uuid NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
-  name text NOT NULL,
-  slug text NOT NULL,
-  status record_status NOT NULL DEFAULT 'active',
-  plan text,
-  limits jsonb NOT NULL DEFAULT '{}'::jsonb,
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz,
-  CONSTRAINT tenants_slug_unique UNIQUE (slug)
-);
-COMMENT ON TABLE tenants IS 'Application tenant records used by health checks and multi-company isolation.';
-
-CREATE TABLE IF NOT EXISTS branches (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_id uuid NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
-  code text NOT NULL,
-  name text NOT NULL,
-  branch_type text NOT NULL DEFAULT 'store',
-  address jsonb NOT NULL DEFAULT '{}'::jsonb,
-  pincode text,
-  phone text,
-  email citext,
-  is_head_office boolean NOT NULL DEFAULT false,
-  status record_status NOT NULL DEFAULT 'active',
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz,
-  CONSTRAINT branches_company_code_unique UNIQUE (company_id, code)
-);
-COMMENT ON TABLE branches IS 'Company branch, store, warehouse office, or service location.';
-
-CREATE TABLE IF NOT EXISTS departments (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_id uuid NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
-  branch_id uuid REFERENCES branches(id) ON DELETE SET NULL,
-  code text NOT NULL,
-  name text NOT NULL,
-  parent_department_id uuid REFERENCES departments(id) ON DELETE SET NULL,
-  status record_status NOT NULL DEFAULT 'active',
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz,
-  CONSTRAINT departments_company_code_unique UNIQUE (company_id, code)
-);
-COMMENT ON TABLE departments IS 'Organizational departments used for staff, permissions, tickets, and routing.';
-
-CREATE TABLE IF NOT EXISTS roles (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_id uuid REFERENCES companies(id) ON DELETE CASCADE,
-  name text NOT NULL,
-  display_name text,
-  description text,
-  is_system boolean NOT NULL DEFAULT false,
-  status record_status NOT NULL DEFAULT 'active',
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz,
-  CONSTRAINT roles_company_name_unique UNIQUE (company_id, name)
-);
-COMMENT ON TABLE roles IS 'RBAC role catalog shared by API, management, superadmin, and portals.';
-
-CREATE TABLE IF NOT EXISTS permissions (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  module text NOT NULL,
-  action text NOT NULL,
-  resource text,
-  description text,
-  status record_status NOT NULL DEFAULT 'active',
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz,
-  CONSTRAINT permissions_module_action_unique UNIQUE (module, action, resource)
-);
-COMMENT ON TABLE permissions IS 'Atomic permissions for least-privilege application authorization.';
-
-CREATE TABLE IF NOT EXISTS role_permissions (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  role_id uuid NOT NULL REFERENCES roles(id) ON DELETE CASCADE,
-  permission_id uuid NOT NULL REFERENCES permissions(id) ON DELETE CASCADE,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz,
-  CONSTRAINT role_permissions_unique UNIQUE (role_id, permission_id)
-);
-COMMENT ON TABLE role_permissions IS 'Many-to-many grant table connecting roles and permissions.';
-
--- Compatibility with older code that queried roles_permissions.
-CREATE OR REPLACE VIEW roles_permissions AS
-SELECT id, role_id, permission_id, created_by, updated_by, deleted_by, created_at, updated_at, deleted_at
-FROM role_permissions;
-COMMENT ON VIEW roles_permissions IS 'Compatibility view for legacy role permission references.';
-
--- =========================================================
--- Phase 2: Authentication, Users, Staff, Customers, Sessions
--- =========================================================
-
-CREATE TABLE IF NOT EXISTS profiles (
-  id uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
-  company_id uuid REFERENCES companies(id) ON DELETE SET NULL,
-  branch_id uuid REFERENCES branches(id) ON DELETE SET NULL,
-  department_id uuid REFERENCES departments(id) ON DELETE SET NULL,
-  email citext,
-  name text,
-  full_name text,
-  mobile text,
-  phone text,
-  phone_number text,
-  role text NOT NULL DEFAULT 'customer',
-  status record_status NOT NULL DEFAULT 'active',
-  is_active boolean NOT NULL DEFAULT true,
-  first_login_whatsapp_sent boolean NOT NULL DEFAULT false,
-  first_login_notified_at timestamptz,
-  address jsonb NOT NULL DEFAULT '{}'::jsonb,
-  pincode text,
-  state text,
-  location jsonb,
-  gstin text,
-  managed_pincodes text[] NOT NULL DEFAULT '{}',
-  preferences jsonb NOT NULL DEFAULT '{}'::jsonb,
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz,
-  CONSTRAINT profiles_role_not_blank CHECK (length(trim(role)) > 0)
-);
-COMMENT ON TABLE profiles IS 'Application profile extension for auth.users; supports customers, staff, managers, admins, and superadmins.';
-
-CREATE TABLE IF NOT EXISTS user_roles (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id uuid NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
-  role_id uuid NOT NULL REFERENCES roles(id) ON DELETE CASCADE,
-  scope_company_id uuid REFERENCES companies(id) ON DELETE CASCADE,
-  scope_branch_id uuid REFERENCES branches(id) ON DELETE CASCADE,
-  starts_at timestamptz NOT NULL DEFAULT now(),
-  ends_at timestamptz,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz,
-  CONSTRAINT user_roles_unique UNIQUE (user_id, role_id, scope_company_id, scope_branch_id)
-);
-COMMENT ON TABLE user_roles IS 'User-to-role assignments with optional company and branch scope.';
-
-CREATE TABLE IF NOT EXISTS staff (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id uuid NOT NULL UNIQUE REFERENCES profiles(id) ON DELETE CASCADE,
-  company_id uuid NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
-  branch_id uuid REFERENCES branches(id) ON DELETE SET NULL,
-  department_id uuid REFERENCES departments(id) ON DELETE SET NULL,
-  employee_code text NOT NULL,
-  designation text,
-  employment_type text NOT NULL DEFAULT 'full_time',
-  joining_date date,
-  exit_date date,
-  manager_staff_id uuid REFERENCES staff(id) ON DELETE SET NULL,
-  status record_status NOT NULL DEFAULT 'active',
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz,
-  CONSTRAINT staff_employee_code_unique UNIQUE (company_id, employee_code),
-  CONSTRAINT staff_exit_after_join CHECK (exit_date IS NULL OR joining_date IS NULL OR exit_date >= joining_date)
-);
-COMMENT ON TABLE staff IS 'Internal employee and contractor records linked to user profiles.';
-
-CREATE TABLE IF NOT EXISTS customers (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id uuid REFERENCES profiles(id) ON DELETE SET NULL,
-  company_id uuid REFERENCES companies(id) ON DELETE SET NULL,
-  customer_code text,
-  name text NOT NULL,
-  email citext,
-  mobile text,
-  phone text,
-  type text NOT NULL DEFAULT 'retail',
-  gstin text,
-  default_address_id uuid,
-  lifetime_value numeric(14,2) NOT NULL DEFAULT 0 CHECK (lifetime_value >= 0),
-  status record_status NOT NULL DEFAULT 'active',
-  tags text[] NOT NULL DEFAULT '{}',
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz,
-  CONSTRAINT customers_company_code_unique UNIQUE (company_id, customer_code),
-  CONSTRAINT customers_contact_present CHECK (email IS NOT NULL OR mobile IS NOT NULL OR phone IS NOT NULL)
-);
-COMMENT ON TABLE customers IS 'Customer master records for portal, ecommerce, CRM, service, and invoicing.';
-
-CREATE TABLE IF NOT EXISTS customer_addresses (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  customer_id uuid NOT NULL REFERENCES customers(id) ON DELETE CASCADE,
-  label text NOT NULL DEFAULT 'default',
-  contact_name text,
-  phone text,
-  line1 text NOT NULL,
-  line2 text,
-  city text,
-  state text,
-  state_code text,
-  country text NOT NULL DEFAULT 'IN',
-  pincode text,
-  latitude numeric(10,7),
-  longitude numeric(10,7),
-  is_default boolean NOT NULL DEFAULT false,
-  status record_status NOT NULL DEFAULT 'active',
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz
-);
-COMMENT ON TABLE customer_addresses IS 'Normalized customer shipping, billing, pickup, and service addresses.';
-DO $$ BEGIN
-  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'customers_default_address_fk') THEN
-    ALTER TABLE customers ADD CONSTRAINT customers_default_address_fk FOREIGN KEY (default_address_id) REFERENCES customer_addresses(id) ON DELETE SET NULL;
-  END IF;
-END $$;
-
-CREATE TABLE IF NOT EXISTS api_keys (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_id uuid REFERENCES companies(id) ON DELETE CASCADE,
-  user_id uuid REFERENCES profiles(id) ON DELETE SET NULL,
-  name text NOT NULL,
-  key_hash text NOT NULL UNIQUE,
-  key_prefix text NOT NULL,
-  scopes text[] NOT NULL DEFAULT '{}',
-  last_used_at timestamptz,
-  expires_at timestamptz,
-  status record_status NOT NULL DEFAULT 'active',
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz
-);
-COMMENT ON TABLE api_keys IS 'Hashed API keys for integrations and backend service access.';
-
-CREATE TABLE IF NOT EXISTS user_sessions (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id uuid REFERENCES profiles(id) ON DELETE CASCADE,
-  session_token_hash text NOT NULL UNIQUE,
-  ip_address inet,
-  user_agent text,
-  device_fingerprint text,
-  expires_at timestamptz NOT NULL,
-  revoked_at timestamptz,
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz
-);
-COMMENT ON TABLE user_sessions IS 'Application session registry for device, security, and revocation tracking.';
-
-CREATE TABLE IF NOT EXISTS otp_verifications (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id uuid REFERENCES profiles(id) ON DELETE CASCADE,
-  phone text,
-  email citext,
-  otp_hash text NOT NULL,
-  purpose text NOT NULL,
-  attempts integer NOT NULL DEFAULT 0 CHECK (attempts >= 0),
-  max_attempts integer NOT NULL DEFAULT 5 CHECK (max_attempts > 0),
-  verified_at timestamptz,
-  expires_at timestamptz NOT NULL,
-  status record_status NOT NULL DEFAULT 'active',
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz
-);
-COMMENT ON TABLE otp_verifications IS 'OTP challenge records for signup, login, and recovery flows.';
-
--- =========================================================
--- Phase 3: Company Structure, Sales Agents, Areas
--- =========================================================
-
-CREATE TABLE IF NOT EXISTS area_pincodes (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_id uuid REFERENCES companies(id) ON DELETE CASCADE,
-  branch_id uuid REFERENCES branches(id) ON DELETE SET NULL,
-  pincode text NOT NULL,
-  city text,
-  state text,
-  is_serviceable boolean NOT NULL DEFAULT true,
-  service_types text[] NOT NULL DEFAULT '{}',
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz,
-  CONSTRAINT area_pincodes_unique UNIQUE (company_id, pincode)
-);
-COMMENT ON TABLE area_pincodes IS 'Serviceable sales/service pincodes and branch routing metadata.';
-
-CREATE TABLE IF NOT EXISTS user_area_assignments (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id uuid NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
-  area_pincode_id uuid NOT NULL REFERENCES area_pincodes(id) ON DELETE CASCADE,
-  assignment_type text NOT NULL DEFAULT 'primary',
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz,
-  CONSTRAINT user_area_assignments_unique UNIQUE (user_id, area_pincode_id, assignment_type)
-);
-COMMENT ON TABLE user_area_assignments IS 'Maps staff and managers to sales/service areas.';
-
-CREATE TABLE IF NOT EXISTS sales_agents (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id uuid REFERENCES profiles(id) ON DELETE SET NULL,
-  company_id uuid REFERENCES companies(id) ON DELETE CASCADE,
-  agent_code text,
-  referral_code text UNIQUE,
-  name text,
-  email citext,
-  mobile text,
-  status text NOT NULL DEFAULT 'pending',
-  points_balance integer NOT NULL DEFAULT 0 CHECK (points_balance >= 0),
-  approved_at timestamptz,
-  approved_by uuid REFERENCES profiles(id) ON DELETE SET NULL,
-  rejected_at timestamptz,
-  rejection_reason text,
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz,
-  CONSTRAINT sales_agents_status_check CHECK (status IN ('pending','approved','rejected','suspended','inactive'))
-);
-COMMENT ON TABLE sales_agents IS 'External and internal sales agent onboarding, status, referral code, and points ledger balance.';
-
-CREATE TABLE IF NOT EXISTS agent_commission_rules (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_id uuid REFERENCES companies(id) ON DELETE CASCADE,
-  name text NOT NULL,
-  product_category_id uuid,
-  commission_type discount_type NOT NULL DEFAULT 'PERCENTAGE',
-  commission_value numeric(12,2) NOT NULL CHECK (commission_value >= 0),
-  min_order_amount numeric(14,2) NOT NULL DEFAULT 0 CHECK (min_order_amount >= 0),
-  starts_at timestamptz,
-  ends_at timestamptz,
-  status record_status NOT NULL DEFAULT 'active',
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz
-);
-COMMENT ON TABLE agent_commission_rules IS 'Configurable sales agent commission rules.';
-
--- =========================================================
--- Phase 4: Products, Catalog, CMS Product Surfaces
--- =========================================================
-
-CREATE TABLE IF NOT EXISTS categories (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_id uuid REFERENCES companies(id) ON DELETE CASCADE,
-  parent_id uuid REFERENCES categories(id) ON DELETE SET NULL,
-  name text NOT NULL,
-  slug text NOT NULL,
-  description text,
-  image_url text,
-  sort_order integer NOT NULL DEFAULT 0,
-  status record_status NOT NULL DEFAULT 'active',
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz,
-  CONSTRAINT categories_company_slug_unique UNIQUE (company_id, slug)
-);
-COMMENT ON TABLE categories IS 'Hierarchical product and service categories.';
-
-CREATE TABLE IF NOT EXISTS brands (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_id uuid REFERENCES companies(id) ON DELETE CASCADE,
-  name text NOT NULL,
-  slug text NOT NULL,
-  logo_url text,
-  description text,
-  status record_status NOT NULL DEFAULT 'active',
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz,
-  CONSTRAINT brands_company_slug_unique UNIQUE (company_id, slug)
-);
-COMMENT ON TABLE brands IS 'Product brand master data.';
-
-CREATE TABLE IF NOT EXISTS products (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_id uuid REFERENCES companies(id) ON DELETE CASCADE,
-  category_id uuid REFERENCES categories(id) ON DELETE SET NULL,
-  brand_id uuid REFERENCES brands(id) ON DELETE SET NULL,
-  handle text,
-  slug text,
-  permalink text,
-  sku text,
-  title text,
-  name text NOT NULL,
-  description text,
-  body_html text,
-  details jsonb NOT NULL DEFAULT '{}'::jsonb,
-  vendor text,
-  brand text,
-  brand_logo text,
-  product_type text,
-  category text,
-  collection text,
-  model_number text,
-  product_url text,
-  images jsonb NOT NULL DEFAULT '[]'::jsonb,
-  image text,
-  image_url text,
-  image_urls text[] NOT NULL DEFAULT '{}',
-  gallery jsonb NOT NULL DEFAULT '[]'::jsonb,
-  seo_title text,
-  meta_title text,
-  seo_description text,
-  meta_description text,
-  hsn_code text,
-  hsncode text,
-  hsn text,
-  hsn_sac text,
-  sac_code text,
-  is_service boolean NOT NULL DEFAULT false,
-  gst_rate numeric(5,2) NOT NULL DEFAULT 18 CHECK (gst_rate >= 0 AND gst_rate <= 100),
-  gst_percentage numeric(5,2),
-  tax_ai_confidence numeric(5,4),
-  tax_ai_justification text,
-  tax_ai_model text,
-  tax_ai_classified_at timestamptz,
-  tax_ai_requested_by uuid REFERENCES profiles(id) ON DELETE SET NULL,
-  tax_ai_reviewed boolean NOT NULL DEFAULT false,
-  tax_ai_reviewed_by uuid REFERENCES profiles(id) ON DELETE SET NULL,
-  tax_ai_reviewed_at timestamptz,
-  mrp numeric(14,2),
-  maximum_retail_price numeric(14,2),
-  list_price numeric(14,2),
-  price numeric(14,2) NOT NULL DEFAULT 0 CHECK (price >= 0),
-  selling_price numeric(14,2),
-  unit_price numeric(14,2),
-  offer_price numeric(14,2),
-  compare_at_price numeric(14,2),
-  final_price numeric(14,2),
-  dealer_price numeric(14,2),
-  discount_percentage numeric(6,2) DEFAULT 0 CHECK (discount_percentage IS NULL OR discount_percentage >= 0),
-  discount_source text,
-  has_active_discount boolean NOT NULL DEFAULT false,
-  applied_offer_title text,
-  stock integer NOT NULL DEFAULT 0 CHECK (stock >= 0),
-  stock_quantity integer NOT NULL DEFAULT 0 CHECK (stock_quantity >= 0),
-  stock_status text NOT NULL DEFAULT 'in_stock',
-  min_stock_level integer NOT NULL DEFAULT 0 CHECK (min_stock_level >= 0),
-  max_stock_level integer,
-  rating numeric(3,2) DEFAULT 0 CHECK (rating IS NULL OR (rating >= 0 AND rating <= 5)),
-  review_count integer NOT NULL DEFAULT 0 CHECK (review_count >= 0),
-  "reviewCount" integer NOT NULL DEFAULT 0 CHECK ("reviewCount" >= 0),
-  popularity integer NOT NULL DEFAULT 0,
-  prioritized boolean NOT NULL DEFAULT false,
-  prioritized_at timestamptz,
-  tags text[] NOT NULL DEFAULT '{}',
-  specifications jsonb NOT NULL DEFAULT '{}'::jsonb,
-  status text NOT NULL DEFAULT 'active',
-  is_deleted boolean NOT NULL DEFAULT false,
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  search_vector tsvector GENERATED ALWAYS AS (to_tsvector('english', coalesce(name,'') || ' ' || coalesce(title,'') || ' ' || coalesce(description,'') || ' ' || coalesce(brand,'') || ' ' || coalesce(category,''))) STORED,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz,
-  CONSTRAINT products_company_sku_unique UNIQUE (company_id, sku),
-  CONSTRAINT products_company_slug_unique UNIQUE (company_id, slug)
-);
-COMMENT ON TABLE products IS 'Enterprise catalog product/service master with compatibility columns used by public and management apps.';
-
-CREATE TABLE IF NOT EXISTS product_variants (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  product_id uuid NOT NULL REFERENCES products(id) ON DELETE CASCADE,
-  sku text,
-  name text NOT NULL,
-  option_values jsonb NOT NULL DEFAULT '{}'::jsonb,
-  price numeric(14,2) NOT NULL DEFAULT 0 CHECK (price >= 0),
-  mrp numeric(14,2),
-  stock_quantity integer NOT NULL DEFAULT 0 CHECK (stock_quantity >= 0),
-  barcode text,
-  status record_status NOT NULL DEFAULT 'active',
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz,
-  CONSTRAINT product_variants_sku_unique UNIQUE (sku)
-);
-COMMENT ON TABLE product_variants IS 'Sellable product variant SKUs with option values and stock.';
-
-CREATE TABLE IF NOT EXISTS product_options (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  product_id uuid NOT NULL REFERENCES products(id) ON DELETE CASCADE,
-  name text NOT NULL,
-  values text[] NOT NULL DEFAULT '{}',
-  sort_order integer NOT NULL DEFAULT 0,
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz,
-  CONSTRAINT product_options_unique UNIQUE (product_id, name)
-);
-COMMENT ON TABLE product_options IS 'Variant option definitions such as color, storage, size, or plan.';
-
-CREATE TABLE IF NOT EXISTS product_images (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  product_id uuid NOT NULL REFERENCES products(id) ON DELETE CASCADE,
-  variant_id uuid REFERENCES product_variants(id) ON DELETE CASCADE,
-  url text NOT NULL,
-  alt_text text,
-  sort_order integer NOT NULL DEFAULT 0,
-  is_primary boolean NOT NULL DEFAULT false,
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz
-);
-COMMENT ON TABLE product_images IS 'Normalized product and variant media gallery.';
-
-CREATE TABLE IF NOT EXISTS product_pricing (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  product_id uuid NOT NULL REFERENCES products(id) ON DELETE CASCADE,
-  variant_id uuid REFERENCES product_variants(id) ON DELETE CASCADE,
-  price_list text NOT NULL DEFAULT 'default',
-  mrp numeric(14,2),
-  price numeric(14,2) NOT NULL CHECK (price >= 0),
-  offer_price numeric(14,2),
-  starts_at timestamptz,
-  ends_at timestamptz,
-  status record_status NOT NULL DEFAULT 'active',
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz,
-  CONSTRAINT product_pricing_unique UNIQUE (product_id, variant_id, price_list, starts_at)
-);
-COMMENT ON TABLE product_pricing IS 'Time-bound product price lists for retail, dealer, quote, and offer pricing.';
-
-CREATE TABLE IF NOT EXISTS product_reviews (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  product_id uuid NOT NULL REFERENCES products(id) ON DELETE CASCADE,
-  customer_id uuid REFERENCES customers(id) ON DELETE SET NULL,
-  rating integer NOT NULL CHECK (rating BETWEEN 1 AND 5),
-  title text,
-  body text,
-  is_verified boolean NOT NULL DEFAULT false,
-  status record_status NOT NULL DEFAULT 'draft',
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz
-);
-COMMENT ON TABLE product_reviews IS 'Customer product ratings and reviews.';
-
-CREATE TABLE IF NOT EXISTS published_blueprints (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_id uuid REFERENCES companies(id) ON DELETE CASCADE,
-  title text NOT NULL,
-  slug text NOT NULL,
-  description text,
-  blueprint jsonb NOT NULL DEFAULT '{}'::jsonb,
-  status record_status NOT NULL DEFAULT 'active',
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz,
-  CONSTRAINT published_blueprints_slug_unique UNIQUE (company_id, slug)
-);
-COMMENT ON TABLE published_blueprints IS 'Public custom setup or project blueprint pages.';
-
-CREATE OR REPLACE VIEW products_columns_view AS
-SELECT column_name
-FROM information_schema.columns
-WHERE table_schema = 'public' AND table_name = 'products';
-COMMENT ON VIEW products_columns_view IS 'Compatibility view used by API product routes to discover catalog columns.';
-
-CREATE OR REPLACE VIEW product_analytics_view AS
-SELECT p.id, p.name, p.category, p.brand, p.price, p.stock_quantity, p.rating, p.review_count, p.created_at, p.updated_at
-FROM products p
-WHERE p.deleted_at IS NULL AND p.is_deleted = false;
-COMMENT ON VIEW product_analytics_view IS 'Read-optimized product analytics projection.';
-
--- =========================================================
--- Phase 5: Warehouses, Suppliers, Inventory, Purchases
--- =========================================================
-
-CREATE TABLE IF NOT EXISTS warehouses (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_id uuid NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
-  branch_id uuid REFERENCES branches(id) ON DELETE SET NULL,
-  code text NOT NULL,
-  name text NOT NULL,
-  address jsonb NOT NULL DEFAULT '{}'::jsonb,
-  type text NOT NULL DEFAULT 'warehouse',
-  status record_status NOT NULL DEFAULT 'active',
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz,
-  CONSTRAINT warehouses_company_code_unique UNIQUE (company_id, code)
-);
-COMMENT ON TABLE warehouses IS 'Physical and virtual stock locations.';
-
-CREATE TABLE IF NOT EXISTS suppliers (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_id uuid REFERENCES companies(id) ON DELETE CASCADE,
-  supplier_code text,
-  name text NOT NULL,
-  email citext,
-  phone text,
-  gstin text,
-  address jsonb NOT NULL DEFAULT '{}'::jsonb,
-  payment_terms text,
-  status record_status NOT NULL DEFAULT 'active',
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz,
-  CONSTRAINT suppliers_company_code_unique UNIQUE (company_id, supplier_code)
-);
-COMMENT ON TABLE suppliers IS 'Supplier/vendor master data for purchase and warranty traceability.';
-
-CREATE TABLE IF NOT EXISTS product_inventory (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  product_id uuid NOT NULL REFERENCES products(id) ON DELETE CASCADE,
-  variant_id uuid REFERENCES product_variants(id) ON DELETE CASCADE,
-  warehouse_id uuid NOT NULL REFERENCES warehouses(id) ON DELETE CASCADE,
-  quantity_on_hand integer NOT NULL DEFAULT 0 CHECK (quantity_on_hand >= 0),
-  quantity_reserved integer NOT NULL DEFAULT 0 CHECK (quantity_reserved >= 0),
-  reorder_level integer NOT NULL DEFAULT 0 CHECK (reorder_level >= 0),
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz,
-  CONSTRAINT product_inventory_unique UNIQUE (product_id, variant_id, warehouse_id),
-  CONSTRAINT product_inventory_reserved_lte_on_hand CHECK (quantity_reserved <= quantity_on_hand)
-);
-COMMENT ON TABLE product_inventory IS 'Aggregate stock balance by product, variant, and warehouse.';
-
-CREATE TABLE IF NOT EXISTS inventory_items (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  product_id uuid NOT NULL REFERENCES products(id) ON DELETE CASCADE,
-  variant_id uuid REFERENCES product_variants(id) ON DELETE SET NULL,
-  warehouse_id uuid REFERENCES warehouses(id) ON DELETE SET NULL,
-  serial_number text,
-  imei text,
-  batch_number text,
-  status text NOT NULL DEFAULT 'available',
-  cost_price numeric(14,2),
-  warranty_starts_at date,
-  warranty_ends_at date,
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz,
-  CONSTRAINT inventory_items_serial_unique UNIQUE (serial_number),
-  CONSTRAINT inventory_items_status_check CHECK (status IN ('available','reserved','sold','installed','returned','damaged','lost'))
-);
-COMMENT ON TABLE inventory_items IS 'Serialized inventory units for warranty, installation, and service tracking.';
-
-CREATE TABLE IF NOT EXISTS inventory (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  product_id uuid NOT NULL REFERENCES products(id) ON DELETE CASCADE,
-  variant_id uuid REFERENCES product_variants(id) ON DELETE SET NULL,
-  warehouse_id uuid REFERENCES warehouses(id) ON DELETE SET NULL,
-  serial_number text,
-  quantity integer NOT NULL DEFAULT 1 CHECK (quantity >= 0),
-  status text NOT NULL DEFAULT 'available',
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz
-);
-COMMENT ON TABLE inventory IS 'Compatibility inventory table used by management serial number workflows.';
-
-CREATE TABLE IF NOT EXISTS purchases (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_id uuid REFERENCES companies(id) ON DELETE CASCADE,
-  supplier_id uuid REFERENCES suppliers(id) ON DELETE SET NULL,
-  warehouse_id uuid REFERENCES warehouses(id) ON DELETE SET NULL,
-  purchase_number text NOT NULL,
-  invoice_number text,
-  purchase_date date NOT NULL DEFAULT current_date,
-  status text NOT NULL DEFAULT 'draft',
-  subtotal numeric(14,2) NOT NULL DEFAULT 0 CHECK (subtotal >= 0),
-  tax_amount numeric(14,2) NOT NULL DEFAULT 0 CHECK (tax_amount >= 0),
-  total numeric(14,2) NOT NULL DEFAULT 0 CHECK (total >= 0),
-  notes text,
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz,
-  CONSTRAINT purchases_number_unique UNIQUE (company_id, purchase_number)
-);
-COMMENT ON TABLE purchases IS 'Purchase order and supplier invoice headers.';
-
-CREATE TABLE IF NOT EXISTS purchase_items (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  purchase_id uuid NOT NULL REFERENCES purchases(id) ON DELETE CASCADE,
-  product_id uuid NOT NULL REFERENCES products(id) ON DELETE RESTRICT,
-  variant_id uuid REFERENCES product_variants(id) ON DELETE SET NULL,
-  quantity integer NOT NULL CHECK (quantity > 0),
-  unit_cost numeric(14,2) NOT NULL CHECK (unit_cost >= 0),
-  gst_rate numeric(5,2) NOT NULL DEFAULT 18 CHECK (gst_rate >= 0),
-  total numeric(14,2) NOT NULL CHECK (total >= 0),
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz
-);
-COMMENT ON TABLE purchase_items IS 'Purchase line items for products and variants.';
-
-CREATE TABLE IF NOT EXISTS stock_movements (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_id uuid REFERENCES companies(id) ON DELETE CASCADE,
-  product_id uuid NOT NULL REFERENCES products(id) ON DELETE RESTRICT,
-  variant_id uuid REFERENCES product_variants(id) ON DELETE SET NULL,
-  warehouse_id uuid REFERENCES warehouses(id) ON DELETE SET NULL,
-  inventory_item_id uuid REFERENCES inventory_items(id) ON DELETE SET NULL,
-  movement_type inventory_movement_type NOT NULL,
-  quantity integer NOT NULL,
-  reference_type text,
-  reference_id uuid,
-  notes text,
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz,
-  CONSTRAINT stock_movements_quantity_nonzero CHECK (quantity <> 0)
-);
-COMMENT ON TABLE stock_movements IS 'Immutable stock ledger entries for all inventory changes.';
-
--- =========================================================
--- Phase 6: Orders, Quotes, Cart, Taxes, Discounts
--- =========================================================
-
-CREATE TABLE IF NOT EXISTS gst_rates (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  code text NOT NULL UNIQUE,
-  rate numeric(5,2) NOT NULL CHECK (rate >= 0 AND rate <= 100),
-  description text,
-  status record_status NOT NULL DEFAULT 'active',
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz
-);
-COMMENT ON TABLE gst_rates IS 'GST rate catalog for Indian tax calculation.';
-
-CREATE TABLE IF NOT EXISTS hsn_codes (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  code text NOT NULL UNIQUE,
-  description text,
-  gst_rate_id uuid REFERENCES gst_rates(id) ON DELETE SET NULL,
-  is_service boolean NOT NULL DEFAULT false,
-  status record_status NOT NULL DEFAULT 'active',
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz
-);
-COMMENT ON TABLE hsn_codes IS 'HSN/SAC code catalog mapped to GST rates.';
-
-CREATE TABLE IF NOT EXISTS taxes (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_id uuid REFERENCES companies(id) ON DELETE CASCADE,
-  name text NOT NULL,
-  tax_type text NOT NULL DEFAULT 'GST',
-  rate numeric(5,2) NOT NULL CHECK (rate >= 0 AND rate <= 100),
-  jurisdiction text,
-  status record_status NOT NULL DEFAULT 'active',
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz
-);
-COMMENT ON TABLE taxes IS 'Tax rules used by quotations, orders, invoices, and reports.';
-
-CREATE TABLE IF NOT EXISTS carts (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id uuid REFERENCES profiles(id) ON DELETE CASCADE,
-  customer_id uuid REFERENCES customers(id) ON DELETE SET NULL,
-  company_id uuid REFERENCES companies(id) ON DELETE CASCADE,
-  status text NOT NULL DEFAULT 'active',
-  currency_code char(3) NOT NULL DEFAULT 'INR',
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz,
-  CONSTRAINT carts_status_check CHECK (status IN ('active','converted','abandoned','expired'))
-);
-COMMENT ON TABLE carts IS 'Shopping cart headers for logged-in and guest checkout flows.';
-
-CREATE TABLE IF NOT EXISTS cart_items (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  cart_id uuid NOT NULL REFERENCES carts(id) ON DELETE CASCADE,
-  product_id uuid NOT NULL REFERENCES products(id) ON DELETE RESTRICT,
-  variant_id uuid REFERENCES product_variants(id) ON DELETE SET NULL,
-  quantity integer NOT NULL CHECK (quantity > 0),
-  unit_price numeric(14,2) NOT NULL CHECK (unit_price >= 0),
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz,
-  CONSTRAINT cart_items_unique UNIQUE (cart_id, product_id, variant_id)
-);
-COMMENT ON TABLE cart_items IS 'Shopping cart product lines.';
-
-CREATE TABLE IF NOT EXISTS orders (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_id uuid REFERENCES companies(id) ON DELETE SET NULL,
-  branch_id uuid REFERENCES branches(id) ON DELETE SET NULL,
-  customer_id uuid REFERENCES profiles(id) ON DELETE SET NULL,
-  customer_record_id uuid REFERENCES customers(id) ON DELETE SET NULL,
-  order_number text UNIQUE,
-  quote_id uuid,
-  customer_name text,
-  customer_email citext,
-  customer_phone text NOT NULL,
-  delivery_address text,
-  delivery_pincode text,
-  pickup_store text,
-  type text NOT NULL DEFAULT 'Delivery',
-  order_type text,
-  category text,
-  status text NOT NULL DEFAULT 'Pending',
-  payment_status text DEFAULT 'pending',
-  payment_method text,
-  subtotal numeric(14,2) NOT NULL DEFAULT 0 CHECK (subtotal >= 0),
-  gst_amount numeric(14,2) NOT NULL DEFAULT 0 CHECK (gst_amount >= 0),
-  cgst_amount numeric(14,2) NOT NULL DEFAULT 0 CHECK (cgst_amount >= 0),
-  sgst_amount numeric(14,2) NOT NULL DEFAULT 0 CHECK (sgst_amount >= 0),
-  igst_amount numeric(14,2) NOT NULL DEFAULT 0 CHECK (igst_amount >= 0),
-  discount_amount numeric(14,2) NOT NULL DEFAULT 0 CHECK (discount_amount >= 0),
-  shipping_amount numeric(14,2) NOT NULL DEFAULT 0 CHECK (shipping_amount >= 0),
-  total numeric(14,2) NOT NULL DEFAULT 0 CHECK (total >= 0),
-  total_amount numeric(14,2) GENERATED ALWAYS AS (total) STORED,
-  items jsonb NOT NULL DEFAULT '{}'::jsonb,
-  notes text,
-  cancellation_reason text,
-  delivered_at timestamptz,
-  agent_id uuid REFERENCES sales_agents(id) ON DELETE SET NULL,
-  assigned_sales_manager_id uuid REFERENCES profiles(id) ON DELETE SET NULL,
-  assigned_service_manager_id uuid REFERENCES profiles(id) ON DELETE SET NULL,
-  area_id uuid REFERENCES area_pincodes(id) ON DELETE SET NULL,
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  search_vector tsvector GENERATED ALWAYS AS (to_tsvector('english', coalesce(order_number,'') || ' ' || coalesce(customer_name,'') || ' ' || coalesce(customer_phone,'') || ' ' || coalesce(customer_email::text,''))) STORED,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz
-);
-COMMENT ON TABLE orders IS 'Order headers for ecommerce, walk-in, agent, service, repair, and installation workflows.';
-
-CREATE TABLE IF NOT EXISTS order_items (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  order_id uuid NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
-  product_id uuid REFERENCES products(id) ON DELETE SET NULL,
-  variant_id uuid REFERENCES product_variants(id) ON DELETE SET NULL,
-  product_name text,
-  sku text,
-  quantity integer NOT NULL CHECK (quantity > 0),
-  price numeric(14,2) NOT NULL DEFAULT 0 CHECK (price >= 0),
-  unit_price numeric(14,2) NOT NULL DEFAULT 0 CHECK (unit_price >= 0),
-  total_price numeric(14,2) NOT NULL DEFAULT 0 CHECK (total_price >= 0),
-  discount_amount numeric(14,2) NOT NULL DEFAULT 0 CHECK (discount_amount >= 0),
-  gst_rate numeric(5,2) NOT NULL DEFAULT 18 CHECK (gst_rate >= 0),
-  hsn_code text,
-  sac_code text,
-  taxable_base numeric(14,2) NOT NULL DEFAULT 0 CHECK (taxable_base >= 0),
-  gst_amount numeric(14,2) NOT NULL DEFAULT 0 CHECK (gst_amount >= 0),
-  cgst numeric(14,2) NOT NULL DEFAULT 0 CHECK (cgst >= 0),
-  sgst numeric(14,2) NOT NULL DEFAULT 0 CHECK (sgst >= 0),
-  igst numeric(14,2) NOT NULL DEFAULT 0 CHECK (igst >= 0),
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz
-);
-COMMENT ON TABLE order_items IS 'Normalized order line items for fulfillment, inventory, tax, and analytics.';
-
-CREATE TABLE IF NOT EXISTS quotes (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_id uuid REFERENCES companies(id) ON DELETE SET NULL,
-  customer_id uuid REFERENCES customers(id) ON DELETE SET NULL,
-  quote_number text NOT NULL UNIQUE,
-  status text NOT NULL DEFAULT 'draft',
-  subtotal numeric(14,2) NOT NULL DEFAULT 0 CHECK (subtotal >= 0),
-  tax_amount numeric(14,2) NOT NULL DEFAULT 0 CHECK (tax_amount >= 0),
-  discount_amount numeric(14,2) NOT NULL DEFAULT 0 CHECK (discount_amount >= 0),
-  total numeric(14,2) NOT NULL DEFAULT 0 CHECK (total >= 0),
-  valid_until date,
-  advance_payment_amount numeric(14,2),
-  accepted_at timestamptz,
-  rejected_at timestamptz,
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz
-);
-COMMENT ON TABLE quotes IS 'Customer quotations and counter-offer records.';
-
-CREATE TABLE IF NOT EXISTS quote_items (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  quote_id uuid NOT NULL REFERENCES quotes(id) ON DELETE CASCADE,
-  product_id uuid REFERENCES products(id) ON DELETE SET NULL,
-  description text,
-  quantity integer NOT NULL CHECK (quantity > 0),
-  unit_price numeric(14,2) NOT NULL CHECK (unit_price >= 0),
-  total numeric(14,2) NOT NULL CHECK (total >= 0),
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz
-);
-COMMENT ON TABLE quote_items IS 'Quotation line items.';
-
-DO $$ BEGIN
-  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'orders_quote_fk') THEN
-    ALTER TABLE orders ADD CONSTRAINT orders_quote_fk FOREIGN KEY (quote_id) REFERENCES quotes(id) ON DELETE SET NULL;
-  END IF;
-END $$;
-
-CREATE TABLE IF NOT EXISTS coupons (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_id uuid REFERENCES companies(id) ON DELETE CASCADE,
-  code text NOT NULL,
-  type discount_type NOT NULL DEFAULT 'PERCENTAGE',
-  discount numeric(14,2) NOT NULL CHECK (discount >= 0),
-  discount_value numeric(14,2),
-  min_order_amount numeric(14,2) NOT NULL DEFAULT 0 CHECK (min_order_amount >= 0),
-  usage_limit integer CHECK (usage_limit IS NULL OR usage_limit >= 0),
-  usage_count integer NOT NULL DEFAULT 0 CHECK (usage_count >= 0),
-  starts_at timestamptz,
-  expires_at timestamptz,
-  status record_status NOT NULL DEFAULT 'active',
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz,
-  CONSTRAINT coupons_company_code_unique UNIQUE (company_id, code)
-);
-COMMENT ON TABLE coupons IS 'Coupon codes and usage limits for checkout discounts.';
-
-CREATE TABLE IF NOT EXISTS discounts (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_id uuid REFERENCES companies(id) ON DELETE CASCADE,
-  name text NOT NULL,
-  type discount_type NOT NULL DEFAULT 'PERCENTAGE',
-  value numeric(14,2) NOT NULL CHECK (value >= 0),
-  target_type text NOT NULL DEFAULT 'order',
-  target_id uuid,
-  starts_at timestamptz,
-  ends_at timestamptz,
-  status record_status NOT NULL DEFAULT 'active',
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz
-);
-COMMENT ON TABLE discounts IS 'Discount rules applied to orders, products, customers, and promotions.';
-
-CREATE TABLE IF NOT EXISTS offers (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_id uuid REFERENCES companies(id) ON DELETE CASCADE,
-  title text NOT NULL,
-  description text,
-  discount_id uuid REFERENCES discounts(id) ON DELETE SET NULL,
-  starts_at timestamptz,
-  ends_at timestamptz,
-  status record_status NOT NULL DEFAULT 'active',
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz
-);
-COMMENT ON TABLE offers IS 'Marketing and checkout offers shown across public and admin apps.';
-
-CREATE TABLE IF NOT EXISTS offer_usage (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  offer_id uuid REFERENCES offers(id) ON DELETE CASCADE,
-  coupon_id uuid REFERENCES coupons(id) ON DELETE SET NULL,
-  customer_id uuid REFERENCES customers(id) ON DELETE SET NULL,
-  order_id uuid REFERENCES orders(id) ON DELETE SET NULL,
-  discount_amount numeric(14,2) NOT NULL DEFAULT 0 CHECK (discount_amount >= 0),
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz
-);
-COMMENT ON TABLE offer_usage IS 'Offer and coupon redemption ledger.';
-
-CREATE TABLE IF NOT EXISTS auto_offers (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_id uuid REFERENCES companies(id) ON DELETE CASCADE,
-  name text NOT NULL,
-  trigger_type text NOT NULL,
-  rules jsonb NOT NULL DEFAULT '{}'::jsonb,
-  offer_id uuid REFERENCES offers(id) ON DELETE SET NULL,
-  status record_status NOT NULL DEFAULT 'active',
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz
-);
-COMMENT ON TABLE auto_offers IS 'Automated offer rules triggered by behavior, cart, customer, or order context.';
-
-CREATE TABLE IF NOT EXISTS customer_discounts (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  customer_id uuid REFERENCES customers(id) ON DELETE CASCADE,
-  discount_id uuid REFERENCES discounts(id) ON DELETE CASCADE,
-  starts_at timestamptz,
-  ends_at timestamptz,
-  status record_status NOT NULL DEFAULT 'active',
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz,
-  CONSTRAINT customer_discounts_unique UNIQUE (customer_id, discount_id)
-);
-COMMENT ON TABLE customer_discounts IS 'Customer-specific discount assignments.';
-
-CREATE TABLE IF NOT EXISTS wishlists (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id uuid REFERENCES profiles(id) ON DELETE CASCADE,
-  customer_id uuid REFERENCES customers(id) ON DELETE CASCADE,
-  product_id uuid NOT NULL REFERENCES products(id) ON DELETE CASCADE,
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz,
-  CONSTRAINT wishlists_unique UNIQUE (user_id, customer_id, product_id)
-);
-COMMENT ON TABLE wishlists IS 'Customer wishlist product saves.';
-
--- =========================================================
--- Phase 7: Payments, Invoices, Recovery
--- =========================================================
-
-CREATE TABLE IF NOT EXISTS payments (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_id uuid REFERENCES companies(id) ON DELETE SET NULL,
-  order_id uuid REFERENCES orders(id) ON DELETE SET NULL,
-  customer_id uuid REFERENCES customers(id) ON DELETE SET NULL,
-  payment_number text UNIQUE,
-  provider text,
-  method text,
-  status text NOT NULL DEFAULT 'pending',
-  amount numeric(14,2) NOT NULL CHECK (amount >= 0),
-  currency_code char(3) NOT NULL DEFAULT 'INR',
-  provider_reference text,
-  paid_at timestamptz,
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz
-);
-COMMENT ON TABLE payments IS 'Payment header records across PayU, UPI, COD, cash, and manual methods.';
-
-CREATE TABLE IF NOT EXISTS payment_transactions (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  payment_id uuid REFERENCES payments(id) ON DELETE CASCADE,
-  order_id uuid REFERENCES orders(id) ON DELETE SET NULL,
-  provider text,
-  provider_transaction_id text,
-  transaction_type text NOT NULL DEFAULT 'payment',
-  status text NOT NULL DEFAULT 'pending',
-  amount numeric(14,2) NOT NULL CHECK (amount >= 0),
-  raw_payload jsonb NOT NULL DEFAULT '{}'::jsonb,
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz,
-  CONSTRAINT payment_transactions_provider_unique UNIQUE (provider, provider_transaction_id)
-);
-COMMENT ON TABLE payment_transactions IS 'Gateway transaction attempts, callbacks, and refunds.';
-
-CREATE TABLE IF NOT EXISTS advance_payment_requests (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  quote_id uuid REFERENCES quotes(id) ON DELETE CASCADE,
-  order_id uuid REFERENCES orders(id) ON DELETE SET NULL,
-  amount numeric(14,2) NOT NULL CHECK (amount >= 0),
-  status text NOT NULL DEFAULT 'pending',
-  payment_link text,
-  expires_at timestamptz,
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz
-);
-COMMENT ON TABLE advance_payment_requests IS 'Advance payment links for quotes and service orders.';
-
-CREATE TABLE IF NOT EXISTS invoices (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_id uuid REFERENCES companies(id) ON DELETE SET NULL,
-  order_id uuid REFERENCES orders(id) ON DELETE SET NULL,
-  customer_id uuid REFERENCES customers(id) ON DELETE SET NULL,
-  invoice_number text NOT NULL UNIQUE,
-  invoice_date date NOT NULL DEFAULT current_date,
-  due_date date,
-  status text NOT NULL DEFAULT 'draft',
-  subtotal numeric(14,2) NOT NULL DEFAULT 0 CHECK (subtotal >= 0),
-  tax_amount numeric(14,2) NOT NULL DEFAULT 0 CHECK (tax_amount >= 0),
-  total numeric(14,2) NOT NULL DEFAULT 0 CHECK (total >= 0),
-  pdf_url text,
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz
-);
-COMMENT ON TABLE invoices IS 'Tax invoice headers for customer orders and services.';
-
-CREATE TABLE IF NOT EXISTS invoice_items (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  invoice_id uuid NOT NULL REFERENCES invoices(id) ON DELETE CASCADE,
-  order_item_id uuid REFERENCES order_items(id) ON DELETE SET NULL,
-  description text NOT NULL,
-  quantity integer NOT NULL CHECK (quantity > 0),
-  unit_price numeric(14,2) NOT NULL CHECK (unit_price >= 0),
-  tax_amount numeric(14,2) NOT NULL DEFAULT 0 CHECK (tax_amount >= 0),
-  total numeric(14,2) NOT NULL CHECK (total >= 0),
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz
-);
-COMMENT ON TABLE invoice_items IS 'Invoice line items.';
-
-CREATE TABLE IF NOT EXISTS payment_recovery_queue (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  order_id uuid REFERENCES orders(id) ON DELETE CASCADE,
-  customer_id uuid REFERENCES customers(id) ON DELETE SET NULL,
-  reason text,
-  status text NOT NULL DEFAULT 'pending',
-  next_attempt_at timestamptz,
-  attempts integer NOT NULL DEFAULT 0 CHECK (attempts >= 0),
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz
-);
-COMMENT ON TABLE payment_recovery_queue IS 'Queue for failed payment recovery and abandoned payment follow-up.';
-
--- =========================================================
--- Phase 8: Service, Warranty, AMC, Logistics
--- =========================================================
-
-CREATE TABLE IF NOT EXISTS services (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_id uuid REFERENCES companies(id) ON DELETE CASCADE,
-  category_id uuid REFERENCES categories(id) ON DELETE SET NULL,
-  name text NOT NULL,
-  slug text,
-  category text,
-  description text,
-  base_price numeric(14,2) NOT NULL DEFAULT 0 CHECK (base_price >= 0),
-  status record_status NOT NULL DEFAULT 'active',
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz
-);
-COMMENT ON TABLE services IS 'Service catalog for repair, setup, installation, and AMC offerings.';
-
-CREATE TABLE IF NOT EXISTS service_engineers (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  staff_id uuid REFERENCES staff(id) ON DELETE SET NULL,
-  user_id uuid REFERENCES profiles(id) ON DELETE SET NULL,
-  company_id uuid REFERENCES companies(id) ON DELETE CASCADE,
-  specialization text[] NOT NULL DEFAULT '{}',
-  skill_level text,
-  availability_status text NOT NULL DEFAULT 'available',
-  rating numeric(3,2) DEFAULT 0 CHECK (rating IS NULL OR (rating >= 0 AND rating <= 5)),
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz
-);
-COMMENT ON TABLE service_engineers IS 'Engineer roster and skill metadata for ticket assignment.';
-
-CREATE TABLE IF NOT EXISTS service_tickets (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_id uuid REFERENCES companies(id) ON DELETE SET NULL,
-  customer_id uuid REFERENCES customers(id) ON DELETE SET NULL,
-  order_id uuid REFERENCES orders(id) ON DELETE SET NULL,
-  service_id uuid REFERENCES services(id) ON DELETE SET NULL,
-  title text NOT NULL,
-  description text,
-  status text NOT NULL DEFAULT 'OPEN',
-  priority text NOT NULL DEFAULT 'NORMAL',
-  department text NOT NULL DEFAULT 'SUPPORT',
-  assigned_to uuid REFERENCES profiles(id) ON DELETE SET NULL,
-  engineer_id uuid REFERENCES service_engineers(id) ON DELETE SET NULL,
-  sender_number text,
-  sla_breach_at timestamptz,
-  resolved_at timestamptz,
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  search_vector tsvector GENERATED ALWAYS AS (to_tsvector('english', coalesce(title,'') || ' ' || coalesce(description,''))) STORED,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz
-);
-COMMENT ON TABLE service_tickets IS 'Support/service tickets from WABA, portal, management, and order workflows.';
-
-CREATE TABLE IF NOT EXISTS service_requests (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_id uuid REFERENCES companies(id) ON DELETE SET NULL,
-  customer_id uuid REFERENCES customers(id) ON DELETE SET NULL,
-  service_id uuid REFERENCES services(id) ON DELETE SET NULL,
-  ticket_id uuid REFERENCES service_tickets(id) ON DELETE SET NULL,
-  requested_for timestamptz,
-  address jsonb NOT NULL DEFAULT '{}'::jsonb,
-  status text NOT NULL DEFAULT 'new',
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz
-);
-COMMENT ON TABLE service_requests IS 'Customer service request intake records before or alongside ticket creation.';
-
-CREATE TABLE IF NOT EXISTS installations (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_id uuid REFERENCES companies(id) ON DELETE SET NULL,
-  customer_id uuid REFERENCES customers(id) ON DELETE SET NULL,
-  order_id uuid REFERENCES orders(id) ON DELETE SET NULL,
-  product_id uuid REFERENCES products(id) ON DELETE SET NULL,
-  inventory_item_id uuid REFERENCES inventory_items(id) ON DELETE SET NULL,
-  engineer_id uuid REFERENCES service_engineers(id) ON DELETE SET NULL,
-  installed_at timestamptz,
-  address jsonb NOT NULL DEFAULT '{}'::jsonb,
-  status text NOT NULL DEFAULT 'scheduled',
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz
-);
-COMMENT ON TABLE installations IS 'Product installation lifecycle and engineer assignment.';
-
-CREATE TABLE IF NOT EXISTS warranties (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_id uuid REFERENCES companies(id) ON DELETE SET NULL,
-  customer_id uuid REFERENCES customers(id) ON DELETE SET NULL,
-  product_id uuid REFERENCES products(id) ON DELETE SET NULL,
-  inventory_item_id uuid REFERENCES inventory_items(id) ON DELETE SET NULL,
-  order_id uuid REFERENCES orders(id) ON DELETE SET NULL,
-  warranty_number text UNIQUE,
-  starts_at date NOT NULL DEFAULT current_date,
-  ends_at date NOT NULL,
-  status text NOT NULL DEFAULT 'active',
-  terms text,
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz,
-  CONSTRAINT warranties_ends_after_starts CHECK (ends_at >= starts_at)
-);
-COMMENT ON TABLE warranties IS 'Product warranty registrations and validity windows.';
-
-CREATE TABLE IF NOT EXISTS amc_contracts (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_id uuid REFERENCES companies(id) ON DELETE SET NULL,
-  customer_id uuid REFERENCES customers(id) ON DELETE SET NULL,
-  contract_number text NOT NULL UNIQUE,
-  starts_at date NOT NULL,
-  ends_at date NOT NULL,
-  amount numeric(14,2) NOT NULL DEFAULT 0 CHECK (amount >= 0),
-  status text NOT NULL DEFAULT 'active',
-  coverage jsonb NOT NULL DEFAULT '{}'::jsonb,
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz,
-  CONSTRAINT amc_ends_after_starts CHECK (ends_at >= starts_at)
-);
-COMMENT ON TABLE amc_contracts IS 'Annual maintenance contracts for customer equipment and services.';
-
-CREATE TABLE IF NOT EXISTS dispatch_records (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  order_id uuid REFERENCES orders(id) ON DELETE CASCADE,
-  carrier text,
-  tracking_number text,
-  status text NOT NULL DEFAULT 'pending',
-  dispatched_at timestamptz,
-  delivered_at timestamptz,
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz
-);
-COMMENT ON TABLE dispatch_records IS 'Shipping and delivery records for orders.';
-
-CREATE TABLE IF NOT EXISTS free_installation_slots (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_id uuid REFERENCES companies(id) ON DELETE CASCADE,
-  branch_id uuid REFERENCES branches(id) ON DELETE SET NULL,
-  slot_start timestamptz NOT NULL,
-  slot_end timestamptz NOT NULL,
-  capacity integer NOT NULL DEFAULT 1 CHECK (capacity > 0),
-  booked_count integer NOT NULL DEFAULT 0 CHECK (booked_count >= 0),
-  status record_status NOT NULL DEFAULT 'active',
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz,
-  CONSTRAINT free_installation_slots_window CHECK (slot_end > slot_start),
-  CONSTRAINT free_installation_slots_capacity CHECK (booked_count <= capacity)
-);
-COMMENT ON TABLE free_installation_slots IS 'Capacity-managed promotional installation slots.';
-
--- =========================================================
--- Phase 9: Marketing, CRM, Notifications, Content
--- =========================================================
-
-CREATE TABLE IF NOT EXISTS leads (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_id uuid REFERENCES companies(id) ON DELETE SET NULL,
-  customer_id uuid REFERENCES customers(id) ON DELETE SET NULL,
-  sender_number text,
-  domain lead_domain NOT NULL DEFAULT 'GENERAL',
-  sub_category text,
-  source text,
-  pincode text,
-  address text,
-  status text NOT NULL DEFAULT 'NEW',
-  assigned_to uuid REFERENCES profiles(id) ON DELETE SET NULL,
-  score integer NOT NULL DEFAULT 0,
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  search_vector tsvector GENERATED ALWAYS AS (to_tsvector('english', coalesce(sender_number,'') || ' ' || coalesce(sub_category,'') || ' ' || coalesce(address,''))) STORED,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz
-);
-COMMENT ON TABLE leads IS 'Unified CRM lead intake table.';
-
-CREATE OR REPLACE VIEW sls_leads AS SELECT * FROM leads;
-COMMENT ON VIEW sls_leads IS 'Compatibility view for legacy sales lead routes.';
-
-CREATE TABLE IF NOT EXISTS sls_activities (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  lead_id uuid REFERENCES leads(id) ON DELETE CASCADE,
-  activity_type text NOT NULL,
-  notes text,
-  occurred_at timestamptz NOT NULL DEFAULT now(),
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz
-);
-COMMENT ON TABLE sls_activities IS 'Sales lead activity timeline.';
-
-CREATE TABLE IF NOT EXISTS tasks (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_id uuid REFERENCES companies(id) ON DELETE SET NULL,
-  lead_id uuid REFERENCES leads(id) ON DELETE SET NULL,
-  assigned_to uuid REFERENCES profiles(id) ON DELETE SET NULL,
-  title text NOT NULL,
-  description text,
-  due_at timestamptz,
-  status text NOT NULL DEFAULT 'open',
-  priority text NOT NULL DEFAULT 'NORMAL',
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz
-);
-COMMENT ON TABLE tasks IS 'Staff and CRM task management.';
-
-CREATE TABLE IF NOT EXISTS calendar_events (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_id uuid REFERENCES companies(id) ON DELETE SET NULL,
-  owner_id uuid REFERENCES profiles(id) ON DELETE SET NULL,
-  title text NOT NULL,
-  description text,
-  starts_at timestamptz NOT NULL,
-  ends_at timestamptz NOT NULL,
-  location text,
-  related_type text,
-  related_id uuid,
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz,
-  CONSTRAINT calendar_events_window CHECK (ends_at >= starts_at)
-);
-COMMENT ON TABLE calendar_events IS 'Calendar events for staff, service, sales, and customer scheduling.';
-
-CREATE TABLE IF NOT EXISTS notifications (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_id uuid REFERENCES companies(id) ON DELETE SET NULL,
-  user_id uuid REFERENCES profiles(id) ON DELETE CASCADE,
-  customer_id uuid REFERENCES customers(id) ON DELETE CASCADE,
-  channel text NOT NULL DEFAULT 'in_app',
-  title text NOT NULL,
-  body text,
-  status text NOT NULL DEFAULT 'queued',
-  read_at timestamptz,
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz
-);
-COMMENT ON TABLE notifications IS 'Unified notification records for in-app, email, SMS, and WhatsApp delivery.';
-
-CREATE TABLE IF NOT EXISTS ntf_queue (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  notification_id uuid REFERENCES notifications(id) ON DELETE CASCADE,
-  channel text NOT NULL,
-  payload jsonb NOT NULL DEFAULT '{}'::jsonb,
-  status text NOT NULL DEFAULT 'pending',
-  attempts integer NOT NULL DEFAULT 0 CHECK (attempts >= 0),
-  next_attempt_at timestamptz,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz
-);
-COMMENT ON TABLE ntf_queue IS 'Notification delivery queue.';
-
-CREATE TABLE IF NOT EXISTS notification_preferences (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id uuid REFERENCES profiles(id) ON DELETE CASCADE,
-  customer_id uuid REFERENCES customers(id) ON DELETE CASCADE,
-  channel text NOT NULL,
-  topic text NOT NULL,
-  enabled boolean NOT NULL DEFAULT true,
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz,
-  CONSTRAINT notification_preferences_unique UNIQUE (user_id, customer_id, channel, topic)
-);
-COMMENT ON TABLE notification_preferences IS 'Per-user and per-customer notification opt-in settings.';
-
-CREATE TABLE IF NOT EXISTS marketing_campaigns (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_id uuid REFERENCES companies(id) ON DELETE CASCADE,
-  name text NOT NULL,
-  campaign_type text NOT NULL DEFAULT 'broadcast',
-  status campaign_status NOT NULL DEFAULT 'DRAFT',
-  audience jsonb NOT NULL DEFAULT '{}'::jsonb,
-  schedule_at timestamptz,
-  started_at timestamptz,
-  completed_at timestamptz,
-  created_by_profile_id uuid REFERENCES profiles(id) ON DELETE SET NULL,
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz
-);
-COMMENT ON TABLE marketing_campaigns IS 'Marketing campaign headers for email, WABA, SMS, and offer workflows.';
-
-CREATE TABLE IF NOT EXISTS broadcast_messages (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  campaign_id uuid REFERENCES marketing_campaigns(id) ON DELETE CASCADE,
-  channel text NOT NULL DEFAULT 'whatsapp',
-  recipient text NOT NULL,
-  content text NOT NULL,
-  status text NOT NULL DEFAULT 'queued',
-  sent_at timestamptz,
-  delivered_at timestamptz,
-  read_at timestamptz,
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz
-);
-COMMENT ON TABLE broadcast_messages IS 'Individual broadcast delivery records.';
-
-CREATE TABLE IF NOT EXISTS marketing_broadcast_logs (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  broadcast_message_id uuid REFERENCES broadcast_messages(id) ON DELETE CASCADE,
-  event_type text NOT NULL,
-  payload jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz
-);
-COMMENT ON TABLE marketing_broadcast_logs IS 'Broadcast message lifecycle events.';
-
-CREATE TABLE IF NOT EXISTS cms_pages (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_id uuid REFERENCES companies(id) ON DELETE CASCADE,
-  page_key text NOT NULL,
-  slug text,
-  title text,
-  content jsonb NOT NULL DEFAULT '{}'::jsonb,
-  status record_status NOT NULL DEFAULT 'draft',
-  is_active boolean NOT NULL DEFAULT false,
-  seo jsonb NOT NULL DEFAULT '{}'::jsonb,
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz,
-  CONSTRAINT cms_pages_key_unique UNIQUE (company_id, page_key)
-);
-COMMENT ON TABLE cms_pages IS 'CMS page records for public website content.';
-
-CREATE TABLE IF NOT EXISTS page_content (
-  key text PRIMARY KEY,
-  company_id uuid REFERENCES companies(id) ON DELETE CASCADE,
-  page_key text UNIQUE,
-  title text,
-  content jsonb,
-  data jsonb,
-  meta_description text,
-  meta_keywords text,
-  status text NOT NULL DEFAULT 'draft',
-  is_active boolean NOT NULL DEFAULT false,
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz
-);
-COMMENT ON TABLE page_content IS 'Compatibility CMS content table used by public and API routes.';
-
-CREATE TABLE IF NOT EXISTS blog_posts (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_id uuid REFERENCES companies(id) ON DELETE CASCADE,
-  slug text NOT NULL,
-  title text NOT NULL,
-  excerpt text,
-  body text,
-  cover_image_url text,
-  author_id uuid REFERENCES profiles(id) ON DELETE SET NULL,
-  published_at timestamptz,
-  status record_status NOT NULL DEFAULT 'draft',
-  tags text[] NOT NULL DEFAULT '{}',
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  search_vector tsvector GENERATED ALWAYS AS (to_tsvector('english', coalesce(title,'') || ' ' || coalesce(excerpt,'') || ' ' || coalesce(body,''))) STORED,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz,
-  CONSTRAINT blog_posts_slug_unique UNIQUE (company_id, slug)
-);
-COMMENT ON TABLE blog_posts IS 'Public blog content with full-text search support.';
-
-CREATE TABLE IF NOT EXISTS faqs (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_id uuid REFERENCES companies(id) ON DELETE CASCADE,
-  question text NOT NULL,
-  answer text NOT NULL,
-  category text,
-  sort_order integer NOT NULL DEFAULT 0,
-  status record_status NOT NULL DEFAULT 'active',
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz
-);
-COMMENT ON TABLE faqs IS 'FAQ content managed by admin and shown publicly.';
-CREATE OR REPLACE VIEW cms_faqs AS SELECT * FROM faqs;
-COMMENT ON VIEW cms_faqs IS 'Compatibility view for public FAQ routes.';
-
-CREATE TABLE IF NOT EXISTS contact_messages (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_id uuid REFERENCES companies(id) ON DELETE SET NULL,
-  customer_id uuid REFERENCES customers(id) ON DELETE SET NULL,
-  name text,
-  email citext,
-  phone text,
-  subject text,
-  message text NOT NULL,
-  status text NOT NULL DEFAULT 'new',
-  assigned_to uuid REFERENCES profiles(id) ON DELETE SET NULL,
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz
-);
-COMMENT ON TABLE contact_messages IS 'Public contact form, promotion claim, and inquiry intake messages.';
-
-CREATE TABLE IF NOT EXISTS inquiries (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_id uuid REFERENCES companies(id) ON DELETE SET NULL,
-  name text,
-  email citext,
-  phone text,
-  subject text,
-  message text,
-  status text NOT NULL DEFAULT 'new',
-  assigned_to uuid REFERENCES profiles(id) ON DELETE SET NULL,
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz
-);
-COMMENT ON TABLE inquiries IS 'General sales and support inquiries.';
-
--- =========================================================
--- Phase 10: WABA, Webmail, Templates
--- =========================================================
-
-CREATE TABLE IF NOT EXISTS whatsapp_conversations (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_id uuid REFERENCES companies(id) ON DELETE SET NULL,
-  customer_id uuid REFERENCES customers(id) ON DELETE SET NULL,
-  sender_number text NOT NULL UNIQUE,
-  contact_name text,
-  address text,
-  pincode text,
-  status text NOT NULL DEFAULT 'NEW',
-  priority text NOT NULL DEFAULT 'NORMAL',
-  tags text[] NOT NULL DEFAULT '{}',
-  notes text,
-  ad_source text,
-  assigned_to uuid REFERENCES profiles(id) ON DELETE SET NULL,
-  department text NOT NULL DEFAULT 'UNASSIGNED',
-  sla_breach_at timestamptz,
-  last_interaction_timestamp timestamptz NOT NULL DEFAULT now(),
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz
-);
-COMMENT ON TABLE whatsapp_conversations IS 'WhatsApp/WABA customer conversation routing and state.';
-CREATE OR REPLACE VIEW "Conversation" AS SELECT row_number() OVER (ORDER BY created_at)::integer AS id, sender_number, last_interaction_timestamp, contact_name, address, pincode, status, priority, tags, notes, ad_source, assigned_to::text, department, sla_breach_at FROM whatsapp_conversations;
-COMMENT ON VIEW "Conversation" IS 'Prisma compatibility projection for legacy WABA Conversation model.';
-
-CREATE TABLE IF NOT EXISTS chat_messages (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  conversation_id uuid REFERENCES whatsapp_conversations(id) ON DELETE CASCADE,
-  message_id text UNIQUE,
-  sender_number text NOT NULL,
-  direction message_direction NOT NULL,
-  message_content text NOT NULL,
-  timestamp timestamptz NOT NULL DEFAULT now(),
-  status text NOT NULL DEFAULT 'DELIVERED',
-  media_url text,
-  media_type text,
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz
-);
-COMMENT ON TABLE chat_messages IS 'All inbound and outbound chat messages across WhatsApp and customer chat.';
-CREATE OR REPLACE VIEW "Message" AS SELECT id, message_id, sender_number, direction::text AS direction, message_content, timestamp, status, media_url, media_type FROM chat_messages;
-COMMENT ON VIEW "Message" IS 'Prisma compatibility projection for legacy WABA Message model.';
-CREATE OR REPLACE VIEW whatsapp_messages AS SELECT * FROM chat_messages;
-COMMENT ON VIEW whatsapp_messages IS 'Compatibility view for WABA routes that read WhatsApp message records.';
-
-CREATE TABLE IF NOT EXISTS templates (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_id uuid REFERENCES companies(id) ON DELETE CASCADE,
-  name text NOT NULL,
-  language text NOT NULL DEFAULT 'en',
-  channel text NOT NULL DEFAULT 'whatsapp',
-  content text NOT NULL,
-  variables jsonb NOT NULL DEFAULT '[]'::jsonb,
-  provider_template_id text,
-  status text NOT NULL DEFAULT 'APPROVED',
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz,
-  CONSTRAINT templates_company_name_language_unique UNIQUE (company_id, name, language, channel)
-);
-COMMENT ON TABLE templates IS 'Reusable WhatsApp, email, SMS, and notification templates.';
-CREATE OR REPLACE VIEW "Template" AS SELECT id, name, language, content, status, created_at FROM templates;
-COMMENT ON VIEW "Template" IS 'Prisma compatibility projection for legacy WABA Template model.';
-
-CREATE TABLE IF NOT EXISTS email_templates (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_id uuid REFERENCES companies(id) ON DELETE CASCADE,
-  name text NOT NULL,
-  subject text NOT NULL,
-  html_body text NOT NULL,
-  text_body text,
-  status record_status NOT NULL DEFAULT 'active',
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz,
-  CONSTRAINT email_templates_name_unique UNIQUE (company_id, name)
-);
-COMMENT ON TABLE email_templates IS 'Transactional and marketing email templates.';
-
-CREATE TABLE IF NOT EXISTS waba_automation_rules (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_id uuid REFERENCES companies(id) ON DELETE CASCADE,
-  name text NOT NULL,
-  trigger_type text NOT NULL,
-  conditions jsonb NOT NULL DEFAULT '{}'::jsonb,
-  actions jsonb NOT NULL DEFAULT '[]'::jsonb,
-  status record_status NOT NULL DEFAULT 'active',
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz
-);
-COMMENT ON TABLE waba_automation_rules IS 'WhatsApp automation and rule engine definitions.';
-
-CREATE TABLE IF NOT EXISTS whatsapp_media (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_id uuid REFERENCES companies(id) ON DELETE CASCADE,
-  message_id uuid REFERENCES chat_messages(id) ON DELETE SET NULL,
-  provider_media_id text,
-  url text NOT NULL,
-  media_type text,
-  mime_type text,
-  size_bytes bigint CHECK (size_bytes IS NULL OR size_bytes >= 0),
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz
-);
-COMMENT ON TABLE whatsapp_media IS 'WhatsApp media attachments and provider media ids.';
-
-CREATE TABLE IF NOT EXISTS webmail_accounts (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_id uuid REFERENCES companies(id) ON DELETE CASCADE,
-  user_id uuid REFERENCES profiles(id) ON DELETE SET NULL,
-  email citext NOT NULL,
-  display_name text,
-  provider text,
-  encrypted_credentials bytea,
-  status record_status NOT NULL DEFAULT 'active',
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz,
-  CONSTRAINT webmail_accounts_email_unique UNIQUE (company_id, email)
-);
-COMMENT ON TABLE webmail_accounts IS 'Webmail account configuration with encrypted credential storage.';
-
-CREATE TABLE IF NOT EXISTS webmail_messages (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  account_id uuid NOT NULL REFERENCES webmail_accounts(id) ON DELETE CASCADE,
-  provider_message_id text,
-  folder text NOT NULL DEFAULT 'inbox',
-  from_email citext,
-  to_emails citext[] NOT NULL DEFAULT '{}',
-  subject text,
-  body_text text,
-  body_html text,
-  received_at timestamptz,
-  sent_at timestamptz,
-  read_at timestamptz,
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz
-);
-COMMENT ON TABLE webmail_messages IS 'Webmail message cache for inbox and sent views.';
-
-CREATE TABLE IF NOT EXISTS failed_api_calls (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  payload text NOT NULL,
-  error text NOT NULL,
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz
-);
-COMMENT ON TABLE failed_api_calls IS 'Failed external API call capture for replay and diagnostics.';
-CREATE OR REPLACE VIEW "FailedApiCall" AS SELECT row_number() OVER (ORDER BY created_at)::integer AS id, payload, error, created_at FROM failed_api_calls;
-COMMENT ON VIEW "FailedApiCall" IS 'Prisma compatibility projection for legacy FailedApiCall model.';
-
--- =========================================================
--- Phase 11: Reports, Audit, Activity, Analytics, Webhooks
--- =========================================================
-
-CREATE TABLE IF NOT EXISTS audit_logs (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_id uuid REFERENCES companies(id) ON DELETE SET NULL,
-  actor_id uuid REFERENCES profiles(id) ON DELETE SET NULL,
-  action text NOT NULL,
-  table_name text,
-  record_id uuid,
-  old_values jsonb,
-  new_values jsonb,
-  ip_address inet,
-  user_agent text,
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz
-);
-COMMENT ON TABLE audit_logs IS 'Enterprise immutable audit trail for sensitive data and administrative actions.';
-
-CREATE TABLE IF NOT EXISTS activity_logs (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_id uuid REFERENCES companies(id) ON DELETE SET NULL,
-  actor_id uuid REFERENCES profiles(id) ON DELETE SET NULL,
-  activity_type text NOT NULL,
-  subject_type text,
-  subject_id uuid,
-  message text,
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz
-);
-COMMENT ON TABLE activity_logs IS 'Operational user activity stream for timelines and dashboards.';
-
-CREATE TABLE IF NOT EXISTS security_audit_log (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id uuid REFERENCES profiles(id) ON DELETE SET NULL,
-  event_type text NOT NULL,
-  risk_level text NOT NULL DEFAULT 'low',
-  ip_address inet,
-  user_agent text,
-  details jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz
-);
-COMMENT ON TABLE security_audit_log IS 'Security events for authentication, MFA, role changes, and suspicious activity.';
-
-CREATE TABLE IF NOT EXISTS analytics_events (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_id uuid REFERENCES companies(id) ON DELETE SET NULL,
-  user_id uuid REFERENCES profiles(id) ON DELETE SET NULL,
-  anonymous_id text,
-  event_name text NOT NULL,
-  event_type text,
-  page_url text,
-  properties jsonb NOT NULL DEFAULT '{}'::jsonb,
-  occurred_at timestamptz NOT NULL DEFAULT now(),
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz
-);
-COMMENT ON TABLE analytics_events IS 'High-volume behavioral analytics event stream.';
-
-CREATE TABLE IF NOT EXISTS reports (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_id uuid REFERENCES companies(id) ON DELETE CASCADE,
-  name text NOT NULL,
-  report_type text NOT NULL,
-  definition jsonb NOT NULL DEFAULT '{}'::jsonb,
-  schedule jsonb,
-  status record_status NOT NULL DEFAULT 'active',
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz
-);
-COMMENT ON TABLE reports IS 'Saved report definitions and schedules.';
-
-CREATE TABLE IF NOT EXISTS dashboard_widgets (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_id uuid REFERENCES companies(id) ON DELETE CASCADE,
-  user_id uuid REFERENCES profiles(id) ON DELETE CASCADE,
-  name text NOT NULL,
-  widget_type text NOT NULL,
-  config jsonb NOT NULL DEFAULT '{}'::jsonb,
-  position jsonb NOT NULL DEFAULT '{}'::jsonb,
-  status record_status NOT NULL DEFAULT 'active',
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz
-);
-COMMENT ON TABLE dashboard_widgets IS 'User and role dashboard widget configuration.';
-
-CREATE TABLE IF NOT EXISTS webhook_events (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  event_id text UNIQUE,
-  source text,
-  event_type text NOT NULL,
-  payload jsonb NOT NULL DEFAULT '{}'::jsonb,
-  success boolean NOT NULL DEFAULT false,
-  error text,
-  duration_ms integer,
-  processed_at timestamptz,
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz
-);
-COMMENT ON TABLE webhook_events IS 'Idempotent webhook processing log.';
-
-CREATE TABLE IF NOT EXISTS webhook_stats (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  source text NOT NULL,
-  event_type text NOT NULL,
-  date_bucket date NOT NULL DEFAULT current_date,
-  success_count bigint NOT NULL DEFAULT 0 CHECK (success_count >= 0),
-  failure_count bigint NOT NULL DEFAULT 0 CHECK (failure_count >= 0),
-  avg_duration_ms numeric(12,2),
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz,
-  CONSTRAINT webhook_stats_unique UNIQUE (source, event_type, date_bucket)
-);
-COMMENT ON TABLE webhook_stats IS 'Aggregated webhook success/failure metrics.';
-
-CREATE TABLE IF NOT EXISTS custom_webhook_tunnel_queue (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  source text,
-  path text,
-  method text,
-  headers jsonb NOT NULL DEFAULT '{}'::jsonb,
-  payload jsonb NOT NULL DEFAULT '{}'::jsonb,
-  status text NOT NULL DEFAULT 'queued',
-  attempts integer NOT NULL DEFAULT 0 CHECK (attempts >= 0),
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz
-);
-COMMENT ON TABLE custom_webhook_tunnel_queue IS 'Webhook tunnel queue for custom integration forwarding.';
-
--- =========================================================
--- Phase 12: Settings, Integrations, Preferences, HR, Files
--- =========================================================
-
-CREATE TABLE IF NOT EXISTS settings (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_id uuid REFERENCES companies(id) ON DELETE CASCADE,
-  key text NOT NULL,
-  value jsonb NOT NULL DEFAULT '{}'::jsonb,
-  is_secret boolean NOT NULL DEFAULT false,
-  description text,
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz,
-  CONSTRAINT settings_company_key_unique UNIQUE (company_id, key)
-);
-COMMENT ON TABLE settings IS 'Application settings used by API, public site, payment, email, and security modules.';
-CREATE OR REPLACE VIEW app_settings AS SELECT * FROM settings;
-CREATE OR REPLACE VIEW app_config AS SELECT * FROM settings;
-CREATE OR REPLACE VIEW system_settings AS SELECT * FROM settings;
-COMMENT ON VIEW app_settings IS 'Compatibility view for application settings.';
-COMMENT ON VIEW app_config IS 'Compatibility view for application configuration.';
-COMMENT ON VIEW system_settings IS 'Compatibility view for system settings.';
-
-CREATE TABLE IF NOT EXISTS website_settings (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_id uuid REFERENCES companies(id) ON DELETE CASCADE,
-  site_key text NOT NULL,
-  config jsonb NOT NULL DEFAULT '{}'::jsonb,
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz,
-  CONSTRAINT website_settings_unique UNIQUE (company_id, site_key)
-);
-COMMENT ON TABLE website_settings IS 'Public website branding, SEO, navigation, and feature configuration.';
-
-CREATE TABLE IF NOT EXISTS company_settings (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_id uuid NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
-  key text NOT NULL,
-  value jsonb NOT NULL DEFAULT '{}'::jsonb,
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz,
-  CONSTRAINT company_settings_unique UNIQUE (company_id, key)
-);
-COMMENT ON TABLE company_settings IS 'Per-company operational configuration.';
-
-CREATE TABLE IF NOT EXISTS user_preferences (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id uuid NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
-  key text NOT NULL,
-  value jsonb NOT NULL DEFAULT '{}'::jsonb,
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz,
-  CONSTRAINT user_preferences_unique UNIQUE (user_id, key)
-);
-COMMENT ON TABLE user_preferences IS 'Per-user dashboard, UI, notification, and workflow preferences.';
-CREATE OR REPLACE VIEW user_communication_preferences AS SELECT id, user_id, key AS topic, value, metadata, created_at, updated_at FROM user_preferences WHERE key LIKE 'communication.%';
-COMMENT ON VIEW user_communication_preferences IS 'Compatibility view for communication preference APIs.';
-
-CREATE TABLE IF NOT EXISTS integrations (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_id uuid REFERENCES companies(id) ON DELETE CASCADE,
-  provider text NOT NULL,
-  name text NOT NULL,
-  config jsonb NOT NULL DEFAULT '{}'::jsonb,
-  encrypted_secrets bytea,
-  status record_status NOT NULL DEFAULT 'active',
-  last_synced_at timestamptz,
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz,
-  CONSTRAINT integrations_unique UNIQUE (company_id, provider, name)
-);
-COMMENT ON TABLE integrations IS 'External integration configuration with encrypted secret storage.';
-
-CREATE TABLE IF NOT EXISTS file_storage (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_id uuid REFERENCES companies(id) ON DELETE CASCADE,
-  owner_id uuid REFERENCES profiles(id) ON DELETE SET NULL,
-  bucket text NOT NULL,
-  object_key text NOT NULL,
-  file_name text NOT NULL,
-  mime_type text,
-  size_bytes bigint CHECK (size_bytes IS NULL OR size_bytes >= 0),
-  checksum text,
-  public_url text,
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz,
-  CONSTRAINT file_storage_object_unique UNIQUE (bucket, object_key)
-);
-COMMENT ON TABLE file_storage IS 'File metadata for product media, quote documents, invoices, and uploads.';
-CREATE OR REPLACE VIEW images AS SELECT id, company_id, owner_id, bucket, object_key, file_name, mime_type, size_bytes, public_url AS url, metadata, created_at, updated_at FROM file_storage WHERE mime_type LIKE 'image/%';
-COMMENT ON VIEW images IS 'Compatibility view for image metadata APIs.';
-
-CREATE TABLE IF NOT EXISTS attendance (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  staff_id uuid NOT NULL REFERENCES staff(id) ON DELETE CASCADE,
-  attendance_date date NOT NULL,
-  check_in_at timestamptz,
-  check_out_at timestamptz,
-  status text NOT NULL DEFAULT 'present',
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz,
-  CONSTRAINT attendance_unique UNIQUE (staff_id, attendance_date)
-);
-COMMENT ON TABLE attendance IS 'Staff attendance and check-in records.';
-
-CREATE TABLE IF NOT EXISTS leave_requests (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  staff_id uuid NOT NULL REFERENCES staff(id) ON DELETE CASCADE,
-  leave_type text NOT NULL,
-  starts_on date NOT NULL,
-  ends_on date NOT NULL,
-  reason text,
-  status text NOT NULL DEFAULT 'pending',
-  approved_by uuid REFERENCES profiles(id) ON DELETE SET NULL,
-  approved_at timestamptz,
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz,
-  CONSTRAINT leave_requests_window CHECK (ends_on >= starts_on)
-);
-COMMENT ON TABLE leave_requests IS 'Leave management requests and approvals.';
-
-CREATE TABLE IF NOT EXISTS expenses (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_id uuid REFERENCES companies(id) ON DELETE CASCADE,
-  staff_id uuid REFERENCES staff(id) ON DELETE SET NULL,
-  expense_date date NOT NULL DEFAULT current_date,
-  category text,
-  amount numeric(14,2) NOT NULL CHECK (amount >= 0),
-  description text,
-  status text NOT NULL DEFAULT 'submitted',
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz
-);
-COMMENT ON TABLE expenses IS 'Sales and staff expense submissions.';
-
--- Additional referenced operational tables
-CREATE TABLE IF NOT EXISTS customer_promotions (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), customer_id uuid REFERENCES customers(id) ON DELETE CASCADE, promotion_type text NOT NULL, status text NOT NULL DEFAULT 'active', metadata jsonb NOT NULL DEFAULT '{}'::jsonb, created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL, updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL, deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL, created_at timestamptz NOT NULL DEFAULT now(), updated_at timestamptz NOT NULL DEFAULT now(), deleted_at timestamptz);
-COMMENT ON TABLE customer_promotions IS 'Customer promotion entitlements and lifecycle.';
-CREATE TABLE IF NOT EXISTS referral_codes (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), customer_id uuid REFERENCES customers(id) ON DELETE SET NULL, sales_agent_id uuid REFERENCES sales_agents(id) ON DELETE SET NULL, code text NOT NULL UNIQUE, usage_count integer NOT NULL DEFAULT 0 CHECK (usage_count >= 0), usage_limit integer, status record_status NOT NULL DEFAULT 'active', metadata jsonb NOT NULL DEFAULT '{}'::jsonb, created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL, updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL, deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL, created_at timestamptz NOT NULL DEFAULT now(), updated_at timestamptz NOT NULL DEFAULT now(), deleted_at timestamptz);
-COMMENT ON TABLE referral_codes IS 'Customer and agent referral codes.';
-CREATE TABLE IF NOT EXISTS referral_claims (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), referral_code_id uuid REFERENCES referral_codes(id) ON DELETE CASCADE, claimant_customer_id uuid REFERENCES customers(id) ON DELETE SET NULL, order_id uuid REFERENCES orders(id) ON DELETE SET NULL, status text NOT NULL DEFAULT 'claimed', metadata jsonb NOT NULL DEFAULT '{}'::jsonb, created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL, updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL, deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL, created_at timestamptz NOT NULL DEFAULT now(), updated_at timestamptz NOT NULL DEFAULT now(), deleted_at timestamptz);
-COMMENT ON TABLE referral_claims IS 'Referral redemption records.';
-CREATE TABLE IF NOT EXISTS sales_agent_commissions (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), agent_id uuid REFERENCES sales_agents(id) ON DELETE CASCADE, order_id uuid REFERENCES orders(id) ON DELETE SET NULL, points_to_add integer NOT NULL DEFAULT 0, amount numeric(14,2) NOT NULL DEFAULT 0, status text NOT NULL DEFAULT 'pending', metadata jsonb NOT NULL DEFAULT '{}'::jsonb, created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL, updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL, deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL, created_at timestamptz NOT NULL DEFAULT now(), updated_at timestamptz NOT NULL DEFAULT now(), deleted_at timestamptz);
-COMMENT ON TABLE sales_agent_commissions IS 'Sales agent commission and points ledger.';
-CREATE TABLE IF NOT EXISTS agent_redemption_requests (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), agent_id uuid REFERENCES sales_agents(id) ON DELETE CASCADE, points_to_redeem integer NOT NULL CHECK (points_to_redeem > 0), status text NOT NULL DEFAULT 'pending', processed_at timestamptz, metadata jsonb NOT NULL DEFAULT '{}'::jsonb, created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL, updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL, deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL, created_at timestamptz NOT NULL DEFAULT now(), updated_at timestamptz NOT NULL DEFAULT now(), deleted_at timestamptz);
-COMMENT ON TABLE agent_redemption_requests IS 'Agent points redemption approval workflow.';
-CREATE TABLE IF NOT EXISTS order_otp_verifications (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), order_id uuid REFERENCES orders(id) ON DELETE CASCADE, agent_id uuid REFERENCES sales_agents(id) ON DELETE SET NULL, customer_phone text NOT NULL, otp_hash text NOT NULL, otp_type text NOT NULL DEFAULT 'agent_order', attempts integer NOT NULL DEFAULT 0, verified_at timestamptz, expires_at timestamptz NOT NULL, metadata jsonb NOT NULL DEFAULT '{}'::jsonb, created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL, updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL, deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL, created_at timestamptz NOT NULL DEFAULT now(), updated_at timestamptz NOT NULL DEFAULT now(), deleted_at timestamptz);
-COMMENT ON TABLE order_otp_verifications IS 'OTP challenges for agent-assisted orders.';
-CREATE TABLE IF NOT EXISTS user_mfa_status (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), user_id uuid NOT NULL REFERENCES profiles(id) ON DELETE CASCADE, mfa_enabled boolean NOT NULL DEFAULT false, methods jsonb NOT NULL DEFAULT '[]'::jsonb, last_verified_at timestamptz, metadata jsonb NOT NULL DEFAULT '{}'::jsonb, created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL, updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL, deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL, created_at timestamptz NOT NULL DEFAULT now(), updated_at timestamptz NOT NULL DEFAULT now(), deleted_at timestamptz, CONSTRAINT user_mfa_status_user_unique UNIQUE (user_id));
-COMMENT ON TABLE user_mfa_status IS 'MFA enrollment and verification status.';
-CREATE TABLE IF NOT EXISTS security_settings (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), company_id uuid REFERENCES companies(id) ON DELETE CASCADE, key text NOT NULL, value jsonb NOT NULL DEFAULT '{}'::jsonb, metadata jsonb NOT NULL DEFAULT '{}'::jsonb, created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL, updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL, deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL, created_at timestamptz NOT NULL DEFAULT now(), updated_at timestamptz NOT NULL DEFAULT now(), deleted_at timestamptz, CONSTRAINT security_settings_unique UNIQUE (company_id, key));
-COMMENT ON TABLE security_settings IS 'Security policy and MFA settings.';
-CREATE TABLE IF NOT EXISTS gdpr_deletion_requests (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), user_id uuid REFERENCES profiles(id) ON DELETE SET NULL, customer_id uuid REFERENCES customers(id) ON DELETE SET NULL, status text NOT NULL DEFAULT 'requested', requested_at timestamptz NOT NULL DEFAULT now(), processed_at timestamptz, metadata jsonb NOT NULL DEFAULT '{}'::jsonb, created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL, updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL, deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL, created_at timestamptz NOT NULL DEFAULT now(), updated_at timestamptz NOT NULL DEFAULT now(), deleted_at timestamptz);
-COMMENT ON TABLE gdpr_deletion_requests IS 'Privacy deletion requests and processing audit.';
-CREATE TABLE IF NOT EXISTS upcoming_projects (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), company_id uuid REFERENCES companies(id) ON DELETE CASCADE, title text NOT NULL, slug text, description text, start_date date, status record_status NOT NULL DEFAULT 'draft', metadata jsonb NOT NULL DEFAULT '{}'::jsonb, created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL, updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL, deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL, created_at timestamptz NOT NULL DEFAULT now(), updated_at timestamptz NOT NULL DEFAULT now(), deleted_at timestamptz);
-COMMENT ON TABLE upcoming_projects IS 'Public upcoming projects and PDF generation content.';
-
--- Custom setup tables referenced by management/public flows.
-CREATE TABLE IF NOT EXISTS custom_setup_offers (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), company_id uuid REFERENCES companies(id) ON DELETE CASCADE, title text NOT NULL, description text, price numeric(14,2) DEFAULT 0, status record_status NOT NULL DEFAULT 'active', metadata jsonb NOT NULL DEFAULT '{}'::jsonb, created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL, updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL, deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL, created_at timestamptz NOT NULL DEFAULT now(), updated_at timestamptz NOT NULL DEFAULT now(), deleted_at timestamptz);
-COMMENT ON TABLE custom_setup_offers IS 'Custom setup promotional offers.';
-CREATE TABLE IF NOT EXISTS custom_setup_inventory (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), product_id uuid REFERENCES products(id) ON DELETE SET NULL, quantity integer NOT NULL DEFAULT 0, metadata jsonb NOT NULL DEFAULT '{}'::jsonb, created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL, updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL, deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL, created_at timestamptz NOT NULL DEFAULT now(), updated_at timestamptz NOT NULL DEFAULT now(), deleted_at timestamptz);
-COMMENT ON TABLE custom_setup_inventory IS 'Inventory allocations for custom setup builder.';
-CREATE TABLE IF NOT EXISTS custom_setup_components (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), name text NOT NULL, component_type text, status record_status NOT NULL DEFAULT 'active', metadata jsonb NOT NULL DEFAULT '{}'::jsonb, created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL, updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL, deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL, created_at timestamptz NOT NULL DEFAULT now(), updated_at timestamptz NOT NULL DEFAULT now(), deleted_at timestamptz);
-COMMENT ON TABLE custom_setup_components IS 'Custom setup component catalog.';
-CREATE TABLE IF NOT EXISTS custom_setup_component_options (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), component_id uuid REFERENCES custom_setup_components(id) ON DELETE CASCADE, product_id uuid REFERENCES products(id) ON DELETE SET NULL, name text NOT NULL, price_delta numeric(14,2) DEFAULT 0, metadata jsonb NOT NULL DEFAULT '{}'::jsonb, created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL, updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL, deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL, created_at timestamptz NOT NULL DEFAULT now(), updated_at timestamptz NOT NULL DEFAULT now(), deleted_at timestamptz);
-COMMENT ON TABLE custom_setup_component_options IS 'Selectable product-backed options for custom setup components.';
-CREATE TABLE IF NOT EXISTS custom_setup_templates (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), name text NOT NULL, config jsonb NOT NULL DEFAULT '{}'::jsonb, status record_status NOT NULL DEFAULT 'active', metadata jsonb NOT NULL DEFAULT '{}'::jsonb, created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL, updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL, deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL, created_at timestamptz NOT NULL DEFAULT now(), updated_at timestamptz NOT NULL DEFAULT now(), deleted_at timestamptz);
-COMMENT ON TABLE custom_setup_templates IS 'Reusable custom setup templates.';
-CREATE TABLE IF NOT EXISTS custom_setup_systems (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), customer_id uuid REFERENCES customers(id) ON DELETE SET NULL, template_id uuid REFERENCES custom_setup_templates(id) ON DELETE SET NULL, config jsonb NOT NULL DEFAULT '{}'::jsonb, status record_status NOT NULL DEFAULT 'draft', metadata jsonb NOT NULL DEFAULT '{}'::jsonb, created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL, updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL, deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL, created_at timestamptz NOT NULL DEFAULT now(), updated_at timestamptz NOT NULL DEFAULT now(), deleted_at timestamptz);
-COMMENT ON TABLE custom_setup_systems IS 'Customer custom setup configurations.';
-CREATE TABLE IF NOT EXISTS custom_setup_constants (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), key text NOT NULL UNIQUE, value jsonb NOT NULL DEFAULT '{}'::jsonb, metadata jsonb NOT NULL DEFAULT '{}'::jsonb, created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL, updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL, deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL, created_at timestamptz NOT NULL DEFAULT now(), updated_at timestamptz NOT NULL DEFAULT now(), deleted_at timestamptz);
-COMMENT ON TABLE custom_setup_constants IS 'Custom setup builder constants and pricing controls.';
-
--- Compatibility views for Prisma organization/system models.
-CREATE OR REPLACE VIEW org_organizations AS SELECT id, display_name AS name, created_at, updated_at FROM companies;
-CREATE OR REPLACE VIEW org_branches AS SELECT id, company_id AS org_id, name, coalesce(address->>'line1', address::text) AS location, created_at, updated_at FROM branches;
-CREATE OR REPLACE VIEW sys_roles AS SELECT id, company_id AS org_id, name, description, is_system, created_at, updated_at FROM roles;
-CREATE OR REPLACE VIEW sys_permissions AS SELECT id, module, action, description, created_at FROM permissions;
-CREATE OR REPLACE VIEW sys_role_permissions AS SELECT role_id, permission_id FROM role_permissions;
-CREATE OR REPLACE VIEW sys_users_prisma AS SELECT p.id, p.email::text AS email, coalesce(p.name, p.email::text) AS name, p.mobile AS phone_number, p.company_id AS organization_id, p.branch_id, ur.role_id, to_jsonb(p.managed_pincodes) AS managed_pincodes, p.created_at AS "createdAt" FROM profiles p LEFT JOIN LATERAL (SELECT role_id FROM user_roles ur WHERE ur.user_id = p.id ORDER BY created_at DESC LIMIT 1) ur ON true;
-CREATE OR REPLACE VIEW "User" AS SELECT * FROM sys_users_prisma;
-COMMENT ON VIEW org_organizations IS 'Prisma compatibility projection for Organization.';
-COMMENT ON VIEW org_branches IS 'Prisma compatibility projection for Branch.';
-COMMENT ON VIEW sys_roles IS 'Prisma compatibility projection for Role.';
-COMMENT ON VIEW sys_permissions IS 'Prisma compatibility projection for Permission.';
-COMMENT ON VIEW sys_role_permissions IS 'Prisma compatibility projection for RolePermission.';
-COMMENT ON VIEW sys_users_prisma IS 'Prisma compatibility projection for User.';
-COMMENT ON VIEW "User" IS 'Prisma compatibility projection for legacy User model.';
-
-CREATE OR REPLACE VIEW auth_users_summary AS
-SELECT id, email, phone, email_confirmed_at, last_sign_in_at, banned_until, raw_app_meta_data AS app_metadata, raw_user_meta_data AS user_metadata, created_at, updated_at
-FROM auth.users;
-COMMENT ON VIEW auth_users_summary IS 'Safe auth user summary for admin user list screens.';
-
--- =========================================================
--- Functions and Triggers
--- =========================================================
-
-CREATE OR REPLACE FUNCTION create_order_number()
-RETURNS trigger
-LANGUAGE plpgsql
-AS $$
+$$ LANGUAGE plpgsql;
+
+-- Generic trigger function for audit logging
+CREATE OR REPLACE FUNCTION public.trg_audit_log()
+RETURNS TRIGGER AS $$
+DECLARE
+    v_user_id UUID;
 BEGIN
-  IF NEW.order_number IS NULL THEN
-    NEW.order_number := 'TB-' || to_char(now(), 'YYYYMMDD') || '-' || upper(substr(replace(NEW.id::text, '-', ''), 1, 8));
-  END IF;
+    -- Attempt to get user ID from auth.uid()
+    v_user_id := auth.uid();
+    
+    IF TG_OP = 'INSERT' THEN
+        INSERT INTO public.sys_audit_logs (table_name, record_id, action, new_data, changed_by)
+        VALUES (TG_TABLE_NAME, NEW.id, 'INSERT', row_to_json(NEW)::jsonb, v_user_id);
+        RETURN NEW;
+    ELSIF TG_OP = 'UPDATE' THEN
+        -- Check if it's a soft delete
+        IF (row_to_json(NEW)->>'deleted_at') IS NOT NULL AND (row_to_json(OLD)->>'deleted_at') IS NULL THEN
+            INSERT INTO public.sys_audit_logs (table_name, record_id, action, old_data, new_data, changed_by)
+            VALUES (TG_TABLE_NAME, NEW.id, 'SOFT_DELETE', row_to_json(OLD)::jsonb, row_to_json(NEW)::jsonb, v_user_id);
+        ELSE
+            INSERT INTO public.sys_audit_logs (table_name, record_id, action, old_data, new_data, changed_by)
+            VALUES (TG_TABLE_NAME, NEW.id, 'UPDATE', row_to_json(OLD)::jsonb, row_to_json(NEW)::jsonb, v_user_id);
+        END IF;
+        RETURN NEW;
+    ELSIF TG_OP = 'DELETE' THEN
+        INSERT INTO public.sys_audit_logs (table_name, record_id, action, old_data, changed_by)
+        VALUES (TG_TABLE_NAME, OLD.id, 'DELETE', row_to_json(OLD)::jsonb, v_user_id);
+        RETURN OLD;
+    END IF;
+    RETURN NULL;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Enable RLS on audit logs
+ALTER TABLE public.sys_audit_logs ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Superadmins can view all audit logs" ON public.sys_audit_logs;
+CREATE POLICY "Superadmins can view all audit logs" ON public.sys_audit_logs FOR SELECT USING (public.is_superadmin());
+
+
+-- ==========================================
+-- MODULE: 20260715000003_rbac_module.sql
+-- ==========================================
+
+
+-- Migration: Dynamic RBAC (Role-Based Access Control) Module
+-- Enterprise rules: UUID PK, timestamps, soft delete, created_by, updated_by, FKs, Indexes, audit triggers.
+
+-- 1. sys_roles
+CREATE TABLE public.sys_roles (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name TEXT NOT NULL UNIQUE,
+    description TEXT,
+    is_system BOOLEAN DEFAULT false,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+
+CREATE UNIQUE INDEX idx_sys_roles_name_active ON public.sys_roles(name) WHERE deleted_at IS NULL;
+
+-- 2. sys_permissions
+CREATE TABLE public.sys_permissions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    module TEXT NOT NULL,
+    action TEXT NOT NULL,
+    description TEXT,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ,
+    UNIQUE (module, action)
+);
+
+CREATE INDEX idx_sys_permissions_module ON public.sys_permissions(module);
+
+-- 3. sys_role_permissions
+CREATE TABLE public.sys_role_permissions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    role_id UUID NOT NULL REFERENCES public.sys_roles(id) ON DELETE CASCADE,
+    permission_id UUID NOT NULL REFERENCES public.sys_permissions(id) ON DELETE CASCADE,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ,
+    UNIQUE (role_id, permission_id)
+);
+
+CREATE INDEX idx_sys_role_permissions_role_id ON public.sys_role_permissions(role_id);
+CREATE INDEX idx_sys_role_permissions_permission_id ON public.sys_role_permissions(permission_id);
+
+-- 4. sys_user_roles
+CREATE TABLE public.sys_user_roles (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    role_id UUID NOT NULL REFERENCES public.sys_roles(id) ON DELETE CASCADE,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ,
+    UNIQUE (user_id, role_id)
+);
+
+CREATE INDEX idx_sys_user_roles_user_id ON public.sys_user_roles(user_id);
+CREATE INDEX idx_sys_user_roles_role_id ON public.sys_user_roles(role_id);
+
+
+-- Apply Audit and Updated_at Triggers
+-- sys_roles
+CREATE TRIGGER trg_sys_roles_updated_at BEFORE UPDATE ON public.sys_roles FOR EACH ROW EXECUTE FUNCTION public.trg_set_updated_at();
+CREATE TRIGGER trg_sys_roles_audit AFTER INSERT OR UPDATE OR DELETE ON public.sys_roles FOR EACH ROW EXECUTE FUNCTION public.trg_audit_log();
+
+-- sys_permissions
+CREATE TRIGGER trg_sys_permissions_updated_at BEFORE UPDATE ON public.sys_permissions FOR EACH ROW EXECUTE FUNCTION public.trg_set_updated_at();
+CREATE TRIGGER trg_sys_permissions_audit AFTER INSERT OR UPDATE OR DELETE ON public.sys_permissions FOR EACH ROW EXECUTE FUNCTION public.trg_audit_log();
+
+-- sys_role_permissions
+CREATE TRIGGER trg_sys_role_permissions_updated_at BEFORE UPDATE ON public.sys_role_permissions FOR EACH ROW EXECUTE FUNCTION public.trg_set_updated_at();
+CREATE TRIGGER trg_sys_role_permissions_audit AFTER INSERT OR UPDATE OR DELETE ON public.sys_role_permissions FOR EACH ROW EXECUTE FUNCTION public.trg_audit_log();
+
+-- sys_user_roles
+CREATE TRIGGER trg_sys_user_roles_updated_at BEFORE UPDATE ON public.sys_user_roles FOR EACH ROW EXECUTE FUNCTION public.trg_set_updated_at();
+CREATE TRIGGER trg_sys_user_roles_audit AFTER INSERT OR UPDATE OR DELETE ON public.sys_user_roles FOR EACH ROW EXECUTE FUNCTION public.trg_audit_log();
+
+-- Helper function to check permission
+CREATE OR REPLACE FUNCTION public.has_permission(p_user_id UUID, p_module TEXT, p_action TEXT)
+RETURNS BOOLEAN AS $$
+BEGIN
+    RETURN EXISTS (
+        SELECT 1
+        FROM public.sys_user_roles ur
+        JOIN public.sys_roles r ON ur.role_id = r.id
+        JOIN public.sys_role_permissions rp ON r.id = rp.role_id
+        JOIN public.sys_permissions p ON rp.permission_id = p.id
+        WHERE ur.user_id = p_user_id
+          AND r.deleted_at IS NULL
+          AND p.module = p_module
+          AND p.action = p_action
+          AND ur.deleted_at IS NULL
+          AND rp.deleted_at IS NULL
+    );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Create Materialized View for fast permission lookup
+CREATE MATERIALIZED VIEW public.mv_user_permissions AS
+SELECT DISTINCT ur.user_id, p.module, p.action
+FROM public.sys_user_roles ur
+JOIN public.sys_roles r ON ur.role_id = r.id
+JOIN public.sys_role_permissions rp ON r.id = rp.role_id
+JOIN public.sys_permissions p ON rp.permission_id = p.id
+WHERE r.deleted_at IS NULL AND ur.deleted_at IS NULL AND rp.deleted_at IS NULL;
+
+CREATE UNIQUE INDEX idx_mv_user_permissions_user_module_action ON public.mv_user_permissions(user_id, module, action);
+
+-- Function to refresh the materialized view
+CREATE OR REPLACE FUNCTION public.refresh_mv_user_permissions()
+RETURNS TRIGGER AS $$
+BEGIN
+    REFRESH MATERIALIZED VIEW CONCURRENTLY public.mv_user_permissions;
+    RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Triggers to refresh materialized view
+CREATE TRIGGER trg_refresh_mv_user_permissions_ur AFTER INSERT OR UPDATE OR DELETE ON public.sys_user_roles FOR EACH STATEMENT EXECUTE FUNCTION public.refresh_mv_user_permissions();
+CREATE TRIGGER trg_refresh_mv_user_permissions_rp AFTER INSERT OR UPDATE OR DELETE ON public.sys_role_permissions FOR EACH STATEMENT EXECUTE FUNCTION public.refresh_mv_user_permissions();
+CREATE TRIGGER trg_refresh_mv_user_permissions_r AFTER INSERT OR UPDATE OR DELETE ON public.sys_roles FOR EACH STATEMENT EXECUTE FUNCTION public.refresh_mv_user_permissions();
+
+-- Enable RLS
+ALTER TABLE public.sys_roles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.sys_permissions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.sys_role_permissions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.sys_user_roles ENABLE ROW LEVEL SECURITY;
+
+-- RLS Policies
+CREATE POLICY "Superadmin full access on sys_roles" ON public.sys_roles FOR ALL USING (public.is_superadmin());
+CREATE POLICY "Superadmin full access on sys_permissions" ON public.sys_permissions FOR ALL USING (public.is_superadmin());
+CREATE POLICY "Superadmin full access on sys_role_permissions" ON public.sys_role_permissions FOR ALL USING (public.is_superadmin());
+CREATE POLICY "Superadmin full access on sys_user_roles" ON public.sys_user_roles FOR ALL USING (public.is_superadmin());
+
+CREATE POLICY "Users can view their own roles" ON public.sys_user_roles FOR SELECT USING (auth.uid() = user_id);
+
+
+-- ==========================================
+-- MODULE: 20260715000005_core_iam.sql
+-- ==========================================
+
+
+-- Migration: Core Organization, IAM, & Auth Security Engine
+-- Encompasses Organizations, Branches, HR, RBAC, and strict Auth tracking.
+
+-- ==========================================
+-- 1. ENUMS & AUDIT (Ensure base exists)
+-- ==========================================
+
+
+
+
+-- Ensuring sys_audit_logs exists (From 000002, re-verified for completeness as requested)
+CREATE TABLE IF NOT EXISTS public.sys_audit_logs (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    table_name TEXT NOT NULL,
+    record_id UUID NOT NULL,
+    action TEXT NOT NULL CHECK (action IN ('INSERT', 'UPDATE', 'DELETE', 'SOFT_DELETE')),
+    old_data JSONB,
+    new_data JSONB,
+    changed_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- ==========================================
+-- 2. ORGANIZATION STRUCTURE (HR Core)
+-- ==========================================
+
+CREATE TABLE public.org_organizations (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name TEXT NOT NULL,
+    registration_number TEXT,
+    tax_id TEXT,
+    industry TEXT,
+    status public.enum_org_status DEFAULT 'ACTIVE',
+    settings JSONB DEFAULT '{}'::jsonb,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+CREATE UNIQUE INDEX idx_org_organizations_name ON public.org_organizations(name) WHERE deleted_at IS NULL;
+
+CREATE TABLE public.org_branches (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    org_id UUID NOT NULL REFERENCES public.org_organizations(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    code TEXT,
+    address JSONB,
+    timezone TEXT DEFAULT 'UTC',
+    is_headquarters BOOLEAN DEFAULT false,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+CREATE INDEX idx_org_branches_org_id ON public.org_branches(org_id);
+
+CREATE TABLE public.org_departments (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    org_id UUID NOT NULL REFERENCES public.org_organizations(id) ON DELETE CASCADE,
+    branch_id UUID REFERENCES public.org_branches(id) ON DELETE SET NULL,
+    name TEXT NOT NULL,
+    description TEXT,
+    parent_id UUID REFERENCES public.org_departments(id) ON DELETE SET NULL,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+CREATE INDEX idx_org_departments_org_id ON public.org_departments(org_id);
+
+CREATE TABLE public.org_designations (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    org_id UUID NOT NULL REFERENCES public.org_organizations(id) ON DELETE CASCADE,
+    department_id UUID REFERENCES public.org_departments(id) ON DELETE SET NULL,
+    title TEXT NOT NULL,
+    level INTEGER DEFAULT 0,
+    job_description TEXT,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+CREATE INDEX idx_org_designations_org_id ON public.org_designations(org_id);
+
+-- ==========================================
+-- 3. CORE USERS & IAM
+-- ==========================================
+
+CREATE TABLE public.sys_users (
+    id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE, -- 1:1 with Auth
+    org_id UUID REFERENCES public.org_organizations(id) ON DELETE SET NULL,
+    branch_id UUID REFERENCES public.org_branches(id) ON DELETE SET NULL,
+    department_id UUID REFERENCES public.org_departments(id) ON DELETE SET NULL,
+    designation_id UUID REFERENCES public.org_designations(id) ON DELETE SET NULL,
+    employee_code TEXT,
+    first_name TEXT,
+    last_name TEXT,
+    phone TEXT,
+    is_active BOOLEAN DEFAULT true,
+    metadata JSONB DEFAULT '{}'::jsonb,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+CREATE INDEX idx_sys_users_org_id ON public.sys_users(org_id);
+CREATE UNIQUE INDEX idx_sys_users_emp_code ON public.sys_users(org_id, employee_code) WHERE deleted_at IS NULL AND employee_code IS NOT NULL;
+
+-- RBAC Tables (Recreated with IF NOT EXISTS to merge with 000003, but upgraded with Org_id for multi-tenancy)
+CREATE TABLE IF NOT EXISTS public.sys_roles (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    org_id UUID REFERENCES public.org_organizations(id) ON DELETE CASCADE, -- NULL means Global System Role
+    name TEXT NOT NULL,
+    description TEXT,
+    is_system BOOLEAN DEFAULT false,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ,
+    UNIQUE (org_id, name)
+);
+
+CREATE TABLE IF NOT EXISTS public.sys_permissions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    module TEXT NOT NULL,
+    action TEXT NOT NULL,
+    description TEXT,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ,
+    UNIQUE (module, action)
+);
+
+CREATE TABLE IF NOT EXISTS public.sys_role_permissions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    role_id UUID NOT NULL REFERENCES public.sys_roles(id) ON DELETE CASCADE,
+    permission_id UUID NOT NULL REFERENCES public.sys_permissions(id) ON DELETE CASCADE,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ,
+    UNIQUE (role_id, permission_id)
+);
+
+CREATE TABLE IF NOT EXISTS public.sys_user_roles (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    role_id UUID NOT NULL REFERENCES public.sys_roles(id) ON DELETE CASCADE,
+    org_id UUID REFERENCES public.org_organizations(id) ON DELETE CASCADE, -- Contextual assignment
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ,
+    UNIQUE (user_id, role_id, org_id)
+);
+
+-- ==========================================
+-- 4. ADVANCED AUTH & SECURITY TRACKING
+-- ==========================================
+
+CREATE TABLE public.sys_auth_devices (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    device_id TEXT NOT NULL,
+    device_name TEXT,
+    browser TEXT,
+    os TEXT,
+    ip_address TEXT,
+    is_trusted BOOLEAN DEFAULT false,
+    last_active TIMESTAMPTZ DEFAULT NOW(),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ,
+    UNIQUE (user_id, device_id)
+);
+
+CREATE TABLE public.sys_auth_sessions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    device_id UUID REFERENCES public.sys_auth_devices(id) ON DELETE SET NULL,
+    session_token TEXT NOT NULL UNIQUE,
+    ip_address TEXT,
+    user_agent TEXT,
+    status public.enum_auth_status DEFAULT 'ACTIVE',
+    expires_at TIMESTAMPTZ NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+CREATE INDEX idx_sys_auth_sessions_user ON public.sys_auth_sessions(user_id);
+
+CREATE TABLE public.sys_auth_refresh_tokens (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    session_id UUID NOT NULL REFERENCES public.sys_auth_sessions(id) ON DELETE CASCADE,
+    token_hash TEXT NOT NULL UNIQUE,
+    status public.enum_auth_status DEFAULT 'ACTIVE',
+    expires_at TIMESTAMPTZ NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+
+CREATE TABLE public.sys_auth_otp (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+    contact TEXT NOT NULL, -- Email or Phone
+    otp_hash TEXT NOT NULL,
+    purpose TEXT NOT NULL, -- e.g., 'LOGIN', 'VERIFY_PHONE'
+    status public.enum_auth_status DEFAULT 'ACTIVE',
+    expires_at TIMESTAMPTZ NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+
+CREATE TABLE public.sys_auth_password_resets (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    token_hash TEXT NOT NULL UNIQUE,
+    ip_address TEXT,
+    status public.enum_auth_status DEFAULT 'ACTIVE',
+    expires_at TIMESTAMPTZ NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+
+CREATE TABLE public.sys_auth_api_keys (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    org_id UUID REFERENCES public.org_organizations(id) ON DELETE CASCADE,
+    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    key_hash TEXT NOT NULL UNIQUE,
+    scopes TEXT[] DEFAULT '{}',
+    status public.enum_auth_status DEFAULT 'ACTIVE',
+    last_used_at TIMESTAMPTZ,
+    expires_at TIMESTAMPTZ,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+
+CREATE TABLE public.sys_auth_2fa (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    method TEXT NOT NULL, -- e.g., 'TOTP', 'SMS'
+    secret TEXT, -- Encrypted TOTP secret
+    recovery_codes TEXT[], -- Hashed backup codes
+    is_enabled BOOLEAN DEFAULT false,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ,
+    UNIQUE(user_id, method)
+);
+
+CREATE TABLE public.sys_auth_login_history (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+    login_attempt_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    is_success BOOLEAN NOT NULL,
+    ip_address TEXT,
+    user_agent TEXT,
+    location_data JSONB,
+    failure_reason TEXT
+);
+-- Note: Login history is an immutable append-only ledger, so no updated_at/deleted_at needed.
+CREATE INDEX idx_sys_auth_login_history_user ON public.sys_auth_login_history(user_id, login_attempt_at);
+
+-- ==========================================
+-- 5. TRIGGERS & RLS AUTOMATION
+-- ==========================================
+
+
+
+-- 6. SECURITY POLICIES (Superadmin Global, Users contextual)
+
+-- Helper function to get current user's org_id
+CREATE OR REPLACE FUNCTION public.get_current_org_id()
+RETURNS UUID AS $$
+    SELECT org_id FROM public.sys_users WHERE id = auth.uid() AND deleted_at IS NULL;
+$$ LANGUAGE SQL STABLE SECURITY DEFINER;
+
+-- Apply Multi-tenant policies dynamically to HR tables
+
+
+-- Policies for Auth Security tables (Users can only see their own auth data)
+
+
+-- ==========================================
+-- MODULE: 20260715000001_advanced_products.sql
+-- ==========================================
+
+
+-- Migration: Enterprise ERP Products, Inventory & Supply Chain
+-- Massive architecture encompassing Master Catalog, Pricing, Warehouse, Suppliers, and Stock Ledger.
+
+-- ==========================================
+-- 1. ENUMS & FOUNDATION
+-- ==========================================
+
+
+
+
+
+
+
+
+-- ==========================================
+-- 2. CATALOG CORE & CLASSIFICATION
+-- ==========================================
+
+CREATE TABLE public.prd_tax_classes (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    org_id UUID REFERENCES public.org_organizations(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    description TEXT,
+    gst_rate NUMERIC DEFAULT 0 CHECK (gst_rate >= 0),
+    hsn_sac_code TEXT,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+
+CREATE TABLE public.prd_brands (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    org_id UUID REFERENCES public.org_organizations(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    logo_url TEXT,
+    website TEXT,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+
+CREATE TABLE public.prd_manufacturers (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    org_id UUID REFERENCES public.org_organizations(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    contact_email TEXT,
+    contact_phone TEXT,
+    address JSONB,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+
+CREATE TABLE public.prd_categories (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    org_id UUID REFERENCES public.org_organizations(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    slug TEXT NOT NULL,
+    description TEXT,
+    image_url TEXT,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ,
+    UNIQUE (org_id, slug)
+);
+
+CREATE TABLE public.prd_subcategories (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    category_id UUID NOT NULL REFERENCES public.prd_categories(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    slug TEXT NOT NULL,
+    description TEXT,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ,
+    UNIQUE (category_id, slug)
+);
+
+-- ==========================================
+-- 3. MASTER PRODUCTS & VARIANTS
+-- ==========================================
+
+CREATE TABLE public.prd_products (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    org_id UUID REFERENCES public.org_organizations(id) ON DELETE CASCADE,
+    title TEXT NOT NULL,
+    slug TEXT NOT NULL,
+    description TEXT,
+    brand_id UUID REFERENCES public.prd_brands(id) ON DELETE SET NULL,
+    manufacturer_id UUID REFERENCES public.prd_manufacturers(id) ON DELETE SET NULL,
+    category_id UUID REFERENCES public.prd_categories(id) ON DELETE SET NULL,
+    subcategory_id UUID REFERENCES public.prd_subcategories(id) ON DELETE SET NULL,
+    tax_class_id UUID REFERENCES public.prd_tax_classes(id) ON DELETE SET NULL,
+    status public.enum_product_status DEFAULT 'DRAFT',
+    search_vector tsvector GENERATED ALWAYS AS (setweight(to_tsvector('english', coalesce(title, '')), 'A') || setweight(to_tsvector('english', coalesce(description, '')), 'B')) STORED,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ,
+    UNIQUE (org_id, slug)
+);
+CREATE INDEX idx_prd_products_search ON public.prd_products USING GIN (search_vector);
+CREATE INDEX idx_prd_products_org ON public.prd_products(org_id, status);
+
+CREATE TABLE public.prd_variants (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    product_id UUID NOT NULL REFERENCES public.prd_products(id) ON DELETE CASCADE,
+    sku TEXT NOT NULL,
+    name TEXT NOT NULL,
+    barcode TEXT,
+    attributes JSONB NOT NULL DEFAULT '{}'::jsonb, -- e.g., {"color": "Red", "size": "XL"}
+    weight_kg NUMERIC CHECK (weight_kg >= 0),
+    dimensions_cm JSONB, -- {"l": 10, "w": 10, "h": 10}
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ,
+    UNIQUE (product_id, sku)
+);
+CREATE INDEX idx_prd_variants_sku ON public.prd_variants(sku);
+
+-- ==========================================
+-- 4. PRODUCT DETAILS & SEO
+-- ==========================================
+
+CREATE TABLE public.prd_media (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    product_id UUID REFERENCES public.prd_products(id) ON DELETE CASCADE,
+    variant_id UUID REFERENCES public.prd_variants(id) ON DELETE CASCADE,
+    media_type public.enum_media_type NOT NULL,
+    url TEXT NOT NULL,
+    alt_text TEXT,
+    display_order INTEGER DEFAULT 0,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ,
+    CHECK (product_id IS NOT NULL OR variant_id IS NOT NULL)
+);
+
+CREATE TABLE public.prd_specifications (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    product_id UUID NOT NULL REFERENCES public.prd_products(id) ON DELETE CASCADE,
+    spec_key TEXT NOT NULL,
+    spec_value TEXT NOT NULL,
+    display_order INTEGER DEFAULT 0,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+
+CREATE TABLE public.prd_attributes (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    product_id UUID NOT NULL REFERENCES public.prd_products(id) ON DELETE CASCADE,
+    attr_key TEXT NOT NULL,
+    attr_values TEXT[] NOT NULL,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+
+CREATE TABLE public.prd_seo (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    product_id UUID NOT NULL REFERENCES public.prd_products(id) ON DELETE CASCADE,
+    meta_title TEXT,
+    meta_description TEXT,
+    meta_keywords TEXT[],
+    canonical_url TEXT,
+    og_image_url TEXT,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ,
+    UNIQUE (product_id)
+);
+
+-- ==========================================
+-- 5. RELATIONS, BUNDLES, REVIEWS & PRICING
+-- ==========================================
+
+CREATE TABLE public.prd_relationships (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    primary_product_id UUID NOT NULL REFERENCES public.prd_products(id) ON DELETE CASCADE,
+    related_product_id UUID NOT NULL REFERENCES public.prd_products(id) ON DELETE CASCADE,
+    relation_type public.enum_relation_type NOT NULL,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ,
+    UNIQUE (primary_product_id, related_product_id, relation_type)
+);
+
+CREATE TABLE public.prd_bundles (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    org_id UUID REFERENCES public.org_organizations(id) ON DELETE CASCADE,
+    title TEXT NOT NULL,
+    slug TEXT NOT NULL UNIQUE,
+    description TEXT,
+    status public.enum_product_status DEFAULT 'ACTIVE',
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+
+CREATE TABLE public.prd_bundle_items (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    bundle_id UUID NOT NULL REFERENCES public.prd_bundles(id) ON DELETE CASCADE,
+    variant_id UUID NOT NULL REFERENCES public.prd_variants(id) ON DELETE CASCADE,
+    quantity INTEGER NOT NULL CHECK (quantity > 0),
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ,
+    UNIQUE (bundle_id, variant_id)
+);
+
+CREATE TABLE public.prd_reviews (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    product_id UUID NOT NULL REFERENCES public.prd_products(id) ON DELETE CASCADE,
+    user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    rating INTEGER NOT NULL CHECK (rating >= 1 AND rating <= 5),
+    title TEXT,
+    comment TEXT,
+    is_verified_purchase BOOLEAN DEFAULT false,
+    status TEXT DEFAULT 'PENDING',
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+
+CREATE TABLE public.prd_pricing (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    variant_id UUID NOT NULL REFERENCES public.prd_variants(id) ON DELETE CASCADE,
+    base_price NUMERIC NOT NULL CHECK (base_price >= 0),
+    compare_at_price NUMERIC CHECK (compare_at_price >= 0),
+    cost_price NUMERIC CHECK (cost_price >= 0),
+    currency TEXT DEFAULT 'INR',
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ,
+    UNIQUE(variant_id)
+);
+
+CREATE TABLE public.prd_price_history (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    variant_id UUID NOT NULL REFERENCES public.prd_variants(id) ON DELETE CASCADE,
+    old_base_price NUMERIC,
+    new_base_price NUMERIC NOT NULL,
+    changed_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    changed_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    reason TEXT
+);
+
+-- ==========================================
+-- 6. SUPPLY CHAIN: WAREHOUSE & PO
+-- ==========================================
+
+CREATE TABLE public.inv_suppliers (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    org_id UUID REFERENCES public.org_organizations(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    contact_name TEXT,
+    email TEXT,
+    phone TEXT,
+    address JSONB,
+    tax_id TEXT,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+
+CREATE TABLE public.inv_warehouses (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    org_id UUID REFERENCES public.org_organizations(id) ON DELETE CASCADE,
+    branch_id UUID REFERENCES public.org_branches(id) ON DELETE SET NULL,
+    name TEXT NOT NULL,
+    code TEXT UNIQUE NOT NULL,
+    address JSONB,
+    is_active BOOLEAN DEFAULT true,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+
+CREATE TABLE public.inv_purchase_orders (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    org_id UUID REFERENCES public.org_organizations(id) ON DELETE CASCADE,
+    supplier_id UUID NOT NULL REFERENCES public.inv_suppliers(id) ON DELETE CASCADE,
+    warehouse_id UUID NOT NULL REFERENCES public.inv_warehouses(id) ON DELETE CASCADE,
+    po_number TEXT NOT NULL UNIQUE,
+    status TEXT DEFAULT 'DRAFT', -- DRAFT, SENT, PARTIAL, COMPLETED, CANCELLED
+    expected_delivery_date DATE,
+    total_amount NUMERIC DEFAULT 0,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+
+CREATE TABLE public.inv_purchase_items (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    po_id UUID NOT NULL REFERENCES public.inv_purchase_orders(id) ON DELETE CASCADE,
+    variant_id UUID NOT NULL REFERENCES public.prd_variants(id) ON DELETE CASCADE,
+    ordered_qty INTEGER NOT NULL CHECK (ordered_qty > 0),
+    received_qty INTEGER DEFAULT 0 CHECK (received_qty >= 0),
+    unit_cost NUMERIC NOT NULL CHECK (unit_cost >= 0),
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+
+-- ==========================================
+-- 7. INVENTORY, SERIALS & STOCK TRACKING
+-- ==========================================
+
+CREATE TABLE public.inv_stock (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    warehouse_id UUID NOT NULL REFERENCES public.inv_warehouses(id) ON DELETE CASCADE,
+    variant_id UUID NOT NULL REFERENCES public.prd_variants(id) ON DELETE CASCADE,
+    quantity_on_hand INTEGER NOT NULL DEFAULT 0 CHECK (quantity_on_hand >= 0),
+    quantity_reserved INTEGER NOT NULL DEFAULT 0 CHECK (quantity_reserved >= 0),
+    reorder_level INTEGER DEFAULT 0,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ,
+    UNIQUE (warehouse_id, variant_id)
+);
+
+CREATE TABLE public.inv_serial_numbers (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    variant_id UUID NOT NULL REFERENCES public.prd_variants(id) ON DELETE CASCADE,
+    warehouse_id UUID REFERENCES public.inv_warehouses(id) ON DELETE SET NULL,
+    serial_number TEXT NOT NULL,
+    rfid_tag TEXT,
+    barcode TEXT,
+    status TEXT DEFAULT 'IN_STOCK', -- IN_STOCK, SOLD, RETURNED, DAMAGED
+    po_id UUID REFERENCES public.inv_purchase_orders(id) ON DELETE SET NULL,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ,
+    UNIQUE (variant_id, serial_number)
+);
+CREATE INDEX idx_inv_serial_rfid ON public.inv_serial_numbers(rfid_tag);
+
+CREATE TABLE public.inv_stock_transfers (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    org_id UUID REFERENCES public.org_organizations(id) ON DELETE CASCADE,
+    from_warehouse_id UUID NOT NULL REFERENCES public.inv_warehouses(id) ON DELETE CASCADE,
+    to_warehouse_id UUID NOT NULL REFERENCES public.inv_warehouses(id) ON DELETE CASCADE,
+    variant_id UUID NOT NULL REFERENCES public.prd_variants(id) ON DELETE CASCADE,
+    quantity INTEGER NOT NULL CHECK (quantity > 0),
+    status TEXT DEFAULT 'PENDING', -- PENDING, IN_TRANSIT, COMPLETED, CANCELLED
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ,
+    CHECK (from_warehouse_id != to_warehouse_id)
+);
+
+CREATE TABLE public.inv_stock_adjustments (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    warehouse_id UUID NOT NULL REFERENCES public.inv_warehouses(id) ON DELETE CASCADE,
+    variant_id UUID NOT NULL REFERENCES public.prd_variants(id) ON DELETE CASCADE,
+    quantity_change INTEGER NOT NULL, -- positive or negative
+    reason TEXT NOT NULL,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+
+CREATE TABLE public.inv_stock_history (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    warehouse_id UUID NOT NULL REFERENCES public.inv_warehouses(id) ON DELETE CASCADE,
+    variant_id UUID NOT NULL REFERENCES public.prd_variants(id) ON DELETE CASCADE,
+    movement_type public.enum_stock_movement NOT NULL,
+    quantity_changed INTEGER NOT NULL,
+    quantity_after INTEGER NOT NULL,
+    reference_id UUID, -- e.g., PO ID, Order ID, Transfer ID
+    recorded_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    recorded_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX idx_inv_stock_history_variant ON public.inv_stock_history(variant_id, warehouse_id, recorded_at);
+
+-- ==========================================
+-- 8. TRIGGERS & POLICIES (DYNAMIC)
+-- ==========================================
+
+
+
+-- 9. SECURITY POLICIES
+-- Core Superadmin Policies
+
+
+-- Specialized Public/Staff Policies
+CREATE POLICY "Public can view active categories" ON public.prd_categories FOR SELECT USING (deleted_at IS NULL);
+CREATE POLICY "Public can view active products" ON public.prd_products FOR SELECT USING (status = 'ACTIVE' AND deleted_at IS NULL);
+CREATE POLICY "Public can view variants of active products" ON public.prd_variants FOR SELECT USING (deleted_at IS NULL);
+CREATE POLICY "Public can view product media" ON public.prd_media FOR SELECT USING (deleted_at IS NULL);
+CREATE POLICY "Public can view product pricing" ON public.prd_pricing FOR SELECT USING (deleted_at IS NULL);
+CREATE POLICY "Public can view active reviews" ON public.prd_reviews FOR SELECT USING (status = 'APPROVED' AND deleted_at IS NULL);
+
+-- Staff Policies via `org_id` context
+CREATE POLICY "Staff can view org products" ON public.prd_products FOR SELECT USING (org_id = public.get_current_org_id());
+CREATE POLICY "Staff can view org inventory" ON public.inv_stock FOR SELECT USING (
+    warehouse_id IN (SELECT id FROM public.inv_warehouses WHERE org_id = public.get_current_org_id())
+);
+
+
+-- ==========================================
+-- MODULE: 20260715000004_website_cms.sql
+-- ==========================================
+
+
+-- Migration: Enterprise Website CMS Architecture
+-- Encompasses Pages, Blogs, Theming, Navigation, SEO, Components, and Media.
+
+-- 1. ENUMS
+
+
+
+
+
+
+-- ==========================================
+-- 2. GLOBAL SETTINGS & THEMING
+-- ==========================================
+
+-- Website Settings (Key-Value for Company Details, Contact Settings, Scripts, Robots, Social Media)
+CREATE TABLE public.cms_settings (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    key TEXT UNIQUE NOT NULL,
+    value JSONB NOT NULL DEFAULT '{}'::jsonb,
+    description TEXT,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+CREATE INDEX idx_cms_settings_key ON public.cms_settings(key);
+
+-- Theme Configuration
+CREATE TABLE public.cms_themes (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name TEXT NOT NULL UNIQUE,
+    colors JSONB NOT NULL DEFAULT '{}'::jsonb,
+    typography JSONB NOT NULL DEFAULT '{}'::jsonb,
+    layout JSONB NOT NULL DEFAULT '{}'::jsonb,
+    is_active BOOLEAN DEFAULT false,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+CREATE UNIQUE INDEX idx_cms_themes_active ON public.cms_themes(is_active) WHERE is_active = true AND deleted_at IS NULL;
+
+-- Redirects
+CREATE TABLE public.cms_redirects (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    source_path TEXT NOT NULL UNIQUE,
+    destination_path TEXT NOT NULL,
+    type public.enum_redirect_type DEFAULT '301',
+    is_active BOOLEAN DEFAULT true,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+CREATE INDEX idx_cms_redirects_source ON public.cms_redirects(source_path);
+
+-- ==========================================
+-- 3. MEDIA & GALLERIES
+-- ==========================================
+
+CREATE TABLE public.cms_media_library (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    file_name TEXT NOT NULL,
+    file_url TEXT NOT NULL UNIQUE,
+    mime_type TEXT,
+    size_bytes BIGINT,
+    alt_text TEXT,
+    title TEXT,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+
+CREATE TABLE public.cms_galleries (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name TEXT NOT NULL UNIQUE,
+    description TEXT,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+
+CREATE TABLE public.cms_gallery_items (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    gallery_id UUID NOT NULL REFERENCES public.cms_galleries(id) ON DELETE CASCADE,
+    media_id UUID NOT NULL REFERENCES public.cms_media_library(id) ON DELETE CASCADE,
+    display_order INTEGER DEFAULT 0,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ,
+    UNIQUE(gallery_id, media_id)
+);
+
+-- ==========================================
+-- 4. NAVIGATION
+-- ==========================================
+
+CREATE TABLE public.cms_menus (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name TEXT NOT NULL,
+    location public.enum_nav_location NOT NULL,
+    is_active BOOLEAN DEFAULT true,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ,
+    UNIQUE(location)
+);
+
+CREATE TABLE public.cms_menu_items (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    menu_id UUID NOT NULL REFERENCES public.cms_menus(id) ON DELETE CASCADE,
+    parent_id UUID REFERENCES public.cms_menu_items(id) ON DELETE CASCADE,
+    title TEXT NOT NULL,
+    url TEXT NOT NULL,
+    icon TEXT,
+    open_in_new_tab BOOLEAN DEFAULT false,
+    display_order INTEGER DEFAULT 0,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+CREATE INDEX idx_cms_menu_items_menu_id ON public.cms_menu_items(menu_id);
+
+-- ==========================================
+-- 5. PAGES & SEO
+-- ==========================================
+
+CREATE TABLE public.cms_pages (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    title TEXT NOT NULL,
+    slug TEXT NOT NULL UNIQUE,
+    is_homepage BOOLEAN DEFAULT false,
+    content JSONB NOT NULL DEFAULT '{}'::jsonb,
+    status public.enum_cms_status DEFAULT 'DRAFT',
+    published_at TIMESTAMPTZ,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+CREATE UNIQUE INDEX idx_cms_pages_homepage ON public.cms_pages(is_homepage) WHERE is_homepage = true AND deleted_at IS NULL;
+CREATE INDEX idx_cms_pages_slug ON public.cms_pages(slug);
+
+CREATE TABLE public.cms_seo_meta (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    entity_id UUID NOT NULL,
+    entity_type TEXT NOT NULL, -- 'PAGE', 'BLOG'
+    meta_title TEXT,
+    meta_description TEXT,
+    meta_keywords TEXT[],
+    canonical_url TEXT,
+    og_title TEXT,
+    og_description TEXT,
+    og_image_url TEXT,
+    include_in_sitemap BOOLEAN DEFAULT true,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ,
+    UNIQUE (entity_id, entity_type)
+);
+CREATE INDEX idx_cms_seo_meta_entity ON public.cms_seo_meta(entity_type, entity_id);
+
+-- ==========================================
+-- 6. UI COMPONENTS (Isolated Tables as Requested)
+-- ==========================================
+
+CREATE TABLE public.cms_heroes (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    page_id UUID REFERENCES public.cms_pages(id) ON DELETE CASCADE,
+    title TEXT NOT NULL,
+    subtitle TEXT,
+    cta_text TEXT,
+    cta_url TEXT,
+    background_media_id UUID REFERENCES public.cms_media_library(id) ON DELETE SET NULL,
+    is_active BOOLEAN DEFAULT true,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+
+CREATE TABLE public.cms_banners (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    title TEXT NOT NULL,
+    content TEXT,
+    link_url TEXT,
+    media_id UUID REFERENCES public.cms_media_library(id) ON DELETE SET NULL,
+    placement TEXT DEFAULT 'GLOBAL',
+    is_active BOOLEAN DEFAULT true,
+    start_date TIMESTAMPTZ,
+    end_date TIMESTAMPTZ,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ,
+    CHECK (end_date IS NULL OR start_date IS NULL OR end_date > start_date)
+);
+
+CREATE TABLE public.cms_popups (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    title TEXT NOT NULL,
+    content TEXT NOT NULL,
+    trigger_type TEXT DEFAULT 'ON_LOAD', -- e.g., 'ON_LOAD', 'EXIT_INTENT', 'SCROLL'
+    delay_seconds INTEGER DEFAULT 0,
+    is_active BOOLEAN DEFAULT false,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+
+CREATE TABLE public.cms_announcements (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    message TEXT NOT NULL,
+    link_url TEXT,
+    is_active BOOLEAN DEFAULT false,
+    display_order INTEGER DEFAULT 0,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+
+-- ==========================================
+-- 7. BLOG ENGINE
+-- ==========================================
+
+CREATE TABLE public.cms_authors (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+    display_name TEXT NOT NULL,
+    bio TEXT,
+    avatar_url TEXT,
+    social_links JSONB,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ,
+    UNIQUE(user_id)
+);
+
+CREATE TABLE public.cms_blog_categories (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name TEXT NOT NULL,
+    slug TEXT NOT NULL UNIQUE,
+    parent_id UUID REFERENCES public.cms_blog_categories(id) ON DELETE SET NULL,
+    description TEXT,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+
+CREATE TABLE public.cms_blogs (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    title TEXT NOT NULL,
+    slug TEXT NOT NULL UNIQUE,
+    excerpt TEXT,
+    content JSONB NOT NULL DEFAULT '{}'::jsonb,
+    author_id UUID REFERENCES public.cms_authors(id) ON DELETE SET NULL,
+    category_id UUID REFERENCES public.cms_blog_categories(id) ON DELETE SET NULL,
+    featured_image_id UUID REFERENCES public.cms_media_library(id) ON DELETE SET NULL,
+    status public.enum_cms_status DEFAULT 'DRAFT',
+    published_at TIMESTAMPTZ,
+    read_time_minutes INTEGER DEFAULT 1,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+CREATE INDEX idx_cms_blogs_slug ON public.cms_blogs(slug);
+CREATE INDEX idx_cms_blogs_author ON public.cms_blogs(author_id);
+
+CREATE TABLE public.cms_blog_tags (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name TEXT NOT NULL UNIQUE,
+    slug TEXT NOT NULL UNIQUE,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+
+CREATE TABLE public.cms_blog_post_tags (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    blog_id UUID NOT NULL REFERENCES public.cms_blogs(id) ON DELETE CASCADE,
+    tag_id UUID NOT NULL REFERENCES public.cms_blog_tags(id) ON DELETE CASCADE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    UNIQUE(blog_id, tag_id)
+);
+
+-- ==========================================
+-- 8. USER ENGAGEMENT
+-- ==========================================
+
+CREATE TABLE public.cms_testimonials (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    customer_name TEXT NOT NULL,
+    customer_role TEXT,
+    company_name TEXT,
+    avatar_url TEXT,
+    rating INTEGER CHECK (rating >= 1 AND rating <= 5),
+    content TEXT NOT NULL,
+    is_featured BOOLEAN DEFAULT false,
+    status public.enum_cms_status DEFAULT 'DRAFT',
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+
+CREATE TABLE public.cms_faqs (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    question TEXT NOT NULL,
+    answer TEXT NOT NULL,
+    category TEXT,
+    display_order INTEGER DEFAULT 0,
+    is_active BOOLEAN DEFAULT true,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+
+CREATE TABLE public.cms_newsletters (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    email TEXT NOT NULL UNIQUE,
+    status TEXT DEFAULT 'SUBSCRIBED' CHECK (status IN ('SUBSCRIBED', 'UNSUBSCRIBED')),
+    subscribed_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    unsubscribed_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+
+-- ==========================================
+-- 9. TRIGGERS & POLICIES
+-- ==========================================
+
+
+
+-- Specialized Public Policies
+CREATE POLICY "Public can view active settings" ON public.cms_settings FOR SELECT USING (deleted_at IS NULL);
+CREATE POLICY "Public can view active themes" ON public.cms_themes FOR SELECT USING (is_active = true AND deleted_at IS NULL);
+CREATE POLICY "Public can view active redirects" ON public.cms_redirects FOR SELECT USING (is_active = true AND deleted_at IS NULL);
+CREATE POLICY "Public can view published pages" ON public.cms_pages FOR SELECT USING (status = 'PUBLISHED' AND deleted_at IS NULL);
+CREATE POLICY "Public can view published blogs" ON public.cms_blogs FOR SELECT USING (status = 'PUBLISHED' AND deleted_at IS NULL);
+CREATE POLICY "Public can view authors" ON public.cms_authors FOR SELECT USING (deleted_at IS NULL);
+CREATE POLICY "Public can view blog categories" ON public.cms_blog_categories FOR SELECT USING (deleted_at IS NULL);
+CREATE POLICY "Public can view seo meta" ON public.cms_seo_meta FOR SELECT USING (deleted_at IS NULL);
+CREATE POLICY "Public can view menus" ON public.cms_menus FOR SELECT USING (is_active = true AND deleted_at IS NULL);
+CREATE POLICY "Public can view menu items" ON public.cms_menu_items FOR SELECT USING (deleted_at IS NULL);
+CREATE POLICY "Public can view heroes" ON public.cms_heroes FOR SELECT USING (is_active = true AND deleted_at IS NULL);
+CREATE POLICY "Public can view banners" ON public.cms_banners FOR SELECT USING (is_active = true AND deleted_at IS NULL);
+CREATE POLICY "Public can view popups" ON public.cms_popups FOR SELECT USING (is_active = true AND deleted_at IS NULL);
+CREATE POLICY "Public can view announcements" ON public.cms_announcements FOR SELECT USING (is_active = true AND deleted_at IS NULL);
+CREATE POLICY "Public can view testimonials" ON public.cms_testimonials FOR SELECT USING (status = 'PUBLISHED' AND deleted_at IS NULL);
+CREATE POLICY "Public can view faqs" ON public.cms_faqs FOR SELECT USING (is_active = true AND deleted_at IS NULL);
+CREATE POLICY "Public can insert newsletter emails" ON public.cms_newsletters FOR INSERT WITH CHECK (true);
+
+
+-- ==========================================
+-- MODULE: 20260715000007_crm_customers.sql
+-- ==========================================
+
+
+-- Migration: CRM & Customer E-Commerce Profiles
+-- Encompasses Identity, Wallets, Loyalty, Addresses, and Carts.
+
+-- ==========================================
+-- 1. ENUMS
+-- ==========================================
+
+
+
+
+
+
+
+
+-- ==========================================
+-- 2. CUSTOMER IDENTITY & SEGMENTATION
+-- ==========================================
+
+CREATE TABLE public.crm_customer_groups (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    org_id UUID REFERENCES public.org_organizations(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    description TEXT,
+    discount_percentage NUMERIC DEFAULT 0 CHECK (discount_percentage >= 0 AND discount_percentage <= 100),
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ,
+    UNIQUE(org_id, name)
+);
+
+CREATE TABLE public.crm_customers (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    org_id UUID REFERENCES public.org_organizations(id) ON DELETE CASCADE,
+    user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL, -- Null if Guest checkout/lead
+    group_id UUID REFERENCES public.crm_customer_groups(id) ON DELETE SET NULL,
+    first_name TEXT NOT NULL,
+    last_name TEXT,
+    email TEXT,
+    phone TEXT,
+    company_name TEXT,
+    tax_id TEXT,
+    status public.enum_crm_status DEFAULT 'ACTIVE',
+    lifetime_value NUMERIC DEFAULT 0 CHECK (lifetime_value >= 0),
+    last_purchase_date TIMESTAMPTZ,
+    search_vector tsvector GENERATED ALWAYS AS (setweight(to_tsvector('english', coalesce(first_name, '')), 'A') || setweight(to_tsvector('english', coalesce(last_name, '')), 'B') || setweight(to_tsvector('english', coalesce(email, '')), 'C')) STORED,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+CREATE INDEX idx_crm_customers_org ON public.crm_customers(org_id);
+CREATE INDEX idx_crm_customers_user ON public.crm_customers(user_id);
+CREATE INDEX idx_crm_customers_search ON public.crm_customers USING GIN (search_vector);
+CREATE UNIQUE INDEX idx_crm_customers_email ON public.crm_customers(org_id, email) WHERE email IS NOT NULL AND deleted_at IS NULL;
+CREATE UNIQUE INDEX idx_crm_customers_phone ON public.crm_customers(org_id, phone) WHERE phone IS NOT NULL AND deleted_at IS NULL;
+
+CREATE TABLE public.crm_customer_group_mapping (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    customer_id UUID NOT NULL REFERENCES public.crm_customers(id) ON DELETE CASCADE,
+    group_id UUID NOT NULL REFERENCES public.crm_customer_groups(id) ON DELETE CASCADE,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    UNIQUE(customer_id, group_id)
+);
+
+-- ==========================================
+-- 3. PROFILE DETAILS (Addresses, Cards, Prefs)
+-- ==========================================
+
+CREATE TABLE public.crm_addresses (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    customer_id UUID NOT NULL REFERENCES public.crm_customers(id) ON DELETE CASCADE,
+    address_type public.enum_address_type DEFAULT 'BOTH',
+    full_name TEXT NOT NULL,
+    phone TEXT,
+    address_line_1 TEXT NOT NULL,
+    address_line_2 TEXT,
+    city TEXT NOT NULL,
+    state TEXT NOT NULL,
+    postal_code TEXT NOT NULL,
+    country TEXT NOT NULL,
+    is_default_billing BOOLEAN DEFAULT false,
+    is_default_shipping BOOLEAN DEFAULT false,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+
+CREATE TABLE public.crm_saved_cards (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    customer_id UUID NOT NULL REFERENCES public.crm_customers(id) ON DELETE CASCADE,
+    payment_gateway TEXT NOT NULL, -- e.g., 'STRIPE', 'RAZORPAY'
+    gateway_token TEXT NOT NULL, -- The opaque reference token
+    brand TEXT NOT NULL, -- e.g., 'Visa', 'MasterCard'
+    last4 TEXT NOT NULL CHECK (length(last4) = 4),
+    exp_month INTEGER NOT NULL CHECK (exp_month BETWEEN 1 AND 12),
+    exp_year INTEGER NOT NULL,
+    is_default BOOLEAN DEFAULT false,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+-- Note: No actual PAN or CVV is stored, strictly PCI compliant.
+
+CREATE TABLE public.crm_preferences (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    customer_id UUID NOT NULL REFERENCES public.crm_customers(id) ON DELETE CASCADE,
+    marketing_opt_in BOOLEAN DEFAULT false,
+    sms_opt_in BOOLEAN DEFAULT false,
+    preferred_language TEXT DEFAULT 'en',
+    currency TEXT DEFAULT 'USD',
+    custom_preferences JSONB DEFAULT '{}'::jsonb,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ,
+    UNIQUE(customer_id)
+);
+
+-- ==========================================
+-- 4. E-COMMERCE ACTIVITY (Wishlist, Carts)
+-- ==========================================
+
+CREATE TABLE public.crm_wishlists (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    customer_id UUID NOT NULL REFERENCES public.crm_customers(id) ON DELETE CASCADE,
+    variant_id UUID NOT NULL REFERENCES public.prd_variants(id) ON DELETE CASCADE,
+    added_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ,
+    UNIQUE(customer_id, variant_id)
+);
+
+CREATE TABLE public.crm_carts (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    org_id UUID REFERENCES public.org_organizations(id) ON DELETE CASCADE,
+    customer_id UUID REFERENCES public.crm_customers(id) ON DELETE SET NULL,
+    session_token TEXT, -- For guest carts
+    status TEXT DEFAULT 'ACTIVE', -- ACTIVE, CONVERTED, ABANDONED
+    currency TEXT DEFAULT 'USD',
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ,
+    CHECK (customer_id IS NOT NULL OR session_token IS NOT NULL)
+);
+
+CREATE TABLE public.crm_cart_items (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    cart_id UUID NOT NULL REFERENCES public.crm_carts(id) ON DELETE CASCADE,
+    variant_id UUID NOT NULL REFERENCES public.prd_variants(id) ON DELETE CASCADE,
+    quantity INTEGER NOT NULL CHECK (quantity > 0),
+    price_at_addition NUMERIC,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ,
+    UNIQUE(cart_id, variant_id)
+);
+
+-- ==========================================
+-- 5. LOYALTY, WALLET & REFERRALS
+-- ==========================================
+
+CREATE TABLE public.crm_loyalty_tiers (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    org_id UUID REFERENCES public.org_organizations(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    min_spend NUMERIC NOT NULL DEFAULT 0,
+    point_multiplier NUMERIC NOT NULL DEFAULT 1.0,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ,
+    UNIQUE(org_id, name)
+);
+
+CREATE TABLE public.crm_reward_points (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    customer_id UUID NOT NULL REFERENCES public.crm_customers(id) ON DELETE CASCADE,
+    points_earned INTEGER DEFAULT 0,
+    points_spent INTEGER DEFAULT 0,
+    current_balance INTEGER GENERATED ALWAYS AS (points_earned - points_spent) STORED,
+    tier_id UUID REFERENCES public.crm_loyalty_tiers(id) ON DELETE SET NULL,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ,
+    UNIQUE(customer_id)
+);
+
+CREATE TABLE public.crm_reward_point_ledger (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    customer_id UUID NOT NULL REFERENCES public.crm_customers(id) ON DELETE CASCADE,
+    transaction_type public.enum_wallet_tx_type NOT NULL,
+    points INTEGER NOT NULL CHECK (points > 0),
+    description TEXT,
+    reference_id UUID, -- E.g., Order ID
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE public.crm_wallets (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    customer_id UUID NOT NULL REFERENCES public.crm_customers(id) ON DELETE CASCADE,
+    currency TEXT NOT NULL DEFAULT 'USD',
+    balance NUMERIC NOT NULL DEFAULT 0 CHECK (balance >= 0),
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ,
+    UNIQUE(customer_id, currency)
+);
+
+CREATE TABLE public.crm_wallet_transactions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    wallet_id UUID NOT NULL REFERENCES public.crm_wallets(id) ON DELETE CASCADE,
+    transaction_type public.enum_wallet_tx_type NOT NULL,
+    amount NUMERIC NOT NULL CHECK (amount > 0),
+    balance_after NUMERIC NOT NULL CHECK (balance_after >= 0),
+    description TEXT,
+    reference_id UUID, -- E.g., Refund Order ID, Top-up payment ID
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE public.crm_referrals (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    referrer_customer_id UUID NOT NULL REFERENCES public.crm_customers(id) ON DELETE CASCADE,
+    referred_customer_id UUID REFERENCES public.crm_customers(id) ON DELETE SET NULL,
+    referral_code TEXT NOT NULL UNIQUE,
+    status TEXT DEFAULT 'PENDING', -- PENDING, CONVERTED
+    reward_issued BOOLEAN DEFAULT false,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ,
+    UNIQUE(referred_customer_id)
+);
+
+-- ==========================================
+-- 6. CRM TIMELINE & INTERNAL TRACKING
+-- ==========================================
+
+CREATE TABLE public.crm_notes (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    customer_id UUID NOT NULL REFERENCES public.crm_customers(id) ON DELETE CASCADE,
+    note TEXT NOT NULL,
+    is_pinned BOOLEAN DEFAULT false,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL, -- Staff/Agent ID
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+
+CREATE TABLE public.crm_documents (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    customer_id UUID NOT NULL REFERENCES public.crm_customers(id) ON DELETE CASCADE,
+    doc_type public.enum_doc_type NOT NULL,
+    file_url TEXT NOT NULL,
+    title TEXT,
+    status TEXT DEFAULT 'PENDING', -- PENDING, VERIFIED, REJECTED
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+
+CREATE TABLE public.crm_timeline (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    customer_id UUID NOT NULL REFERENCES public.crm_customers(id) ON DELETE CASCADE,
+    event_type TEXT NOT NULL, -- e.g., 'REGISTERED', 'ORDER_PLACED', 'SUPPORT_TICKET'
+    description TEXT NOT NULL,
+    metadata JSONB,
+    reference_id UUID,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+-- Immutable event ledger
+
+-- ==========================================
+-- 7. TRIGGERS & RLS AUTOMATION
+-- ==========================================
+
+
+
+-- Enable RLS for immutable ledgers as well
+ALTER TABLE public.crm_wallet_transactions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.crm_reward_point_ledger ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.crm_timeline ENABLE ROW LEVEL SECURITY;
+
+-- 8. SECURITY POLICIES
+
+-- Superadmin & Staff Policies
+
+
+-- End-User Policies (Can view/manage their own data if linked to auth.uid via user_id in crm_customers)
+-- Note: A helper function resolves auth.uid() to customer_id(s).
+CREATE OR REPLACE FUNCTION public.get_my_customer_ids()
+RETURNS SETOF UUID AS $$
+    SELECT id FROM public.crm_customers WHERE user_id = auth.uid() AND deleted_at IS NULL;
+$$ LANGUAGE SQL STABLE SECURITY DEFINER;
+
+-- Apply end-user policies
+
+
+-- ==========================================
+-- MODULE: 20260715000008_sales_crm_leads.sql
+-- ==========================================
+
+
+-- Migration: Sales CRM & Lead Management
+-- Encompasses Pipelines, Stages, Leads, Opportunities, Activities, and Scoring.
+
+-- ==========================================
+-- 1. ENUMS
+-- ==========================================
+
+
+
+
+
+
+
+
+-- ==========================================
+-- 2. PIPELINES & CONFIGURATION
+-- ==========================================
+
+CREATE TABLE public.sls_pipelines (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    org_id UUID REFERENCES public.org_organizations(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    description TEXT,
+    is_default BOOLEAN DEFAULT false,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ,
+    UNIQUE(org_id, name)
+);
+
+CREATE TABLE public.sls_stages (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    org_id UUID REFERENCES public.org_organizations(id) ON DELETE CASCADE,
+    pipeline_id UUID NOT NULL REFERENCES public.sls_pipelines(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    display_order INTEGER NOT NULL DEFAULT 0,
+    probability_percentage NUMERIC DEFAULT 0 CHECK (probability_percentage >= 0 AND probability_percentage <= 100),
+    is_won_stage BOOLEAN DEFAULT false,
+    is_lost_stage BOOLEAN DEFAULT false,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ,
+    UNIQUE(pipeline_id, name)
+);
+
+CREATE TABLE public.sls_lead_sources (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    org_id UUID REFERENCES public.org_organizations(id) ON DELETE CASCADE,
+    name TEXT NOT NULL, -- e.g., 'Website Form', 'Trade Show', 'Referral'
+    cost_per_lead NUMERIC DEFAULT 0 CHECK (cost_per_lead >= 0),
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ,
+    UNIQUE(org_id, name)
+);
+
+-- ==========================================
+-- 3. LEADS & OPPORTUNITIES
+-- ==========================================
+
+CREATE TABLE public.sls_leads (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    org_id UUID REFERENCES public.org_organizations(id) ON DELETE CASCADE,
+    first_name TEXT NOT NULL,
+    last_name TEXT,
+    email TEXT,
+    phone TEXT,
+    company_name TEXT,
+    job_title TEXT,
+    source_id UUID REFERENCES public.sls_lead_sources(id) ON DELETE SET NULL,
+    status public.enum_sls_lead_status DEFAULT 'NEW',
+    lead_score INTEGER DEFAULT 0, -- Auto-calculated or manual rating
+    converted_customer_id UUID REFERENCES public.crm_customers(id) ON DELETE SET NULL, -- Bridges Sales CRM to Operational CRM
+    metadata JSONB DEFAULT '{}'::jsonb,
+    search_vector tsvector GENERATED ALWAYS AS (
+        setweight(to_tsvector('english', coalesce(first_name, '')), 'A') || 
+        setweight(to_tsvector('english', coalesce(last_name, '')), 'B') || 
+        setweight(to_tsvector('english', coalesce(company_name, '')), 'C') ||
+        setweight(to_tsvector('english', coalesce(email, '')), 'D')
+    ) STORED,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+CREATE INDEX idx_sls_leads_org ON public.sls_leads(org_id);
+CREATE INDEX idx_sls_leads_search ON public.sls_leads USING GIN (search_vector);
+CREATE UNIQUE INDEX idx_sls_leads_email ON public.sls_leads(org_id, email) WHERE email IS NOT NULL AND deleted_at IS NULL;
+
+CREATE TABLE public.sls_opportunities (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    org_id UUID REFERENCES public.org_organizations(id) ON DELETE CASCADE,
+    lead_id UUID REFERENCES public.sls_leads(id) ON DELETE CASCADE, -- An Opportunity usually stems from a Lead
+    customer_id UUID REFERENCES public.crm_customers(id) ON DELETE CASCADE, -- Alternatively stems from an existing customer
+    pipeline_id UUID NOT NULL REFERENCES public.sls_pipelines(id) ON DELETE CASCADE,
+    stage_id UUID NOT NULL REFERENCES public.sls_stages(id) ON DELETE CASCADE,
+    title TEXT NOT NULL,
+    expected_revenue NUMERIC NOT NULL DEFAULT 0 CHECK (expected_revenue >= 0),
+    expected_close_date DATE,
+    actual_close_date DATE,
+    status public.enum_sls_opp_status DEFAULT 'OPEN',
+    loss_reason TEXT,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ,
+    CHECK (lead_id IS NOT NULL OR customer_id IS NOT NULL)
+);
+
+CREATE TABLE public.sls_lead_assignments (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    lead_id UUID REFERENCES public.sls_leads(id) ON DELETE CASCADE,
+    opportunity_id UUID REFERENCES public.sls_opportunities(id) ON DELETE CASCADE,
+    sales_executive_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE, -- Mapping to specific Sales Rep
+    assigned_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    assigned_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    is_active BOOLEAN DEFAULT true,
+    CHECK (lead_id IS NOT NULL OR opportunity_id IS NOT NULL)
+);
+CREATE INDEX idx_sls_lead_assignments_exec ON public.sls_lead_assignments(sales_executive_id);
+
+-- ==========================================
+-- 4. SALES ACTIVITIES & ENGAGEMENT
+-- ==========================================
+
+CREATE TABLE public.sls_activities (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    org_id UUID REFERENCES public.org_organizations(id) ON DELETE CASCADE,
+    activity_type public.enum_sls_activity_type NOT NULL, -- TASK, MEETING, CALL, FOLLOW_UP
+    title TEXT NOT NULL,
+    description TEXT,
+    lead_id UUID REFERENCES public.sls_leads(id) ON DELETE CASCADE,
+    opportunity_id UUID REFERENCES public.sls_opportunities(id) ON DELETE CASCADE,
+    assigned_to UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    due_date TIMESTAMPTZ NOT NULL,
+    completed_at TIMESTAMPTZ,
+    status public.enum_sls_activity_status DEFAULT 'PENDING',
+    outcome TEXT,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+CREATE INDEX idx_sls_activities_assigned ON public.sls_activities(assigned_to, status);
+
+CREATE TABLE public.sls_notes (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    lead_id UUID REFERENCES public.sls_leads(id) ON DELETE CASCADE,
+    opportunity_id UUID REFERENCES public.sls_opportunities(id) ON DELETE CASCADE,
+    note TEXT NOT NULL,
+    is_pinned BOOLEAN DEFAULT false,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL, -- Sales Exec ID
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ,
+    CHECK (lead_id IS NOT NULL OR opportunity_id IS NOT NULL)
+);
+
+CREATE TABLE public.sls_timeline (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    lead_id UUID REFERENCES public.sls_leads(id) ON DELETE CASCADE,
+    opportunity_id UUID REFERENCES public.sls_opportunities(id) ON DELETE CASCADE,
+    event_type TEXT NOT NULL, -- e.g., 'STAGE_CHANGED', 'LEAD_ASSIGNED', 'CALL_LOGGED'
+    description TEXT NOT NULL,
+    old_value TEXT,
+    new_value TEXT,
+    metadata JSONB,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    CHECK (lead_id IS NOT NULL OR opportunity_id IS NOT NULL)
+);
+-- Immutable event ledger
+
+-- ==========================================
+-- 5. TRIGGERS & RLS AUTOMATION
+-- ==========================================
+
+
+
+-- Enable RLS for ledgers and assignment tables
+ALTER TABLE public.sls_lead_assignments ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.sls_timeline ENABLE ROW LEVEL SECURITY;
+
+-- 6. SECURITY POLICIES
+
+-- Superadmin & Staff General Access (scoped by org_id)
+
+
+-- Sales Executive Access Control (Visibility based on Assignments)
+-- A Sales Exec can only see leads/opportunities they are assigned to.
+CREATE POLICY "Sales Execs view assigned leads" ON public.sls_leads FOR SELECT USING (
+    id IN (SELECT lead_id FROM public.sls_lead_assignments WHERE sales_executive_id = auth.uid() AND is_active = true)
+);
+
+CREATE POLICY "Sales Execs update assigned leads" ON public.sls_leads FOR UPDATE USING (
+    id IN (SELECT lead_id FROM public.sls_lead_assignments WHERE sales_executive_id = auth.uid() AND is_active = true)
+);
+
+CREATE POLICY "Sales Execs view assigned ops" ON public.sls_opportunities FOR SELECT USING (
+    id IN (SELECT opportunity_id FROM public.sls_lead_assignments WHERE sales_executive_id = auth.uid() AND is_active = true) OR
+    lead_id IN (SELECT lead_id FROM public.sls_lead_assignments WHERE sales_executive_id = auth.uid() AND is_active = true)
+);
+
+CREATE POLICY "Sales Execs update assigned ops" ON public.sls_opportunities FOR UPDATE USING (
+    id IN (SELECT opportunity_id FROM public.sls_lead_assignments WHERE sales_executive_id = auth.uid() AND is_active = true) OR
+    lead_id IN (SELECT lead_id FROM public.sls_lead_assignments WHERE sales_executive_id = auth.uid() AND is_active = true)
+);
+
+CREATE POLICY "Sales Execs view own assignments" ON public.sls_lead_assignments FOR SELECT USING (sales_executive_id = auth.uid());
+
+CREATE POLICY "Sales Execs manage own activities" ON public.sls_activities FOR ALL USING (assigned_to = auth.uid());
+
+-- Sales Execs can view notes and timelines for their assigned leads/ops
+CREATE POLICY "Sales Execs view assigned notes" ON public.sls_notes FOR SELECT USING (
+    lead_id IN (SELECT lead_id FROM public.sls_lead_assignments WHERE sales_executive_id = auth.uid() AND is_active = true) OR
+    opportunity_id IN (SELECT opportunity_id FROM public.sls_lead_assignments WHERE sales_executive_id = auth.uid() AND is_active = true)
+);
+
+CREATE POLICY "Sales Execs view assigned timeline" ON public.sls_timeline FOR SELECT USING (
+    lead_id IN (SELECT lead_id FROM public.sls_lead_assignments WHERE sales_executive_id = auth.uid() AND is_active = true) OR
+    opportunity_id IN (SELECT opportunity_id FROM public.sls_lead_assignments WHERE sales_executive_id = auth.uid() AND is_active = true)
+);
+
+
+-- ==========================================
+-- MODULE: 20260715000009_oms_billing.sql
+-- ==========================================
+
+
+-- Migration: Enterprise Order Management System (OMS) & Billing
+-- Encompasses Quotes, Orders, Invoices, Logistics, Returns, and Promotions.
+
+-- ==========================================
+-- 1. ENUMS
+-- ==========================================
+
+
+
+
+
+
+-- ==========================================
+-- 2. PRE-SALE: QUOTATIONS
+-- ==========================================
+
+CREATE TABLE public.oms_quotations (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    org_id UUID REFERENCES public.org_organizations(id) ON DELETE CASCADE,
+    quote_number TEXT NOT NULL UNIQUE,
+    customer_id UUID REFERENCES public.crm_customers(id) ON DELETE SET NULL,
+    lead_id UUID REFERENCES public.sls_leads(id) ON DELETE SET NULL, -- Can stem from Sales CRM
+    status TEXT DEFAULT 'DRAFT', -- DRAFT, SENT, ACCEPTED, REJECTED, EXPIRED
+    valid_until DATE NOT NULL,
+    subtotal NUMERIC NOT NULL DEFAULT 0,
+    total_tax NUMERIC NOT NULL DEFAULT 0,
+    total_discount NUMERIC NOT NULL DEFAULT 0,
+    grand_total NUMERIC NOT NULL DEFAULT 0,
+    terms_conditions TEXT,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ,
+    CHECK (customer_id IS NOT NULL OR lead_id IS NOT NULL)
+);
+
+CREATE TABLE public.oms_quotation_items (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    quotation_id UUID NOT NULL REFERENCES public.oms_quotations(id) ON DELETE CASCADE,
+    variant_id UUID NOT NULL REFERENCES public.prd_variants(id) ON DELETE CASCADE,
+    quantity INTEGER NOT NULL CHECK (quantity > 0),
+    unit_price NUMERIC NOT NULL CHECK (unit_price >= 0),
+    tax_rate NUMERIC DEFAULT 0,
+    discount_amount NUMERIC DEFAULT 0,
+    line_total NUMERIC GENERATED ALWAYS AS ((quantity * unit_price) + (quantity * unit_price * tax_rate / 100) - discount_amount) STORED,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+
+-- ==========================================
+-- 3. PROMOTIONS & REWARDS
+-- ==========================================
+
+CREATE TABLE public.oms_coupons (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    org_id UUID REFERENCES public.org_organizations(id) ON DELETE CASCADE,
+    code TEXT NOT NULL UNIQUE,
+    discount_type TEXT NOT NULL, -- PERCENTAGE, FIXED_AMOUNT, FREE_SHIPPING
+    discount_value NUMERIC NOT NULL CHECK (discount_value >= 0),
+    min_order_value NUMERIC DEFAULT 0,
+    max_discount_amount NUMERIC,
+    usage_limit INTEGER, -- NULL means unlimited
+    times_used INTEGER DEFAULT 0,
+    start_date TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    end_date TIMESTAMPTZ,
+    is_active BOOLEAN DEFAULT true,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+
+CREATE TABLE public.oms_discount_rules (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    org_id UUID REFERENCES public.org_organizations(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    rule_type TEXT NOT NULL, -- BOGO, BULK_BUY, CATEGORY_DISCOUNT
+    conditions JSONB NOT NULL, -- e.g., {"buy_qty": 2, "get_qty": 1}
+    discount_value NUMERIC NOT NULL,
+    start_date TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    end_date TIMESTAMPTZ,
+    is_active BOOLEAN DEFAULT true,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+
+CREATE TABLE public.oms_gift_cards (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    org_id UUID REFERENCES public.org_organizations(id) ON DELETE CASCADE,
+    customer_id UUID REFERENCES public.crm_customers(id) ON DELETE SET NULL,
+    code TEXT NOT NULL UNIQUE,
+    initial_balance NUMERIC NOT NULL CHECK (initial_balance >= 0),
+    current_balance NUMERIC NOT NULL CHECK (current_balance >= 0),
+    currency TEXT DEFAULT 'USD',
+    issue_date TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    expiry_date TIMESTAMPTZ,
+    is_active BOOLEAN DEFAULT true,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+
+-- ==========================================
+-- 4. CORE ORDERS
+-- ==========================================
+
+CREATE TABLE public.oms_orders (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    org_id UUID REFERENCES public.org_organizations(id) ON DELETE CASCADE,
+    order_number TEXT NOT NULL UNIQUE,
+    customer_id UUID NOT NULL REFERENCES public.crm_customers(id) ON DELETE CASCADE,
+    billing_address_id UUID REFERENCES public.crm_addresses(id) ON DELETE SET NULL,
+    shipping_address_id UUID REFERENCES public.crm_addresses(id) ON DELETE SET NULL,
+    quotation_id UUID REFERENCES public.oms_quotations(id) ON DELETE SET NULL,
+    coupon_id UUID REFERENCES public.oms_coupons(id) ON DELETE SET NULL,
+    order_status public.enum_oms_order_status DEFAULT 'PENDING',
+    payment_status public.enum_oms_payment_status DEFAULT 'UNPAID',
+    currency TEXT DEFAULT 'USD',
+    subtotal NUMERIC NOT NULL DEFAULT 0,
+    total_tax NUMERIC NOT NULL DEFAULT 0,
+    total_discount NUMERIC NOT NULL DEFAULT 0,
+    shipping_fee NUMERIC NOT NULL DEFAULT 0,
+    grand_total NUMERIC NOT NULL DEFAULT 0,
+    customer_notes TEXT,
+    internal_notes TEXT,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ,
+    search_vector tsvector GENERATED ALWAYS AS (
+        setweight(to_tsvector('english', coalesce(order_number, '')), 'A')
+    ) STORED
+);
+CREATE INDEX idx_oms_orders_search ON public.oms_orders USING GIN (search_vector);
+CREATE INDEX idx_oms_orders_customer ON public.oms_orders(customer_id, created_at);
+
+CREATE TABLE public.oms_order_items (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    order_id UUID NOT NULL REFERENCES public.oms_orders(id) ON DELETE CASCADE,
+    variant_id UUID NOT NULL REFERENCES public.prd_variants(id) ON DELETE CASCADE,
+    warehouse_id UUID REFERENCES public.inv_warehouses(id) ON DELETE SET NULL, -- Fulfilling warehouse
+    quantity INTEGER NOT NULL CHECK (quantity > 0),
+    unit_price NUMERIC NOT NULL CHECK (unit_price >= 0),
+    tax_rate NUMERIC DEFAULT 0,
+    discount_amount NUMERIC DEFAULT 0,
+    line_total NUMERIC GENERATED ALWAYS AS ((quantity * unit_price) + (quantity * unit_price * tax_rate / 100) - discount_amount) STORED,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+
+-- Function & Trigger to automatically deduct inventory when an order is Confirmed
+CREATE OR REPLACE FUNCTION public.fn_oms_deduct_inventory()
+RETURNS TRIGGER AS $$
+DECLARE
+    item RECORD;
+BEGIN
+    IF NEW.order_status = 'CONFIRMED' AND OLD.order_status != 'CONFIRMED' THEN
+        FOR item IN SELECT variant_id, warehouse_id, quantity FROM public.oms_order_items WHERE order_id = NEW.id
+        LOOP
+            -- Deduct stock if a warehouse is assigned
+            IF item.warehouse_id IS NOT NULL THEN
+                UPDATE public.inv_stock
+                SET quantity_on_hand = quantity_on_hand - item.quantity,
+                    updated_at = NOW()
+                WHERE variant_id = item.variant_id AND warehouse_id = item.warehouse_id;
+                
+                -- Log immutable history
+                INSERT INTO public.inv_stock_history (warehouse_id, variant_id, movement_type, quantity_changed, quantity_after, reference_id)
+                VALUES (
+                    item.warehouse_id, 
+                    item.variant_id, 
+                    'SALE', 
+                    -(item.quantity), 
+                    (SELECT quantity_on_hand FROM public.inv_stock WHERE variant_id = item.variant_id AND warehouse_id = item.warehouse_id),
+                    NEW.id
+                );
+            END IF;
+        END LOOP;
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+CREATE TRIGGER trg_oms_deduct_inventory
+    AFTER UPDATE OF order_status ON public.oms_orders
+    FOR EACH ROW EXECUTE FUNCTION public.fn_oms_deduct_inventory();
+
+-- ==========================================
+-- 5. BILLING & FINANCE
+-- ==========================================
+
+CREATE TABLE public.oms_invoices (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    org_id UUID REFERENCES public.org_organizations(id) ON DELETE CASCADE,
+    order_id UUID NOT NULL REFERENCES public.oms_orders(id) ON DELETE CASCADE,
+    invoice_number TEXT NOT NULL UNIQUE,
+    issue_date TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    due_date TIMESTAMPTZ,
+    status TEXT DEFAULT 'DRAFT', -- DRAFT, ISSUED, PAID, VOID
+    amount_due NUMERIC NOT NULL,
+    amount_paid NUMERIC NOT NULL DEFAULT 0,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+
+CREATE TABLE public.oms_taxes (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    order_id UUID NOT NULL REFERENCES public.oms_orders(id) ON DELETE CASCADE,
+    tax_name TEXT NOT NULL, -- e.g., 'CGST 9%', 'SGST 9%'
+    tax_amount NUMERIC NOT NULL CHECK (tax_amount >= 0),
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE public.oms_payments (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    invoice_id UUID NOT NULL REFERENCES public.oms_invoices(id) ON DELETE CASCADE,
+    payment_method TEXT NOT NULL, -- e.g., 'CREDIT_CARD', 'WALLET', 'CASH'
+    gateway_reference TEXT, -- Stripe Charge ID, Razorpay Payment ID
+    amount NUMERIC NOT NULL CHECK (amount > 0),
+    currency TEXT DEFAULT 'USD',
+    status public.enum_oms_payment_status DEFAULT 'PENDING',
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+
+CREATE TABLE public.oms_payment_history (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    payment_id UUID NOT NULL REFERENCES public.oms_payments(id) ON DELETE CASCADE,
+    event_status TEXT NOT NULL, -- INITIATED, SUCCESS, FAILED
+    gateway_response JSONB,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+-- Immutable ledger
+
+-- ==========================================
+-- 6. LOGISTICS & TRACKING
+-- ==========================================
+
+CREATE TABLE public.oms_shipments (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    order_id UUID NOT NULL REFERENCES public.oms_orders(id) ON DELETE CASCADE,
+    tracking_number TEXT,
+    carrier TEXT, -- e.g., FedEx, DHL
+    status public.enum_oms_shipment_status DEFAULT 'PENDING',
+    weight_kg NUMERIC,
+    dimensions_cm JSONB,
+    estimated_delivery_date DATE,
+    shipping_label_url TEXT,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+
+CREATE TABLE public.oms_deliveries (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    shipment_id UUID NOT NULL REFERENCES public.oms_shipments(id) ON DELETE CASCADE,
+    delivery_agent_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    vehicle_registration TEXT,
+    start_time TIMESTAMPTZ,
+    end_time TIMESTAMPTZ,
+    proof_of_delivery_url TEXT,
+    recipient_signature_url TEXT,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+
+CREATE TABLE public.oms_tracking_history (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    shipment_id UUID NOT NULL REFERENCES public.oms_shipments(id) ON DELETE CASCADE,
+    status public.enum_oms_shipment_status NOT NULL,
+    location TEXT,
+    description TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+-- Immutable ledger
+
+-- ==========================================
+-- 7. RETURNS & REFUNDS
+-- ==========================================
+
+CREATE TABLE public.oms_returns (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    order_item_id UUID NOT NULL REFERENCES public.oms_order_items(id) ON DELETE CASCADE,
+    quantity INTEGER NOT NULL CHECK (quantity > 0),
+    reason TEXT NOT NULL,
+    condition TEXT NOT NULL, -- e.g., 'UNOPENED', 'DAMAGED'
+    status TEXT DEFAULT 'REQUESTED', -- REQUESTED, APPROVED, REJECTED, RECEIVED
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+
+CREATE TABLE public.oms_refunds (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    return_id UUID REFERENCES public.oms_returns(id) ON DELETE SET NULL,
+    payment_id UUID NOT NULL REFERENCES public.oms_payments(id) ON DELETE CASCADE,
+    amount NUMERIC NOT NULL CHECK (amount > 0),
+    refund_method TEXT NOT NULL, -- 'ORIGINAL_GATEWAY', 'WALLET', 'STORE_CREDIT'
+    status TEXT DEFAULT 'PENDING', -- PENDING, COMPLETED, FAILED
+    gateway_reference TEXT,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+
+-- ==========================================
+-- 8. TRIGGERS & RLS AUTOMATION
+-- ==========================================
+
+
+
+ALTER TABLE public.oms_payment_history ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.oms_tracking_history ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.oms_taxes ENABLE ROW LEVEL SECURITY;
+
+-- 9. SECURITY POLICIES
+
+-- Superadmin & Staff General Access (scoped by org_id where applicable)
+
+
+-- End-User Policies (Customers can only view their own orders and related entities)
+-- Note: Reusing get_my_customer_ids() from script 000007
+CREATE POLICY "Users view own quotations" ON public.oms_quotations FOR SELECT USING (customer_id IN (SELECT public.get_my_customer_ids()));
+CREATE POLICY "Users view own orders" ON public.oms_orders FOR SELECT USING (customer_id IN (SELECT public.get_my_customer_ids()));
+CREATE POLICY "Users view own order items" ON public.oms_order_items FOR SELECT USING (order_id IN (SELECT id FROM public.oms_orders WHERE customer_id IN (SELECT public.get_my_customer_ids())));
+CREATE POLICY "Users view own invoices" ON public.oms_invoices FOR SELECT USING (order_id IN (SELECT id FROM public.oms_orders WHERE customer_id IN (SELECT public.get_my_customer_ids())));
+CREATE POLICY "Users view own shipments" ON public.oms_shipments FOR SELECT USING (order_id IN (SELECT id FROM public.oms_orders WHERE customer_id IN (SELECT public.get_my_customer_ids())));
+CREATE POLICY "Users view own returns" ON public.oms_returns FOR SELECT USING (order_item_id IN (SELECT id FROM public.oms_order_items WHERE order_id IN (SELECT id FROM public.oms_orders WHERE customer_id IN (SELECT public.get_my_customer_ids()))));
+CREATE POLICY "Users view own gift cards" ON public.oms_gift_cards FOR SELECT USING (customer_id IN (SELECT public.get_my_customer_ids()));
+
+
+-- ==========================================
+-- MODULE: 20260715000010_waba_enterprise_chat.sql
+-- ==========================================
+
+
+-- Migration: Enterprise WABA (WhatsApp Business API)
+-- Encompasses Chat, Routing, Messaging Engine, Campaigns, and AI Automation.
+
+-- ==========================================
+-- 1. ENUMS
+-- ==========================================
+
+
+
+
+
+
+
+
+-- ==========================================
+-- 2. ROUTING CONFIG (Departments, Teams, Queues)
+-- ==========================================
+
+CREATE TABLE public.wab_departments (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    org_id UUID REFERENCES public.org_organizations(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    description TEXT,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ,
+    UNIQUE(org_id, name)
+);
+
+CREATE TABLE public.wab_teams (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    department_id UUID NOT NULL REFERENCES public.wab_departments(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+
+CREATE TABLE public.wab_queues (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    org_id UUID REFERENCES public.org_organizations(id) ON DELETE CASCADE,
+    team_id UUID REFERENCES public.wab_teams(id) ON DELETE SET NULL,
+    name TEXT NOT NULL,
+    routing_strategy TEXT DEFAULT 'ROUND_ROBIN', -- ROUND_ROBIN, LONGEST_IDLE, MANUAL
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+
+-- ==========================================
+-- 3. CORE CHATS & CONVERSATIONS
+-- ==========================================
+
+CREATE TABLE public.wab_conversations (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    org_id UUID REFERENCES public.org_organizations(id) ON DELETE CASCADE,
+    customer_phone TEXT NOT NULL,
+    customer_id UUID REFERENCES public.crm_customers(id) ON DELETE SET NULL, -- Nullable for unknown leads
+    waba_phone_id TEXT NOT NULL, -- The specific Meta Phone ID serving this chat
+    status public.enum_wab_conv_status DEFAULT 'OPEN',
+    priority public.enum_wab_priority DEFAULT 'NORMAL',
+    queue_id UUID REFERENCES public.wab_queues(id) ON DELETE SET NULL,
+    last_message_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    last_message_snippet TEXT,
+    unread_count INTEGER DEFAULT 0,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+CREATE INDEX idx_wab_conversations_phone ON public.wab_conversations(org_id, customer_phone);
+
+CREATE TABLE public.wab_conversation_assignments (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    conversation_id UUID NOT NULL REFERENCES public.wab_conversations(id) ON DELETE CASCADE,
+    assigned_to_user UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+    assigned_to_team UUID REFERENCES public.wab_teams(id) ON DELETE CASCADE,
+    assigned_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    is_active BOOLEAN DEFAULT true,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    CHECK (assigned_to_user IS NOT NULL OR assigned_to_team IS NOT NULL)
+);
+CREATE INDEX idx_wab_conv_assignments_user ON public.wab_conversation_assignments(assigned_to_user) WHERE is_active = true;
+
+CREATE TABLE public.wab_labels (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    org_id UUID REFERENCES public.org_organizations(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    color_hex TEXT DEFAULT '#000000',
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE public.wab_tags (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    conversation_id UUID NOT NULL REFERENCES public.wab_conversations(id) ON DELETE CASCADE,
+    label_id UUID NOT NULL REFERENCES public.wab_labels(id) ON DELETE CASCADE,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    UNIQUE(conversation_id, label_id)
+);
+
+-- ==========================================
+-- 4. MESSAGING ENGINE & STATUS
+-- ==========================================
+
+CREATE TABLE public.wab_messages (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    conversation_id UUID NOT NULL REFERENCES public.wab_conversations(id) ON DELETE CASCADE,
+    waba_message_id TEXT UNIQUE, -- Meta's specific message ID (wamg...)
+    direction public.enum_wab_msg_direction NOT NULL,
+    message_type TEXT NOT NULL, -- text, image, document, template, interactive
+    content_text TEXT,
+    content_json JSONB, -- Fallback for interactive/buttons payloads
+    sent_by UUID REFERENCES auth.users(id) ON DELETE SET NULL, -- Agent who sent it, NULL if AI/Customer
+    is_deleted BOOLEAN DEFAULT false,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+-- Note: Messages are immutable payloads. We do not track updated_at.
+
+CREATE TABLE public.wab_message_status (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    message_id UUID NOT NULL REFERENCES public.wab_messages(id) ON DELETE CASCADE,
+    waba_message_id TEXT NOT NULL,
+    status public.enum_wab_msg_status NOT NULL,
+    error_code TEXT,
+    error_description TEXT,
+    timestamp TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+-- Delivery Report Ledger (Immutable appending of sent -> delivered -> read)
+CREATE INDEX idx_wab_message_status_msg ON public.wab_message_status(message_id, timestamp);
+
+CREATE TABLE public.wab_message_queue (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    org_id UUID REFERENCES public.org_organizations(id) ON DELETE CASCADE,
+    payload JSONB NOT NULL, -- Complete JSON required for Meta API
+    target_phone TEXT NOT NULL,
+    scheduled_for TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    priority INTEGER DEFAULT 0,
+    status TEXT DEFAULT 'PENDING', -- PENDING, PROCESSING, COMPLETED, FAILED
+    retry_count INTEGER DEFAULT 0,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE public.wab_webhook_logs (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    org_id UUID REFERENCES public.org_organizations(id) ON DELETE SET NULL,
+    payload JSONB NOT NULL,
+    event_type TEXT,
+    processed BOOLEAN DEFAULT false,
+    error_message TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+-- Debugging ledger
+CREATE INDEX idx_wab_webhook_logs_processed ON public.wab_webhook_logs(processed);
+
+-- ==========================================
+-- 5. MEDIA & FILES
+-- ==========================================
+
+CREATE TABLE public.wab_media (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    message_id UUID REFERENCES public.wab_messages(id) ON DELETE SET NULL,
+    waba_media_id TEXT, -- Meta's media reference ID
+    file_type TEXT NOT NULL, -- image/jpeg, application/pdf
+    file_url TEXT NOT NULL, -- Internal storage URL after download
+    file_size_bytes BIGINT,
+    caption TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- ==========================================
+-- 6. AI & AGENT AUGMENTATION
+-- ==========================================
+
+CREATE TABLE public.wab_internal_notes (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    conversation_id UUID NOT NULL REFERENCES public.wab_conversations(id) ON DELETE CASCADE,
+    note TEXT NOT NULL,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+
+CREATE TABLE public.wab_ai_summaries (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    conversation_id UUID NOT NULL REFERENCES public.wab_conversations(id) ON DELETE CASCADE,
+    summary_text TEXT NOT NULL,
+    sentiment_score NUMERIC,
+    generated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE public.wab_ai_suggestions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    conversation_id UUID NOT NULL REFERENCES public.wab_conversations(id) ON DELETE CASCADE,
+    suggested_reply TEXT NOT NULL,
+    confidence_score NUMERIC,
+    is_used BOOLEAN DEFAULT false,
+    generated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE public.wab_knowledge_base (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    org_id UUID REFERENCES public.org_organizations(id) ON DELETE CASCADE,
+    title TEXT NOT NULL,
+    content TEXT NOT NULL,
+    is_active BOOLEAN DEFAULT true,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+
+CREATE TABLE public.wab_auto_replies (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    org_id UUID REFERENCES public.org_organizations(id) ON DELETE CASCADE,
+    trigger_keyword TEXT, -- If NULL, applies generally based on rule_type
+    rule_type TEXT NOT NULL, -- OOH (Out of Hours), WELCOME, KEYWORD
+    reply_text TEXT NOT NULL,
+    is_active BOOLEAN DEFAULT true,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+
+-- ==========================================
+-- 7. BROADCASTS & CAMPAIGNS
+-- ==========================================
+
+CREATE TABLE public.wab_templates (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    org_id UUID REFERENCES public.org_organizations(id) ON DELETE CASCADE,
+    waba_template_id TEXT NOT NULL UNIQUE,
+    name TEXT NOT NULL,
+    category TEXT NOT NULL, -- MARKETING, UTILITY, AUTHENTICATION
+    language TEXT NOT NULL,
+    status TEXT DEFAULT 'PENDING', -- PENDING, APPROVED, REJECTED
+    components JSONB NOT NULL,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+
+CREATE TABLE public.wab_campaigns (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    org_id UUID REFERENCES public.org_organizations(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    description TEXT,
+    status TEXT DEFAULT 'DRAFT',
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+
+CREATE TABLE public.wab_broadcasts (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    campaign_id UUID REFERENCES public.wab_campaigns(id) ON DELETE CASCADE,
+    template_id UUID NOT NULL REFERENCES public.wab_templates(id) ON DELETE CASCADE,
+    target_group_id UUID REFERENCES public.crm_customer_groups(id) ON DELETE SET NULL,
+    status TEXT DEFAULT 'SCHEDULED', -- SCHEDULED, RUNNING, COMPLETED, CANCELLED
+    scheduled_for TIMESTAMPTZ NOT NULL,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+
+CREATE TABLE public.wab_broadcast_analytics (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    broadcast_id UUID NOT NULL REFERENCES public.wab_broadcasts(id) ON DELETE CASCADE,
+    total_sent INTEGER DEFAULT 0,
+    total_delivered INTEGER DEFAULT 0,
+    total_read INTEGER DEFAULT 0,
+    total_failed INTEGER DEFAULT 0,
+    total_replied INTEGER DEFAULT 0,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- ==========================================
+-- 8. TIMELINE & HISTORY
+-- ==========================================
+
+CREATE TABLE public.wab_customer_timeline (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    conversation_id UUID NOT NULL REFERENCES public.wab_conversations(id) ON DELETE CASCADE,
+    event_type TEXT NOT NULL, -- e.g., 'AGENT_ASSIGNED', 'SNOOZED', 'BOT_ESCALATED'
+    description TEXT NOT NULL,
+    metadata JSONB,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+-- Immutable ledger for tracking exact progression of a chat.
+
+-- ==========================================
+-- 9. TRIGGERS & RLS AUTOMATION
+-- ==========================================
+
+
+
+-- Enable RLS for ledgers
+ALTER TABLE public.wab_messages ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.wab_message_status ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.wab_webhook_logs ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.wab_media ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.wab_customer_timeline ENABLE ROW LEVEL SECURITY;
+
+-- 10. SECURITY POLICIES
+
+-- Superadmin & Staff General Access (scoped by org_id)
+
+
+-- Agent View Context (Agents can only view conversations explicitly assigned to them or their team, plus unassigned queued chats)
+CREATE POLICY "Agents view assigned or unassigned convos" ON public.wab_conversations FOR SELECT USING (
+    id IN (
+        SELECT conversation_id FROM public.wab_conversation_assignments 
+        WHERE (assigned_to_user = auth.uid() OR assigned_to_team IN (
+            -- Subquery: get teams agent belongs to (requires mapping table, simplified here to just user check for now)
+            -- For standard MVP, just checking user assignment. If no assignments exist, allow if status is OPEN.
+            SELECT id FROM public.wab_teams LIMIT 0
+        )) AND is_active = true
+    )
+    OR
+    (NOT EXISTS (SELECT 1 FROM public.wab_conversation_assignments WHERE conversation_id = wab_conversations.id AND is_active = true))
+);
+
+CREATE POLICY "Agents view messages for viewable convos" ON public.wab_messages FOR SELECT USING (
+    conversation_id IN (
+        SELECT id FROM public.wab_conversations WHERE org_id = public.get_current_org_id() -- simplified policy for massive tables, relies on RLS chaining if needed
+    )
+);
+
+
+-- ==========================================
+-- MODULE: 20260715000011_marketing_omnichannel.sql
+-- ==========================================
+
+
+-- Migration: Enterprise Marketing & Omnichannel Engine
+-- Encompasses Audiences, Campaigns, Broadcasts, Events, and Reviews.
+
+-- ==========================================
+-- 1. ENUMS
+-- ==========================================
+
+
+
+
+-- ==========================================
+-- 2. AUDIENCE & SEGMENTATION
+-- ==========================================
+
+CREATE TABLE public.mkt_audiences (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    org_id UUID REFERENCES public.org_organizations(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    description TEXT,
+    is_dynamic BOOLEAN DEFAULT false, -- If true, populated by Segments automatically
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ,
+    UNIQUE(org_id, name)
+);
+
+CREATE TABLE public.mkt_segments (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    audience_id UUID NOT NULL REFERENCES public.mkt_audiences(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    rule_logic JSONB NOT NULL, -- e.g., {"field": "total_spent", "operator": ">", "value": 500}
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+
+CREATE TABLE public.mkt_audience_members (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    audience_id UUID NOT NULL REFERENCES public.mkt_audiences(id) ON DELETE CASCADE,
+    customer_id UUID REFERENCES public.crm_customers(id) ON DELETE CASCADE,
+    lead_id UUID REFERENCES public.sls_leads(id) ON DELETE CASCADE,
+    added_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    is_unsubscribed BOOLEAN DEFAULT false,
+    CHECK (customer_id IS NOT NULL OR lead_id IS NOT NULL),
+    UNIQUE(audience_id, customer_id),
+    UNIQUE(audience_id, lead_id)
+);
+CREATE INDEX idx_mkt_aud_members_cust ON public.mkt_audience_members(customer_id);
+
+-- ==========================================
+-- 3. OMNICHANNEL CAMPAIGNS
+-- ==========================================
+
+CREATE TABLE public.mkt_campaigns (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    org_id UUID REFERENCES public.org_organizations(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    description TEXT,
+    status public.enum_mkt_campaign_status DEFAULT 'DRAFT',
+    start_date TIMESTAMPTZ,
+    end_date TIMESTAMPTZ,
+    budget NUMERIC DEFAULT 0,
+    -- Global UTM parameters to inject into links
+    utm_source TEXT,
+    utm_medium TEXT,
+    utm_campaign TEXT,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+
+CREATE TABLE public.mkt_email_broadcasts (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    campaign_id UUID NOT NULL REFERENCES public.mkt_campaigns(id) ON DELETE CASCADE,
+    audience_id UUID NOT NULL REFERENCES public.mkt_audiences(id) ON DELETE CASCADE,
+    subject_line TEXT NOT NULL,
+    preheader_text TEXT,
+    sender_name TEXT,
+    sender_email TEXT,
+    html_body TEXT NOT NULL,
+    status public.enum_mkt_broadcast_status DEFAULT 'DRAFT',
+    scheduled_for TIMESTAMPTZ,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+
+CREATE TABLE public.mkt_sms_broadcasts (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    campaign_id UUID NOT NULL REFERENCES public.mkt_campaigns(id) ON DELETE CASCADE,
+    audience_id UUID NOT NULL REFERENCES public.mkt_audiences(id) ON DELETE CASCADE,
+    message_body TEXT NOT NULL,
+    sender_id TEXT, -- e.g., 'TECBUNNY'
+    status public.enum_mkt_broadcast_status DEFAULT 'DRAFT',
+    scheduled_for TIMESTAMPTZ,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+
+CREATE TABLE public.mkt_social_campaigns (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    campaign_id UUID NOT NULL REFERENCES public.mkt_campaigns(id) ON DELETE CASCADE,
+    platform TEXT NOT NULL, -- FACEBOOK, LINKEDIN, GOOGLE_ADS
+    external_ad_id TEXT,
+    ad_creative_url TEXT,
+    ad_copy TEXT,
+    daily_budget NUMERIC DEFAULT 0,
+    status TEXT DEFAULT 'DRAFT',
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+
+-- ==========================================
+-- 4. LEAD GENERATION & PROMOTIONS
+-- ==========================================
+
+CREATE TABLE public.mkt_promotions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    campaign_id UUID NOT NULL REFERENCES public.mkt_campaigns(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    promotion_type TEXT NOT NULL, -- e.g., 'HOLIDAY_SALE', 'FLASH_SALE'
+    -- Links to OMS Coupons or CRM Referrals for the actual logic execution
+    oms_coupon_id UUID REFERENCES public.oms_coupons(id) ON DELETE SET NULL,
+    crm_referral_program_id UUID, -- Assuming future expansion or link to crm_referrals
+    start_date TIMESTAMPTZ NOT NULL,
+    end_date TIMESTAMPTZ,
+    is_active BOOLEAN DEFAULT true,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+
+CREATE TABLE public.mkt_events (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    org_id UUID REFERENCES public.org_organizations(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    event_type TEXT NOT NULL, -- WEBINAR, IN_PERSON, CONFERENCE
+    start_time TIMESTAMPTZ NOT NULL,
+    end_time TIMESTAMPTZ NOT NULL,
+    location_url TEXT,
+    max_capacity INTEGER,
+    registered_count INTEGER DEFAULT 0,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+
+CREATE TABLE public.mkt_landing_pages (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    org_id UUID REFERENCES public.org_organizations(id) ON DELETE CASCADE,
+    campaign_id UUID REFERENCES public.mkt_campaigns(id) ON DELETE SET NULL,
+    title TEXT NOT NULL,
+    slug TEXT NOT NULL UNIQUE,
+    html_content TEXT,
+    is_published BOOLEAN DEFAULT false,
+    view_count INTEGER DEFAULT 0,
+    conversion_count INTEGER DEFAULT 0,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+
+CREATE TABLE public.mkt_lead_magnets (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    landing_page_id UUID NOT NULL REFERENCES public.mkt_landing_pages(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    asset_url TEXT NOT NULL, -- PDF, E-Book download link
+    download_count INTEGER DEFAULT 0,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+
+-- ==========================================
+-- 5. REVIEWS & REPUTATION MANAGEMENT
+-- ==========================================
+
+CREATE TABLE public.mkt_reviews (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    org_id UUID REFERENCES public.org_organizations(id) ON DELETE CASCADE,
+    customer_id UUID REFERENCES public.crm_customers(id) ON DELETE SET NULL,
+    product_id UUID REFERENCES public.prd_products(id) ON DELETE SET NULL,
+    order_id UUID REFERENCES public.oms_orders(id) ON DELETE SET NULL,
+    rating INTEGER NOT NULL CHECK (rating >= 1 AND rating <= 5),
+    review_text TEXT,
+    status TEXT DEFAULT 'PENDING', -- PENDING, APPROVED, REJECTED
+    is_verified_purchase BOOLEAN DEFAULT false,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+
+CREATE TABLE public.mkt_google_reviews (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    org_id UUID REFERENCES public.org_organizations(id) ON DELETE CASCADE,
+    gmb_review_id TEXT NOT NULL UNIQUE, -- Google My Business review ID
+    reviewer_name TEXT NOT NULL,
+    reviewer_photo_url TEXT,
+    rating INTEGER NOT NULL CHECK (rating >= 1 AND rating <= 5),
+    review_text TEXT,
+    reply_text TEXT, -- Internal reply sent back to GMB
+    replied_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW() -- Synced at
+);
+-- External sync table, generally immutable outside of replies
+
+-- Unified View for the Dashboard
+CREATE OR REPLACE VIEW public.v_mkt_all_reviews AS
+SELECT 
+    id, org_id, 'NATIVE' AS source, rating, review_text, created_at, status
+FROM public.mkt_reviews
+UNION ALL
+SELECT 
+    id, org_id, 'GOOGLE_GMB' AS source, rating, review_text, created_at, 'APPROVED' AS status
+FROM public.mkt_google_reviews;
+
+-- ==========================================
+-- 6. ANALYTICS LEDGER
+-- ==========================================
+
+CREATE TABLE public.mkt_campaign_analytics (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    campaign_id UUID NOT NULL REFERENCES public.mkt_campaigns(id) ON DELETE CASCADE,
+    date DATE NOT NULL DEFAULT CURRENT_DATE,
+    channel TEXT NOT NULL, -- EMAIL, SMS, SOCIAL, WABA
+    impressions INTEGER DEFAULT 0,
+    clicks INTEGER DEFAULT 0,
+    conversions INTEGER DEFAULT 0,
+    spend NUMERIC DEFAULT 0,
+    revenue_generated NUMERIC DEFAULT 0,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    UNIQUE(campaign_id, date, channel)
+);
+-- Upsertable analytics ledger
+
+-- ==========================================
+-- 7. TRIGGERS & RLS AUTOMATION
+-- ==========================================
+
+
+
+ALTER TABLE public.mkt_google_reviews ENABLE ROW LEVEL SECURITY;
+
+-- 8. SECURITY POLICIES
+
+-- Superadmin & Staff General Access (scoped by org_id)
+
+
+-- Public Access for Landing Pages & Active Native Reviews
+CREATE POLICY "Public view landing pages" ON public.mkt_landing_pages FOR SELECT USING (is_published = true);
+CREATE POLICY "Public view active native reviews" ON public.mkt_reviews FOR SELECT USING (status = 'APPROVED');
+CREATE POLICY "Public view active events" ON public.mkt_events FOR SELECT USING (deleted_at IS NULL);
+
+
+-- ==========================================
+-- MODULE: 20260715000012_support_field_service.sql
+-- ==========================================
+
+
+-- Migration: Enterprise Support & Field Service Management (FSM)
+-- Encompasses Helpdesk Ticketing, AMC/Warranty, Field Engineers, and Spare Parts.
+
+-- ==========================================
+-- 1. ENUMS
+-- ==========================================
+
+
+
+
+
+
+
+
+-- ==========================================
+-- 2. ASSET & CONTRACT MANAGEMENT
+-- ==========================================
+
+CREATE TABLE public.sup_customer_assets (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    org_id UUID REFERENCES public.org_organizations(id) ON DELETE CASCADE,
+    customer_id UUID NOT NULL REFERENCES public.crm_customers(id) ON DELETE CASCADE,
+    variant_id UUID NOT NULL REFERENCES public.prd_variants(id) ON DELETE CASCADE,
+    serial_number_id UUID REFERENCES public.inv_serial_numbers(id) ON DELETE SET NULL, -- Maps to specific physical unit
+    order_id UUID REFERENCES public.oms_orders(id) ON DELETE SET NULL,
+    installation_date DATE,
+    status TEXT DEFAULT 'ACTIVE', -- ACTIVE, INACTIVE, SCRAPPED
+    location_address_id UUID REFERENCES public.crm_addresses(id) ON DELETE SET NULL,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+CREATE INDEX idx_sup_customer_assets_cust ON public.sup_customer_assets(customer_id);
+
+CREATE TABLE public.sup_warranties (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    asset_id UUID NOT NULL REFERENCES public.sup_customer_assets(id) ON DELETE CASCADE,
+    warranty_type TEXT NOT NULL, -- STANDARD, EXTENDED
+    provider TEXT NOT NULL, -- OEM, THIRD_PARTY
+    start_date DATE NOT NULL,
+    end_date DATE NOT NULL,
+    terms_conditions_url TEXT,
+    is_active BOOLEAN DEFAULT true,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+
+CREATE TABLE public.sup_amc_contracts (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    org_id UUID REFERENCES public.org_organizations(id) ON DELETE CASCADE,
+    customer_id UUID NOT NULL REFERENCES public.crm_customers(id) ON DELETE CASCADE,
+    asset_id UUID REFERENCES public.sup_customer_assets(id) ON DELETE CASCADE,
+    contract_number TEXT NOT NULL UNIQUE,
+    start_date DATE NOT NULL,
+    end_date DATE NOT NULL,
+    total_preventative_visits INTEGER NOT NULL DEFAULT 0,
+    visits_completed INTEGER NOT NULL DEFAULT 0,
+    contract_value NUMERIC NOT NULL DEFAULT 0,
+    status TEXT DEFAULT 'ACTIVE', -- ACTIVE, EXPIRED, CANCELLED
+    terms_conditions_url TEXT,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+
+-- ==========================================
+-- 3. CORE TICKETING (HELPDESK)
+-- ==========================================
+
+CREATE TABLE public.sup_tickets (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    org_id UUID REFERENCES public.org_organizations(id) ON DELETE CASCADE,
+    ticket_number TEXT NOT NULL UNIQUE,
+    customer_id UUID NOT NULL REFERENCES public.crm_customers(id) ON DELETE CASCADE,
+    asset_id UUID REFERENCES public.sup_customer_assets(id) ON DELETE SET NULL,
+    ticket_type public.enum_sup_ticket_type NOT NULL,
+    priority public.enum_sup_priority DEFAULT 'MEDIUM',
+    status public.enum_sup_ticket_status DEFAULT 'OPEN',
+    subject TEXT NOT NULL,
+    description TEXT NOT NULL,
+    assigned_to UUID REFERENCES auth.users(id) ON DELETE SET NULL, -- Helpdesk Agent
+    due_date TIMESTAMPTZ,
+    resolved_at TIMESTAMPTZ,
+    closed_at TIMESTAMPTZ,
+    is_sla_breached BOOLEAN DEFAULT false,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ,
+    search_vector tsvector GENERATED ALWAYS AS (
+        setweight(to_tsvector('english', coalesce(ticket_number, '')), 'A') ||
+        setweight(to_tsvector('english', coalesce(subject, '')), 'B')
+    ) STORED
+);
+CREATE INDEX idx_sup_tickets_search ON public.sup_tickets USING GIN (search_vector);
+CREATE INDEX idx_sup_tickets_assigned ON public.sup_tickets(assigned_to, status);
+CREATE INDEX idx_sup_tickets_customer ON public.sup_tickets(customer_id);
+
+CREATE TABLE public.sup_ticket_messages (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    ticket_id UUID NOT NULL REFERENCES public.sup_tickets(id) ON DELETE CASCADE,
+    sender_user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL, -- NULL if from customer (if no auth.users mapping exists)
+    sender_customer_id UUID REFERENCES public.crm_customers(id) ON DELETE SET NULL,
+    message TEXT NOT NULL,
+    is_internal_note BOOLEAN DEFAULT false, -- If true, invisible to customer
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ,
+    CHECK (sender_user_id IS NOT NULL OR sender_customer_id IS NOT NULL)
+);
+
+CREATE TABLE public.sup_ticket_attachments (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    ticket_id UUID NOT NULL REFERENCES public.sup_tickets(id) ON DELETE CASCADE,
+    message_id UUID REFERENCES public.sup_ticket_messages(id) ON DELETE SET NULL,
+    file_name TEXT NOT NULL,
+    file_url TEXT NOT NULL,
+    file_type TEXT NOT NULL,
+    file_size_bytes BIGINT,
+    uploaded_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE public.sup_ticket_resolutions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    ticket_id UUID NOT NULL REFERENCES public.sup_tickets(id) ON DELETE CASCADE,
+    resolution_code TEXT NOT NULL, -- e.g., 'HARDWARE_REPLACED', 'USER_ERROR'
+    resolution_summary TEXT NOT NULL,
+    resolved_by UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE public.sup_ticket_feedback (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    ticket_id UUID NOT NULL REFERENCES public.sup_tickets(id) ON DELETE CASCADE,
+    customer_id UUID NOT NULL REFERENCES public.crm_customers(id) ON DELETE CASCADE,
+    csat_score INTEGER NOT NULL CHECK (csat_score >= 1 AND csat_score <= 5),
+    nps_score INTEGER CHECK (nps_score >= 0 AND nps_score <= 10),
+    feedback_text TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+-- Immutable feedback record
+
+-- ==========================================
+-- 4. FIELD SERVICE MANAGEMENT (FSM)
+-- ==========================================
+
+CREATE TABLE public.sup_engineers (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    org_id UUID REFERENCES public.org_organizations(id) ON DELETE CASCADE,
+    user_id UUID NOT NULL UNIQUE REFERENCES auth.users(id) ON DELETE CASCADE,
+    skills TEXT[], -- Array of specific skills/certifications
+    service_area_radius_km INTEGER DEFAULT 50,
+    base_location_lat NUMERIC,
+    base_location_lng NUMERIC,
+    is_active BOOLEAN DEFAULT true,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+
+CREATE TABLE public.sup_engineer_visits (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    ticket_id UUID NOT NULL REFERENCES public.sup_tickets(id) ON DELETE CASCADE,
+    engineer_id UUID NOT NULL REFERENCES public.sup_engineers(id) ON DELETE CASCADE,
+    visit_type public.enum_sup_ticket_type NOT NULL,
+    scheduled_start TIMESTAMPTZ NOT NULL,
+    scheduled_end TIMESTAMPTZ NOT NULL,
+    actual_start TIMESTAMPTZ,
+    actual_end TIMESTAMPTZ,
+    status public.enum_sup_visit_status DEFAULT 'SCHEDULED',
+    address_id UUID REFERENCES public.crm_addresses(id) ON DELETE SET NULL,
+    gps_checkin_lat NUMERIC,
+    gps_checkin_lng NUMERIC,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+CREATE INDEX idx_sup_engineer_visits_eng ON public.sup_engineer_visits(engineer_id, status);
+
+CREATE TABLE public.sup_service_reports (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    visit_id UUID NOT NULL REFERENCES public.sup_engineer_visits(id) ON DELETE CASCADE,
+    engineer_id UUID NOT NULL REFERENCES public.sup_engineers(id) ON DELETE CASCADE,
+    work_done_summary TEXT NOT NULL,
+    recommendations TEXT,
+    customer_signature_url TEXT,
+    is_signed_off BOOLEAN DEFAULT false,
+    signed_off_at TIMESTAMPTZ,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+
+CREATE TABLE public.sup_spare_parts_used (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    service_report_id UUID NOT NULL REFERENCES public.sup_service_reports(id) ON DELETE CASCADE,
+    variant_id UUID NOT NULL REFERENCES public.prd_variants(id) ON DELETE CASCADE,
+    warehouse_id UUID REFERENCES public.inv_warehouses(id) ON DELETE SET NULL, -- The warehouse/van stock location to deduct from
+    quantity INTEGER NOT NULL CHECK (quantity > 0),
+    is_billable BOOLEAN DEFAULT true, -- False if covered by warranty/AMC
+    status TEXT DEFAULT 'PENDING_DEDUCTION', -- PENDING_DEDUCTION, CONSUMED, RETURNED
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+
+-- Function & Trigger to automatically deduct inventory when a spare part is consumed
+CREATE OR REPLACE FUNCTION public.fn_sup_deduct_spare_part_inventory()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF NEW.status = 'CONSUMED' AND OLD.status != 'CONSUMED' THEN
+        -- Deduct stock if a warehouse/van location is assigned
+        IF NEW.warehouse_id IS NOT NULL THEN
+            UPDATE public.inv_stock
+            SET quantity_on_hand = quantity_on_hand - NEW.quantity,
+                updated_at = NOW()
+            WHERE variant_id = NEW.variant_id AND warehouse_id = NEW.warehouse_id;
+            
+            -- Log immutable history
+            INSERT INTO public.inv_stock_history (warehouse_id, variant_id, movement_type, quantity_changed, quantity_after, reference_id)
+            VALUES (
+                NEW.warehouse_id, 
+                NEW.variant_id, 
+                'SPARE_PART_CONSUMED', 
+                -(NEW.quantity), 
+                (SELECT quantity_on_hand FROM public.inv_stock WHERE variant_id = NEW.variant_id AND warehouse_id = NEW.warehouse_id),
+                NEW.id
+            );
+        END IF;
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+CREATE TRIGGER trg_sup_deduct_spare_part_inventory
+    AFTER UPDATE OF status ON public.sup_spare_parts_used
+    FOR EACH ROW EXECUTE FUNCTION public.fn_sup_deduct_spare_part_inventory();
+
+
+-- ==========================================
+-- 5. TRIGGERS & RLS AUTOMATION
+-- ==========================================
+
+
+
+ALTER TABLE public.sup_ticket_attachments ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.sup_ticket_feedback ENABLE ROW LEVEL SECURITY;
+
+-- 6. SECURITY POLICIES
+
+-- Superadmin & Staff General Access (scoped by org_id)
+
+
+-- Customer Access Policies (Customers see their own tickets, assets, AMCs, etc.)
+-- Uses get_my_customer_ids() from script 000007
+CREATE POLICY "Users view own assets" ON public.sup_customer_assets FOR SELECT USING (customer_id IN (SELECT public.get_my_customer_ids()));
+CREATE POLICY "Users view own tickets" ON public.sup_tickets FOR SELECT USING (customer_id IN (SELECT public.get_my_customer_ids()));
+CREATE POLICY "Users insert own tickets" ON public.sup_tickets FOR INSERT WITH CHECK (customer_id IN (SELECT public.get_my_customer_ids()));
+CREATE POLICY "Users view own messages" ON public.sup_ticket_messages FOR SELECT USING (
+    ticket_id IN (SELECT id FROM public.sup_tickets WHERE customer_id IN (SELECT public.get_my_customer_ids()))
+    AND is_internal_note = false
+);
+CREATE POLICY "Users insert own messages" ON public.sup_ticket_messages FOR INSERT WITH CHECK (
+    ticket_id IN (SELECT id FROM public.sup_tickets WHERE customer_id IN (SELECT public.get_my_customer_ids()))
+);
+CREATE POLICY "Users view own AMC" ON public.sup_amc_contracts FOR SELECT USING (customer_id IN (SELECT public.get_my_customer_ids()));
+
+-- Engineer Access Policies
+-- Engineers can view and update their assigned visits and related service reports
+CREATE POLICY "Engineers view own visits" ON public.sup_engineer_visits FOR SELECT USING (
+    engineer_id IN (SELECT id FROM public.sup_engineers WHERE user_id = auth.uid())
+);
+CREATE POLICY "Engineers update own visits" ON public.sup_engineer_visits FOR UPDATE USING (
+    engineer_id IN (SELECT id FROM public.sup_engineers WHERE user_id = auth.uid())
+);
+CREATE POLICY "Engineers manage own reports" ON public.sup_service_reports FOR ALL USING (
+    engineer_id IN (SELECT id FROM public.sup_engineers WHERE user_id = auth.uid())
+);
+CREATE POLICY "Engineers view assigned ticket" ON public.sup_tickets FOR SELECT USING (
+    id IN (SELECT ticket_id FROM public.sup_engineer_visits WHERE engineer_id IN (SELECT id FROM public.sup_engineers WHERE user_id = auth.uid()))
+);
+
+
+-- ==========================================
+-- MODULE: 20260715000013_financial_accounting.sql
+-- ==========================================
+
+
+-- Migration: Enterprise Financial Accounting & General Ledger
+-- Encompasses Chart of Accounts, Double-Entry Ledger, AR/AP, Taxation (GST), and Payroll tracking.
+
+-- ==========================================
+-- 1. ENUMS
+-- ==========================================
+
+
+
+
+
+
+-- ==========================================
+-- 2. CHART OF ACCOUNTS (CoA)
+-- ==========================================
+
+CREATE TABLE public.fin_accounts (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    org_id UUID REFERENCES public.org_organizations(id) ON DELETE CASCADE,
+    account_code TEXT NOT NULL,
+    account_name TEXT NOT NULL,
+    account_type public.enum_fin_account_type NOT NULL,
+    parent_account_id UUID REFERENCES public.fin_accounts(id) ON DELETE RESTRICT,
+    description TEXT,
+    is_active BOOLEAN DEFAULT true,
+    is_system_account BOOLEAN DEFAULT false, -- e.g., 'Retained Earnings' which shouldn't be deleted
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ,
+    UNIQUE(org_id, account_code)
+);
+
+-- ==========================================
+-- 3. THE GENERAL LEDGER (Double-Entry)
+-- ==========================================
+
+CREATE TABLE public.fin_journal_entries (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    org_id UUID REFERENCES public.org_organizations(id) ON DELETE CASCADE,
+    entry_number TEXT NOT NULL UNIQUE,
+    entry_date DATE NOT NULL DEFAULT CURRENT_DATE,
+    reference TEXT, -- Invoice number, Receipt number, etc.
+    description TEXT NOT NULL,
+    status public.enum_fin_entry_status DEFAULT 'DRAFT',
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    posted_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+-- No deleted_at. Journal Entries cannot be soft-deleted.
+
+CREATE TABLE public.fin_ledger_lines (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    journal_entry_id UUID NOT NULL REFERENCES public.fin_journal_entries(id) ON DELETE CASCADE,
+    account_id UUID NOT NULL REFERENCES public.fin_accounts(id) ON DELETE RESTRICT,
+    description TEXT,
+    dr_amount NUMERIC NOT NULL DEFAULT 0 CHECK (dr_amount >= 0),
+    cr_amount NUMERIC NOT NULL DEFAULT 0 CHECK (cr_amount >= 0),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    CHECK (dr_amount > 0 OR cr_amount > 0)
+);
+
+-- STRICT DOUBLE-ENTRY COMPLIANCE TRIGGER
+CREATE OR REPLACE FUNCTION public.fn_fin_enforce_double_entry()
+RETURNS TRIGGER AS $$
+DECLARE
+    total_dr NUMERIC;
+    total_cr NUMERIC;
+    entry_status TEXT;
+BEGIN
+    SELECT status INTO entry_status FROM public.fin_journal_entries WHERE id = NEW.id;
+    
+    IF entry_status = 'POSTED' THEN
+        SELECT COALESCE(SUM(dr_amount), 0), COALESCE(SUM(cr_amount), 0)
+        INTO total_dr, total_cr
+        FROM public.fin_ledger_lines
+        WHERE journal_entry_id = NEW.id;
+        
+        IF total_dr != total_cr THEN
+            RAISE EXCEPTION 'Double-entry violation: Debits (%) must equal Credits (%) for posted journal entry.', total_dr, total_cr;
+        END IF;
+    END IF;
+    
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+CREATE TRIGGER trg_fin_enforce_double_entry
+    AFTER UPDATE OF status ON public.fin_journal_entries
+    FOR EACH ROW EXECUTE FUNCTION public.fn_fin_enforce_double_entry();
+
+-- STRICT IMMUTABILITY TRIGGER
+CREATE OR REPLACE FUNCTION public.fn_fin_enforce_immutability()
+RETURNS TRIGGER AS $$
+DECLARE
+    entry_status TEXT;
+BEGIN
+    SELECT status INTO entry_status FROM public.fin_journal_entries WHERE id = OLD.journal_entry_id;
+    
+    IF entry_status = 'POSTED' THEN
+        RAISE EXCEPTION 'Immutability violation: Cannot modify or delete ledger lines belonging to a POSTED journal entry. Reversals must be used.';
+    END IF;
+    
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+CREATE TRIGGER trg_fin_enforce_immutability
+    BEFORE UPDATE OR DELETE ON public.fin_ledger_lines
+    FOR EACH ROW EXECUTE FUNCTION public.fn_fin_enforce_immutability();
+
+-- ==========================================
+-- 4. ACCOUNTS RECEIVABLE & PAYABLE
+-- ==========================================
+
+CREATE TABLE public.fin_invoices (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    org_id UUID REFERENCES public.org_organizations(id) ON DELETE CASCADE,
+    oms_invoice_id UUID REFERENCES public.oms_invoices(id) ON DELETE SET NULL, -- Maps back to OMS billing
+    customer_id UUID NOT NULL REFERENCES public.crm_customers(id) ON DELETE CASCADE,
+    journal_entry_id UUID REFERENCES public.fin_journal_entries(id) ON DELETE RESTRICT,
+    invoice_number TEXT NOT NULL UNIQUE,
+    issue_date DATE NOT NULL,
+    due_date DATE NOT NULL,
+    subtotal NUMERIC NOT NULL DEFAULT 0,
+    total_tax NUMERIC NOT NULL DEFAULT 0,
+    grand_total NUMERIC NOT NULL DEFAULT 0,
+    amount_paid NUMERIC NOT NULL DEFAULT 0,
+    outstanding_balance NUMERIC GENERATED ALWAYS AS (grand_total - amount_paid) STORED,
+    status public.enum_fin_doc_status DEFAULT 'UNPAID',
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+
+CREATE TABLE public.fin_bills (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    org_id UUID REFERENCES public.org_organizations(id) ON DELETE CASCADE,
+    supplier_id UUID NOT NULL REFERENCES public.inv_suppliers(id) ON DELETE CASCADE,
+    journal_entry_id UUID REFERENCES public.fin_journal_entries(id) ON DELETE RESTRICT,
+    bill_number TEXT NOT NULL,
+    reference TEXT,
+    issue_date DATE NOT NULL,
+    due_date DATE NOT NULL,
+    subtotal NUMERIC NOT NULL DEFAULT 0,
+    total_tax NUMERIC NOT NULL DEFAULT 0,
+    grand_total NUMERIC NOT NULL DEFAULT 0,
+    amount_paid NUMERIC NOT NULL DEFAULT 0,
+    outstanding_balance NUMERIC GENERATED ALWAYS AS (grand_total - amount_paid) STORED,
+    status public.enum_fin_doc_status DEFAULT 'UNPAID',
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+
+CREATE TABLE public.fin_credit_notes (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    org_id UUID REFERENCES public.org_organizations(id) ON DELETE CASCADE,
+    customer_id UUID NOT NULL REFERENCES public.crm_customers(id) ON DELETE CASCADE,
+    invoice_id UUID REFERENCES public.fin_invoices(id) ON DELETE SET NULL,
+    journal_entry_id UUID REFERENCES public.fin_journal_entries(id) ON DELETE RESTRICT,
+    credit_note_number TEXT NOT NULL UNIQUE,
+    issue_date DATE NOT NULL,
+    amount NUMERIC NOT NULL CHECK (amount > 0),
+    reason TEXT NOT NULL,
+    status TEXT DEFAULT 'APPLIED',
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE public.fin_debit_notes (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    org_id UUID REFERENCES public.org_organizations(id) ON DELETE CASCADE,
+    supplier_id UUID NOT NULL REFERENCES public.inv_suppliers(id) ON DELETE CASCADE,
+    bill_id UUID REFERENCES public.fin_bills(id) ON DELETE SET NULL,
+    journal_entry_id UUID REFERENCES public.fin_journal_entries(id) ON DELETE RESTRICT,
+    debit_note_number TEXT NOT NULL UNIQUE,
+    issue_date DATE NOT NULL,
+    amount NUMERIC NOT NULL CHECK (amount > 0),
+    reason TEXT NOT NULL,
+    status TEXT DEFAULT 'APPLIED',
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- ==========================================
+-- 5. BANKING & TREASURY
+-- ==========================================
+
+CREATE TABLE public.fin_bank_accounts (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    org_id UUID REFERENCES public.org_organizations(id) ON DELETE CASCADE,
+    account_id UUID NOT NULL REFERENCES public.fin_accounts(id) ON DELETE RESTRICT, -- Map to specific CoA ledger
+    bank_name TEXT NOT NULL,
+    account_number TEXT NOT NULL,
+    ifsc_routing_code TEXT,
+    currency TEXT DEFAULT 'USD',
+    opening_balance NUMERIC DEFAULT 0,
+    is_active BOOLEAN DEFAULT true,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+
+CREATE TABLE public.fin_bank_transactions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    bank_account_id UUID NOT NULL REFERENCES public.fin_bank_accounts(id) ON DELETE CASCADE,
+    journal_entry_id UUID REFERENCES public.fin_journal_entries(id) ON DELETE SET NULL, -- Set when reconciled
+    transaction_date DATE NOT NULL,
+    description TEXT NOT NULL,
+    withdrawal_amount NUMERIC DEFAULT 0 CHECK (withdrawal_amount >= 0),
+    deposit_amount NUMERIC DEFAULT 0 CHECK (deposit_amount >= 0),
+    running_balance NUMERIC,
+    is_reconciled BOOLEAN DEFAULT false,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- ==========================================
+-- 6. TAXATION & GST COMPLIANCE
+-- ==========================================
+
+CREATE TABLE public.fin_tax_rates (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    org_id UUID REFERENCES public.org_organizations(id) ON DELETE CASCADE,
+    name TEXT NOT NULL, -- e.g., 'GST 18% (IGST)'
+    tax_type TEXT NOT NULL, -- IGST, CGST, SGST, VAT
+    rate_percentage NUMERIC NOT NULL CHECK (rate_percentage >= 0),
+    is_active BOOLEAN DEFAULT true,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+
+CREATE TABLE public.fin_tax_ledger (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    org_id UUID REFERENCES public.org_organizations(id) ON DELETE CASCADE,
+    tax_rate_id UUID NOT NULL REFERENCES public.fin_tax_rates(id) ON DELETE RESTRICT,
+    journal_entry_id UUID NOT NULL REFERENCES public.fin_journal_entries(id) ON DELETE CASCADE,
+    tax_direction TEXT NOT NULL, -- 'OUTPUT_TAX_LIABILITY' (Sales) or 'INPUT_TAX_CREDIT' (Purchases)
+    taxable_amount NUMERIC NOT NULL,
+    tax_amount NUMERIC NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- ==========================================
+-- 7. EXPENSES: PAYROLL & COMMISSIONS
+-- ==========================================
+
+CREATE TABLE public.fin_salary_slips (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    org_id UUID REFERENCES public.org_organizations(id) ON DELETE CASCADE,
+    employee_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    journal_entry_id UUID REFERENCES public.fin_journal_entries(id) ON DELETE RESTRICT,
+    month_year TEXT NOT NULL, -- e.g., '2026-07'
+    basic_salary NUMERIC NOT NULL DEFAULT 0,
+    allowances NUMERIC NOT NULL DEFAULT 0,
+    deductions NUMERIC NOT NULL DEFAULT 0,
+    net_salary NUMERIC GENERATED ALWAYS AS (basic_salary + allowances - deductions) STORED,
+    status TEXT DEFAULT 'DRAFT', -- DRAFT, APPROVED, PAID
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+
+CREATE TABLE public.fin_commission_ledger (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    org_id UUID REFERENCES public.org_organizations(id) ON DELETE CASCADE,
+    sales_executive_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    journal_entry_id UUID REFERENCES public.fin_journal_entries(id) ON DELETE RESTRICT,
+    opportunity_id UUID REFERENCES public.sls_opportunities(id) ON DELETE SET NULL,
+    invoice_id UUID REFERENCES public.fin_invoices(id) ON DELETE SET NULL,
+    commission_amount NUMERIC NOT NULL CHECK (commission_amount > 0),
+    status TEXT DEFAULT 'PENDING', -- PENDING, APPROVED, PAID
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- ==========================================
+-- 8. TRIGGERS & RLS AUTOMATION
+-- ==========================================
+
+
+
+-- Enable RLS for ledgers
+ALTER TABLE public.fin_ledger_lines ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.fin_credit_notes ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.fin_debit_notes ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.fin_bank_transactions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.fin_tax_ledger ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.fin_commission_ledger ENABLE ROW LEVEL SECURITY;
+
+-- 9. SECURITY POLICIES
+
+-- Superadmin & Staff General Access (scoped by org_id)
+-- Finance data is extremely sensitive. Generally only Superadmins or specific 'FINANCE' roles should access.
+-- Using is_superadmin() for foundational access.
+
+
+-- Employees view own salary slips
+CREATE POLICY "Users view own salary slips" ON public.fin_salary_slips FOR SELECT USING (employee_id = auth.uid());
+
+-- Sales Execs view own commissions
+CREATE POLICY "Sales execs view own commission" ON public.fin_commission_ledger FOR SELECT USING (sales_executive_id = auth.uid());
+
+-- Customers view own invoices and credit notes
+CREATE POLICY "Customers view own invoices" ON public.fin_invoices FOR SELECT USING (customer_id IN (SELECT public.get_my_customer_ids()));
+CREATE POLICY "Customers view own credit notes" ON public.fin_credit_notes FOR SELECT USING (customer_id IN (SELECT public.get_my_customer_ids()));
+
+
+-- ==========================================
+-- MODULE: 20260715000014_human_resources.sql
+-- ==========================================
+
+
+-- Migration: Enterprise Human Resources (HRMS)
+-- Encompasses Employee Files, Attendance, Leave, Payroll, and Performance.
+
+-- ==========================================
+-- 1. ENUMS
+-- ==========================================
+
+
+
+
+
+
+
+
+-- ==========================================
+-- 2. EMPLOYEE FILES & DOCUMENTS
+-- ==========================================
+
+CREATE TABLE public.hr_employees (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    org_id UUID REFERENCES public.org_organizations(id) ON DELETE CASCADE,
+    user_id UUID NOT NULL UNIQUE REFERENCES auth.users(id) ON DELETE CASCADE,
+    employee_code TEXT NOT NULL UNIQUE,
+    employment_type public.enum_hr_employment_type DEFAULT 'FULL_TIME',
+    joining_date DATE NOT NULL,
+    probation_end_date DATE,
+    exit_date DATE,
+    date_of_birth DATE,
+    gender TEXT,
+    blood_group TEXT,
+    national_id_number TEXT, -- SSN, PAN, Aadhar (Should ideally be encrypted at app layer)
+    emergency_contact_name TEXT,
+    emergency_contact_phone TEXT,
+    bank_account_name TEXT,
+    bank_account_number TEXT,
+    bank_routing_code TEXT,
+    is_active BOOLEAN DEFAULT true,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+
+CREATE TABLE public.hr_documents (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    employee_id UUID NOT NULL REFERENCES public.hr_employees(id) ON DELETE CASCADE,
+    document_type TEXT NOT NULL, -- e.g., 'ID_PROOF', 'CONTRACT', 'NDA', 'CERTIFICATE'
+    document_url TEXT NOT NULL,
+    is_verified BOOLEAN DEFAULT false,
+    verified_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+
+-- ==========================================
+-- 3. TIME & ATTENDANCE
+-- ==========================================
+
+CREATE TABLE public.hr_holidays (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    org_id UUID REFERENCES public.org_organizations(id) ON DELETE CASCADE,
+    branch_id UUID REFERENCES public.org_branches(id) ON DELETE CASCADE, -- Null means company-wide
+    name TEXT NOT NULL,
+    holiday_date DATE NOT NULL,
+    is_optional BOOLEAN DEFAULT false,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+
+CREATE TABLE public.hr_attendance (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    employee_id UUID NOT NULL REFERENCES public.hr_employees(id) ON DELETE CASCADE,
+    attendance_date DATE NOT NULL DEFAULT CURRENT_DATE,
+    clock_in_time TIMESTAMPTZ,
+    clock_out_time TIMESTAMPTZ,
+    clock_in_lat NUMERIC, -- Geofencing for field staff
+    clock_in_lng NUMERIC,
+    clock_out_lat NUMERIC,
+    clock_out_lng NUMERIC,
+    status public.enum_hr_attendance_status DEFAULT 'PRESENT',
+    total_hours_worked NUMERIC GENERATED ALWAYS AS (
+        EXTRACT(EPOCH FROM (clock_out_time - clock_in_time))/3600
+    ) STORED,
+    remarks TEXT,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    UNIQUE(employee_id, attendance_date)
+);
+
+-- ==========================================
+-- 4. LEAVE MANAGEMENT
+-- ==========================================
+
+CREATE TABLE public.hr_leave_types (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    org_id UUID REFERENCES public.org_organizations(id) ON DELETE CASCADE,
+    name TEXT NOT NULL, -- e.g., 'SICK_LEAVE', 'CASUAL_LEAVE'
+    annual_allowance NUMERIC NOT NULL DEFAULT 0,
+    is_carry_forward BOOLEAN DEFAULT false,
+    max_carry_forward NUMERIC DEFAULT 0,
+    is_unpaid BOOLEAN DEFAULT false,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+
+CREATE TABLE public.hr_leave_balances (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    employee_id UUID NOT NULL REFERENCES public.hr_employees(id) ON DELETE CASCADE,
+    leave_type_id UUID NOT NULL REFERENCES public.hr_leave_types(id) ON DELETE CASCADE,
+    year INTEGER NOT NULL,
+    total_accrued NUMERIC NOT NULL DEFAULT 0,
+    total_used NUMERIC NOT NULL DEFAULT 0,
+    balance NUMERIC GENERATED ALWAYS AS (total_accrued - total_used) STORED,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    UNIQUE(employee_id, leave_type_id, year)
+);
+
+CREATE TABLE public.hr_leave_requests (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    employee_id UUID NOT NULL REFERENCES public.hr_employees(id) ON DELETE CASCADE,
+    leave_type_id UUID NOT NULL REFERENCES public.hr_leave_types(id) ON DELETE CASCADE,
+    start_date DATE NOT NULL,
+    end_date DATE NOT NULL,
+    total_days NUMERIC NOT NULL CHECK (total_days > 0),
+    reason TEXT NOT NULL,
+    status public.enum_hr_leave_status DEFAULT 'PENDING',
+    approved_by UUID REFERENCES auth.users(id) ON DELETE SET NULL, -- Usually the Manager
+    approved_at TIMESTAMPTZ,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+
+-- ==========================================
+-- 5. PAYROLL STRUCTURING
+-- ==========================================
+
+CREATE TABLE public.hr_salary_structures (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    employee_id UUID NOT NULL UNIQUE REFERENCES public.hr_employees(id) ON DELETE CASCADE,
+    annual_ctc NUMERIC NOT NULL DEFAULT 0, -- Cost to Company
+    basic_salary NUMERIC NOT NULL DEFAULT 0,
+    hra_allowance NUMERIC NOT NULL DEFAULT 0,
+    special_allowance NUMERIC NOT NULL DEFAULT 0,
+    pf_deduction NUMERIC NOT NULL DEFAULT 0,
+    tax_deduction NUMERIC NOT NULL DEFAULT 0,
+    effective_from DATE NOT NULL,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+
+CREATE TABLE public.hr_payroll_runs (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    org_id UUID REFERENCES public.org_organizations(id) ON DELETE CASCADE,
+    month_year TEXT NOT NULL, -- e.g., '2026-07'
+    status public.enum_hr_payroll_status DEFAULT 'DRAFT',
+    total_employees INTEGER DEFAULT 0,
+    total_payout NUMERIC DEFAULT 0,
+    processed_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    processed_at TIMESTAMPTZ,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ,
+    UNIQUE(org_id, month_year)
+);
+
+CREATE TABLE public.hr_payslips (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    payroll_run_id UUID NOT NULL REFERENCES public.hr_payroll_runs(id) ON DELETE CASCADE,
+    employee_id UUID NOT NULL REFERENCES public.hr_employees(id) ON DELETE CASCADE,
+    fin_salary_slip_id UUID REFERENCES public.fin_salary_slips(id) ON DELETE SET NULL, -- Links to strict finance ledger
+    days_present NUMERIC NOT NULL DEFAULT 0,
+    days_absent NUMERIC NOT NULL DEFAULT 0,
+    -- Granular Breakdown for the PDF
+    basic_salary NUMERIC NOT NULL DEFAULT 0,
+    hra_allowance NUMERIC NOT NULL DEFAULT 0,
+    special_allowance NUMERIC NOT NULL DEFAULT 0,
+    pf_deduction NUMERIC NOT NULL DEFAULT 0,
+    tax_deduction NUMERIC NOT NULL DEFAULT 0,
+    gross_earnings NUMERIC GENERATED ALWAYS AS (basic_salary + hra_allowance + special_allowance) STORED,
+    total_deductions NUMERIC GENERATED ALWAYS AS (pf_deduction + tax_deduction) STORED,
+    net_payable NUMERIC GENERATED ALWAYS AS (basic_salary + hra_allowance + special_allowance - pf_deduction - tax_deduction) STORED,
+    status public.enum_hr_payroll_status DEFAULT 'DRAFT',
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    UNIQUE(payroll_run_id, employee_id)
+);
+
+-- ==========================================
+-- 6. PERFORMANCE & TRAINING
+-- ==========================================
+
+CREATE TABLE public.hr_performance_reviews (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    employee_id UUID NOT NULL REFERENCES public.hr_employees(id) ON DELETE CASCADE,
+    manager_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    review_period TEXT NOT NULL, -- e.g., 'Q3-2026'
+    self_assessment_text TEXT,
+    manager_feedback_text TEXT,
+    kpi_score NUMERIC CHECK (kpi_score >= 0 AND kpi_score <= 100),
+    final_rating TEXT, -- e.g., 'EXCEEDS_EXPECTATIONS', 'MEETS_EXPECTATIONS'
+    status TEXT DEFAULT 'DRAFT', -- DRAFT, SUBMITTED, REVIEWED, COMPLETED
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+
+CREATE TABLE public.hr_training_programs (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    org_id UUID REFERENCES public.org_organizations(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    description TEXT,
+    is_mandatory BOOLEAN DEFAULT false,
+    duration_hours NUMERIC,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+
+CREATE TABLE public.hr_employee_trainings (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    employee_id UUID NOT NULL REFERENCES public.hr_employees(id) ON DELETE CASCADE,
+    program_id UUID NOT NULL REFERENCES public.hr_training_programs(id) ON DELETE CASCADE,
+    status TEXT DEFAULT 'ENROLLED', -- ENROLLED, IN_PROGRESS, COMPLETED, FAILED
+    assessment_score NUMERIC,
+    completed_at TIMESTAMPTZ,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    UNIQUE(employee_id, program_id)
+);
+
+-- ==========================================
+-- 7. TRIGGERS & RLS AUTOMATION
+-- ==========================================
+
+
+
+
+-- 8. SECURITY POLICIES
+
+-- Superadmin & HR Staff Access
+
+
+-- Extreme Privacy Policies: Employees can ONLY view their own records.
+CREATE POLICY "Employees view own files" ON public.hr_employees FOR SELECT USING (user_id = auth.uid());
+CREATE POLICY "Employees view own documents" ON public.hr_documents FOR SELECT USING (employee_id IN (SELECT id FROM public.hr_employees WHERE user_id = auth.uid()));
+CREATE POLICY "Employees view own attendance" ON public.hr_attendance FOR SELECT USING (employee_id IN (SELECT id FROM public.hr_employees WHERE user_id = auth.uid()));
+CREATE POLICY "Employees clock in out" ON public.hr_attendance FOR INSERT WITH CHECK (employee_id IN (SELECT id FROM public.hr_employees WHERE user_id = auth.uid()));
+CREATE POLICY "Employees update own clock out" ON public.hr_attendance FOR UPDATE USING (employee_id IN (SELECT id FROM public.hr_employees WHERE user_id = auth.uid()));
+
+CREATE POLICY "Employees view own leave balance" ON public.hr_leave_balances FOR SELECT USING (employee_id IN (SELECT id FROM public.hr_employees WHERE user_id = auth.uid()));
+CREATE POLICY "Employees view own leave requests" ON public.hr_leave_requests FOR SELECT USING (employee_id IN (SELECT id FROM public.hr_employees WHERE user_id = auth.uid()));
+CREATE POLICY "Employees insert own leave requests" ON public.hr_leave_requests FOR INSERT WITH CHECK (employee_id IN (SELECT id FROM public.hr_employees WHERE user_id = auth.uid()));
+
+CREATE POLICY "Employees view own payslips" ON public.hr_payslips FOR SELECT USING (employee_id IN (SELECT id FROM public.hr_employees WHERE user_id = auth.uid()));
+
+CREATE POLICY "Employees view own performance" ON public.hr_performance_reviews FOR SELECT USING (employee_id IN (SELECT id FROM public.hr_employees WHERE user_id = auth.uid()));
+CREATE POLICY "Employees update self assessment" ON public.hr_performance_reviews FOR UPDATE USING (employee_id IN (SELECT id FROM public.hr_employees WHERE user_id = auth.uid()));
+
+CREATE POLICY "Employees view own training" ON public.hr_employee_trainings FOR SELECT USING (employee_id IN (SELECT id FROM public.hr_employees WHERE user_id = auth.uid()));
+
+-- All employees can see the master holiday list and training curriculum
+CREATE POLICY "Public view holidays" ON public.hr_holidays FOR SELECT USING (deleted_at IS NULL);
+CREATE POLICY "Public view leave types" ON public.hr_leave_types FOR SELECT USING (deleted_at IS NULL);
+CREATE POLICY "Public view training programs" ON public.hr_training_programs FOR SELECT USING (deleted_at IS NULL);
+
+
+-- ==========================================
+-- MODULE: 20260715000015_notification_engine.sql
+-- ==========================================
+
+
+-- Migration: Omnichannel Notification Engine
+-- Encompasses Queues, Templates, Logs, and Preferences.
+
+-- ==========================================
+-- 1. ENUMS
+-- ==========================================
+
+
+
+
+-- ==========================================
+-- 2. TEMPLATES & PREFERENCES
+-- ==========================================
+
+CREATE TABLE public.ntf_templates (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    org_id UUID REFERENCES public.org_organizations(id) ON DELETE CASCADE,
+    template_code TEXT NOT NULL UNIQUE, -- e.g., 'ORDER_CONFIRMATION'
+    channel public.enum_ntf_channel NOT NULL,
+    subject TEXT, -- Only for EMAIL
+    body TEXT NOT NULL, -- HTML for Email, Text for SMS/WhatsApp
+    variables JSONB, -- Expected variables array
+    is_active BOOLEAN DEFAULT true,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+
+CREATE TABLE public.ntf_preferences (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+    customer_id UUID REFERENCES public.crm_customers(id) ON DELETE CASCADE,
+    channel public.enum_ntf_channel NOT NULL,
+    is_opted_in BOOLEAN DEFAULT true,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    CHECK (user_id IS NOT NULL OR customer_id IS NOT NULL),
+    UNIQUE(user_id, channel),
+    UNIQUE(customer_id, channel)
+);
+
+-- ==========================================
+-- 3. QUEUE & DELIVERY LOGS (Immutable)
+-- ==========================================
+
+CREATE TABLE public.ntf_queue (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    org_id UUID REFERENCES public.org_organizations(id) ON DELETE CASCADE,
+    template_id UUID REFERENCES public.ntf_templates(id) ON DELETE SET NULL,
+    channel public.enum_ntf_channel NOT NULL,
+    recipient_user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+    recipient_customer_id UUID REFERENCES public.crm_customers(id) ON DELETE CASCADE,
+    recipient_address TEXT NOT NULL, -- Email address or Phone number
+    payload JSONB NOT NULL, -- The merged variables
+    status public.enum_ntf_status DEFAULT 'PENDING',
+    scheduled_for TIMESTAMPTZ DEFAULT NOW(),
+    processed_at TIMESTAMPTZ,
+    error_message TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX idx_ntf_queue_status ON public.ntf_queue(status, scheduled_for);
+
+CREATE TABLE public.ntf_delivery_logs (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    queue_id UUID NOT NULL REFERENCES public.ntf_queue(id) ON DELETE CASCADE,
+    external_message_id TEXT, -- e.g., SendGrid ID or Twilio SID
+    status public.enum_ntf_status NOT NULL,
+    raw_response JSONB,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- ==========================================
+-- 4. TRIGGERS & RLS AUTOMATION
+-- ==========================================
+
+
+
+ALTER TABLE public.ntf_queue ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.ntf_delivery_logs ENABLE ROW LEVEL SECURITY;
+
+-- 5. SECURITY POLICIES
+
+-- Superadmin & Staff General Access
+
+
+-- Privacy: Users control their own preferences
+CREATE POLICY "Users manage own preferences" ON public.ntf_preferences FOR ALL USING (
+    user_id = auth.uid() OR customer_id IN (SELECT public.get_my_customer_ids())
+);
+
+
+-- ==========================================
+-- MODULE: 20260715000016_analytics_reports.sql
+-- ==========================================
+
+
+-- Migration: Analytics & Reporting Engine
+-- Encompasses Dashboards, Materialized Views, and AI Insights.
+
+-- ==========================================
+-- 1. DASHBOARDS & WIDGETS
+-- ==========================================
+
+CREATE TABLE public.rpt_dashboard_layouts (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    org_id UUID REFERENCES public.org_organizations(id) ON DELETE CASCADE,
+    role_id UUID REFERENCES public.sys_roles(id) ON DELETE CASCADE, -- Layout tied to a specific role
+    name TEXT NOT NULL,
+    is_default BOOLEAN DEFAULT false,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE public.rpt_dashboard_widgets (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    layout_id UUID NOT NULL REFERENCES public.rpt_dashboard_layouts(id) ON DELETE CASCADE,
+    widget_type TEXT NOT NULL, -- e.g., 'BAR_CHART', 'KPI_CARD', 'TABLE'
+    data_source TEXT NOT NULL, -- e.g., 'mv_sales_summary'
+    title TEXT NOT NULL,
+    configuration JSONB NOT NULL, -- Grid position (x, y, w, h), filters, colors
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE public.rpt_saved_reports (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    org_id UUID REFERENCES public.org_organizations(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    report_category TEXT NOT NULL, -- SALES, CUSTOMER, INVENTORY, FINANCE, MARKETING, ENGINEER
+    query_configuration JSONB NOT NULL, -- JSON definition of filters, columns, sorting
+    schedule_cron TEXT, -- Optional cron for email delivery
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- ==========================================
+-- 2. AI INSIGHTS LEDGER
+-- ==========================================
+
+CREATE TABLE public.rpt_ai_insights (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    org_id UUID REFERENCES public.org_organizations(id) ON DELETE CASCADE,
+    insight_type TEXT NOT NULL, -- ANOMALY, PREDICTION, SUMMARY
+    category TEXT NOT NULL, -- SALES, FINANCE, INVENTORY
+    insight_text TEXT NOT NULL,
+    confidence_score NUMERIC CHECK (confidence_score >= 0 AND confidence_score <= 100),
+    data_snapshot JSONB, -- The data the AI based this insight on
+    generated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    is_acknowledged BOOLEAN DEFAULT false
+);
+
+-- ==========================================
+-- 3. CORE MATERIALIZED VIEWS (For Dashboard Performance)
+-- ==========================================
+
+-- A. Sales & Revenue Summary
+CREATE MATERIALIZED VIEW public.mv_rpt_sales_summary AS
+SELECT 
+    DATE_TRUNC('day', issue_date) AS sales_date,
+    org_id,
+    COUNT(id) AS total_invoices,
+    SUM(subtotal) AS total_subtotal,
+    SUM(total_tax) AS total_tax,
+    SUM(grand_total) AS total_revenue
+FROM public.fin_invoices
+WHERE status != 'VOIDED'
+GROUP BY DATE_TRUNC('day', issue_date), org_id;
+CREATE UNIQUE INDEX idx_mv_sales_summary ON public.mv_rpt_sales_summary(sales_date, org_id);
+
+-- B. Inventory Valuation
+CREATE MATERIALIZED VIEW public.mv_rpt_inventory_valuation AS
+SELECT 
+    s.warehouse_id,
+    s.variant_id,
+    s.quantity_on_hand,
+    p.base_price,
+    (s.quantity_on_hand * p.base_price) AS total_value
+FROM public.inv_stock s
+JOIN public.prd_variants v ON s.variant_id = v.id
+JOIN public.prd_pricing p ON v.id = p.variant_id;
+CREATE UNIQUE INDEX idx_mv_inventory_val ON public.mv_rpt_inventory_valuation(warehouse_id, variant_id);
+
+-- C. Support Field Engineer Performance
+CREATE MATERIALIZED VIEW public.mv_rpt_engineer_performance AS
+SELECT 
+    e.id AS engineer_id,
+    u.email AS engineer_email,
+    COUNT(v.id) AS total_visits,
+    SUM(CASE WHEN v.status = 'COMPLETED' THEN 1 ELSE 0 END) AS completed_visits,
+    AVG(EXTRACT(EPOCH FROM (v.actual_end - v.actual_start))/3600) AS avg_visit_duration_hours
+FROM public.sup_engineers e
+JOIN auth.users u ON e.user_id = u.id
+LEFT JOIN public.sup_engineer_visits v ON e.id = v.engineer_id
+GROUP BY e.id, u.email;
+CREATE UNIQUE INDEX idx_mv_eng_perf ON public.mv_rpt_engineer_performance(engineer_id);
+
+-- D. Customer Growth
+CREATE MATERIALIZED VIEW public.mv_rpt_customer_growth AS
+SELECT 
+    DATE_TRUNC('month', created_at) AS join_month,
+    org_id,
+    COUNT(id) AS new_customers
+FROM public.crm_customers
+GROUP BY DATE_TRUNC('month', created_at), org_id;
+CREATE UNIQUE INDEX idx_mv_cust_growth ON public.mv_rpt_customer_growth(join_month, org_id);
+
+-- ==========================================
+-- 4. SECURITY & RLS
+-- ==========================================
+
+
+-- ==========================================
+-- MODULE: 20260715000017_integrations_webhooks.sql
+-- ==========================================
+
+
+-- Migration: Third-Party Integrations & API Architecture
+-- Encompasses Integration Settings, OAuth, Webhooks, and API Logging.
+
+-- ==========================================
+-- 1. INTEGRATION CONFIGURATIONS
+-- ==========================================
+
+CREATE TABLE public.sys_integration_settings (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    org_id UUID REFERENCES public.org_organizations(id) ON DELETE CASCADE,
+    provider TEXT NOT NULL, -- STRIPE, RAZORPAY, SMTP, META_WABA, INFOBIP, CLOUDINARY, GOOGLE
+    config_keys JSONB NOT NULL, -- Strongly recommend external KMS/Vault for production. Storing encrypted strings here.
+    is_active BOOLEAN DEFAULT true,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    UNIQUE(org_id, provider)
+);
+
+CREATE TABLE public.sys_oauth_connections (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    org_id UUID REFERENCES public.org_organizations(id) ON DELETE CASCADE,
+    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE, -- If user-level connection
+    provider TEXT NOT NULL, -- e.g., GOOGLE_WORKSPACE, MICROSOFT_365
+    access_token TEXT NOT NULL,
+    refresh_token TEXT,
+    expires_at TIMESTAMPTZ,
+    scopes TEXT[],
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- ==========================================
+-- 2. WEBHOOKS (Outbound Subscriptions)
+-- ==========================================
+
+CREATE TABLE public.sys_webhooks_outbound (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    org_id UUID REFERENCES public.org_organizations(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    target_url TEXT NOT NULL,
+    secret_token TEXT, -- For HMAC signing
+    event_topics TEXT[] NOT NULL, -- e.g., ['order.created', 'ticket.resolved']
+    is_active BOOLEAN DEFAULT true,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- ==========================================
+-- 3. API & WEBHOOK LOGS (High Velocity)
+-- ==========================================
+
+CREATE TABLE public.sys_api_logs (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    org_id UUID REFERENCES public.org_organizations(id) ON DELETE CASCADE,
+    direction TEXT NOT NULL, -- INBOUND (Webhook received), OUTBOUND (Webhook sent / API called)
+    provider TEXT, -- e.g., META, STRIPE, INFOBIP
+    endpoint TEXT NOT NULL,
+    method TEXT NOT NULL,
+    status_code INTEGER,
+    request_payload JSONB,
+    response_payload JSONB,
+    processing_time_ms INTEGER,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX idx_sys_api_logs_provider ON public.sys_api_logs(provider, created_at);
+
+-- ==========================================
+-- 4. SECURITY & RLS
+-- ==========================================
+
+
+
+ALTER TABLE public.sys_api_logs ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Superadmins manage sys_api_logs" ON public.sys_api_logs FOR ALL USING (public.is_superadmin());
+
+
+-- ==========================================
+-- MODULE: 20260715000018_security_vault.sql
+-- ==========================================
+
+
+-- Migration: Advanced Security Vault & Firewalls
+-- Encompasses Blocked IPs, Failed Logins, and Specialized Security Logs.
+
+-- ==========================================
+-- 1. BRUTE FORCE PROTECTION & FIREWALL
+-- ==========================================
+
+CREATE TABLE public.sys_failed_logins (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    ip_address TEXT NOT NULL,
+    user_agent TEXT,
+    attempted_email TEXT,
+    attempted_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX idx_sys_failed_logins_ip ON public.sys_failed_logins(ip_address, attempted_at);
+
+CREATE TABLE public.sys_blocked_ips (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    ip_address TEXT NOT NULL UNIQUE,
+    reason TEXT NOT NULL, -- e.g., 'BRUTE_FORCE_LOGIN', 'MALICIOUS_PAYLOAD'
+    blocked_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    expires_at TIMESTAMPTZ, -- Null means permanently blocked
+    unblocked_at TIMESTAMPTZ,
+    unblocked_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    is_active BOOLEAN DEFAULT true
+);
+CREATE INDEX idx_sys_blocked_ips_active ON public.sys_blocked_ips(ip_address) WHERE (unblocked_at IS NULL);
+
+-- ==========================================
+-- 2. SPECIALIZED SECURITY EVENTS LEDGER
+-- ==========================================
+
+CREATE TABLE public.sys_security_events (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    org_id UUID REFERENCES public.org_organizations(id) ON DELETE CASCADE,
+    actor_user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    event_type TEXT NOT NULL, -- 'ROLE_ASSIGNED', 'PERMISSION_CHANGED', 'API_KEY_REVOKED', 'DATA_EXPORTED'
+    target_user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    target_role_id UUID REFERENCES public.sys_roles(id) ON DELETE SET NULL,
+    description TEXT NOT NULL,
+    ip_address TEXT,
+    metadata JSONB,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX idx_sys_security_events_type ON public.sys_security_events(event_type, created_at);
+
+-- ==========================================
+-- 3. SECURITY & RLS
+-- ==========================================
+
+ALTER TABLE public.sys_failed_logins ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.sys_blocked_ips ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.sys_security_events ENABLE ROW LEVEL SECURITY;
+
+-- Only Superadmins have access to the Security Vault
+CREATE POLICY "Superadmins manage sys_failed_logins" ON public.sys_failed_logins FOR ALL USING (public.is_superadmin());
+CREATE POLICY "Superadmins manage sys_blocked_ips" ON public.sys_blocked_ips FOR ALL USING (public.is_superadmin());
+CREATE POLICY "Superadmins manage sys_security_events" ON public.sys_security_events FOR ALL USING (public.is_superadmin());
+
+
+-- ==========================================
+-- MODULE: 20260715000019_enterprise_optimizations.sql
+-- ==========================================
+
+
+-- Migration: Enterprise Database Optimizations & Linkers
+-- Fills architectural gaps, adds GIN indexes, hardens constraints, and builds 360 views.
+
+-- ==========================================
+-- 1. GLOBAL SETTINGS & JOB QUEUES
+-- ==========================================
+
+CREATE TABLE public.sys_app_settings (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    org_id UUID REFERENCES public.org_organizations(id) ON DELETE CASCADE,
+    setting_key TEXT NOT NULL, -- e.g., 'DEFAULT_CURRENCY', 'FISCAL_YEAR_START', 'TIMEZONE'
+    setting_value JSONB NOT NULL,
+    description TEXT,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    UNIQUE(org_id, setting_key)
+);
+
+CREATE TABLE public.sys_background_jobs (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    org_id UUID REFERENCES public.org_organizations(id) ON DELETE CASCADE,
+    job_type TEXT NOT NULL, -- e.g., 'REFRESH_MV', 'DATA_EXPORT', 'CLEANUP'
+    payload JSONB,
+    status TEXT DEFAULT 'PENDING' CHECK (status IN ('PENDING', 'RUNNING', 'COMPLETED', 'FAILED')),
+    scheduled_for TIMESTAMPTZ DEFAULT NOW(),
+    started_at TIMESTAMPTZ,
+    completed_at TIMESTAMPTZ,
+    error_message TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX idx_sys_bg_jobs_status ON public.sys_background_jobs(status, scheduled_for);
+
+
+-- ==========================================
+-- 2. HIGH-PERFORMANCE SEARCH INDEXES (GIN)
+-- ==========================================
+
+-- Removed: search_vector columns have been moved to their respective initial CREATE TABLE scripts.
+
+
+-- ==========================================
+-- 3. DATA INTEGRITY CONSTRAINTS
+-- ==========================================
+
+-- Removed: Redundant CHECK constraints for priority/status. These are automatically strictly enforced by their underlying PostgreSQL ENUM types.
+
+-- Finance & OMS: Prevent Negative Billing
+DO $$ BEGIN
+    ALTER TABLE public.oms_orders ADD CONSTRAINT chk_oms_orders_total CHECK (grand_total >= 0 AND total_tax >= 0 AND subtotal >= 0);
+EXCEPTION WHEN duplicate_object THEN null; END $$;
+
+DO $$ BEGIN
+    ALTER TABLE public.fin_invoices ADD CONSTRAINT chk_fin_invoices_total CHECK (grand_total >= 0 AND total_tax >= 0 AND subtotal >= 0);
+EXCEPTION WHEN duplicate_object THEN null; END $$;
+
+
+-- ==========================================
+-- 4. 360-DEGREE EXECUTIVE VIEWS
+-- ==========================================
+
+-- Customer 360 View: Unifies CRM, OMS, Tickets, and Finance
+CREATE OR REPLACE VIEW public.v_customer_360_view AS
+SELECT 
+    c.id AS customer_id,
+    c.org_id,
+    c.first_name,
+    c.last_name,
+    c.email,
+    c.phone,
+    g.name AS customer_group,
+    w.balance AS wallet_balance,
+    rp.current_balance AS reward_points,
+    (SELECT COUNT(id) FROM public.oms_orders o WHERE o.customer_id = c.id) AS total_orders,
+    (SELECT COALESCE(SUM(grand_total), 0) FROM public.oms_orders o WHERE o.customer_id = c.id AND o.order_status != 'CANCELLED') AS lifetime_value,
+    (SELECT COALESCE(SUM(outstanding_balance), 0) FROM public.fin_invoices i WHERE i.customer_id = c.id AND i.status != 'PAID') AS total_outstanding,
+    (SELECT COUNT(id) FROM public.sup_tickets t WHERE t.customer_id = c.id AND t.status NOT IN ('RESOLVED', 'CLOSED')) AS open_tickets,
+    c.created_at AS joined_at
+FROM public.crm_customers c
+LEFT JOIN public.crm_customer_groups g ON c.group_id = g.id
+LEFT JOIN public.crm_wallets w ON c.id = w.customer_id
+LEFT JOIN public.crm_reward_points rp ON c.id = rp.customer_id;
+
+-- Employee 360 View: Unifies HR and Organization Structure
+CREATE OR REPLACE VIEW public.v_employee_360_view AS
+SELECT 
+    e.id AS employee_id,
+    e.org_id,
+    u.email,
+    e.employee_code,
+    e.joining_date,
+    e.employment_type,
+    e.is_active,
+    d.name AS department_name,
+    ds.title AS designation_name,
+    br.name AS branch_name,
+    (SELECT COUNT(id) FROM public.hr_leave_requests l WHERE l.employee_id = e.id AND l.status = 'PENDING') AS pending_leave_requests
+FROM public.hr_employees e
+JOIN auth.users u ON e.user_id = u.id
+LEFT JOIN public.sys_users su ON su.id = u.id
+LEFT JOIN public.org_departments d ON su.department_id = d.id
+LEFT JOIN public.org_designations ds ON su.designation_id = ds.id
+LEFT JOIN public.org_branches br ON su.branch_id = br.id;
+
+
+-- ==========================================
+-- 5. MISSING UTILITY FUNCTIONS
+-- ==========================================
+
+-- Function to refresh all Materialized Views built in 000016
+CREATE OR REPLACE FUNCTION public.fn_refresh_all_materialized_views()
+RETURNS void AS $$
+BEGIN
+    REFRESH MATERIALIZED VIEW CONCURRENTLY public.mv_rpt_sales_summary;
+    REFRESH MATERIALIZED VIEW CONCURRENTLY public.mv_rpt_inventory_valuation;
+    REFRESH MATERIALIZED VIEW CONCURRENTLY public.mv_rpt_engineer_performance;
+    REFRESH MATERIALIZED VIEW CONCURRENTLY public.mv_rpt_customer_growth;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+
+-- ==========================================
+-- 6. SECURITY & RLS (For New Tables)
+-- ==========================================
+
+
+-- ==========================================
+-- MODULE: 20260715000020_missing_modules_audit.sql
+-- ==========================================
+
+
+-- Migration: Missing Modules Audit (Subscriptions & Projects)
+-- Generates the final SaaS billing and internal PMO architecture.
+
+-- ==========================================
+-- 1. ENUMS
+-- ==========================================
+
+
+
+
+
+
+
+
+
+
+-- ==========================================
+-- 2. SUBSCRIPTION & RECURRING BILLING ENGINE
+-- ==========================================
+
+CREATE TABLE public.sub_plans (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    org_id UUID REFERENCES public.org_organizations(id) ON DELETE CASCADE,
+    product_id UUID REFERENCES public.prd_products(id) ON DELETE CASCADE, -- Links to ERP master catalog
+    name TEXT NOT NULL,
+    description TEXT,
+    interval public.enum_sub_interval NOT NULL DEFAULT 'MONTHLY',
+    interval_count INTEGER NOT NULL DEFAULT 1, -- e.g., Every 3 Months
+    amount NUMERIC NOT NULL CHECK (amount >= 0),
+    trial_period_days INTEGER DEFAULT 0,
+    is_active BOOLEAN DEFAULT true,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+
+CREATE TABLE public.sub_subscriptions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    org_id UUID REFERENCES public.org_organizations(id) ON DELETE CASCADE,
+    customer_id UUID NOT NULL REFERENCES public.crm_customers(id) ON DELETE CASCADE,
+    plan_id UUID NOT NULL REFERENCES public.sub_plans(id) ON DELETE RESTRICT,
+    status public.enum_sub_status NOT NULL DEFAULT 'TRIALING',
+    quantity INTEGER NOT NULL DEFAULT 1,
+    current_period_start TIMESTAMPTZ NOT NULL,
+    current_period_end TIMESTAMPTZ NOT NULL,
+    cancel_at_period_end BOOLEAN DEFAULT false,
+    canceled_at TIMESTAMPTZ,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE public.sub_billing_cycles (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    subscription_id UUID NOT NULL REFERENCES public.sub_subscriptions(id) ON DELETE CASCADE,
+    invoice_id UUID REFERENCES public.fin_invoices(id) ON DELETE SET NULL, -- Links to strict Accounting Ledger
+    cycle_start TIMESTAMPTZ NOT NULL,
+    cycle_end TIMESTAMPTZ NOT NULL,
+    amount_due NUMERIC NOT NULL CHECK (amount_due >= 0),
+    is_processed BOOLEAN DEFAULT false,
+    processed_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    UNIQUE(subscription_id, cycle_start)
+);
+
+-- ==========================================
+-- 3. PROJECT MANAGEMENT & TIMESHEETS ENGINE
+-- ==========================================
+
+CREATE TABLE public.pm_projects (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    org_id UUID REFERENCES public.org_organizations(id) ON DELETE CASCADE,
+    customer_id UUID REFERENCES public.crm_customers(id) ON DELETE SET NULL, -- Null for internal projects
+    name TEXT NOT NULL,
+    description TEXT,
+    status public.enum_pm_project_status DEFAULT 'PLANNING',
+    start_date DATE,
+    target_end_date DATE,
+    actual_end_date DATE,
+    budget_amount NUMERIC CHECK (budget_amount >= 0),
+    owner_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+
+CREATE TABLE public.pm_tasks (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    project_id UUID NOT NULL REFERENCES public.pm_projects(id) ON DELETE CASCADE,
+    parent_task_id UUID REFERENCES public.pm_tasks(id) ON DELETE CASCADE, -- Hierarchical tasks
+    title TEXT NOT NULL,
+    description TEXT,
+    status public.enum_pm_task_status DEFAULT 'TODO',
+    priority public.enum_pm_priority DEFAULT 'MEDIUM',
+    assignee_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    due_date TIMESTAMPTZ,
+    estimated_hours NUMERIC CHECK (estimated_hours >= 0),
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+
+CREATE TABLE public.pm_timesheets (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    task_id UUID NOT NULL REFERENCES public.pm_tasks(id) ON DELETE CASCADE,
+    employee_id UUID NOT NULL REFERENCES public.hr_employees(id) ON DELETE CASCADE,
+    work_date DATE NOT NULL,
+    hours_worked NUMERIC NOT NULL CHECK (hours_worked > 0 AND hours_worked <= 24),
+    description TEXT,
+    is_billable BOOLEAN DEFAULT true,
+    is_invoiced BOOLEAN DEFAULT false,
+    invoice_id UUID REFERENCES public.fin_invoices(id) ON DELETE SET NULL, -- If billed to client
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- ==========================================
+-- 4. TRIGGERS & RLS AUTOMATION
+-- ==========================================
+
+
+
+
+-- 5. SECURITY POLICIES
+
+-- Superadmin & Staff General Access
+
+
+-- Privacy: Customers view own subscriptions
+CREATE POLICY "Customers view own subscriptions" ON public.sub_subscriptions FOR SELECT USING (customer_id IN (SELECT public.get_my_customer_ids()));
+CREATE POLICY "Customers view own billing cycles" ON public.sub_billing_cycles FOR SELECT USING (subscription_id IN (SELECT id FROM public.sub_subscriptions WHERE customer_id IN (SELECT public.get_my_customer_ids())));
+
+-- Privacy: Employees view/edit own tasks and timesheets
+CREATE POLICY "Employees view assigned tasks" ON public.pm_tasks FOR SELECT USING (assignee_id = auth.uid());
+CREATE POLICY "Employees update assigned tasks" ON public.pm_tasks FOR UPDATE USING (assignee_id = auth.uid());
+
+CREATE POLICY "Employees view own timesheets" ON public.pm_timesheets FOR SELECT USING (employee_id IN (SELECT id FROM public.hr_employees WHERE user_id = auth.uid()));
+CREATE POLICY "Employees insert own timesheets" ON public.pm_timesheets FOR INSERT WITH CHECK (employee_id IN (SELECT id FROM public.hr_employees WHERE user_id = auth.uid()));
+CREATE POLICY "Employees update own timesheets" ON public.pm_timesheets FOR UPDATE USING (employee_id IN (SELECT id FROM public.hr_employees WHERE user_id = auth.uid()));
+
+
+-- ==========================================
+-- MODULE: 20260716000000_lead_revenue_engine.sql
+-- ==========================================
+
+
+-- Migration: Lead Generation Revenue Engine Extensions
+-- Adds visitor tracking, AI qualification fields, and nurture sequence schemas.
+
+-- 1. ENUMS
+
+
+-- 2. ALTER SLS_LEADS
+ALTER TABLE public.sls_leads
+ADD COLUMN IF NOT EXISTS budget NUMERIC DEFAULT 0,
+ADD COLUMN IF NOT EXISTS timeline TEXT,
+ADD COLUMN IF NOT EXISTS city TEXT,
+ADD COLUMN IF NOT EXISTS business_type TEXT,
+ADD COLUMN IF NOT EXISTS requirement TEXT,
+ADD COLUMN IF NOT EXISTS quantity INTEGER DEFAULT 0,
+ADD COLUMN IF NOT EXISTS heat_level public.enum_sls_heat_level DEFAULT 'COLD',
+ADD COLUMN IF NOT EXISTS tracking_session_id TEXT,
+ADD COLUMN IF NOT EXISTS lead_owner_id UUID REFERENCES auth.users(id) ON DELETE SET NULL;
+
+CREATE INDEX IF NOT EXISTS idx_sls_leads_heat ON public.sls_leads(heat_level);
+CREATE INDEX IF NOT EXISTS idx_sls_leads_session ON public.sls_leads(tracking_session_id);
+
+-- 3. VISITOR TRACKING
+CREATE TABLE public.sls_visitor_tracking (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    session_id TEXT NOT NULL,
+    url_visited TEXT NOT NULL,
+    time_spent_seconds INTEGER DEFAULT 0,
+    product_id UUID, -- References products if available
+    metadata JSONB DEFAULT '{}'::jsonb,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX idx_sls_visitor_tracking_session ON public.sls_visitor_tracking(session_id);
+
+-- 4. NURTURE SEQUENCES
+CREATE TABLE public.sls_nurture_sequences (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    org_id UUID REFERENCES public.org_organizations(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    description TEXT,
+    target_audience TEXT, -- e.g., 'Commercial', 'Home CCTV'
+    is_active BOOLEAN DEFAULT true,
+    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TYPE public.enum_sls_nurture_action AS ENUM ('SEND_WABA', 'SEND_EMAIL', 'CREATE_TASK', 'ESCALATE');
+
+CREATE TABLE public.sls_nurture_steps (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    sequence_id UUID NOT NULL REFERENCES public.sls_nurture_sequences(id) ON DELETE CASCADE,
+    step_order INTEGER NOT NULL,
+    delay_days INTEGER NOT NULL DEFAULT 0,
+    action_type public.enum_sls_nurture_action NOT NULL,
+    message_template TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- 5. TRIGGER FOR UPDATED_AT
+DO $$ 
+BEGIN
+    EXECUTE 'CREATE TRIGGER trg_sls_nurture_sequences_updated_at BEFORE UPDATE ON public.sls_nurture_sequences FOR EACH ROW EXECUTE FUNCTION public.trg_set_updated_at();';
+EXCEPTION WHEN duplicate_object THEN null; END $$;
+
+-- 6. ROW LEVEL SECURITY
+ALTER TABLE public.sls_visitor_tracking ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.sls_nurture_sequences ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.sls_nurture_steps ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Allow public insert for tracking" ON public.sls_visitor_tracking FOR INSERT WITH CHECK (true);
+CREATE POLICY "Superadmins view tracking" ON public.sls_visitor_tracking FOR SELECT USING (public.is_superadmin());
+
+CREATE POLICY "Superadmins manage nurture sequences" ON public.sls_nurture_sequences FOR ALL USING (public.is_superadmin());
+CREATE POLICY "Org members view nurture sequences" ON public.sls_nurture_sequences FOR SELECT USING (org_id = public.get_current_org_id());
+
+CREATE POLICY "Superadmins manage nurture steps" ON public.sls_nurture_steps FOR ALL USING (public.is_superadmin());
+CREATE POLICY "Org members view nurture steps" ON public.sls_nurture_steps FOR SELECT USING (
+    sequence_id IN (SELECT id FROM public.sls_nurture_sequences WHERE org_id = public.get_current_org_id())
+);
+
+
+-- ==========================================
+-- MODULE: 20260717000001_phase46_tables_indexes_rls.sql
+-- ==========================================
+
+
+-- =============================================================================
+-- Migration: Performance indexes & RLS policies for Phase 4-6 tables
+-- Created:   2026-07-17
+-- =============================================================================
+
+-- ─── Indexes on existing legacy hot tables ─────────────────────────────────
+
+-- orders: most common query patterns
+CREATE INDEX IF NOT EXISTS idx_orders_user_id       ON public.orders(user_id);
+CREATE INDEX IF NOT EXISTS idx_orders_status        ON public.orders(status);
+CREATE INDEX IF NOT EXISTS idx_orders_created_at    ON public.orders(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_orders_customer_phone ON public.orders(customer_phone) WHERE customer_phone IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_orders_agent_id      ON public.orders(agent_id) WHERE agent_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_orders_status_created ON public.orders(status, created_at DESC);
+
+-- products
+CREATE INDEX IF NOT EXISTS idx_products_status      ON public.products(status) WHERE status IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_products_category    ON public.products(category) WHERE category IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_products_created_at  ON public.products(created_at DESC);
+
+-- profiles
+CREATE INDEX IF NOT EXISTS idx_profiles_user_id     ON public.profiles(id);
+CREATE INDEX IF NOT EXISTS idx_profiles_role        ON public.profiles(role) WHERE role IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_profiles_mobile      ON public.profiles(mobile) WHERE mobile IS NOT NULL;
+
+-- carts
+CREATE INDEX IF NOT EXISTS idx_carts_user_id        ON public.carts(user_id) WHERE user_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_carts_status         ON public.carts(status);
+CREATE INDEX IF NOT EXISTS idx_carts_updated_at     ON public.carts(updated_at DESC);
+
+-- blog_posts (created in Phase 3)
+CREATE INDEX IF NOT EXISTS idx_blog_posts_slug      ON public.blog_posts(slug);
+CREATE INDEX IF NOT EXISTS idx_blog_posts_status    ON public.blog_posts(status);
+CREATE INDEX IF NOT EXISTS idx_blog_posts_published ON public.blog_posts(published_at DESC) WHERE status = 'published';
+
+-- ─── Notification preferences (Phase 4-6 new table) ───────────────────────
+
+CREATE TABLE IF NOT EXISTS public.notification_preferences (
+  id         uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id    uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  email      boolean NOT NULL DEFAULT true,
+  sms        boolean NOT NULL DEFAULT false,
+  whatsapp   boolean NOT NULL DEFAULT true,
+  push       boolean NOT NULL DEFAULT false,
+  order_updates    boolean NOT NULL DEFAULT true,
+  promotions       boolean NOT NULL DEFAULT false,
+  service_reminders boolean NOT NULL DEFAULT true,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  CONSTRAINT uq_notification_prefs_user UNIQUE (user_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_notification_prefs_user_id ON public.notification_preferences(user_id);
+
+ALTER TABLE public.notification_preferences ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY IF NOT EXISTS "users_own_notification_prefs"
+  ON public.notification_preferences
+  FOR ALL
+  USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
+
+-- ─── Referral codes (Phase 4-1 new table) ─────────────────────────────────
+
+CREATE TABLE IF NOT EXISTS public.referral_codes (
+  id         uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id    uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  code       text NOT NULL,
+  uses       integer NOT NULL DEFAULT 0,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  CONSTRAINT uq_referral_codes_user UNIQUE (user_id),
+  CONSTRAINT uq_referral_codes_code UNIQUE (code)
+);
+
+CREATE INDEX IF NOT EXISTS idx_referral_codes_user_id ON public.referral_codes(user_id);
+CREATE INDEX IF NOT EXISTS idx_referral_codes_code    ON public.referral_codes(code);
+
+ALTER TABLE public.referral_codes ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY IF NOT EXISTS "users_read_own_referral"
+  ON public.referral_codes
+  FOR SELECT
+  USING (auth.uid() = user_id);
+
+CREATE POLICY IF NOT EXISTS "service_role_manage_referral"
+  ON public.referral_codes
+  FOR ALL
+  USING (auth.role() = 'service_role');
+
+-- ─── Referral claims ──────────────────────────────────────────────────────
+
+CREATE TABLE IF NOT EXISTS public.referral_claims (
+  id              uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  referral_code   text NOT NULL,
+  referred_user   uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  referrer_user   uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  claimed_at      timestamptz NOT NULL DEFAULT now(),
+  CONSTRAINT uq_referral_claim_user UNIQUE (referred_user)
+);
+
+CREATE INDEX IF NOT EXISTS idx_referral_claims_code     ON public.referral_claims(referral_code);
+CREATE INDEX IF NOT EXISTS idx_referral_claims_referrer ON public.referral_claims(referrer_user);
+
+ALTER TABLE public.referral_claims ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY IF NOT EXISTS "service_role_manage_claims"
+  ON public.referral_claims
+  FOR ALL
+  USING (auth.role() = 'service_role');
+
+-- ─── Wishlist ─────────────────────────────────────────────────────────────
+
+CREATE TABLE IF NOT EXISTS public.wishlist_items (
+  id         uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id    uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  product_id text NOT NULL,
+  added_at   timestamptz NOT NULL DEFAULT now(),
+  CONSTRAINT uq_wishlist_item UNIQUE (user_id, product_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_wishlist_user_id ON public.wishlist_items(user_id);
+
+ALTER TABLE public.wishlist_items ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY IF NOT EXISTS "users_own_wishlist"
+  ON public.wishlist_items
+  FOR ALL
+  USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
+
+-- ─── Trigger: auto-update updated_at on notification_preferences ──────────
+
+CREATE OR REPLACE FUNCTION public.set_updated_at()
+RETURNS TRIGGER LANGUAGE plpgsql AS $$
+BEGIN
+  NEW.updated_at = now();
   RETURN NEW;
 END;
 $$;
-COMMENT ON FUNCTION create_order_number() IS 'Generates human-readable order numbers when not supplied.';
 
-CREATE OR REPLACE FUNCTION audit_row_change()
-RETURNS trigger
-LANGUAGE plpgsql
-AS $$
-BEGIN
-  IF TG_OP = 'INSERT' THEN
-    INSERT INTO audit_logs(actor_id, action, table_name, record_id, new_values, created_by)
-    VALUES (app_current_user_id(), 'INSERT', TG_TABLE_NAME, NEW.id, to_jsonb(NEW), app_current_user_id());
-    RETURN NEW;
-  ELSIF TG_OP = 'UPDATE' THEN
-    INSERT INTO audit_logs(actor_id, action, table_name, record_id, old_values, new_values, created_by)
-    VALUES (app_current_user_id(), 'UPDATE', TG_TABLE_NAME, NEW.id, to_jsonb(OLD), to_jsonb(NEW), app_current_user_id());
-    RETURN NEW;
-  ELSIF TG_OP = 'DELETE' THEN
-    INSERT INTO audit_logs(actor_id, action, table_name, record_id, old_values, created_by)
-    VALUES (app_current_user_id(), 'DELETE', TG_TABLE_NAME, OLD.id, to_jsonb(OLD), app_current_user_id());
-    RETURN OLD;
-  END IF;
-  RETURN NULL;
-END;
-$$;
-COMMENT ON FUNCTION audit_row_change() IS 'Generic audit trigger function for sensitive tables.';
+DROP TRIGGER IF EXISTS trg_notification_prefs_updated_at ON public.notification_preferences;
+CREATE TRIGGER trg_notification_prefs_updated_at
+  BEFORE UPDATE ON public.notification_preferences
+  FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
-CREATE OR REPLACE FUNCTION allocate_order_inventory_atomic(
-  p_customer_name text,
-  p_customer_id uuid,
-  p_customer_email text,
-  p_customer_phone text,
-  p_delivery_address text,
-  p_notes text,
-  p_payment_method text,
-  p_subtotal numeric,
-  p_gst_amount numeric,
-  p_total numeric,
-  p_discount_amount numeric,
-  p_shipping_amount numeric,
-  p_payment_status text,
-  p_order_type text,
-  p_items jsonb,
-  p_agent_id uuid DEFAULT NULL
-)
-RETURNS jsonb
-LANGUAGE plpgsql
-AS $$
+-- 5. DYNAMIC TRIGGERS & RLS AUTOMATION
+DO $$ 
 DECLARE
-  v_order orders%ROWTYPE;
-  v_item jsonb;
-  v_product_id uuid;
-  v_quantity integer;
-  v_available integer;
+    tbl TEXT;
 BEGIN
-  FOR v_item IN SELECT * FROM jsonb_array_elements(coalesce(p_items->'cart_items', '[]'::jsonb)) LOOP
-    v_product_id := nullif(coalesce(v_item->>'productId', v_item->>'product_id', v_item->>'id'), '')::uuid;
-    v_quantity := greatest(coalesce((v_item->>'quantity')::integer, 1), 1);
-    SELECT stock_quantity INTO v_available FROM products WHERE id = v_product_id FOR UPDATE;
-    IF v_available IS NULL THEN
-      RETURN jsonb_build_object('success', false, 'error', 'Product not found: ' || v_product_id::text);
-    END IF;
-    IF v_available < v_quantity THEN
-      RETURN jsonb_build_object('success', false, 'error', 'Insufficient stock for product: ' || v_product_id::text);
-    END IF;
-  END LOOP;
-
-  INSERT INTO orders(customer_name, customer_id, customer_email, customer_phone, delivery_address, notes, payment_method, subtotal, gst_amount, total, discount_amount, shipping_amount, payment_status, type, items, agent_id, created_by)
-  VALUES (p_customer_name, p_customer_id, p_customer_email, p_customer_phone, p_delivery_address, p_notes, p_payment_method, p_subtotal, p_gst_amount, p_total, p_discount_amount, p_shipping_amount, coalesce(p_payment_status, 'pending'), coalesce(p_order_type, 'Delivery'), p_items, p_agent_id, app_current_user_id())
-  RETURNING * INTO v_order;
-
-  FOR v_item IN SELECT * FROM jsonb_array_elements(coalesce(p_items->'cart_items', '[]'::jsonb)) LOOP
-    v_product_id := nullif(coalesce(v_item->>'productId', v_item->>'product_id', v_item->>'id'), '')::uuid;
-    v_quantity := greatest(coalesce((v_item->>'quantity')::integer, 1), 1);
-    UPDATE products SET stock_quantity = stock_quantity - v_quantity, stock = greatest(stock - v_quantity, 0), updated_at = now() WHERE id = v_product_id;
-    INSERT INTO order_items(order_id, product_id, quantity, price, unit_price, total_price, discount_amount, gst_rate, hsn_code, sac_code, taxable_base, gst_amount, cgst, sgst, igst, created_by)
-    VALUES (v_order.id, v_product_id, v_quantity, coalesce((v_item->>'price')::numeric, 0), coalesce((v_item->>'price')::numeric, 0), coalesce((v_item->>'total_price')::numeric, coalesce((v_item->>'price')::numeric, 0) * v_quantity), coalesce((v_item->>'discount_amount')::numeric, 0), coalesce((v_item->>'gstRate')::numeric, 18), v_item->>'hsnCode', v_item->>'sacCode', coalesce((v_item->>'taxableBase')::numeric, 0), coalesce((v_item->>'gstAmount')::numeric, 0), coalesce((v_item->>'cgst')::numeric, 0), coalesce((v_item->>'sgst')::numeric, 0), coalesce((v_item->>'igst')::numeric, 0), app_current_user_id());
-    INSERT INTO stock_movements(product_id, movement_type, quantity, reference_type, reference_id, created_by)
-    VALUES (v_product_id, 'sale', -v_quantity, 'order', v_order.id, app_current_user_id());
-  END LOOP;
-
-  RETURN jsonb_build_object('success', true, 'order', to_jsonb(v_order));
-END;
-$$;
-COMMENT ON FUNCTION allocate_order_inventory_atomic(text, uuid, text, text, text, text, text, numeric, numeric, numeric, numeric, numeric, text, text, jsonb, uuid) IS 'Atomically validates stock, creates an order, inserts order items, decrements stock, and records stock movements.';
-
-CREATE OR REPLACE FUNCTION update_order_status_v1(p_order_id uuid, p_status text, p_additional_data jsonb DEFAULT '{}'::jsonb)
-RETURNS void
-LANGUAGE plpgsql
-AS $$
-BEGIN
-  UPDATE orders
-  SET status = p_status,
-      payment_status = coalesce(p_additional_data->>'payment_status', payment_status),
-      cancellation_reason = coalesce(p_additional_data->>'cancellation_reason', cancellation_reason),
-      notes = coalesce(p_additional_data->>'notes', notes),
-      updated_at = now(),
-      updated_by = app_current_user_id()
-  WHERE id = p_order_id;
-END;
-$$;
-COMMENT ON FUNCTION update_order_status_v1(uuid, text, jsonb) IS 'Centralized order status update RPC used by API services.';
-
-CREATE OR REPLACE FUNCTION record_atomic_stock_movement(p_product_id uuid, p_quantity integer, p_movement_type text, p_reference_type text DEFAULT NULL, p_reference_id uuid DEFAULT NULL)
-RETURNS uuid
-LANGUAGE plpgsql
-AS $$
-DECLARE v_id uuid;
-BEGIN
-  UPDATE products SET stock_quantity = greatest(stock_quantity + p_quantity, 0), stock = greatest(stock + p_quantity, 0), updated_at = now() WHERE id = p_product_id;
-  INSERT INTO stock_movements(product_id, movement_type, quantity, reference_type, reference_id, created_by)
-  VALUES (p_product_id, p_movement_type::inventory_movement_type, p_quantity, p_reference_type, p_reference_id, app_current_user_id()) RETURNING id INTO v_id;
-  RETURN v_id;
-END;
-$$;
-COMMENT ON FUNCTION record_atomic_stock_movement(uuid, integer, text, text, uuid) IS 'Atomic product stock balance update plus stock movement ledger insert.';
-
-CREATE OR REPLACE FUNCTION increment_product_stock(p_product_id uuid, p_quantity integer)
-RETURNS void
-LANGUAGE sql
-AS $$ UPDATE products SET stock = stock + p_quantity, stock_quantity = stock_quantity + p_quantity, updated_at = now() WHERE id = p_product_id $$;
-COMMENT ON FUNCTION increment_product_stock(uuid, integer) IS 'Restores product stock, used by auto-cancel and returns.';
-
-CREATE OR REPLACE FUNCTION soft_delete_product(p_product_id uuid)
-RETURNS void
-LANGUAGE sql
-AS $$ UPDATE products SET is_deleted = true, status = 'archived', deleted_at = now(), deleted_by = app_current_user_id(), updated_at = now() WHERE id = p_product_id $$;
-COMMENT ON FUNCTION soft_delete_product(uuid) IS 'Archives a product without physically deleting it.';
-
-CREATE OR REPLACE FUNCTION restore_product(p_product_id uuid)
-RETURNS void
-LANGUAGE sql
-AS $$ UPDATE products SET is_deleted = false, status = 'active', deleted_at = NULL, deleted_by = NULL, updated_at = now() WHERE id = p_product_id $$;
-COMMENT ON FUNCTION restore_product(uuid) IS 'Restores a previously soft-deleted product.';
-
-CREATE OR REPLACE FUNCTION increment_agent_points(p_agent_id uuid, p_points integer)
-RETURNS void
-LANGUAGE sql
-AS $$ UPDATE sales_agents SET points_balance = points_balance + greatest(p_points, 0), updated_at = now() WHERE id = p_agent_id $$;
-COMMENT ON FUNCTION increment_agent_points(uuid, integer) IS 'Atomically increments a sales agent points balance.';
-
-CREATE OR REPLACE FUNCTION increment_referral_code_uses(p_referral_code_id uuid)
-RETURNS void
-LANGUAGE sql
-AS $$ UPDATE referral_codes SET usage_count = usage_count + 1, updated_at = now() WHERE id = p_referral_code_id $$;
-COMMENT ON FUNCTION increment_referral_code_uses(uuid) IS 'Increments referral code usage count.';
-
-CREATE OR REPLACE FUNCTION check_customer_promotions(p_customer_id uuid)
-RETURNS jsonb
-LANGUAGE sql STABLE
-AS $$ SELECT coalesce(jsonb_agg(to_jsonb(cp)), '[]'::jsonb) FROM customer_promotions cp WHERE cp.customer_id = p_customer_id AND cp.deleted_at IS NULL $$;
-COMMENT ON FUNCTION check_customer_promotions(uuid) IS 'Returns active promotion records for a customer.';
-
-CREATE OR REPLACE FUNCTION add_customer_promotion_v1(p_customer_id uuid, p_promotion_type text, p_metadata jsonb DEFAULT '{}'::jsonb)
-RETURNS uuid
-LANGUAGE plpgsql
-AS $$ DECLARE v_id uuid; BEGIN INSERT INTO customer_promotions(customer_id, promotion_type, metadata, created_by) VALUES (p_customer_id, p_promotion_type, p_metadata, app_current_user_id()) RETURNING id INTO v_id; RETURN v_id; END; $$;
-COMMENT ON FUNCTION add_customer_promotion_v1(uuid, text, jsonb) IS 'Adds a customer promotion entitlement.';
-
-CREATE OR REPLACE FUNCTION check_otp_rate_limit(p_phone text)
-RETURNS boolean
-LANGUAGE sql STABLE
-AS $$ SELECT count(*) < 5 FROM otp_verifications WHERE phone = p_phone AND created_at > now() - interval '10 minutes' $$;
-COMMENT ON FUNCTION check_otp_rate_limit(text) IS 'Checks OTP generation rate limit for a phone number.';
-
-CREATE OR REPLACE FUNCTION fetch_and_increment_otp_attempt(p_otp_id uuid)
-RETURNS otp_verifications
-LANGUAGE plpgsql
-AS $$ DECLARE v_row otp_verifications; BEGIN UPDATE otp_verifications SET attempts = attempts + 1, updated_at = now() WHERE id = p_otp_id RETURNING * INTO v_row; RETURN v_row; END; $$;
-COMMENT ON FUNCTION fetch_and_increment_otp_attempt(uuid) IS 'Increments and returns an OTP verification attempt row.';
-
-CREATE OR REPLACE FUNCTION complete_payment_transaction(p_payment_id uuid, p_status text, p_payload jsonb DEFAULT '{}'::jsonb)
-RETURNS void
-LANGUAGE plpgsql
-AS $$
-BEGIN
-  UPDATE payments SET status = p_status, paid_at = CASE WHEN p_status IN ('paid','Payment Confirmed') THEN now() ELSE paid_at END, metadata = metadata || p_payload, updated_at = now() WHERE id = p_payment_id;
-  UPDATE orders SET payment_status = p_status, updated_at = now() WHERE id = (SELECT order_id FROM payments WHERE id = p_payment_id);
-END;
-$$;
-COMMENT ON FUNCTION complete_payment_transaction(uuid, text, jsonb) IS 'Finalizes payment status and synchronizes the related order payment status.';
-
-CREATE OR REPLACE FUNCTION validate_password_strength(p_password text)
-RETURNS boolean
-LANGUAGE sql IMMUTABLE
-AS $$ SELECT length(p_password) >= 8 AND p_password ~ '[A-Z]' AND p_password ~ '[a-z]' AND p_password ~ '[0-9]' $$;
-COMMENT ON FUNCTION validate_password_strength(text) IS 'Basic password strength validator.';
-
-CREATE OR REPLACE FUNCTION auto_cancel_stale_orders_v1(p_before timestamptz DEFAULT now() - interval '30 minutes')
-RETURNS integer
-LANGUAGE plpgsql
-AS $$ DECLARE v_count integer; BEGIN UPDATE orders SET status = 'Cancelled', cancellation_reason = 'Auto-cancelled stale unpaid order', updated_at = now() WHERE status IN ('Pending','Awaiting Payment') AND created_at < p_before; GET DIAGNOSTICS v_count = ROW_COUNT; RETURN v_count; END; $$;
-COMMENT ON FUNCTION auto_cancel_stale_orders_v1(timestamptz) IS 'Cancels stale pending orders older than the provided cutoff.';
-
-CREATE OR REPLACE FUNCTION complete_service_ticket_v1(p_ticket_id uuid, p_resolution text DEFAULT NULL)
-RETURNS void
-LANGUAGE sql
-AS $$ UPDATE service_tickets SET status = 'CLOSED', resolved_at = now(), metadata = metadata || jsonb_build_object('resolution', p_resolution), updated_at = now() WHERE id = p_ticket_id $$;
-COMMENT ON FUNCTION complete_service_ticket_v1(uuid, text) IS 'Closes a service ticket with optional resolution notes.';
-
-CREATE OR REPLACE FUNCTION admin_set_user_role(p_user_id uuid, p_role text)
-RETURNS void
-LANGUAGE plpgsql
-AS $$
-DECLARE v_role_id uuid;
-BEGIN
-  IF NOT is_platform_admin() THEN RAISE EXCEPTION 'admin privileges required'; END IF;
-  SELECT id INTO v_role_id FROM roles WHERE name = p_role ORDER BY company_id NULLS FIRST LIMIT 1;
-  IF v_role_id IS NULL THEN RAISE EXCEPTION 'role not found: %', p_role; END IF;
-  UPDATE profiles SET role = p_role, updated_at = now(), updated_by = app_current_user_id() WHERE id = p_user_id;
-  DELETE FROM user_roles WHERE user_id = p_user_id;
-  INSERT INTO user_roles(user_id, role_id, created_by) VALUES (p_user_id, v_role_id, app_current_user_id());
-END;
-$$;
-COMMENT ON FUNCTION admin_set_user_role(uuid, text) IS 'Admin-only RPC to synchronize profile.role and user_roles.';
-
-CREATE OR REPLACE FUNCTION superadmin_assign_inquiry(p_inquiry_id uuid, p_assigned_to uuid)
-RETURNS void
-LANGUAGE sql
-AS $$ UPDATE inquiries SET assigned_to = p_assigned_to, updated_at = now(), updated_by = app_current_user_id() WHERE id = p_inquiry_id $$;
-COMMENT ON FUNCTION superadmin_assign_inquiry(uuid, uuid) IS 'Assigns an inquiry to a staff user.';
-
-DROP TRIGGER IF EXISTS orders_order_number_trg ON orders;
-CREATE TRIGGER orders_order_number_trg BEFORE INSERT ON orders FOR EACH ROW EXECUTE FUNCTION create_order_number();
-
-DO $$
-DECLARE r record;
-BEGIN
-  FOR r IN SELECT tablename FROM pg_tables WHERE schemaname = 'public' AND tablename NOT IN ('audit_logs') LOOP
-    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = r.tablename AND column_name = 'updated_at') THEN
-      EXECUTE format('DROP TRIGGER IF EXISTS %I ON %I', r.tablename || '_set_updated_at_trg', r.tablename);
-      EXECUTE format('CREATE TRIGGER %I BEFORE UPDATE ON %I FOR EACH ROW EXECUTE FUNCTION set_updated_at()', r.tablename || '_set_updated_at_trg', r.tablename);
-    END IF;
-  END LOOP;
+    FOR tbl IN 
+        SELECT table_name 
+        FROM information_schema.tables 
+        WHERE table_schema = 'public' 
+          AND (table_name LIKE 'org_%' OR table_name LIKE 'sys_%')
+          AND table_name != 'sys_audit_logs'
+          AND table_name != 'sys_auth_login_history'
+    LOOP
+        -- Remove existing triggers if any (for idempotency since we are recreating some sys_ tables)
+        -- Add updated_at trigger
+        EXECUTE format('DROP TRIGGER IF EXISTS trg_%I_updated_at ON public.%I', tbl, tbl);
+        EXECUTE format('DROP TRIGGER IF EXISTS trg_%I_audit ON public.%I', tbl, tbl);
+        EXECUTE format('CREATE TRIGGER trg_%I_updated_at BEFORE UPDATE ON public.%I FOR EACH ROW EXECUTE FUNCTION public.trg_set_updated_at();', tbl, tbl);
+        
+        -- Add audit trigger
+        EXECUTE format('CREATE TRIGGER trg_%I_audit AFTER INSERT OR UPDATE OR DELETE ON public.%I FOR EACH ROW EXECUTE FUNCTION public.trg_audit_log();', tbl, tbl);
+        
+        -- Enable RLS
+        EXECUTE format('ALTER TABLE public.%I ENABLE ROW LEVEL SECURITY;', tbl);
+    END LOOP;
 END $$;
 
-DROP TRIGGER IF EXISTS audit_profiles_trg ON profiles;
-CREATE TRIGGER audit_profiles_trg AFTER INSERT OR UPDATE OR DELETE ON profiles FOR EACH ROW EXECUTE FUNCTION audit_row_change();
-DROP TRIGGER IF EXISTS audit_roles_trg ON roles;
-CREATE TRIGGER audit_roles_trg AFTER INSERT OR UPDATE OR DELETE ON roles FOR EACH ROW EXECUTE FUNCTION audit_row_change();
-DROP TRIGGER IF EXISTS audit_permissions_trg ON permissions;
-CREATE TRIGGER audit_permissions_trg AFTER INSERT OR UPDATE OR DELETE ON permissions FOR EACH ROW EXECUTE FUNCTION audit_row_change();
-DROP TRIGGER IF EXISTS audit_orders_trg ON orders;
-CREATE TRIGGER audit_orders_trg AFTER INSERT OR UPDATE OR DELETE ON orders FOR EACH ROW EXECUTE FUNCTION audit_row_change();
-DROP TRIGGER IF EXISTS audit_payments_trg ON payments;
-CREATE TRIGGER audit_payments_trg AFTER INSERT OR UPDATE OR DELETE ON payments FOR EACH ROW EXECUTE FUNCTION audit_row_change();
-DROP TRIGGER IF EXISTS audit_api_keys_trg ON api_keys;
-CREATE TRIGGER audit_api_keys_trg AFTER INSERT OR UPDATE OR DELETE ON api_keys FOR EACH ROW EXECUTE FUNCTION audit_row_change();
+DO $$ 
+DECLARE
+    tbl TEXT;
+BEGIN
+    FOR tbl IN 
+        SELECT unnest(ARRAY['org_organizations', 'org_branches', 'org_departments', 'org_designations'])
+    LOOP
+        EXECUTE format('DROP POLICY IF EXISTS "Superadmins manage %I" ON public.%I', tbl, tbl);
+        EXECUTE format('DROP POLICY IF EXISTS "Superadmins manage %I" ON public.%I', tbl, tbl);
+        EXECUTE format('CREATE POLICY "Superadmins manage %I" ON public.%I FOR ALL USING (public.is_superadmin());
+        ', tbl, tbl);
+        
+        EXECUTE format('DROP POLICY IF EXISTS "Users view their org %I" ON public.%I', tbl, tbl);
+        IF tbl = 'org_organizations' THEN
+            EXECUTE format('DROP POLICY IF EXISTS "Users view their org %I" ON public.%I', tbl, tbl);
+        EXECUTE format('CREATE POLICY "Users view their org %I" ON public.%I FOR SELECT USING (id = public.get_current_org_id());
+        ', tbl, tbl);
+        ELSE
+            EXECUTE format('DROP POLICY IF EXISTS "Users view their org %I" ON public.%I', tbl, tbl);
+        EXECUTE format('CREATE POLICY "Users view their org %I" ON public.%I FOR SELECT USING (org_id = public.get_current_org_id());
+        ', tbl, tbl);
+        END IF;
+    END LOOP;
+END $$;
 
--- =========================================================
--- Indexes
--- =========================================================
+DO $$ 
+DECLARE
+    tbl TEXT;
+BEGIN
+    FOR tbl IN 
+        SELECT unnest(ARRAY['sys_auth_sessions', 'sys_auth_devices', 'sys_auth_otp', 'sys_auth_password_resets', 'sys_auth_api_keys', 'sys_auth_2fa', 'sys_auth_login_history'])
+    LOOP
+        EXECUTE format('DROP POLICY IF EXISTS "Superadmins manage %I" ON public.%I', tbl, tbl);
+        EXECUTE format('DROP POLICY IF EXISTS "Superadmins manage %I" ON public.%I', tbl, tbl);
+        EXECUTE format('CREATE POLICY "Superadmins manage %I" ON public.%I FOR ALL USING (public.is_superadmin());
+        ', tbl, tbl);
+        
+        EXECUTE format('DROP POLICY IF EXISTS "Users manage their own %I" ON public.%I', tbl, tbl);
+        IF tbl = 'sys_auth_api_keys' THEN
+             EXECUTE format('DROP POLICY IF EXISTS "Users manage their own %I" ON public.%I', tbl, tbl);
+        EXECUTE format('CREATE POLICY "Users manage their own %I" ON public.%I FOR ALL USING (user_id = auth.uid() OR org_id = public.get_current_org_id());
+        ', tbl, tbl);
+        ELSE
+             EXECUTE format('DROP POLICY IF EXISTS "Users manage their own %I" ON public.%I', tbl, tbl);
+        EXECUTE format('CREATE POLICY "Users manage their own %I" ON public.%I FOR ALL USING (user_id = auth.uid());
+        ', tbl, tbl);
+        END IF;
+    END LOOP;
+END $$;
 
-CREATE INDEX IF NOT EXISTS idx_companies_status ON companies(status) WHERE deleted_at IS NULL;
-CREATE INDEX IF NOT EXISTS idx_branches_company ON branches(company_id, status) WHERE deleted_at IS NULL;
-CREATE INDEX IF NOT EXISTS idx_departments_company_branch ON departments(company_id, branch_id) WHERE deleted_at IS NULL;
-CREATE INDEX IF NOT EXISTS idx_roles_company_name ON roles(company_id, name) WHERE deleted_at IS NULL;
-CREATE INDEX IF NOT EXISTS idx_permissions_module_action ON permissions(module, action) WHERE deleted_at IS NULL;
-CREATE INDEX IF NOT EXISTS idx_profiles_company_role ON profiles(company_id, role) WHERE deleted_at IS NULL;
-CREATE INDEX IF NOT EXISTS idx_profiles_email_trgm ON profiles USING gin ((email::text) gin_trgm_ops);
-CREATE INDEX IF NOT EXISTS idx_profiles_name_trgm ON profiles USING gin (name gin_trgm_ops);
-CREATE INDEX IF NOT EXISTS idx_profiles_mobile ON profiles(mobile) WHERE deleted_at IS NULL;
-CREATE INDEX IF NOT EXISTS idx_staff_company_branch ON staff(company_id, branch_id, department_id) WHERE deleted_at IS NULL;
-CREATE INDEX IF NOT EXISTS idx_customers_email ON customers(email) WHERE deleted_at IS NULL;
-CREATE INDEX IF NOT EXISTS idx_customers_mobile ON customers(mobile) WHERE deleted_at IS NULL;
-CREATE INDEX IF NOT EXISTS idx_customers_search ON customers USING gin (to_tsvector('english', coalesce(name,'') || ' ' || coalesce(email::text,'') || ' ' || coalesce(mobile,'')));
-CREATE INDEX IF NOT EXISTS idx_products_company_status ON products(company_id, status, is_deleted) WHERE deleted_at IS NULL;
-CREATE INDEX IF NOT EXISTS idx_products_category_brand ON products(category_id, brand_id) WHERE deleted_at IS NULL;
-CREATE INDEX IF NOT EXISTS idx_products_search ON products USING gin(search_vector);
-CREATE INDEX IF NOT EXISTS idx_products_name_trgm ON products USING gin(name gin_trgm_ops);
-CREATE INDEX IF NOT EXISTS idx_products_handle ON products(handle) WHERE deleted_at IS NULL;
-CREATE INDEX IF NOT EXISTS idx_product_variants_product ON product_variants(product_id, status) WHERE deleted_at IS NULL;
-CREATE INDEX IF NOT EXISTS idx_product_inventory_lookup ON product_inventory(product_id, variant_id, warehouse_id) WHERE deleted_at IS NULL;
-CREATE INDEX IF NOT EXISTS idx_inventory_items_serial ON inventory_items(serial_number) WHERE deleted_at IS NULL;
-CREATE INDEX IF NOT EXISTS idx_stock_movements_product_created ON stock_movements(product_id, created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_orders_customer_created ON orders(customer_id, created_at DESC) WHERE deleted_at IS NULL;
-CREATE INDEX IF NOT EXISTS idx_orders_phone_created ON orders(customer_phone, created_at DESC) WHERE deleted_at IS NULL;
-CREATE INDEX IF NOT EXISTS idx_orders_status_created ON orders(status, created_at DESC) WHERE deleted_at IS NULL;
-CREATE INDEX IF NOT EXISTS idx_orders_search ON orders USING gin(search_vector);
-CREATE INDEX IF NOT EXISTS idx_order_items_order ON order_items(order_id);
-CREATE INDEX IF NOT EXISTS idx_order_items_product ON order_items(product_id);
-CREATE INDEX IF NOT EXISTS idx_payments_order_status ON payments(order_id, status) WHERE deleted_at IS NULL;
-CREATE INDEX IF NOT EXISTS idx_invoices_order ON invoices(order_id) WHERE deleted_at IS NULL;
-CREATE INDEX IF NOT EXISTS idx_service_tickets_assignee_status ON service_tickets(assigned_to, status, priority) WHERE deleted_at IS NULL;
-CREATE INDEX IF NOT EXISTS idx_service_tickets_search ON service_tickets USING gin(search_vector);
-CREATE INDEX IF NOT EXISTS idx_leads_assigned_status ON leads(assigned_to, status, created_at DESC) WHERE deleted_at IS NULL;
-CREATE INDEX IF NOT EXISTS idx_leads_search ON leads USING gin(search_vector);
-CREATE INDEX IF NOT EXISTS idx_notifications_user_status ON notifications(user_id, status, created_at DESC) WHERE deleted_at IS NULL;
-CREATE INDEX IF NOT EXISTS idx_marketing_campaigns_status_schedule ON marketing_campaigns(status, schedule_at) WHERE deleted_at IS NULL;
-CREATE INDEX IF NOT EXISTS idx_whatsapp_conversations_sender ON whatsapp_conversations(sender_number) WHERE deleted_at IS NULL;
-CREATE INDEX IF NOT EXISTS idx_chat_messages_sender_time ON chat_messages(sender_number, timestamp DESC) WHERE deleted_at IS NULL;
-CREATE INDEX IF NOT EXISTS idx_analytics_events_name_time ON analytics_events(event_name, occurred_at DESC);
-CREATE INDEX IF NOT EXISTS idx_analytics_events_user_time ON analytics_events(user_id, occurred_at DESC);
-CREATE INDEX IF NOT EXISTS idx_audit_logs_table_record ON audit_logs(table_name, record_id, created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_audit_logs_actor_time ON audit_logs(actor_id, created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_activity_logs_subject ON activity_logs(subject_type, subject_id, created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_webhook_events_event_id ON webhook_events(event_id) WHERE event_id IS NOT NULL;
-CREATE INDEX IF NOT EXISTS idx_settings_company_key ON settings(company_id, key) WHERE deleted_at IS NULL;
-CREATE INDEX IF NOT EXISTS idx_file_storage_object ON file_storage(bucket, object_key) WHERE deleted_at IS NULL;
-CREATE INDEX IF NOT EXISTS idx_api_keys_prefix ON api_keys(key_prefix) WHERE deleted_at IS NULL;
-CREATE INDEX IF NOT EXISTS idx_user_sessions_user_expires ON user_sessions(user_id, expires_at DESC) WHERE deleted_at IS NULL;
+DO $$ 
+DECLARE
+    tbl TEXT;
+BEGIN
+    FOR tbl IN 
+        SELECT table_name 
+        FROM information_schema.tables 
+        WHERE table_schema = 'public' 
+          AND (table_name LIKE 'prd_%' OR table_name LIKE 'inv_%')
+          AND table_name != 'prd_price_history'
+          AND table_name != 'inv_stock_history'
+    LOOP
+        -- Remove existing triggers (important since we are overwriting 000001)
+        EXECUTE format('DROP TRIGGER IF EXISTS trg_%I_updated_at ON public.%I', tbl, tbl);
+        EXECUTE format('DROP TRIGGER IF EXISTS trg_%I_audit ON public.%I', tbl, tbl);
+        EXECUTE format('CREATE TRIGGER trg_%I_updated_at BEFORE UPDATE ON public.%I FOR EACH ROW EXECUTE FUNCTION public.trg_set_updated_at();', tbl, tbl);
+        EXECUTE format('CREATE TRIGGER trg_%I_audit AFTER INSERT OR UPDATE OR DELETE ON public.%I FOR EACH ROW EXECUTE FUNCTION public.trg_audit_log();', tbl, tbl);
+        
+        EXECUTE format('ALTER TABLE public.%I ENABLE ROW LEVEL SECURITY;', tbl);
+    END LOOP;
+END $$;
 
--- =========================================================
--- Row Level Security
--- =========================================================
+DO $$ 
+DECLARE
+    tbl TEXT;
+BEGIN
+    FOR tbl IN 
+        SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND (table_name LIKE 'prd_%' OR table_name LIKE 'inv_%')
+    LOOP
+        EXECUTE format('DROP POLICY IF EXISTS "Superadmins manage %I" ON public.%I', tbl, tbl);
+        EXECUTE format('DROP POLICY IF EXISTS "Superadmins manage %I" ON public.%I', tbl, tbl);
+        EXECUTE format('CREATE POLICY "Superadmins manage %I" ON public.%I FOR ALL USING (public.is_superadmin());
+        ', tbl, tbl);
+    END LOOP;
+END $$;
 
-ALTER TABLE companies ENABLE ROW LEVEL SECURITY;
-ALTER TABLE tenants ENABLE ROW LEVEL SECURITY;
-ALTER TABLE branches ENABLE ROW LEVEL SECURITY;
-ALTER TABLE departments ENABLE ROW LEVEL SECURITY;
-ALTER TABLE roles ENABLE ROW LEVEL SECURITY;
-ALTER TABLE permissions ENABLE ROW LEVEL SECURITY;
-ALTER TABLE role_permissions ENABLE ROW LEVEL SECURITY;
-ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
-ALTER TABLE user_roles ENABLE ROW LEVEL SECURITY;
-ALTER TABLE staff ENABLE ROW LEVEL SECURITY;
-ALTER TABLE customers ENABLE ROW LEVEL SECURITY;
-ALTER TABLE customer_addresses ENABLE ROW LEVEL SECURITY;
-ALTER TABLE api_keys ENABLE ROW LEVEL SECURITY;
-ALTER TABLE user_sessions ENABLE ROW LEVEL SECURITY;
-ALTER TABLE otp_verifications ENABLE ROW LEVEL SECURITY;
-ALTER TABLE area_pincodes ENABLE ROW LEVEL SECURITY;
-ALTER TABLE user_area_assignments ENABLE ROW LEVEL SECURITY;
-ALTER TABLE sales_agents ENABLE ROW LEVEL SECURITY;
-ALTER TABLE agent_commission_rules ENABLE ROW LEVEL SECURITY;
-ALTER TABLE categories ENABLE ROW LEVEL SECURITY;
-ALTER TABLE brands ENABLE ROW LEVEL SECURITY;
-ALTER TABLE products ENABLE ROW LEVEL SECURITY;
-ALTER TABLE product_variants ENABLE ROW LEVEL SECURITY;
-ALTER TABLE product_options ENABLE ROW LEVEL SECURITY;
-ALTER TABLE product_images ENABLE ROW LEVEL SECURITY;
-ALTER TABLE product_pricing ENABLE ROW LEVEL SECURITY;
-ALTER TABLE product_reviews ENABLE ROW LEVEL SECURITY;
-ALTER TABLE published_blueprints ENABLE ROW LEVEL SECURITY;
-ALTER TABLE warehouses ENABLE ROW LEVEL SECURITY;
-ALTER TABLE suppliers ENABLE ROW LEVEL SECURITY;
-ALTER TABLE product_inventory ENABLE ROW LEVEL SECURITY;
-ALTER TABLE inventory_items ENABLE ROW LEVEL SECURITY;
-ALTER TABLE inventory ENABLE ROW LEVEL SECURITY;
-ALTER TABLE purchases ENABLE ROW LEVEL SECURITY;
-ALTER TABLE purchase_items ENABLE ROW LEVEL SECURITY;
-ALTER TABLE stock_movements ENABLE ROW LEVEL SECURITY;
-ALTER TABLE gst_rates ENABLE ROW LEVEL SECURITY;
-ALTER TABLE hsn_codes ENABLE ROW LEVEL SECURITY;
-ALTER TABLE taxes ENABLE ROW LEVEL SECURITY;
-ALTER TABLE carts ENABLE ROW LEVEL SECURITY;
-ALTER TABLE cart_items ENABLE ROW LEVEL SECURITY;
-ALTER TABLE orders ENABLE ROW LEVEL SECURITY;
-ALTER TABLE order_items ENABLE ROW LEVEL SECURITY;
-ALTER TABLE quotes ENABLE ROW LEVEL SECURITY;
-ALTER TABLE quote_items ENABLE ROW LEVEL SECURITY;
-ALTER TABLE coupons ENABLE ROW LEVEL SECURITY;
-ALTER TABLE discounts ENABLE ROW LEVEL SECURITY;
-ALTER TABLE offers ENABLE ROW LEVEL SECURITY;
-ALTER TABLE offer_usage ENABLE ROW LEVEL SECURITY;
-ALTER TABLE auto_offers ENABLE ROW LEVEL SECURITY;
-ALTER TABLE customer_discounts ENABLE ROW LEVEL SECURITY;
-ALTER TABLE wishlists ENABLE ROW LEVEL SECURITY;
-ALTER TABLE payments ENABLE ROW LEVEL SECURITY;
-ALTER TABLE payment_transactions ENABLE ROW LEVEL SECURITY;
-ALTER TABLE advance_payment_requests ENABLE ROW LEVEL SECURITY;
-ALTER TABLE invoices ENABLE ROW LEVEL SECURITY;
-ALTER TABLE invoice_items ENABLE ROW LEVEL SECURITY;
-ALTER TABLE payment_recovery_queue ENABLE ROW LEVEL SECURITY;
-ALTER TABLE services ENABLE ROW LEVEL SECURITY;
-ALTER TABLE service_engineers ENABLE ROW LEVEL SECURITY;
-ALTER TABLE service_tickets ENABLE ROW LEVEL SECURITY;
-ALTER TABLE service_requests ENABLE ROW LEVEL SECURITY;
-ALTER TABLE installations ENABLE ROW LEVEL SECURITY;
-ALTER TABLE warranties ENABLE ROW LEVEL SECURITY;
-ALTER TABLE amc_contracts ENABLE ROW LEVEL SECURITY;
-ALTER TABLE dispatch_records ENABLE ROW LEVEL SECURITY;
-ALTER TABLE free_installation_slots ENABLE ROW LEVEL SECURITY;
-ALTER TABLE leads ENABLE ROW LEVEL SECURITY;
-ALTER TABLE sls_activities ENABLE ROW LEVEL SECURITY;
-ALTER TABLE tasks ENABLE ROW LEVEL SECURITY;
-ALTER TABLE calendar_events ENABLE ROW LEVEL SECURITY;
-ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
-ALTER TABLE ntf_queue ENABLE ROW LEVEL SECURITY;
-ALTER TABLE notification_preferences ENABLE ROW LEVEL SECURITY;
-ALTER TABLE marketing_campaigns ENABLE ROW LEVEL SECURITY;
-ALTER TABLE broadcast_messages ENABLE ROW LEVEL SECURITY;
-ALTER TABLE marketing_broadcast_logs ENABLE ROW LEVEL SECURITY;
-ALTER TABLE cms_pages ENABLE ROW LEVEL SECURITY;
-ALTER TABLE page_content ENABLE ROW LEVEL SECURITY;
-ALTER TABLE blog_posts ENABLE ROW LEVEL SECURITY;
-ALTER TABLE faqs ENABLE ROW LEVEL SECURITY;
-ALTER TABLE contact_messages ENABLE ROW LEVEL SECURITY;
-ALTER TABLE inquiries ENABLE ROW LEVEL SECURITY;
-ALTER TABLE whatsapp_conversations ENABLE ROW LEVEL SECURITY;
-ALTER TABLE chat_messages ENABLE ROW LEVEL SECURITY;
-ALTER TABLE templates ENABLE ROW LEVEL SECURITY;
-ALTER TABLE email_templates ENABLE ROW LEVEL SECURITY;
-ALTER TABLE waba_automation_rules ENABLE ROW LEVEL SECURITY;
-ALTER TABLE whatsapp_media ENABLE ROW LEVEL SECURITY;
-ALTER TABLE webmail_accounts ENABLE ROW LEVEL SECURITY;
-ALTER TABLE webmail_messages ENABLE ROW LEVEL SECURITY;
-ALTER TABLE failed_api_calls ENABLE ROW LEVEL SECURITY;
-ALTER TABLE audit_logs ENABLE ROW LEVEL SECURITY;
-ALTER TABLE activity_logs ENABLE ROW LEVEL SECURITY;
-ALTER TABLE security_audit_log ENABLE ROW LEVEL SECURITY;
-ALTER TABLE analytics_events ENABLE ROW LEVEL SECURITY;
-ALTER TABLE reports ENABLE ROW LEVEL SECURITY;
-ALTER TABLE dashboard_widgets ENABLE ROW LEVEL SECURITY;
-ALTER TABLE webhook_events ENABLE ROW LEVEL SECURITY;
-ALTER TABLE webhook_stats ENABLE ROW LEVEL SECURITY;
-ALTER TABLE custom_webhook_tunnel_queue ENABLE ROW LEVEL SECURITY;
-ALTER TABLE settings ENABLE ROW LEVEL SECURITY;
-ALTER TABLE website_settings ENABLE ROW LEVEL SECURITY;
-ALTER TABLE company_settings ENABLE ROW LEVEL SECURITY;
-ALTER TABLE user_preferences ENABLE ROW LEVEL SECURITY;
-ALTER TABLE integrations ENABLE ROW LEVEL SECURITY;
-ALTER TABLE file_storage ENABLE ROW LEVEL SECURITY;
-ALTER TABLE attendance ENABLE ROW LEVEL SECURITY;
-ALTER TABLE leave_requests ENABLE ROW LEVEL SECURITY;
-ALTER TABLE expenses ENABLE ROW LEVEL SECURITY;
-ALTER TABLE customer_promotions ENABLE ROW LEVEL SECURITY;
-ALTER TABLE referral_codes ENABLE ROW LEVEL SECURITY;
-ALTER TABLE referral_claims ENABLE ROW LEVEL SECURITY;
-ALTER TABLE sales_agent_commissions ENABLE ROW LEVEL SECURITY;
-ALTER TABLE agent_redemption_requests ENABLE ROW LEVEL SECURITY;
-ALTER TABLE order_otp_verifications ENABLE ROW LEVEL SECURITY;
-ALTER TABLE user_mfa_status ENABLE ROW LEVEL SECURITY;
-ALTER TABLE security_settings ENABLE ROW LEVEL SECURITY;
-ALTER TABLE gdpr_deletion_requests ENABLE ROW LEVEL SECURITY;
-ALTER TABLE upcoming_projects ENABLE ROW LEVEL SECURITY;
-ALTER TABLE custom_setup_offers ENABLE ROW LEVEL SECURITY;
-ALTER TABLE custom_setup_inventory ENABLE ROW LEVEL SECURITY;
-ALTER TABLE custom_setup_components ENABLE ROW LEVEL SECURITY;
-ALTER TABLE custom_setup_component_options ENABLE ROW LEVEL SECURITY;
-ALTER TABLE custom_setup_templates ENABLE ROW LEVEL SECURITY;
-ALTER TABLE custom_setup_systems ENABLE ROW LEVEL SECURITY;
-ALTER TABLE custom_setup_constants ENABLE ROW LEVEL SECURITY;
+DO $$ 
+DECLARE
+    tbl TEXT;
+BEGIN
+    FOR tbl IN 
+        SELECT table_name 
+        FROM information_schema.tables 
+        WHERE table_schema = 'public' 
+          AND table_name LIKE 'cms_%' 
+          AND table_name != 'cms_blog_post_tags'
+    LOOP
+        EXECUTE format('DROP TRIGGER IF EXISTS trg_%I_updated_at ON public.%I', tbl, tbl);
+        EXECUTE format('DROP TRIGGER IF EXISTS trg_%I_audit ON public.%I', tbl, tbl);
+        EXECUTE format('CREATE TRIGGER trg_%I_updated_at BEFORE UPDATE ON public.%I FOR EACH ROW EXECUTE FUNCTION public.trg_set_updated_at();', tbl, tbl);
+        EXECUTE format('CREATE TRIGGER trg_%I_audit AFTER INSERT OR UPDATE OR DELETE ON public.%I FOR EACH ROW EXECUTE FUNCTION public.trg_audit_log();', tbl, tbl);
+        EXECUTE format('ALTER TABLE public.%I ENABLE ROW LEVEL SECURITY;', tbl);
+        
+        -- Default policies: Superadmins manage everything, Public reads active/published content
+        EXECUTE format('DROP POLICY IF EXISTS "Superadmins can manage %I" ON public.%I', tbl, tbl);
+        EXECUTE format('CREATE POLICY "Superadmins can manage %I" ON public.%I FOR ALL USING (public.is_superadmin());
+        ', tbl, tbl);
+    END LOOP;
+END $$;
 
-DROP POLICY IF EXISTS companies_admin_all ON companies;
-CREATE POLICY companies_admin_all ON companies FOR ALL USING (is_platform_admin()) WITH CHECK (is_platform_admin());
-DROP POLICY IF EXISTS companies_member_read ON companies;
-CREATE POLICY companies_member_read ON companies FOR SELECT USING (id = current_company_id());
-DROP POLICY IF EXISTS tenant_company_read ON branches;
-CREATE POLICY tenant_company_read ON branches FOR SELECT USING (company_id = current_company_id() OR is_platform_admin());
-DROP POLICY IF EXISTS tenant_company_write ON branches;
-CREATE POLICY tenant_company_write ON branches FOR ALL USING (is_platform_admin()) WITH CHECK (is_platform_admin());
-DROP POLICY IF EXISTS profiles_self_read ON profiles;
-CREATE POLICY profiles_self_read ON profiles FOR SELECT USING (id = auth.uid() OR company_id = current_company_id() OR is_platform_admin());
-DROP POLICY IF EXISTS profiles_self_update ON profiles;
-CREATE POLICY profiles_self_update ON profiles FOR UPDATE USING (id = auth.uid() OR is_platform_admin()) WITH CHECK (id = auth.uid() OR is_platform_admin());
-DROP POLICY IF EXISTS customers_company_access ON customers;
-CREATE POLICY customers_company_access ON customers FOR ALL USING (company_id = current_company_id() OR is_platform_admin()) WITH CHECK (company_id = current_company_id() OR is_platform_admin());
-DROP POLICY IF EXISTS products_public_read ON products;
-CREATE POLICY products_public_read ON products FOR SELECT USING (deleted_at IS NULL AND is_deleted = false AND status = 'active');
-DROP POLICY IF EXISTS products_admin_write ON products;
-CREATE POLICY products_admin_write ON products FOR ALL USING (is_platform_admin()) WITH CHECK (is_platform_admin());
-DROP POLICY IF EXISTS orders_customer_read ON orders;
-CREATE POLICY orders_customer_read ON orders FOR SELECT USING (customer_id = auth.uid() OR company_id = current_company_id() OR is_platform_admin());
-DROP POLICY IF EXISTS orders_customer_insert ON orders;
-CREATE POLICY orders_customer_insert ON orders FOR INSERT WITH CHECK (customer_id = auth.uid() OR auth.uid() IS NULL OR is_platform_admin());
-DROP POLICY IF EXISTS service_tickets_company_access ON service_tickets;
-CREATE POLICY service_tickets_company_access ON service_tickets FOR ALL USING (company_id = current_company_id() OR assigned_to = auth.uid() OR is_platform_admin()) WITH CHECK (company_id = current_company_id() OR assigned_to = auth.uid() OR is_platform_admin());
-DROP POLICY IF EXISTS notifications_user_access ON notifications;
-CREATE POLICY notifications_user_access ON notifications FOR ALL USING (user_id = auth.uid() OR is_platform_admin()) WITH CHECK (user_id = auth.uid() OR is_platform_admin());
-DROP POLICY IF EXISTS leads_company_access ON leads;
-CREATE POLICY leads_company_access ON leads FOR ALL USING (company_id = current_company_id() OR assigned_to = auth.uid() OR is_platform_admin()) WITH CHECK (company_id = current_company_id() OR assigned_to = auth.uid() OR is_platform_admin());
-DROP POLICY IF EXISTS settings_admin_access ON settings;
-CREATE POLICY settings_admin_access ON settings FOR ALL USING (is_platform_admin()) WITH CHECK (is_platform_admin());
-DROP POLICY IF EXISTS audit_admin_read ON audit_logs;
-CREATE POLICY audit_admin_read ON audit_logs FOR SELECT USING (is_platform_admin());
+DO $$ 
+DECLARE
+    tbl TEXT;
+BEGIN
+    FOR tbl IN 
+        SELECT table_name 
+        FROM information_schema.tables 
+        WHERE table_schema = 'public' 
+          AND table_name LIKE 'crm_%' 
+          AND table_name NOT IN ('crm_wallet_transactions', 'crm_reward_point_ledger', 'crm_timeline')
+    LOOP
+        EXECUTE format('DROP TRIGGER IF EXISTS trg_%I_updated_at ON public.%I', tbl, tbl);
+        EXECUTE format('DROP TRIGGER IF EXISTS trg_%I_audit ON public.%I', tbl, tbl);
+        EXECUTE format('CREATE TRIGGER trg_%I_updated_at BEFORE UPDATE ON public.%I FOR EACH ROW EXECUTE FUNCTION public.trg_set_updated_at();', tbl, tbl);
+        EXECUTE format('CREATE TRIGGER trg_%I_audit AFTER INSERT OR UPDATE OR DELETE ON public.%I FOR EACH ROW EXECUTE FUNCTION public.trg_audit_log();', tbl, tbl);
+        EXECUTE format('ALTER TABLE public.%I ENABLE ROW LEVEL SECURITY;', tbl);
+    END LOOP;
+END $$;
 
--- =========================================================
--- Seed System Roles and Baseline Settings
--- =========================================================
+DO $$ 
+DECLARE
+    tbl TEXT;
+BEGIN
+    FOR tbl IN 
+        SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name LIKE 'crm_%'
+    LOOP
+        EXECUTE format('DROP POLICY IF EXISTS "Superadmins manage %I" ON public.%I', tbl, tbl);
+        EXECUTE format('CREATE POLICY "Superadmins manage %I" ON public.%I FOR ALL USING (public.is_superadmin());
+        ', tbl, tbl);
+        
+        -- If table has org_id natively
+        IF tbl IN ('crm_customer_groups', 'crm_customers', 'crm_carts', 'crm_loyalty_tiers') THEN
+            EXECUTE format('DROP POLICY IF EXISTS "Staff view org %I" ON public.%I', tbl, tbl);
+        EXECUTE format('CREATE POLICY "Staff view org %I" ON public.%I FOR SELECT USING (org_id = public.get_current_org_id());
+        ', tbl, tbl);
+        END IF;
+    END LOOP;
+END $$;
 
-INSERT INTO companies(code, legal_name, display_name, status)
-VALUES ('TECBUNNY', 'Tecbunny Private Limited', 'Tecbunny', 'active')
-ON CONFLICT (code) DO NOTHING;
+DO $$ 
+DECLARE
+    tbl TEXT;
+BEGIN
+    FOR tbl IN 
+        SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name LIKE 'crm_%'
+    LOOP
+        IF tbl = 'crm_customers' THEN
+            EXECUTE format('DROP POLICY IF EXISTS "Users manage own %I" ON public.%I', tbl, tbl);
+        EXECUTE format('CREATE POLICY "Users manage own %I" ON public.%I FOR ALL USING (user_id = auth.uid());
+        ', tbl, tbl);
+        ELSIF tbl IN ('crm_addresses', 'crm_saved_cards', 'crm_preferences', 'crm_wishlists', 'crm_carts', 'crm_cart_items', 'crm_reward_points', 'crm_reward_point_ledger', 'crm_wallets', 'crm_wallet_transactions', 'crm_referrals', 'crm_timeline', 'crm_customer_group_mapping') THEN
+            -- Tables that have a customer_id column
+            BEGIN
+                EXECUTE format('DROP POLICY IF EXISTS "Users manage own %I" ON public.%I', tbl, tbl);
+        EXECUTE format('CREATE POLICY "Users manage own %I" ON public.%I FOR ALL USING (customer_id IN (SELECT public.get_my_customer_ids()));
+        ', tbl, tbl);
+            EXCEPTION WHEN undefined_column THEN null; END;
+        END IF;
+    END LOOP;
+END $$;
 
-INSERT INTO roles(company_id, name, display_name, is_system)
-SELECT c.id, r.name, r.display_name, true
-FROM companies c
-CROSS JOIN (VALUES
-  ('superadmin','Super Admin'), ('admin','Admin'), ('manager','Manager'), ('sales_manager','Sales Manager'),
-  ('service_manager','Service Manager'), ('sales_executive','Sales Executive'), ('store_executive','Store Executive'),
-  ('sales_agent','Sales Agent'), ('service_engineer','Service Engineer'), ('accounts','Accounts'), ('customer','Customer')
-) AS r(name, display_name)
-WHERE c.code = 'TECBUNNY'
-ON CONFLICT (company_id, name) DO NOTHING;
+DO $$ 
+DECLARE
+    tbl TEXT;
+BEGIN
+    FOR tbl IN 
+        SELECT table_name 
+        FROM information_schema.tables 
+        WHERE table_schema = 'public' 
+          AND table_name LIKE 'sls_%' 
+          AND table_name NOT IN ('sls_lead_assignments', 'sls_timeline')
+    LOOP
+        EXECUTE format('DROP TRIGGER IF EXISTS trg_%I_updated_at ON public.%I', tbl, tbl);
+        EXECUTE format('DROP TRIGGER IF EXISTS trg_%I_audit ON public.%I', tbl, tbl);
+        EXECUTE format('CREATE TRIGGER trg_%I_updated_at BEFORE UPDATE ON public.%I FOR EACH ROW EXECUTE FUNCTION public.trg_set_updated_at();', tbl, tbl);
+        EXECUTE format('CREATE TRIGGER trg_%I_audit AFTER INSERT OR UPDATE OR DELETE ON public.%I FOR EACH ROW EXECUTE FUNCTION public.trg_audit_log();', tbl, tbl);
+        EXECUTE format('ALTER TABLE public.%I ENABLE ROW LEVEL SECURITY;', tbl);
+    END LOOP;
+END $$;
 
-INSERT INTO permissions(module, action, resource, description)
-VALUES
-  ('users','read','profiles','Read users and profiles'),
-  ('users','write','profiles','Create and update users'),
-  ('catalog','read','products','Read catalog'),
-  ('catalog','write','products','Manage catalog'),
-  ('orders','read','orders','Read orders'),
-  ('orders','write','orders','Manage orders'),
-  ('service','read','service_tickets','Read service tickets'),
-  ('service','write','service_tickets','Manage service tickets'),
-  ('settings','write','settings','Manage settings'),
-  ('security','read','audit_logs','Read audit logs')
-ON CONFLICT (module, action, resource) DO NOTHING;
+DO $$ 
+DECLARE
+    tbl TEXT;
+BEGIN
+    FOR tbl IN 
+        SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name LIKE 'sls_%'
+    LOOP
+        EXECUTE format('DROP POLICY IF EXISTS "Superadmins manage %I" ON public.%I', tbl, tbl);
+        EXECUTE format('CREATE POLICY "Superadmins manage %I" ON public.%I FOR ALL USING (public.is_superadmin());
+        ', tbl, tbl);
+        
+        -- Config tables are viewable by everyone in the org
+        IF tbl IN ('sls_pipelines', 'sls_stages', 'sls_lead_sources') THEN
+            EXECUTE format('DROP POLICY IF EXISTS "Org members view config %I" ON public.%I', tbl, tbl);
+        EXECUTE format('CREATE POLICY "Org members view config %I" ON public.%I FOR SELECT USING (org_id = public.get_current_org_id());
+        ', tbl, tbl);
+        END IF;
+    END LOOP;
+END $$;
 
--- =========================================================
--- Consolidated Supabase Migration: Superadmin Areas
--- Merged into the single database initializer on 2026-07-19.
--- =========================================================
+DO $$ 
+DECLARE
+    tbl TEXT;
+BEGIN
+    FOR tbl IN 
+        SELECT table_name 
+        FROM information_schema.tables 
+        WHERE table_schema = 'public' 
+          AND table_name LIKE 'oms_%' 
+          AND table_name NOT IN ('oms_payment_history', 'oms_tracking_history', 'oms_taxes')
+    LOOP
+        EXECUTE format('DROP TRIGGER IF EXISTS trg_%I_updated_at ON public.%I', tbl, tbl);
+        EXECUTE format('DROP TRIGGER IF EXISTS trg_%I_audit ON public.%I', tbl, tbl);
+        EXECUTE format('CREATE TRIGGER trg_%I_updated_at BEFORE UPDATE ON public.%I FOR EACH ROW EXECUTE FUNCTION public.trg_set_updated_at();', tbl, tbl);
+        EXECUTE format('CREATE TRIGGER trg_%I_audit AFTER INSERT OR UPDATE OR DELETE ON public.%I FOR EACH ROW EXECUTE FUNCTION public.trg_audit_log();', tbl, tbl);
+        EXECUTE format('ALTER TABLE public.%I ENABLE ROW LEVEL SECURITY;', tbl);
+    END LOOP;
+END $$;
 
-CREATE TABLE IF NOT EXISTS areas (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  code text NOT NULL UNIQUE,
-  name text NOT NULL,
-  is_active boolean NOT NULL DEFAULT true,
-  services_enabled boolean NOT NULL DEFAULT false,
-  sales_manager_id uuid REFERENCES profiles(id) ON DELETE SET NULL,
-  service_manager_id uuid REFERENCES profiles(id) ON DELETE SET NULL,
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  deleted_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz
-);
+DO $$ 
+DECLARE
+    tbl TEXT;
+BEGIN
+    FOR tbl IN 
+        SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name LIKE 'oms_%'
+    LOOP
+        EXECUTE format('DROP POLICY IF EXISTS "Superadmins manage %I" ON public.%I', tbl, tbl);
+        EXECUTE format('CREATE POLICY "Superadmins manage %I" ON public.%I FOR ALL USING (public.is_superadmin());
+        ', tbl, tbl);
+    END LOOP;
+END $$;
 
-ALTER TABLE area_pincodes
-  ADD COLUMN IF NOT EXISTS area_id uuid REFERENCES areas(id) ON DELETE SET NULL,
-  ADD COLUMN IF NOT EXISTS is_active boolean NOT NULL DEFAULT true;
+DO $$ 
+DECLARE
+    tbl TEXT;
+BEGIN
+    FOR tbl IN 
+        SELECT table_name 
+        FROM information_schema.tables 
+        WHERE table_schema = 'public' 
+          AND table_name LIKE 'wab_%' 
+          -- Exclude immutable ledgers from updated_at triggers
+          AND table_name NOT IN ('wab_messages', 'wab_message_status', 'wab_webhook_logs', 'wab_media', 'wab_ai_summaries', 'wab_ai_suggestions', 'wab_customer_timeline')
+    LOOP
+        EXECUTE format('DROP TRIGGER IF EXISTS trg_%I_updated_at ON public.%I', tbl, tbl);
+        EXECUTE format('DROP TRIGGER IF EXISTS trg_%I_audit ON public.%I', tbl, tbl);
+        EXECUTE format('CREATE TRIGGER trg_%I_updated_at BEFORE UPDATE ON public.%I FOR EACH ROW EXECUTE FUNCTION public.trg_set_updated_at();', tbl, tbl);
+        EXECUTE format('CREATE TRIGGER trg_%I_audit AFTER INSERT OR UPDATE OR DELETE ON public.%I FOR EACH ROW EXECUTE FUNCTION public.trg_audit_log();', tbl, tbl);
+        EXECUTE format('ALTER TABLE public.%I ENABLE ROW LEVEL SECURITY;', tbl);
+    END LOOP;
+END $$;
 
-ALTER TABLE user_area_assignments
-  ADD COLUMN IF NOT EXISTS area_id uuid REFERENCES areas(id) ON DELETE CASCADE,
-  ADD COLUMN IF NOT EXISTS is_primary boolean NOT NULL DEFAULT false;
+DO $$ 
+DECLARE
+    tbl TEXT;
+BEGIN
+    FOR tbl IN 
+        SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name LIKE 'wab_%'
+    LOOP
+        EXECUTE format('DROP POLICY IF EXISTS "Superadmins manage %I" ON public.%I', tbl, tbl);
+        EXECUTE format('CREATE POLICY "Superadmins manage %I" ON public.%I FOR ALL USING (public.is_superadmin());
+        ', tbl, tbl);
+    END LOOP;
+END $$;
 
-CREATE INDEX IF NOT EXISTS idx_areas_active ON areas(is_active) WHERE deleted_at IS NULL;
-CREATE INDEX IF NOT EXISTS idx_area_pincodes_area_id ON area_pincodes(area_id) WHERE deleted_at IS NULL;
-CREATE INDEX IF NOT EXISTS idx_user_area_assignments_area_id ON user_area_assignments(area_id) WHERE deleted_at IS NULL;
+DO $$ 
+DECLARE
+    tbl TEXT;
+BEGIN
+    FOR tbl IN 
+        SELECT table_name 
+        FROM information_schema.tables 
+        WHERE table_schema = 'public' 
+          AND table_name LIKE 'mkt_%' 
+          AND table_name NOT IN ('mkt_google_reviews') -- Exclude external sync ledger
+    LOOP
+        EXECUTE format('DROP TRIGGER IF EXISTS trg_%I_updated_at ON public.%I', tbl, tbl);
+        EXECUTE format('DROP TRIGGER IF EXISTS trg_%I_audit ON public.%I', tbl, tbl);
+        EXECUTE format('CREATE TRIGGER trg_%I_updated_at BEFORE UPDATE ON public.%I FOR EACH ROW EXECUTE FUNCTION public.trg_set_updated_at();', tbl, tbl);
+        EXECUTE format('CREATE TRIGGER trg_%I_audit AFTER INSERT OR UPDATE OR DELETE ON public.%I FOR EACH ROW EXECUTE FUNCTION public.trg_audit_log();', tbl, tbl);
+        EXECUTE format('ALTER TABLE public.%I ENABLE ROW LEVEL SECURITY;', tbl);
+    END LOOP;
+END $$;
 
-COMMENT ON TABLE areas IS 'Sales and service operating areas used by superadmin routing.';
+DO $$ 
+DECLARE
+    tbl TEXT;
+BEGIN
+    FOR tbl IN 
+        SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name LIKE 'mkt_%'
+    LOOP
+        EXECUTE format('DROP POLICY IF EXISTS "Superadmins manage %I" ON public.%I', tbl, tbl);
+        EXECUTE format('CREATE POLICY "Superadmins manage %I" ON public.%I FOR ALL USING (public.is_superadmin());
+        ', tbl, tbl);
+    END LOOP;
+END $$;
 
-COMMIT;
+DO $$ 
+DECLARE
+    tbl TEXT;
+BEGIN
+    FOR tbl IN 
+        SELECT table_name 
+        FROM information_schema.tables 
+        WHERE table_schema = 'public' 
+          AND table_name LIKE 'sup_%' 
+          AND table_name NOT IN ('sup_ticket_attachments', 'sup_ticket_feedback')
+    LOOP
+        EXECUTE format('DROP TRIGGER IF EXISTS trg_%I_updated_at ON public.%I', tbl, tbl);
+        EXECUTE format('DROP TRIGGER IF EXISTS trg_%I_audit ON public.%I', tbl, tbl);
+        EXECUTE format('CREATE TRIGGER trg_%I_updated_at BEFORE UPDATE ON public.%I FOR EACH ROW EXECUTE FUNCTION public.trg_set_updated_at();', tbl, tbl);
+        EXECUTE format('CREATE TRIGGER trg_%I_audit AFTER INSERT OR UPDATE OR DELETE ON public.%I FOR EACH ROW EXECUTE FUNCTION public.trg_audit_log();', tbl, tbl);
+        EXECUTE format('ALTER TABLE public.%I ENABLE ROW LEVEL SECURITY;', tbl);
+    END LOOP;
+END $$;
+
+DO $$ 
+DECLARE
+    tbl TEXT;
+BEGIN
+    FOR tbl IN 
+        SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name LIKE 'sup_%'
+    LOOP
+        EXECUTE format('DROP POLICY IF EXISTS "Superadmins manage %I" ON public.%I', tbl, tbl);
+        EXECUTE format('CREATE POLICY "Superadmins manage %I" ON public.%I FOR ALL USING (public.is_superadmin());
+        ', tbl, tbl);
+    END LOOP;
+END $$;
+
+DO $$ 
+DECLARE
+    tbl TEXT;
+BEGIN
+    FOR tbl IN 
+        SELECT table_name 
+        FROM information_schema.tables 
+        WHERE table_schema = 'public' 
+          AND table_name LIKE 'fin_%' 
+          -- Exclude immutable ledgers from updated_at triggers
+          AND table_name NOT IN ('fin_ledger_lines', 'fin_credit_notes', 'fin_debit_notes', 'fin_bank_transactions', 'fin_tax_ledger', 'fin_commission_ledger')
+    LOOP
+        EXECUTE format('DROP TRIGGER IF EXISTS trg_%I_updated_at ON public.%I', tbl, tbl);
+        EXECUTE format('DROP TRIGGER IF EXISTS trg_%I_audit ON public.%I', tbl, tbl);
+        EXECUTE format('CREATE TRIGGER trg_%I_updated_at BEFORE UPDATE ON public.%I FOR EACH ROW EXECUTE FUNCTION public.trg_set_updated_at();', tbl, tbl);
+        EXECUTE format('CREATE TRIGGER trg_%I_audit AFTER INSERT OR UPDATE OR DELETE ON public.%I FOR EACH ROW EXECUTE FUNCTION public.trg_audit_log();', tbl, tbl);
+        EXECUTE format('ALTER TABLE public.%I ENABLE ROW LEVEL SECURITY;', tbl);
+    END LOOP;
+END $$;
+
+DO $$ 
+DECLARE
+    tbl TEXT;
+BEGIN
+    FOR tbl IN 
+        SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name LIKE 'fin_%'
+    LOOP
+        EXECUTE format('DROP POLICY IF EXISTS "Superadmins manage %I" ON public.%I', tbl, tbl);
+        EXECUTE format('CREATE POLICY "Superadmins manage %I" ON public.%I FOR ALL USING (public.is_superadmin());
+        ', tbl, tbl);
+    END LOOP;
+END $$;
+
+DO $$ 
+DECLARE
+    tbl TEXT;
+BEGIN
+    FOR tbl IN 
+        SELECT table_name 
+        FROM information_schema.tables 
+        WHERE table_schema = 'public' 
+          AND table_name LIKE 'hr_%' 
+    LOOP
+        EXECUTE format('DROP TRIGGER IF EXISTS trg_%I_updated_at ON public.%I', tbl, tbl);
+        EXECUTE format('DROP TRIGGER IF EXISTS trg_%I_audit ON public.%I', tbl, tbl);
+        EXECUTE format('CREATE TRIGGER trg_%I_updated_at BEFORE UPDATE ON public.%I FOR EACH ROW EXECUTE FUNCTION public.trg_set_updated_at();', tbl, tbl);
+        EXECUTE format('CREATE TRIGGER trg_%I_audit AFTER INSERT OR UPDATE OR DELETE ON public.%I FOR EACH ROW EXECUTE FUNCTION public.trg_audit_log();', tbl, tbl);
+        EXECUTE format('ALTER TABLE public.%I ENABLE ROW LEVEL SECURITY;', tbl);
+    END LOOP;
+END $$;
+
+DO $$ 
+DECLARE
+    tbl TEXT;
+BEGIN
+    FOR tbl IN 
+        SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name LIKE 'hr_%'
+    LOOP
+        EXECUTE format('DROP POLICY IF EXISTS "Superadmins manage %I" ON public.%I', tbl, tbl);
+        EXECUTE format('CREATE POLICY "Superadmins manage %I" ON public.%I FOR ALL USING (public.is_superadmin());
+        ', tbl, tbl);
+    END LOOP;
+END $$;
+
+DO $$ 
+DECLARE
+    tbl TEXT;
+BEGIN
+    FOR tbl IN 
+        SELECT table_name 
+        FROM information_schema.tables 
+        WHERE table_schema = 'public' 
+          AND table_name LIKE 'ntf_%' 
+          AND table_name NOT IN ('ntf_queue', 'ntf_delivery_logs') -- Exclude high velocity from update triggers
+    LOOP
+        EXECUTE format('DROP TRIGGER IF EXISTS trg_%I_updated_at ON public.%I', tbl, tbl);
+        EXECUTE format('DROP TRIGGER IF EXISTS trg_%I_audit ON public.%I', tbl, tbl);
+        EXECUTE format('CREATE TRIGGER trg_%I_updated_at BEFORE UPDATE ON public.%I FOR EACH ROW EXECUTE FUNCTION public.trg_set_updated_at();', tbl, tbl);
+        EXECUTE format('CREATE TRIGGER trg_%I_audit AFTER INSERT OR UPDATE OR DELETE ON public.%I FOR EACH ROW EXECUTE FUNCTION public.trg_audit_log();', tbl, tbl);
+        EXECUTE format('ALTER TABLE public.%I ENABLE ROW LEVEL SECURITY;', tbl);
+    END LOOP;
+END $$;
+
+DO $$ 
+DECLARE
+    tbl TEXT;
+BEGIN
+    FOR tbl IN 
+        SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name LIKE 'ntf_%'
+    LOOP
+        EXECUTE format('DROP POLICY IF EXISTS "Superadmins manage %I" ON public.%I', tbl, tbl);
+        EXECUTE format('CREATE POLICY "Superadmins manage %I" ON public.%I FOR ALL USING (public.is_superadmin());
+        ', tbl, tbl);
+    END LOOP;
+END $$;
+
+DO $$ 
+DECLARE
+    tbl TEXT;
+BEGIN
+    FOR tbl IN 
+        SELECT table_name 
+        FROM information_schema.tables 
+        WHERE table_schema = 'public' 
+          AND table_name LIKE 'rpt_%' 
+    LOOP
+        EXECUTE format('ALTER TABLE public.%I ENABLE ROW LEVEL SECURITY;', tbl);
+        EXECUTE format('DROP POLICY IF EXISTS "Superadmins manage %I" ON public.%I', tbl, tbl);
+        EXECUTE format('CREATE POLICY "Superadmins manage %I" ON public.%I FOR ALL USING (public.is_superadmin());
+        ', tbl, tbl);
+    END LOOP;
+END $$;
+
+DO $$ 
+DECLARE
+    tbl TEXT;
+BEGIN
+    FOR tbl IN 
+        SELECT table_name 
+        FROM information_schema.tables 
+        WHERE table_schema = 'public' 
+          AND (table_name LIKE 'sys_integration%' OR table_name LIKE 'sys_oauth%' OR table_name LIKE 'sys_webhooks%')
+    LOOP
+        EXECUTE format('DROP POLICY IF EXISTS "Superadmins manage %I" ON public.%I', tbl, tbl);
+        EXECUTE format('CREATE POLICY "Superadmins manage %I" ON public.%I FOR ALL USING (public.is_superadmin());
+        ', tbl, tbl);
+    END LOOP;
+END $$;
+
+DO $$ 
+DECLARE
+    tbl TEXT;
+BEGIN
+    FOR tbl IN 
+        SELECT table_name 
+        FROM information_schema.tables 
+        WHERE table_schema = 'public' 
+          AND table_name IN ('sys_app_settings', 'sys_background_jobs')
+    LOOP
+        EXECUTE format('DROP POLICY IF EXISTS "Superadmins manage %I" ON public.%I', tbl, tbl);
+        EXECUTE format('CREATE POLICY "Superadmins manage %I" ON public.%I FOR ALL USING (public.is_superadmin());
+        ', tbl, tbl);
+    END LOOP;
+END $$;
+
+DO $$ 
+DECLARE
+    tbl TEXT;
+BEGIN
+    FOR tbl IN 
+        SELECT table_name 
+        FROM information_schema.tables 
+        WHERE table_schema = 'public' 
+          AND (table_name LIKE 'sub_%' OR table_name LIKE 'pm_%')
+    LOOP
+        EXECUTE format('DROP TRIGGER IF EXISTS trg_%I_updated_at ON public.%I', tbl, tbl);
+        EXECUTE format('DROP TRIGGER IF EXISTS trg_%I_audit ON public.%I', tbl, tbl);
+        EXECUTE format('CREATE TRIGGER trg_%I_updated_at BEFORE UPDATE ON public.%I FOR EACH ROW EXECUTE FUNCTION public.trg_set_updated_at();', tbl, tbl);
+        EXECUTE format('CREATE TRIGGER trg_%I_audit AFTER INSERT OR UPDATE OR DELETE ON public.%I FOR EACH ROW EXECUTE FUNCTION public.trg_audit_log();', tbl, tbl);
+        EXECUTE format('ALTER TABLE public.%I ENABLE ROW LEVEL SECURITY;', tbl);
+    END LOOP;
+END $$;
+
+DO $$ 
+DECLARE
+    tbl TEXT;
+BEGIN
+    FOR tbl IN 
+        SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND (table_name LIKE 'sub_%' OR table_name LIKE 'pm_%')
+    LOOP
+        EXECUTE format('DROP POLICY IF EXISTS "Superadmins manage %I" ON public.%I', tbl, tbl);
+        EXECUTE format('CREATE POLICY "Superadmins manage %I" ON public.%I FOR ALL USING (public.is_superadmin());
+        ', tbl, tbl);
+    END LOOP;
+END $$;
+

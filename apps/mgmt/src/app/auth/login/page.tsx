@@ -38,6 +38,22 @@ const Turnstile = NextDynamic(() => import('react-turnstile').then(m => m.defaul
   ssr: false,
 }) as unknown as React.ComponentType<any>;
 
+async function resolveStaffRole(supabase: ReturnType<typeof createClient>, user: any) {
+  const metadataRole = normalizeRole(user?.app_metadata?.role);
+  if (metadataRole && metadataRole !== 'superadmin') {
+    return metadataRole;
+  }
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single();
+
+  const profileRole = normalizeRole(profile?.role);
+  return profileRole === 'superadmin' ? null : profileRole;
+}
+
 function StaffSignInForm() {
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
@@ -98,16 +114,7 @@ function StaffSignInForm() {
       }
 
       // Confirm role after 2FA
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', twoFactorUser.id)
-        .single();
-
-      let userRole = normalizeRole(profile?.role) ?? null;
-      if (userRole === 'superadmin') {
-        userRole = null;
-      }
+      const userRole = await resolveStaffRole(supabase, twoFactorUser);
 
       if (!userRole || !STAFF_ROLES.has(userRole)) {
         await supabase.auth.signOut();
@@ -219,16 +226,7 @@ function StaffSignInForm() {
       }
 
       // Check staff role
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', authUser.id)
-        .single();
-
-      let userRole = normalizeRole(profile?.role) ?? null;
-      if (userRole === 'superadmin') {
-        userRole = null;
-      }
+      const userRole = await resolveStaffRole(supabase, authUser);
 
       if (!userRole || !STAFF_ROLES.has(userRole)) {
         // Sign them out immediately — customer accounts are not allowed here

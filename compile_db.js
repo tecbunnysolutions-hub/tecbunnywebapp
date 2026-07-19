@@ -130,18 +130,8 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto" WITH SCHEMA extensions;
 
     // Save the monolithic file
     fs.writeFileSync(outputFile, finalSQL, 'utf8');
-    
-    // Save chunked files to bypass max_locks_per_transaction in Supabase editor
-    let part1 = `-- PART 1: INIT, ENUMS, & FUNCTIONS\n${resetSQL}\n${Array.from(enums).join('\n\n')}\n\n${Array.from(functions).join('\n\n')}`;
-    let part2 = `-- PART 2: TABLES, FKs, & VIEWS\n${tablesAndViews.join('\n\n')}`;
-    let part3 = `-- PART 3: DYNAMIC TRIGGERS & RLS\n${automationBlocks.join('\n\n')}`;
-    
-    fs.writeFileSync(path.join(__dirname, 'db_part1.sql'), part1, 'utf8');
-    fs.writeFileSync(path.join(__dirname, 'db_part2.sql'), part2, 'utf8');
-    fs.writeFileSync(path.join(__dirname, 'db_part3.sql'), part3, 'utf8');
 
     console.log(`\nSuccess! Wrote fully integrated database to ${outputFile}`);
-    console.log(`Also generated db_part1.sql, db_part2.sql, and db_part3.sql for safe execution.`);
 }
 
 compileDB().catch(console.error);

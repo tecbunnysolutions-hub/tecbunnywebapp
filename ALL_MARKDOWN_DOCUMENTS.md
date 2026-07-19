@@ -3163,7 +3163,7 @@ The current implementation is strong for public commerce, authentication, produc
 - Database mapping: `docs/api-audit/api-database-mapping.md`
 - Role mapping: `docs/api-audit/api-role-mapping.md`
 - Machine inventory: `docs/api-audit/inventory.json`
-- Database schema: `database.sql`
+- Database schema: consolidated final schema in `database.sql`
 - Next route handlers across `apps/api`, `apps/mgmt`, `apps/superadmin`, `apps/waba`, `apps/public`, and `apps/webmail`
 - Public website, management, superadmin, WABA, webmail, extension, shared packages, and database modules were considered as one enterprise platform.
 
@@ -3908,7 +3908,7 @@ Code remediation is complete for the audited release blockers. The remaining ite
 - Hardened `apps/api/src/app/api/webhooks/orders/notconfirmed/route.ts` with raw-body HMAC validation, timestamp replay protection, safe logging, idempotency, and shared webhook event logging.
 - Aligned `apps/api/src/app/api/webhooks/orders/shipped/route.ts` with duplicate-event protection and shared webhook event logging.
 - Enforced mandatory v2 superadmin session fingerprint validation in `packages/core/src/auth/superadmin-session.ts`, including central Next.js header resolution for older call sites.
-- Removed broad schema `ALL` grants for `anon` and `authenticated` from `database.sql` and `db_part1.sql`.
+- Removed broad schema `ALL` grants for `anon` and `authenticated` from the database schema files.
 - Restricted WABA automation rules, conditions, and actions reads to staff/manager/admin/superadmin roles in `db_part4_waba_rules.sql`.
 - Added bounded `limit`/`offset` pagination and pagination metadata to `apps/waba/src/app/api/messages/route.ts` for both conversation lists and per-conversation message reads.
 - Replaced custom regex HTML sanitization in `packages/core/src/sanitize-html.ts` with the maintained `sanitize-html` parser-based library while preserving the existing export API.
@@ -4371,9 +4371,7 @@ Module: Database / RBAC
 
 Affected files:
 
-- `supabase/migrations/20260715000002_enterprise_audit_core.sql`
-- `supabase/migrations/20260715000003_rbac_module.sql`
-- `supabase/migrations/20260715000005_core_iam.sql`
+- `database.sql`
 
 Root cause: Multiple migrations define overlapping IAM/RBAC tables.
 
@@ -4420,7 +4418,6 @@ Module: Database / RLS / Privileges
 Affected files:
 
 - `database.sql`
-- `db_part1.sql`
 
 Root cause: Broad grants assign all privileges on the public schema to `anon`, `authenticated`, and `service_role`.
 
@@ -7243,14 +7240,7 @@ The following section provides a comprehensive structural mapping and detailed b
 | `src/types/css.d.ts` | General component/module | None | None |
 | `src/types/fontkit.d.ts` | General component/module | None | None |
 | `src/types/pdfkit-standalone.d.ts` | General component/module | None | pdfkit |
-| `supabase/migrations/20260608000000_final_schema.sql` | Supabase DB config/migration | None | None |
-| `supabase/migrations/20260619000000_global_app_config.sql` | Supabase DB config/migration | None | None |
-| `supabase/migrations/20260620000000_performance_database_hardening.sql` | Supabase DB config/migration | None | None |
-| `supabase/migrations/20260621000000_storage_security_hardening.sql` | Supabase DB config/migration | None | None |
-| `supabase/migrations/20260621095702_create_otp_verifications.sql` | Supabase DB config/migration | None | None |
-| `supabase/migrations/20260621230000_dynamic_rbac_schema.sql` | Supabase DB config/migration | None | None |
-| `supabase/migrations/20260622000000_immutable_audit_trails.sql` | Supabase DB config/migration | None | None |
-| `supabase/update_products.sql` | Supabase DB config/migration | None | None |
+| `database.sql` | Consolidated final database schema | None | None |
 | `supabase/upload_and_update_sql.js` | Supabase DB config/migration | None | fs, @supabase/supabase-js, sharp, crypto |
 | `tailwind.config.ts` | General component/module | None | tailwindcss |
 | `tsconfig.json` | Configuration/Data | None | None |

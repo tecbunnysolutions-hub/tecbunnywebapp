@@ -111,14 +111,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Validate SQL files exist and are non-empty
+      - name: Validate final SQL file exists and is non-empty
         run: |
-          echo "Checking migration files..."
-          for f in supabase/migrations/*.sql; do
-            if [ ! -s "$f" ]; then
-              echo "ERROR: Empty migration file: $f"
-              exit 1
-            fi
-            echo "OK: $f"
-          done
+          echo "Checking final SQL file..."
+          if [ ! -s database.sql ]; then
+            echo "ERROR: database.sql is missing or empty"
+            exit 1
+          fi
+          echo "OK: database.sql"
 
