@@ -15,6 +15,7 @@ export class ExtensionAuthError extends Error {
 }
 
 const DEFAULT_ALLOWED_ORIGINS = ['https://www.tecbunny.com', 'https://tecbunny.com'];
+const CHROME_EXTENSION_ID_PATTERN = /^[a-p]{32}$/;
 
 function createSupabaseServiceClient() {
   const { url, serviceKey } = requireSupabaseServiceEnv();
@@ -41,6 +42,24 @@ function allowedOrigins() {
   return new Set([...DEFAULT_ALLOWED_ORIGINS, ...configuredExtensionOrigins()]);
 }
 
+function isChromeExtensionOrigin(origin: string) {
+  try {
+    const parsedOrigin = new URL(origin);
+    return parsedOrigin.protocol === 'chrome-extension:' && CHROME_EXTENSION_ID_PATTERN.test(parsedOrigin.hostname);
+  } catch {
+    return false;
+  }
+}
+
+function isAllowedOriginValue(origin: string) {
+  if (!origin) return true;
+
+  const origins = allowedOrigins();
+  if (origins.has(origin)) return true;
+
+  return isChromeExtensionOrigin(origin);
+}
+
 export function getExtensionCorsHeaders(request: NextRequest) {
   const origin = request.headers.get('origin') || '';
   const headers: Record<string, string> = {
@@ -50,7 +69,7 @@ export function getExtensionCorsHeaders(request: NextRequest) {
     'Access-Control-Max-Age': '600',
   };
 
-  if (origin && allowedOrigins().has(origin)) {
+  if (origin && isAllowedOriginValue(origin)) {
     headers['Access-Control-Allow-Origin'] = origin;
   }
 
@@ -58,8 +77,8 @@ export function getExtensionCorsHeaders(request: NextRequest) {
 }
 
 export function isAllowedExtensionOrigin(request: NextRequest) {
-  const origin = request.headers.get('origin');
-  return !origin || allowedOrigins().has(origin);
+  const origin = request.headers.get('origin') || '';
+  return isAllowedOriginValue(origin);
 }
 
 export function extensionOptionsResponse(request: NextRequest) {

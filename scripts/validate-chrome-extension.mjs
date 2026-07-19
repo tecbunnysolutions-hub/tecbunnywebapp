@@ -84,6 +84,8 @@ assert(/slice\(0, MAX_RAW_TEXT_LENGTH\)/.test(read('extension/content.js')), 'co
 const extensionSecurity = read('apps/api/src/app/api/extension-security.ts');
 assert(/CHROME_EXTENSION_ID/.test(extensionSecurity), 'API CORS must support configured Chrome extension ID');
 assert(/CHROME_EXTENSION_ALLOWED_ORIGINS/.test(extensionSecurity), 'API CORS must support configured allowed extension origins');
+assert(/CHROME_EXTENSION_ID_PATTERN/.test(extensionSecurity), 'extension wildcard origin handling must validate Chrome extension IDs');
+assert(/return isChromeExtensionOrigin\(origin\)/.test(extensionSecurity), 'API CORS must allow valid Chrome extension origins without per-device env changes');
 assert(!/Access-Control-Allow-Origin['"]:\s*['"]\*/.test(extensionSecurity), 'extension security helper must not allow wildcard CORS');
 
 const authRoute = read('apps/api/src/app/api/auth/extension/route.ts');

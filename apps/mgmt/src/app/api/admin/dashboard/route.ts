@@ -1,6 +1,7 @@
 import { isSupabaseServiceConfigured } from "@tecbunny/database/admin";
 import { NextRequest, NextResponse } from 'next/server';
 
+import { logStaffActivity } from "@tecbunny/core/enterprise-analytics";
 import { logger } from "@tecbunny/core/logger";
 import { AdminAuthError, requireAdminContext } from "@tecbunny/core/auth/admin-guard";
 
@@ -24,7 +25,17 @@ function coerceCurrency(order: Record<string, unknown>): number {
   return 0;
 }
 
-export async function GET(_request: NextRequest) {
+function percentageChange(current: number, previous: number) {
+  if (previous === 0) return current > 0 ? 100 : 0;
+  return Number((((current - previous) / previous) * 100).toFixed(1));
+}
+
+function statusBucket(status: unknown) {
+  const normalized = String(status ?? 'Unknown').trim() || 'Unknown';
+  return normalized;
+}
+
+export async function GET(request: NextRequest) {
   if (!isSupabaseServiceConfigured) {
     logger.warn('admin_dashboard.misconfigured_supabase');
   }
@@ -58,12 +69,23 @@ export async function GET(_request: NextRequest) {
       productCount = productCountRaw ?? 0;
     }
 
+    const url = new URL(request.url);
+    const rangeParam = url.searchParams.get('range') || 'month';
     const now = new Date();
     const currentYear = now.getFullYear();
     const currentMonth = now.getMonth();
-    const startOfMonth = new Date(currentYear, currentMonth, 1);
-    const startOfNextMonth = new Date(currentYear, currentMonth + 1, 1);
-    const startOfLastMonth = new Date(currentYear, currentMonth - 1, 1);
+    const fallbackStart = rangeParam === 'week'
+      ? new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
+      : rangeParam === 'quarter'
+        ? new Date(currentYear, Math.floor(currentMonth / 3) * 3, 1)
+        : rangeParam === 'year'
+          ? new Date(currentYear, 0, 1)
+          : new Date(currentYear, currentMonth, 1);
+    const startOfRange = url.searchParams.get('from') ? new Date(String(url.searchParams.get('from'))) : fallbackStart;
+    const endOfRange = url.searchParams.get('to') ? new Date(String(url.searchParams.get('to'))) : now;
+    endOfRange.setHours(23, 59, 59, 999);
+    const rangeMs = Math.max(1, endOfRange.getTime() - startOfRange.getTime());
+    const previousStart = new Date(startOfRange.getTime() - rangeMs);
 
     // Fetch total orders count
     let totalOrders = 0;
@@ -77,14 +99,14 @@ export async function GET(_request: NextRequest) {
       totalOrders = totalOrdersRaw ?? 0;
     }
 
-    // Fetch current month orders (for count + revenue)
+    // Fetch selected-range orders (for count + revenue + chart data)
     let monthlyOrdersCount = 0;
     let monthlyOrdersData: Array<Record<string, unknown>> = [];
     const { data: monthlyOrdersDataRaw, count: monthlyOrdersCountRaw, error: monthlyOrdersError } = await serviceSupabase
       .from('orders')
-      .select('total, created_at, status', { count: 'exact' })
-      .gte('created_at', startOfMonth.toISOString())
-      .lt('created_at', startOfNextMonth.toISOString())
+      .select('id, total, created_at, status, payment_status, type, customer_id', { count: 'exact' })
+      .gte('created_at', startOfRange.toISOString())
+      .lte('created_at', endOfRange.toISOString())
       .neq('status', 'cancelled');
 
     if (monthlyOrdersError) {
@@ -96,13 +118,13 @@ export async function GET(_request: NextRequest) {
 
     const monthlyRevenue = (monthlyOrdersData ?? []).reduce((total, order) => total + coerceCurrency(order), 0);
 
-    // Fetch last month orders count (no need to fetch all rows)
+    // Fetch previous period order count (no need to fetch all rows)
     let lastMonthOrdersCount = 0;
     const { count: lastMonthOrdersCountRaw, error: lastMonthOrdersError } = await serviceSupabase
       .from('orders')
       .select('*', { count: 'exact', head: true })
-      .gte('created_at', startOfLastMonth.toISOString())
-      .lt('created_at', startOfMonth.toISOString())
+      .gte('created_at', previousStart.toISOString())
+      .lt('created_at', startOfRange.toISOString())
       .neq('status', 'cancelled');
 
     if (lastMonthOrdersError) {
@@ -133,6 +155,65 @@ export async function GET(_request: NextRequest) {
       status: String(order.status ?? '')
     }));
 
+    const statusCounts = monthlyOrdersData.reduce((acc, order) => {
+      const key = statusBucket(order.status);
+      acc[key] = Number(acc[key] ?? 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+
+    const paymentCounts = monthlyOrdersData.reduce((acc, order) => {
+      const key = statusBucket(order.payment_status);
+      acc[key] = Number(acc[key] ?? 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+
+    const typeCounts = monthlyOrdersData.reduce((acc, order) => {
+      const key = statusBucket(order.type);
+      acc[key] = Number(acc[key] ?? 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+
+    const revenueByDay = monthlyOrdersData.reduce((acc, order) => {
+      const day = String(order.created_at ?? '').slice(0, 10) || 'unknown';
+      acc[day] = Number(acc[day] ?? 0) + coerceCurrency(order);
+      return acc;
+    }, {} as Record<string, number>);
+
+    let recentCustomers: Array<Record<string, unknown>> = [];
+    const { data: recentCustomersRaw, error: recentCustomersError } = await serviceSupabase
+      .from('profiles')
+      .select('id, name, email, mobile, role, created_at')
+      .order('created_at', { ascending: false })
+      .limit(5);
+
+    if (recentCustomersError) {
+      logger.warn('admin_dashboard.recent_customers_error', { error: recentCustomersError.message, code: recentCustomersError.code });
+    } else {
+      recentCustomers = (recentCustomersRaw as Array<Record<string, unknown>>) ?? [];
+    }
+
+    const pendingTasks = [
+      { label: 'Awaiting payment', count: Number(paymentCounts.Pending ?? paymentCounts['Awaiting Payment'] ?? 0), href: '/mgmt/admin/orders?paymentStatus=Pending' },
+      { label: 'Pending orders', count: Number(statusCounts.Pending ?? 0), href: '/mgmt/admin/orders?status=Pending' },
+      { label: 'Ready to ship', count: Number(statusCounts['Ready to Ship'] ?? statusCounts.Processing ?? 0), href: '/mgmt/admin/orders?status=Ready%20to%20Ship' },
+    ];
+
+    const systemHealth = {
+      api: 'operational',
+      database: isSupabaseServiceConfigured ? 'service-configured' : 'client-fallback',
+      analytics: 'enabled',
+      lastRefreshedAt: now.toISOString(),
+    };
+
+    const aiInsights = [
+      monthlyOrdersCount === 0
+        ? 'No order activity in the selected range. Review acquisition channels and pending quote follow-ups.'
+        : `Selected range generated ${monthlyOrdersCount} orders and ₹${monthlyRevenue.toLocaleString('en-IN')} revenue.`,
+      percentageChange(monthlyOrdersCount, lastMonthOrdersCount) >= 0
+        ? 'Order volume is trending upward versus the previous comparable period.'
+        : 'Order volume is below the previous comparable period; inspect cancelled and pending payment queues.',
+    ];
+
     const stats = {
       totalUsers: totalUserCount ?? 0,
       totalProducts: productCount ?? 0,
@@ -140,8 +221,49 @@ export async function GET(_request: NextRequest) {
       monthlyRevenue,
       monthlyOrders: monthlyOrdersCount ?? 0,
       lastMonthOrders: lastMonthOrdersCount ?? 0,
-      recentActivity
+      orderGrowthPercent: percentageChange(monthlyOrdersCount, lastMonthOrdersCount),
+      recentActivity,
+      recentCustomers,
+      orderStatistics: { byStatus: statusCounts, byType: typeCounts, byPaymentStatus: paymentCounts },
+      customerStatistics: { totalCustomers: totalUserCount, recentCustomers: recentCustomers.length },
+      inventoryStatistics: { totalProducts: productCount, lowStock: 0, allocationRisk: productCount === 0 ? 'unknown' : 'normal' },
+      salesStatistics: { selectedRangeOrders: monthlyOrdersCount, averageOrderValue: monthlyOrdersCount > 0 ? monthlyRevenue / monthlyOrdersCount : 0 },
+      financialSummary: { selectedRangeRevenue: monthlyRevenue, currency: 'INR', previousPeriodOrders: lastMonthOrdersCount },
+      staffPerformance: { activeUsers: totalUserCount, pendingTasks: pendingTasks.reduce((sum, task) => sum + task.count, 0) },
+      engineerPerformance: { openServiceOrders: statusCounts.Service ?? 0, pendingDispatch: statusCounts['Ready for Delivery'] ?? 0 },
+      marketingPerformance: { recentCustomers: recentCustomers.length, conversionSignal: monthlyOrdersCount > 0 ? 'active' : 'needs-attention' },
+      pendingTasks,
+      upcomingActivities: pendingTasks.filter((task) => task.count > 0),
+      notifications: pendingTasks.filter((task) => task.count > 0).map((task) => `${task.count} ${task.label.toLowerCase()}`),
+      quickActions: [
+        { label: 'Create order', href: '/mgmt/sales/orders?action=new' },
+        { label: 'Review orders', href: '/mgmt/admin/orders' },
+        { label: 'Open CRM', href: '/mgmt/crm' },
+        { label: 'View reports', href: '/mgmt/reports' },
+      ],
+      charts: {
+        revenueByDay: Object.entries(revenueByDay).map(([date, value]) => ({ date, value })),
+        ordersByStatus: Object.entries(statusCounts).map(([status, count]) => ({ status, count })),
+        ordersByType: Object.entries(typeCounts).map(([type, count]) => ({ type, count })),
+      },
+      systemHealth,
+      aiInsights,
+      liveActivityFeed: recentActivity,
+      range: { key: rangeParam, from: startOfRange.toISOString(), to: endOfRange.toISOString() },
     };
+
+    void logStaffActivity({
+      application: 'mgmt',
+      module: 'dashboard',
+      screen: '/api/admin/dashboard',
+      action: 'dashboard_viewed',
+      description: 'Loaded enterprise management dashboard metrics',
+      context: { userId: user.id, userEmail: user.email, role },
+      apiEndpoint: '/api/admin/dashboard',
+      httpMethod: 'GET',
+      success: true,
+      metadata: { range: stats.range, monthlyOrders: stats.monthlyOrders, monthlyRevenue: stats.monthlyRevenue },
+    });
 
     logger.info('admin_dashboard.fetch_success', { stats });
 

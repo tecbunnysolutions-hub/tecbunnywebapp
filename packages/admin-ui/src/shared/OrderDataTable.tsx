@@ -61,8 +61,11 @@ const TYPE_BADGE_CLASS: Record<OrderType, string> = {
 };
 
 type TypeFilter = 'all' | OrderType;
+type StatusFilter = 'all' | OrderStatus;
+type PaymentStatusFilter = 'all' | 'Pending' | 'Awaiting Payment' | 'Payment Confirmed' | 'Fully Paid' | 'Payment Failed' | 'Payment Cancelled';
 type TableDensity = 'comfortable' | 'compact';
 type OrderColumnKey = 'order' | 'customer' | 'type' | 'date' | 'status' | 'payment' | 'total';
+type SortBy = 'created_at' | 'updated_at' | 'total' | 'status' | 'payment_status';
 
 interface OrderDataTableProps {
   role: 'ADMIN' | 'SALES';
@@ -73,6 +76,12 @@ type SavedOrderView = {
   name: string;
   searchTerm: string;
   typeFilter: TypeFilter;
+  statusFilter?: StatusFilter;
+  paymentStatusFilter?: PaymentStatusFilter;
+  dateFrom?: string;
+  dateTo?: string;
+  sortBy?: SortBy;
+  sortDirection?: 'asc' | 'desc';
   limit: number;
   density?: TableDensity;
   visibleColumns?: OrderColumnKey[];
@@ -99,6 +108,12 @@ export default function OrderDataTable({ role }: OrderDataTableProps) {
   const [orders, setOrders] = React.useState<Order[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [typeFilter, setTypeFilter] = React.useState<TypeFilter>('all');
+  const [statusFilter, setStatusFilter] = React.useState<StatusFilter>('all');
+  const [paymentStatusFilter, setPaymentStatusFilter] = React.useState<PaymentStatusFilter>('all');
+  const [dateFrom, setDateFrom] = React.useState('');
+  const [dateTo, setDateTo] = React.useState('');
+  const [sortBy, setSortBy] = React.useState<SortBy>('created_at');
+  const [sortDirection, setSortDirection] = React.useState<'asc' | 'desc'>('desc');
   const [page, setPage] = React.useState(1);
   const [limit, setLimit] = React.useState(20);
   const [totalPages, setTotalPages] = React.useState(1);
@@ -130,6 +145,14 @@ export default function OrderDataTable({ role }: OrderDataTableProps) {
         if (typeFilter !== 'all') {
           params.set('type', typeFilter);
         }
+
+        if (statusFilter !== 'all') params.set('status', statusFilter);
+        if (paymentStatusFilter !== 'all') params.set('paymentStatus', paymentStatusFilter);
+        if (dateFrom) params.set('from', dateFrom);
+        if (dateTo) params.set('to', dateTo);
+        if (searchTerm.trim()) params.set('search', searchTerm.trim());
+        params.set('sortBy', sortBy);
+        params.set('sortDirection', sortDirection);
 
         const response = await fetch(`/api/admin/orders?${params.toString()}`, {
           signal: controller.signal,
@@ -181,7 +204,7 @@ export default function OrderDataTable({ role }: OrderDataTableProps) {
         setLoading(false);
       }
     }
-  }, [limit, page, toast, typeFilter, role, supabase]);
+  }, [dateFrom, dateTo, limit, page, paymentStatusFilter, searchTerm, sortBy, sortDirection, statusFilter, toast, typeFilter, role, supabase]);
 
   React.useEffect(() => {
     fetchOrders();
@@ -224,6 +247,12 @@ export default function OrderDataTable({ role }: OrderDataTableProps) {
       name,
       searchTerm,
       typeFilter,
+      statusFilter,
+      paymentStatusFilter,
+      dateFrom,
+      dateTo,
+      sortBy,
+      sortDirection,
       limit,
       density,
       visibleColumns: Array.from(visibleColumns),
@@ -240,7 +269,7 @@ export default function OrderDataTable({ role }: OrderDataTableProps) {
     setActiveSavedViewId(view.id);
     setNewViewName('');
     toast({ title: 'View saved', description: `${name} is ready for reuse.` });
-  }, [density, limit, newViewName, persistSavedViews, savedViews, searchTerm, toast, typeFilter, visibleColumns]);
+  }, [dateFrom, dateTo, density, limit, newViewName, paymentStatusFilter, persistSavedViews, savedViews, searchTerm, sortBy, sortDirection, statusFilter, toast, typeFilter, visibleColumns]);
 
   const applySavedView = React.useCallback((viewId: string) => {
     setActiveSavedViewId(viewId);
@@ -251,6 +280,12 @@ export default function OrderDataTable({ role }: OrderDataTableProps) {
 
     setSearchTerm(view.searchTerm);
     setTypeFilter(view.typeFilter);
+    setStatusFilter(view.statusFilter ?? 'all');
+    setPaymentStatusFilter(view.paymentStatusFilter ?? 'all');
+    setDateFrom(view.dateFrom ?? '');
+    setDateTo(view.dateTo ?? '');
+    setSortBy(view.sortBy ?? 'created_at');
+    setSortDirection(view.sortDirection ?? 'desc');
     setLimit(view.limit);
     setDensity(view.density ?? 'comfortable');
     setVisibleColumns(new Set(view.visibleColumns?.length ? view.visibleColumns : DEFAULT_ORDER_COLUMNS));
@@ -260,6 +295,12 @@ export default function OrderDataTable({ role }: OrderDataTableProps) {
   const resetTableView = React.useCallback(() => {
     setSearchTerm('');
     setTypeFilter('all');
+    setStatusFilter('all');
+    setPaymentStatusFilter('all');
+    setDateFrom('');
+    setDateTo('');
+    setSortBy('created_at');
+    setSortDirection('desc');
     setLimit(20);
     setDensity('comfortable');
     setVisibleColumns(new Set(DEFAULT_ORDER_COLUMNS));
@@ -370,8 +411,20 @@ export default function OrderDataTable({ role }: OrderDataTableProps) {
   };
 
   const exportCurrentView = React.useCallback(() => {
+    if (role === 'ADMIN') {
+      const params = new URLSearchParams({ page: String(page), limit: String(limit), export: 'csv' });
+      if (typeFilter !== 'all') params.set('type', typeFilter);
+      if (statusFilter !== 'all') params.set('status', statusFilter);
+      if (paymentStatusFilter !== 'all') params.set('paymentStatus', paymentStatusFilter);
+      if (dateFrom) params.set('from', dateFrom);
+      if (dateTo) params.set('to', dateTo);
+      if (searchTerm.trim()) params.set('search', searchTerm.trim());
+      params.set('sortBy', sortBy);
+      params.set('sortDirection', sortDirection);
+      void fetch(`/api/admin/orders?${params.toString()}`, { cache: 'no-store' });
+    }
     exportOrders(filteredOrders, 'loaded');
-  }, [filteredOrders, toast]);
+  }, [dateFrom, dateTo, filteredOrders, limit, page, paymentStatusFilter, role, searchTerm, sortBy, sortDirection, statusFilter, toast, typeFilter]);
 
   const exportSelectedOrders = React.useCallback(() => {
     exportOrders(selectedOrders, 'selected');
@@ -470,6 +523,57 @@ export default function OrderDataTable({ role }: OrderDataTableProps) {
           </Button>
         </div>
       </div>
+
+      {role === 'ADMIN' && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Enterprise Filters</CardTitle>
+            <CardDescription>Server-backed search, date ranges, sorting, and export logging for audit-ready order operations.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+              <Select value={statusFilter} onValueChange={(value) => { setPage(1); setStatusFilter(value as StatusFilter); }}>
+                <SelectTrigger><SelectValue placeholder="Order status" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All statuses</SelectItem>
+                  {Object.keys(STATUS_VARIANT).map((status) => <SelectItem key={status} value={status}>{status}</SelectItem>)}
+                </SelectContent>
+              </Select>
+              <Select value={paymentStatusFilter} onValueChange={(value) => { setPage(1); setPaymentStatusFilter(value as PaymentStatusFilter); }}>
+                <SelectTrigger><SelectValue placeholder="Payment status" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All payment statuses</SelectItem>
+                  <SelectItem value="Pending">Pending</SelectItem>
+                  <SelectItem value="Awaiting Payment">Awaiting Payment</SelectItem>
+                  <SelectItem value="Payment Confirmed">Payment Confirmed</SelectItem>
+                  <SelectItem value="Fully Paid">Fully Paid</SelectItem>
+                  <SelectItem value="Payment Failed">Payment Failed</SelectItem>
+                  <SelectItem value="Payment Cancelled">Payment Cancelled</SelectItem>
+                </SelectContent>
+              </Select>
+              <Input type="date" value={dateFrom} onChange={(event) => { setPage(1); setDateFrom(event.target.value); }} aria-label="Orders from date" />
+              <Input type="date" value={dateTo} onChange={(event) => { setPage(1); setDateTo(event.target.value); }} aria-label="Orders to date" />
+              <Select value={sortBy} onValueChange={(value) => { setPage(1); setSortBy(value as SortBy); }}>
+                <SelectTrigger><SelectValue placeholder="Sort by" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="created_at">Created date</SelectItem>
+                  <SelectItem value="updated_at">Updated date</SelectItem>
+                  <SelectItem value="total">Total</SelectItem>
+                  <SelectItem value="status">Status</SelectItem>
+                  <SelectItem value="payment_status">Payment status</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={sortDirection} onValueChange={(value) => { setPage(1); setSortDirection(value as 'asc' | 'desc'); }}>
+                <SelectTrigger><SelectValue placeholder="Sort direction" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="desc">Descending</SelectItem>
+                  <SelectItem value="asc">Ascending</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {role === 'ADMIN' ? (
         <Card className="border-l-2 border-l-primary bg-primary/5 border-border">

@@ -132,6 +132,13 @@ graph TD
   POST__api_admin_products_bulk --> db_products[("products")]
   POST__api_admin_products_bulk --> db_rpc_soft_delete_product[("rpc:soft_delete_product")]
   app_admin_ui["admin-ui"] --> POST__api_admin_products_bulk
+  GET__api_admin_profile["GET /api/admin/profile"]
+  GET__api_admin_profile --> db_profiles[("profiles")]
+  app_mgmt["mgmt"] --> GET__api_admin_profile
+  PATCH__api_admin_profile["PATCH /api/admin/profile"]
+  PATCH__api_admin_profile --> db_profiles[("profiles")]
+  POST__api_admin_profile["POST /api/admin/profile"]
+  POST__api_admin_profile --> db_profiles[("profiles")]
   GET__api_admin_quotes["GET /api/admin/quotes"]
   GET__api_admin_quotes --> db_quotes[("quotes")]
   app_mgmt["mgmt"] --> GET__api_admin_quotes
@@ -864,6 +871,19 @@ graph TD
   POST__api_superadmin_custom_setup_offers --> db_custom_setup_offers[("custom_setup_offers")]
   PUT__api_superadmin_custom_setup_offers["PUT /api/superadmin/custom-setup-offers"]
   PUT__api_superadmin_custom_setup_offers --> db_custom_setup_offers[("custom_setup_offers")]
+  GET__api_superadmin_dashboard_alerts["GET /api/superadmin/dashboard/alerts"]
+  GET__api_superadmin_dashboard_alerts --> db_enterprise_alert_acknowledgements[("enterprise_alert_acknowledgements")]
+  app_superadmin["superadmin"] --> GET__api_superadmin_dashboard_alerts
+  POST__api_superadmin_dashboard_alerts["POST /api/superadmin/dashboard/alerts"]
+  POST__api_superadmin_dashboard_alerts --> db_enterprise_alert_acknowledgements[("enterprise_alert_acknowledgements")]
+  POST__api_superadmin_dashboard_ask["POST /api/superadmin/dashboard/ask"]
+  POST__api_superadmin_dashboard_ask --> db_enterprise_audit_logs[("enterprise_audit_logs")]
+  app_superadmin["superadmin"] --> POST__api_superadmin_dashboard_ask
+  GET__api_superadmin_dashboard_command_center["GET /api/superadmin/dashboard/command-center"]
+  app_superadmin["superadmin"] --> GET__api_superadmin_dashboard_command_center
+  GET__api_superadmin_dashboard_export["GET /api/superadmin/dashboard/export"]
+  app_superadmin["superadmin"] --> GET__api_superadmin_dashboard_export
+  GET__api_superadmin_dashboard_platform_health["GET /api/superadmin/dashboard/platform-health"]
   GET__api_superadmin_inquiries["GET /api/superadmin/inquiries"]
   app_superadmin["superadmin"] --> GET__api_superadmin_inquiries
   PATCH__api_superadmin_inquiries__id__assignment["PATCH /api/superadmin/inquiries/{id}/assignment"]

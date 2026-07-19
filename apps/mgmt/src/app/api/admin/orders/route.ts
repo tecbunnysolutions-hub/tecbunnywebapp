@@ -1,6 +1,7 @@
 import { createServiceClient, isSupabaseServiceConfigured } from "@tecbunny/database/admin";
 import { NextRequest, NextResponse } from 'next/server';
 
+import { logStaffActivity } from "@tecbunny/core/enterprise-analytics";
 import { getSessionWithRole } from "@tecbunny/core/auth/server-role";
 
 import { logger } from "@tecbunny/core/logger";
@@ -9,6 +10,7 @@ import { deserializeOrder } from "@tecbunny/core/orders/normalizers";
 const ADMIN_ROLES = new Set(['admin', 'manager', 'superadmin']);
 const MIN_LIMIT = 10;
 const MAX_LIMIT = 100;
+const SORT_COLUMNS = new Set(['created_at', 'updated_at', 'total', 'status', 'payment_status']);
 
 // export const dynamic = 'force-dynamic';
 
@@ -37,7 +39,13 @@ export async function GET(request: NextRequest) {
     const offset = (page - 1) * limit;
     const typeFilter = searchParams.get('type');
     const statusFilter = searchParams.get('status');
+    const paymentStatusFilter = searchParams.get('paymentStatus');
     const searchTerm = searchParams.get('search');
+    const dateFrom = searchParams.get('from');
+    const dateTo = searchParams.get('to');
+    const sortBy = searchParams.get('sortBy') || 'created_at';
+    const sortDirection = searchParams.get('sortDirection') === 'asc' ? 'asc' : 'desc';
+    const exportFormat = searchParams.get('export');
 
     let query = supabase
       .from('orders')
@@ -66,7 +74,7 @@ export async function GET(request: NextRequest) {
         ].join(', '),
         { count: 'exact' }
       )
-      .order('created_at', { ascending: false })
+      .order(SORT_COLUMNS.has(sortBy) ? sortBy : 'created_at', { ascending: sortDirection === 'asc' })
       .range(offset, offset + limit - 1);
 
     if (typeFilter && typeFilter !== 'all') {
@@ -75,6 +83,20 @@ export async function GET(request: NextRequest) {
 
     if (statusFilter && statusFilter !== 'all') {
       query = query.eq('status', statusFilter);
+    }
+
+    if (paymentStatusFilter && paymentStatusFilter !== 'all') {
+      query = query.eq('payment_status', paymentStatusFilter);
+    }
+
+    if (dateFrom) {
+      query = query.gte('created_at', new Date(dateFrom).toISOString());
+    }
+
+    if (dateTo) {
+      const endDate = new Date(dateTo);
+      endDate.setHours(23, 59, 59, 999);
+      query = query.lte('created_at', endDate.toISOString());
     }
 
     if (searchTerm) {
@@ -94,6 +116,27 @@ export async function GET(request: NextRequest) {
     const orders = (data ?? []).map(deserializeOrder);
     const total = count ?? orders.length;
     const pages = Math.max(1, Math.ceil(total / limit));
+    const analytics = orders.reduce((summary, order) => {
+      summary.loadedRevenue += Number(order.total ?? 0);
+      summary.byStatus[order.status] = (summary.byStatus[order.status] ?? 0) + 1;
+      summary.byPaymentStatus[order.payment_status || 'Unknown'] = (summary.byPaymentStatus[order.payment_status || 'Unknown'] ?? 0) + 1;
+      return summary;
+    }, { loadedRevenue: 0, byStatus: {} as Record<string, number>, byPaymentStatus: {} as Record<string, number> });
+
+    if (exportFormat) {
+      void logStaffActivity({
+        application: 'mgmt',
+        module: 'orders',
+        screen: '/api/admin/orders',
+        action: 'order_exported',
+        description: `Exported ${orders.length} loaded orders as ${exportFormat}`,
+        context: { userId: session.user.id, userEmail: session.user.email, role },
+        apiEndpoint: '/api/admin/orders',
+        httpMethod: 'GET',
+        success: true,
+        metadata: { exportFormat, filters: Object.fromEntries(searchParams.entries()), total },
+      });
+    }
 
     return NextResponse.json({
       orders,
@@ -102,6 +145,17 @@ export async function GET(request: NextRequest) {
         limit,
         total,
         pages,
+      },
+      analytics,
+      filters: {
+        type: typeFilter ?? 'all',
+        status: statusFilter ?? 'all',
+        paymentStatus: paymentStatusFilter ?? 'all',
+        search: searchTerm ?? '',
+        from: dateFrom,
+        to: dateTo,
+        sortBy: SORT_COLUMNS.has(sortBy) ? sortBy : 'created_at',
+        sortDirection,
       },
     });
   } catch (error) {

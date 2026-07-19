@@ -45,6 +45,9 @@
 | /api/admin/products/bulk-price | PATCH | required/static signal found | role/permission signal found | validation, authentication, authorization, auditTrail, rateLimiting |
 | /api/admin/products/bulk-price | POST | required/static signal found | role/permission signal found | validation, authentication, authorization, auditTrail, rateLimiting |
 | /api/admin/products/bulk | POST | required/static signal found | role/permission signal found | validation, authentication, authorization, auditTrail, rateLimiting |
+| /api/admin/profile | GET | required/static signal found | role/permission signal found | validation, authentication, authorization, auditTrail, rateLimiting |
+| /api/admin/profile | PATCH | required/static signal found | role/permission signal found | validation, authentication, authorization, auditTrail, rateLimiting |
+| /api/admin/profile | POST | required/static signal found | role/permission signal found | validation, authentication, authorization, auditTrail, rateLimiting |
 | /api/admin/quotes | GET | public or optional/static signal found | role/permission signal found | authentication, authorization, rateLimiting |
 | /api/admin/quotes/{id}/download | GET | required/static signal found | role/permission signal found | authentication, authorization, rateLimiting |
 | /api/admin/quotes/{id}/respond | POST | required/static signal found | role/permission signal found | authentication, authorization, rateLimiting |
@@ -109,9 +112,9 @@
 | /api/blog/{slug} | GET | public or optional/static signal found | role/permission signal found | validation, authentication, authorization, rateLimiting |
 | /api/blog/{slug} | PATCH | required/static signal found | role/permission signal found | validation, authentication, authorization, auditTrail, rateLimiting |
 | /api/blueprints/attribution/conversion | POST | required/static signal found | not found | validation, authentication, auditTrail, rateLimiting |
-| /api/branches | DELETE | required/static signal found | role/permission signal found | validation, authentication, authorization, rateLimiting |
-| /api/branches | GET | required/static signal found | role/permission signal found | validation, authentication, authorization, rateLimiting |
-| /api/branches | POST | required/static signal found | role/permission signal found | validation, authentication, authorization, rateLimiting |
+| /api/branches | DELETE | required/static signal found | role/permission signal found | validation, authentication, authorization, auditTrail, rateLimiting |
+| /api/branches | GET | required/static signal found | role/permission signal found | validation, authentication, authorization, auditTrail, rateLimiting |
+| /api/branches | POST | required/static signal found | role/permission signal found | validation, authentication, authorization, auditTrail, rateLimiting |
 | /api/campaigns | POST | required/static signal found | role/permission signal found | authentication, authorization, auditTrail, rateLimiting |
 | /api/captcha/config | GET | public or optional/static signal found | none detected for public route | authentication, auditTrail, rateLimiting |
 | /api/captcha/verify | POST | not found | none detected for public route | validation, auditTrail, rateLimiting |
@@ -224,9 +227,9 @@
 | /api/orders/auto-cancel | POST | required/static signal found | role/permission signal found | authentication, authorization, auditTrail, rateLimiting |
 | /api/orders/commission | POST | required/static signal found | role/permission signal found | validation, authentication, authorization, auditTrail, rateLimiting |
 | /api/orders/update-status | POST | required/static signal found | role/permission signal found | validation, authentication, authorization, auditTrail, rateLimiting |
-| /api/organizations | DELETE | required/static signal found | role/permission signal found | validation, authentication, authorization, rateLimiting |
-| /api/organizations | GET | required/static signal found | role/permission signal found | validation, authentication, authorization, rateLimiting |
-| /api/organizations | POST | required/static signal found | role/permission signal found | validation, authentication, authorization, rateLimiting |
+| /api/organizations | DELETE | required/static signal found | role/permission signal found | validation, authentication, authorization, auditTrail, rateLimiting |
+| /api/organizations | GET | required/static signal found | role/permission signal found | validation, authentication, authorization, auditTrail, rateLimiting |
+| /api/organizations | POST | required/static signal found | role/permission signal found | validation, authentication, authorization, auditTrail, rateLimiting |
 | /api/otp/generate | GET | required/static signal found | role/permission signal found | validation, authentication, authorization, auditTrail, rateLimiting |
 | /api/otp/generate | POST | required/static signal found | role/permission signal found | validation, authentication, authorization, auditTrail, rateLimiting |
 | /api/otp/resend | GET | required/static signal found | role/permission signal found | validation, authentication, authorization, auditTrail, rateLimiting |
@@ -290,11 +293,11 @@
 | /api/referral | GET | required/static signal found | role/permission signal found | authentication, authorization, rateLimiting |
 | /api/referral/claim | POST | required/static signal found | role/permission signal found | validation, authentication, authorization, auditTrail, rateLimiting |
 | /api/roles-public | GET | public or optional/static signal found | role/permission signal found | authentication, authorization, rateLimiting |
-| /api/roles | DELETE | required/static signal found | role/permission signal found | validation, authentication, authorization, rateLimiting |
+| /api/roles | DELETE | required/static signal found | role/permission signal found | validation, authentication, authorization, auditTrail, rateLimiting |
 | /api/roles | GET | required/static signal found | role/permission signal found | authentication, authorization, rateLimiting |
-| /api/roles | GET | required/static signal found | role/permission signal found | validation, authentication, authorization, rateLimiting |
+| /api/roles | GET | required/static signal found | role/permission signal found | validation, authentication, authorization, auditTrail, rateLimiting |
 | /api/roles | POST | required/static signal found | role/permission signal found | authentication, authorization, auditTrail, rateLimiting |
-| /api/roles | POST | required/static signal found | role/permission signal found | validation, authentication, authorization, rateLimiting |
+| /api/roles | POST | required/static signal found | role/permission signal found | validation, authentication, authorization, auditTrail, rateLimiting |
 | /api/sales-agents/apply | POST | public or optional/static signal found | none detected for public route | authentication, auditTrail, rateLimiting |
 | /api/security/audit-logs | GET | required/static signal found | role/permission signal found | validation, authentication, authorization, auditTrail, rateLimiting |
 | /api/security/audit-logs | POST | required/static signal found | role/permission signal found | validation, authentication, authorization, auditTrail, rateLimiting |
@@ -327,10 +330,16 @@
 | /api/superadmin/areas | GET | required/static signal found | role/permission signal found | validation, authentication, authorization, rateLimiting |
 | /api/superadmin/areas | POST | required/static signal found | role/permission signal found | validation, authentication, authorization, rateLimiting |
 | /api/superadmin/catalogue/generate | POST | required/static signal found | role/permission signal found | validation, authentication, authorization, rateLimiting |
-| /api/superadmin/custom-setup-offers | DELETE | public or optional/static signal found | role/permission signal found | validation, authentication, authorization, rateLimiting |
-| /api/superadmin/custom-setup-offers | GET | public or optional/static signal found | role/permission signal found | validation, authentication, authorization, rateLimiting |
-| /api/superadmin/custom-setup-offers | POST | public or optional/static signal found | role/permission signal found | validation, authentication, authorization, rateLimiting |
-| /api/superadmin/custom-setup-offers | PUT | public or optional/static signal found | role/permission signal found | validation, authentication, authorization, rateLimiting |
+| /api/superadmin/custom-setup-offers | DELETE | public or optional/static signal found | role/permission signal found | validation, authentication, authorization, auditTrail, rateLimiting |
+| /api/superadmin/custom-setup-offers | GET | public or optional/static signal found | role/permission signal found | validation, authentication, authorization, auditTrail, rateLimiting |
+| /api/superadmin/custom-setup-offers | POST | public or optional/static signal found | role/permission signal found | validation, authentication, authorization, auditTrail, rateLimiting |
+| /api/superadmin/custom-setup-offers | PUT | public or optional/static signal found | role/permission signal found | validation, authentication, authorization, auditTrail, rateLimiting |
+| /api/superadmin/dashboard/alerts | GET | required/static signal found | role/permission signal found | validation, authentication, authorization, rateLimiting |
+| /api/superadmin/dashboard/alerts | POST | required/static signal found | role/permission signal found | validation, authentication, authorization, rateLimiting |
+| /api/superadmin/dashboard/ask | POST | required/static signal found | role/permission signal found | validation, authentication, authorization, auditTrail, rateLimiting |
+| /api/superadmin/dashboard/command-center | GET | required/static signal found | role/permission signal found | authentication, authorization, rateLimiting |
+| /api/superadmin/dashboard/export | GET | required/static signal found | role/permission signal found | authentication, authorization, auditTrail, rateLimiting |
+| /api/superadmin/dashboard/platform-health | GET | required/static signal found | role/permission signal found | authentication, authorization, rateLimiting |
 | /api/superadmin/inquiries | GET | public or optional/static signal found | role/permission signal found | authentication, authorization, auditTrail, rateLimiting |
 | /api/superadmin/inquiries/{id}/assignment | PATCH | required/static signal found | role/permission signal found | authentication, authorization, auditTrail, rateLimiting |
 | /api/superadmin/services/ai-generate | POST | required/static signal found | role/permission signal found | validation, authentication, authorization, rateLimiting |

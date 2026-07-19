@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@tecbunny/database';
-import { assertExtensionOrigin, extensionJson, extensionOptionsResponse, getExtensionCorsHeaders } from '../../extension-security';
+import { ExtensionAuthError, assertExtensionOrigin, extensionJson, extensionOptionsResponse, getExtensionCorsHeaders } from '../../extension-security';
 
 export async function OPTIONS(request: NextRequest) {
   return extensionOptionsResponse(request);
@@ -86,6 +86,10 @@ export async function POST(request: NextRequest) {
       { status: 200 }
     );
   } catch (error: any) {
+    if (error instanceof ExtensionAuthError) {
+      return extensionJson(request, { error: error.message }, { status: error.status });
+    }
+
     return NextResponse.json(
       { error: `Internal Server Error: ${error.message || error}` },
       { status: error?.status || 500, headers: getExtensionCorsHeaders(request) }

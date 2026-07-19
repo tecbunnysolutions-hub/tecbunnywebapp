@@ -43,6 +43,9 @@ PUT    /api/admin/products/archive
 PATCH  /api/admin/products/bulk-price
 POST   /api/admin/products/bulk-price
 POST   /api/admin/products/bulk
+GET    /api/admin/profile
+PATCH  /api/admin/profile
+POST   /api/admin/profile
 GET    /api/admin/quotes
 GET    /api/admin/quotes/{id}/download
 POST   /api/admin/quotes/{id}/respond
@@ -329,6 +332,12 @@ DELETE /api/superadmin/custom-setup-offers
 GET    /api/superadmin/custom-setup-offers
 POST   /api/superadmin/custom-setup-offers
 PUT    /api/superadmin/custom-setup-offers
+GET    /api/superadmin/dashboard/alerts
+POST   /api/superadmin/dashboard/alerts
+POST   /api/superadmin/dashboard/ask
+GET    /api/superadmin/dashboard/command-center
+GET    /api/superadmin/dashboard/export
+GET    /api/superadmin/dashboard/platform-health
 GET    /api/superadmin/inquiries
 PATCH  /api/superadmin/inquiries/{id}/assignment
 POST   /api/superadmin/services/ai-generate

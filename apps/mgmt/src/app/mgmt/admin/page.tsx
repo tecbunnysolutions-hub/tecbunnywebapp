@@ -21,6 +21,7 @@ interface DashboardStats {
     monthlyRevenue: number;
     monthlyOrders: number;
     lastMonthOrders: number;
+    orderGrowthPercent?: number;
     recentActivity: Array<{
         id: string;
         type: string;
@@ -28,6 +29,18 @@ interface DashboardStats {
         date: string;
         status: string;
     }>;
+    recentCustomers?: Array<{ id?: string; name?: string; email?: string; mobile?: string; role?: string; created_at?: string }>;
+    orderStatistics?: { byStatus: Record<string, number>; byType: Record<string, number>; byPaymentStatus: Record<string, number> };
+    salesStatistics?: { selectedRangeOrders: number; averageOrderValue: number };
+    financialSummary?: { selectedRangeRevenue: number; currency: string; previousPeriodOrders: number };
+    pendingTasks?: Array<{ label: string; count: number; href: string }>;
+    notifications?: string[];
+    quickActions?: Array<{ label: string; href: string }>;
+    charts?: { revenueByDay: Array<{ date: string; value: number }>; ordersByStatus: Array<{ status: string; count: number }>; ordersByType: Array<{ type: string; count: number }> };
+    systemHealth?: { api: string; database: string; analytics: string; lastRefreshedAt: string };
+    aiInsights?: string[];
+    liveActivityFeed?: DashboardStats['recentActivity'];
+    range?: { key: string; from: string; to: string };
 }
 
 export default function AdminDashboard() {
@@ -42,6 +55,7 @@ export default function AdminDashboard() {
     });
     const [loading, setLoading] = React.useState(true);
     const [error, setError] = React.useState<string | null>(null);
+    const [range, setRange] = React.useState('month');
 
     interface DashboardResponse {
         success: boolean;
@@ -55,7 +69,7 @@ export default function AdminDashboard() {
             setError(null);
             
             // Add cache-busting parameter to force fresh data
-            const response = await fetch(`/api/admin/dashboard?t=${Date.now()}`, {
+            const response = await fetch(`/api/admin/dashboard?range=${range}&t=${Date.now()}`, {
                 cache: 'no-store',
                 headers: {
                     'Cache-Control': 'no-cache'
@@ -96,7 +110,7 @@ export default function AdminDashboard() {
         } finally {
             setLoading(false);
         }
-    }, []);
+    }, [range]);
 
     React.useEffect(() => {
         setTimeout(() => { fetchStats(); }, 0);
@@ -109,6 +123,9 @@ export default function AdminDashboard() {
     const isGrowthPositive = parseFloat(orderGrowth) >= 0;
     const pendingCount = stats.recentActivity.filter((activity) => activity.status === 'pending').length;
     const completedCount = stats.recentActivity.filter((activity) => activity.status === 'completed').length;
+    const averageOrderValue = stats.salesStatistics?.averageOrderValue ?? (stats.monthlyOrders > 0 ? stats.monthlyRevenue / stats.monthlyOrders : 0);
+    const maxRevenuePoint = Math.max(1, ...(stats.charts?.revenueByDay ?? []).map((point) => point.value));
+    const maxStatusPoint = Math.max(1, ...(stats.charts?.ordersByStatus ?? []).map((point) => point.count));
     return (
         <div className="text-foreground">
             <div className="relative">
@@ -130,6 +147,17 @@ export default function AdminDashboard() {
                             <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
                             Refresh
                         </Button>
+                        <select
+                            value={range}
+                            onChange={(event) => setRange(event.target.value)}
+                            className="rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground"
+                            aria-label="Dashboard date range"
+                        >
+                            <option value="week">Last 7 days</option>
+                            <option value="month">This month</option>
+                            <option value="quarter">This quarter</option>
+                            <option value="year">This year</option>
+                        </select>
                     </div>
 
                     {error && (
@@ -190,8 +218,58 @@ export default function AdminDashboard() {
                                         )}
                                     </div>
                                 </div>
+
+                                <div className="rounded-xl border border-border bg-card p-4 sm:rounded-2xl sm:p-6">
+                                    <p className="text-xs text-muted-foreground font-bold uppercase tracking-wider">Average Order Value</p>
+                                    <div className="mt-2 text-2xl font-bold text-foreground font-tech">₹{Math.round(averageOrderValue).toLocaleString('en-IN')}</div>
+                                    <div className="mt-2 text-xs text-muted-foreground">Selected range</div>
+                                </div>
+
+                                <div className="rounded-xl border border-border bg-card p-4 sm:rounded-2xl sm:p-6">
+                                    <p className="text-xs text-muted-foreground font-bold uppercase tracking-wider">Customers</p>
+                                    <div className="mt-2 text-2xl font-bold text-foreground font-tech">{stats.totalUsers}</div>
+                                    <div className="mt-2 text-xs text-muted-foreground">{stats.recentCustomers?.length ?? 0} recent profiles</div>
+                                </div>
+
+                                <div className="rounded-xl border border-border bg-card p-4 sm:rounded-2xl sm:p-6">
+                                    <p className="text-xs text-muted-foreground font-bold uppercase tracking-wider">System Health</p>
+                                    <div className="mt-2 text-2xl font-bold text-emerald-600 font-tech">Online</div>
+                                    <div className="mt-2 text-xs text-muted-foreground">Analytics {stats.systemHealth?.analytics ?? 'enabled'}</div>
+                                </div>
                             </>
                         )}
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-5 lg:grid-cols-3 lg:gap-8">
+                        <div className="rounded-2xl border border-border bg-card p-4 sm:p-6 lg:col-span-2">
+                            <div className="mb-4 flex items-center justify-between gap-3">
+                                <div>
+                                    <h3 className="font-semibold text-foreground tracking-wide">Revenue Trend</h3>
+                                    <p className="text-xs text-muted-foreground">Daily revenue in the selected range</p>
+                                </div>
+                                <span className="text-xs font-semibold text-primary">Live API</span>
+                            </div>
+                            <div className="flex h-48 items-end gap-2 rounded-xl border border-border bg-muted/20 p-3">
+                                {(stats.charts?.revenueByDay?.length ? stats.charts.revenueByDay : [{ date: 'No data', value: 0 }]).map((point) => (
+                                    <div key={point.date} className="flex min-w-8 flex-1 flex-col items-center justify-end gap-2">
+                                        <div className="w-full rounded-t bg-primary/70 transition-all" style={{ height: `${Math.max(4, (point.value / maxRevenuePoint) * 100)}%` }} />
+                                        <span className="max-w-16 truncate text-[10px] text-muted-foreground">{point.date.slice(5) || point.date}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="rounded-2xl border border-border bg-card p-4 sm:p-6">
+                            <h3 className="mb-4 font-semibold text-foreground tracking-wide">Order Status</h3>
+                            <div className="space-y-3">
+                                {(stats.charts?.ordersByStatus?.length ? stats.charts.ordersByStatus : [{ status: 'No data', count: 0 }]).map((point) => (
+                                    <div key={point.status}>
+                                        <div className="mb-1 flex justify-between text-xs"><span className="text-muted-foreground">{point.status}</span><span className="font-semibold">{point.count}</span></div>
+                                        <div className="h-2 rounded-full bg-muted"><div className="h-2 rounded-full bg-emerald-500" style={{ width: `${Math.max(4, (point.count / maxStatusPoint) * 100)}%` }} /></div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
                     </div>
 
                     <div className="grid grid-cols-1 gap-5 lg:grid-cols-3 lg:gap-8">
@@ -204,6 +282,27 @@ export default function AdminDashboard() {
                         </div>
 
                         <div className="space-y-6">
+                            <div className="rounded-2xl border border-border bg-card p-4 sm:p-6">
+                                <h3 className="font-semibold text-foreground tracking-wide mb-4">AI Insights</h3>
+                                <div className="space-y-3">
+                                    {(stats.aiInsights ?? []).map((insight) => (
+                                        <div key={insight} className="rounded-xl border border-border bg-muted/30 p-3 text-sm text-foreground">{insight}</div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className="rounded-2xl border border-border bg-card p-4 sm:p-6">
+                                <h3 className="font-semibold text-foreground tracking-wide mb-4">Pending Tasks</h3>
+                                <div className="space-y-2">
+                                    {(stats.pendingTasks ?? []).map((task) => (
+                                        <Link key={task.label} href={task.href} className="flex items-center justify-between rounded-xl border border-border px-3 py-2 text-sm hover:bg-muted/60">
+                                            <span>{task.label}</span>
+                                            <span className="font-bold text-primary">{task.count}</span>
+                                        </Link>
+                                    ))}
+                                </div>
+                            </div>
+
                             <div className="rounded-2xl border border-border bg-card p-4 sm:p-6">
                                 <h3 className="font-semibold text-foreground tracking-wide mb-4">Command Protocols</h3>
                                 <div className="grid grid-cols-1 gap-2 min-[420px]:grid-cols-2 sm:gap-3">

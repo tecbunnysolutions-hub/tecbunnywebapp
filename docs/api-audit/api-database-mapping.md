@@ -45,6 +45,9 @@
 | /api/admin/products/bulk-price | PATCH | products | Update, Read |
 | /api/admin/products/bulk-price | POST | products | Update, Read |
 | /api/admin/products/bulk | POST | products<br>rpc:soft_delete_product | Update, Soft Delete |
+| /api/admin/profile | GET | profiles | Update, Read |
+| /api/admin/profile | PATCH | profiles | Update, Read |
+| /api/admin/profile | POST | profiles | Update, Read |
 | /api/admin/quotes | GET | quotes | Read |
 | /api/admin/quotes/{id}/download | GET | quotes | Read |
 | /api/admin/quotes/{id}/respond | POST | profiles<br>quotes | Update, Read |
@@ -331,6 +334,12 @@
 | /api/superadmin/custom-setup-offers | GET | custom_setup_offers | Insert, Update, Delete, Read |
 | /api/superadmin/custom-setup-offers | POST | custom_setup_offers | Insert, Update, Delete, Read |
 | /api/superadmin/custom-setup-offers | PUT | custom_setup_offers | Insert, Update, Delete, Read |
+| /api/superadmin/dashboard/alerts | GET | enterprise_alert_acknowledgements | Insert, Read |
+| /api/superadmin/dashboard/alerts | POST | enterprise_alert_acknowledgements | Insert, Read |
+| /api/superadmin/dashboard/ask | POST | enterprise_audit_logs | Insert |
+| /api/superadmin/dashboard/command-center | GET | none detected | none detected |
+| /api/superadmin/dashboard/export | GET | none detected | Read |
+| /api/superadmin/dashboard/platform-health | GET | none detected | none detected |
 | /api/superadmin/inquiries | GET | none detected | none detected |
 | /api/superadmin/inquiries/{id}/assignment | PATCH | none detected | none detected |
 | /api/superadmin/services/ai-generate | POST | none detected | none detected |

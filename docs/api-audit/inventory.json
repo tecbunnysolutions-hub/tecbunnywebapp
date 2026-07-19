@@ -1,8 +1,8 @@
-﻿{
+{
   "summary": {
-    "generatedAt": "2026-07-19T13:41:46.416Z",
-    "totalApisFound": 397,
-    "workingApis": 397,
+    "generatedAt": "2026-07-19T16:12:54.751Z",
+    "totalApisFound": 406,
+    "workingApis": 406,
     "brokenApis": 0,
     "missingApis": 0,
     "unusedApis": 0,
@@ -928,6 +928,7 @@
       "controllerFile": "apps/mgmt/src/app/api/admin/dashboard/route.ts",
       "serviceFiles": [
         "@tecbunny/core/auth/admin-guard",
+        "@tecbunny/core/enterprise-analytics",
         "@tecbunny/core/logger",
         "@tecbunny/core/order-utils",
         "@tecbunny/database/admin",
@@ -970,7 +971,7 @@
         "csrf": false,
         "caching": true,
         "pagination": true,
-        "hasInput": false,
+        "hasInput": true,
         "mutates": false
       },
       "mutates": false,
@@ -1959,6 +1960,7 @@
       "controllerFile": "apps/mgmt/src/app/api/admin/orders/route.ts",
       "serviceFiles": [
         "@tecbunny/core/auth/server-role",
+        "@tecbunny/core/enterprise-analytics",
         "@tecbunny/core/logger",
         "@tecbunny/core/orders/normalizers",
         "@tecbunny/database/admin",
@@ -3353,6 +3355,198 @@
       "integrationReason": "No unmatched caller exists; absence of a direct static frontend fetch is not a missing integration."
     },
     {
+      "id": "mgmt:GET:/api/admin/profile",
+      "type": "next-route-handler",
+      "module": "mgmt",
+      "apiName": "GET /api/admin/profile",
+      "method": "GET",
+      "url": "/api/admin/profile",
+      "completeUrl": "{{MGMT_BASE_URL}}/api/admin/profile",
+      "routeFile": "apps/mgmt/src/app/api/admin/profile/route.ts",
+      "controllerFile": "apps/mgmt/src/app/api/admin/profile/route.ts",
+      "serviceFiles": [
+        "@tecbunny/core/auth/server-role",
+        "@tecbunny/core/enterprise-analytics",
+        "@tecbunny/core/logger",
+        "@tecbunny/database/admin",
+        "next/server"
+      ],
+      "validationFile": "inline",
+      "middleware": [
+        "@tecbunny/core/auth/server-role"
+      ],
+      "authentication": "required/static signal found",
+      "permissionRequired": "role/permission signal found",
+      "requiresAuth": true,
+      "requiresPermission": true,
+      "databaseTables": [
+        "profiles"
+      ],
+      "frontendPagesUsingIt": [
+        "apps/mgmt/src/app/mgmt/profile/page.tsx"
+      ],
+      "applicationsUsingIt": [
+        "mgmt"
+      ],
+      "statusCodes": [
+        500
+      ],
+      "routeExists": true,
+      "routeRegistered": true,
+      "verification": {
+        "controller": true,
+        "service": true,
+        "validation": true,
+        "authentication": true,
+        "authorization": true,
+        "database": true,
+        "businessLogic": true,
+        "response": true,
+        "errorHandling": true,
+        "logging": true,
+        "auditTrail": true,
+        "rateLimiting": true,
+        "cors": false,
+        "csrf": false,
+        "caching": false,
+        "pagination": false,
+        "hasInput": true,
+        "mutates": true
+      },
+      "mutates": true,
+      "status": "Discovered - static verification pending issues review",
+      "issues": [],
+      "integrationRequired": false,
+      "integrationStatus": "direct frontend/shared caller detected",
+      "integrationReason": "No unmatched caller exists; absence of a direct static frontend fetch is not a missing integration."
+    },
+    {
+      "id": "mgmt:PATCH:/api/admin/profile",
+      "type": "next-route-handler",
+      "module": "mgmt",
+      "apiName": "PATCH /api/admin/profile",
+      "method": "PATCH",
+      "url": "/api/admin/profile",
+      "completeUrl": "{{MGMT_BASE_URL}}/api/admin/profile",
+      "routeFile": "apps/mgmt/src/app/api/admin/profile/route.ts",
+      "controllerFile": "apps/mgmt/src/app/api/admin/profile/route.ts",
+      "serviceFiles": [
+        "@tecbunny/core/auth/server-role",
+        "@tecbunny/core/enterprise-analytics",
+        "@tecbunny/core/logger",
+        "@tecbunny/database/admin",
+        "next/server"
+      ],
+      "validationFile": "inline",
+      "middleware": [
+        "@tecbunny/core/auth/server-role"
+      ],
+      "authentication": "required/static signal found",
+      "permissionRequired": "role/permission signal found",
+      "requiresAuth": true,
+      "requiresPermission": true,
+      "databaseTables": [
+        "profiles"
+      ],
+      "frontendPagesUsingIt": [],
+      "applicationsUsingIt": [],
+      "statusCodes": [
+        400,
+        500
+      ],
+      "routeExists": true,
+      "routeRegistered": true,
+      "verification": {
+        "controller": true,
+        "service": true,
+        "validation": true,
+        "authentication": true,
+        "authorization": true,
+        "database": true,
+        "businessLogic": true,
+        "response": true,
+        "errorHandling": true,
+        "logging": true,
+        "auditTrail": true,
+        "rateLimiting": true,
+        "cors": false,
+        "csrf": false,
+        "caching": false,
+        "pagination": false,
+        "hasInput": true,
+        "mutates": true
+      },
+      "mutates": true,
+      "status": "Discovered - static verification available API endpoint",
+      "issues": [],
+      "integrationRequired": false,
+      "integrationStatus": "available API endpoint",
+      "integrationReason": "No unmatched caller exists; absence of a direct static frontend fetch is not a missing integration."
+    },
+    {
+      "id": "mgmt:POST:/api/admin/profile",
+      "type": "next-route-handler",
+      "module": "mgmt",
+      "apiName": "POST /api/admin/profile",
+      "method": "POST",
+      "url": "/api/admin/profile",
+      "completeUrl": "{{MGMT_BASE_URL}}/api/admin/profile",
+      "routeFile": "apps/mgmt/src/app/api/admin/profile/route.ts",
+      "controllerFile": "apps/mgmt/src/app/api/admin/profile/route.ts",
+      "serviceFiles": [
+        "@tecbunny/core/auth/server-role",
+        "@tecbunny/core/enterprise-analytics",
+        "@tecbunny/core/logger",
+        "@tecbunny/database/admin",
+        "next/server"
+      ],
+      "validationFile": "inline",
+      "middleware": [
+        "@tecbunny/core/auth/server-role"
+      ],
+      "authentication": "required/static signal found",
+      "permissionRequired": "role/permission signal found",
+      "requiresAuth": true,
+      "requiresPermission": true,
+      "databaseTables": [
+        "profiles"
+      ],
+      "frontendPagesUsingIt": [],
+      "applicationsUsingIt": [],
+      "statusCodes": [
+        400,
+        500
+      ],
+      "routeExists": true,
+      "routeRegistered": true,
+      "verification": {
+        "controller": true,
+        "service": true,
+        "validation": true,
+        "authentication": true,
+        "authorization": true,
+        "database": true,
+        "businessLogic": true,
+        "response": true,
+        "errorHandling": true,
+        "logging": true,
+        "auditTrail": true,
+        "rateLimiting": true,
+        "cors": false,
+        "csrf": false,
+        "caching": false,
+        "pagination": false,
+        "hasInput": true,
+        "mutates": true
+      },
+      "mutates": true,
+      "status": "Discovered - static verification available API endpoint",
+      "issues": [],
+      "integrationRequired": false,
+      "integrationStatus": "available API endpoint",
+      "integrationReason": "No unmatched caller exists; absence of a direct static frontend fetch is not a missing integration."
+    },
+    {
       "id": "mgmt:GET:/api/admin/quotes",
       "type": "next-route-handler",
       "module": "mgmt",
@@ -4032,6 +4226,7 @@
       "serviceFiles": [
         "@tecbunny/core",
         "@tecbunny/core/auth/guard",
+        "@tecbunny/core/enterprise-analytics",
         "@tecbunny/database",
         "@tecbunny/database/admin",
         "next/server"
@@ -8044,6 +8239,7 @@
       "routeFile": "apps/superadmin/src/app/api/branches/route.ts",
       "controllerFile": "apps/superadmin/src/app/api/branches/route.ts",
       "serviceFiles": [
+        "@tecbunny/core/enterprise-analytics",
         "next/server"
       ],
       "validationFile": "inline",
@@ -8061,13 +8257,14 @@
       ],
       "statusCodes": [
         400,
+        404,
         500
       ],
       "routeExists": true,
       "routeRegistered": true,
       "verification": {
         "controller": true,
-        "service": false,
+        "service": true,
         "validation": true,
         "authentication": true,
         "authorization": true,
@@ -8076,7 +8273,7 @@
         "response": true,
         "errorHandling": true,
         "logging": false,
-        "auditTrail": false,
+        "auditTrail": true,
         "rateLimiting": true,
         "cors": false,
         "csrf": false,
@@ -8102,21 +8299,6 @@
             "Implement missing route contract.",
             "Add positive and negative API tests."
           ]
-        },
-        {
-          "severity": "Medium",
-          "summary": "No audit trail signal found.",
-          "rootCause": "Static source audit did not find the required implementation signal in the route/procedure source.",
-          "affectedRoute": "DELETE /api/branches",
-          "affectedFiles": [
-            "apps/superadmin/src/app/api/branches/route.ts"
-          ],
-          "recommendedFix": "Write a structured audit event for privileged reads, writes, and webhook/cron side effects.",
-          "implementationSteps": [
-            "Identify auditable action.",
-            "Persist audit event with actor, route, entity, result.",
-            "Assert audit write in tests."
-          ]
         }
       ],
       "integrationRequired": false,
@@ -8134,6 +8316,7 @@
       "routeFile": "apps/superadmin/src/app/api/branches/route.ts",
       "controllerFile": "apps/superadmin/src/app/api/branches/route.ts",
       "serviceFiles": [
+        "@tecbunny/core/enterprise-analytics",
         "next/server"
       ],
       "validationFile": "inline",
@@ -8152,7 +8335,7 @@
       "routeRegistered": true,
       "verification": {
         "controller": true,
-        "service": false,
+        "service": true,
         "validation": true,
         "authentication": true,
         "authorization": true,
@@ -8161,7 +8344,7 @@
         "response": true,
         "errorHandling": true,
         "logging": false,
-        "auditTrail": false,
+        "auditTrail": true,
         "rateLimiting": true,
         "cors": false,
         "csrf": false,
@@ -8187,21 +8370,6 @@
             "Implement missing route contract.",
             "Add positive and negative API tests."
           ]
-        },
-        {
-          "severity": "Medium",
-          "summary": "No audit trail signal found.",
-          "rootCause": "Static source audit did not find the required implementation signal in the route/procedure source.",
-          "affectedRoute": "GET /api/branches",
-          "affectedFiles": [
-            "apps/superadmin/src/app/api/branches/route.ts"
-          ],
-          "recommendedFix": "Write a structured audit event for privileged reads, writes, and webhook/cron side effects.",
-          "implementationSteps": [
-            "Identify auditable action.",
-            "Persist audit event with actor, route, entity, result.",
-            "Assert audit write in tests."
-          ]
         }
       ],
       "integrationRequired": false,
@@ -8219,6 +8387,7 @@
       "routeFile": "apps/superadmin/src/app/api/branches/route.ts",
       "controllerFile": "apps/superadmin/src/app/api/branches/route.ts",
       "serviceFiles": [
+        "@tecbunny/core/enterprise-analytics",
         "next/server"
       ],
       "validationFile": "inline",
@@ -8238,7 +8407,7 @@
       "routeRegistered": true,
       "verification": {
         "controller": true,
-        "service": false,
+        "service": true,
         "validation": true,
         "authentication": true,
         "authorization": true,
@@ -8247,7 +8416,7 @@
         "response": true,
         "errorHandling": true,
         "logging": false,
-        "auditTrail": false,
+        "auditTrail": true,
         "rateLimiting": true,
         "cors": false,
         "csrf": false,
@@ -8273,21 +8442,6 @@
             "Implement missing route contract.",
             "Add positive and negative API tests."
           ]
-        },
-        {
-          "severity": "Medium",
-          "summary": "No audit trail signal found.",
-          "rootCause": "Static source audit did not find the required implementation signal in the route/procedure source.",
-          "affectedRoute": "POST /api/branches",
-          "affectedFiles": [
-            "apps/superadmin/src/app/api/branches/route.ts"
-          ],
-          "recommendedFix": "Write a structured audit event for privileged reads, writes, and webhook/cron side effects.",
-          "implementationSteps": [
-            "Identify auditable action.",
-            "Persist audit event with actor, route, entity, result.",
-            "Assert audit write in tests."
-          ]
         }
       ],
       "integrationRequired": false,
@@ -8305,6 +8459,7 @@
       "routeFile": "apps/waba/src/app/api/campaigns/route.ts",
       "controllerFile": "apps/waba/src/app/api/campaigns/route.ts",
       "serviceFiles": [
+        "@tecbunny/core/enterprise-analytics",
         "@tecbunny/core/queue",
         "@tecbunny/core/redis",
         "@tecbunny/core/server-role-guard",
@@ -16019,6 +16174,7 @@
       "routeFile": "apps/superadmin/src/app/api/organizations/route.ts",
       "controllerFile": "apps/superadmin/src/app/api/organizations/route.ts",
       "serviceFiles": [
+        "@tecbunny/core/enterprise-analytics",
         "next/server"
       ],
       "validationFile": "inline",
@@ -16037,13 +16193,14 @@
       ],
       "statusCodes": [
         400,
+        404,
         500
       ],
       "routeExists": true,
       "routeRegistered": true,
       "verification": {
         "controller": true,
-        "service": false,
+        "service": true,
         "validation": true,
         "authentication": true,
         "authorization": true,
@@ -16052,7 +16209,7 @@
         "response": true,
         "errorHandling": true,
         "logging": false,
-        "auditTrail": false,
+        "auditTrail": true,
         "rateLimiting": true,
         "cors": false,
         "csrf": false,
@@ -16078,21 +16235,6 @@
             "Implement missing route contract.",
             "Add positive and negative API tests."
           ]
-        },
-        {
-          "severity": "Medium",
-          "summary": "No audit trail signal found.",
-          "rootCause": "Static source audit did not find the required implementation signal in the route/procedure source.",
-          "affectedRoute": "DELETE /api/organizations",
-          "affectedFiles": [
-            "apps/superadmin/src/app/api/organizations/route.ts"
-          ],
-          "recommendedFix": "Write a structured audit event for privileged reads, writes, and webhook/cron side effects.",
-          "implementationSteps": [
-            "Identify auditable action.",
-            "Persist audit event with actor, route, entity, result.",
-            "Assert audit write in tests."
-          ]
         }
       ],
       "integrationRequired": false,
@@ -16110,6 +16252,7 @@
       "routeFile": "apps/superadmin/src/app/api/organizations/route.ts",
       "controllerFile": "apps/superadmin/src/app/api/organizations/route.ts",
       "serviceFiles": [
+        "@tecbunny/core/enterprise-analytics",
         "next/server"
       ],
       "validationFile": "inline",
@@ -16128,7 +16271,7 @@
       "routeRegistered": true,
       "verification": {
         "controller": true,
-        "service": false,
+        "service": true,
         "validation": true,
         "authentication": true,
         "authorization": true,
@@ -16137,7 +16280,7 @@
         "response": true,
         "errorHandling": true,
         "logging": false,
-        "auditTrail": false,
+        "auditTrail": true,
         "rateLimiting": true,
         "cors": false,
         "csrf": false,
@@ -16163,21 +16306,6 @@
             "Implement missing route contract.",
             "Add positive and negative API tests."
           ]
-        },
-        {
-          "severity": "Medium",
-          "summary": "No audit trail signal found.",
-          "rootCause": "Static source audit did not find the required implementation signal in the route/procedure source.",
-          "affectedRoute": "GET /api/organizations",
-          "affectedFiles": [
-            "apps/superadmin/src/app/api/organizations/route.ts"
-          ],
-          "recommendedFix": "Write a structured audit event for privileged reads, writes, and webhook/cron side effects.",
-          "implementationSteps": [
-            "Identify auditable action.",
-            "Persist audit event with actor, route, entity, result.",
-            "Assert audit write in tests."
-          ]
         }
       ],
       "integrationRequired": false,
@@ -16195,6 +16323,7 @@
       "routeFile": "apps/superadmin/src/app/api/organizations/route.ts",
       "controllerFile": "apps/superadmin/src/app/api/organizations/route.ts",
       "serviceFiles": [
+        "@tecbunny/core/enterprise-analytics",
         "next/server"
       ],
       "validationFile": "inline",
@@ -16214,7 +16343,7 @@
       "routeRegistered": true,
       "verification": {
         "controller": true,
-        "service": false,
+        "service": true,
         "validation": true,
         "authentication": true,
         "authorization": true,
@@ -16223,7 +16352,7 @@
         "response": true,
         "errorHandling": true,
         "logging": false,
-        "auditTrail": false,
+        "auditTrail": true,
         "rateLimiting": true,
         "cors": false,
         "csrf": false,
@@ -16248,21 +16377,6 @@
             "Confirm intended behavior.",
             "Implement missing route contract.",
             "Add positive and negative API tests."
-          ]
-        },
-        {
-          "severity": "Medium",
-          "summary": "No audit trail signal found.",
-          "rootCause": "Static source audit did not find the required implementation signal in the route/procedure source.",
-          "affectedRoute": "POST /api/organizations",
-          "affectedFiles": [
-            "apps/superadmin/src/app/api/organizations/route.ts"
-          ],
-          "recommendedFix": "Write a structured audit event for privileged reads, writes, and webhook/cron side effects.",
-          "implementationSteps": [
-            "Identify auditable action.",
-            "Persist audit event with actor, route, entity, result.",
-            "Assert audit write in tests."
           ]
         }
       ],
@@ -20577,6 +20691,7 @@
       "routeFile": "apps/superadmin/src/app/api/roles/route.ts",
       "controllerFile": "apps/superadmin/src/app/api/roles/route.ts",
       "serviceFiles": [
+        "@tecbunny/core/enterprise-analytics",
         "next/server"
       ],
       "validationFile": "inline",
@@ -20602,7 +20717,7 @@
       "routeRegistered": true,
       "verification": {
         "controller": true,
-        "service": false,
+        "service": true,
         "validation": true,
         "authentication": true,
         "authorization": true,
@@ -20611,7 +20726,7 @@
         "response": true,
         "errorHandling": true,
         "logging": true,
-        "auditTrail": false,
+        "auditTrail": true,
         "rateLimiting": true,
         "cors": false,
         "csrf": false,
@@ -20622,23 +20737,7 @@
       },
       "mutates": true,
       "status": "Discovered - static verification pending issues review",
-      "issues": [
-        {
-          "severity": "Medium",
-          "summary": "No audit trail signal found.",
-          "rootCause": "Static source audit did not find the required implementation signal in the route/procedure source.",
-          "affectedRoute": "DELETE /api/roles",
-          "affectedFiles": [
-            "apps/superadmin/src/app/api/roles/route.ts"
-          ],
-          "recommendedFix": "Write a structured audit event for privileged reads, writes, and webhook/cron side effects.",
-          "implementationSteps": [
-            "Identify auditable action.",
-            "Persist audit event with actor, route, entity, result.",
-            "Assert audit write in tests."
-          ]
-        }
-      ],
+      "issues": [],
       "integrationRequired": false,
       "integrationStatus": "direct frontend/shared caller detected",
       "integrationReason": "No unmatched caller exists; absence of a direct static frontend fetch is not a missing integration."
@@ -20731,6 +20830,7 @@
       "routeFile": "apps/superadmin/src/app/api/roles/route.ts",
       "controllerFile": "apps/superadmin/src/app/api/roles/route.ts",
       "serviceFiles": [
+        "@tecbunny/core/enterprise-analytics",
         "next/server"
       ],
       "validationFile": "inline",
@@ -20749,7 +20849,7 @@
       "routeRegistered": true,
       "verification": {
         "controller": true,
-        "service": false,
+        "service": true,
         "validation": true,
         "authentication": true,
         "authorization": true,
@@ -20758,7 +20858,7 @@
         "response": true,
         "errorHandling": true,
         "logging": true,
-        "auditTrail": false,
+        "auditTrail": true,
         "rateLimiting": true,
         "cors": false,
         "csrf": false,
@@ -20769,23 +20869,7 @@
       },
       "mutates": true,
       "status": "Discovered - static verification available API endpoint",
-      "issues": [
-        {
-          "severity": "Medium",
-          "summary": "No audit trail signal found.",
-          "rootCause": "Static source audit did not find the required implementation signal in the route/procedure source.",
-          "affectedRoute": "GET /api/roles",
-          "affectedFiles": [
-            "apps/superadmin/src/app/api/roles/route.ts"
-          ],
-          "recommendedFix": "Write a structured audit event for privileged reads, writes, and webhook/cron side effects.",
-          "implementationSteps": [
-            "Identify auditable action.",
-            "Persist audit event with actor, route, entity, result.",
-            "Assert audit write in tests."
-          ]
-        }
-      ],
+      "issues": [],
       "integrationRequired": false,
       "integrationStatus": "available API endpoint",
       "integrationReason": "No unmatched caller exists; absence of a direct static frontend fetch is not a missing integration."
@@ -20860,6 +20944,7 @@
       "routeFile": "apps/superadmin/src/app/api/roles/route.ts",
       "controllerFile": "apps/superadmin/src/app/api/roles/route.ts",
       "serviceFiles": [
+        "@tecbunny/core/enterprise-analytics",
         "next/server"
       ],
       "validationFile": "inline",
@@ -20879,7 +20964,7 @@
       "routeRegistered": true,
       "verification": {
         "controller": true,
-        "service": false,
+        "service": true,
         "validation": true,
         "authentication": true,
         "authorization": true,
@@ -20888,7 +20973,7 @@
         "response": true,
         "errorHandling": true,
         "logging": true,
-        "auditTrail": false,
+        "auditTrail": true,
         "rateLimiting": true,
         "cors": false,
         "csrf": false,
@@ -20899,23 +20984,7 @@
       },
       "mutates": true,
       "status": "Discovered - static verification available API endpoint",
-      "issues": [
-        {
-          "severity": "Medium",
-          "summary": "No audit trail signal found.",
-          "rootCause": "Static source audit did not find the required implementation signal in the route/procedure source.",
-          "affectedRoute": "POST /api/roles",
-          "affectedFiles": [
-            "apps/superadmin/src/app/api/roles/route.ts"
-          ],
-          "recommendedFix": "Write a structured audit event for privileged reads, writes, and webhook/cron side effects.",
-          "implementationSteps": [
-            "Identify auditable action.",
-            "Persist audit event with actor, route, entity, result.",
-            "Assert audit write in tests."
-          ]
-        }
-      ],
+      "issues": [],
       "integrationRequired": false,
       "integrationStatus": "available API endpoint",
       "integrationReason": "No unmatched caller exists; absence of a direct static frontend fetch is not a missing integration."
@@ -23138,6 +23207,7 @@
       "routeFile": "apps/superadmin/src/app/api/superadmin/custom-setup-offers/route.ts",
       "controllerFile": "apps/superadmin/src/app/api/superadmin/custom-setup-offers/route.ts",
       "serviceFiles": [
+        "@tecbunny/core/enterprise-analytics",
         "@tecbunny/core/logger",
         "@tecbunny/database/admin",
         "next/server"
@@ -23159,6 +23229,7 @@
       ],
       "statusCodes": [
         400,
+        404,
         500
       ],
       "routeExists": true,
@@ -23174,7 +23245,7 @@
         "response": true,
         "errorHandling": true,
         "logging": true,
-        "auditTrail": false,
+        "auditTrail": true,
         "rateLimiting": true,
         "cors": false,
         "csrf": false,
@@ -23185,23 +23256,7 @@
       },
       "mutates": true,
       "status": "Discovered - static verification pending issues review",
-      "issues": [
-        {
-          "severity": "Medium",
-          "summary": "No audit trail signal found.",
-          "rootCause": "Static source audit did not find the required implementation signal in the route/procedure source.",
-          "affectedRoute": "DELETE /api/superadmin/custom-setup-offers",
-          "affectedFiles": [
-            "apps/superadmin/src/app/api/superadmin/custom-setup-offers/route.ts"
-          ],
-          "recommendedFix": "Write a structured audit event for privileged reads, writes, and webhook/cron side effects.",
-          "implementationSteps": [
-            "Identify auditable action.",
-            "Persist audit event with actor, route, entity, result.",
-            "Assert audit write in tests."
-          ]
-        }
-      ],
+      "issues": [],
       "integrationRequired": false,
       "integrationStatus": "direct frontend/shared caller detected",
       "integrationReason": "No unmatched caller exists; absence of a direct static frontend fetch is not a missing integration."
@@ -23217,6 +23272,7 @@
       "routeFile": "apps/superadmin/src/app/api/superadmin/custom-setup-offers/route.ts",
       "controllerFile": "apps/superadmin/src/app/api/superadmin/custom-setup-offers/route.ts",
       "serviceFiles": [
+        "@tecbunny/core/enterprise-analytics",
         "@tecbunny/core/logger",
         "@tecbunny/database/admin",
         "next/server"
@@ -23248,7 +23304,7 @@
         "response": true,
         "errorHandling": true,
         "logging": true,
-        "auditTrail": false,
+        "auditTrail": true,
         "rateLimiting": true,
         "cors": false,
         "csrf": false,
@@ -23259,23 +23315,7 @@
       },
       "mutates": true,
       "status": "Discovered - static verification available API endpoint",
-      "issues": [
-        {
-          "severity": "Medium",
-          "summary": "No audit trail signal found.",
-          "rootCause": "Static source audit did not find the required implementation signal in the route/procedure source.",
-          "affectedRoute": "GET /api/superadmin/custom-setup-offers",
-          "affectedFiles": [
-            "apps/superadmin/src/app/api/superadmin/custom-setup-offers/route.ts"
-          ],
-          "recommendedFix": "Write a structured audit event for privileged reads, writes, and webhook/cron side effects.",
-          "implementationSteps": [
-            "Identify auditable action.",
-            "Persist audit event with actor, route, entity, result.",
-            "Assert audit write in tests."
-          ]
-        }
-      ],
+      "issues": [],
       "integrationRequired": false,
       "integrationStatus": "available API endpoint",
       "integrationReason": "No unmatched caller exists; absence of a direct static frontend fetch is not a missing integration."
@@ -23291,6 +23331,7 @@
       "routeFile": "apps/superadmin/src/app/api/superadmin/custom-setup-offers/route.ts",
       "controllerFile": "apps/superadmin/src/app/api/superadmin/custom-setup-offers/route.ts",
       "serviceFiles": [
+        "@tecbunny/core/enterprise-analytics",
         "@tecbunny/core/logger",
         "@tecbunny/database/admin",
         "next/server"
@@ -23324,7 +23365,7 @@
         "response": true,
         "errorHandling": true,
         "logging": true,
-        "auditTrail": false,
+        "auditTrail": true,
         "rateLimiting": true,
         "cors": false,
         "csrf": false,
@@ -23335,23 +23376,7 @@
       },
       "mutates": true,
       "status": "Discovered - static verification available API endpoint",
-      "issues": [
-        {
-          "severity": "Medium",
-          "summary": "No audit trail signal found.",
-          "rootCause": "Static source audit did not find the required implementation signal in the route/procedure source.",
-          "affectedRoute": "POST /api/superadmin/custom-setup-offers",
-          "affectedFiles": [
-            "apps/superadmin/src/app/api/superadmin/custom-setup-offers/route.ts"
-          ],
-          "recommendedFix": "Write a structured audit event for privileged reads, writes, and webhook/cron side effects.",
-          "implementationSteps": [
-            "Identify auditable action.",
-            "Persist audit event with actor, route, entity, result.",
-            "Assert audit write in tests."
-          ]
-        }
-      ],
+      "issues": [],
       "integrationRequired": false,
       "integrationStatus": "available API endpoint",
       "integrationReason": "No unmatched caller exists; absence of a direct static frontend fetch is not a missing integration."
@@ -23367,6 +23392,7 @@
       "routeFile": "apps/superadmin/src/app/api/superadmin/custom-setup-offers/route.ts",
       "controllerFile": "apps/superadmin/src/app/api/superadmin/custom-setup-offers/route.ts",
       "serviceFiles": [
+        "@tecbunny/core/enterprise-analytics",
         "@tecbunny/core/logger",
         "@tecbunny/database/admin",
         "next/server"
@@ -23379,6 +23405,157 @@
       "requiresPermission": true,
       "databaseTables": [
         "custom_setup_offers"
+      ],
+      "frontendPagesUsingIt": [],
+      "applicationsUsingIt": [],
+      "statusCodes": [
+        400,
+        404,
+        500
+      ],
+      "routeExists": true,
+      "routeRegistered": true,
+      "verification": {
+        "controller": true,
+        "service": true,
+        "validation": true,
+        "authentication": true,
+        "authorization": true,
+        "database": true,
+        "businessLogic": true,
+        "response": true,
+        "errorHandling": true,
+        "logging": true,
+        "auditTrail": true,
+        "rateLimiting": true,
+        "cors": false,
+        "csrf": false,
+        "caching": false,
+        "pagination": false,
+        "hasInput": true,
+        "mutates": true
+      },
+      "mutates": true,
+      "status": "Discovered - static verification available API endpoint",
+      "issues": [],
+      "integrationRequired": false,
+      "integrationStatus": "available API endpoint",
+      "integrationReason": "No unmatched caller exists; absence of a direct static frontend fetch is not a missing integration."
+    },
+    {
+      "id": "superadmin:GET:/api/superadmin/dashboard/alerts",
+      "type": "next-route-handler",
+      "module": "superadmin",
+      "apiName": "GET /api/superadmin/dashboard/alerts",
+      "method": "GET",
+      "url": "/api/superadmin/dashboard/alerts",
+      "completeUrl": "{{SUPERADMIN_BASE_URL}}/api/superadmin/dashboard/alerts",
+      "routeFile": "apps/superadmin/src/app/api/superadmin/dashboard/alerts/route.ts",
+      "controllerFile": "apps/superadmin/src/app/api/superadmin/dashboard/alerts/route.ts",
+      "serviceFiles": [
+        "@tecbunny/database/admin",
+        "next/server"
+      ],
+      "validationFile": "inline",
+      "middleware": [],
+      "authentication": "required/static signal found",
+      "permissionRequired": "role/permission signal found",
+      "requiresAuth": true,
+      "requiresPermission": true,
+      "databaseTables": [
+        "enterprise_alert_acknowledgements"
+      ],
+      "frontendPagesUsingIt": [
+        "apps/superadmin/src/components/superadmin/SuperadminCommandCenter.tsx"
+      ],
+      "applicationsUsingIt": [
+        "superadmin"
+      ],
+      "statusCodes": [
+        500
+      ],
+      "routeExists": true,
+      "routeRegistered": true,
+      "verification": {
+        "controller": true,
+        "service": true,
+        "validation": true,
+        "authentication": true,
+        "authorization": true,
+        "database": true,
+        "businessLogic": true,
+        "response": true,
+        "errorHandling": true,
+        "logging": false,
+        "auditTrail": false,
+        "rateLimiting": true,
+        "cors": false,
+        "csrf": false,
+        "caching": true,
+        "pagination": true,
+        "hasInput": true,
+        "mutates": true
+      },
+      "mutates": true,
+      "status": "Discovered - static verification pending issues review",
+      "issues": [
+        {
+          "severity": "Medium",
+          "summary": "No logging signal found.",
+          "rootCause": "Static source audit did not find the required implementation signal in the route/procedure source.",
+          "affectedRoute": "GET /api/superadmin/dashboard/alerts",
+          "affectedFiles": [
+            "apps/superadmin/src/app/api/superadmin/dashboard/alerts/route.ts"
+          ],
+          "recommendedFix": "Use the shared logger with route name, correlation id, and sanitized error details.",
+          "implementationSteps": [
+            "Confirm intended behavior.",
+            "Implement missing route contract.",
+            "Add positive and negative API tests."
+          ]
+        },
+        {
+          "severity": "Medium",
+          "summary": "No audit trail signal found.",
+          "rootCause": "Static source audit did not find the required implementation signal in the route/procedure source.",
+          "affectedRoute": "GET /api/superadmin/dashboard/alerts",
+          "affectedFiles": [
+            "apps/superadmin/src/app/api/superadmin/dashboard/alerts/route.ts"
+          ],
+          "recommendedFix": "Write a structured audit event for privileged reads, writes, and webhook/cron side effects.",
+          "implementationSteps": [
+            "Identify auditable action.",
+            "Persist audit event with actor, route, entity, result.",
+            "Assert audit write in tests."
+          ]
+        }
+      ],
+      "integrationRequired": false,
+      "integrationStatus": "direct frontend/shared caller detected",
+      "integrationReason": "No unmatched caller exists; absence of a direct static frontend fetch is not a missing integration."
+    },
+    {
+      "id": "superadmin:POST:/api/superadmin/dashboard/alerts",
+      "type": "next-route-handler",
+      "module": "superadmin",
+      "apiName": "POST /api/superadmin/dashboard/alerts",
+      "method": "POST",
+      "url": "/api/superadmin/dashboard/alerts",
+      "completeUrl": "{{SUPERADMIN_BASE_URL}}/api/superadmin/dashboard/alerts",
+      "routeFile": "apps/superadmin/src/app/api/superadmin/dashboard/alerts/route.ts",
+      "controllerFile": "apps/superadmin/src/app/api/superadmin/dashboard/alerts/route.ts",
+      "serviceFiles": [
+        "@tecbunny/database/admin",
+        "next/server"
+      ],
+      "validationFile": "inline",
+      "middleware": [],
+      "authentication": "required/static signal found",
+      "permissionRequired": "role/permission signal found",
+      "requiresAuth": true,
+      "requiresPermission": true,
+      "databaseTables": [
+        "enterprise_alert_acknowledgements"
       ],
       "frontendPagesUsingIt": [],
       "applicationsUsingIt": [],
@@ -23398,8 +23575,103 @@
         "businessLogic": true,
         "response": true,
         "errorHandling": true,
-        "logging": true,
+        "logging": false,
         "auditTrail": false,
+        "rateLimiting": true,
+        "cors": false,
+        "csrf": false,
+        "caching": true,
+        "pagination": true,
+        "hasInput": true,
+        "mutates": true
+      },
+      "mutates": true,
+      "status": "Discovered - static verification available API endpoint",
+      "issues": [
+        {
+          "severity": "Medium",
+          "summary": "No logging signal found.",
+          "rootCause": "Static source audit did not find the required implementation signal in the route/procedure source.",
+          "affectedRoute": "POST /api/superadmin/dashboard/alerts",
+          "affectedFiles": [
+            "apps/superadmin/src/app/api/superadmin/dashboard/alerts/route.ts"
+          ],
+          "recommendedFix": "Use the shared logger with route name, correlation id, and sanitized error details.",
+          "implementationSteps": [
+            "Confirm intended behavior.",
+            "Implement missing route contract.",
+            "Add positive and negative API tests."
+          ]
+        },
+        {
+          "severity": "Medium",
+          "summary": "No audit trail signal found.",
+          "rootCause": "Static source audit did not find the required implementation signal in the route/procedure source.",
+          "affectedRoute": "POST /api/superadmin/dashboard/alerts",
+          "affectedFiles": [
+            "apps/superadmin/src/app/api/superadmin/dashboard/alerts/route.ts"
+          ],
+          "recommendedFix": "Write a structured audit event for privileged reads, writes, and webhook/cron side effects.",
+          "implementationSteps": [
+            "Identify auditable action.",
+            "Persist audit event with actor, route, entity, result.",
+            "Assert audit write in tests."
+          ]
+        }
+      ],
+      "integrationRequired": false,
+      "integrationStatus": "available API endpoint",
+      "integrationReason": "No unmatched caller exists; absence of a direct static frontend fetch is not a missing integration."
+    },
+    {
+      "id": "superadmin:POST:/api/superadmin/dashboard/ask",
+      "type": "next-route-handler",
+      "module": "superadmin",
+      "apiName": "POST /api/superadmin/dashboard/ask",
+      "method": "POST",
+      "url": "/api/superadmin/dashboard/ask",
+      "completeUrl": "{{SUPERADMIN_BASE_URL}}/api/superadmin/dashboard/ask",
+      "routeFile": "apps/superadmin/src/app/api/superadmin/dashboard/ask/route.ts",
+      "controllerFile": "apps/superadmin/src/app/api/superadmin/dashboard/ask/route.ts",
+      "serviceFiles": [
+        "@tecbunny/core/ai/gemini-service",
+        "@tecbunny/core/logger",
+        "@tecbunny/database/admin",
+        "next/server"
+      ],
+      "validationFile": "inline",
+      "middleware": [],
+      "authentication": "required/static signal found",
+      "permissionRequired": "role/permission signal found",
+      "requiresAuth": true,
+      "requiresPermission": true,
+      "databaseTables": [
+        "enterprise_audit_logs"
+      ],
+      "frontendPagesUsingIt": [
+        "apps/superadmin/src/components/superadmin/SuperadminCommandCenter.tsx"
+      ],
+      "applicationsUsingIt": [
+        "superadmin"
+      ],
+      "statusCodes": [
+        400,
+        500
+      ],
+      "routeExists": true,
+      "routeRegistered": true,
+      "verification": {
+        "controller": true,
+        "service": true,
+        "validation": true,
+        "authentication": true,
+        "authorization": true,
+        "database": true,
+        "businessLogic": true,
+        "response": true,
+        "errorHandling": true,
+        "logging": true,
+        "auditTrail": true,
         "rateLimiting": true,
         "cors": false,
         "csrf": false,
@@ -23409,15 +23681,249 @@
         "mutates": true
       },
       "mutates": true,
-      "status": "Discovered - static verification available API endpoint",
+      "status": "Discovered - static verification pending issues review",
+      "issues": [],
+      "integrationRequired": false,
+      "integrationStatus": "direct frontend/shared caller detected",
+      "integrationReason": "No unmatched caller exists; absence of a direct static frontend fetch is not a missing integration."
+    },
+    {
+      "id": "superadmin:GET:/api/superadmin/dashboard/command-center",
+      "type": "next-route-handler",
+      "module": "superadmin",
+      "apiName": "GET /api/superadmin/dashboard/command-center",
+      "method": "GET",
+      "url": "/api/superadmin/dashboard/command-center",
+      "completeUrl": "{{SUPERADMIN_BASE_URL}}/api/superadmin/dashboard/command-center",
+      "routeFile": "apps/superadmin/src/app/api/superadmin/dashboard/command-center/route.ts",
+      "controllerFile": "apps/superadmin/src/app/api/superadmin/dashboard/command-center/route.ts",
+      "serviceFiles": [
+        "next/server"
+      ],
+      "validationFile": "not found",
+      "middleware": [],
+      "authentication": "required/static signal found",
+      "permissionRequired": "role/permission signal found",
+      "requiresAuth": true,
+      "requiresPermission": true,
+      "databaseTables": [],
+      "frontendPagesUsingIt": [
+        "apps/superadmin/src/components/superadmin/SuperadminCommandCenter.tsx"
+      ],
+      "applicationsUsingIt": [
+        "superadmin"
+      ],
+      "statusCodes": [
+        500
+      ],
+      "routeExists": true,
+      "routeRegistered": true,
+      "verification": {
+        "controller": true,
+        "service": false,
+        "validation": false,
+        "authentication": true,
+        "authorization": true,
+        "database": false,
+        "businessLogic": true,
+        "response": true,
+        "errorHandling": true,
+        "logging": false,
+        "auditTrail": false,
+        "rateLimiting": true,
+        "cors": false,
+        "csrf": false,
+        "caching": true,
+        "pagination": false,
+        "hasInput": false,
+        "mutates": false
+      },
+      "mutates": false,
+      "status": "Discovered - static verification pending issues review",
       "issues": [
+        {
+          "severity": "Medium",
+          "summary": "No logging signal found.",
+          "rootCause": "Static source audit did not find the required implementation signal in the route/procedure source.",
+          "affectedRoute": "GET /api/superadmin/dashboard/command-center",
+          "affectedFiles": [
+            "apps/superadmin/src/app/api/superadmin/dashboard/command-center/route.ts"
+          ],
+          "recommendedFix": "Use the shared logger with route name, correlation id, and sanitized error details.",
+          "implementationSteps": [
+            "Confirm intended behavior.",
+            "Implement missing route contract.",
+            "Add positive and negative API tests."
+          ]
+        },
         {
           "severity": "Medium",
           "summary": "No audit trail signal found.",
           "rootCause": "Static source audit did not find the required implementation signal in the route/procedure source.",
-          "affectedRoute": "PUT /api/superadmin/custom-setup-offers",
+          "affectedRoute": "GET /api/superadmin/dashboard/command-center",
           "affectedFiles": [
-            "apps/superadmin/src/app/api/superadmin/custom-setup-offers/route.ts"
+            "apps/superadmin/src/app/api/superadmin/dashboard/command-center/route.ts"
+          ],
+          "recommendedFix": "Write a structured audit event for privileged reads, writes, and webhook/cron side effects.",
+          "implementationSteps": [
+            "Identify auditable action.",
+            "Persist audit event with actor, route, entity, result.",
+            "Assert audit write in tests."
+          ]
+        }
+      ],
+      "integrationRequired": false,
+      "integrationStatus": "direct frontend/shared caller detected",
+      "integrationReason": "No unmatched caller exists; absence of a direct static frontend fetch is not a missing integration."
+    },
+    {
+      "id": "superadmin:GET:/api/superadmin/dashboard/export",
+      "type": "next-route-handler",
+      "module": "superadmin",
+      "apiName": "GET /api/superadmin/dashboard/export",
+      "method": "GET",
+      "url": "/api/superadmin/dashboard/export",
+      "completeUrl": "{{SUPERADMIN_BASE_URL}}/api/superadmin/dashboard/export",
+      "routeFile": "apps/superadmin/src/app/api/superadmin/dashboard/export/route.ts",
+      "controllerFile": "apps/superadmin/src/app/api/superadmin/dashboard/export/route.ts",
+      "serviceFiles": [
+        "@tecbunny/database/admin",
+        "next/server"
+      ],
+      "validationFile": "not found",
+      "middleware": [],
+      "authentication": "required/static signal found",
+      "permissionRequired": "role/permission signal found",
+      "requiresAuth": true,
+      "requiresPermission": true,
+      "databaseTables": [],
+      "frontendPagesUsingIt": [
+        "apps/superadmin/src/components/superadmin/SuperadminCommandCenter.tsx"
+      ],
+      "applicationsUsingIt": [
+        "superadmin"
+      ],
+      "statusCodes": [
+        400,
+        500
+      ],
+      "routeExists": true,
+      "routeRegistered": true,
+      "verification": {
+        "controller": true,
+        "service": true,
+        "validation": false,
+        "authentication": true,
+        "authorization": true,
+        "database": true,
+        "businessLogic": true,
+        "response": true,
+        "errorHandling": true,
+        "logging": false,
+        "auditTrail": true,
+        "rateLimiting": true,
+        "cors": false,
+        "csrf": false,
+        "caching": true,
+        "pagination": true,
+        "hasInput": true,
+        "mutates": false
+      },
+      "mutates": false,
+      "status": "Discovered - static verification pending issues review",
+      "issues": [
+        {
+          "severity": "Medium",
+          "summary": "No logging signal found.",
+          "rootCause": "Static source audit did not find the required implementation signal in the route/procedure source.",
+          "affectedRoute": "GET /api/superadmin/dashboard/export",
+          "affectedFiles": [
+            "apps/superadmin/src/app/api/superadmin/dashboard/export/route.ts"
+          ],
+          "recommendedFix": "Use the shared logger with route name, correlation id, and sanitized error details.",
+          "implementationSteps": [
+            "Confirm intended behavior.",
+            "Implement missing route contract.",
+            "Add positive and negative API tests."
+          ]
+        }
+      ],
+      "integrationRequired": false,
+      "integrationStatus": "direct frontend/shared caller detected",
+      "integrationReason": "No unmatched caller exists; absence of a direct static frontend fetch is not a missing integration."
+    },
+    {
+      "id": "superadmin:GET:/api/superadmin/dashboard/platform-health",
+      "type": "next-route-handler",
+      "module": "superadmin",
+      "apiName": "GET /api/superadmin/dashboard/platform-health",
+      "method": "GET",
+      "url": "/api/superadmin/dashboard/platform-health",
+      "completeUrl": "{{SUPERADMIN_BASE_URL}}/api/superadmin/dashboard/platform-health",
+      "routeFile": "apps/superadmin/src/app/api/superadmin/dashboard/platform-health/route.ts",
+      "controllerFile": "apps/superadmin/src/app/api/superadmin/dashboard/platform-health/route.ts",
+      "serviceFiles": [
+        "next/server"
+      ],
+      "validationFile": "not found",
+      "middleware": [],
+      "authentication": "required/static signal found",
+      "permissionRequired": "role/permission signal found",
+      "requiresAuth": true,
+      "requiresPermission": true,
+      "databaseTables": [],
+      "frontendPagesUsingIt": [],
+      "applicationsUsingIt": [],
+      "statusCodes": [
+        500
+      ],
+      "routeExists": true,
+      "routeRegistered": true,
+      "verification": {
+        "controller": true,
+        "service": false,
+        "validation": false,
+        "authentication": true,
+        "authorization": true,
+        "database": false,
+        "businessLogic": true,
+        "response": true,
+        "errorHandling": true,
+        "logging": false,
+        "auditTrail": false,
+        "rateLimiting": true,
+        "cors": false,
+        "csrf": false,
+        "caching": true,
+        "pagination": false,
+        "hasInput": false,
+        "mutates": false
+      },
+      "mutates": false,
+      "status": "Discovered - static verification available API endpoint",
+      "issues": [
+        {
+          "severity": "Medium",
+          "summary": "No logging signal found.",
+          "rootCause": "Static source audit did not find the required implementation signal in the route/procedure source.",
+          "affectedRoute": "GET /api/superadmin/dashboard/platform-health",
+          "affectedFiles": [
+            "apps/superadmin/src/app/api/superadmin/dashboard/platform-health/route.ts"
+          ],
+          "recommendedFix": "Use the shared logger with route name, correlation id, and sanitized error details.",
+          "implementationSteps": [
+            "Confirm intended behavior.",
+            "Implement missing route contract.",
+            "Add positive and negative API tests."
+          ]
+        },
+        {
+          "severity": "Medium",
+          "summary": "No audit trail signal found.",
+          "rootCause": "Static source audit did not find the required implementation signal in the route/procedure source.",
+          "affectedRoute": "GET /api/superadmin/dashboard/platform-health",
+          "affectedFiles": [
+            "apps/superadmin/src/app/api/superadmin/dashboard/platform-health/route.ts"
           ],
           "recommendedFix": "Write a structured audit event for privileged reads, writes, and webhook/cron side effects.",
           "implementationSteps": [
@@ -23633,6 +24139,7 @@
       "routeFile": "apps/waba/src/app/api/templates/route.ts",
       "controllerFile": "apps/waba/src/app/api/templates/route.ts",
       "serviceFiles": [
+        "@tecbunny/core/enterprise-analytics",
         "@tecbunny/core/server-role-guard",
         "next/server"
       ],
@@ -23714,6 +24221,7 @@
       "routeFile": "apps/waba/src/app/api/templates/route.ts",
       "controllerFile": "apps/waba/src/app/api/templates/route.ts",
       "serviceFiles": [
+        "@tecbunny/core/enterprise-analytics",
         "@tecbunny/core/server-role-guard",
         "next/server"
       ],
@@ -23791,6 +24299,7 @@
       "routeFile": "apps/waba/src/app/api/templates/sync/route.ts",
       "controllerFile": "apps/waba/src/app/api/templates/sync/route.ts",
       "serviceFiles": [
+        "@tecbunny/core/enterprise-analytics",
         "@tecbunny/core/server-role-guard",
         "next/server"
       ],

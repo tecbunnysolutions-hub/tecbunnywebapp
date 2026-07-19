@@ -4,8 +4,8 @@ Latest status update: 2026-07-19. The extension is included in the enterprise pl
 
 ## Production Requirements
 
-- Configure `CHROME_EXTENSION_ID` after Chrome Web Store registration so API CORS allows `chrome-extension://<id>`.
-- Use `CHROME_EXTENSION_ALLOWED_ORIGINS` for additional comma-separated extension origins during controlled testing.
+- The API accepts syntactically valid `chrome-extension://<id>` origins by default so the extension can be used from multiple devices without changing API environment variables.
+- Optionally configure `CHROME_EXTENSION_ID` after Chrome Web Store registration, or use `CHROME_EXTENSION_ALLOWED_ORIGINS` for additional comma-separated website origins during controlled testing.
 - Keep `host_permissions` limited to `https://www.tecbunny.com/*`; user-initiated page scraping uses `activeTab` and `scripting`.
 - Extension tokens are stored in `chrome.storage.session`; local storage is limited to non-secret account display state.
 - Scraped products are created with `status: draft` and must be reviewed before publication.

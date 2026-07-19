@@ -1,4 +1,4 @@
-﻿{
+{
   "openapi": "3.1.0",
   "info": {
     "title": "Tecbunny API Surface",
@@ -1242,6 +1242,73 @@
         "x-frontend-usage": [
           "packages/admin-ui/src/components/admin-products-new.tsx"
         ]
+      }
+    },
+    "/api/admin/profile": {
+      "get": {
+        "description": "GET /api/admin/profile",
+        "parameters": [],
+        "responses": {
+          "500": {
+            "description": "Observed or expected 500 response"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-route-file": "apps/mgmt/src/app/api/admin/profile/route.ts",
+        "x-database-tables": [
+          "profiles"
+        ],
+        "x-frontend-usage": [
+          "apps/mgmt/src/app/mgmt/profile/page.tsx"
+        ]
+      },
+      "patch": {
+        "description": "PATCH /api/admin/profile",
+        "parameters": [],
+        "responses": {
+          "400": {
+            "description": "Observed or expected 400 response"
+          },
+          "500": {
+            "description": "Observed or expected 500 response"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-route-file": "apps/mgmt/src/app/api/admin/profile/route.ts",
+        "x-database-tables": [
+          "profiles"
+        ],
+        "x-frontend-usage": []
+      },
+      "post": {
+        "description": "POST /api/admin/profile",
+        "parameters": [],
+        "responses": {
+          "400": {
+            "description": "Observed or expected 400 response"
+          },
+          "500": {
+            "description": "Observed or expected 500 response"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-route-file": "apps/mgmt/src/app/api/admin/profile/route.ts",
+        "x-database-tables": [
+          "profiles"
+        ],
+        "x-frontend-usage": []
       }
     },
     "/api/admin/quotes": {
@@ -3042,6 +3109,9 @@
         "responses": {
           "400": {
             "description": "Observed or expected 400 response"
+          },
+          "404": {
+            "description": "Observed or expected 404 response"
           },
           "500": {
             "description": "Observed or expected 500 response"
@@ -5958,6 +6028,9 @@
           "400": {
             "description": "Observed or expected 400 response"
           },
+          "404": {
+            "description": "Observed or expected 404 response"
+          },
           "500": {
             "description": "Observed or expected 500 response"
           }
@@ -8722,6 +8795,9 @@
           "400": {
             "description": "Observed or expected 400 response"
           },
+          "404": {
+            "description": "Observed or expected 404 response"
+          },
           "500": {
             "description": "Observed or expected 500 response"
           }
@@ -8778,6 +8854,9 @@
           "400": {
             "description": "Observed or expected 400 response"
           },
+          "404": {
+            "description": "Observed or expected 404 response"
+          },
           "500": {
             "description": "Observed or expected 500 response"
           }
@@ -8787,6 +8866,141 @@
         "x-database-tables": [
           "custom_setup_offers"
         ],
+        "x-frontend-usage": []
+      }
+    },
+    "/api/superadmin/dashboard/alerts": {
+      "get": {
+        "description": "GET /api/superadmin/dashboard/alerts",
+        "parameters": [],
+        "responses": {
+          "500": {
+            "description": "Observed or expected 500 response"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-route-file": "apps/superadmin/src/app/api/superadmin/dashboard/alerts/route.ts",
+        "x-database-tables": [
+          "enterprise_alert_acknowledgements"
+        ],
+        "x-frontend-usage": [
+          "apps/superadmin/src/components/superadmin/SuperadminCommandCenter.tsx"
+        ]
+      },
+      "post": {
+        "description": "POST /api/superadmin/dashboard/alerts",
+        "parameters": [],
+        "responses": {
+          "400": {
+            "description": "Observed or expected 400 response"
+          },
+          "500": {
+            "description": "Observed or expected 500 response"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-route-file": "apps/superadmin/src/app/api/superadmin/dashboard/alerts/route.ts",
+        "x-database-tables": [
+          "enterprise_alert_acknowledgements"
+        ],
+        "x-frontend-usage": []
+      }
+    },
+    "/api/superadmin/dashboard/ask": {
+      "post": {
+        "description": "POST /api/superadmin/dashboard/ask",
+        "parameters": [],
+        "responses": {
+          "400": {
+            "description": "Observed or expected 400 response"
+          },
+          "500": {
+            "description": "Observed or expected 500 response"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-route-file": "apps/superadmin/src/app/api/superadmin/dashboard/ask/route.ts",
+        "x-database-tables": [
+          "enterprise_audit_logs"
+        ],
+        "x-frontend-usage": [
+          "apps/superadmin/src/components/superadmin/SuperadminCommandCenter.tsx"
+        ]
+      }
+    },
+    "/api/superadmin/dashboard/command-center": {
+      "get": {
+        "description": "GET /api/superadmin/dashboard/command-center",
+        "parameters": [],
+        "responses": {
+          "500": {
+            "description": "Observed or expected 500 response"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-route-file": "apps/superadmin/src/app/api/superadmin/dashboard/command-center/route.ts",
+        "x-database-tables": [],
+        "x-frontend-usage": [
+          "apps/superadmin/src/components/superadmin/SuperadminCommandCenter.tsx"
+        ]
+      }
+    },
+    "/api/superadmin/dashboard/export": {
+      "get": {
+        "description": "GET /api/superadmin/dashboard/export",
+        "parameters": [],
+        "responses": {
+          "400": {
+            "description": "Observed or expected 400 response"
+          },
+          "500": {
+            "description": "Observed or expected 500 response"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-route-file": "apps/superadmin/src/app/api/superadmin/dashboard/export/route.ts",
+        "x-database-tables": [],
+        "x-frontend-usage": [
+          "apps/superadmin/src/components/superadmin/SuperadminCommandCenter.tsx"
+        ]
+      }
+    },
+    "/api/superadmin/dashboard/platform-health": {
+      "get": {
+        "description": "GET /api/superadmin/dashboard/platform-health",
+        "parameters": [],
+        "responses": {
+          "500": {
+            "description": "Observed or expected 500 response"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-route-file": "apps/superadmin/src/app/api/superadmin/dashboard/platform-health/route.ts",
+        "x-database-tables": [],
         "x-frontend-usage": []
       }
     },

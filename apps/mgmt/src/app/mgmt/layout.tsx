@@ -8,7 +8,7 @@ import { isAtLeast } from '@tecbunny/core/roles';
 import type { UserRole } from '@tecbunny/core/roles';
 import { 
   LayoutDashboard, Users, ShoppingCart, Activity, Briefcase,
-  Megaphone, CheckSquare, ClipboardList, Box, X
+  Megaphone, CheckSquare, ClipboardList, Box, X, UserCog
 } from 'lucide-react';
 
 const ALL_NAV_ITEMS = [
@@ -20,7 +20,8 @@ const ALL_NAV_ITEMS = [
   { label: 'Marketing', href: '/mgmt/marketing', icon: Megaphone, module: 'marketing' },
   { label: 'Tasks', href: '/mgmt/tasks', icon: CheckSquare, module: 'tasks' },
   { label: 'Approvals', href: '/mgmt/approvals', icon: ClipboardList, module: 'approvals' },
-  { label: 'Reports', href: '/mgmt/reports', icon: Activity, module: 'reports' }
+  { label: 'Reports', href: '/mgmt/reports', icon: Activity, module: 'reports' },
+  { label: 'Profile Settings', href: '/mgmt/profile', icon: UserCog, module: 'profile' }
 ];
 
 /** Derive allowed modules from the canonical role graph instead of fragile string matching. */
@@ -29,24 +30,24 @@ function getAllowedModules(role: UserRole): string[] {
     return ALL_NAV_ITEMS.map(i => i.module);
   }
   if (isAtLeast(role, 'sales_manager')) {
-    return ['dashboard', 'crm', 'orders', 'inventory', 'tasks', 'reports', 'approvals'];
+    return ['dashboard', 'crm', 'orders', 'inventory', 'tasks', 'reports', 'approvals', 'profile'];
   }
   if (isAtLeast(role, 'service_manager')) {
-    return ['dashboard', 'crm', 'tasks', 'inventory', 'reports'];
+    return ['dashboard', 'crm', 'tasks', 'inventory', 'reports', 'profile'];
   }
   if (isAtLeast(role, 'sales_executive') || isAtLeast(role, 'sales_agent') || isAtLeast(role, 'store_executive')) {
-    return ['dashboard', 'crm', 'orders', 'tasks', 'reports'];
+    return ['dashboard', 'crm', 'orders', 'tasks', 'reports', 'profile'];
   }
   if (isAtLeast(role, 'service_engineer')) {
-    return ['dashboard', 'crm', 'tasks', 'inventory'];
+    return ['dashboard', 'crm', 'tasks', 'inventory', 'profile'];
   }
   if (role === 'accounts') {
-    return ['dashboard', 'accounts', 'approvals', 'reports'];
+    return ['dashboard', 'accounts', 'approvals', 'reports', 'profile'];
   }
   if (role === 'marketing_executive' || role === 'marketing_manager') {
-    return ['dashboard', 'crm', 'marketing', 'reports'];
+    return ['dashboard', 'crm', 'marketing', 'reports', 'profile'];
   }
-  return ['dashboard'];
+  return ['dashboard', 'profile'];
 }
 
 const QUICK_CREATE_ROUTES: Record<string, string> = {
