@@ -60,7 +60,7 @@ export const EnvSchema = z.object({
 
 export type EnvironmentConfig = z.infer<typeof EnvSchema>;
 
-class EnvironmentValidator {
+export class EnvironmentValidator {
   private config: EnvironmentConfig | Partial<EnvironmentConfig> = {};
   private errors: z.ZodIssue[] = [];
 
@@ -72,9 +72,9 @@ class EnvironmentValidator {
     const unvalidated = {
       supabase: {
         url: process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || '',
-        anonKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || '',
+        anonKey: process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || '',
         serviceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY || '',
-        publicKeySource: process.env.NEXT_PUBLIC_SUPABASE_KEY_SOURCE || 'anon',
+        publicKeySource: process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ? 'publishable' : (process.env.NEXT_PUBLIC_SUPABASE_KEY_SOURCE || 'anon'),
         dbPassword: process.env.SUPABASE_DB_PASSWORD,
         dbUrl: process.env.DATABASE_URL,
       },
@@ -130,20 +130,45 @@ class EnvironmentValidator {
     if (!result.success) {
       this.errors = result.error.issues;
       this.config = unvalidated as any;
-      
-      // We log but don't strictly throw yet in build time
-      if (process.env.NODE_ENV !== 'production') {
-        const errorMessages = this.errors.map(e => `${e.path.join('.')}: ${e.message}`);
-        console.warn('⚠️ Environment validation warnings:', errorMessages);
+
+      const errorMessages = this.getErrors();
+
+      if (this.shouldFailHard()) {
+        logger.error('Environment validation failed', { errors: errorMessages });
+        throw new Error(`Environment validation failed:\n${errorMessages.join('\n')}`);
+      }
+
+      if (errorMessages.length > 0) {
+        logger.warn('Environment validation warnings', { errors: errorMessages });
       }
     } else {
+      this.errors = [];
       this.config = result.data;
     }
+  }
+
+  private shouldFailHard() {
+    return process.env.NODE_ENV === 'production'
+      || process.env.CI === 'true'
+      || process.env.TECBUNNY_VALIDATE_ENV === 'strict';
   }
 
   getConfig(): EnvironmentConfig {
     return this.config as EnvironmentConfig;
   }
+
+  isValid() {
+    return this.errors.length === 0;
+  }
+
+  getErrors() {
+    return this.errors.map(e => `${e.path.join('.')}: ${e.message}`);
+  }
+
+  getWarnings() {
+    return this.getErrors();
+  }
 }
 
-export const env = new EnvironmentValidator().getConfig();
+export const environmentValidation = new EnvironmentValidator();
+export const env = environmentValidation.getConfig();

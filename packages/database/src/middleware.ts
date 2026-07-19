@@ -163,9 +163,23 @@ export async function updateSession(
   });
 
   const pathname = request.nextUrl.pathname;
+
+  const matchesPublicRoute = (route: string) => {
+    const trimmedRoute = route.trim();
+    const methodSeparator = trimmedRoute.indexOf(' ');
+    const hasMethod = methodSeparator > 0;
+    const allowedMethod = hasMethod ? trimmedRoute.slice(0, methodSeparator).toUpperCase() : null;
+    const allowedPath = hasMethod ? trimmedRoute.slice(methodSeparator + 1).trim() : trimmedRoute;
+
+    if (allowedMethod && allowedMethod !== request.method.toUpperCase()) {
+      return false;
+    }
+
+    return pathname === allowedPath || pathname.startsWith(`${allowedPath}/`);
+  };
   
   // Allow public routes
-  if (options?.publicRoutes?.some((route: string) => pathname.startsWith(route))) {
+  if (options?.publicRoutes?.some(matchesPublicRoute)) {
     return response;
   }
 

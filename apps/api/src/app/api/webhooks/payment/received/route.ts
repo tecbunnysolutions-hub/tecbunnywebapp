@@ -36,11 +36,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
     }
     
-    logger.info('Payment received webhook received:', { body: JSON.stringify(body), correlationId });
-
     const signature = request.headers.get('x-webhook-signature');
     const source = request.headers.get('x-webhook-source') || 'unknown';
     const timestampStr = request.headers.get('x-webhook-timestamp') || request.headers.get('x-payu-timestamp');
+    const eventId = body.id || body.event_id || body.payment_id || body.transaction_id || deriveWebhookEventId(source, rawBody, signature);
+
+    logger.info('Payment received webhook received', { source, eventId, correlationId });
     
     // Webhook Timestamp Validation
     if (timestampStr) {
@@ -61,7 +62,6 @@ export async function POST(request: NextRequest) {
     }
 
     // Idempotency: every signed request gets either the gateway event id or a stable body fingerprint.
-    const eventId = body.id || body.event_id || body.payment_id || body.transaction_id || deriveWebhookEventId(source, rawBody, signature);
     const redis = getRedis();
     if (redis) {
       const idempotencyKey = `webhook:payment:received:${eventId}`;

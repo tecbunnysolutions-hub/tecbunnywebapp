@@ -3,11 +3,12 @@ import { NextRequest, NextResponse } from 'next/server';
 
 
 import { logger } from "@tecbunny/core";
+import { AdminAuthError, requireAdminContext } from "@tecbunny/core/auth/admin-guard";
 
 // Get webhook statistics from the webhook_stats view
 export async function GET(request: NextRequest) {
   try {
-    const supabase = await createClient();
+    const { serviceSupabase: supabase } = await requireAdminContext();
     const { searchParams } = new URL(request.url);
     
     // Optional filters
@@ -90,6 +91,10 @@ export async function GET(request: NextRequest) {
     });
     
   } catch (error: any) {
+    if (error instanceof AdminAuthError) {
+      return NextResponse.json({ error: error.message }, { status: error.status });
+    }
+
     logger.error('webhook_stats_error', { error: error.message });
     return NextResponse.json(
       { error: 'Internal server error' },
@@ -101,7 +106,7 @@ export async function GET(request: NextRequest) {
 // Get specific webhook event types and their counts
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient();
+    const { serviceSupabase: supabase } = await requireAdminContext();
     const body = await request.json();
     const { event_types = [], days = 30 } = body;
     
@@ -168,6 +173,10 @@ export async function POST(request: NextRequest) {
     });
     
   } catch (error: any) {
+    if (error instanceof AdminAuthError) {
+      return NextResponse.json({ error: error.message }, { status: error.status });
+    }
+
     logger.error('webhook_stats_post_error', { error: error.message });
     return NextResponse.json(
       { error: 'Internal server error' },

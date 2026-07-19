@@ -19,8 +19,10 @@ const MOCK_THREADS: EmailThread[] = [
   { id: '3', from: 'noreply@infobip.com', subject: 'WABA Channel Approved', preview: 'Your WhatsApp Business Account...', date: 'Jul 15', unread: false, starred: false },
 ];
 
+const mockWebmailEnabled = process.env.NODE_ENV !== 'production' || process.env.NEXT_PUBLIC_WEBMAIL_ENABLE_MOCK === 'true';
+
 export default function InboxPage() {
-  const [threads, setThreads] = React.useState<EmailThread[]>(MOCK_THREADS);
+  const [threads, setThreads] = React.useState<EmailThread[]>(mockWebmailEnabled ? MOCK_THREADS : []);
   const [loading, setLoading] = React.useState(false);
   const [selected, setSelected] = React.useState<string | null>(null);
 
@@ -32,6 +34,20 @@ export default function InboxPage() {
 
   const selectedThread = threads.find(t => t.id === selected);
   const unreadCount = threads.filter(t => t.unread).length;
+
+  if (!mockWebmailEnabled) {
+    return (
+      <div className="flex h-full items-center justify-center bg-slate-50 px-6">
+        <div className="max-w-md rounded-lg border border-slate-200 bg-white p-6 text-center shadow-sm">
+          <Mail className="mx-auto mb-3 h-8 w-8 text-slate-400" />
+          <h1 className="text-sm font-semibold text-slate-900">Webmail disabled in production</h1>
+          <p className="mt-2 text-sm leading-6 text-slate-600">
+            Configure a real mailbox provider before enabling this module for production traffic.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-full">

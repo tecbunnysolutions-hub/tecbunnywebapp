@@ -1,32 +1,106 @@
-import { createSupabaseServiceClient } from "@tecbunny/core/server";
 import { NextRequest, NextResponse } from 'next/server';
 import { logger } from "@tecbunny/core";
 import { GoogleGenAI, Type } from '@google/genai';
 import * as cheerio from 'cheerio';
+import { AdminAuthError, requireAdminContext } from "@tecbunny/core/auth/admin-guard";
+import { validatePublicRemoteUrl } from "@tecbunny/core/security/network-validation";
+
+export const runtime = 'nodejs';
+
+const MAX_REMOTE_HTML_BYTES = 1024 * 1024;
+const REMOTE_FETCH_TIMEOUT_MS = 8000;
+
+async function readResponseTextWithLimit(response: Response, limitBytes: number) {
+  if (!response.body) {
+    const buffer = Buffer.from(await response.arrayBuffer());
+    if (buffer.byteLength > limitBytes) {
+      throw new Error('REMOTE_HTML_TOO_LARGE');
+    }
+    return buffer.toString('utf8');
+  }
+
+  const chunks: Uint8Array[] = [];
+  let total = 0;
+  const reader = response.body.getReader();
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    if (!value) continue;
+
+    total += value.byteLength;
+    if (total > limitBytes) {
+      await reader.cancel();
+      throw new Error('REMOTE_HTML_TOO_LARGE');
+    }
+
+    chunks.push(value);
+  }
+
+  return Buffer.concat(chunks).toString('utf8');
+}
 
 export async function POST(request: NextRequest) {
   const correlationId = crypto.randomUUID();
   try {
+    const { serviceSupabase: supabase, user, role } = await requireAdminContext();
     const { url } = await request.json();
 
-    if (!url) {
+    if (!url || typeof url !== 'string') {
       return NextResponse.json({ error: 'URL is required' }, { status: 400 });
     }
 
+    let targetUrl: URL;
+    try {
+      targetUrl = new URL(url);
+    } catch {
+      return NextResponse.json({ error: 'Invalid URL format' }, { status: 400 });
+    }
+
+    try {
+      const isPublicTarget = await validatePublicRemoteUrl(targetUrl);
+      if (!isPublicTarget) {
+        logger.warn('url_scraper.blocked_private_target', { correlationId, hostname: targetUrl.hostname });
+        return NextResponse.json({ error: 'Invalid URL target' }, { status: 400 });
+      }
+    } catch {
+      logger.warn('url_scraper.dns_validation_failed', { correlationId, hostname: targetUrl.hostname });
+      return NextResponse.json({ error: 'Could not resolve URL' }, { status: 400 });
+    }
+
     // Attempt to fetch the URL using standard browser headers
-    const fetchResponse = await fetch(url, {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), REMOTE_FETCH_TIMEOUT_MS);
+    const fetchResponse = await fetch(targetUrl.href, {
+      redirect: 'manual',
+      signal: controller.signal,
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
         'Accept-Language': 'en-US,en;q=0.9',
       }
     });
+    clearTimeout(timeout);
+
+    if (fetchResponse.status >= 300 && fetchResponse.status < 400) {
+      return NextResponse.json({ error: 'Redirecting URLs are not allowed' }, { status: 400 });
+    }
 
     if (!fetchResponse.ok) {
       throw new Error(`Failed to fetch URL: ${fetchResponse.status} ${fetchResponse.statusText}`);
     }
 
-    const html = await fetchResponse.text();
+    const contentType = fetchResponse.headers.get('content-type') || '';
+    if (!contentType.toLowerCase().includes('text/html')) {
+      return NextResponse.json({ error: 'URL must serve HTML content' }, { status: 400 });
+    }
+
+    const contentLength = Number(fetchResponse.headers.get('content-length') ?? 0);
+    if (Number.isFinite(contentLength) && contentLength > MAX_REMOTE_HTML_BYTES) {
+      return NextResponse.json({ error: 'Remote page is too large' }, { status: 400 });
+    }
+
+    const html = await readResponseTextWithLimit(fetchResponse, MAX_REMOTE_HTML_BYTES);
 
     // Use cheerio to load and strip unnecessary tags
     const $ = cheerio.load(html);
@@ -123,8 +197,6 @@ export async function POST(request: NextRequest) {
 
     const result = JSON.parse(aiResponse.text);
 
-    const supabase = await createSupabaseServiceClient();
-
     let parsedPrice = 0;
     if (result.price) {
       const match = result.price.match(/[\d,.]+/);
@@ -150,7 +222,7 @@ export async function POST(request: NextRequest) {
       product_type: 'physical',
       model_number: result.modelNo || null,
       specifications: {
-        'Source URL': url,
+        'Source URL': targetUrl.href,
         ...(result.warrantyPeriod && { 'Warranty Period': result.warrantyPeriod }),
         ...(result.warrantyType && { 'Warranty Type': result.warrantyType }),
         ...(result.additional1 && { 'Additional 1': result.additional1 }),
@@ -175,10 +247,14 @@ export async function POST(request: NextRequest) {
       throw new Error(`Database Error: ${dbError.message}`);
     }
 
-    logger.info('url_scraper.success', { correlationId, url });
+    logger.info('url_scraper.success', { correlationId, hostname: targetUrl.hostname, requestedBy: user.id, role });
     return NextResponse.json({ success: true, product: insertedProduct });
 
   } catch (err: any) {
+    if (err instanceof AdminAuthError) {
+      return NextResponse.json({ error: err.message }, { status: err.status });
+    }
+
     logger.error('url_scraper.error', { correlationId, error: err.message });
     return NextResponse.json({ error: err.message || 'Internal server error' }, { status: 500 });
   }

@@ -9,6 +9,20 @@ export const dynamic = 'force-dynamic';
 const apiKey = process.env.GEMINI_API_KEY || "";
 const genAI = apiKey ? new GoogleGenerativeAI(apiKey) : null;
 
+function getPagination(searchParams: URLSearchParams, defaults: { limit: number; maxLimit: number }) {
+  const requestedLimit = Number(searchParams.get('limit') || defaults.limit);
+  const requestedOffset = Number(searchParams.get('offset') || 0);
+
+  const limit = Number.isFinite(requestedLimit)
+    ? Math.min(Math.max(Math.trunc(requestedLimit), 1), defaults.maxLimit)
+    : defaults.limit;
+  const offset = Number.isFinite(requestedOffset)
+    ? Math.max(Math.trunc(requestedOffset), 0)
+    : 0;
+
+  return { limit, offset };
+}
+
 export async function GET(req: Request) {
   try {
     const auth = await requireApiRole();
@@ -19,21 +33,33 @@ export async function GET(req: Request) {
     const conversationId = searchParams.get('conversation');
 
     if (conversationId) {
+      const { limit, offset } = getPagination(searchParams, { limit: 100, maxLimit: 200 });
       const { data: messages, error } = await supabase
         .from('Message')
         .select('*')
         .eq('sender_number', conversationId)
-        .order('timestamp', { ascending: true });
+        .order('timestamp', { ascending: true })
+        .range(offset, offset + limit - 1);
 
       if (error) throw error;
-      return NextResponse.json({ messages: messages || [] });
+      return NextResponse.json({
+        messages: messages || [],
+        pagination: {
+          limit,
+          offset,
+          hasMore: (messages || []).length === limit,
+        },
+      });
     }
+
+    const { limit, offset } = getPagination(searchParams, { limit: 50, maxLimit: 100 });
 
     // Note: Since Prisma's relation 'messages' was used, we fetch conversations, then fetch latest message for each.
     const { data: conversations, error: convError } = await supabase
       .from('Conversation')
       .select('*')
-      .order('last_interaction_timestamp', { ascending: false });
+      .order('last_interaction_timestamp', { ascending: false })
+      .range(offset, offset + limit - 1);
 
     if (convError) throw convError;
 
@@ -64,7 +90,14 @@ export async function GET(req: Request) {
         : []
     }));
 
-    return NextResponse.json({ conversations: conversationsWithMessages });
+    return NextResponse.json({
+      conversations: conversationsWithMessages,
+      pagination: {
+        limit,
+        offset,
+        hasMore: (conversations || []).length === limit,
+      },
+    });
 
   } catch (error: unknown) {
     console.error('Failed to fetch messages', error);

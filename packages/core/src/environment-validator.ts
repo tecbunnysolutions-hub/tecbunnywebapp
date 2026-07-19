@@ -1,11 +1,11 @@
-import { env, EnvSchema, EnvironmentConfig } from './config/env';
+import { env, EnvSchema, EnvironmentConfig, environmentValidation } from './config/env';
 
 // For backwards compatibility
 export const environmentValidator = {
   getConfig: () => env,
-  isValid: () => true,
-  getErrors: () => [] as string[],
-  getWarnings: () => [] as string[],
+  isValid: () => environmentValidation.isValid(),
+  getErrors: () => environmentValidation.getErrors(),
+  getWarnings: () => environmentValidation.getWarnings(),
   getFeatureStatus: () => ({
     email: Boolean(env.smtp?.host && env.smtp?.user && env.smtp?.pass),
     whatsapp: Boolean(env.whatsapp?.apiKey && env.whatsapp?.baseUrl),

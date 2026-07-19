@@ -1,4 +1,5 @@
 import { createClient } from '@tecbunny/database';
+import { createServiceClient, isSupabaseServiceConfigured } from '@tecbunny/core/server';
 import { Suspense } from 'react';
 
 import FaqsClient from '@/components/FaqsClient';
@@ -7,17 +8,23 @@ import { Skeleton } from "@tecbunny/ui";
 export const revalidate = 60; // Revalidate at most once every minute
 
 async function fetchFaqs() {
-  const supabase = await createClient();
+  const supabase = isSupabaseServiceConfigured
+    ? await createServiceClient()
+    : await createClient();
+
   const { data: faqs, error } = await supabase
-    .from('faqs')
-    .select('id, category, question, answer')
-    .order('category', { ascending: true });
+    .from('cms_faqs')
+    .select('id, category, question, answer, display_order')
+    .eq('is_active', true)
+    .is('deleted_at', null)
+    .order('category', { ascending: true })
+    .order('display_order', { ascending: true });
 
   if (error) {
     console.error('Error loading FAQs from DB:', error);
     return [];
   }
-  return (faqs || []).map((faq: any) => ({ ...faq, display_order: 0 }));
+  return (faqs || []).map((faq: any) => ({ ...faq, display_order: faq.display_order ?? 0 }));
 }
 
 export default async function FaqsPage() {

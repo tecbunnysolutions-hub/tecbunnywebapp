@@ -1,33 +1,61 @@
 import { createClient } from '@tecbunny/database';
 import { NextRequest, NextResponse } from 'next/server';
+import crypto from 'crypto';
 
 
 import { sendWhatsAppNotification, sendShipmentNotification } from "@tecbunny/core/whatsapp-service";
 import { logger } from "@tecbunny/core";
+import { logWebhookEvent } from "@tecbunny/core/webhook-logger";
+
+const deriveWebhookEventId = (source: string, rawBody: string, signature: string | null): string => crypto
+  .createHash('sha256')
+  .update(source)
+  .update('\0')
+  .update(signature ?? '')
+  .update('\0')
+  .update(rawBody)
+  .digest('hex');
 
 // Generic order shipped webhook handler
 export async function POST(request: NextRequest) {
   let body: any = {};
+  const correlationId = request.headers.get('x-correlation-id') || null;
+  const startTime = new Date();
+
   try {
     const supabase = await createClient();
+    const rawBody = await request.text();
     try {
-      body = await request.json();
+      body = JSON.parse(rawBody);
     } catch (e) {
       logger.error('Failed to parse webhook body', { error: e });
       return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
     }
     
-    logger.info('Order shipped webhook received:', { body: JSON.stringify(body) });
-
     const signature = request.headers.get('x-webhook-signature');
+    const timestamp = request.headers.get('x-webhook-timestamp');
     const source = request.headers.get('x-webhook-source') || 'unknown';
+    const eventId = body.id || body.event_id || body.order_id || body.order_number || request.headers.get('x-webhook-id') || deriveWebhookEventId(source, rawBody, signature);
+
+    logger.info('Order shipped webhook received', { source, eventId, correlationId });
     
-    if (!validateWebhookSignature(signature, body, source)) {
+    if (!validateWebhookSignature(signature, timestamp, rawBody, source)) {
       return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
     }
 
+    const { data: existingEvent } = await supabase
+      .from('webhook_events')
+      .select('id')
+      .eq('event_id', eventId)
+      .maybeSingle();
+
+    if (existingEvent) {
+      logger.info('Duplicate order shipped webhook event received, skipping execution', { eventId, correlationId });
+      return NextResponse.json({ success: true, message: 'Event already processed (duplicate)' }, { status: 200 });
+    }
+
     const result = await processOrderShipped(supabase, body, source);
-    await logWebhookEvent(supabase, 'order_shipped', body, source, true);
+    await logWebhookEvent(supabase, 'order_shipped', body, source, true, undefined, startTime, eventId);
     
     return NextResponse.json(result);
 
@@ -36,7 +64,16 @@ export async function POST(request: NextRequest) {
     
     try {
       const supabase = await createClient();
-      await logWebhookEvent(supabase, 'order_shipped', body, 'unknown', false, error.message);
+      await logWebhookEvent(
+        supabase,
+        'order_shipped',
+        body,
+        'unknown',
+        false,
+        error.message,
+        startTime,
+        body?.id || body?.event_id || body?.order_id || body?.order_number || null
+      );
     } catch (logError: any) {
       logger.error('Failed to log webhook error:', { error: logError.message });
     }
@@ -209,45 +246,50 @@ Status: Package is in transit! 🚚
   }
 }
 
-function validateWebhookSignature(signature: string | null, body: any, source: string): boolean {
-  if (process.env.NODE_ENV === 'development') {
-    return true;
-  }
+function validateWebhookSignature(
+  signature: string | null,
+  timestamp: string | null,
+  rawBody: string,
+  source: string
+): boolean {
+  const secret = process.env.ORDER_SHIPPED_WEBHOOK_SECRET || process.env.SHIPPING_WEBHOOK_SECRET || process.env.WEBHOOK_SIGNING_SECRET;
 
-  if (!signature) {
-    logger.warn('No webhook signature provided:', { source });
+  if (!secret) {
+    if (process.env.NODE_ENV === 'development') {
+      logger.warn('Order shipped webhook signature skipped in development because no secret is configured', { source });
+      return true;
+    }
+
+    logger.error('Order shipped webhook secret is not configured', { source });
     return false;
   }
 
-  // Basic check for signature presence.
-  // In a real production environment with a specific provider (e.g. ShipRocket, Delhivery),
-  // you would validate the HMAC signature against a secret key here to ensure authenticity.
-  // For now, checks if signature is present.
-  return signature.length > 0;
-}
-
-async function logWebhookEvent(
-  supabase: any, 
-  eventType: string, 
-  payload: any, 
-  source: string, 
-  processed: boolean, 
-  errorMessage?: string
-) {
-  try {
-    await supabase
-      .from('webhook_events')
-      .insert({
-        source,
-        event_type: eventType,
-        payload,
-        processed,
-        error_message: errorMessage,
-        created_at: new Date().toISOString()
-      });
-  } catch (error: any) {
-    logger.error('Failed to log webhook event:', { error: error.message });
+  if (!signature) {
+    logger.warn('No webhook signature provided', { source });
+    return false;
   }
+
+  if (timestamp) {
+    const timestampMs = Number(timestamp) * (timestamp.length === 10 ? 1000 : 1);
+    if (!Number.isFinite(timestampMs) || Math.abs(Date.now() - timestampMs) > 5 * 60 * 1000) {
+      logger.warn('Stale or invalid webhook timestamp', { source });
+      return false;
+    }
+  }
+
+  const signedPayload = timestamp ? `${timestamp}.${rawBody}` : rawBody;
+  const expected = crypto.createHmac('sha256', secret).update(signedPayload).digest('hex');
+  const received = signature.startsWith('sha256=') ? signature.slice('sha256='.length) : signature;
+
+  const expectedBuffer = Buffer.from(expected, 'hex');
+  const receivedBuffer = Buffer.from(received, 'hex');
+
+  if (receivedBuffer.length !== expectedBuffer.length) {
+    logger.warn('Invalid webhook signature length', { source });
+    return false;
+  }
+
+  return crypto.timingSafeEqual(receivedBuffer, expectedBuffer);
 }
 
 

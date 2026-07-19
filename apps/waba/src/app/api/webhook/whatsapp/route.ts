@@ -44,7 +44,7 @@ function verifySignature(payload: Buffer | string, signature: string): boolean {
   }
 
   if (!isValid) {
-    console.error('Signature mismatch. Received:', signature, 'Expected Hex:', expectedHex, 'Expected Base64:', expectedBase64);
+    console.error('Signature mismatch for WABA webhook payload.');
   }
 
   return isValid;

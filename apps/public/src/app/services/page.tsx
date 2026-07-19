@@ -69,6 +69,10 @@ function isServiceRow(value: unknown): value is ServiceRow {
   return !!value && typeof value === 'object' && 'id' in value;
 }
 
+function isMissingTableError(error: unknown) {
+  return (error as { code?: string } | null)?.code === 'PGRST205';
+}
+
 function normalizeService(row: ServiceRow): Service {
   const statusValue = row.status;
   const isActive = typeof row.is_active === 'boolean'
@@ -116,6 +120,10 @@ export default async function Page() {
       .select('*');
 
     if (error) {
+      if (isMissingTableError(error)) {
+        return <ServicesPage services={[]} hasServiceLoadError={false} />;
+      }
+
       logger.error('Error fetching services', {
         message: error.message,
         details: error.details,

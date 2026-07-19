@@ -98,6 +98,23 @@ async function generateFingerprint(requestOrIp: Request | string | null, uaStr?:
   return base64UrlEncode(new Uint8Array(hashBuffer)).substring(0, 16);
 }
 
+async function resolveFingerprintContext(requestOrIp?: Request | string | null, uaStr?: string | null) {
+  if (requestOrIp || uaStr) {
+    return { requestOrIp: requestOrIp || null, uaStr: uaStr || null };
+  }
+
+  try {
+    const { headers } = await import('next/headers');
+    const headersList = await headers();
+    return {
+      requestOrIp: headersList.get('x-forwarded-for') || 'unknown',
+      uaStr: headersList.get('user-agent') || 'unknown',
+    };
+  } catch {
+    return null;
+  }
+}
+
 export async function createSuperadminSessionToken(email: string, requestOrIp: Request | string, ua?: string) {
   const secret = getSessionSecret();
   if (!secret) {
@@ -159,9 +176,18 @@ export async function verifySuperadminSessionToken(token: string | undefined | n
       return null;
     }
 
-    // Fingerprint verification for v2 tokens
-    if (version === 'v2' && (requestOrIp || uaStr)) {
-      const currentFp = await generateFingerprint(requestOrIp || null, uaStr);
+    // Fingerprint verification is mandatory for v2 tokens. Older call sites that
+    // omit explicit context are handled by resolving Next.js request headers here.
+    if (version === 'v2') {
+      const fingerprintContext = await resolveFingerprintContext(requestOrIp, uaStr);
+      if (!fingerprintContext) {
+        await logMessage('warn', 'superadmin_session_fingerprint_context_missing', {
+          reason: 'v2 token verification requires request IP and User-Agent context',
+        });
+        return null;
+      }
+
+      const currentFp = await generateFingerprint(fingerprintContext.requestOrIp, fingerprintContext.uaStr);
       if (payload.fp !== currentFp) {
         await logMessage('warn', 'superadmin_session_fingerprint_mismatch', { 
           reason: 'Token was generated for a different IP or User-Agent',

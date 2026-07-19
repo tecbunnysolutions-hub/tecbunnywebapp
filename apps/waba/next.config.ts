@@ -1,9 +1,4 @@
 import type { NextConfig } from "next";
-import bundleAnalyzer from '@next/bundle-analyzer';
-
-const withBundleAnalyzer = process.env.ANALYZE === 'true'
-  ? bundleAnalyzer({ enabled: true, openAnalyzer: false })
-  : (c: NextConfig) => c;
 
 const nextConfig: NextConfig = {
   output: process.env.DOCKER_BUILD === 'true' ? 'standalone' : undefined,
@@ -23,4 +18,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default withBundleAnalyzer(nextConfig);
+export default nextConfig;

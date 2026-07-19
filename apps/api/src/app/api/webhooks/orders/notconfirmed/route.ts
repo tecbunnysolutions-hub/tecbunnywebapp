@@ -1,28 +1,81 @@
 import { createClient } from '@tecbunny/database';
 import { NextRequest, NextResponse } from 'next/server';
+import crypto from 'crypto';
 
 
 import { sendWhatsAppNotification } from "@tecbunny/core/whatsapp-service";
 import { logger } from "@tecbunny/core";
+import { validateWebhookSignature, validateWebhookTimestamp } from "@tecbunny/core/webhook-validator";
+import { logWebhookEvent } from "@tecbunny/core/webhook-logger";
+
+const deriveWebhookEventId = (source: string, rawBody: string, signature: string | null): string => crypto
+  .createHash('sha256')
+  .update(source)
+  .update('\0')
+  .update(signature ?? '')
+  .update('\0')
+  .update(rawBody)
+  .digest('hex');
 
 // Generic order not confirmed webhook handler
 export async function POST(request: NextRequest) {
   let body: any = null;
+  let rawBody = '';
+  const correlationId = request.headers.get('x-correlation-id') || null;
+  const startTime = new Date();
+
   try {
     const supabase = await createClient();
-    body = await request.json();
-    
-    logger.info('Order not confirmed webhook received:', { body: JSON.stringify(body) });
+    rawBody = await request.text();
+
+    try {
+      body = JSON.parse(rawBody);
+    } catch (error) {
+      logger.error('Failed to parse order not confirmed webhook body', { error });
+      return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
+    }
 
     const signature = request.headers.get('x-webhook-signature');
     const source = request.headers.get('x-webhook-source') || 'unknown';
+    const timestampStr = request.headers.get('x-webhook-timestamp');
+    const eventId = body.id || body.event_id || body.order_id || body.order_number || deriveWebhookEventId(source, rawBody, signature);
+
+    logger.info('Order not confirmed webhook received', { source, eventId, correlationId });
+
+    if (timestampStr) {
+      try {
+        validateWebhookTimestamp(Number(timestampStr));
+      } catch (error) {
+        logger.error('Order not confirmed webhook timestamp validation failed', {
+          error: error instanceof Error ? error.message : String(error),
+          eventId,
+          correlationId,
+        });
+        return NextResponse.json({ error: 'Timestamp verification failed' }, { status: 403 });
+      }
+    }
+
+    const secret = source === 'razorpay'
+      ? process.env.RAZORPAY_WEBHOOK_SECRET
+      : process.env.TECBUNNY_WEBHOOK_SECRET;
     
-    if (!validateWebhookSignature(signature, body, source)) {
+    if (!validateWebhookSignature(signature, rawBody, secret)) {
       return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
     }
 
+    const { data: existingEvent } = await supabase
+      .from('webhook_events')
+      .select('id')
+      .eq('event_id', eventId)
+      .maybeSingle();
+
+    if (existingEvent) {
+      logger.info('Duplicate order not confirmed webhook event received, skipping execution', { eventId, correlationId });
+      return NextResponse.json({ success: true, message: 'Event already processed (duplicate)' }, { status: 200 });
+    }
+
     const result = await processOrderNotConfirmed(supabase, body, source);
-    await logWebhookEvent(supabase, 'order_not_confirmed', body, source, true);
+    await logWebhookEvent(supabase, 'order_not_confirmed', body, source, true, undefined, startTime, eventId);
     
     return NextResponse.json(result);
 
@@ -31,7 +84,16 @@ export async function POST(request: NextRequest) {
     
     try {
       const supabase = await createClient();
-      await logWebhookEvent(supabase, 'order_not_confirmed', body, 'unknown', false, error.message);
+      await logWebhookEvent(
+        supabase,
+        'order_not_confirmed',
+        body,
+        'unknown',
+        false,
+        error.message,
+        startTime,
+        body?.id || body?.event_id || body?.order_id || body?.order_number || null
+      );
     } catch (logError: any) {
       logger.error('Failed to log webhook error:', { error: logError.message });
     }
@@ -199,43 +261,6 @@ Action: Follow up with customer for confirmation! 📞
     }
   } catch (error: any) {
     logger.error('Failed to send team notification:', { error: error.message });
-  }
-}
-
-function validateWebhookSignature(signature: string | null, body: any, source: string): boolean {
-  if (process.env.NODE_ENV === 'development') {
-    return true;
-  }
-
-  if (!signature) {
-    logger.warn('No webhook signature provided:', { source });
-    return false;
-  }
-
-  return true;
-}
-
-async function logWebhookEvent(
-  supabase: any, 
-  eventType: string, 
-  payload: any, 
-  source: string, 
-  processed: boolean, 
-  errorMessage?: string
-) {
-  try {
-    await supabase
-      .from('webhook_events')
-      .insert({
-        source,
-        event_type: eventType,
-        payload,
-        processed,
-        error_message: errorMessage,
-        created_at: new Date().toISOString()
-      });
-  } catch (error: any) {
-    logger.error('Failed to log webhook event:', { error: error.message });
   }
 }
 

@@ -4,6 +4,7 @@ import { logger } from "@tecbunny/core";
 import { apiError, apiSuccess } from "@tecbunny/core";
 import { rateLimit } from "@tecbunny/core/rate-limit";
 import { PaymentService } from "@tecbunny/core/server";
+import { AdminAuthError, requireAdminContext } from "@tecbunny/core/auth/admin-guard";
 
 interface PaymentUpdateData {
   order_id: string;
@@ -19,7 +20,7 @@ interface PaymentUpdateData {
 export async function POST(request: NextRequest) {
   try {
     const correlationId = request.headers.get('x-correlation-id') || null;
-    const supabase = await createClient();
+    const { serviceSupabase: supabase, user, role } = await requireAdminContext();
 
     // Rate limiting
     const clientIP = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
@@ -51,6 +52,8 @@ export async function POST(request: NextRequest) {
       payment_id,
       status,
       amount,
+      requestedBy: user.id,
+      role,
       correlationId
     });
 
@@ -84,6 +87,10 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     const correlationId = request.headers.get('x-correlation-id') || null;
+    if (error instanceof AdminAuthError) {
+      return NextResponse.json({ error: error.message }, { status: error.status });
+    }
+
     logger.error('payment_update_error', { error, correlationId });
     return apiError('INTERNAL_ERROR', { correlationId });
   }
