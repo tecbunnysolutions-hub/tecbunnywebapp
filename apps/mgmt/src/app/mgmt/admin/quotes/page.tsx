@@ -261,8 +261,10 @@ export default function AdminQuotesPage() {
                           <ExternalLink className="h-4 w-4" />
                         </Button>
                         <Button variant="ghost" size="sm" onClick={() => {
-                          // Download PDF logic
-                          toast({ title: 'Download', description: 'PDF download feature coming soon.' });
+                          const token = quote.secure_quote_token;
+                          const url = `/quotes/${quote.quote_number || quote.id}${token ? `?token=${encodeURIComponent(token)}&print=1` : '?print=1'}`;
+                          window.open(url, '_blank');
+                          toast({ title: 'Printable quote opened', description: 'Use the browser print dialog to save this quote as PDF.' });
                         }}>
                           <Download className="h-4 w-4" />
                         </Button>

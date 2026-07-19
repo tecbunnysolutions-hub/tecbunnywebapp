@@ -16,8 +16,8 @@ import {
   Bot,
   Settings,
   ClipboardList,
+  ChevronRight,
   Menu,
-  Search,
   Sparkles,
   Bell,
   LogOut,
@@ -64,18 +64,39 @@ const NAV_SECTIONS: NavSection[] = [
     title: 'Platform',
     items: [
       { href: '/superadmin/mgmt/ai-config', label: 'AI Configuration', icon: Bot },
+      { href: '/superadmin/mgmt/system-health', label: 'System Health', icon: Activity },
       { href: '/superadmin/mgmt/settings', label: 'System Settings', icon: Settings },
       { href: '/superadmin/mgmt/audit-logs', label: 'Audit Logs', icon: ClipboardList },
     ],
   },
 ];
 
+function getBreadcrumbs(pathname: string) {
+  const activeItem = NAV_SECTIONS
+    .flatMap((section) => section.items)
+    .find((item) => item.exact ? pathname === item.href : pathname.startsWith(item.href));
+
+  if (!activeItem) {
+    return ['Superadmin'];
+  }
+
+  const activeSection = NAV_SECTIONS.find((section) => section.items.some((item) => item.href === activeItem.href));
+  return ['Superadmin', activeSection?.title, activeItem.label].filter(Boolean) as string[];
+}
+
 export function SuperadminShell({ children }: { children: React.ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
+  const breadcrumbs = getBreadcrumbs(pathname || '/superadmin/mgmt/dashboard');
 
   return (
     <div className="flex h-screen bg-zinc-950 overflow-hidden font-sans text-zinc-100">
+      <a
+        href="#superadmin-main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:left-3 focus:top-3 focus:z-[60] rounded-md border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-white"
+      >
+        Skip to main content
+      </a>
       {/* Scrollbar-hide styles for clean sidebar */}
       <style jsx global>{`
         .no-scrollbar::-webkit-scrollbar {
@@ -174,28 +195,36 @@ export function SuperadminShell({ children }: { children: React.ReactNode }) {
           <div className="flex items-center gap-4 flex-1">
             {/* Mobile hamburger */}
             <button
+              type="button"
               className="lg:hidden p-2 -ml-2 text-zinc-400 hover:text-zinc-200 rounded-md hover:bg-zinc-900/50"
               onClick={() => setMobileOpen(true)}
+              aria-label="Open superadmin navigation"
+              aria-expanded={mobileOpen}
             >
               <Menu className="h-5 w-5" />
             </button>
 
-            {/* Search */}
-            <button className="hidden md:flex items-center gap-2 px-4 py-2 bg-zinc-900 border border-zinc-850 hover:bg-zinc-850/60 text-zinc-500 rounded-lg max-w-md w-full transition-colors text-sm text-left">
-              <Search className="h-4 w-4 shrink-0 text-zinc-400" />
-              Search anywhere… (Cmd+K)
-            </button>
+            <nav aria-label="Breadcrumb" className="hidden min-w-0 items-center gap-2 text-sm md:flex">
+              {breadcrumbs.map((breadcrumb, index) => (
+                <React.Fragment key={`${breadcrumb}-${index}`}>
+                  {index > 0 ? <ChevronRight className="h-3.5 w-3.5 shrink-0 text-zinc-600" /> : null}
+                  <span className={index === breadcrumbs.length - 1 ? 'truncate font-semibold text-zinc-200' : 'truncate text-zinc-500'}>
+                    {breadcrumb}
+                  </span>
+                </React.Fragment>
+              ))}
+            </nav>
           </div>
 
           <div className="flex items-center gap-3">
             {/* AI Command */}
-            <button className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-gradient-to-r from-indigo-950/40 to-purple-950/40 text-indigo-300 border border-indigo-900/50 hover:shadow-lg hover:border-indigo-800/60 transition-all">
+            <button type="button" className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-gradient-to-r from-indigo-950/40 to-purple-950/40 text-indigo-300 border border-indigo-900/50 hover:shadow-lg hover:border-indigo-800/60 transition-all">
               <Sparkles className="h-3.5 w-3.5 text-purple-400 shrink-0" />
               AI Command
             </button>
 
             {/* Notifications */}
-            <button className="p-2 text-zinc-400 hover:text-zinc-200 relative rounded-full hover:bg-zinc-900/60">
+            <button type="button" className="p-2 text-zinc-400 hover:text-zinc-200 relative rounded-full hover:bg-zinc-900/60" aria-label="View superadmin notifications">
               <Bell className="h-5 w-5" />
               <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full ring-2 ring-zinc-900" />
             </button>
@@ -214,7 +243,7 @@ export function SuperadminShell({ children }: { children: React.ReactNode }) {
         </header>
 
         {/* Page content */}
-        <main className="flex-1 overflow-y-auto bg-zinc-950">
+        <main id="superadmin-main-content" tabIndex={-1} className="flex-1 overflow-y-auto bg-zinc-950 focus:outline-none">
           <div className="mx-auto max-w-7xl p-4 sm:p-6 lg:p-8">{children}</div>
         </main>
       </div>

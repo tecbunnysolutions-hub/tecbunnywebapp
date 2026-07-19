@@ -78,6 +78,7 @@ const displayName = (staff: Staff) =>
 
 export default function SuperadminAreasPage() {
   const [areas, setAreas] = React.useState<Area[]>([]);
+  const [pendingDeleteId, setPendingDeleteId] = React.useState<string | null>(null);
   const [staff, setStaff] = React.useState<Staff[]>([]);
   const [form, setForm] = React.useState<FormState>(EMPTY_FORM);
   const [loading, setLoading] = React.useState(true);
@@ -214,7 +215,6 @@ export default function SuperadminAreasPage() {
   };
 
   const deleteArea = async (area: Area) => {
-    if (!window.confirm(`Delete ${area.name}? Its pincode and team assignments will also be removed.`)) return;
     const response = await fetch(`/api/superadmin/areas?id=${encodeURIComponent(area.id)}`, {
       method: 'DELETE',
       credentials: 'include',
@@ -224,6 +224,7 @@ export default function SuperadminAreasPage() {
       toast({ variant: 'destructive', title: 'Delete failed', description: payload.error || 'Could not delete area' });
       return;
     }
+    setPendingDeleteId(null);
     if (form.id === area.id) setForm(EMPTY_FORM);
     await load();
   };
@@ -354,12 +355,24 @@ export default function SuperadminAreasPage() {
 
           <div className="flex justify-end gap-2">
             {form.id && (
-              <Button variant="destructive" onClick={() => {
-                const area = areas.find((item) => item.id === form.id);
-                if (area) void deleteArea(area);
-              }}>
-                <Trash2 className="mr-2 h-4 w-4" /> Delete
-              </Button>
+              pendingDeleteId === form.id ? (
+                <div className="flex items-center gap-2 rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2">
+                  <span className="text-sm font-medium text-destructive">Delete this area?</span>
+                  <Button variant="destructive" size="sm" onClick={() => {
+                    const area = areas.find((item) => item.id === form.id);
+                    if (area) void deleteArea(area);
+                  }}>
+                    Confirm
+                  </Button>
+                  <Button variant="ghost" size="sm" onClick={() => setPendingDeleteId(null)}>
+                    Cancel
+                  </Button>
+                </div>
+              ) : (
+                <Button variant="destructive" onClick={() => setPendingDeleteId(form.id)}>
+                  <Trash2 className="mr-2 h-4 w-4" /> Delete
+                </Button>
+              )
             )}
             <Button onClick={() => void saveArea()} disabled={saving}>
               <Save className="mr-2 h-4 w-4" /> {saving ? 'Saving…' : 'Save Area & Teams'}

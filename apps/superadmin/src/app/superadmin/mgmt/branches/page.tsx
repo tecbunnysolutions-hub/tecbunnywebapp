@@ -20,12 +20,16 @@ type Branch = {
   };
 };
 
+type PageNotice = { tone: 'error' | 'success'; message: string };
+
 export default function BranchesPage() {
   const [branches, setBranches] = useState<Branch[]>([]);
   const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [loading, setLoading] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [notice, setNotice] = useState<PageNotice | null>(null);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
 
   // Form states
   const [name, setName] = useState('');
@@ -55,6 +59,7 @@ export default function BranchesPage() {
   const handleCreateBranch = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || !orgId) return;
+    setNotice(null);
     setSubmitting(true);
     try {
       const res = await fetch('/api/branches', {
@@ -71,21 +76,22 @@ export default function BranchesPage() {
         setOrgId('');
         setLocation('');
         setIsCreating(false);
+        setNotice({ tone: 'success', message: 'Branch created successfully.' });
         fetchData();
       } else {
         const error = await res.json();
-        alert(error.error || 'Failed to create branch');
+        setNotice({ tone: 'error', message: error.error || 'Failed to create branch.' });
       }
     } catch (e) {
       console.error(e);
-      alert('Error creating branch');
+      setNotice({ tone: 'error', message: 'Error creating branch. Please try again.' });
     } finally {
       setSubmitting(false);
     }
   };
 
   const handleDeleteBranch = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this branch?')) return;
+    setNotice(null);
     try {
       const res = await fetch('/api/branches', {
         method: 'DELETE',
@@ -93,14 +99,16 @@ export default function BranchesPage() {
         body: JSON.stringify({ id }),
       });
       if (res.ok) {
+        setPendingDeleteId(null);
+        setNotice({ tone: 'success', message: 'Branch deleted successfully.' });
         fetchData();
       } else {
         const error = await res.json();
-        alert(error.error || 'Failed to delete branch');
+        setNotice({ tone: 'error', message: error.error || 'Failed to delete branch.' });
       }
     } catch (e) {
       console.error(e);
-      alert('Error deleting branch');
+      setNotice({ tone: 'error', message: 'Error deleting branch. Please try again.' });
     }
   };
 
@@ -120,7 +128,7 @@ export default function BranchesPage() {
         <button
           onClick={() => {
             if (organizations.length === 0) {
-              alert('Please create at least one Organization first.');
+              setNotice({ tone: 'error', message: 'Create at least one organization before adding branches.' });
               return;
             }
             // Set default org selection if available
@@ -133,6 +141,15 @@ export default function BranchesPage() {
           Create Branch
         </button>
       </div>
+
+      {notice && (
+        <div
+          role={notice.tone === 'error' ? 'alert' : 'status'}
+          className={`rounded-lg border px-4 py-3 text-sm ${notice.tone === 'error' ? 'border-red-500/30 bg-red-500/10 text-red-200' : 'border-emerald-500/30 bg-emerald-500/10 text-emerald-200'}`}
+        >
+          {notice.message}
+        </div>
+      )}
 
       {/* Global Drawer for configuration */}
       <GlobalDrawer
@@ -268,12 +285,34 @@ export default function BranchesPage() {
                       {new Date(br.created_at).toLocaleDateString()}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
-                      <button
-                        onClick={() => handleDeleteBranch(br.id)}
-                        className="p-1.5 text-zinc-500 hover:text-red-500 rounded-md hover:bg-red-500/10 transition-all inline-flex items-center"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
+                      {pendingDeleteId === br.id ? (
+                        <div className="inline-flex items-center justify-end gap-2 rounded-lg border border-red-500/30 bg-red-500/10 px-2 py-1">
+                          <span className="text-xs font-medium text-red-200">Delete?</span>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteBranch(br.id)}
+                            className="rounded-md bg-red-600 px-2 py-1 text-xs font-semibold text-white hover:bg-red-700"
+                          >
+                            Confirm
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setPendingDeleteId(null)}
+                            className="rounded-md px-2 py-1 text-xs font-semibold text-zinc-300 hover:bg-zinc-800 hover:text-white"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => setPendingDeleteId(br.id)}
+                          aria-label={`Delete branch ${br.name}`}
+                          className="p-1.5 text-zinc-500 hover:text-red-500 rounded-md hover:bg-red-500/10 transition-all inline-flex items-center"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ))}

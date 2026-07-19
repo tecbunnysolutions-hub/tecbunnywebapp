@@ -15,6 +15,7 @@ export default function TemplatesPage() {
   const [templates, setTemplates] = useState<Template[]>([]);
   const [loading, setLoading] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
+  const [notice, setNotice] = useState<{ tone: 'error' | 'success'; message: string } | null>(null);
   
   // New Template Form
   const [newName, setNewName] = useState("");
@@ -47,6 +48,7 @@ export default function TemplatesPage() {
   const handleCreateTemplate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newName || !newContent) return;
+    setNotice(null);
     
     try {
       const res = await fetch('/api/templates', {
@@ -58,12 +60,14 @@ export default function TemplatesPage() {
         setNewName("");
         setNewContent("");
         setIsCreating(false);
+        setNotice({ tone: 'success', message: 'Template submitted for approval.' });
         fetchTemplates();
       } else {
-        alert("Failed to create template.");
+        setNotice({ tone: 'error', message: 'Failed to create template. Please check the details and try again.' });
       }
     } catch (err) {
       console.error(err);
+      setNotice({ tone: 'error', message: 'Template could not be submitted. Please check the connection and try again.' });
     }
   };
 
@@ -79,6 +83,22 @@ export default function TemplatesPage() {
           <button onClick={() => setIsCreating(!isCreating)} style={{ background: '#10b981', color: 'white', padding: '0.75rem 1.5rem', borderRadius: '8px', border: 'none', cursor: 'pointer', fontWeight: 600 }}>+ New Template</button>
         </div>
       </div>
+
+      {notice && (
+        <div
+          role={notice.tone === 'error' ? 'alert' : 'status'}
+          style={{
+            padding: '0.85rem 1rem',
+            borderRadius: '10px',
+            border: notice.tone === 'error' ? '1px solid rgba(239, 68, 68, 0.35)' : '1px solid rgba(16, 185, 129, 0.35)',
+            background: notice.tone === 'error' ? 'rgba(239, 68, 68, 0.12)' : 'rgba(16, 185, 129, 0.12)',
+            color: notice.tone === 'error' ? '#fecaca' : '#bbf7d0',
+            fontSize: '0.9rem'
+          }}
+        >
+          {notice.message}
+        </div>
+      )}
 
       {isCreating && (
         <div className="glass-panel" style={{ padding: '2rem' }}>

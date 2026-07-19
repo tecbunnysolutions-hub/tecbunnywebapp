@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { createBrowserClient } from '@supabase/ssr';
 
 import { Sidebar } from '../components/waba/Sidebar';
-import { ChatMain } from '../components/waba/ChatMain';
+import { ChatMain, type ChatNotice } from '../components/waba/ChatMain';
 import { Customer360Panel } from '../components/waba/Customer360Panel';
 import { Conversation, Message, Template, User } from '../components/waba/types';
 
@@ -26,6 +26,7 @@ export default function Dashboard() {
   const [showSidebar, setShowSidebar] = useState(true);
   const [showCrm, setShowCrm] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [chatNotice, setChatNotice] = useState<ChatNotice | null>(null);
 
   // CRM Panel State
   const [crmName, setCrmName] = useState("");
@@ -148,6 +149,7 @@ export default function Dashboard() {
 
     const textToSend = inputText;
     setInputText("");
+    setChatNotice(null);
 
     const tempMsg: Message = {
       id: Date.now().toString(),
@@ -174,15 +176,16 @@ export default function Dashboard() {
         setMessages(prev => prev.filter(m => m.id !== tempMsg.id));
 
         if (data.is_ai_clarification) {
-          alert(`🤖 AI Editor needs clarification:\n\n"${data.error}"\n\nPlease add more details to your draft!`);
+          setChatNotice({ tone: 'error', message: `AI Editor needs clarification: ${data.error || 'Please add more details to your draft.'}` });
           setInputText(textToSend); // Restore their draft so they don't have to retype it
         } else {
-          alert(`Error sending message: ${data.error || 'Unknown error'}`);
+          setChatNotice({ tone: 'error', message: `Error sending message: ${data.error || 'Unknown error'}` });
         }
       }
     } catch (err) {
       console.error(err);
       setMessages(prev => prev.filter(m => m.id !== tempMsg.id));
+      setChatNotice({ tone: 'error', message: 'Message could not be sent. Please check the connection and try again.' });
     }
   };
 
@@ -191,6 +194,7 @@ export default function Dashboard() {
     const file = e.target.files[0];
 
     setIsUploading(true);
+    setChatNotice(null);
     const formData = new FormData();
     formData.append('file', file);
     formData.append('to', activeConversation);
@@ -202,9 +206,9 @@ export default function Dashboard() {
         body: formData
       });
       if (res.ok) fetchMessages(activeConversation);
-      else alert("Failed to send media.");
+      else setChatNotice({ tone: 'error', message: 'Failed to send media. Please try again.' });
     } catch {
-      alert("Upload error.");
+      setChatNotice({ tone: 'error', message: 'Upload error. Please check the file and try again.' });
     }
     setIsUploading(false);
     // Reset file input
@@ -298,6 +302,8 @@ export default function Dashboard() {
               inputText={inputText}
               setInputText={setInputText}
               isUploading={isUploading}
+              notice={chatNotice}
+              onNoticeClear={() => setChatNotice(null)}
               handleSendMessage={handleSendMessage}
               handleFileUpload={handleFileUpload}
             />
@@ -329,7 +335,7 @@ export default function Dashboard() {
           </>
         ) : (
           <div className="empty-state" style={{ width: '100%', position: 'relative' }}>
-            <button className="mobile-toggle" onClick={() => setShowSidebar(true)} style={{ position: 'absolute', top: '1rem', left: '1rem' }}>☰ Inbox</button>
+            <button className="mobile-toggle" type="button" onClick={() => setShowSidebar(true)} aria-label="Show inbox" style={{ position: 'absolute', top: '1rem', left: '1rem' }}>Inbox</button>
             <div className="empty-icon">💬</div>
             <h2>Select a conversation</h2>
             <p>Choose a contact from the sidebar to view your message history.</p>

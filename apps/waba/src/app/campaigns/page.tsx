@@ -8,14 +8,17 @@ export default function CampaignsPage() {
   const [templateName, setTemplateName] = useState("registration_confirmation");
   const [isSending, setIsSending] = useState(false);
   const [resultMessage, setResultMessage] = useState("");
+  const [needsConfirmation, setNeedsConfirmation] = useState(false);
+
+  const requestCampaignSend = () => {
+    setResultMessage("");
+    setNeedsConfirmation(true);
+  };
 
   const handleSendCampaign = async () => {
-    if (!confirm(`Are you sure you want to blast the '${templateName}' template to all contacts with status '${targetStatus}'?`)) {
-      return;
-    }
-
     setIsSending(true);
     setResultMessage("");
+    setNeedsConfirmation(false);
 
     try {
       const res = await fetch('/api/campaigns', {
@@ -76,8 +79,9 @@ export default function CampaignsPage() {
         </div>
 
         <button 
-          onClick={handleSendCampaign}
-          disabled={isSending}
+          type="button"
+          onClick={requestCampaignSend}
+          disabled={isSending || needsConfirmation}
           style={{
             padding: '1rem',
             background: isSending ? 'rgba(59, 130, 246, 0.5)' : '#3b82f6',
@@ -91,8 +95,24 @@ export default function CampaignsPage() {
             transition: 'background 0.2s'
           }}
         >
-          {isSending ? 'Broadcasting...' : '🚀 Blast Campaign'}
+          {isSending ? 'Broadcasting...' : 'Review Campaign'}
         </button>
+
+        {needsConfirmation && (
+          <div role="status" style={{ padding: '1rem', borderRadius: '8px', background: 'rgba(245, 158, 11, 0.1)', color: '#fde68a', border: '1px solid rgba(245, 158, 11, 0.25)', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            <div>
+              Confirm broadcast of <strong>{templateName}</strong> to <strong>{targetStatus}</strong> contacts.
+            </div>
+            <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+              <button type="button" onClick={handleSendCampaign} disabled={isSending} style={{ background: '#f59e0b', color: '#111827', border: 'none', borderRadius: '8px', padding: '0.65rem 1rem', fontWeight: 700, cursor: isSending ? 'not-allowed' : 'pointer' }}>
+                Confirm Send
+              </button>
+              <button type="button" onClick={() => setNeedsConfirmation(false)} disabled={isSending} style={{ background: 'rgba(255,255,255,0.1)', color: '#fff', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '8px', padding: '0.65rem 1rem', cursor: isSending ? 'not-allowed' : 'pointer' }}>
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
 
         {resultMessage && (
           <div style={{ padding: '1rem', borderRadius: '8px', background: resultMessage.startsWith('✅') ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)', color: resultMessage.startsWith('✅') ? '#34d399' : '#f87171', border: `1px solid ${resultMessage.startsWith('✅') ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)'}` }}>

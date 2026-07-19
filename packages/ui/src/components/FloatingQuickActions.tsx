@@ -2,34 +2,40 @@
 
 import * as React from 'react';
 import { useRouter } from 'next/navigation';
-import { Plus, User, ShoppingBag, FileText, X } from 'lucide-react';
-import { Button } from './ui/button';
+import { Plus, User, ShoppingBag, FileSearch } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { cn } from "@tecbunny/core/utils";
+import { enterpriseActions, quickActionIds, type EnterpriseActionId } from './enterprise-actions';
+
+const ACTION_ICONS: Record<EnterpriseActionId, LucideIcon> = {
+  createFieldOrder: ShoppingBag,
+  leadCenter: User,
+  findInvoice: FileSearch,
+  orderOperations: ShoppingBag,
+  salesDashboard: ShoppingBag,
+  inventory: ShoppingBag,
+  accounts: FileSearch,
+  serviceTickets: FileSearch,
+  staffOperations: User,
+  broadcastDesk: User,
+  adminSettings: User,
+};
+
+const ACTION_COLORS: Partial<Record<EnterpriseActionId, string>> = {
+  leadCenter: 'bg-blue-500 text-white hover:bg-blue-600',
+  createFieldOrder: 'bg-emerald-500 text-white hover:bg-emerald-600',
+  findInvoice: 'bg-amber-500 text-white hover:bg-amber-600',
+};
 
 export function FloatingQuickActions() {
   const [open, setOpen] = React.useState(false);
   const router = useRouter();
 
-  const actions = [
-    {
-      label: 'New Customer',
-      icon: User,
-      href: '/mgmt/manager/customers/new',
-      color: 'bg-blue-500 text-white hover:bg-blue-600',
-    },
-    {
-      label: 'New Order',
-      icon: ShoppingBag,
-      href: '/mgmt/sales/orders/new',
-      color: 'bg-emerald-500 text-white hover:bg-emerald-600',
-    },
-    {
-      label: 'Create Invoice',
-      icon: FileText,
-      href: '/mgmt/accounts/invoices',
-      color: 'bg-amber-500 text-white hover:bg-amber-600',
-    },
-  ];
+  const actions = quickActionIds.map((actionId) => ({
+    ...enterpriseActions[actionId],
+    icon: ACTION_ICONS[actionId],
+    color: ACTION_COLORS[actionId] ?? 'bg-blue-500 text-white hover:bg-blue-600',
+  }));
 
   return (
     <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">
@@ -54,6 +60,7 @@ export function FloatingQuickActions() {
                   action.color
                 )}
                 title={action.label}
+                aria-label={action.label}
               >
                 <action.icon className="w-4 h-4" />
               </button>
@@ -68,6 +75,8 @@ export function FloatingQuickActions() {
           "flex items-center justify-center w-14 h-14 rounded-full shadow-2xl shadow-blue-500/20 transition-all duration-300",
           open ? "bg-zinc-800 text-zinc-400 rotate-45" : "bg-blue-600 text-white hover:bg-blue-700 hover:scale-105"
         )}
+        aria-label={open ? 'Close quick actions' : 'Open quick actions'}
+        aria-expanded={open}
       >
         {open ? <Plus className="w-6 h-6" /> : <Plus className="w-6 h-6" />}
       </button>

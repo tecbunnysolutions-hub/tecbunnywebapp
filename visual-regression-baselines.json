@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "viewports": [
+    { "name": "mobile", "width": 390, "height": 844 },
+    { "name": "tablet", "width": 768, "height": 1024 },
+    { "name": "desktop", "width": 1440, "height": 960 }
+  ],
+  "criticalPages": [
+    { "id": "public-checkout", "path": "/checkout", "app": "public" },
+    { "id": "mgmt-orders", "path": "/mgmt/admin/orders", "app": "mgmt" },
+    { "id": "mgmt-role-dashboard", "path": "/mgmt/manager", "app": "mgmt" },
+    { "id": "waba-inbox", "path": "/", "app": "waba" },
+    { "id": "webmail-inbox", "path": "/inbox", "app": "webmail" },
+    { "id": "superadmin-health", "path": "/superadmin/mgmt/system-health", "app": "superadmin" }
+  ],
+  "assertions": [
+    "nonblank-render",
+    "no-horizontal-overflow",
+    "primary-actions-visible",
+    "no-critical-text-overlap"
+  ]
+}

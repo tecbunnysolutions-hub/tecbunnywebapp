@@ -136,6 +136,7 @@ export default function CheckoutPage() {
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>('');
   const [orderError, setOrderError] = useState<string>('');
   const [privacyAccepted, setPrivacyAccepted] = useState(false);
+  const [recoveryPreview, setRecoveryPreview] = useState<{ phone: string; message: string; upiDeepLink: string } | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({
     name: '',
     email: '',
@@ -1196,7 +1197,11 @@ export default function CheckoutPage() {
 
                         const data = await res.json();
                         if (data.success) {
-                          alert(`[SIMULATED WHATSAPP MESSAGE SENT TO ${customerInfo.phone}]\n\n${data.whatsappMessage}\n\n[UPI DEEP LINK URL]:\n${data.upiDeepLink}`);
+                          setRecoveryPreview({
+                            phone: customerInfo.phone,
+                            message: data.whatsappMessage,
+                            upiDeepLink: data.upiDeepLink,
+                          });
                           toast({
                             title: 'Recovery Simulation Success',
                             description: 'WhatsApp recovery message previewed successfully.',
@@ -1216,6 +1221,13 @@ export default function CheckoutPage() {
                   >
                     Simulate WhatsApp Recovery
                   </button>
+                  {recoveryPreview && (
+                    <div role="status" className="rounded-xl border border-blue-500/30 bg-blue-500/10 p-3 text-xs text-blue-100 space-y-2">
+                      <p className="font-bold uppercase tracking-wider text-blue-200">Simulated WhatsApp Message Sent To {recoveryPreview.phone}</p>
+                      <p className="whitespace-pre-wrap leading-relaxed">{recoveryPreview.message}</p>
+                      <p className="break-all text-blue-200">UPI deep link: {recoveryPreview.upiDeepLink}</p>
+                    </div>
+                  )}
                 </div>
 
                 {/* Verified Business Identity Trust Panel */}

@@ -123,6 +123,7 @@ export default function SuperadminServicesPage() {
   
   const [createDialogOpen, setCreateDialogOpen] = React.useState(false);
   const [editDialogOpen, setEditDialogOpen] = React.useState(false);
+  const [pendingDeleteId, setPendingDeleteId] = React.useState<string | null>(null);
   const [selectedService, setSelectedService] = React.useState<Service | null>(null);
 
   const { toast } = useToast();
@@ -184,7 +185,6 @@ export default function SuperadminServicesPage() {
   };
 
   const handleDeleteService = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this service?')) return;
     try {
       const res = await fetch(`/api/superadmin/services/${id}`, {
         method: 'DELETE',
@@ -193,6 +193,7 @@ export default function SuperadminServicesPage() {
       if (!res.ok) throw new Error(data.error || 'Failed to delete service');
 
       setServices(prev => prev.filter(s => s.id !== id));
+  setPendingDeleteId(null);
       toast({
         title: 'Success',
         description: 'Service deleted successfully',
@@ -322,10 +323,20 @@ export default function SuperadminServicesPage() {
                               <Edit className="mr-2 h-4.5 w-4.5" />
                               Edit Service
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleDeleteService(service.id)} className="text-red-500 hover:bg-red-500/10 cursor-pointer">
-                              <Trash2 className="mr-2 h-4.5 w-4.5" />
-                              Delete
-                            </DropdownMenuItem>
+                            {pendingDeleteId === service.id ? (
+                              <div className="space-y-2 px-2 py-2 text-xs">
+                                <p className="font-medium text-red-300">Delete this service?</p>
+                                <div className="flex gap-2">
+                                  <Button size="sm" variant="destructive" onClick={() => handleDeleteService(service.id)}>Confirm</Button>
+                                  <Button size="sm" variant="ghost" onClick={() => setPendingDeleteId(null)}>Cancel</Button>
+                                </div>
+                              </div>
+                            ) : (
+                              <DropdownMenuItem onClick={() => setPendingDeleteId(service.id)} className="text-red-500 hover:bg-red-500/10 cursor-pointer">
+                                <Trash2 className="mr-2 h-4.5 w-4.5" />
+                                Delete
+                              </DropdownMenuItem>
+                            )}
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </TableCell>

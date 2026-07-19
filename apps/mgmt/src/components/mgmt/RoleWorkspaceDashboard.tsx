@@ -10,6 +10,7 @@ import {
   BarChart3,
   BriefcaseBusiness,
   CheckCircle2,
+  Clock3,
   ClipboardCheck,
   FileSearch,
   IndianRupee,
@@ -23,7 +24,8 @@ import {
   Zap,
   AlertTriangle,
   MessageSquare,
-  Radio
+  Radio,
+  UserCheck
 } from 'lucide-react';
 
 import { useAuth } from "@tecbunny/core/hooks";
@@ -156,6 +158,21 @@ interface RoleWorkspaceDashboardProps {
   kind: WorkspaceKind;
 }
 
+const formatSlaAge = (timestamp?: string | null) => {
+  if (!timestamp) return 'SLA not started';
+  const minutes = Math.max(0, Math.floor((Date.now() - new Date(timestamp).getTime()) / 60000));
+  if (minutes < 60) return `${minutes}m open`;
+  return `${Math.floor(minutes / 60)}h ${minutes % 60}m open`;
+};
+
+const getSlaTone = (timestamp?: string | null) => {
+  if (!timestamp) return 'text-zinc-400';
+  const minutes = Math.max(0, Math.floor((Date.now() - new Date(timestamp).getTime()) / 60000));
+  if (minutes >= 30) return 'text-red-200';
+  if (minutes >= 15) return 'text-amber-200';
+  return 'text-emerald-200';
+};
+
 export function RoleWorkspaceDashboard({ kind }: RoleWorkspaceDashboardProps) {
   const { user } = useAuth();
   const config = WORKSPACES[kind];
@@ -165,6 +182,85 @@ export function RoleWorkspaceDashboard({ kind }: RoleWorkspaceDashboardProps) {
   const [needsAttentionQueue, setNeedsAttentionQueue] = useState<any[]>([]);
   const [liveLeadCaptureQueue, setLiveLeadCaptureQueue] = useState<any[]>([]);
   const supabase = createClient();
+  const decisionBriefItems = [
+    {
+      label: 'Escalations waiting',
+      value: String(needsAttentionQueue.length),
+      guidance: needsAttentionQueue.length > 0 ? 'Take over the oldest human handoff first.' : 'No human takeover queue is waiting.',
+      icon: AlertTriangle,
+      tone: needsAttentionQueue.length > 0 ? 'text-red-300' : 'text-emerald-300',
+    },
+    {
+      label: 'Live AI captures',
+      value: String(liveLeadCaptureQueue.length),
+      guidance: liveLeadCaptureQueue.length > 0 ? 'Monitor active lead capture before it needs human help.' : 'No live AI lead capture is active right now.',
+      icon: Radio,
+      tone: liveLeadCaptureQueue.length > 0 ? 'text-blue-300' : 'text-zinc-400',
+    },
+    {
+      label: 'Recommended next action',
+      value: config.primaryAction.title,
+      guidance: config.primaryAction.description,
+      icon: PrimaryIcon,
+      tone: 'text-blue-300',
+    },
+  ];
+  const workflowTasks = [
+    ...needsAttentionQueue.slice(0, 3).map((conv) => ({
+      id: `handoff-${conv.id}`,
+      label: 'Human handoff',
+      title: conv.contact_name || conv.sender_number || 'Unknown contact',
+      detail: conv.address || 'Customer needs manual response.',
+      owner: ROLE_DISPLAY_NAME[role] ?? role,
+      evidence: conv.last_interaction_timestamp ? `Last touch ${new Date(conv.last_interaction_timestamp).toLocaleTimeString()}` : 'Live handoff event',
+      sla: formatSlaAge(conv.last_interaction_timestamp),
+      statusReason: 'Customer is waiting for human takeover',
+      requiredEvidence: conv.address ? 'Confirm address and next action' : 'Capture address before dispatch',
+      watchers: ['Sales lead', 'Service desk'],
+      statusHistory: ['AI escalated', 'Awaiting human owner'],
+      commentPrompt: 'Add takeover note before replying',
+      priority: 'Critical',
+      href: `/mgmt/sales/lead-center?chat=${conv.id}`,
+      icon: AlertTriangle,
+      tone: 'border-red-500/30 bg-red-500/10 text-red-200',
+    })),
+    ...liveLeadCaptureQueue.slice(0, 2).map((conv) => ({
+      id: `capture-${conv.id}`,
+      label: 'AI capture watch',
+      title: conv.contact_name || conv.sender_number || 'Active visitor',
+      detail: 'Monitor qualification before human takeover is needed.',
+      owner: 'AI SDR with sales oversight',
+      evidence: conv.last_interaction_timestamp ? `Active since ${new Date(conv.last_interaction_timestamp).toLocaleTimeString()}` : 'Processing conversation',
+      sla: formatSlaAge(conv.last_interaction_timestamp),
+      statusReason: 'AI is qualifying the customer request',
+      requiredEvidence: 'Watch for product, location, and contact intent',
+      watchers: ['AI SDR', 'Sales oversight'],
+      statusHistory: ['AI capture started', 'Qualification in progress'],
+      commentPrompt: 'Comment if human follow-up is required',
+      priority: 'Watch',
+      href: `/mgmt/sales/lead-center?chat=${conv.id}`,
+      icon: Radio,
+      tone: 'border-blue-500/30 bg-blue-500/10 text-blue-200',
+    })),
+    {
+      id: `primary-${kind}`,
+      label: 'Primary workspace action',
+      title: config.primaryAction.title,
+      detail: config.primaryAction.description,
+      owner: ROLE_DISPLAY_NAME[role] ?? role,
+      evidence: 'Role workspace primary action',
+      sla: 'Same business day',
+      statusReason: 'Recommended role action',
+      requiredEvidence: 'Complete action and leave operational trail',
+      watchers: [ROLE_DISPLAY_NAME[role] ?? role],
+      statusHistory: ['Recommended', 'Ready to open'],
+      commentPrompt: 'Record outcome after completion',
+      priority: 'Next',
+      href: config.primaryAction.href,
+      icon: PrimaryIcon,
+      tone: 'border-zinc-700 bg-zinc-900 text-zinc-200',
+    },
+  ];
 
   useEffect(() => {
     // 1. Initial Fetch
@@ -276,6 +372,103 @@ export function RoleWorkspaceDashboard({ kind }: RoleWorkspaceDashboardProps) {
         </div>
       </section>
 
+      <section aria-label="Decision brief" className="grid gap-3 lg:grid-cols-3">
+        {decisionBriefItems.map((item) => {
+          const Icon = item.icon;
+          return (
+            <div key={item.label} className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4">
+              <div className="flex items-start gap-3">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-zinc-950 text-zinc-300">
+                  <Icon className={`h-4 w-4 ${item.tone}`} />
+                </span>
+                <div className="min-w-0">
+                  <p className="text-xs font-bold uppercase tracking-[0.18em] text-zinc-500">{item.label}</p>
+                  <p className="mt-1 truncate text-base font-bold text-white">{item.value}</p>
+                  <p className="mt-1 text-xs leading-5 text-zinc-500">{item.guidance}</p>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </section>
+
+      <section aria-label="Workflow inbox" className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 sm:p-6">
+        <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-zinc-500">Workflow inbox</p>
+            <h2 className="mt-1 text-xl font-bold text-white">Prioritized next moves</h2>
+          </div>
+          <span className="rounded-full border border-zinc-700 px-3 py-1 text-xs font-semibold text-zinc-400">
+            {workflowTasks.length} open item{workflowTasks.length === 1 ? '' : 's'}
+          </span>
+        </div>
+        <div className="grid gap-3 lg:grid-cols-3">
+          {workflowTasks.map((task) => {
+            const Icon = task.icon;
+            return (
+              <Link
+                key={task.id}
+                href={task.href}
+                className={`group rounded-xl border p-4 transition-colors hover:border-blue-400/40 ${task.tone}`}
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="text-[10px] font-bold uppercase tracking-[0.18em] opacity-70">{task.label}</p>
+                    <h3 className="mt-1 truncate text-sm font-bold text-white">{task.title}</h3>
+                    <p className="mt-1 line-clamp-2 text-xs leading-5 opacity-75">{task.detail}</p>
+                    <dl className="mt-3 grid gap-1 text-[11px] opacity-75">
+                      <div className="flex items-center justify-between gap-3">
+                        <dt>Owner</dt>
+                        <dd className="truncate font-semibold text-white">{task.owner}</dd>
+                      </div>
+                      <div className="flex items-center justify-between gap-3">
+                        <dt>Evidence</dt>
+                        <dd className="truncate font-semibold text-white">{task.evidence}</dd>
+                      </div>
+                      <div className="flex items-center justify-between gap-3">
+                        <dt>SLA</dt>
+                        <dd className="truncate font-semibold text-white">{task.sla}</dd>
+                      </div>
+                    </dl>
+                    <div className="mt-3 grid gap-2 text-[11px] opacity-85">
+                      <span className="inline-flex items-center gap-1 rounded-full bg-black/20 px-2 py-1">
+                        <UserCheck className="h-3 w-3" /> {task.statusReason}
+                      </span>
+                      <span className="inline-flex items-center gap-1 rounded-full bg-black/20 px-2 py-1">
+                        <ClipboardCheck className="h-3 w-3" /> {task.requiredEvidence}
+                      </span>
+                    </div>
+                    <div className="mt-3 rounded-lg border border-white/10 bg-black/10 p-2 text-[11px] opacity-85">
+                      <div className="flex items-center justify-between gap-3">
+                        <span>Watchers</span>
+                        <span className="truncate font-semibold text-white">{task.watchers.join(', ')}</span>
+                      </div>
+                      <div className="mt-1 flex items-center justify-between gap-3">
+                        <span>Status history</span>
+                        <span className="truncate font-semibold text-white">{task.statusHistory.join(' -> ')}</span>
+                      </div>
+                      <div className="mt-1 flex items-center justify-between gap-3">
+                        <span>Comment</span>
+                        <span className="truncate font-semibold text-white">{task.commentPrompt}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-black/20">
+                    <Icon className="h-4 w-4" />
+                  </span>
+                </div>
+                <div className="mt-4 flex items-center justify-between gap-3 text-xs font-semibold">
+                  <span>{task.priority}</span>
+                  <span className="inline-flex items-center gap-1 text-white">
+                    Open <ArrowUpRight className="h-3 w-3 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+                  </span>
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+      </section>
+
       {/* Real-Time "Needs Attention" Queue */}
       {needsAttentionQueue.length > 0 && (
         <section className="rounded-xl border border-red-500/30 bg-red-500/5 p-4 sm:p-6 shadow-sm">
@@ -297,10 +490,18 @@ export function RoleWorkspaceDashboard({ kind }: RoleWorkspaceDashboardProps) {
                     <MessageSquare className="h-4 w-4 text-zinc-500" />
                   </div>
                   <p className="mt-1 text-xs text-zinc-400">{conv.address || 'No address provided'}</p>
+                  <div className="mt-3 flex flex-wrap gap-2 text-[11px] font-semibold">
+                    <span className={`inline-flex items-center gap-1 rounded-full bg-red-950/40 px-2 py-1 ${getSlaTone(conv.last_interaction_timestamp)}`}>
+                      <Clock3 className="h-3 w-3" /> {formatSlaAge(conv.last_interaction_timestamp)}
+                    </span>
+                    <span className="inline-flex items-center gap-1 rounded-full bg-zinc-800 px-2 py-1 text-zinc-300">
+                      <ClipboardCheck className="h-3 w-3" /> {conv.address ? 'Address captured' : 'Address needed'}
+                    </span>
+                  </div>
                 </div>
                 <div className="mt-4">
                   <Link
-                    href={`/mgmt/manager/leads?chat=${conv.id}`}
+                    href={`/mgmt/sales/lead-center?chat=${conv.id}`}
                     className="inline-flex items-center gap-2 text-sm font-semibold text-red-400 hover:text-red-300"
                   >
                     Take over chat <ArrowUpRight className="h-4 w-4" />
@@ -333,10 +534,18 @@ export function RoleWorkspaceDashboard({ kind }: RoleWorkspaceDashboardProps) {
                     <MessageSquare className="h-4 w-4 text-zinc-500" />
                   </div>
                   <p className="mt-1 text-xs text-zinc-400">Capturing location/details...</p>
+                  <div className="mt-3 flex flex-wrap gap-2 text-[11px] font-semibold">
+                    <span className={`inline-flex items-center gap-1 rounded-full bg-blue-950/40 px-2 py-1 ${getSlaTone(conv.last_interaction_timestamp)}`}>
+                      <Clock3 className="h-3 w-3" /> {formatSlaAge(conv.last_interaction_timestamp)}
+                    </span>
+                    <span className="inline-flex items-center gap-1 rounded-full bg-zinc-800 px-2 py-1 text-zinc-300">
+                      <UserCheck className="h-3 w-3" /> AI qualifying
+                    </span>
+                  </div>
                 </div>
                 <div className="mt-4">
                   <Link
-                    href={`/mgmt/manager/leads?chat=${conv.id}`}
+                    href={`/mgmt/sales/lead-center?chat=${conv.id}`}
                     className="inline-flex items-center gap-2 text-sm font-semibold text-blue-400 hover:text-blue-300"
                   >
                     View active chat <ArrowUpRight className="h-4 w-4" />

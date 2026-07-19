@@ -52,19 +52,25 @@ export function Sidebar({
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <h2>Workspace <span style={{ fontSize: '0.8rem', color: '#94a3b8', fontWeight: 'normal' }}>({currentUser.name})</span></h2>
           <div style={{ display: 'flex', gap: '8px' }}>
-            <button className="mobile-toggle" onClick={() => setShowSidebar(false)}>✕</button>
+            <button className="mobile-toggle" onClick={() => setShowSidebar(false)} aria-label="Close conversation list">Close</button>
           </div>
         </div>
 
         {/* Workspace Navigation Tabs */}
-        <div style={{ display: 'flex', gap: '4px', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+        <div role="tablist" aria-label="Conversation workspace view" style={{ display: 'flex', gap: '4px', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
           <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === 'queue'}
             onClick={() => setActiveTab('queue')}
             style={{ flex: 1, padding: '8px', background: activeTab === 'queue' ? 'rgba(255,255,255,0.1)' : 'transparent', border: 'none', color: 'white', cursor: 'pointer', borderBottom: activeTab === 'queue' ? '2px solid var(--accent)' : 'none' }}
           >
             Queues
           </button>
           <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === 'team'}
             onClick={() => setActiveTab('team')}
             style={{ flex: 1, padding: '8px', background: activeTab === 'team' ? 'rgba(255,255,255,0.1)' : 'transparent', border: 'none', color: 'white', cursor: 'pointer', borderBottom: activeTab === 'team' ? '2px solid var(--accent)' : 'none' }}
           >
@@ -78,6 +84,8 @@ export function Sidebar({
             ['unassigned', 'assigned', 'waiting', 'urgent', 'vip'].map(q => (
               <button
                 key={q}
+                type="button"
+                aria-pressed={activeQueue === q}
                 onClick={() => setActiveQueue(q)}
                 style={{ fontSize: '0.75rem', padding: '4px 8px', borderRadius: '12px', background: activeQueue === q ? 'var(--accent)' : 'rgba(255,255,255,0.1)', border: 'none', color: 'white', cursor: 'pointer', whiteSpace: 'nowrap' }}
               >
@@ -88,6 +96,8 @@ export function Sidebar({
             ['sales', 'support', 'accounts', 'engineers'].map(t => (
               <button
                 key={t}
+                type="button"
+                aria-pressed={activeTeam === t}
                 onClick={() => setActiveTeam(t)}
                 style={{ fontSize: '0.75rem', padding: '4px 8px', borderRadius: '12px', background: activeTeam === t ? 'var(--accent)' : 'rgba(255,255,255,0.1)', border: 'none', color: 'white', cursor: 'pointer', whiteSpace: 'nowrap' }}
               >
@@ -105,10 +115,14 @@ export function Sidebar({
           <div style={{ padding: '20px', textAlign: 'center', color: '#94a3b8', fontSize: '0.9rem' }}>No chats in this view</div>
         ) : (
           filteredConversations.map(conv => (
-            <div
+            <button
+              type="button"
               key={conv.id}
               className={`conversation-item ${activeConversation === conv.sender_number ? 'active' : ''}`}
               onClick={() => onSelectConversation(conv)}
+              aria-current={activeConversation === conv.sender_number ? 'true' : undefined}
+              aria-label={`Open conversation with ${conv.contact_name || conv.sender_number}`}
+              style={{ width: '100%', textAlign: 'left', background: 'transparent', color: 'inherit' }}
             >
               <div className="avatar">{(conv.contact_name || conv.sender_number).substring(0, 2).toUpperCase()}</div>
               <div className="conversation-details">
@@ -143,7 +157,7 @@ export function Sidebar({
                   )}
                 </div>
               </div>
-            </div>
+            </button>
           ))
         )}
       </div>

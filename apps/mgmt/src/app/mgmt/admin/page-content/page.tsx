@@ -21,6 +21,7 @@ import { Input } from "@tecbunny/ui";
 import { Label } from "@tecbunny/ui";
 import { Textarea } from "@tecbunny/ui";
 import { Badge } from "@tecbunny/ui";
+import { useDirtyStateGuard } from "@tecbunny/ui";
 import { useAllPageContents } from '../../../../hooks/use-page-content';
 
 interface PageContent {
@@ -35,11 +36,36 @@ interface PageContent {
   updated_at: string;
 }
 
+type PageNotice = { tone: 'error' | 'success'; message: string };
+type PageContentFormData = {
+  title: string;
+  content: string;
+  meta_description: string;
+  meta_keywords: string;
+  status: string;
+};
+
+const PAGE_CONTENT_DRAFT_KEY = 'tecbunny.pageContentDraft.v1';
+
+function getContentValidationSummary(content: string) {
+  const trimmed = content.trim();
+  if (!trimmed) {
+    return { tone: 'error' as const, label: 'Content is empty', detail: 'Add JSON or plain text before saving this page.' };
+  }
+
+  try {
+    JSON.parse(trimmed);
+    return { tone: 'success' as const, label: 'Valid JSON content', detail: 'This content will be stored as structured page data.' };
+  } catch {
+    return { tone: 'info' as const, label: 'Plain text content', detail: 'This content is not JSON and will be stored as plain text.' };
+  }
+}
+
 export default function PageContentAdmin() {
   const { contents, loading, error, refetch } = useAllPageContents();
   const [selectedPage, setSelectedPage] = useState<PageContent | null>(null);
   const [editMode, setEditMode] = useState(false);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<PageContentFormData>({
     title: '',
     content: '',
     meta_description: '',
@@ -58,6 +84,25 @@ export default function PageContentAdmin() {
   }));
   const [creating, setCreating] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [notice, setNotice] = useState<PageNotice | null>(null);
+  const [deleteReviewOpen, setDeleteReviewOpen] = useState(false);
+  const [recoverableDraft, setRecoverableDraft] = useState<PageContentFormData | null>(null);
+  const initialFormSnapshot = selectedPage ? JSON.stringify({
+    title: selectedPage.title,
+    content: typeof selectedPage.content === 'string' ? selectedPage.content : JSON.stringify(selectedPage.content, null, 2),
+    meta_description: selectedPage.meta_description || '',
+    meta_keywords: selectedPage.meta_keywords || '',
+    status: selectedPage.status,
+  }) : '';
+  const currentFormSnapshot = JSON.stringify(formData);
+  const hasUnsavedChanges = editMode && Boolean(selectedPage) && currentFormSnapshot !== initialFormSnapshot;
+  const { canProceed } = useDirtyStateGuard({ isDirty: hasUnsavedChanges, message: 'Page content has unsaved changes.' });
+
+  const guardUnsavedChanges = () => {
+    if (canProceed()) return true;
+    setNotice({ tone: 'error', message: 'Save or cancel your current page edits before switching pages.' });
+    return false;
+  };
 
   const resetNewPageForm = () => {
     setNewPageForm({
@@ -70,9 +115,11 @@ export default function PageContentAdmin() {
     });
   };
 
+  const getDraftStorageKey = (pageKey: string) => `${PAGE_CONTENT_DRAFT_KEY}.${pageKey}`;
+
   useEffect(() => {
     if (selectedPage) {
-      setFormData({
+      const nextFormData = {
         title: selectedPage.title,
         content: typeof selectedPage.content === 'string'
           ? selectedPage.content
@@ -80,9 +127,22 @@ export default function PageContentAdmin() {
         meta_description: selectedPage.meta_description || '',
         meta_keywords: selectedPage.meta_keywords || '',
         status: selectedPage.status
-      });
+      };
+      setFormData(nextFormData);
+      try {
+        const rawDraft = window.localStorage.getItem(getDraftStorageKey(selectedPage.page_key));
+        const parsedDraft = rawDraft ? JSON.parse(rawDraft) as PageContentFormData : null;
+        setRecoverableDraft(parsedDraft && JSON.stringify(parsedDraft) !== JSON.stringify(nextFormData) ? parsedDraft : null);
+      } catch {
+        setRecoverableDraft(null);
+      }
     }
   }, [selectedPage]);
+
+  useEffect(() => {
+    if (!selectedPage || !hasUnsavedChanges) return;
+    window.localStorage.setItem(getDraftStorageKey(selectedPage.page_key), JSON.stringify(formData));
+  }, [formData, hasUnsavedChanges, selectedPage]);
 
   useEffect(() => {
     if (!contents.length) {
@@ -109,12 +169,12 @@ export default function PageContentAdmin() {
       .replace(/^-+|-+$/g, '');
 
     if (!normalizedKey) {
-      alert('Please provide a valid page key.');
+      setNotice({ tone: 'error', message: 'Please provide a valid page key.' });
       return;
     }
 
     if (contents.some(page => page.page_key === normalizedKey)) {
-      alert('A page with this key already exists.');
+      setNotice({ tone: 'error', message: 'A page with this key already exists.' });
       return;
     }
 
@@ -127,6 +187,7 @@ export default function PageContentAdmin() {
       contentData = newPageForm.content;
     }
 
+  setNotice(null);
     setCreating(true);
     try {
       const response = await fetch('/api/page-content', {
@@ -152,10 +213,10 @@ export default function PageContentAdmin() {
         setSelectedPage(result.data);
       }
       resetNewPageForm();
-      alert('Page created successfully.');
+      setNotice({ tone: 'success', message: 'Page created successfully.' });
     } catch (error) {
       console.error('Error creating page content:', error);
-      alert(error instanceof Error ? (error as Error).message : 'Failed to create page');
+      setNotice({ tone: 'error', message: error instanceof Error ? (error as Error).message : 'Failed to create page.' });
     } finally {
       setCreating(false);
     }
@@ -164,13 +225,11 @@ export default function PageContentAdmin() {
   const handleDeletePage = async () => {
     if (!selectedPage) return;
     if (selectedPage.page_key === 'homepage') {
-      alert('The homepage cannot be deleted.');
+      setNotice({ tone: 'error', message: 'The homepage cannot be deleted.' });
       return;
     }
 
-    const confirmed = window.confirm(`Delete the page "${formatPageKey(selectedPage.page_key)}"? This cannot be undone.`);
-    if (!confirmed) return;
-
+    setNotice(null);
     setDeleting(true);
     try {
       const response = await fetch(`/api/page-content?key=${encodeURIComponent(selectedPage.page_key)}`, {
@@ -183,10 +242,11 @@ export default function PageContentAdmin() {
 
       await refetch();
       setSelectedPage(null);
-      alert('Page deleted successfully.');
+      setDeleteReviewOpen(false);
+      setNotice({ tone: 'success', message: 'Page deleted successfully.' });
     } catch (error) {
       console.error('Error deleting page content:', error);
-      alert(error instanceof Error ? (error as Error).message : 'Failed to delete page');
+      setNotice({ tone: 'error', message: error instanceof Error ? (error as Error).message : 'Failed to delete page.' });
     } finally {
       setDeleting(false);
     }
@@ -195,6 +255,7 @@ export default function PageContentAdmin() {
   const handleSave = async () => {
     if (!selectedPage) return;
 
+    setNotice(null);
     setSaving(true);
     try {
       let contentData;
@@ -226,14 +287,16 @@ export default function PageContentAdmin() {
         if (result.data) {
           setSelectedPage(result.data);
         }
-        alert('Page content updated successfully!');
+        window.localStorage.removeItem(getDraftStorageKey(selectedPage.page_key));
+        setRecoverableDraft(null);
+        setNotice({ tone: 'success', message: 'Page content updated successfully.' });
       } else {
         const errorResponse = await response.json();
-        alert(`Error: ${errorResponse.error}`);
+        setNotice({ tone: 'error', message: `Error: ${errorResponse.error}` });
       }
     } catch (error) {
       console.error('Error saving:', error);
-      alert('Error saving page content');
+      setNotice({ tone: 'error', message: 'Error saving page content.' });
     } finally {
       setSaving(false);
     }
@@ -282,6 +345,8 @@ export default function PageContentAdmin() {
 
   const editableContents = [...contents].sort((a, b) => a.page_key.localeCompare(b.page_key));
   const canDeleteSelected = selectedPage ? selectedPage.page_key !== 'homepage' : false;
+  const newPageValidation = getContentValidationSummary(newPageForm.content);
+  const editContentValidation = getContentValidationSummary(formData.content);
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -377,6 +442,9 @@ export default function PageContentAdmin() {
               className="font-mono text-sm"
               placeholder="JSON or plain text"
             />
+            <div className={`mt-2 rounded-md border px-3 py-2 text-xs ${newPageValidation.tone === 'error' ? 'border-red-500/30 bg-red-500/10 text-red-700' : newPageValidation.tone === 'success' ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700' : 'border-blue-500/30 bg-blue-500/10 text-blue-700'}`}>
+              <strong>{newPageValidation.label}:</strong> {newPageValidation.detail}
+            </div>
           </div>
 
           <div className="flex items-center justify-end gap-3">
@@ -422,8 +490,10 @@ export default function PageContentAdmin() {
                       : 'hover:bg-white/5 border-white/10'
                   }`}
                   onClick={() => {
+                    if (!guardUnsavedChanges()) return;
                     setSelectedPage(page);
                     setEditMode(false);
+                    setDeleteReviewOpen(false);
                   }}
                 >
                   <div className="flex items-center justify-between">
@@ -468,7 +538,10 @@ export default function PageContentAdmin() {
                   {editMode ? (
                     <>
                       <Button
-                        onClick={() => setEditMode(false)}
+                        onClick={() => {
+                          setEditMode(false);
+                          setNotice(null);
+                        }}
                         variant="outline"
                         size="sm"
                       >
@@ -496,27 +569,87 @@ export default function PageContentAdmin() {
                       Edit
                     </Button>
                   )}
-                  <Button
-                    onClick={handleDeletePage}
-                    variant="destructive"
-                    size="sm"
-                    disabled={!canDeleteSelected || deleting}
-                  >
-                    {deleting ? (
-                      <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                    ) : (
+                  {deleteReviewOpen ? (
+                    <div className="flex flex-wrap items-center gap-2 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2">
+                      <span className="text-sm font-medium text-red-700">Delete this page?</span>
+                      <Button
+                        onClick={handleDeletePage}
+                        variant="destructive"
+                        size="sm"
+                        disabled={deleting}
+                      >
+                        {deleting && <RefreshCw className="h-4 w-4 mr-2 animate-spin" />}
+                        Confirm
+                      </Button>
+                      <Button onClick={() => setDeleteReviewOpen(false)} variant="outline" size="sm" disabled={deleting}>
+                        Cancel
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      onClick={() => {
+                        if (!canDeleteSelected) {
+                          setNotice({ tone: 'error', message: 'The homepage cannot be deleted.' });
+                          return;
+                        }
+                        setDeleteReviewOpen(true);
+                      }}
+                      variant="destructive"
+                      size="sm"
+                      disabled={deleting}
+                    >
                       <Trash2 className="h-4 w-4 mr-2" />
-                    )}
-                    Delete
-                  </Button>
+                      Delete
+                    </Button>
+                  )}
                 </div>
               )}
             </div>
           </CardHeader>
           <CardContent>
+            {notice && (
+              <div
+                role={notice.tone === 'error' ? 'alert' : 'status'}
+                className={`mb-4 rounded-lg border px-4 py-3 text-sm ${notice.tone === 'error' ? 'border-red-500/30 bg-red-500/10 text-red-700' : 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700'}`}
+              >
+                {notice.message}
+              </div>
+            )}
             {selectedPage ? (
               editMode ? (
                 <div className="space-y-4">
+                  {recoverableDraft && (
+                    <div role="status" className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-amber-800">
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        <p>A saved draft is available for this page.</p>
+                        <div className="flex gap-2">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              setFormData(recoverableDraft);
+                              setRecoverableDraft(null);
+                              setNotice({ tone: 'success', message: 'Draft restored. Review and save when ready.' });
+                            }}
+                          >
+                            Restore Draft
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              window.localStorage.removeItem(getDraftStorageKey(selectedPage.page_key));
+                              setRecoverableDraft(null);
+                            }}
+                          >
+                            Discard Draft
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                   <div>
                     <Label htmlFor="title">Title</Label>
                     <Input
@@ -558,6 +691,9 @@ export default function PageContentAdmin() {
                       rows={15}
                       className="font-mono text-sm"
                     />
+                    <div className={`mt-2 rounded-md border px-3 py-2 text-xs ${editContentValidation.tone === 'error' ? 'border-red-500/30 bg-red-500/10 text-red-700' : editContentValidation.tone === 'success' ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700' : 'border-blue-500/30 bg-blue-500/10 text-blue-700'}`}>
+                      <strong>{editContentValidation.label}:</strong> {editContentValidation.detail}
+                    </div>
                   </div>
 
                   <div>

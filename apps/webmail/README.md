@@ -45,6 +45,16 @@ apps/webmail/
 
 ## 💻 Scripts & Getting Started
 
+### Production Provider Gate
+
+Mock inbox data is disabled in production unless `NEXT_PUBLIC_WEBMAIL_ENABLE_MOCK=true` is explicitly set. Before enabling Webmail for production traffic, configure:
+
+- `WEBMAIL_IMAP_HOST`
+- `WEBMAIL_SMTP_HOST`
+- `WEBMAIL_MAILBOX_USER`
+
+The `/api/health` route reports `configuration_required` and lists missing provider keys until the mailbox provider contract is complete.
+
 ### Installation & Running
 
 ```bash

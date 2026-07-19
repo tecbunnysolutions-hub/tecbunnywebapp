@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "accessibilityEvidence": {
+    "standard": "WCAG 2.2 AA",
+    "requiredMethods": ["keyboard-navigation", "screen-reader-labels", "focus-management", "status-announcements", "color-contrast"],
+    "coveredSurfaces": ["public-checkout", "mgmt-orders", "waba-chat", "webmail-inbox", "superadmin-system-health"]
+  },
+  "taskCompletionMetrics": [
+    { "id": "find-and-open-order", "targetCompletionRate": 0.95, "targetP95Seconds": 45 },
+    { "id": "save-order-view", "targetCompletionRate": 0.95, "targetP95Seconds": 30 },
+    { "id": "waba-stage-agent-reply", "targetCompletionRate": 0.95, "targetP95Seconds": 30 },
+    { "id": "webmail-stage-reply", "targetCompletionRate": 0.9, "targetP95Seconds": 35 },
+    { "id": "review-launch-health-blockers", "targetCompletionRate": 1, "targetP95Seconds": 25 }
+  ],
+  "cioDemoScript": [
+    "Open command palette and route to order operations",
+    "Apply a saved order view and export selected orders",
+    "Review a WABA handoff with assignment, SLA, note, and canned reply",
+    "Stage a Webmail reply and show provider gate guidance",
+    "Review Superadmin System Health launch blockers and risk summary"
+  ]
+}

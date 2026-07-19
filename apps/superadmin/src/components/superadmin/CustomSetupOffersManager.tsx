@@ -52,6 +52,7 @@ export default function CustomSetupOffersManager() {
   const [showDialog, setShowDialog] = useState(false);
   const [editingOffer, setEditingOffer] = useState<CustomSetupOffer | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
 
   const { toast } = useToast();
 
@@ -149,13 +150,12 @@ export default function CustomSetupOffersManager() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this offer?')) return;
-
     try {
       const res = await fetch(`/api/superadmin/custom-setup-offers?id=${id}`, { method: 'DELETE' });
       const data = await res.json();
       if (res.ok) {
         toast({ title: 'Success', description: data.message });
+        setPendingDeleteId(null);
         await fetchOffers();
       } else {
         throw new Error(data.error || 'Failed to delete offer');
@@ -343,9 +343,17 @@ export default function CustomSetupOffersManager() {
                     <Button variant="ghost" size="icon" onClick={() => handleEdit(offer)}>
                       <Edit2 className="w-4 h-4" />
                     </Button>
-                    <Button variant="ghost" size="icon" onClick={() => handleDelete(offer.id)}>
-                      <Trash2 className="w-4 h-4 text-destructive" />
-                    </Button>
+                    {pendingDeleteId === offer.id ? (
+                      <span className="inline-flex items-center gap-2 rounded-md border border-destructive/30 bg-destructive/10 px-2 py-1 align-middle">
+                        <span className="text-xs text-destructive">Delete?</span>
+                        <Button variant="destructive" size="sm" onClick={() => handleDelete(offer.id)}>Confirm</Button>
+                        <Button variant="ghost" size="sm" onClick={() => setPendingDeleteId(null)}>Cancel</Button>
+                      </span>
+                    ) : (
+                      <Button variant="ghost" size="icon" onClick={() => setPendingDeleteId(offer.id)} aria-label={`Delete offer ${offer.title}`}>
+                        <Trash2 className="w-4 h-4 text-destructive" />
+                      </Button>
+                    )}
                   </TableCell>
                 </TableRow>
               ))

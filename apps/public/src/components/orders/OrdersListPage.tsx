@@ -27,6 +27,8 @@ export default function OrdersListPage() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [loading, setLoading] = useState(true);
   const [cancellingOrderId, setCancellingOrderId] = useState<string | null>(null);
+  const [pendingCancelOrderId, setPendingCancelOrderId] = useState<string | null>(null);
+  const [notice, setNotice] = useState<{ tone: 'error' | 'success' | 'info'; message: string } | null>(null);
   const [statusOptions, setStatusOptions] = useState<string[]>([]);
 
   useEffect(() => {
@@ -129,15 +131,18 @@ export default function OrdersListPage() {
 
   const handleCancelOrder = async (orderId: string) => {
     if (cancellingOrderId) return;
-    const confirmed = window.confirm('Are you sure you want to cancel this order?');
-    if (!confirmed) return;
 
+    setNotice(null);
     setCancellingOrderId(orderId);
     const success = await cancelOrder(orderId);
     setCancellingOrderId(null);
 
     if (success) {
+      setPendingCancelOrderId(null);
+      setNotice({ tone: 'success', message: 'Order cancelled successfully.' });
       await getOrders();
+    } else {
+      setNotice({ tone: 'error', message: 'Unable to cancel this order. Please try again.' });
     }
   };
 
@@ -162,6 +167,15 @@ export default function OrdersListPage() {
           <h1 className="text-3xl font-bold text-white mb-2">Your Orders</h1>
           <p className="text-slate-300">Track and manage your order history</p>
         </div>
+
+        {notice && (
+          <div
+            role={notice.tone === 'error' ? 'alert' : 'status'}
+            className={`mb-6 rounded-xl border px-4 py-3 text-sm ${notice.tone === 'error' ? 'border-red-500/30 bg-red-500/10 text-red-200' : notice.tone === 'success' ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-200' : 'border-primary/30 bg-primary/10 text-primary'}`}
+          >
+            {notice.message}
+          </div>
+        )}
 
         {/* Filters */}
         <Card className="mb-6">
@@ -295,15 +309,32 @@ export default function OrdersListPage() {
                         View Details
                       </Button>
                       {order.status === 'Pending' && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="text-red-300 hover:text-red-200 border-red-500/30 hover:border-red-500/50"
-                          disabled={cancellingOrderId === order.id}
-                          onClick={() => handleCancelOrder(order.id)}
-                        >
-                          {cancellingOrderId === order.id ? 'Cancelling...' : 'Cancel Order'}
-                        </Button>
+                        pendingCancelOrderId === order.id ? (
+                          <div className="flex flex-wrap items-center gap-2 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2">
+                            <span className="text-xs font-semibold text-red-200">Cancel order?</span>
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              disabled={cancellingOrderId === order.id}
+                              onClick={() => handleCancelOrder(order.id)}
+                            >
+                              {cancellingOrderId === order.id ? 'Cancelling...' : 'Confirm'}
+                            </Button>
+                            <Button variant="outline" size="sm" disabled={cancellingOrderId === order.id} onClick={() => setPendingCancelOrderId(null)}>
+                              Keep Order
+                            </Button>
+                          </div>
+                        ) : (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="text-red-300 hover:text-red-200 border-red-500/30 hover:border-red-500/50"
+                            disabled={cancellingOrderId === order.id}
+                            onClick={() => setPendingCancelOrderId(order.id)}
+                          >
+                            Cancel Order
+                          </Button>
+                        )
                       )}
                     </div>
                   </div>
@@ -335,8 +366,7 @@ export default function OrdersListPage() {
                             size="sm" 
                             className="bg-primary hover:bg-white hover:text-zinc-950 text-white text-[10px] font-bold h-8 px-3"
                             onClick={() => {
-                              // Logic to add to order/dispatch would go here
-                              alert('Accessory added to technician dispatch!');
+                              setNotice({ tone: 'info', message: `Surveillance SD accessory added to dispatch review for order #${formatOrderNumber(order.id)}.` });
                             }}
                           >
                             + Add to Dispatch

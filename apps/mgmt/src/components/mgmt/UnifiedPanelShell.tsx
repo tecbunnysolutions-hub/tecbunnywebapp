@@ -12,7 +12,6 @@ import {
   ChevronRight,
   LogOut,
   Menu,
-  Plus,
   ShieldCheck,
   User,
   X,
@@ -260,10 +259,13 @@ export function UnifiedPanelShell({
             </div>
 
             <div className="hidden items-center gap-2 sm:flex">
-              <Button variant="ghost" size="sm" className="h-10 gap-2 border border-zinc-800 bg-zinc-950 text-zinc-300 hover:bg-zinc-900 hover:text-white">
-                <Plus className="h-4 w-4" />
-                New
-              </Button>
+              <div
+                className="flex h-10 items-center gap-2 rounded-md border border-zinc-800 bg-zinc-950 px-3 text-xs font-semibold text-zinc-500"
+                aria-label="Press Control K to open command search"
+              >
+                <span className="text-zinc-400">Search</span>
+                <kbd className="rounded border border-zinc-700 bg-zinc-900 px-1.5 py-0.5 text-[10px] text-zinc-300">Ctrl K</kbd>
+              </div>
               <button
                 type="button"
                 className="flex h-10 w-10 items-center justify-center rounded-md border border-zinc-800 text-zinc-300 transition-colors hover:bg-zinc-900 hover:text-white"

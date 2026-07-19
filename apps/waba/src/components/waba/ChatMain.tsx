@@ -1,6 +1,21 @@
 import React, { useState, useRef } from 'react';
 import { Message, Conversation, Template } from './types';
 
+export type ChatNotice = { tone: 'error' | 'info'; message: string };
+
+type InternalNote = {
+  id: string;
+  text: string;
+  createdAt: string;
+};
+
+function emitProductTelemetry(event: string, payload: Record<string, string | number | boolean | null | undefined>) {
+  if (typeof window === 'undefined') return;
+  window.dispatchEvent(new CustomEvent('tecbunny:product-telemetry', {
+    detail: { event, payload, timestamp: new Date().toISOString() },
+  }));
+}
+
 interface ChatMainProps {
   activeConversation: string;
   activeConvObj?: Conversation;
@@ -18,15 +33,17 @@ interface ChatMainProps {
   inputText: string;
   setInputText: (text: string) => void;
   isUploading: boolean;
+  notice?: ChatNotice | null;
+  onNoticeClear?: () => void;
   handleSendMessage: (e?: React.FormEvent) => Promise<void>;
   handleFileUpload: (e: React.ChangeEvent<HTMLInputElement>, type: 'image' | 'document') => Promise<void>;
 }
 
 export function ChatMain({
-  activeConversation, displayName, messages, messagesEndRef,
+  activeConversation, activeConvObj, displayName, messages, messagesEndRef,
   showSidebar, setShowSidebar, showCrm, setShowCrm, isOutsideWindow,
   templates, selectedTemplate, setSelectedTemplate, inputText, setInputText,
-  isUploading, handleSendMessage, handleFileUpload
+  isUploading, notice, onNoticeClear, handleSendMessage, handleFileUpload
 }: ChatMainProps) {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -36,6 +53,9 @@ export function ChatMain({
   const [showCommands, setShowCommands] = useState(false);
   const [systemMessages, setSystemMessages] = useState<Message[]>([]);
   const [isCopilotThinking, setIsCopilotThinking] = useState(false);
+  const [inlineNotice, setInlineNotice] = useState<{ tone: 'error' | 'info'; message: string } | null>(null);
+  const [internalNotes, setInternalNotes] = useState<InternalNote[]>([]);
+  const [noteDraft, setNoteDraft] = useState('');
 
   const COMMANDS = [
     { cmd: '/summary', desc: 'Summarize the conversation' },
@@ -47,9 +67,26 @@ export function ChatMain({
     { cmd: '/reply', desc: 'Generate a professional reply draft' }
   ];
 
+  const CANNED_REPLIES = [
+    {
+      label: 'Acknowledge',
+      text: 'Thanks for reaching out. I am checking this now and will update you shortly.',
+    },
+    {
+      label: 'Need Details',
+      text: 'Could you please share the order number, location, and any photos or screenshots related to this request?',
+    },
+    {
+      label: 'Visit Follow-up',
+      text: 'Our team can help with this. Please confirm your preferred visit date and time window.',
+    },
+  ];
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
     setInputText(val);
+    setInlineNotice(null);
+    onNoticeClear?.();
     if (val === '/') {
       setShowCommands(true);
     } else if (!val.startsWith('/')) {
@@ -88,25 +125,101 @@ export function ChatMain({
           }]);
         }
       } else {
-        alert('Copilot Error: ' + result.error);
+        setInlineNotice({ tone: 'error', message: `Copilot error: ${result.error || 'Unable to complete this command.'}` });
       }
     } catch (err) {
       console.error(err);
-      alert('Failed to execute AI command.');
+      setInlineNotice({ tone: 'error', message: 'Failed to execute AI command. Please try again.' });
     }
     setIsCopilotThinking(false);
   };
 
+  const applyCannedReply = (text: string) => {
+    setInputText(text);
+    emitProductTelemetry('waba_canned_reply_inserted', { conversationId: activeConversation, draftLength: text.length });
+    setInlineNotice({ tone: 'info', message: 'Canned reply inserted. Review and edit before sending.' });
+    onNoticeClear?.();
+  };
+
+  React.useEffect(() => {
+    try {
+      const rawNotes = window.localStorage.getItem(`tecbunny.waba.internalNotes.${activeConversation}`);
+      const parsedNotes = rawNotes ? JSON.parse(rawNotes) : [];
+      setInternalNotes(Array.isArray(parsedNotes) ? parsedNotes : []);
+    } catch {
+      setInternalNotes([]);
+    }
+    setNoteDraft('');
+  }, [activeConversation]);
+
+  const saveInternalNote = () => {
+    const text = noteDraft.trim();
+    if (!text) return;
+    const nextNotes = [
+      { id: `${Date.now()}`, text, createdAt: new Date().toISOString() },
+      ...internalNotes,
+    ].slice(0, 5);
+    setInternalNotes(nextNotes);
+    window.localStorage.setItem(`tecbunny.waba.internalNotes.${activeConversation}`, JSON.stringify(nextNotes));
+    setNoteDraft('');
+    setInlineNotice({ tone: 'info', message: 'Internal note saved for this conversation.' });
+    onNoticeClear?.();
+  };
+
   const allMessages = [...messages, ...systemMessages].filter(m => m.sender_number === activeConversation).sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+  const visibleNotice = inlineNotice ?? notice;
+  const lastInteractionAge = activeConvObj?.last_interaction_timestamp
+    ? Math.max(0, Math.floor((Date.now() - new Date(activeConvObj.last_interaction_timestamp).getTime()) / 60000))
+    : null;
+  const slaTone = lastInteractionAge == null
+    ? '#94a3b8'
+    : lastInteractionAge >= 30
+      ? '#fecaca'
+      : lastInteractionAge >= 15
+        ? '#fde68a'
+        : '#bbf7d0';
+  const slaLabel = lastInteractionAge == null
+    ? 'SLA unavailable'
+    : lastInteractionAge < 60
+      ? `${lastInteractionAge}m since last touch`
+      : `${Math.floor(lastInteractionAge / 60)}h ${lastInteractionAge % 60}m since last touch`;
 
   return (
     <div className="chat-main">
       <div className="chat-header">
-        <button className="mobile-toggle" onClick={() => setShowSidebar(!showSidebar)} style={{ marginRight: '1rem' }}>☰</button>
-        <h3 style={{ flexGrow: 1 }}>{displayName}</h3>
-        <button className="mobile-toggle" onClick={() => setShowCrm(!showCrm)}>👤</button>
+        <button
+          className="mobile-toggle"
+          onClick={() => setShowSidebar(!showSidebar)}
+          style={{ marginRight: '1rem' }}
+          aria-label={showSidebar ? 'Hide conversation list' : 'Show conversation list'}
+          aria-expanded={showSidebar}
+        >
+          Menu
+        </button>
+        <div style={{ flexGrow: 1, minWidth: 0 }}>
+          <h3 style={{ margin: 0 }}>{displayName}</h3>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', marginTop: '0.35rem' }} aria-label="Conversation assignment and SLA">
+            <span style={{ border: '1px solid rgba(148, 163, 184, 0.2)', borderRadius: '999px', padding: '0.2rem 0.5rem', color: '#cbd5e1', fontSize: '0.72rem' }}>
+              Owner: {activeConvObj?.assigned_to || 'Unassigned'}
+            </span>
+            <span style={{ border: '1px solid rgba(148, 163, 184, 0.2)', borderRadius: '999px', padding: '0.2rem 0.5rem', color: '#cbd5e1', fontSize: '0.72rem' }}>
+              Dept: {activeConvObj?.department || 'General'}
+            </span>
+            <span style={{ border: '1px solid rgba(148, 163, 184, 0.2)', borderRadius: '999px', padding: '0.2rem 0.5rem', color: slaTone, fontSize: '0.72rem' }}>
+              {slaLabel}
+            </span>
+          </div>
+        </div>
+        <button
+          className="mobile-toggle"
+          onClick={() => setShowCrm(!showCrm)}
+          aria-label={showCrm ? 'Hide customer profile panel' : 'Show customer profile panel'}
+          aria-expanded={showCrm}
+        >
+          Profile
+        </button>
       </div>
-      <div className="messages-container">
+      <div className="messages-container" role="log" aria-live="polite" aria-label="Conversation messages">
         {allMessages.map(msg => {
           if (msg.status === 'SYSTEM') {
             return (
@@ -180,26 +293,88 @@ export function ChatMain({
         <div ref={messagesEndRef} />
       </div>
 
+      <section aria-label="Internal conversation notes" style={{ borderTop: '1px solid rgba(148, 163, 184, 0.16)', borderBottom: '1px solid rgba(148, 163, 184, 0.16)', padding: '0.75rem 1.5rem', background: 'rgba(15, 23, 42, 0.72)' }}>
+        <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+          <input
+            type="text"
+            value={noteDraft}
+            onChange={(event) => setNoteDraft(event.target.value)}
+            placeholder="Add an internal note for the next agent..."
+            aria-label="Internal conversation note"
+            style={{ flex: 1, border: '1px solid rgba(148, 163, 184, 0.22)', borderRadius: '10px', background: 'rgba(2, 6, 23, 0.55)', color: '#e2e8f0', padding: '0.65rem 0.8rem', outline: 'none' }}
+          />
+          <button
+            type="button"
+            onClick={saveInternalNote}
+            disabled={!noteDraft.trim()}
+            style={{ border: '1px solid rgba(59, 130, 246, 0.35)', background: noteDraft.trim() ? 'rgba(59, 130, 246, 0.18)' : 'rgba(148, 163, 184, 0.12)', color: noteDraft.trim() ? '#bfdbfe' : '#94a3b8', borderRadius: '10px', padding: '0.65rem 0.9rem', fontSize: '0.8rem', fontWeight: 700, cursor: noteDraft.trim() ? 'pointer' : 'not-allowed' }}
+          >
+            Save Note
+          </button>
+        </div>
+        {internalNotes.length > 0 && (
+          <div style={{ marginTop: '0.65rem', display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+            {internalNotes.map((note) => (
+              <span key={note.id} style={{ maxWidth: '100%', border: '1px solid rgba(148, 163, 184, 0.18)', borderRadius: '999px', background: 'rgba(2, 6, 23, 0.45)', color: '#cbd5e1', padding: '0.35rem 0.65rem', fontSize: '0.75rem' }}>
+                {new Date(note.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}: {note.text}
+              </span>
+            ))}
+          </div>
+        )}
+      </section>
+
       {/* ATTACHMENT TOOLBAR & INPUT */}
       <div style={{ position: 'relative' }}>
-        {isUploading && <div style={{ position: 'absolute', top: '-30px', left: '20px', background: 'rgba(59,130,246,0.8)', padding: '4px 12px', borderRadius: '12px', fontSize: '0.8rem' }}>Uploading media...</div>}
-        {isCopilotThinking && <div style={{ position: 'absolute', top: '-30px', left: '20px', background: 'rgba(16,185,129,0.8)', padding: '4px 12px', borderRadius: '12px', fontSize: '0.8rem' }}>✨ Copilot is thinking...</div>}
+        {visibleNotice && (
+          <div
+            role={visibleNotice.tone === 'error' ? 'alert' : 'status'}
+            style={{
+              margin: '0 1.5rem 0.75rem',
+              padding: '0.75rem 1rem',
+              borderRadius: '10px',
+              border: visibleNotice.tone === 'error' ? '1px solid rgba(239, 68, 68, 0.35)' : '1px solid rgba(59, 130, 246, 0.35)',
+              background: visibleNotice.tone === 'error' ? 'rgba(239, 68, 68, 0.12)' : 'rgba(59, 130, 246, 0.12)',
+              color: visibleNotice.tone === 'error' ? '#fecaca' : '#bfdbfe',
+              fontSize: '0.85rem'
+            }}
+          >
+            {visibleNotice.message}
+          </div>
+        )}
+        {isUploading && <div role="status" aria-live="polite" style={{ position: 'absolute', top: '-30px', left: '20px', background: 'rgba(59,130,246,0.8)', padding: '4px 12px', borderRadius: '12px', fontSize: '0.8rem' }}>Uploading media...</div>}
+        {isCopilotThinking && <div role="status" aria-live="polite" style={{ position: 'absolute', top: '-30px', left: '20px', background: 'rgba(16,185,129,0.8)', padding: '4px 12px', borderRadius: '12px', fontSize: '0.8rem' }}>Copilot is thinking...</div>}
+
+        {!isOutsideWindow && (
+          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', margin: '0 1.5rem 0.75rem' }} aria-label="Canned replies">
+            {CANNED_REPLIES.map((reply) => (
+              <button
+                key={reply.label}
+                type="button"
+                onClick={() => applyCannedReply(reply.text)}
+                style={{ border: '1px solid rgba(148, 163, 184, 0.25)', background: 'rgba(15, 23, 42, 0.75)', color: '#cbd5e1', borderRadius: '999px', padding: '0.4rem 0.7rem', fontSize: '0.75rem', cursor: 'pointer' }}
+              >
+                {reply.label}
+              </button>
+            ))}
+          </div>
+        )}
 
         {/* SLASH COMMAND PALETTE */}
         {showCommands && (
-          <div style={{ position: 'absolute', bottom: '100%', left: 0, right: 0, background: '#1e293b', border: '1px solid #334155', borderRadius: '8px 8px 0 0', zIndex: 10, maxHeight: '200px', overflowY: 'auto' }}>
+          <div id="waba-command-menu" style={{ position: 'absolute', bottom: '100%', left: 0, right: 0, background: '#1e293b', border: '1px solid #334155', borderRadius: '8px 8px 0 0', zIndex: 10, maxHeight: '200px', overflowY: 'auto' }}>
             <div style={{ padding: '8px', fontSize: '0.8rem', color: '#94a3b8', borderBottom: '1px solid #334155' }}>AI Copilot Commands</div>
             {COMMANDS.filter(c => c.cmd.startsWith(inputText)).map(cmd => (
-              <div
+              <button
+                type="button"
                 key={cmd.cmd}
                 onClick={() => executeCommand(cmd.cmd)}
-                style={{ padding: '8px 12px', cursor: 'pointer', display: 'flex', gap: '12px', alignItems: 'center' }}
+                style={{ width: '100%', padding: '8px 12px', cursor: 'pointer', display: 'flex', gap: '12px', alignItems: 'center', background: 'transparent', border: 'none', textAlign: 'left' }}
                 onMouseEnter={(e) => (e.currentTarget.style.background = '#334155')}
                 onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
               >
                 <span style={{ color: '#3b82f6', fontWeight: 600 }}>{cmd.cmd}</span>
                 <span style={{ color: '#cbd5e1', fontSize: '0.9rem' }}>{cmd.desc}</span>
-              </div>
+              </button>
             ))}
           </div>
         )}
@@ -210,6 +385,7 @@ export function ChatMain({
               <span style={{ color: '#ef4444', fontSize: '0.8rem', fontWeight: 600 }}>⚠️ Outside 24-Hour Window (Template Required)</span>
               <select
                 className="crm-select"
+                aria-label="Approved message template"
                 style={{ border: '1px solid #ef4444', background: 'rgba(255,255,255,0.05)' }}
                 value={selectedTemplate}
                 onChange={(e) => {
@@ -227,10 +403,10 @@ export function ChatMain({
           ) : (
             <>
               <div className="attachment-toolbar">
-                <button type="button" onClick={() => fileInputRef.current?.click()} title="Send Image">📷</button>
-                <button type="button" onClick={() => docInputRef.current?.click()} title="Send Document">📄</button>
-                <input type="file" ref={fileInputRef} onChange={(e) => handleFileUpload(e, 'image')} accept="image/*,video/*" style={{ display: 'none' }} />
-                <input type="file" ref={docInputRef} onChange={(e) => handleFileUpload(e, 'document')} accept=".pdf,.doc,.docx" style={{ display: 'none' }} />
+                <button type="button" onClick={() => fileInputRef.current?.click()} title="Send image or video" aria-label="Attach image or video">Image</button>
+                <button type="button" onClick={() => docInputRef.current?.click()} title="Send document" aria-label="Attach document">Document</button>
+                <input type="file" ref={fileInputRef} onChange={(e) => handleFileUpload(e, 'image')} accept="image/*,video/*" style={{ display: 'none' }} aria-label="Image or video upload" />
+                <input type="file" ref={docInputRef} onChange={(e) => handleFileUpload(e, 'document')} accept=".pdf,.doc,.docx" style={{ display: 'none' }} aria-label="Document upload" />
               </div>
 
               <input
@@ -239,11 +415,13 @@ export function ChatMain({
                 value={inputText}
                 onChange={handleInputChange}
                 autoFocus
+                aria-label="Message text"
+                aria-controls={showCommands ? 'waba-command-menu' : undefined}
               />
             </>
           )}
 
-          <button type="submit" disabled={(!inputText.trim() && !isUploading) || (isOutsideWindow && !selectedTemplate)}>
+          <button type="submit" disabled={(!inputText.trim() && !isUploading) || (isOutsideWindow && !selectedTemplate)} aria-label="Send message">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <line x1="22" y1="2" x2="11" y2="13"></line>
               <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>

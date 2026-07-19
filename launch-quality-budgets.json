@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "budgets": {
+    "largestContentfulPaintMs": 2500,
+    "interactionToNextPaintMs": 200,
+    "cumulativeLayoutShift": 0.1,
+    "firstLoadJsKb": 250,
+    "criticalTypecheckApps": ["public", "mgmt", "waba", "superadmin"]
+  },
+  "demoReadiness": {
+    "requiredFlows": [
+      "command-palette-action-routing",
+      "order-operations-saved-view",
+      "waba-agent-handoff",
+      "webmail-provider-gate",
+      "superadmin-system-health"
+    ],
+    "requiredValidators": [
+      "validate:ux-actions",
+      "validate:no-browser-modals",
+      "validate:accessibility-contract",
+      "validate:product-telemetry",
+      "validate:theme-contract",
+      "validate:launch-readiness",
+      "validate:performance-budgets",
+      "validate:visual-baselines",
+      "validate:launch-evidence"
+    ]
+  }
+}

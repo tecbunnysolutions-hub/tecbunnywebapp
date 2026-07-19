@@ -1,3 +1,43 @@
+export const enterpriseTokenContract = {
+  colorRoles: [
+    'background',
+    'foreground',
+    'card',
+    'popover',
+    'primary',
+    'secondary',
+    'muted',
+    'accent',
+    'destructive',
+    'border',
+    'input',
+    'ring',
+    'chart',
+    'sidebar',
+  ],
+  density: {
+    compact: 'data-density="compact"',
+    comfortable: 'data-density="comfortable"',
+  },
+  radius: {
+    panel: 'lg',
+    control: 'md',
+    indicator: 'sm',
+  },
+  motion: {
+    quick: '120ms',
+    standard: '200ms',
+    deliberate: '320ms',
+  },
+  status: {
+    success: 'green',
+    warning: 'accent',
+    danger: 'alert',
+    information: 'blue',
+    neutral: 'muted',
+  },
+} as const;
+
 export const theme = {
   colors: {
     brand: {
@@ -102,6 +142,7 @@ export const theme = {
     'accordion-down': 'accordion-down 0.2s ease-out',
     'accordion-up': 'accordion-up 0.2s ease-out',
   },
+  enterprise: enterpriseTokenContract,
   backgroundImage: {
     'noise': "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.4'/%3E%3C/svg%3E\")",
   },
