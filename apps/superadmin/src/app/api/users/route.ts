@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { logger } from "@tecbunny/core";
-import { BaseSupabaseClient, SupabaseUserRepository } from "@tecbunny/infra";
-import { verifySuperadminSessionToken } from "@tecbunny/core/server";
-import { UserService } from "@tecbunny/core/server";
-import { z } from "zod";
-import { withValidation } from "@tecbunny/core/api/with-validation";
+import { logger } from '@tecbunny/core';
+import { BaseSupabaseClient, SupabaseUserRepository } from '@tecbunny/infra';
+import { verifySuperadminSessionToken } from '@tecbunny/core/server';
+import { UserService } from '@tecbunny/core/server';
+import { z } from 'zod';
+import { withValidation } from '@tecbunny/core/api/with-validation';
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY;
@@ -18,6 +18,7 @@ function getAdminBaseClient() {
   if (!isSupabaseConfigured()) {
     throw new Error('Supabase is not configured');
   }
+
   return new BaseSupabaseClient({
     url: SUPABASE_URL!,
     key: SUPABASE_SERVICE_ROLE_KEY!,
@@ -49,7 +50,7 @@ async function createAuthenticatedClient(request: NextRequest) {
   if (superadminPayload) {
     return {
       session: { user: { id: 'superadmin-root-id', email: superadminPayload.email } },
-      role: 'superadmin'
+      role: 'superadmin',
     };
   }
 
@@ -69,7 +70,6 @@ async function createAuthenticatedClient(request: NextRequest) {
   return { session: null, role: null };
 }
 
-// GET /api/users - List all users (admin only)
 export async function GET(request: NextRequest) {
   try {
     if (!isSupabaseConfigured()) {
@@ -87,7 +87,6 @@ export async function GET(request: NextRequest) {
     }
 
     const { searchParams } = new URL(request.url);
-
     const pageParam = Number(searchParams.get('page'));
     const pageSizeParam = Number(searchParams.get('pageSize'));
     const page = Number.isFinite(pageParam) && pageParam > 0 ? Math.floor(pageParam) : 1;
@@ -103,11 +102,10 @@ export async function GET(request: NextRequest) {
       email: 'email',
       role: 'role',
       created_at: 'created_at',
-      updated_at: 'updated_at'
+      updated_at: 'updated_at',
     };
 
     const sortColumn = SORTABLE_COLUMNS[sortFieldParam] || SORTABLE_COLUMNS.name;
-
     const baseClient = getAdminBaseClient();
     const userRepository = new SupabaseUserRepository(baseClient);
     const userService = new UserService(userRepository);
@@ -119,7 +117,7 @@ export async function GET(request: NextRequest) {
       roles,
       sortColumn,
       sortDirection: sortDirectionParam,
-      operatorRole: role
+      operatorRole: role,
     });
 
     if (includeCounts && result.success) {
@@ -134,23 +132,22 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// User Creation Schema
 const CreateUserSchema = z.object({
   email: z.string().email(),
   name: z.string().min(2),
   role: z.string().optional(),
   mobile: z.string().optional(),
-  password: z.string().min(6).optional()
+  password: z.string().min(6).optional(),
 });
 
-// POST /api/users - Create new user (admin only)
 export const POST = withValidation(CreateUserSchema, async (request: NextRequest, body: z.infer<typeof CreateUserSchema>) => {
   try {
     if (!isSupabaseConfigured()) {
       return NextResponse.json({ error: 'Service configuration error' }, { status: 503 });
     }
+
     const { session, role } = await createAuthenticatedClient(request);
-    
+
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -163,38 +160,35 @@ export const POST = withValidation(CreateUserSchema, async (request: NextRequest
     const userRepository = new SupabaseUserRepository(baseClient);
     const userService = new UserService(userRepository);
 
-    try {
-      const user = await userService.createUser({
-        email: body.email,
-        name: body.name,
-        role: body.role,
-        mobile: body.mobile,
-        password: body.password,
-        operatorRole: role,
-        operatorId: session.user.id
-      });
+    const user = await userService.createUser({
+      email: body.email,
+      name: body.name,
+      role: body.role,
+      mobile: body.mobile,
+      password: body.password,
+      operatorRole: role,
+      operatorId: session.user.id,
+    });
 
-      return NextResponse.json({
-        message: 'User created successfully',
-        user
-      });
-    } catch (e: any) {
-      return NextResponse.json({ error: e.message }, { status: 400 });
+    if (!user.success) {
+      return NextResponse.json({ error: user.error.message }, { status: 400 });
     }
+
+    return NextResponse.json({ message: 'User created successfully', user: user.data });
   } catch (error) {
     logger.error('Error in POST /api/users:', { error });
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 });
 
-// PUT /api/users - Update user (admin only)
 export async function PUT(request: NextRequest) {
   try {
     if (!isSupabaseConfigured()) {
       return NextResponse.json({ error: 'Service configuration error' }, { status: 503 });
     }
+
     const { session, role } = await createAuthenticatedClient(request);
-    
+
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -211,34 +205,27 @@ export async function PUT(request: NextRequest) {
     const baseClient = getAdminBaseClient();
     const userRepository = new SupabaseUserRepository(baseClient);
     const userService = new UserService(userRepository);
+    const result = await userService.updateUser({ userId, updates, operatorRole: role, operatorId: session.user.id });
 
-    try {
-      await userService.updateUser({
-        userId,
-        updates,
-        operatorRole: role,
-        operatorId: session.user.id
-      });
-
-      return NextResponse.json({ message: 'User updated successfully' });
-    } catch (e: any) {
-      return NextResponse.json({ error: e.message }, { status: 400 });
+    if (!result.success) {
+      return NextResponse.json({ error: result.error.message }, { status: 400 });
     }
 
+    return NextResponse.json({ message: 'User updated successfully' });
   } catch (error) {
     logger.error('Error in PUT /api/users:', { error });
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
-// DELETE /api/users - Delete user (admin only)
 export async function DELETE(request: NextRequest) {
   try {
     if (!isSupabaseConfigured()) {
       return NextResponse.json({ error: 'Service configuration error' }, { status: 503 });
     }
+
     const { session, role } = await createAuthenticatedClient(request);
-    
+
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -249,7 +236,6 @@ export async function DELETE(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get('userId');
-
     if (!userId) {
       return NextResponse.json({ error: 'User ID is required' }, { status: 400 });
     }
@@ -257,17 +243,13 @@ export async function DELETE(request: NextRequest) {
     const baseClient = getAdminBaseClient();
     const userRepository = new SupabaseUserRepository(baseClient);
     const userService = new UserService(userRepository);
+    const result = await userService.deleteUser({ userId, operatorRole: role, operatorId: session.user.id });
 
-    try {
-      await userService.deleteUser({
-        userId,
-        operatorRole: role,
-        operatorId: session.user.id
-      });
-      return NextResponse.json({ message: 'User deleted successfully' });
-    } catch (e: any) {
-      return NextResponse.json({ error: e.message }, { status: 400 });
+    if (!result.success) {
+      return NextResponse.json({ error: result.error.message }, { status: 400 });
     }
+
+    return NextResponse.json({ message: 'User deleted successfully' });
   } catch (error) {
     logger.error('Error in DELETE /api/users:', { error });
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

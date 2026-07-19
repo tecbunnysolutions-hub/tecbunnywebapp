@@ -7,6 +7,10 @@ export declare class SupabaseUserRepository implements IUserRepository {
     private parseAssignableRole;
     private syncUserRole;
     getTotals(): Promise<UserTotals>;
+    private profileName;
+    private profileMobile;
+    private buildAuthOnlyProfile;
+    private getAuthOnlyUsers;
     getUsers(params: GetUsersParams): Promise<GetUsersResult>;
     createUser(params: CreateUserParams): Promise<{
         id: string;

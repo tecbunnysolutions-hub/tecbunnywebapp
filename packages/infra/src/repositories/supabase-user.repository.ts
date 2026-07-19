@@ -81,6 +81,78 @@ export class SupabaseUserRepository implements IUserRepository {
     };
   }
 
+  private profileName(profile: any): string | null {
+    return profile?.name ?? profile?.full_name ?? null;
+  }
+
+  private profileMobile(profile: any): string | null {
+    return profile?.mobile ?? profile?.phone ?? null;
+  }
+
+  private buildAuthOnlyProfile(authUser: any) {
+    return {
+      id: authUser.id,
+      name: authUser.user_metadata?.name ?? authUser.user_metadata?.full_name ?? null,
+      full_name: authUser.user_metadata?.full_name ?? authUser.user_metadata?.name ?? null,
+      email: authUser.email ?? null,
+      mobile: authUser.phone ?? authUser.user_metadata?.mobile ?? authUser.user_metadata?.phone ?? null,
+      phone: authUser.phone ?? authUser.user_metadata?.phone ?? authUser.user_metadata?.mobile ?? null,
+      role: authUser.app_metadata?.role ?? 'customer',
+      is_active: !authUser.banned_until,
+      created_at: authUser.created_at ?? null,
+      updated_at: authUser.updated_at ?? null,
+    };
+  }
+
+  private async getAuthOnlyUsers(params: GetUsersParams): Promise<GetUsersResult> {
+    const { data, error } = await this.supabaseAdmin.auth.admin.listUsers({ page: 1, perPage: 1000 });
+    if (error) throw error;
+
+    let authUsers = data.users || [];
+    if (params.roles?.length) {
+      authUsers = authUsers.filter((user: any) => params.roles!.includes(user.app_metadata?.role ?? 'customer'));
+    }
+
+    if (params.search) {
+      const search = params.search.toLowerCase();
+      authUsers = authUsers.filter((user: any) => {
+        const profile = this.buildAuthOnlyProfile(user);
+        return [profile.name, profile.full_name, profile.email, profile.mobile, profile.phone, profile.role]
+          .filter(Boolean)
+          .some((value) => String(value).toLowerCase().includes(search));
+      });
+    }
+
+    const sortColumn = params.sortColumn === 'full_name' ? 'name' : params.sortColumn === 'phone' ? 'mobile' : params.sortColumn;
+    authUsers.sort((left: any, right: any) => {
+      const leftProfile = this.buildAuthOnlyProfile(left);
+      const rightProfile = this.buildAuthOnlyProfile(right);
+      const leftValue = String(leftProfile[sortColumn as keyof ReturnType<SupabaseUserRepository['buildAuthOnlyProfile']>] ?? '').toLowerCase();
+      const rightValue = String(rightProfile[sortColumn as keyof ReturnType<SupabaseUserRepository['buildAuthOnlyProfile']>] ?? '').toLowerCase();
+      return params.sortDirection === 'asc' ? leftValue.localeCompare(rightValue) : rightValue.localeCompare(leftValue);
+    });
+
+    const offset = (params.page - 1) * params.pageSize;
+    const paginatedUsers = authUsers.slice(offset, offset + params.pageSize);
+
+    return {
+      users: paginatedUsers.map((authUser: any) => ({
+        id: authUser.id,
+        email: authUser.email ?? null,
+        email_confirmed_at: authUser.email_confirmed_at ?? null,
+        last_sign_in_at: authUser.last_sign_in_at ?? null,
+        created_at: authUser.created_at ?? null,
+        updated_at: authUser.updated_at ?? null,
+        banned_until: authUser.banned_until ?? null,
+        profile: this.buildAuthOnlyProfile(authUser),
+      })),
+      total: authUsers.length,
+      page: params.page,
+      pageSize: params.pageSize,
+      totals: null,
+    };
+  }
+
   async getUsers(params: GetUsersParams): Promise<GetUsersResult> {
     const offset = (params.page - 1) * params.pageSize;
     let roles = params.roles || [];
@@ -107,7 +179,7 @@ export class SupabaseUserRepository implements IUserRepository {
       const sanitizedSearch = params.search.replace(/[%_]/g, (match: string) => `\\${match}`);
       const pattern = `%${sanitizedSearch}%`;
       profileQuery = profileQuery.or(
-        `full_name.ilike.${pattern},email.ilike.${pattern},phone.ilike.${pattern}`
+        `name.ilike.${pattern},email.ilike.${pattern},mobile.ilike.${pattern}`
       );
     }
 
@@ -115,6 +187,10 @@ export class SupabaseUserRepository implements IUserRepository {
       profileQuery.order(params.sortColumn, { ascending: params.sortDirection === 'asc', nullsFirst: params.sortDirection === 'asc' }).range(offset, offset + params.pageSize - 1),
       'get_users_profiles'
     );
+
+    if ((count ?? 0) === 0 && !roles.length && !params.search) {
+      return this.getAuthOnlyUsers(params);
+    }
 
     const profileIds = (profiles || []).map((p: any) => p.id);
     const authUsersMap: Record<string, any> = {};
@@ -161,7 +237,13 @@ export class SupabaseUserRepository implements IUserRepository {
         created_at: authUser?.created_at ?? profile.created_at ?? null,
         updated_at: authUser?.updated_at ?? profile.updated_at ?? null,
         banned_until: authUser?.banned_until ?? null,
-        profile
+        profile: {
+          ...profile,
+          full_name: profile.full_name ?? this.profileName(profile),
+          name: profile.name ?? this.profileName(profile),
+          phone: profile.phone ?? this.profileMobile(profile),
+          mobile: profile.mobile ?? this.profileMobile(profile),
+        }
       };
     });
 

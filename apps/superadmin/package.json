@@ -14,6 +14,7 @@
     "@tecbunny/admin-ui": "*",
     "@tecbunny/core": "*",
     "@tecbunny/database": "*",
+    "@tecbunny/infra": "*",
     "@tecbunny/types": "*",
     "next": "16.2.10",
     "pg": "^8.22.0",

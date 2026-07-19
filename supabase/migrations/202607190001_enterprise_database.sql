@@ -1,0 +1,16 @@
+-- Tecbunny Enterprise Database Migration
+-- Executes the production initializer from the repository root.
+-- The initializer is phase-ordered internally:
+-- 01 core/extensions/types/helpers
+-- 02 authentication/users/staff/customers/sessions
+-- 03 company structure/sales agents/areas
+-- 04 products/catalog
+-- 05 warehouses/suppliers/inventory/purchases
+-- 06 orders/quotes/cart/taxes/discounts
+-- 07 payments/invoices/recovery
+-- 08 service/warranty/amc/logistics
+-- 09 marketing/crm/notifications/content
+-- 10 WABA/webmail/templates
+-- 11 reports/audit/activity/analytics/webhooks
+-- 12 settings/integrations/preferences/hr/files
+\ir ../../database.sql
