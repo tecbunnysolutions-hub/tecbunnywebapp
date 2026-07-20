@@ -118,11 +118,27 @@ export async function POST(request: NextRequest) {
       updated_at: new Date().toISOString()
     };
 
-    const { data, error } = await supabase
+    let insertResult = await supabase
       .from('products')
       .insert([productPayload])
       .select()
       .single();
+
+    if (insertResult.error && /short_description/i.test(insertResult.error.message || '')) {
+      const fallbackPayload = { ...productPayload } as Record<string, unknown>;
+      delete fallbackPayload.short_description;
+      if (!fallbackPayload.description && shortDescription) {
+        fallbackPayload.description = shortDescription;
+      }
+
+      insertResult = await supabase
+        .from('products')
+        .insert([fallbackPayload])
+        .select()
+        .single();
+    }
+
+    const { data, error } = insertResult;
 
     if (error) {
       console.error('[Scraper Import Error]:', error);

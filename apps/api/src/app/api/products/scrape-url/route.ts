@@ -237,11 +237,27 @@ export async function POST(request: NextRequest) {
       stock_quantity: 1
     };
 
-    const { data: insertedProduct, error: dbError } = await supabase
+    let insertResult = await supabase
       .from('products')
       .insert(productPayload)
       .select()
       .single();
+
+    if (insertResult.error && /short_description/i.test(insertResult.error.message || '')) {
+      const fallbackPayload = { ...productPayload } as Record<string, unknown>;
+      delete fallbackPayload.short_description;
+      if (!fallbackPayload.description && result.shortDescription) {
+        fallbackPayload.description = result.shortDescription;
+      }
+
+      insertResult = await supabase
+        .from('products')
+        .insert(fallbackPayload)
+        .select()
+        .single();
+    }
+
+    const { data: insertedProduct, error: dbError } = insertResult;
 
     if (dbError) {
       throw new Error(`Database Error: ${dbError.message}`);
