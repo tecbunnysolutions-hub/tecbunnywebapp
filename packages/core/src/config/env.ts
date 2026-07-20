@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { logger } from '../logger';
+import { resolveSupabasePublicEnv, resolveSupabaseServiceEnv } from '@tecbunny/database';
 
 // Standardized unified Zod schema for environment variables across the monorepo
 export const EnvSchema = z.object({
@@ -52,6 +53,7 @@ export const EnvSchema = z.object({
     environment: z.string().min(1, 'PayU Environment is required'),
     clientId: z.string().min(1, 'PayU Client ID is required'),
   }),
+  supabasePublicKeySource: z.enum(['publishable', 'anon']).optional(), // Backward compatibility helper
   turnstile: z.object({
     siteKey: z.string().min(1, 'Turnstile Site Key is required'),
     secretKey: z.string().min(1, 'Turnstile Secret Key is required'),
@@ -69,12 +71,33 @@ export class EnvironmentValidator {
   }
 
   private validateEnvironment() {
+    let supabasePublic: any = {};
+    let supabaseService: any = {};
+    try {
+      supabasePublic = resolveSupabasePublicEnv();
+    } catch (e: any) {
+      this.errors.push({
+        path: ['supabase', 'anonKey'],
+        message: e.message || 'Invalid public Supabase configuration',
+        code: z.ZodIssueCode.custom,
+      });
+    }
+    try {
+      supabaseService = resolveSupabaseServiceEnv();
+    } catch (e: any) {
+      this.errors.push({
+        path: ['supabase', 'serviceRoleKey'],
+        message: e.message || 'Invalid service Supabase configuration',
+        code: z.ZodIssueCode.custom,
+      });
+    }
+
     const unvalidated = {
       supabase: {
-        url: process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || '',
-        anonKey: process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || '',
-        serviceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY || '',
-        publicKeySource: process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ? 'publishable' : (process.env.NEXT_PUBLIC_SUPABASE_KEY_SOURCE || 'anon'),
+        url: supabasePublic.url || supabaseService.url || process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || '',
+        anonKey: supabasePublic.publicKey || '',
+        serviceRoleKey: supabaseService.serviceKey || '',
+        publicKeySource: supabasePublic.keySource || 'anon',
         dbPassword: process.env.SUPABASE_DB_PASSWORD,
         dbUrl: process.env.DATABASE_URL,
       },
@@ -148,6 +171,9 @@ export class EnvironmentValidator {
   }
 
   private shouldFailHard() {
+    if (process.env.TECBUNNY_VALIDATE_ENV === 'off') {
+      return false;
+    }
     return process.env.NODE_ENV === 'production'
       || process.env.CI === 'true'
       || process.env.TECBUNNY_VALIDATE_ENV === 'strict';

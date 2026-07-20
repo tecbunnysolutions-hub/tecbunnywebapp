@@ -77,7 +77,17 @@ export default function ManagementLayout({ children }: { children: React.ReactNo
     return [{ title: 'Workspace', items: allowed }] as NavSection[];
   }, [user]);
 
-  if (loading || !user) {
+  React.useEffect(() => {
+    if (!loading) {
+      if (!user) {
+        router.push('/');
+      } else if (user.role === 'customer') {
+        router.push('/');
+      }
+    }
+  }, [loading, user, router]);
+
+  if (loading || !user || user.role === 'customer') {
     return null;
   }
 

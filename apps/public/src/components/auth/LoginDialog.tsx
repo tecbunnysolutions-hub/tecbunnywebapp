@@ -150,9 +150,6 @@ export function LoginDialog({ children }: { children: React.ReactNode }) {
           
           const userRole = normalizeRole(profile?.role) ?? 'customer';
           
-          // Wait a bit longer for AuthProvider state to update
-          await new Promise(resolve => setTimeout(resolve, 500));
-          
           let redirectUrl: string;
           
           switch (userRole) {

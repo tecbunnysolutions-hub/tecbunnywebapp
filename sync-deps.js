@@ -32,7 +32,9 @@ for (const pkgPath of packageJsons) {
       if (!allDeps[dep]) allDeps[dep] = new Set();
       allDeps[dep].add(version);
     }
-  } catch (e) {}
+  } catch (e) {
+    console.error(`Error reading/parsing ${pkgPath}:`, e);
+  }
 }
 
 // Step 2: Compute max version
@@ -57,6 +59,7 @@ for (const [dep, versionsSet] of Object.entries(allDeps)) {
             if (versions[i].startsWith('^')) highest = versions[i];
         }
     } catch(e) {
+        console.warn(`Semver check failed for ${dep} between ${v1} and ${v2}, falling back to string comparison:`, e.message);
         // Fallback to simple string comparison if semver fails
         if (versions[i] > highest) highest = versions[i];
     }
@@ -107,7 +110,9 @@ for (const pkgPath of packageJsons) {
       fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n');
       console.log(`Updated ${path.relative(__dirname, pkgPath)}`);
     }
-  } catch (e) {}
+  } catch (e) {
+    console.error(`Error rewriting ${pkgPath}:`, e);
+  }
 }
 
 console.log('Synchronization complete.');

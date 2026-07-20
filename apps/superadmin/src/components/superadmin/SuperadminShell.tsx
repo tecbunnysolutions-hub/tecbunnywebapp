@@ -118,17 +118,17 @@ export function SuperadminShell({ children }: { children: React.ReactNode }) {
 
       {/* ── Sidebar ── */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-slate-200/80 flex flex-col transition-transform duration-300 lg:static lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-50 w-64 bg-zinc-900 border-r border-zinc-800/80 flex flex-col transition-transform duration-300 lg:static lg:translate-x-0 ${
           mobileOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
         {/* Logo */}
-        <div className="h-16 flex items-center gap-3 px-5 border-b border-slate-100 shrink-0">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-red-655 from-red-600 to-red-800 flex items-center justify-center text-white font-black text-sm shrink-0">
+        <div className="h-16 flex items-center gap-3 px-5 border-b border-zinc-800 shrink-0">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-red-600 to-red-800 flex items-center justify-center text-white font-black text-sm shrink-0">
             T
           </div>
           <div>
-            <p className="text-sm font-black uppercase tracking-tight text-slate-900 leading-tight">
+            <p className="text-sm font-black uppercase tracking-tight text-zinc-100 leading-tight">
               TecBunny
             </p>
             <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-red-500 leading-tight">
@@ -141,7 +141,7 @@ export function SuperadminShell({ children }: { children: React.ReactNode }) {
         <nav className="flex-1 overflow-y-auto no-scrollbar py-4 px-3 space-y-4">
           {NAV_SECTIONS.map((section) => (
             <div key={section.title}>
-              <p className="px-3 mb-1 text-[9px] font-bold uppercase tracking-widest text-slate-400">
+              <p className="px-3 mb-1 text-[9px] font-bold uppercase tracking-widest text-zinc-500">
                 {section.title}
               </p>
               <div className="space-y-0.5">
@@ -157,13 +157,13 @@ export function SuperadminShell({ children }: { children: React.ReactNode }) {
                       onClick={() => setMobileOpen(false)}
                       className={`flex items-center gap-2.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${
                         isActive
-                          ? 'bg-red-50 text-red-700 border border-red-100/50 shadow-sm'
-                          : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                          ? 'bg-red-950/40 text-red-400 border border-red-900/50 shadow-sm'
+                          : 'text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-100'
                       }`}
                     >
                       <Icon
                         className={`h-4 w-4 shrink-0 ${
-                          isActive ? 'text-red-600' : 'text-slate-400'
+                          isActive ? 'text-red-400' : 'text-zinc-500'
                         }`}
                       />
                       {item.label}
@@ -176,19 +176,19 @@ export function SuperadminShell({ children }: { children: React.ReactNode }) {
         </nav>
 
         {/* Sign out */}
-        <form action="/superadmin/mgmt/logout" method="post" className="border-t border-slate-100 p-2.5 shrink-0">
+        <form action="/superadmin/mgmt/logout" method="post" className="border-t border-zinc-800 p-2.5 shrink-0">
           <button
             type="submit"
-            className="flex w-full items-center gap-2.5 px-3 py-1.5 rounded-md text-xs font-semibold text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition-colors"
+            className="flex w-full items-center gap-2.5 px-3 py-1.5 rounded-md text-xs font-semibold text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-200 transition-colors"
           >
-            <LogOut className="h-4 w-4 shrink-0 text-slate-400" />
+            <LogOut className="h-4 w-4 shrink-0 text-zinc-500" />
             Sign out
           </button>
         </form>
       </aside>
 
       {/* ── Main area ── */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden bg-zinc-955 bg-zinc-950">
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden bg-zinc-950">
         {/* Topbar */}
         <header className="h-16 bg-zinc-900/30 border-b border-zinc-800/80 flex items-center justify-between px-4 sm:px-6 shrink-0 z-10">
           <div className="flex items-center gap-4 flex-1">

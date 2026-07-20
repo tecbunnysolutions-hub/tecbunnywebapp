@@ -1,5 +1,5 @@
 const fs = require('fs');
-const { execSync } = require('child_process');
+const { execSync, spawnSync } = require('child_process');
 const path = require('path');
 
 const projects = ['api', 'tecbunny', 'waba', 'superadmin', 'mgmt'];
@@ -41,18 +41,18 @@ for (const project of projects) {
   
   try {
     console.log(`Linking...`);
-    execSync(`vercel link --project ${project} --yes`, { cwd: tempDir, stdio: 'pipe' });
+    spawnSync('vercel', ['link', '--project', project, '--yes'], { cwd: tempDir, stdio: 'pipe' });
     
     let count = 1;
     for (const { key, value } of envVars) {
       console.log(`[${count++}/${envVars.length}] Adding ${key}...`);
       try {
-        execSync(`vercel env rm ${key} --yes`, { cwd: tempDir, stdio: 'ignore' }); // Remove if exists
+        spawnSync('vercel', ['env', 'rm', key, '--yes'], { cwd: tempDir, stdio: 'ignore' }); // Remove if exists
       } catch (e) {
         // Ignore if it doesn't exist
       }
       try {
-        execSync(`vercel env add ${key} production --value "${value}" --yes`, { cwd: tempDir, stdio: 'ignore' });
+        spawnSync('vercel', ['env', 'add', key, 'production', '--value', value, '--yes'], { cwd: tempDir, stdio: 'ignore' });
       } catch (err) {
         console.error(`Failed to add ${key}:`, err.message);
       }

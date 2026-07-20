@@ -104,6 +104,28 @@ jobs:
           NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
           NEXT_PUBLIC_SUPABASE_ANON_KEY: placeholder
           NEXT_TELEMETRY_DISABLED: 1
+          TECBUNNY_VALIDATE_ENV: off
+
+  # ─── Lint & UX Validation ───────────────────────────────────────────────────
+  validate:
+    name: Lint & UX Validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Run ESLint
+        run: npm run lint
+      - name: Run Product UX validation
+        run: npm run validate:product-ux
+        env:
+          TECBUNNY_VALIDATE_ENV: off
+          NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: placeholder
 
   # ─── Database migration check ───────────────────────────────────────────────
   migrations:
@@ -111,12 +133,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Validate final SQL file exists and is non-empty
+      - name: Validate final SQL file exists, is non-empty, and has no DROP SCHEMA
         run: |
           echo "Checking final SQL file..."
           if [ ! -s database.sql ]; then
             echo "ERROR: database.sql is missing or empty"
             exit 1
           fi
-          echo "OK: database.sql"
+          if grep -qi "DROP SCHEMA" database.sql; then
+            echo "ERROR: database.sql contains DROP SCHEMA command! This is destructive for production."
+            exit 1
+          fi
+          echo "OK: database.sql is non-destructive"
+
 

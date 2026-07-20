@@ -78,20 +78,20 @@ async function fetchWithTimeout(url, options) {
   }
 }
 
+chrome.runtime.onStartup.addListener(() => {
+  chrome.storage.local.remove(['accessToken']);
+});
+
+chrome.runtime.onInstalled.addListener(() => {
+  chrome.storage.local.remove(['accessToken']);
+});
+
 async function getAccessToken() {
   const sessionCredentials = await new Promise(resolve => {
     chrome.storage.session.get(['accessToken'], resolve);
   });
 
-  if (sessionCredentials.accessToken) {
-    return sessionCredentials.accessToken;
-  }
-
-  const legacyCredentials = await new Promise(resolve => {
-    chrome.storage.local.get(['accessToken'], resolve);
-  });
-
-  return legacyCredentials.accessToken || '';
+  return sessionCredentials.accessToken || '';
 }
 
 async function sendProductData(productData) {

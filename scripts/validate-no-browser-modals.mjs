@@ -4,7 +4,7 @@ import { join, relative } from 'node:path';
 const root = process.cwd();
 const appSourceRoot = join(root, 'apps');
 const sourceExtensions = new Set(['.ts', '.tsx', '.js', '.jsx']);
-const forbiddenPatterns = [/\balert\s*\(/, /\bconfirm\s*\(/, /\bwindow\.confirm\s*\(/];
+const forbiddenPatterns = [/\balert\s*\(/, /\bconfirm\s*\(/, /\bwindow\.confirm\s*\(/, /\bprompt\s*\(/, /\bwindow\.prompt\s*\(/];
 const violations = [];
 
 function extensionOf(filePath) {

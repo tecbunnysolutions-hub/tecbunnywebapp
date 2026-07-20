@@ -9,8 +9,7 @@ import type { User as SupabaseUser } from '@supabase/supabase-js';
 
 import { logger } from '@tecbunny/core';
 
-import { Button } from "@tecbunny/ui";
-import { useToast } from "@tecbunny/ui";
+import { Button, useToast, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Input, Label } from "@tecbunny/ui";
 
 import { EditProfileDialog } from '@/components/profile/EditProfileDialog';
 import { TwoFactorSetup } from '@/components/auth/TwoFactorSetup';
@@ -30,6 +29,9 @@ export default function UserProfile({ user, profile, salesAgentData, orders, ser
   const [agentStatus, setAgentStatus] = React.useState(salesAgentData);
   const [showTwoFactorSetup, setShowTwoFactorSetup] = React.useState(false);
   const [twoFactorStatus, setTwoFactorStatus] = React.useState<any>(null);
+  const [showDisable2FA, setShowDisable2FA] = React.useState(false);
+  const [disable2FACode, setDisable2FACode] = React.useState('');
+  const [isDisabling2FA, setIsDisabling2FA] = React.useState(false);
   const { toast } = useToast();
   const { updateUser } = useAuth();
 
@@ -81,15 +83,16 @@ export default function UserProfile({ user, profile, salesAgentData, orders, ser
     }
   };
 
-  const handleDisable2FA = async () => {
-    const code = prompt('Enter your 2FA code to disable two-factor authentication:');
-    if (!code) return;
+  const handleDisable2FASubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!disable2FACode.trim()) return;
 
+    setIsDisabling2FA(true);
     try {
       const response = await fetch('/api/auth/2fa/disable', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code }),
+        body: JSON.stringify({ code: disable2FACode.trim() }),
       });
 
       if (!response.ok) {
@@ -108,14 +111,19 @@ export default function UserProfile({ user, profile, salesAgentData, orders, ser
         title: '2FA Disabled',
         description: 'Two-factor authentication has been disabled for your account.',
       });
+      setShowDisable2FA(false);
+      setDisable2FACode('');
     } catch (error: any) {
       toast({
         variant: 'destructive',
         title: 'Error',
-        description: error.message,
+        description: error.message || 'Failed to disable 2FA',
       });
+    } finally {
+      setIsDisabling2FA(false);
     }
   };
+
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -437,7 +445,7 @@ export default function UserProfile({ user, profile, salesAgentData, orders, ser
                           <CheckCircle className="h-3 w-3" /> Enabled
                         </span>
                         <Button
-                          onClick={handleDisable2FA}
+                          onClick={() => setShowDisable2FA(true)}
                           variant="outline"
                           size="sm"
                           className="border-border bg-background text-foreground hover:bg-muted/50"
@@ -545,6 +553,53 @@ export default function UserProfile({ user, profile, salesAgentData, orders, ser
           }}
           onCancel={() => setShowTwoFactorSetup(false)}
         />
+      )}
+
+      {showDisable2FA && (
+        <Dialog open={showDisable2FA} onOpenChange={setShowDisable2FA}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle className="text-2xl text-center">Disable Two-Factor Authentication</DialogTitle>
+              <DialogDescription className="text-center">
+                Enter your 6-digit authentication code to disable 2FA.
+              </DialogDescription>
+            </DialogHeader>
+            <form onSubmit={handleDisable2FASubmit} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="disable-2fa-code">Authentication Code</Label>
+                <Input
+                  id="disable-2fa-code"
+                  type="text"
+                  placeholder="000000"
+                  maxLength={6}
+                  value={disable2FACode}
+                  onChange={(e) => setDisable2FACode(e.target.value.replace(/\D/g, ''))}
+                  disabled={isDisabling2FA}
+                  className="text-center tracking-widest text-lg font-mono"
+                  autoComplete="one-time-code"
+                  required
+                />
+              </div>
+              <div className="flex gap-2 justify-end">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => { setShowDisable2FA(false); setDisable2FACode(''); }}
+                  disabled={isDisabling2FA}
+                  className="border-border bg-background text-foreground hover:bg-muted/50"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={isDisabling2FA || disable2FACode.length !== 6}
+                >
+                  {isDisabling2FA ? 'Disabling...' : 'Disable 2FA'}
+                </Button>
+              </div>
+            </form>
+          </DialogContent>
+        </Dialog>
       )}
     </div>
   );

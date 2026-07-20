@@ -1,6 +1,16 @@
 import { PrismaClient } from '@tecbunny/types';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { logger } from '../logger';
+import { AsyncLocalStorage } from 'node:async_hooks';
+import type { UserRole } from '../roles';
+
+export interface PrismaServiceContext {
+  role: UserRole;
+  userId?: string;
+  permissions: string[];
+}
+
+export const prismaServiceContext = new AsyncLocalStorage<PrismaServiceContext>();
 
 // PrismaClient is attached to the `global` object in development to prevent
 // exhausting your database connection limit.
@@ -14,9 +24,11 @@ const globalForPrisma = globalThis as unknown as { prisma: PrismaClient | undefi
 
 const adapter = new PrismaPg(process.env.DATABASE_URL ?? '');
 
+const isProduction = process.env.NODE_ENV === 'production';
+
 const basePrisma = globalForPrisma.prisma ?? new PrismaClient({
   adapter,
-  log: ['query', 'error', 'info', 'warn'],
+  log: isProduction ? ['error', 'warn'] : ['query', 'error', 'info', 'warn'],
 });
 
 export const prisma = basePrisma.$extends({
@@ -27,19 +39,25 @@ export const prisma = basePrisma.$extends({
         let permissions: string[] = [];
         let userId: string | undefined;
 
-        try {
-          // Attempt to fetch context dynamically via Next.js
-          const { getServerAuthState } = await import('../server-role-guard');
-          const auth = await getServerAuthState();
-          role = auth.role;
-          permissions = auth.permissions;
-          userId = auth.session?.user?.id;
-        } catch (e) {
-          // If called outside Next.js request context (e.g., CLI or background jobs)
-          // Defaulting to system role or restricted based on your security posture.
-          // For now, assume background jobs have superadmin powers, but log a warning.
-          logger.warn('prisma_auth_fallback', { warning: 'Executing DB query outside Request context. Defaulting to superadmin.' });
-          role = 'superadmin';
+        const serviceCtx = prismaServiceContext.getStore();
+        if (serviceCtx) {
+          role = serviceCtx.role;
+          permissions = serviceCtx.permissions;
+          userId = serviceCtx.userId;
+        } else {
+          try {
+            // Attempt to fetch context dynamically via Next.js
+            const { getServerAuthState } = await import('../server-role-guard');
+            const auth = await getServerAuthState();
+            role = auth.role;
+            permissions = auth.permissions;
+            userId = auth.session?.user?.id;
+          } catch (e) {
+            // If called outside Next.js request context (e.g., CLI or background jobs)
+            // and no service context exists, fail closed.
+            logger.error('prisma_auth_error', { error: 'Executing DB query outside Request context without service context. Denying.' });
+            throw new Error('Forbidden: Database operation attempted outside authorization context.');
+          }
         }
 
         // Map Prisma operation to Policy Action

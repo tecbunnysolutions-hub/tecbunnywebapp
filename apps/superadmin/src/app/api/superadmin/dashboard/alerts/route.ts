@@ -34,13 +34,13 @@ export async function POST(request: NextRequest) {
 
   const body = await request.json().catch(() => ({}));
   const alertKey = typeof body.alertKey === 'string' ? body.alertKey.trim() : '';
-  const module = typeof body.module === 'string' ? body.module.trim() : '';
+  const moduleName = typeof body.module === 'string' ? body.module.trim() : '';
   const severity = typeof body.severity === 'string' ? body.severity.trim() : 'medium';
   const note = typeof body.note === 'string' ? body.note.trim().slice(0, 500) : null;
   const status = VALID_STATUSES.includes(body.status) ? body.status : 'acknowledged';
 
-  if (!alertKey || !module) {
-    return NextResponse.json({ error: 'alertKey and module are required' }, { status: 400 });
+  if (!alertKey || !moduleName) {
+    return NextResponse.json({ error: 'alertKey and moduleName are required' }, { status: 400 });
   }
 
   const supabase = createSupabaseServiceClient();
@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
     .from('enterprise_alert_acknowledgements')
     .insert({
       alert_key: alertKey,
-      module,
+      module: moduleName,
       severity,
       status,
       note,

@@ -64,7 +64,7 @@ function timeLabel(value: string) {
 }
 
 function MetricCard({ metric, index }: { metric: DashboardMetric; index: number }) {
-  const Icon = getMetricIcon(index);
+  const IconComponent = getMetricIcon(index);
   return (
     <Link
       href={metric.href ?? '#'}
@@ -77,7 +77,7 @@ function MetricCard({ metric, index }: { metric: DashboardMetric; index: number 
           <p className="mt-2 break-words text-2xl font-black tracking-tight text-white">{metric.displayValue}</p>
         </div>
         <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-zinc-800 bg-zinc-950 text-red-400">
-          <Icon className="h-4.5 w-4.5" />
+          {React.createElement(IconComponent, { className: "h-4.5 w-4.5" })}
         </span>
       </div>
       <div className="mt-4 flex items-center justify-between gap-2 text-[11px] text-zinc-500">

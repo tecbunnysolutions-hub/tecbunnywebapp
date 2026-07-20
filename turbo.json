@@ -73,6 +73,10 @@
       "cache": false,
       "persistent": true
     },
+    "test": {
+      "dependsOn": [],
+      "cache": false
+    },
     "clean": {
       "cache": false
     }

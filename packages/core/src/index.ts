@@ -27,3 +27,5 @@ export * from './hooks/use-customer-workspace';
 // export * from './services/customer.service';
 export * from './schemas/order.schema';
 export * from './store/globalDrawerStore';
+export { prisma, prismaServiceContext, type PrismaServiceContext } from './db/prisma';
+

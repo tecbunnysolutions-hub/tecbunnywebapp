@@ -130,9 +130,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Navigation functions
   function checkCredentials() {
-    chrome.storage.local.get(['superadminUser', 'accessToken'], (localData) => {
+    chrome.storage.local.get(['superadminUser'], (localData) => {
       chrome.storage.session.get(['accessToken'], (sessionData) => {
-        const accessToken = sessionData.accessToken || localData.accessToken;
+        const accessToken = sessionData.accessToken;
         if (!localData.superadminUser || !accessToken) {
           // First-time or reset credentials setup
           superadminUser.value = localData.superadminUser || '';

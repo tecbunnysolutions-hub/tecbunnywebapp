@@ -1,6 +1,6 @@
 {
   "name": "tecbunny-monorepo",
-  "packageManager": "npm@12.0.1",
+  "packageManager": "npm@11.12.1",
   "private": true,
   "workspaces": [
     "apps/*",
@@ -28,7 +28,8 @@
     "prepare": "husky",
     "postinstall": "npm run db:generate",
     "db:generate": "npx prisma generate --schema=./packages/types/prisma/schema.prisma",
-    "reset-db": "npm run reset-db --workspace=@tecbunny/infra"
+    "reset-db": "npm run reset-db --workspace=@tecbunny/infra",
+    "test": "turbo run test"
   },
   "devDependencies": {
     "eslint": "^9.39.5",
