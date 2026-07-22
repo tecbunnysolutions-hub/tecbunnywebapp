@@ -1,5 +1,5 @@
 import { createClient } from '@tecbunny/database';
-import { logger } from '@tecbunny/core';
+import { logger } from './logger';
 
 export interface PageContent {
   id: string;

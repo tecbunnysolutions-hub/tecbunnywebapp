@@ -1,9 +1,9 @@
-import { createClient } from '.';
+import { createClient } from '@tecbunny/database';
 
 import type { CartItem, CustomerCategory, AutoOffer, Coupon } from "./types";
 
 
-import { logger } from './logger';
+import { logger } from './logger-browser';
 import { resolveSiteUrl } from './site-url';
 
 type MarketingOfferRecord = {

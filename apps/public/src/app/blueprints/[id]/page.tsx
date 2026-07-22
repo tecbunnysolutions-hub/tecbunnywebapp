@@ -1,4 +1,4 @@
-import { createServiceClient } from "@tecbunny/core/server";
+import { createServiceClient } from "@tecbunny/database/admin";
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 

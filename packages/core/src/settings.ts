@@ -2,7 +2,7 @@ import { createServiceClient, isSupabaseServiceConfigured } from '@tecbunny/data
 import { createClient } from '@tecbunny/database';
 
 import { getPageContentServer } from './page-content';
-import { logger } from '@tecbunny/core';
+import { logger } from './logger';
 
 const DEFAULT_SUPPORT_PHONE = '+91 96041 36010';
 const DEFAULT_SUPPORT_EMAIL = 'support@tecbunny.com';

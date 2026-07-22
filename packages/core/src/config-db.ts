@@ -1,5 +1,5 @@
 import { unstable_cache } from 'next/cache';
-import { createServiceClient } from './server';
+import { createServiceClient } from '@tecbunny/database/admin';
 
 // Safe wrapper for Next.js cache that falls back to direct execution in workers
 function safeCache<T extends (...args: any[]) => Promise<any>>(

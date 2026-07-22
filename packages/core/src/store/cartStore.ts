@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import type { Product, CartItem, CustomerCategory, AutoOffer, Coupon } from '../types';
 import { toast } from '@tecbunny/ui';
 import { offerDiscountService } from '../offer-discount-service';
-import { logger } from '../logger';
+import { logger } from '../logger-browser';
 
 export interface CartPricing {
   subtotal: number;

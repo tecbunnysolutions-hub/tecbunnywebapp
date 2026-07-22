@@ -1,5 +1,4 @@
-import { isSupabaseServiceConfigured } from "@tecbunny/core/server";
-import { createServiceClient } from "@tecbunny/core/server";
+import { isSupabaseServiceConfigured, createServiceClient } from "@tecbunny/database/admin";
 import { ProductDetailPage } from '@/components/products/ProductDetailPage';
 import { Metadata } from 'next';
 import { cookies } from 'next/headers';

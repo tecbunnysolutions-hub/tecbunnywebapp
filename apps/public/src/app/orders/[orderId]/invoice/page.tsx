@@ -1,4 +1,4 @@
-import { createServiceClient } from "@tecbunny/core/server";
+import { createServiceClient } from "@tecbunny/database/admin";
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
 

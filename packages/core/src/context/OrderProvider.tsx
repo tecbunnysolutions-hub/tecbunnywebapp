@@ -7,7 +7,7 @@ import { createClient } from '@tecbunny/database';
 import { useToast } from "@tecbunny/ui";
 import { AuthContext } from './AuthProvider';
 import { useCartStore } from '../store/cartStore';
-import { logger } from '../logger';
+import { logger } from '../logger-browser';
 import { deserializeOrder, normalizeOrderStatus } from '../orders/normalizers';
 import { formatOrderNumber, calculateCartTotals } from '../order-utils';
 

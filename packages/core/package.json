@@ -7,7 +7,10 @@
     "./src/logger.ts": "./src/logger-browser.ts"
   },
   "exports": {
-    ".": "./src/index.ts",
+    ".": {
+      "browser": "./src/browser.ts",
+      "default": "./src/index.ts"
+    },
     "./admin-auth": "./src/admin-auth.ts",
     "./ai/gemini-service": "./src/ai/gemini-service.ts",
     "./ai/product-details": "./src/ai/product-details.ts",

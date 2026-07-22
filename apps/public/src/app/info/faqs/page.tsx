@@ -1,5 +1,5 @@
 import { createClient } from '@tecbunny/database';
-import { createServiceClient, isSupabaseServiceConfigured } from '@tecbunny/core/server';
+import { createServiceClient, isSupabaseServiceConfigured } from '@tecbunny/database/admin';
 import { Suspense } from 'react';
 
 import FaqsClient from '@/components/FaqsClient';
