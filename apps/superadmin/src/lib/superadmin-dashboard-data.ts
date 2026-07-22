@@ -486,7 +486,14 @@ export async function getSuperadminCommandCenterData(): Promise<SuperadminComman
     const text = `${row.event_name ?? ''} ${row.module ?? ''} ${row.action ?? ''} ${row.api_endpoint ?? ''}`.toLowerCase();
     return text.includes('ai') || text.includes('gemini');
   }).length;
-  const errors24h = analyticsRows.filter((row) => row.success === false || toNumber(row.http_status) >= 500).length;
+  const errorRows24h = analyticsRows.filter((row) => (row.success === false || toNumber(row.http_status) >= 500) && inRange(row.created_at, dayAgo));
+  const errors24h = errorRows24h.length;
+  const errorsByEndpoint = new Map<string, number>();
+  errorRows24h.forEach((row) => {
+    const endpoint = String(row.api_endpoint ?? row.module ?? row.event_name ?? 'unknown');
+    errorsByEndpoint.set(endpoint, (errorsByEndpoint.get(endpoint) ?? 0) + 1);
+  });
+  const topErrorEndpoints = Array.from(errorsByEndpoint.entries()).sort((a, b) => b[1] - a[1]).slice(0, 3);
   const avgExecution = analyticsRows.length > 0
     ? analyticsRows.reduce((total, row) => total + toNumber(row.execution_time_ms), 0) / analyticsRows.length
     : 0;
@@ -590,9 +597,9 @@ export async function getSuperadminCommandCenterData(): Promise<SuperadminComman
     }] : []),
     ...(errors24h > 0 ? [{
       module: 'Platform reliability',
-      severity: errors24h > 20 ? 'critical' as DashboardSeverity : 'high' as DashboardSeverity,
-      businessImpact: `${errors24h} failed API or telemetry events were recorded in the last 24 hours.`,
-      rootCause: 'enterprise_analytics_events includes unsuccessful events or 5xx statuses.',
+      severity: errors24h > allowedErrors24h || errorBudgetRemaining < 25 ? 'critical' as DashboardSeverity : 'high' as DashboardSeverity,
+      businessImpact: `${errors24h} failed API or telemetry events were recorded in the last 24 hours${topErrorEndpoints.length > 0 ? ` — top offender: ${topErrorEndpoints[0][0]} (${topErrorEndpoints[0][1]} failure${topErrorEndpoints[0][1] === 1 ? '' : 's'})` : ''}. Error budget remaining against the ${sloTargetPercent}% availability SLO: ${integer.format(errorBudgetRemaining)}%.`,
+      rootCause: `enterprise_analytics_events includes unsuccessful events or 5xx statuses. By endpoint: ${topErrorEndpoints.length > 0 ? topErrorEndpoints.map(([endpoint, count]) => `${endpoint} (${count})`).join(', ') : 'no api_endpoint recorded on the failing events'}.`,
       filesAffected: ['supabase/migrations/202607190006_enterprise_analytics_logging.sql', 'apps/superadmin/src/lib/superadmin-dashboard-data.ts'],
       recommendedSolution: 'Create error-rate SLO thresholds and route failures into the notification center.',
       implementationSteps: ['Group errors by endpoint.', 'Add SLO budget widget.', 'Add incident acknowledgement workflow.'],
@@ -714,6 +721,7 @@ export async function getSuperadminCommandCenterData(): Promise<SuperadminComman
     metric({ key: 'api_availability_slo', label: `API Availability (SLO ${sloTargetPercent}%)`, value: apiAvailability24h, category: 'system', severity: apiAvailability24h < sloTargetPercent ? 'high' : 'ok', source: 'enterprise_analytics_events 24h', percent: true }),
     metric({ key: 'error_budget_remaining', label: 'Error Budget Remaining (24h)', value: errorBudgetRemaining, category: 'system', severity: errorBudgetRemaining < 25 ? 'high' : errorBudgetRemaining < 50 ? 'medium' : 'ok', source: `SLO ${sloTargetPercent}% over enterprise_analytics_events`, percent: true }),
     metric({ key: 'p95_latency', label: 'P95 API Latency (24h)', value: p95Latency, category: 'system', severity: p95Latency > 2000 ? 'high' : p95Latency > 1000 ? 'medium' : 'ok', source: 'enterprise_analytics_events.execution_time_ms', displayValue: `${integer.format(p95Latency)} ms` }),
+    metric({ key: 'top_failing_endpoint', label: 'Top Failing Endpoint (24h)', value: topErrorEndpoints[0]?.[1] ?? 0, category: 'system', severity: topErrorEndpoints.length === 0 ? 'ok' : errors24h > allowedErrors24h ? 'critical' : 'high', source: 'enterprise_analytics_events grouped by api_endpoint', displayValue: topErrorEndpoints.length === 0 ? 'None' : `${topErrorEndpoints[0][0]} (${integer.format(topErrorEndpoints[0][1])})` }),
   ];
 
   const analyticsMetrics = [
