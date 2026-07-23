@@ -38,13 +38,27 @@ async function getFallbackPricing() {
   }));
   const withFallback = <T>(items: unknown[], fallback: T[]): T[] => items.length > 0 ? items as T[] : fallback;
   const getAccessory = (id: string, fallback: PriceEntry) => getItems('accessory').find(i => i.id === id) || fallback;
-  const getAnalogCamera = (id: string, fallback: PriceEntry) => getItems('analog_camera').find(i => i.id === id) || fallback;
-  const getIpCamera = (id: string, fallback: PriceEntry) => getItems('ip_camera').find(i => i.id === id) || fallback;
+  const getAnalogCamera = (candidates: string[], fallback: PriceEntry) => {
+    const items = getItems('analog_camera');
+    for (const cand of candidates) {
+      const match = items.find(i => i.id === cand || i.label.toLowerCase().includes(cand.toLowerCase()));
+      if (match) return match;
+    }
+    return items[0] || fallback;
+  };
+  const getIpCamera = (candidates: string[], fallback: PriceEntry) => {
+    const items = getItems('ip_camera');
+    for (const cand of candidates) {
+      const match = items.find(i => i.id === cand || i.label.toLowerCase().includes(cand.toLowerCase()));
+      if (match) return match;
+    }
+    return items[0] || fallback;
+  };
 
-  const analogDvr = getItems('analog_dvr').filter((entry) => [4, 8, 16].includes(entry.capacity) && entry.label.toLowerCase().includes('analog'));
+  const analogDvr = getItems('analog_dvr').filter((entry) => [4, 8, 16].includes(entry.capacity));
   const analogSmps = getItems('analog_smps').filter((entry) => [4, 8, 16].includes(entry.capacity));
-  const ipNvr = getItems('ip_nvr').filter((entry) => [8, 16, 32].includes(entry.capacity));
-  const ipPoe = getItems('ip_poe').filter((entry) => [4, 8, 16, 32].includes(entry.capacity));
+  const ipNvr = getItems('ip_nvr').filter((entry) => [4, 8, 16, 32].includes(entry.capacity));
+  const ipPoe = getItems('ip_poe').filter((entry) => [4, 8, 16, 24, 32].includes(entry.capacity));
   
   return {
     analog: {
@@ -52,12 +66,12 @@ async function getFallbackPricing() {
       smps: withFallback(analogSmps, FALLBACK_ANALOG_PRICING.smps),
       camera: {
         '2.4mp': {
-          standard: getAnalogCamera('analog-2.4-standard', FALLBACK_ANALOG_PRICING.camera['2.4mp'].standard),
-          dualLight: getAnalogCamera('analog-2.4-dual', FALLBACK_ANALOG_PRICING.camera['2.4mp'].dualLight),
+          standard: getAnalogCamera(['opt-cam-2mp-dome', '2.4', '2mp', 'dome'], FALLBACK_ANALOG_PRICING.camera['2.4mp'].standard),
+          dualLight: getAnalogCamera(['opt-cam-2mp-bullet', '2.4', 'dual', 'bullet'], FALLBACK_ANALOG_PRICING.camera['2.4mp'].dualLight),
         },
         '5mp': {
-          standard: getAnalogCamera('analog-5-standard', FALLBACK_ANALOG_PRICING.camera['5mp'].standard),
-          dualLight: getAnalogCamera('analog-5-dual', FALLBACK_ANALOG_PRICING.camera['5mp'].dualLight),
+          standard: getAnalogCamera(['opt-cam-5mp-bullet', '5mp'], FALLBACK_ANALOG_PRICING.camera['5mp'].standard),
+          dualLight: getAnalogCamera(['opt-cam-5mp-bullet', '5mp', 'dual'], FALLBACK_ANALOG_PRICING.camera['5mp'].dualLight),
         }
       },
       cable: withFallback(getItems('analog_cable'), FALLBACK_ANALOG_PRICING.cable)
@@ -67,12 +81,12 @@ async function getFallbackPricing() {
       poe: withFallback(ipPoe, FALLBACK_IP_PRICING.poe),
       camera: {
         '2mp': {
-          standard: getIpCamera('ip-2-standard', FALLBACK_IP_PRICING.camera['2mp'].standard),
-          dualLight: getIpCamera('ip-2-dual', FALLBACK_IP_PRICING.camera['2mp'].dualLight),
+          standard: getIpCamera(['opt-cam-ip-4mp-dome', '4mp', '2mp', 'dome'], FALLBACK_IP_PRICING.camera['2mp'].standard),
+          dualLight: getIpCamera(['opt-cam-ip-4mp-bullet', '4mp', 'bullet'], FALLBACK_IP_PRICING.camera['2mp'].dualLight),
         },
         '5mp': {
-          standard: getIpCamera('ip-4-standard', FALLBACK_IP_PRICING.camera['5mp'].standard),
-          dualLight: getIpCamera('ip-4-dual', FALLBACK_IP_PRICING.camera['5mp'].dualLight),
+          standard: getIpCamera(['opt-cam-ip-5mp-color', '5mp'], FALLBACK_IP_PRICING.camera['5mp'].standard),
+          dualLight: getIpCamera(['opt-cam-ip-5mp-color', '5mp', 'color'], FALLBACK_IP_PRICING.camera['5mp'].dualLight),
         }
       },
       cable: withFallback(getItems('ip_cable'), FALLBACK_IP_PRICING.cable)

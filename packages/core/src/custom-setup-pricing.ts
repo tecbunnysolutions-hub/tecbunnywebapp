@@ -49,24 +49,22 @@ export interface IpPricing {
 
 export const FALLBACK_ANALOG_PRICING: AnalogPricing = {
   dvr: [
-    { id: 'dvr-4', label: '4-Ch Analog (2.4MP Max)', capacity: 4, mrp: 2500, sale: 1800 },
-    { id: 'dvr-8', label: '8-Ch Analog (2.4MP Max)', capacity: 8, mrp: 3800, sale: 2800 },
-    { id: 'dvr-4-5mp', label: '4-Ch 5MP Analog', capacity: 4, mrp: 3500, sale: 2500 },
-    { id: 'dvr-8-5mp', label: '8-Ch 5MP Analog', capacity: 8, mrp: 5200, sale: 3900 },
-    { id: 'dvr-16-5mp', label: '16-Ch 5MP Analog', capacity: 16, mrp: 8500, sale: 6500 },
+    { id: 'opt-dvr-4ch', label: '4-Ch Analog DVR', capacity: 4, mrp: 3500, sale: 2999 },
+    { id: 'opt-dvr-8ch', label: '8-Ch Analog DVR', capacity: 8, mrp: 5500, sale: 4799 },
+    { id: 'opt-dvr-16ch', label: '16-Ch Analog DVR', capacity: 16, mrp: 9500, sale: 8299 },
   ],
   smps: [
-    { id: 'smps-8', label: '8-Channel SMPS (DVR Only)', capacity: 8, mrp: 1200, sale: 750 },
-    { id: 'smps-16', label: '16-Channel SMPS (DVR Only)', capacity: 16, mrp: 2200, sale: 1450 },
+    { id: 'opt-smps-4ch', label: '4 Channel 12V SMPS', capacity: 4, mrp: 999, sale: 749 },
+    { id: 'opt-smps-8ch', label: '8 Channel 12V SMPS', capacity: 8, mrp: 1699, sale: 1299 },
   ],
   camera: {
     '2.4mp': {
-      standard: { id: 'analog-2.4-standard', label: '2.4MP Normal', mrp: 1800, sale: 1150 },
-      dualLight: { id: 'analog-2.4-dual', label: '2.4MP Dual Light', mrp: 2200, sale: 1450 },
+      standard: { id: 'opt-cam-2mp-dome', label: '2.4MP Indoor Dome Camera', mrp: 2200, sale: 1857 },
+      dualLight: { id: 'opt-cam-2mp-bullet', label: '2.4MP Outdoor Bullet Camera', mrp: 2300, sale: 2043 },
     },
     '5mp': {
-      standard: { id: 'analog-5-standard', label: '5MP Normal', mrp: 2800, sale: 1950 },
-      dualLight: { id: 'analog-5-dual', label: '5MP Dual Light', mrp: 3400, sale: 2350 },
+      standard: { id: 'opt-cam-5mp-bullet', label: '5MP Night Vision Bullet Camera', mrp: 3800, sale: 3299 },
+      dualLight: { id: 'opt-cam-5mp-bullet', label: '5MP Night Vision Bullet Camera', mrp: 3800, sale: 3299 },
     },
   },
   cable: [
