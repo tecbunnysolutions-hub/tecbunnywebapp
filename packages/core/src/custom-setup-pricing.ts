@@ -49,117 +49,117 @@ export interface IpPricing {
 
 export const FALLBACK_ANALOG_PRICING: AnalogPricing = {
   dvr: [
-    { id: 'dvr-4', label: '4-Ch Analog (2.4MP Max)', capacity: 4, mrp: 0, sale: 0 },
-    { id: 'dvr-8', label: '8-Ch Analog (2.4MP Max)', capacity: 8, mrp: 0, sale: 0 },
-    { id: 'dvr-4-5mp', label: '4-Ch 5MP Analog', capacity: 4, mrp: 0, sale: 0 },
-    { id: 'dvr-8-5mp', label: '8-Ch 5MP Analog', capacity: 8, mrp: 0, sale: 0 },
-    { id: 'dvr-16-5mp', label: '16-Ch 5MP Analog', capacity: 16, mrp: 0, sale: 0 },
+    { id: 'dvr-4', label: '4-Ch Analog (2.4MP Max)', capacity: 4, mrp: 2500, sale: 1800 },
+    { id: 'dvr-8', label: '8-Ch Analog (2.4MP Max)', capacity: 8, mrp: 3800, sale: 2800 },
+    { id: 'dvr-4-5mp', label: '4-Ch 5MP Analog', capacity: 4, mrp: 3500, sale: 2500 },
+    { id: 'dvr-8-5mp', label: '8-Ch 5MP Analog', capacity: 8, mrp: 5200, sale: 3900 },
+    { id: 'dvr-16-5mp', label: '16-Ch 5MP Analog', capacity: 16, mrp: 8500, sale: 6500 },
   ],
   smps: [
-    { id: 'smps-8', label: '8-Channel SMPS (DVR Only)', capacity: 8, mrp: 0, sale: 0 },
-    { id: 'smps-16', label: '16-Channel SMPS (DVR Only)', capacity: 16, mrp: 0, sale: 0 },
+    { id: 'smps-8', label: '8-Channel SMPS (DVR Only)', capacity: 8, mrp: 1200, sale: 750 },
+    { id: 'smps-16', label: '16-Channel SMPS (DVR Only)', capacity: 16, mrp: 2200, sale: 1450 },
   ],
   camera: {
     '2.4mp': {
-      standard: { id: 'analog-2.4-standard', label: '2.4MP Normal', mrp: 0, sale: 0 },
-      dualLight: { id: 'analog-2.4-dual', label: '2.4MP Dual Light', mrp: 0, sale: 0 },
+      standard: { id: 'analog-2.4-standard', label: '2.4MP Normal', mrp: 1800, sale: 1150 },
+      dualLight: { id: 'analog-2.4-dual', label: '2.4MP Dual Light', mrp: 2200, sale: 1450 },
     },
     '5mp': {
-      standard: { id: 'analog-5-standard', label: '5MP Normal', mrp: 0, sale: 0 },
-      dualLight: { id: 'analog-5-dual', label: '5MP Dual Light', mrp: 0, sale: 0 },
+      standard: { id: 'analog-5-standard', label: '5MP Normal', mrp: 2800, sale: 1950 },
+      dualLight: { id: 'analog-5-dual', label: '5MP Dual Light', mrp: 3400, sale: 2350 },
     },
   },
   cable: [
-    { id: 'cable-coaxial-100m', label: 'CCTV 3+1 Cable (DVR Only)', coverageMeters: 100, mrpPerUnit: 0, salePerUnit: 0 },
+    { id: 'cable-coaxial-100m', label: 'CCTV 3+1 Cable (DVR Only)', coverageMeters: 100, mrpPerUnit: 22, salePerUnit: 15.5 },
   ],
 };
 
 export const FALLBACK_IP_PRICING: IpPricing = {
   nvr: [
-    { id: 'nvr-8', label: '8-Channel NVR (IP)', capacity: 8, mrp: 0, sale: 0 },
-    { id: 'nvr-16', label: '16-Channel NVR (IP)', capacity: 16, mrp: 0, sale: 0 },
-    { id: 'nvr-32', label: '32-Channel NVR (IP)', capacity: 32, mrp: 0, sale: 0 },
+    { id: 'nvr-8', label: '8-Channel NVR (IP)', capacity: 8, mrp: 5500, sale: 3950 },
+    { id: 'nvr-16', label: '16-Channel NVR (IP)', capacity: 16, mrp: 9500, sale: 6800 },
+    { id: 'nvr-32', label: '32-Channel NVR (IP)', capacity: 32, mrp: 16500, sale: 12200 },
   ],
   poe: [
-    { id: 'poe-4-normal', label: '4-Port POE Switch (Normal)', capacity: 4, variant: 'normal', mrp: 0, sale: 0 },
-    { id: 'poe-8-normal', label: '8-Port POE Switch (Normal)', capacity: 8, variant: 'normal', mrp: 0, sale: 0 },
-    { id: 'poe-16-normal', label: '16-Port POE Switch (Normal)', capacity: 16, variant: 'normal', mrp: 0, sale: 0 },
-    { id: 'poe-24-normal', label: '24-Port POE Switch (Normal)', capacity: 24, variant: 'normal', mrp: 0, sale: 0 },
-    { id: 'poe-4-giga', label: '4-Port POE Switch (GIGA)', capacity: 4, variant: 'giga', mrp: 0, sale: 0 },
-    { id: 'poe-8-giga', label: '8-Port POE Switch (GIGA)', capacity: 8, variant: 'giga', mrp: 0, sale: 0 },
-    { id: 'poe-16-giga', label: '16-Port POE Switch (GIGA)', capacity: 16, variant: 'giga', mrp: 0, sale: 0 },
-    { id: 'poe-24-giga', label: '24-Port POE Switch (GIGA)', capacity: 24, variant: 'giga', mrp: 0, sale: 0 },
+    { id: 'poe-4-normal', label: '4-Port POE Switch (Normal)', capacity: 4, variant: 'normal', mrp: 2800, sale: 1850 },
+    { id: 'poe-8-normal', label: '8-Port POE Switch (Normal)', capacity: 8, variant: 'normal', mrp: 4500, sale: 3200 },
+    { id: 'poe-16-normal', label: '16-Port POE Switch (Normal)', capacity: 16, variant: 'normal', mrp: 8900, sale: 6400 },
+    { id: 'poe-24-normal', label: '24-Port POE Switch (Normal)', capacity: 24, variant: 'normal', mrp: 13500, sale: 9800 },
+    { id: 'poe-4-giga', label: '4-Port POE Switch (GIGA)', capacity: 4, variant: 'giga', mrp: 3600, sale: 2600 },
+    { id: 'poe-8-giga', label: '8-Port POE Switch (GIGA)', capacity: 8, variant: 'giga', mrp: 5800, sale: 4200 },
+    { id: 'poe-16-giga', label: '16-Port POE Switch (GIGA)', capacity: 16, variant: 'giga', mrp: 11200, sale: 8200 },
+    { id: 'poe-24-giga', label: '24-Port POE Switch (GIGA)', capacity: 24, variant: 'giga', mrp: 16800, sale: 12500 },
   ],
   camera: {
     '2mp': {
-      standard: { id: 'ip-2-standard', label: '2MP Normal', mrp: 0, sale: 0 },
-      dualLight: { id: 'ip-2-dual', label: '2MP Dual Light', mrp: 0, sale: 0 },
+      standard: { id: 'ip-2-standard', label: '2MP Normal', mrp: 2500, sale: 1650 },
+      dualLight: { id: 'ip-2-dual', label: '2MP Dual Light', mrp: 3100, sale: 2150 },
     },
     '5mp': {
-      standard: { id: 'ip-4-standard', label: '4MP Normal', mrp: 0, sale: 0 },
-      dualLight: { id: 'ip-4-dual', label: '4MP Dual Light', mrp: 0, sale: 0 },
+      standard: { id: 'ip-4-standard', label: '4MP Normal', mrp: 3800, sale: 2750 },
+      dualLight: { id: 'ip-4-dual', label: '4MP Dual Light', mrp: 4500, sale: 3250 },
     },
   },
   cable: [
-    { id: 'cable-lan-cat5', label: 'LAN Cat5 Cable (100m)', coverageMeters: 100, mrpPerUnit: 0, salePerUnit: 0 },
-    { id: 'cable-lan-cat6', label: 'LAN Cat6 Cable (100m)', coverageMeters: 100, mrpPerUnit: 0, salePerUnit: 0 },
+    { id: 'cable-lan-cat5', label: 'LAN Cat5 Cable (100m)', coverageMeters: 100, mrpPerUnit: 28, salePerUnit: 19.5 },
+    { id: 'cable-lan-cat6', label: 'LAN Cat6 Cable (100m)', coverageMeters: 100, mrpPerUnit: 38, salePerUnit: 26.5 },
   ],
 };
 
 export const FALLBACK_HDD_OPTIONS: PriceEntry[] = [
-  { id: 'hdd-surveillance-500gb', label: '500 GB Surveillance HDD', mrp: 0, sale: 0 },
-  { id: 'hdd-surveillance-1tb', label: '1 TB Surveillance HDD', mrp: 0, sale: 0 },
-  { id: 'hdd-surveillance-2tb', label: '2 TB Surveillance HDD', mrp: 0, sale: 0 },
+  { id: 'hdd-surveillance-500gb', label: '500 GB Surveillance HDD', mrp: 2200, sale: 1450 },
+  { id: 'hdd-surveillance-1tb', label: '1 TB Surveillance HDD', mrp: 4200, sale: 3150 },
+  { id: 'hdd-surveillance-2tb', label: '2 TB Surveillance HDD', mrp: 6800, sale: 4950 },
 ];
 
 export const FALLBACK_MONITOR_OPTION: PriceEntry = {
   id: 'monitor-19',
   label: '19-inch LED Monitor',
-  mrp: 0,
-  sale: 0,
+  mrp: 5500,
+  sale: 3800,
 };
 
 export const FALLBACK_MONITOR_OPTIONS: PriceEntry[] = [
   {
     id: 'monitor-19',
     label: '19-inch LED Monitor',
-    mrp: 0,
-    sale: 0,
+    mrp: 5500,
+    sale: 3800,
   },
   {
     id: 'monitor-22',
     label: '22-inch LED Monitor',
-    mrp: 0,
-    sale: 0,
+    mrp: 7800,
+    sale: 5400,
   },
 ];
 
 export const FALLBACK_WALL_MOUNT_ADDON: PriceEntry = {
   id: 'wall-mount-addon',
   label: 'Wall Mount Installation Kit',
-  mrp: 0,
-  sale: 0,
+  mrp: 600,
+  sale: 350,
 };
 
 export const FALLBACK_SPIKE_GUARD_OPTION: PriceEntry = {
   id: 'spike-guard',
   label: 'Spike Guard / Power Surge Protector',
-  mrp: 0,
-  sale: 0,
+  mrp: 750,
+  sale: 450,
 };
 
 export const FALLBACK_RACK_OPTIONS: PriceEntry[] = [
   {
     id: 'rack-2u',
     label: '2U Wall Mount Rack',
-    mrp: 0,
-    sale: 0,
+    mrp: 1800,
+    sale: 1200,
   },
   {
     id: 'rack-3u',
     label: '3U Wall Mount Rack',
-    mrp: 0,
-    sale: 0,
+    mrp: 2400,
+    sale: 1650,
   },
 ];
 
@@ -167,16 +167,16 @@ export const FALLBACK_CONDUIT_PIPE_OPTIONS: PriceEntry[] = [
   {
     id: 'conduit-pipe',
     label: 'Conduit Pipe',
-    mrp: 0,
-    sale: 0,
+    mrp: 800,
+    sale: 500,
   },
 ];
 
 export const FALLBACK_INSTALLATION_OPTION: PriceEntry = {
   id: 'installation',
   label: 'On-site Installation & Configuration',
-  mrp: 0,
-  sale: 0,
+  mrp: 2500,
+  sale: 1500,
 };
 
 
@@ -241,9 +241,9 @@ export function resolvePricePair(
   fallbackMrp: number,
   fallbackSale: number
 ): { mrp: number; sale: number } {
-  const mrpSource = option?.unitPrice ?? component?.unitPrice ?? component?.basePrice ?? fallbackMrp;
-  const saleMeta = option ? SALE_PRICE_METADATA_KEYS.map((key) => readNumericMetadata(option.metadata ?? null, key)).find((value) => value !== null) : null;
-  const saleSource = saleMeta ?? fallbackSale ?? mrpSource;
+  const mrpSource = (option?.unitPrice || component?.unitPrice || component?.basePrice || fallbackMrp);
+  const saleMeta = option ? SALE_PRICE_METADATA_KEYS.map((key) => readNumericMetadata(option.metadata ?? null, key)).find((value) => value !== null && value > 0) : null;
+  const saleSource = (saleMeta || fallbackSale || mrpSource);
   
   const rawMrp = Math.max(0, mrpSource || 0);
   const rawSale = Math.max(0, saleSource || 0);

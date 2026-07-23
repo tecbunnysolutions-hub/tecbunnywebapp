@@ -11,6 +11,7 @@ import {
   Users,
   Package,
   Wrench,
+  SlidersHorizontal,
   CreditCard,
   Activity,
   Bot,
@@ -56,6 +57,7 @@ const NAV_SECTIONS: NavSection[] = [
     items: [
       { href: '/superadmin/mgmt/products', label: 'Products', icon: Package },
       { href: '/superadmin/mgmt/services', label: 'Services', icon: Wrench },
+      { href: '/superadmin/mgmt/custom-setups', label: 'Custom Setups', icon: SlidersHorizontal },
       { href: '/superadmin/mgmt/payment-settings', label: 'Payment Settings', icon: CreditCard },
       { href: '/superadmin/mgmt/marketing', label: 'Marketing', icon: Activity },
     ],
