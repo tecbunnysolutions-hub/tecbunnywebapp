@@ -65,7 +65,29 @@ export async function proxy(request: NextRequest, event: NextFetchEvent) {
         'POST /api/promotions/claim-viral',
         'POST /api/promotions/free-installation-claim',
         'POST /api/quotes',
-        'POST /api/uploads/quote-documents'
+        'POST /api/uploads/quote-documents',
+        // The tRPC catch-all route (/api/trpc/[trpc]) hosts a mix of public and
+        // protected procedures (see packages/rpc/src/routers/*.ts -- e.g.
+        // featureFlags.getAll, coupons.getAll/getByCode/getById, offers.getAll,
+        // projects.getAll, pageContent.get, contactMessages.submit are all
+        // `publicProcedure`, called anonymously by every public-site page load).
+        // This gateway-level auth wall has no visibility into individual
+        // procedure names -- httpBatchLink can even batch several procedure
+        // calls into one comma-joined path (e.g.
+        // /api/trpc/featureFlags.getAll,pageContent.get) -- so it was blocking
+        // ALL anonymous tRPC calls with a 307 redirect to /login, which
+        // surfaced as real "failed API/telemetry events" for anonymous
+        // visitors (e.g. featureFlags.getAll) in the Superadmin Platform
+        // Reliability notification. tRPC already enforces its own auth
+        // boundary correctly: `protectedProcedure` (packages/rpc/src/trpc.ts)
+        // throws UNAUTHORIZED unless `ctx.session.user` is set, and
+        // `createContext` (packages/rpc/src/context.ts) independently verifies
+        // the superadmin cookie or Supabase bearer token against the real Auth
+        // API -- so this is not a case of removing real protection, just an
+        // incorrect/redundant duplicate gate at the wrong layer. Rate limiting
+        // and CORS/security headers in executeUnifiedPolicyMiddleware still
+        // apply to every request regardless of this publicRoutes entry.
+        '/api/trpc',
       ],
     });
     emitEnterpriseProxyTelemetry(request, { application: 'api', response, startedAt, event, sameOriginIngest: true });
