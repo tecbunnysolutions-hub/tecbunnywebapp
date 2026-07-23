@@ -10,10 +10,19 @@ type HealthCheck = {
   detail: string;
 };
 
+type ApiFailure = {
+  endpoint: string;
+  method: string;
+  status: number;
+  count: number;
+  problem: string;
+};
+
 type HealthResponse = {
   status: string;
   service: string;
   checks: HealthCheck[];
+  apiFailures?: ApiFailure[];
   timestamp: string;
   version: string;
   environment: string;
@@ -168,6 +177,53 @@ export default function SystemHealthPage() {
           </div>
         )}
       </section>
+
+      {health?.apiFailures && health.apiFailures.length > 0 && (
+        <section aria-label="API failure log" className="rounded-xl border border-red-500/30 bg-red-500/10 p-5">
+          <div className="flex items-start gap-3">
+            <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-red-400" />
+            <div className="min-w-0 flex-1">
+              <h2 className="text-base font-bold text-white">API Failure Details</h2>
+              <p className="mt-1 text-sm leading-6 text-red-200/70">
+                The following API endpoints recorded errors within the last 24 hours. Investigate the corresponding services to restore full availability.
+              </p>
+              
+              <div className="mt-4 overflow-hidden rounded-lg border border-zinc-800 bg-zinc-950/60 p-4">
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-zinc-900 text-sm">
+                    <thead>
+                      <tr className="text-left font-bold text-zinc-500">
+                        <th className="pb-2 pr-3 uppercase text-[11px] tracking-wider">Method</th>
+                        <th className="pb-2 px-3 uppercase text-[11px] tracking-wider">Endpoint</th>
+                        <th className="pb-2 px-3 text-center uppercase text-[11px] tracking-wider">Status</th>
+                        <th className="pb-2 px-3 text-center uppercase text-[11px] tracking-wider">Failures</th>
+                        <th className="pb-2 pl-3 uppercase text-[11px] tracking-wider">Problem</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-zinc-900 text-zinc-300">
+                      {health.apiFailures.map((ep, idx) => (
+                        <tr key={`${ep.method}-${ep.endpoint}-${ep.status}-${idx}`} className="hover:bg-zinc-900/40">
+                          <td className="py-2.5 pr-3 font-mono font-bold text-zinc-400">{ep.method}</td>
+                          <td className="py-2.5 px-3 font-mono truncate max-w-[220px]" title={ep.endpoint}>{ep.endpoint}</td>
+                          <td className="py-2.5 px-3 text-center">
+                            <span className={`px-2 py-0.5 rounded font-mono font-bold text-xs ${
+                              ep.status >= 500 ? 'bg-red-500/20 text-red-300' : 'bg-amber-500/20 text-amber-300'
+                            }`}>
+                              {ep.status}
+                            </span>
+                          </td>
+                          <td className="py-2.5 px-3 text-center font-mono font-bold text-zinc-400">{ep.count}</td>
+                          <td className="py-2.5 pl-3 text-zinc-400 leading-normal">{ep.problem}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
 
       {health && (
         <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 text-xs text-zinc-500">

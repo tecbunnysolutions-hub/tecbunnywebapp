@@ -228,6 +228,41 @@ function NotificationList({ issues, onRefresh }: { issues: DashboardIssue[]; onR
               <p className="text-sm font-black text-white">{issue.module}</p>
               <p className="mt-1 text-xs leading-5 text-zinc-300">{issue.businessImpact}</p>
               <p className="mt-2 text-[11px] font-semibold uppercase tracking-wider text-zinc-500">{issue.recommendedSolution}</p>
+              {issue.failingEndpoints && issue.failingEndpoints.length > 0 && (
+                <div className="mt-3 overflow-hidden rounded border border-zinc-850 bg-zinc-950/60 p-3">
+                  <h4 className="text-[10px] font-bold uppercase tracking-wider text-red-400 mb-2">API Failure Details</h4>
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-zinc-900 text-[10px] sm:text-[11px]">
+                      <thead>
+                        <tr className="text-left font-bold text-zinc-500">
+                          <th className="pb-1.5 pr-2 uppercase">Method</th>
+                          <th className="pb-1.5 px-2 uppercase">Endpoint</th>
+                          <th className="pb-1.5 px-2 text-center uppercase">Status</th>
+                          <th className="pb-1.5 px-2 text-center uppercase">Failures</th>
+                          <th className="pb-1.5 pl-2 uppercase">Problem</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-zinc-900 text-zinc-300">
+                        {issue.failingEndpoints.map((ep, idx) => (
+                          <tr key={`${ep.method}-${ep.endpoint}-${ep.status}-${idx}`} className="hover:bg-zinc-900/40">
+                            <td className="py-1.5 pr-2 font-mono font-bold text-zinc-400">{ep.method}</td>
+                            <td className="py-1.5 px-2 font-mono truncate max-w-[150px] sm:max-w-[220px]" title={ep.endpoint}>{ep.endpoint}</td>
+                            <td className="py-1.5 px-2 text-center">
+                              <span className={`px-1.5 py-0.5 rounded font-mono font-bold ${
+                                ep.status >= 500 ? 'bg-red-500/20 text-red-300' : 'bg-amber-500/20 text-amber-300'
+                              }`}>
+                                {ep.status}
+                              </span>
+                            </td>
+                            <td className="py-1.5 px-2 text-center font-mono font-bold text-zinc-400">{ep.count}</td>
+                            <td className="py-1.5 pl-2 text-zinc-400 leading-normal">{ep.problem}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
               <div className="mt-2 flex flex-wrap items-center gap-2">
                 {issue.acknowledged ? (
                   <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-400">

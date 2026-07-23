@@ -40,6 +40,7 @@ export type DashboardIssue = {
   acknowledged?: boolean;
   acknowledgedBy?: string;
   assignedTo?: string;
+  failingEndpoints?: { endpoint: string; method: string; status: number; count: number; problem: string }[];
 };
 
 export type DashboardInsight = {
@@ -393,7 +394,7 @@ export async function getSuperadminCommandCenterData(): Promise<SuperadminComman
     fetchRows<Record<string, unknown>>(supabase, 'sls_leads', 'id,first_name,last_name,company_name,converted_customer_id,created_at', issues, (query) => query.order('created_at', { ascending: false })),
     fetchRows<Record<string, unknown>>(supabase, 'mkt_campaigns', 'id,name,status,created_at', issues, (query) => query.order('created_at', { ascending: false })),
     fetchRows<Record<string, unknown>>(supabase, 'sup_tickets', 'id,ticket_number,subject,status,assigned_to,is_sla_breached,resolved_at,created_at', issues, (query) => query.order('created_at', { ascending: false })),
-    fetchRows<Record<string, unknown>>(supabase, 'enterprise_analytics_events', 'id,event_name,event_category,application,module,api_endpoint,action,success,http_status,execution_time_ms,created_at:occurred_at,occurred_at', issues, (query) => query.order('occurred_at', { ascending: false })),
+    fetchRows<Record<string, unknown>>(supabase, 'enterprise_analytics_events', 'id,event_name,event_category,application,module,api_endpoint,action,success,http_status,http_method,execution_time_ms,created_at:occurred_at,occurred_at', issues, (query) => query.order('occurred_at', { ascending: false })),
     fetchRows<Record<string, unknown>>(supabase, 'enterprise_staff_activity_logs', 'id,user_email,role,module,action,description,success,created_at', issues, (query) => query.order('created_at', { ascending: false })),
     fetchRows<Record<string, unknown>>(supabase, 'enterprise_audit_logs', 'id,user_email,module,action,entity_type,entity_id,success,created_at', issues, (query) => query.order('created_at', { ascending: false })),
     fetchRows<Record<string, unknown>>(supabase, 'sys_auth_login_history', 'id,user_id,is_success,failure_reason,login_attempt_at', issues, (query) => query.order('login_attempt_at', { ascending: false })),
@@ -490,11 +491,41 @@ export async function getSuperadminCommandCenterData(): Promise<SuperadminComman
   const errorRows24h = analyticsRows.filter((row) => (row.success === false || toNumber(row.http_status) >= 500) && inRange(row.created_at, dayAgo));
   const errors24h = errorRows24h.length;
   const errorsByEndpoint = new Map<string, number>();
+  const errorsByGroup = new Map<string, { endpoint: string; method: string; status: number; count: number; problem: string }>();
+
   errorRows24h.forEach((row) => {
     const endpoint = String(row.api_endpoint ?? row.module ?? row.event_name ?? 'unknown');
     errorsByEndpoint.set(endpoint, (errorsByEndpoint.get(endpoint) ?? 0) + 1);
+
+    const method = String(row.http_method ?? 'GET');
+    const status = toNumber(row.http_status);
+    const key = `${method}:${endpoint}:${status}`;
+
+    let problem = 'Unspecified connection or application error.';
+    if (status === 400) problem = 'Bad Request - Malformed syntax or invalid parameters.';
+    else if (status === 401) problem = 'Unauthorized - Missing or invalid authentication token.';
+    else if (status === 403) problem = 'Forbidden - Client lacks permission to access resource.';
+    else if (status === 404) problem = 'Not Found - The requested API endpoint does not exist.';
+    else if (status === 405) problem = 'Method Not Allowed - HTTP method not supported for route.';
+    else if (status === 408) problem = 'Request Timeout - Server timed out waiting for request.';
+    else if (status === 422) problem = 'Unprocessable Entity - Request validation failed.';
+    else if (status === 429) problem = 'Too Many Requests - Rate limit exceeded.';
+    else if (status >= 500) {
+      if (status === 502) problem = 'Bad Gateway - Invalid response from upstream API worker.';
+      else if (status === 503) problem = 'Service Unavailable - Server overloaded or down.';
+      else if (status === 504) problem = 'Gateway Timeout - Upstream server timed out.';
+      else problem = `Internal Server Error (${status}) - Server encountered an unexpected error.`;
+    }
+
+    const existing = errorsByGroup.get(key);
+    if (existing) {
+      existing.count++;
+    } else {
+      errorsByGroup.set(key, { endpoint, method, status, count: 1, problem });
+    }
   });
   const topErrorEndpoints = Array.from(errorsByEndpoint.entries()).sort((a, b) => b[1] - a[1]).slice(0, 3);
+  const failingEndpoints = Array.from(errorsByGroup.values()).sort((a, b) => b.count - a.count);
   const avgExecution = analyticsRows.length > 0
     ? analyticsRows.reduce((total, row) => total + toNumber(row.execution_time_ms), 0) / analyticsRows.length
     : 0;
@@ -612,6 +643,7 @@ export async function getSuperadminCommandCenterData(): Promise<SuperadminComman
       filesAffected: ['supabase/migrations/202607190006_enterprise_analytics_logging.sql', 'apps/superadmin/src/lib/superadmin-dashboard-data.ts'],
       recommendedSolution: `SLO thresholds are enforced (warn <${sloWarningPercent}%, critical <${sloTargetPercent}% availability) and this alert is already routed into the notification center below — acknowledge it, assign an owner, or resolve once the failing endpoint is fixed.`,
       implementationSteps: ['Investigate the top failing endpoint listed above.', 'Acknowledge or assign an owner using the controls on this notification.', 'Escalate to on-call if the error budget stays below 25% across repeated 24h windows.'],
+      failingEndpoints,
     }] : []),
   ];
   const notifications = [...domainIssues, ...sourceIssues].slice(0, 10).map((issue) => {
