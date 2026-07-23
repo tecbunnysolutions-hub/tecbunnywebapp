@@ -48,6 +48,7 @@ export async function proxy(request: NextRequest, event: NextFetchEvent) {
         'POST /api/payment/payu/initiate',
         'POST /api/webhooks/orders/shipped',
         '/api/health',
+        'GET /api/settings',
         'GET /api/metadata',
         'GET /api/page-content',
         'GET /api/auto-offers',
