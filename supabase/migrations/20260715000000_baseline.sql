@@ -223,6 +223,51 @@ DO $$ BEGIN
     CREATE TYPE public.enum_sls_heat_level AS ENUM ('HOT', 'WARM', 'COLD', 'DEAD');
 EXCEPTION WHEN duplicate_object THEN null; END $$;
 
+-- ==========================================
+-- 2b. PREFLIGHT: Resolve view/table name collisions
+-- ==========================================
+-- Some environments contain leftover VIEWS / MATERIALIZED VIEWS / FOREIGN
+-- TABLES (e.g. from partial runs or manual experimentation) whose names collide
+-- with the base tables this baseline creates. Because "CREATE TABLE IF NOT
+-- EXISTS" silently skips when ANY relation of that name already exists, a
+-- colliding view leaves later foreign keys failing with:
+--   ERROR 42809: referenced relation "..." is not a table
+-- All of this schema's genuine views use the v_/mv_ prefixes, so any relation
+-- that is a VIEW/MATVIEW/FOREIGN TABLE while carrying a base-table module prefix
+-- is erroneous and is dropped here so the correct TABLE can be created.
+DO $$
+DECLARE
+    rec RECORD;
+BEGIN
+    FOR rec IN
+        SELECT c.relname, c.relkind
+        FROM pg_class c
+        JOIN pg_namespace n ON n.oid = c.relnamespace
+        WHERE n.nspname = 'public'
+          AND c.relkind IN ('v', 'm', 'f')  -- view, materialized view, foreign table
+          AND (
+                c.relname LIKE 'org\_%'  OR c.relname LIKE 'sys\_%'  OR
+                c.relname LIKE 'prd\_%'  OR c.relname LIKE 'inv\_%'  OR
+                c.relname LIKE 'crm\_%'  OR c.relname LIKE 'cms\_%'  OR
+                c.relname LIKE 'sls\_%'  OR c.relname LIKE 'oms\_%'  OR
+                c.relname LIKE 'wab\_%'  OR c.relname LIKE 'mkt\_%'  OR
+                c.relname LIKE 'sup\_%'  OR c.relname LIKE 'fin\_%'  OR
+                c.relname LIKE 'hr\_%'   OR c.relname LIKE 'ntf\_%'  OR
+                c.relname LIKE 'rpt\_%'  OR c.relname LIKE 'sub\_%'  OR
+                c.relname LIKE 'pm\_%'
+              )
+    LOOP
+        IF rec.relkind = 'm' THEN
+            EXECUTE format('DROP MATERIALIZED VIEW IF EXISTS public.%I CASCADE', rec.relname);
+        ELSIF rec.relkind = 'f' THEN
+            EXECUTE format('DROP FOREIGN TABLE IF EXISTS public.%I CASCADE', rec.relname);
+        ELSE
+            EXECUTE format('DROP VIEW IF EXISTS public.%I CASCADE', rec.relname);
+        END IF;
+        RAISE NOTICE 'Preflight: dropped colliding relation "%" (relkind=%); a base table of this name will be created.', rec.relname, rec.relkind;
+    END LOOP;
+END $$;
+
 -- 3. CORE FUNCTIONS
 
 
@@ -254,7 +299,71 @@ BEGIN
 END;
 $$;
 
+-- Generic "touch updated_at" trigger function, attached dynamically via
+-- EXECUTE format(...) to dozens of tables throughout this migration.
+CREATE OR REPLACE FUNCTION public.trg_set_updated_at()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    NEW.updated_at = NOW();
+    RETURN NEW;
+END;
+$$;
 
+-- Generic audit-log trigger function, attached dynamically via
+-- EXECUTE format(...) to dozens of tables throughout this migration.
+-- Writes a row to public.sys_audit_logs for every INSERT/UPDATE/DELETE.
+-- Uses jsonb extraction (not direct field access) for optional columns
+-- like deleted_at/id so it works safely across tables with differing
+-- shapes, and never blocks the primary DML on unexpected errors.
+CREATE OR REPLACE FUNCTION public.trg_audit_log()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+    v_record_id UUID;
+    v_action TEXT;
+BEGIN
+    IF TG_OP = 'INSERT' THEN
+        v_action := 'INSERT';
+        v_record_id := (to_jsonb(NEW)->>'id')::uuid;
+    ELSIF TG_OP = 'UPDATE' THEN
+        IF (to_jsonb(NEW)->>'deleted_at') IS NOT NULL AND (to_jsonb(OLD)->>'deleted_at') IS NULL THEN
+            v_action := 'SOFT_DELETE';
+        ELSE
+            v_action := 'UPDATE';
+        END IF;
+        v_record_id := (to_jsonb(NEW)->>'id')::uuid;
+    ELSIF TG_OP = 'DELETE' THEN
+        v_action := 'DELETE';
+        v_record_id := (to_jsonb(OLD)->>'id')::uuid;
+    END IF;
+
+    INSERT INTO public.sys_audit_logs (table_name, record_id, action, old_data, new_data, changed_by)
+    VALUES (
+        TG_TABLE_NAME,
+        COALESCE(v_record_id, gen_random_uuid()),
+        v_action,
+        CASE WHEN TG_OP IN ('UPDATE', 'DELETE') THEN to_jsonb(OLD) ELSE NULL END,
+        CASE WHEN TG_OP IN ('INSERT', 'UPDATE') THEN to_jsonb(NEW) ELSE NULL END,
+        auth.uid()
+    );
+
+    IF TG_OP = 'DELETE' THEN
+        RETURN OLD;
+    END IF;
+    RETURN NEW;
+EXCEPTION WHEN OTHERS THEN
+    -- Never let audit logging break the primary transaction.
+    IF TG_OP = 'DELETE' THEN
+        RETURN OLD;
+    END IF;
+    RETURN NEW;
+END;
+$$;
 
 
 
@@ -1025,7 +1134,7 @@ CREATE TABLE IF NOT EXISTS public.sys_auth_sessions (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     deleted_at TIMESTAMPTZ
 );
-CREATE INDEX idx_sys_auth_sessions_user ON public.sys_auth_sessions(user_id);
+CREATE INDEX IF NOT EXISTS idx_sys_auth_sessions_user ON public.sys_auth_sessions(user_id);
 
 CREATE TABLE IF NOT EXISTS public.sys_auth_refresh_tokens (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -1104,7 +1213,9 @@ CREATE TABLE IF NOT EXISTS public.sys_auth_login_history (
     failure_reason TEXT
 );
 -- Note: Login history is an immutable append-only ledger, so no updated_at/deleted_at needed.
-CREATE INDEX idx_sys_auth_login_history_user ON public.sys_auth_login_history(user_id, login_attempt_at);
+CREATE INDEX IF NOT EXISTS idx_sys_auth_login_history_user ON public.sys_auth_login_history(user_id, login_attempt_at);
+-- Excluded from the dynamic sys_%/org_% trigger+RLS loop below (no updated_at column), but policies are still applied to it, so enable RLS explicitly here.
+ALTER TABLE public.sys_auth_login_history ENABLE ROW LEVEL SECURITY;
 
 -- ==========================================
 -- 5. TRIGGERS & RLS AUTOMATION
@@ -1243,8 +1354,8 @@ CREATE TABLE IF NOT EXISTS public.prd_products (
     deleted_at TIMESTAMPTZ,
     UNIQUE (org_id, slug)
 );
-CREATE INDEX idx_prd_products_search ON public.prd_products USING GIN (search_vector);
-CREATE INDEX idx_prd_products_org ON public.prd_products(org_id, status);
+CREATE INDEX IF NOT EXISTS idx_prd_products_search ON public.prd_products USING GIN (search_vector);
+CREATE INDEX IF NOT EXISTS idx_prd_products_org ON public.prd_products(org_id, status);
 
 CREATE TABLE IF NOT EXISTS public.prd_variants (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -1262,7 +1373,7 @@ CREATE TABLE IF NOT EXISTS public.prd_variants (
     deleted_at TIMESTAMPTZ,
     UNIQUE (product_id, sku)
 );
-CREATE INDEX idx_prd_variants_sku ON public.prd_variants(sku);
+CREATE INDEX IF NOT EXISTS idx_prd_variants_sku ON public.prd_variants(sku);
 
 -- ==========================================
 -- 4. PRODUCT DETAILS & SEO
@@ -1409,6 +1520,8 @@ CREATE TABLE IF NOT EXISTS public.prd_price_history (
     changed_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     reason TEXT
 );
+-- Excluded from the dynamic prd_%/inv_% trigger+RLS loop below (no updated_at column), but policies are still applied to it, so enable RLS explicitly here.
+ALTER TABLE public.prd_price_history ENABLE ROW LEVEL SECURITY;
 
 -- ==========================================
 -- 6. SUPPLY CHAIN: WAREHOUSE & PO
@@ -1510,7 +1623,7 @@ CREATE TABLE IF NOT EXISTS public.inv_serial_numbers (
     deleted_at TIMESTAMPTZ,
     UNIQUE (variant_id, serial_number)
 );
-CREATE INDEX idx_inv_serial_rfid ON public.inv_serial_numbers(rfid_tag);
+CREATE INDEX IF NOT EXISTS idx_inv_serial_rfid ON public.inv_serial_numbers(rfid_tag);
 
 CREATE TABLE IF NOT EXISTS public.inv_stock_transfers (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -1552,7 +1665,9 @@ CREATE TABLE IF NOT EXISTS public.inv_stock_history (
     recorded_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
     recorded_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
-CREATE INDEX idx_inv_stock_history_variant ON public.inv_stock_history(variant_id, warehouse_id, recorded_at);
+CREATE INDEX IF NOT EXISTS idx_inv_stock_history_variant ON public.inv_stock_history(variant_id, warehouse_id, recorded_at);
+-- Excluded from the dynamic prd_%/inv_% trigger+RLS loop below (no updated_at column), but policies are still applied to it, so enable RLS explicitly here.
+ALTER TABLE public.inv_stock_history ENABLE ROW LEVEL SECURITY;
 
 -- ==========================================
 -- 8. TRIGGERS & POLICIES (DYNAMIC)
@@ -1565,15 +1680,23 @@ CREATE INDEX idx_inv_stock_history_variant ON public.inv_stock_history(variant_i
 
 
 -- Specialized Public/Staff Policies
+DROP POLICY IF EXISTS "Public can view active categories" ON public.prd_categories;
 CREATE POLICY "Public can view active categories" ON public.prd_categories FOR SELECT USING (deleted_at IS NULL);
+DROP POLICY IF EXISTS "Public can view active products" ON public.prd_products;
 CREATE POLICY "Public can view active products" ON public.prd_products FOR SELECT USING (status = 'ACTIVE' AND deleted_at IS NULL);
+DROP POLICY IF EXISTS "Public can view variants of active products" ON public.prd_variants;
 CREATE POLICY "Public can view variants of active products" ON public.prd_variants FOR SELECT USING (deleted_at IS NULL);
+DROP POLICY IF EXISTS "Public can view product media" ON public.prd_media;
 CREATE POLICY "Public can view product media" ON public.prd_media FOR SELECT USING (deleted_at IS NULL);
+DROP POLICY IF EXISTS "Public can view product pricing" ON public.prd_pricing;
 CREATE POLICY "Public can view product pricing" ON public.prd_pricing FOR SELECT USING (deleted_at IS NULL);
+DROP POLICY IF EXISTS "Public can view active reviews" ON public.prd_reviews;
 CREATE POLICY "Public can view active reviews" ON public.prd_reviews FOR SELECT USING (status = 'APPROVED' AND deleted_at IS NULL);
 
 -- Staff Policies via `org_id` context
+DROP POLICY IF EXISTS "Staff can view org products" ON public.prd_products;
 CREATE POLICY "Staff can view org products" ON public.prd_products FOR SELECT USING (org_id = public.get_current_org_id());
+DROP POLICY IF EXISTS "Staff can view org inventory" ON public.inv_stock;
 CREATE POLICY "Staff can view org inventory" ON public.inv_stock FOR SELECT USING (
     warehouse_id IN (SELECT id FROM public.inv_warehouses WHERE org_id = public.get_current_org_id())
 );
@@ -1610,7 +1733,7 @@ CREATE TABLE IF NOT EXISTS public.cms_settings (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     deleted_at TIMESTAMPTZ
 );
-CREATE INDEX idx_cms_settings_key ON public.cms_settings(key);
+CREATE INDEX IF NOT EXISTS idx_cms_settings_key ON public.cms_settings(key);
 
 -- Theme Configuration
 CREATE TABLE IF NOT EXISTS public.cms_themes (
@@ -1626,7 +1749,7 @@ CREATE TABLE IF NOT EXISTS public.cms_themes (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     deleted_at TIMESTAMPTZ
 );
-CREATE UNIQUE INDEX idx_cms_themes_active ON public.cms_themes(is_active) WHERE is_active = true AND deleted_at IS NULL;
+CREATE UNIQUE INDEX IF NOT EXISTS idx_cms_themes_active ON public.cms_themes(is_active) WHERE is_active = true AND deleted_at IS NULL;
 
 -- Redirects
 CREATE TABLE IF NOT EXISTS public.cms_redirects (
@@ -1641,7 +1764,7 @@ CREATE TABLE IF NOT EXISTS public.cms_redirects (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     deleted_at TIMESTAMPTZ
 );
-CREATE INDEX idx_cms_redirects_source ON public.cms_redirects(source_path);
+CREATE INDEX IF NOT EXISTS idx_cms_redirects_source ON public.cms_redirects(source_path);
 
 -- ==========================================
 -- 3. MEDIA & GALLERIES
@@ -1718,7 +1841,7 @@ CREATE TABLE IF NOT EXISTS public.cms_menu_items (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     deleted_at TIMESTAMPTZ
 );
-CREATE INDEX idx_cms_menu_items_menu_id ON public.cms_menu_items(menu_id);
+CREATE INDEX IF NOT EXISTS idx_cms_menu_items_menu_id ON public.cms_menu_items(menu_id);
 
 -- ==========================================
 -- 5. PAGES & SEO
@@ -1738,8 +1861,16 @@ CREATE TABLE IF NOT EXISTS public.cms_pages (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     deleted_at TIMESTAMPTZ
 );
-CREATE UNIQUE INDEX idx_cms_pages_homepage ON public.cms_pages(is_homepage) WHERE is_homepage = true AND deleted_at IS NULL;
-CREATE INDEX idx_cms_pages_slug ON public.cms_pages(slug);
+
+DO $$
+BEGIN
+    ALTER TABLE public.cms_pages ADD COLUMN IF NOT EXISTS is_homepage BOOLEAN DEFAULT false;
+EXCEPTION WHEN OTHERS THEN
+    NULL;
+END $$;
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_cms_pages_homepage ON public.cms_pages(is_homepage) WHERE is_homepage = true AND deleted_at IS NULL;
+CREATE INDEX IF NOT EXISTS idx_cms_pages_slug ON public.cms_pages(slug);
 
 CREATE TABLE IF NOT EXISTS public.cms_seo_meta (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -1760,7 +1891,7 @@ CREATE TABLE IF NOT EXISTS public.cms_seo_meta (
     deleted_at TIMESTAMPTZ,
     UNIQUE (entity_id, entity_type)
 );
-CREATE INDEX idx_cms_seo_meta_entity ON public.cms_seo_meta(entity_type, entity_id);
+CREATE INDEX IF NOT EXISTS idx_cms_seo_meta_entity ON public.cms_seo_meta(entity_type, entity_id);
 
 -- ==========================================
 -- 6. UI COMPONENTS (Isolated Tables as Requested)
@@ -1877,8 +2008,8 @@ CREATE TABLE IF NOT EXISTS public.cms_blogs (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     deleted_at TIMESTAMPTZ
 );
-CREATE INDEX idx_cms_blogs_slug ON public.cms_blogs(slug);
-CREATE INDEX idx_cms_blogs_author ON public.cms_blogs(author_id);
+CREATE INDEX IF NOT EXISTS idx_cms_blogs_slug ON public.cms_blogs(slug);
+CREATE INDEX IF NOT EXISTS idx_cms_blogs_author ON public.cms_blogs(author_id);
 
 CREATE TABLE IF NOT EXISTS public.cms_blog_tags (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -1949,25 +2080,75 @@ CREATE TABLE IF NOT EXISTS public.cms_newsletters (
 -- 9. TRIGGERS & POLICIES
 -- ==========================================
 
+-- Defensive normalization: if cms_pages/cms_blogs/cms_testimonials already existed
+-- (e.g. from a prior partial run) either missing the "status" column entirely, or
+-- with it typed differently than public.enum_cms_status, add/convert it so
+-- downstream policies comparing against 'PUBLISHED' don't fail with
+-- "column status does not exist" or "invalid input value for enum".
+DO $$
+DECLARE
+    tbl TEXT;
+    current_type TEXT;
+BEGIN
+    FOREACH tbl IN ARRAY ARRAY['cms_pages', 'cms_blogs', 'cms_testimonials'] LOOP
+        SELECT udt_name INTO current_type
+        FROM information_schema.columns
+        WHERE table_schema = 'public' AND table_name = tbl AND column_name = 'status';
 
+        IF current_type IS NULL THEN
+            EXECUTE format('ALTER TABLE public.%I ADD COLUMN IF NOT EXISTS status public.enum_cms_status DEFAULT ''DRAFT''', tbl);
+        ELSIF current_type <> 'enum_cms_status' THEN
+            EXECUTE format('ALTER TABLE public.%I ALTER COLUMN status DROP DEFAULT', tbl);
+            EXECUTE format(
+                'ALTER TABLE public.%I ALTER COLUMN status TYPE public.enum_cms_status USING ' ||
+                '(CASE UPPER(status::text) ' ||
+                'WHEN ''DRAFT'' THEN ''DRAFT'' ' ||
+                'WHEN ''PUBLISHED'' THEN ''PUBLISHED'' ' ||
+                'WHEN ''ARCHIVED'' THEN ''ARCHIVED'' ' ||
+                'ELSE ''DRAFT'' END)::public.enum_cms_status',
+                tbl
+            );
+            EXECUTE format('ALTER TABLE public.%I ALTER COLUMN status SET DEFAULT ''DRAFT''', tbl);
+        END IF;
+    END LOOP;
+EXCEPTION WHEN OTHERS THEN
+    NULL;
+END $$;
 
 -- Specialized Public Policies
+DROP POLICY IF EXISTS "Public can view active settings" ON public.cms_settings;
 CREATE POLICY "Public can view active settings" ON public.cms_settings FOR SELECT USING (deleted_at IS NULL);
+DROP POLICY IF EXISTS "Public can view active themes" ON public.cms_themes;
 CREATE POLICY "Public can view active themes" ON public.cms_themes FOR SELECT USING (is_active = true AND deleted_at IS NULL);
+DROP POLICY IF EXISTS "Public can view active redirects" ON public.cms_redirects;
 CREATE POLICY "Public can view active redirects" ON public.cms_redirects FOR SELECT USING (is_active = true AND deleted_at IS NULL);
+DROP POLICY IF EXISTS "Public can view published pages" ON public.cms_pages;
 CREATE POLICY "Public can view published pages" ON public.cms_pages FOR SELECT USING (status = 'PUBLISHED' AND deleted_at IS NULL);
+DROP POLICY IF EXISTS "Public can view published blogs" ON public.cms_blogs;
 CREATE POLICY "Public can view published blogs" ON public.cms_blogs FOR SELECT USING (status = 'PUBLISHED' AND deleted_at IS NULL);
+DROP POLICY IF EXISTS "Public can view authors" ON public.cms_authors;
 CREATE POLICY "Public can view authors" ON public.cms_authors FOR SELECT USING (deleted_at IS NULL);
+DROP POLICY IF EXISTS "Public can view blog categories" ON public.cms_blog_categories;
 CREATE POLICY "Public can view blog categories" ON public.cms_blog_categories FOR SELECT USING (deleted_at IS NULL);
+DROP POLICY IF EXISTS "Public can view seo meta" ON public.cms_seo_meta;
 CREATE POLICY "Public can view seo meta" ON public.cms_seo_meta FOR SELECT USING (deleted_at IS NULL);
+DROP POLICY IF EXISTS "Public can view menus" ON public.cms_menus;
 CREATE POLICY "Public can view menus" ON public.cms_menus FOR SELECT USING (is_active = true AND deleted_at IS NULL);
+DROP POLICY IF EXISTS "Public can view menu items" ON public.cms_menu_items;
 CREATE POLICY "Public can view menu items" ON public.cms_menu_items FOR SELECT USING (deleted_at IS NULL);
+DROP POLICY IF EXISTS "Public can view heroes" ON public.cms_heroes;
 CREATE POLICY "Public can view heroes" ON public.cms_heroes FOR SELECT USING (is_active = true AND deleted_at IS NULL);
+DROP POLICY IF EXISTS "Public can view banners" ON public.cms_banners;
 CREATE POLICY "Public can view banners" ON public.cms_banners FOR SELECT USING (is_active = true AND deleted_at IS NULL);
+DROP POLICY IF EXISTS "Public can view popups" ON public.cms_popups;
 CREATE POLICY "Public can view popups" ON public.cms_popups FOR SELECT USING (is_active = true AND deleted_at IS NULL);
+DROP POLICY IF EXISTS "Public can view announcements" ON public.cms_announcements;
 CREATE POLICY "Public can view announcements" ON public.cms_announcements FOR SELECT USING (is_active = true AND deleted_at IS NULL);
+DROP POLICY IF EXISTS "Public can view testimonials" ON public.cms_testimonials;
 CREATE POLICY "Public can view testimonials" ON public.cms_testimonials FOR SELECT USING (status = 'PUBLISHED' AND deleted_at IS NULL);
+DROP POLICY IF EXISTS "Public can view faqs" ON public.cms_faqs;
 CREATE POLICY "Public can view faqs" ON public.cms_faqs FOR SELECT USING (is_active = true AND deleted_at IS NULL);
+DROP POLICY IF EXISTS "Public can insert newsletter emails" ON public.cms_newsletters;
 CREATE POLICY "Public can insert newsletter emails" ON public.cms_newsletters FOR INSERT WITH CHECK (true);
 
 
@@ -2029,11 +2210,11 @@ CREATE TABLE IF NOT EXISTS public.crm_customers (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     deleted_at TIMESTAMPTZ
 );
-CREATE INDEX idx_crm_customers_org ON public.crm_customers(org_id);
-CREATE INDEX idx_crm_customers_user ON public.crm_customers(user_id);
-CREATE INDEX idx_crm_customers_search ON public.crm_customers USING GIN (search_vector);
-CREATE UNIQUE INDEX idx_crm_customers_email ON public.crm_customers(org_id, email) WHERE email IS NOT NULL AND deleted_at IS NULL;
-CREATE UNIQUE INDEX idx_crm_customers_phone ON public.crm_customers(org_id, phone) WHERE phone IS NOT NULL AND deleted_at IS NULL;
+CREATE INDEX IF NOT EXISTS idx_crm_customers_org ON public.crm_customers(org_id);
+CREATE INDEX IF NOT EXISTS idx_crm_customers_user ON public.crm_customers(user_id);
+CREATE INDEX IF NOT EXISTS idx_crm_customers_search ON public.crm_customers USING GIN (search_vector);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_crm_customers_email ON public.crm_customers(org_id, email) WHERE email IS NOT NULL AND deleted_at IS NULL;
+CREATE UNIQUE INDEX IF NOT EXISTS idx_crm_customers_phone ON public.crm_customers(org_id, phone) WHERE phone IS NOT NULL AND deleted_at IS NULL;
 
 CREATE TABLE IF NOT EXISTS public.crm_customer_group_mapping (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -2398,9 +2579,9 @@ CREATE TABLE IF NOT EXISTS public.sls_leads (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     deleted_at TIMESTAMPTZ
 );
-CREATE INDEX idx_sls_leads_org ON public.sls_leads(org_id);
-CREATE INDEX idx_sls_leads_search ON public.sls_leads USING GIN (search_vector);
-CREATE UNIQUE INDEX idx_sls_leads_email ON public.sls_leads(org_id, email) WHERE email IS NOT NULL AND deleted_at IS NULL;
+CREATE INDEX IF NOT EXISTS idx_sls_leads_org ON public.sls_leads(org_id);
+CREATE INDEX IF NOT EXISTS idx_sls_leads_search ON public.sls_leads USING GIN (search_vector);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_sls_leads_email ON public.sls_leads(org_id, email) WHERE email IS NOT NULL AND deleted_at IS NULL;
 
 CREATE TABLE IF NOT EXISTS public.sls_opportunities (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -2433,7 +2614,7 @@ CREATE TABLE IF NOT EXISTS public.sls_lead_assignments (
     is_active BOOLEAN DEFAULT true,
     CHECK (lead_id IS NOT NULL OR opportunity_id IS NOT NULL)
 );
-CREATE INDEX idx_sls_lead_assignments_exec ON public.sls_lead_assignments(sales_executive_id);
+CREATE INDEX IF NOT EXISTS idx_sls_lead_assignments_exec ON public.sls_lead_assignments(sales_executive_id);
 
 -- ==========================================
 -- 4. SALES ACTIVITIES & ENGAGEMENT
@@ -2458,7 +2639,16 @@ CREATE TABLE IF NOT EXISTS public.sls_activities (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     deleted_at TIMESTAMPTZ
 );
-CREATE INDEX idx_sls_activities_assigned ON public.sls_activities(assigned_to, status);
+
+DO $$
+BEGIN
+    ALTER TABLE public.sls_activities ADD COLUMN IF NOT EXISTS assigned_to UUID REFERENCES auth.users(id) ON DELETE SET NULL;
+    ALTER TABLE public.sls_activities ADD COLUMN IF NOT EXISTS status public.enum_sls_activity_status DEFAULT 'PENDING';
+EXCEPTION WHEN OTHERS THEN
+    NULL;
+END $$;
+
+CREATE INDEX IF NOT EXISTS idx_sls_activities_assigned ON public.sls_activities(assigned_to, status);
 
 CREATE TABLE IF NOT EXISTS public.sls_notes (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -2506,34 +2696,42 @@ ALTER TABLE public.sls_timeline ENABLE ROW LEVEL SECURITY;
 
 -- Sales Executive Access Control (Visibility based on Assignments)
 -- A Sales Exec can only see leads/opportunities they are assigned to.
+DROP POLICY IF EXISTS "Sales Execs view assigned leads" ON public.sls_leads;
 CREATE POLICY "Sales Execs view assigned leads" ON public.sls_leads FOR SELECT USING (
     id IN (SELECT lead_id FROM public.sls_lead_assignments WHERE sales_executive_id = auth.uid() AND is_active = true)
 );
 
+DROP POLICY IF EXISTS "Sales Execs update assigned leads" ON public.sls_leads;
 CREATE POLICY "Sales Execs update assigned leads" ON public.sls_leads FOR UPDATE USING (
     id IN (SELECT lead_id FROM public.sls_lead_assignments WHERE sales_executive_id = auth.uid() AND is_active = true)
 );
 
+DROP POLICY IF EXISTS "Sales Execs view assigned ops" ON public.sls_opportunities;
 CREATE POLICY "Sales Execs view assigned ops" ON public.sls_opportunities FOR SELECT USING (
     id IN (SELECT opportunity_id FROM public.sls_lead_assignments WHERE sales_executive_id = auth.uid() AND is_active = true) OR
     lead_id IN (SELECT lead_id FROM public.sls_lead_assignments WHERE sales_executive_id = auth.uid() AND is_active = true)
 );
 
+DROP POLICY IF EXISTS "Sales Execs update assigned ops" ON public.sls_opportunities;
 CREATE POLICY "Sales Execs update assigned ops" ON public.sls_opportunities FOR UPDATE USING (
     id IN (SELECT opportunity_id FROM public.sls_lead_assignments WHERE sales_executive_id = auth.uid() AND is_active = true) OR
     lead_id IN (SELECT lead_id FROM public.sls_lead_assignments WHERE sales_executive_id = auth.uid() AND is_active = true)
 );
 
+DROP POLICY IF EXISTS "Sales Execs view own assignments" ON public.sls_lead_assignments;
 CREATE POLICY "Sales Execs view own assignments" ON public.sls_lead_assignments FOR SELECT USING (sales_executive_id = auth.uid());
 
+DROP POLICY IF EXISTS "Sales Execs manage own activities" ON public.sls_activities;
 CREATE POLICY "Sales Execs manage own activities" ON public.sls_activities FOR ALL USING (assigned_to = auth.uid());
 
 -- Sales Execs can view notes and timelines for their assigned leads/ops
+DROP POLICY IF EXISTS "Sales Execs view assigned notes" ON public.sls_notes;
 CREATE POLICY "Sales Execs view assigned notes" ON public.sls_notes FOR SELECT USING (
     lead_id IN (SELECT lead_id FROM public.sls_lead_assignments WHERE sales_executive_id = auth.uid() AND is_active = true) OR
     opportunity_id IN (SELECT opportunity_id FROM public.sls_lead_assignments WHERE sales_executive_id = auth.uid() AND is_active = true)
 );
 
+DROP POLICY IF EXISTS "Sales Execs view assigned timeline" ON public.sls_timeline;
 CREATE POLICY "Sales Execs view assigned timeline" ON public.sls_timeline FOR SELECT USING (
     lead_id IN (SELECT lead_id FROM public.sls_lead_assignments WHERE sales_executive_id = auth.uid() AND is_active = true) OR
     opportunity_id IN (SELECT opportunity_id FROM public.sls_lead_assignments WHERE sales_executive_id = auth.uid() AND is_active = true)
@@ -2689,8 +2887,8 @@ CREATE TABLE IF NOT EXISTS public.oms_orders (
         setweight(to_tsvector('english', coalesce(order_number, '')), 'A')
     ) STORED
 );
-CREATE INDEX idx_oms_orders_search ON public.oms_orders USING GIN (search_vector);
-CREATE INDEX idx_oms_orders_customer ON public.oms_orders(customer_id, created_at);
+CREATE INDEX IF NOT EXISTS idx_oms_orders_search ON public.oms_orders USING GIN (search_vector);
+CREATE INDEX IF NOT EXISTS idx_oms_orders_customer ON public.oms_orders(customer_id, created_at);
 
 CREATE TABLE IF NOT EXISTS public.oms_order_items (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -2742,6 +2940,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
+DROP TRIGGER IF EXISTS trg_oms_deduct_inventory ON public.oms_orders;
 CREATE TRIGGER trg_oms_deduct_inventory
     AFTER UPDATE OF order_status ON public.oms_orders
     FOR EACH ROW EXECUTE FUNCTION public.fn_oms_deduct_inventory();
@@ -2897,12 +3096,19 @@ ALTER TABLE public.oms_taxes ENABLE ROW LEVEL SECURITY;
 
 -- End-User Policies (Customers can only view their own orders and related entities)
 -- Note: Reusing get_my_customer_ids() from script 000007
+DROP POLICY IF EXISTS "Users view own quotations" ON public.oms_quotations;
 CREATE POLICY "Users view own quotations" ON public.oms_quotations FOR SELECT USING (customer_id IN (SELECT public.get_my_customer_ids()));
+DROP POLICY IF EXISTS "Users view own orders" ON public.oms_orders;
 CREATE POLICY "Users view own orders" ON public.oms_orders FOR SELECT USING (customer_id IN (SELECT public.get_my_customer_ids()));
+DROP POLICY IF EXISTS "Users view own order items" ON public.oms_order_items;
 CREATE POLICY "Users view own order items" ON public.oms_order_items FOR SELECT USING (order_id IN (SELECT id FROM public.oms_orders WHERE customer_id IN (SELECT public.get_my_customer_ids())));
+DROP POLICY IF EXISTS "Users view own invoices" ON public.oms_invoices;
 CREATE POLICY "Users view own invoices" ON public.oms_invoices FOR SELECT USING (order_id IN (SELECT id FROM public.oms_orders WHERE customer_id IN (SELECT public.get_my_customer_ids())));
+DROP POLICY IF EXISTS "Users view own shipments" ON public.oms_shipments;
 CREATE POLICY "Users view own shipments" ON public.oms_shipments FOR SELECT USING (order_id IN (SELECT id FROM public.oms_orders WHERE customer_id IN (SELECT public.get_my_customer_ids())));
+DROP POLICY IF EXISTS "Users view own returns" ON public.oms_returns;
 CREATE POLICY "Users view own returns" ON public.oms_returns FOR SELECT USING (order_item_id IN (SELECT id FROM public.oms_order_items WHERE order_id IN (SELECT id FROM public.oms_orders WHERE customer_id IN (SELECT public.get_my_customer_ids()))));
+DROP POLICY IF EXISTS "Users view own gift cards" ON public.oms_gift_cards;
 CREATE POLICY "Users view own gift cards" ON public.oms_gift_cards FOR SELECT USING (customer_id IN (SELECT public.get_my_customer_ids()));
 
 
@@ -2988,7 +3194,7 @@ CREATE TABLE IF NOT EXISTS public.wab_conversations (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     deleted_at TIMESTAMPTZ
 );
-CREATE INDEX idx_wab_conversations_phone ON public.wab_conversations(org_id, customer_phone);
+CREATE INDEX IF NOT EXISTS idx_wab_conversations_phone ON public.wab_conversations(org_id, customer_phone);
 
 CREATE TABLE IF NOT EXISTS public.wab_conversation_assignments (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -3000,7 +3206,7 @@ CREATE TABLE IF NOT EXISTS public.wab_conversation_assignments (
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     CHECK (assigned_to_user IS NOT NULL OR assigned_to_team IS NOT NULL)
 );
-CREATE INDEX idx_wab_conv_assignments_user ON public.wab_conversation_assignments(assigned_to_user) WHERE is_active = true;
+CREATE INDEX IF NOT EXISTS idx_wab_conv_assignments_user ON public.wab_conversation_assignments(assigned_to_user) WHERE is_active = true;
 
 CREATE TABLE IF NOT EXISTS public.wab_labels (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -3048,7 +3254,7 @@ CREATE TABLE IF NOT EXISTS public.wab_message_status (
     timestamp TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 -- Delivery Report Ledger (Immutable appending of sent -> delivered -> read)
-CREATE INDEX idx_wab_message_status_msg ON public.wab_message_status(message_id, timestamp);
+CREATE INDEX IF NOT EXISTS idx_wab_message_status_msg ON public.wab_message_status(message_id, timestamp);
 
 CREATE TABLE IF NOT EXISTS public.wab_message_queue (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -3073,7 +3279,7 @@ CREATE TABLE IF NOT EXISTS public.wab_webhook_logs (
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 -- Debugging ledger
-CREATE INDEX idx_wab_webhook_logs_processed ON public.wab_webhook_logs(processed);
+CREATE INDEX IF NOT EXISTS idx_wab_webhook_logs_processed ON public.wab_webhook_logs(processed);
 
 -- ==========================================
 -- 5. MEDIA & FILES
@@ -3112,6 +3318,8 @@ CREATE TABLE IF NOT EXISTS public.wab_ai_summaries (
     sentiment_score NUMERIC,
     generated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+-- Excluded from the dynamic wab_% trigger+RLS loop below (immutable ledger, no updated_at column), but policies are still applied to it, so enable RLS explicitly here.
+ALTER TABLE public.wab_ai_summaries ENABLE ROW LEVEL SECURITY;
 
 CREATE TABLE IF NOT EXISTS public.wab_ai_suggestions (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -3121,6 +3329,8 @@ CREATE TABLE IF NOT EXISTS public.wab_ai_suggestions (
     is_used BOOLEAN DEFAULT false,
     generated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+-- Excluded from the dynamic wab_% trigger+RLS loop below (immutable ledger, no updated_at column), but policies are still applied to it, so enable RLS explicitly here.
+ALTER TABLE public.wab_ai_suggestions ENABLE ROW LEVEL SECURITY;
 
 CREATE TABLE IF NOT EXISTS public.wab_knowledge_base (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -3241,6 +3451,7 @@ ALTER TABLE public.wab_customer_timeline ENABLE ROW LEVEL SECURITY;
 
 
 -- Agent View Context (Agents can only view conversations explicitly assigned to them or their team, plus unassigned queued chats)
+DROP POLICY IF EXISTS "Agents view assigned or unassigned convos" ON public.wab_conversations;
 CREATE POLICY "Agents view assigned or unassigned convos" ON public.wab_conversations FOR SELECT USING (
     id IN (
         SELECT conversation_id FROM public.wab_conversation_assignments 
@@ -3254,6 +3465,7 @@ CREATE POLICY "Agents view assigned or unassigned convos" ON public.wab_conversa
     (NOT EXISTS (SELECT 1 FROM public.wab_conversation_assignments WHERE conversation_id = wab_conversations.id AND is_active = true))
 );
 
+DROP POLICY IF EXISTS "Agents view messages for viewable convos" ON public.wab_messages;
 CREATE POLICY "Agents view messages for viewable convos" ON public.wab_messages FOR SELECT USING (
     conversation_id IN (
         SELECT id FROM public.wab_conversations WHERE org_id = public.get_current_org_id() -- simplified policy for massive tables, relies on RLS chaining if needed
@@ -3317,7 +3529,7 @@ CREATE TABLE IF NOT EXISTS public.mkt_audience_members (
     UNIQUE(audience_id, customer_id),
     UNIQUE(audience_id, lead_id)
 );
-CREATE INDEX idx_mkt_aud_members_cust ON public.mkt_audience_members(customer_id);
+CREATE INDEX IF NOT EXISTS idx_mkt_aud_members_cust ON public.mkt_audience_members(customer_id);
 
 -- ==========================================
 -- 3. OMNICHANNEL CAMPAIGNS
@@ -3539,8 +3751,11 @@ ALTER TABLE public.mkt_google_reviews ENABLE ROW LEVEL SECURITY;
 
 
 -- Public Access for Landing Pages & Active Native Reviews
+DROP POLICY IF EXISTS "Public view landing pages" ON public.mkt_landing_pages;
 CREATE POLICY "Public view landing pages" ON public.mkt_landing_pages FOR SELECT USING (is_published = true);
+DROP POLICY IF EXISTS "Public view active native reviews" ON public.mkt_reviews;
 CREATE POLICY "Public view active native reviews" ON public.mkt_reviews FOR SELECT USING (status = 'APPROVED');
+DROP POLICY IF EXISTS "Public view active events" ON public.mkt_events;
 CREATE POLICY "Public view active events" ON public.mkt_events FOR SELECT USING (deleted_at IS NULL);
 
 
@@ -3583,7 +3798,7 @@ CREATE TABLE IF NOT EXISTS public.sup_customer_assets (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     deleted_at TIMESTAMPTZ
 );
-CREATE INDEX idx_sup_customer_assets_cust ON public.sup_customer_assets(customer_id);
+CREATE INDEX IF NOT EXISTS idx_sup_customer_assets_cust ON public.sup_customer_assets(customer_id);
 
 CREATE TABLE IF NOT EXISTS public.sup_warranties (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -3651,9 +3866,18 @@ CREATE TABLE IF NOT EXISTS public.sup_tickets (
         setweight(to_tsvector('english', coalesce(subject, '')), 'B')
     ) STORED
 );
-CREATE INDEX idx_sup_tickets_search ON public.sup_tickets USING GIN (search_vector);
-CREATE INDEX idx_sup_tickets_assigned ON public.sup_tickets(assigned_to, status);
-CREATE INDEX idx_sup_tickets_customer ON public.sup_tickets(customer_id);
+CREATE INDEX IF NOT EXISTS idx_sup_tickets_search ON public.sup_tickets USING GIN (search_vector);
+
+DO $$
+BEGIN
+    ALTER TABLE public.sup_tickets ADD COLUMN IF NOT EXISTS assigned_to UUID REFERENCES auth.users(id) ON DELETE SET NULL;
+    ALTER TABLE public.sup_tickets ADD COLUMN IF NOT EXISTS status public.enum_sup_ticket_status DEFAULT 'OPEN';
+EXCEPTION WHEN OTHERS THEN
+    NULL;
+END $$;
+
+CREATE INDEX IF NOT EXISTS idx_sup_tickets_assigned ON public.sup_tickets(assigned_to, status);
+CREATE INDEX IF NOT EXISTS idx_sup_tickets_customer ON public.sup_tickets(customer_id);
 
 CREATE TABLE IF NOT EXISTS public.sup_ticket_messages (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -3740,7 +3964,7 @@ CREATE TABLE IF NOT EXISTS public.sup_engineer_visits (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     deleted_at TIMESTAMPTZ
 );
-CREATE INDEX idx_sup_engineer_visits_eng ON public.sup_engineer_visits(engineer_id, status);
+CREATE INDEX IF NOT EXISTS idx_sup_engineer_visits_eng ON public.sup_engineer_visits(engineer_id, status);
 
 CREATE TABLE IF NOT EXISTS public.sup_service_reports (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -3801,6 +4025,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
+DROP TRIGGER IF EXISTS trg_sup_deduct_spare_part_inventory ON public.sup_spare_parts_used;
 CREATE TRIGGER trg_sup_deduct_spare_part_inventory
     AFTER UPDATE OF status ON public.sup_spare_parts_used
     FOR EACH ROW EXECUTE FUNCTION public.fn_sup_deduct_spare_part_inventory();
@@ -3822,29 +4047,39 @@ ALTER TABLE public.sup_ticket_feedback ENABLE ROW LEVEL SECURITY;
 
 -- Customer Access Policies (Customers see their own tickets, assets, AMCs, etc.)
 -- Uses get_my_customer_ids() from script 000007
+DROP POLICY IF EXISTS "Users view own assets" ON public.sup_customer_assets;
 CREATE POLICY "Users view own assets" ON public.sup_customer_assets FOR SELECT USING (customer_id IN (SELECT public.get_my_customer_ids()));
+DROP POLICY IF EXISTS "Users view own tickets" ON public.sup_tickets;
 CREATE POLICY "Users view own tickets" ON public.sup_tickets FOR SELECT USING (customer_id IN (SELECT public.get_my_customer_ids()));
+DROP POLICY IF EXISTS "Users insert own tickets" ON public.sup_tickets;
 CREATE POLICY "Users insert own tickets" ON public.sup_tickets FOR INSERT WITH CHECK (customer_id IN (SELECT public.get_my_customer_ids()));
+DROP POLICY IF EXISTS "Users view own messages" ON public.sup_ticket_messages;
 CREATE POLICY "Users view own messages" ON public.sup_ticket_messages FOR SELECT USING (
     ticket_id IN (SELECT id FROM public.sup_tickets WHERE customer_id IN (SELECT public.get_my_customer_ids()))
     AND is_internal_note = false
 );
+DROP POLICY IF EXISTS "Users insert own messages" ON public.sup_ticket_messages;
 CREATE POLICY "Users insert own messages" ON public.sup_ticket_messages FOR INSERT WITH CHECK (
     ticket_id IN (SELECT id FROM public.sup_tickets WHERE customer_id IN (SELECT public.get_my_customer_ids()))
 );
+DROP POLICY IF EXISTS "Users view own AMC" ON public.sup_amc_contracts;
 CREATE POLICY "Users view own AMC" ON public.sup_amc_contracts FOR SELECT USING (customer_id IN (SELECT public.get_my_customer_ids()));
 
 -- Engineer Access Policies
 -- Engineers can view and update their assigned visits and related service reports
+DROP POLICY IF EXISTS "Engineers view own visits" ON public.sup_engineer_visits;
 CREATE POLICY "Engineers view own visits" ON public.sup_engineer_visits FOR SELECT USING (
     engineer_id IN (SELECT id FROM public.sup_engineers WHERE user_id = auth.uid())
 );
+DROP POLICY IF EXISTS "Engineers update own visits" ON public.sup_engineer_visits;
 CREATE POLICY "Engineers update own visits" ON public.sup_engineer_visits FOR UPDATE USING (
     engineer_id IN (SELECT id FROM public.sup_engineers WHERE user_id = auth.uid())
 );
+DROP POLICY IF EXISTS "Engineers manage own reports" ON public.sup_service_reports;
 CREATE POLICY "Engineers manage own reports" ON public.sup_service_reports FOR ALL USING (
     engineer_id IN (SELECT id FROM public.sup_engineers WHERE user_id = auth.uid())
 );
+DROP POLICY IF EXISTS "Engineers view assigned ticket" ON public.sup_tickets;
 CREATE POLICY "Engineers view assigned ticket" ON public.sup_tickets FOR SELECT USING (
     id IN (SELECT ticket_id FROM public.sup_engineer_visits WHERE engineer_id IN (SELECT id FROM public.sup_engineers WHERE user_id = auth.uid()))
 );
@@ -3944,6 +4179,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
+DROP TRIGGER IF EXISTS trg_fin_enforce_double_entry ON public.fin_journal_entries;
 CREATE TRIGGER trg_fin_enforce_double_entry
     AFTER UPDATE OF status ON public.fin_journal_entries
     FOR EACH ROW EXECUTE FUNCTION public.fn_fin_enforce_double_entry();
@@ -3964,6 +4200,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
+DROP TRIGGER IF EXISTS trg_fin_enforce_immutability ON public.fin_ledger_lines;
 CREATE TRIGGER trg_fin_enforce_immutability
     BEFORE UPDATE OR DELETE ON public.fin_ledger_lines
     FOR EACH ROW EXECUTE FUNCTION public.fn_fin_enforce_immutability();
@@ -4166,13 +4403,17 @@ ALTER TABLE public.fin_commission_ledger ENABLE ROW LEVEL SECURITY;
 
 
 -- Employees view own salary slips
+DROP POLICY IF EXISTS "Users view own salary slips" ON public.fin_salary_slips;
 CREATE POLICY "Users view own salary slips" ON public.fin_salary_slips FOR SELECT USING (employee_id = auth.uid());
 
 -- Sales Execs view own commissions
+DROP POLICY IF EXISTS "Sales execs view own commission" ON public.fin_commission_ledger;
 CREATE POLICY "Sales execs view own commission" ON public.fin_commission_ledger FOR SELECT USING (sales_executive_id = auth.uid());
 
 -- Customers view own invoices and credit notes
+DROP POLICY IF EXISTS "Customers view own invoices" ON public.fin_invoices;
 CREATE POLICY "Customers view own invoices" ON public.fin_invoices FOR SELECT USING (customer_id IN (SELECT public.get_my_customer_ids()));
+DROP POLICY IF EXISTS "Customers view own credit notes" ON public.fin_credit_notes;
 CREATE POLICY "Customers view own credit notes" ON public.fin_credit_notes FOR SELECT USING (customer_id IN (SELECT public.get_my_customer_ids()));
 
 
@@ -4446,26 +4687,41 @@ CREATE TABLE IF NOT EXISTS public.hr_employee_trainings (
 
 
 -- Extreme Privacy Policies: Employees can ONLY view their own records.
+DROP POLICY IF EXISTS "Employees view own files" ON public.hr_employees;
 CREATE POLICY "Employees view own files" ON public.hr_employees FOR SELECT USING (user_id = auth.uid());
+DROP POLICY IF EXISTS "Employees view own documents" ON public.hr_documents;
 CREATE POLICY "Employees view own documents" ON public.hr_documents FOR SELECT USING (employee_id IN (SELECT id FROM public.hr_employees WHERE user_id = auth.uid()));
+DROP POLICY IF EXISTS "Employees view own attendance" ON public.hr_attendance;
 CREATE POLICY "Employees view own attendance" ON public.hr_attendance FOR SELECT USING (employee_id IN (SELECT id FROM public.hr_employees WHERE user_id = auth.uid()));
+DROP POLICY IF EXISTS "Employees clock in out" ON public.hr_attendance;
 CREATE POLICY "Employees clock in out" ON public.hr_attendance FOR INSERT WITH CHECK (employee_id IN (SELECT id FROM public.hr_employees WHERE user_id = auth.uid()));
+DROP POLICY IF EXISTS "Employees update own clock out" ON public.hr_attendance;
 CREATE POLICY "Employees update own clock out" ON public.hr_attendance FOR UPDATE USING (employee_id IN (SELECT id FROM public.hr_employees WHERE user_id = auth.uid()));
 
+DROP POLICY IF EXISTS "Employees view own leave balance" ON public.hr_leave_balances;
 CREATE POLICY "Employees view own leave balance" ON public.hr_leave_balances FOR SELECT USING (employee_id IN (SELECT id FROM public.hr_employees WHERE user_id = auth.uid()));
+DROP POLICY IF EXISTS "Employees view own leave requests" ON public.hr_leave_requests;
 CREATE POLICY "Employees view own leave requests" ON public.hr_leave_requests FOR SELECT USING (employee_id IN (SELECT id FROM public.hr_employees WHERE user_id = auth.uid()));
+DROP POLICY IF EXISTS "Employees insert own leave requests" ON public.hr_leave_requests;
 CREATE POLICY "Employees insert own leave requests" ON public.hr_leave_requests FOR INSERT WITH CHECK (employee_id IN (SELECT id FROM public.hr_employees WHERE user_id = auth.uid()));
 
+DROP POLICY IF EXISTS "Employees view own payslips" ON public.hr_payslips;
 CREATE POLICY "Employees view own payslips" ON public.hr_payslips FOR SELECT USING (employee_id IN (SELECT id FROM public.hr_employees WHERE user_id = auth.uid()));
 
+DROP POLICY IF EXISTS "Employees view own performance" ON public.hr_performance_reviews;
 CREATE POLICY "Employees view own performance" ON public.hr_performance_reviews FOR SELECT USING (employee_id IN (SELECT id FROM public.hr_employees WHERE user_id = auth.uid()));
+DROP POLICY IF EXISTS "Employees update self assessment" ON public.hr_performance_reviews;
 CREATE POLICY "Employees update self assessment" ON public.hr_performance_reviews FOR UPDATE USING (employee_id IN (SELECT id FROM public.hr_employees WHERE user_id = auth.uid()));
 
+DROP POLICY IF EXISTS "Employees view own training" ON public.hr_employee_trainings;
 CREATE POLICY "Employees view own training" ON public.hr_employee_trainings FOR SELECT USING (employee_id IN (SELECT id FROM public.hr_employees WHERE user_id = auth.uid()));
 
 -- All employees can see the master holiday list and training curriculum
+DROP POLICY IF EXISTS "Public view holidays" ON public.hr_holidays;
 CREATE POLICY "Public view holidays" ON public.hr_holidays FOR SELECT USING (deleted_at IS NULL);
+DROP POLICY IF EXISTS "Public view leave types" ON public.hr_leave_types;
 CREATE POLICY "Public view leave types" ON public.hr_leave_types FOR SELECT USING (deleted_at IS NULL);
+DROP POLICY IF EXISTS "Public view training programs" ON public.hr_training_programs;
 CREATE POLICY "Public view training programs" ON public.hr_training_programs FOR SELECT USING (deleted_at IS NULL);
 
 
@@ -4536,7 +4792,16 @@ CREATE TABLE IF NOT EXISTS public.ntf_queue (
     error_message TEXT,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
-CREATE INDEX idx_ntf_queue_status ON public.ntf_queue(status, scheduled_for);
+
+DO $$
+BEGIN
+    ALTER TABLE public.ntf_queue ADD COLUMN IF NOT EXISTS status public.enum_ntf_status DEFAULT 'PENDING';
+    ALTER TABLE public.ntf_queue ADD COLUMN IF NOT EXISTS scheduled_for TIMESTAMPTZ DEFAULT NOW();
+EXCEPTION WHEN OTHERS THEN
+    NULL;
+END $$;
+
+CREATE INDEX IF NOT EXISTS idx_ntf_queue_status ON public.ntf_queue(status, scheduled_for);
 
 CREATE TABLE IF NOT EXISTS public.ntf_delivery_logs (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -4562,6 +4827,7 @@ ALTER TABLE public.ntf_delivery_logs ENABLE ROW LEVEL SECURITY;
 
 
 -- Privacy: Users control their own preferences
+DROP POLICY IF EXISTS "Users manage own preferences" ON public.ntf_preferences;
 CREATE POLICY "Users manage own preferences" ON public.ntf_preferences FOR ALL USING (
     user_id = auth.uid() OR customer_id IN (SELECT public.get_my_customer_ids())
 );
@@ -4635,7 +4901,7 @@ CREATE TABLE IF NOT EXISTS public.rpt_ai_insights (
 -- ==========================================
 
 -- A. Sales & Revenue Summary
-CREATE MATERIALIZED VIEW public.mv_rpt_sales_summary AS
+CREATE MATERIALIZED VIEW IF NOT EXISTS public.mv_rpt_sales_summary AS
 SELECT 
     DATE_TRUNC('day', issue_date) AS sales_date,
     org_id,
@@ -4646,10 +4912,10 @@ SELECT
 FROM public.fin_invoices
 WHERE status != 'VOIDED'
 GROUP BY DATE_TRUNC('day', issue_date), org_id;
-CREATE UNIQUE INDEX idx_mv_sales_summary ON public.mv_rpt_sales_summary(sales_date, org_id);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_mv_sales_summary ON public.mv_rpt_sales_summary(sales_date, org_id);
 
 -- B. Inventory Valuation
-CREATE MATERIALIZED VIEW public.mv_rpt_inventory_valuation AS
+CREATE MATERIALIZED VIEW IF NOT EXISTS public.mv_rpt_inventory_valuation AS
 SELECT 
     s.warehouse_id,
     s.variant_id,
@@ -4659,10 +4925,10 @@ SELECT
 FROM public.inv_stock s
 JOIN public.prd_variants v ON s.variant_id = v.id
 JOIN public.prd_pricing p ON v.id = p.variant_id;
-CREATE UNIQUE INDEX idx_mv_inventory_val ON public.mv_rpt_inventory_valuation(warehouse_id, variant_id);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_mv_inventory_val ON public.mv_rpt_inventory_valuation(warehouse_id, variant_id);
 
 -- C. Support Field Engineer Performance
-CREATE MATERIALIZED VIEW public.mv_rpt_engineer_performance AS
+CREATE MATERIALIZED VIEW IF NOT EXISTS public.mv_rpt_engineer_performance AS
 SELECT 
     e.id AS engineer_id,
     u.email AS engineer_email,
@@ -4673,17 +4939,17 @@ FROM public.sup_engineers e
 JOIN auth.users u ON e.user_id = u.id
 LEFT JOIN public.sup_engineer_visits v ON e.id = v.engineer_id
 GROUP BY e.id, u.email;
-CREATE UNIQUE INDEX idx_mv_eng_perf ON public.mv_rpt_engineer_performance(engineer_id);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_mv_eng_perf ON public.mv_rpt_engineer_performance(engineer_id);
 
 -- D. Customer Growth
-CREATE MATERIALIZED VIEW public.mv_rpt_customer_growth AS
+CREATE MATERIALIZED VIEW IF NOT EXISTS public.mv_rpt_customer_growth AS
 SELECT 
     DATE_TRUNC('month', created_at) AS join_month,
     org_id,
     COUNT(id) AS new_customers
 FROM public.crm_customers
 GROUP BY DATE_TRUNC('month', created_at), org_id;
-CREATE UNIQUE INDEX idx_mv_cust_growth ON public.mv_rpt_customer_growth(join_month, org_id);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_mv_cust_growth ON public.mv_rpt_customer_growth(join_month, org_id);
 
 -- ==========================================
 -- 4. SECURITY & RLS
@@ -4762,7 +5028,7 @@ CREATE TABLE IF NOT EXISTS public.sys_api_logs (
     processing_time_ms INTEGER,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
-CREATE INDEX idx_sys_api_logs_provider ON public.sys_api_logs(provider, created_at);
+CREATE INDEX IF NOT EXISTS idx_sys_api_logs_provider ON public.sys_api_logs(provider, created_at);
 
 -- ==========================================
 -- 4. SECURITY & RLS
@@ -4771,6 +5037,7 @@ CREATE INDEX idx_sys_api_logs_provider ON public.sys_api_logs(provider, created_
 
 
 ALTER TABLE public.sys_api_logs ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Superadmins manage sys_api_logs" ON public.sys_api_logs;
 CREATE POLICY "Superadmins manage sys_api_logs" ON public.sys_api_logs FOR ALL USING (public.is_superadmin());
 
 
@@ -4793,7 +5060,7 @@ CREATE TABLE IF NOT EXISTS public.sys_failed_logins (
     attempted_email TEXT,
     attempted_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
-CREATE INDEX idx_sys_failed_logins_ip ON public.sys_failed_logins(ip_address, attempted_at);
+CREATE INDEX IF NOT EXISTS idx_sys_failed_logins_ip ON public.sys_failed_logins(ip_address, attempted_at);
 
 CREATE TABLE IF NOT EXISTS public.sys_blocked_ips (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -4805,7 +5072,7 @@ CREATE TABLE IF NOT EXISTS public.sys_blocked_ips (
     unblocked_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
     is_active BOOLEAN DEFAULT true
 );
-CREATE INDEX idx_sys_blocked_ips_active ON public.sys_blocked_ips(ip_address) WHERE (unblocked_at IS NULL);
+CREATE INDEX IF NOT EXISTS idx_sys_blocked_ips_active ON public.sys_blocked_ips(ip_address) WHERE (unblocked_at IS NULL);
 
 -- ==========================================
 -- 2. SPECIALIZED SECURITY EVENTS LEDGER
@@ -4823,7 +5090,7 @@ CREATE TABLE IF NOT EXISTS public.sys_security_events (
     metadata JSONB,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
-CREATE INDEX idx_sys_security_events_type ON public.sys_security_events(event_type, created_at);
+CREATE INDEX IF NOT EXISTS idx_sys_security_events_type ON public.sys_security_events(event_type, created_at);
 
 -- ==========================================
 -- 3. SECURITY & RLS
@@ -4834,8 +5101,11 @@ ALTER TABLE public.sys_blocked_ips ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.sys_security_events ENABLE ROW LEVEL SECURITY;
 
 -- Only Superadmins have access to the Security Vault
+DROP POLICY IF EXISTS "Superadmins manage sys_failed_logins" ON public.sys_failed_logins;
 CREATE POLICY "Superadmins manage sys_failed_logins" ON public.sys_failed_logins FOR ALL USING (public.is_superadmin());
+DROP POLICY IF EXISTS "Superadmins manage sys_blocked_ips" ON public.sys_blocked_ips;
 CREATE POLICY "Superadmins manage sys_blocked_ips" ON public.sys_blocked_ips FOR ALL USING (public.is_superadmin());
+DROP POLICY IF EXISTS "Superadmins manage sys_security_events" ON public.sys_security_events;
 CREATE POLICY "Superadmins manage sys_security_events" ON public.sys_security_events FOR ALL USING (public.is_superadmin());
 
 
@@ -4876,7 +5146,16 @@ CREATE TABLE IF NOT EXISTS public.sys_background_jobs (
     error_message TEXT,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
-CREATE INDEX idx_sys_bg_jobs_status ON public.sys_background_jobs(status, scheduled_for);
+
+DO $$
+BEGIN
+    ALTER TABLE public.sys_background_jobs ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'PENDING';
+    ALTER TABLE public.sys_background_jobs ADD COLUMN IF NOT EXISTS scheduled_for TIMESTAMPTZ DEFAULT NOW();
+EXCEPTION WHEN OTHERS THEN
+    NULL;
+END $$;
+
+CREATE INDEX IF NOT EXISTS idx_sys_bg_jobs_status ON public.sys_background_jobs(status, scheduled_for);
 
 
 -- ==========================================
@@ -5114,16 +5393,23 @@ CREATE TABLE IF NOT EXISTS public.pm_timesheets (
 
 
 -- Privacy: Customers view own subscriptions
+DROP POLICY IF EXISTS "Customers view own subscriptions" ON public.sub_subscriptions;
 CREATE POLICY "Customers view own subscriptions" ON public.sub_subscriptions FOR SELECT USING (customer_id IN (SELECT public.get_my_customer_ids()));
+DROP POLICY IF EXISTS "Customers view own billing cycles" ON public.sub_billing_cycles;
 CREATE POLICY "Customers view own billing cycles" ON public.sub_billing_cycles FOR SELECT USING (subscription_id IN (SELECT id FROM public.sub_subscriptions WHERE customer_id IN (SELECT public.get_my_customer_ids())));
 
 -- Privacy: Employees view/edit own tasks and timesheets
+DROP POLICY IF EXISTS "Employees view assigned tasks" ON public.pm_tasks;
 CREATE POLICY "Employees view assigned tasks" ON public.pm_tasks FOR SELECT USING (assignee_id = auth.uid());
+DROP POLICY IF EXISTS "Employees update assigned tasks" ON public.pm_tasks;
 CREATE POLICY "Employees update assigned tasks" ON public.pm_tasks FOR UPDATE USING (assignee_id = auth.uid());
 
-CREATE POLICY "Employees view own timesheets" ON public.pm_timesheets FOR SELECT USING (employee_id IN (SELECT id FROM public.hr_employees WHERE user_id = auth.uid()));
-CREATE POLICY "Employees insert own timesheets" ON public.pm_timesheets FOR INSERT WITH CHECK (employee_id IN (SELECT id FROM public.hr_employees WHERE user_id = auth.uid()));
-CREATE POLICY "Employees update own timesheets" ON public.pm_timesheets FOR UPDATE USING (employee_id IN (SELECT id FROM public.hr_employees WHERE user_id = auth.uid()));
+DO $$
+BEGIN
+    EXECUTE 'CREATE POLICY "Employees view own timesheets" ON public.pm_timesheets FOR SELECT USING (employee_id IN (SELECT id FROM public.hr_employees WHERE user_id = auth.uid()));';
+    EXECUTE 'CREATE POLICY "Employees insert own timesheets" ON public.pm_timesheets FOR INSERT WITH CHECK (employee_id IN (SELECT id FROM public.hr_employees WHERE user_id = auth.uid()));';
+    EXECUTE 'CREATE POLICY "Employees update own timesheets" ON public.pm_timesheets FOR UPDATE USING (employee_id IN (SELECT id FROM public.hr_employees WHERE user_id = auth.uid()));';
+EXCEPTION WHEN undefined_column THEN null; END $$;
 
 
 -- ==========================================
@@ -5162,7 +5448,7 @@ CREATE TABLE IF NOT EXISTS public.sls_visitor_tracking (
     metadata JSONB DEFAULT '{}'::jsonb,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
-CREATE INDEX idx_sls_visitor_tracking_session ON public.sls_visitor_tracking(session_id);
+CREATE INDEX IF NOT EXISTS idx_sls_visitor_tracking_session ON public.sls_visitor_tracking(session_id);
 
 -- 4. NURTURE SEQUENCES
 CREATE TABLE IF NOT EXISTS public.sls_nurture_sequences (
@@ -5177,7 +5463,9 @@ CREATE TABLE IF NOT EXISTS public.sls_nurture_sequences (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE TYPE public.enum_sls_nurture_action AS ENUM ('SEND_WABA', 'SEND_EMAIL', 'CREATE_TASK', 'ESCALATE');
+DO $$ BEGIN
+    CREATE TYPE public.enum_sls_nurture_action AS ENUM ('SEND_WABA', 'SEND_EMAIL', 'CREATE_TASK', 'ESCALATE');
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
 CREATE TABLE IF NOT EXISTS public.sls_nurture_steps (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -5200,13 +5488,19 @@ ALTER TABLE public.sls_visitor_tracking ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.sls_nurture_sequences ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.sls_nurture_steps ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Allow public insert for tracking" ON public.sls_visitor_tracking;
 CREATE POLICY "Allow public insert for tracking" ON public.sls_visitor_tracking FOR INSERT WITH CHECK (true);
+DROP POLICY IF EXISTS "Superadmins view tracking" ON public.sls_visitor_tracking;
 CREATE POLICY "Superadmins view tracking" ON public.sls_visitor_tracking FOR SELECT USING (public.is_superadmin());
 
+DROP POLICY IF EXISTS "Superadmins manage nurture sequences" ON public.sls_nurture_sequences;
 CREATE POLICY "Superadmins manage nurture sequences" ON public.sls_nurture_sequences FOR ALL USING (public.is_superadmin());
+DROP POLICY IF EXISTS "Org members view nurture sequences" ON public.sls_nurture_sequences;
 CREATE POLICY "Org members view nurture sequences" ON public.sls_nurture_sequences FOR SELECT USING (org_id = public.get_current_org_id());
 
+DROP POLICY IF EXISTS "Superadmins manage nurture steps" ON public.sls_nurture_steps;
 CREATE POLICY "Superadmins manage nurture steps" ON public.sls_nurture_steps FOR ALL USING (public.is_superadmin());
+DROP POLICY IF EXISTS "Org members view nurture steps" ON public.sls_nurture_steps;
 CREATE POLICY "Org members view nurture steps" ON public.sls_nurture_steps FOR SELECT USING (
     sequence_id IN (SELECT id FROM public.sls_nurture_sequences WHERE org_id = public.get_current_org_id())
 );
@@ -5222,37 +5516,70 @@ CREATE POLICY "Org members view nurture steps" ON public.sls_nurture_steps FOR S
 -- Created:   2026-07-17
 -- =============================================================================
 
--- ─── Indexes on existing legacy hot tables ─────────────────────────────────
+-- â”€â”€â”€ Indexes on existing legacy hot tables â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+-- These tables (orders, products, profiles, carts, blog_posts) are not
+-- created by this migration; they're assumed to pre-exist from the legacy
+-- app schema. Guard each index by checking the required columns actually
+-- exist on the target table first, so a missing/renamed column (or a
+-- missing table altogether on a fresh database) doesn't abort the migration.
+DO $$
+DECLARE
+    idx RECORD;
+BEGIN
+    FOR idx IN
+        SELECT * FROM (VALUES
+            ('orders',     ARRAY['user_id'],              'CREATE INDEX IF NOT EXISTS idx_orders_user_id ON public.orders(user_id)'),
+            ('orders',     ARRAY['status'],                'CREATE INDEX IF NOT EXISTS idx_orders_status ON public.orders(status)'),
+            ('orders',     ARRAY['created_at'],            'CREATE INDEX IF NOT EXISTS idx_orders_created_at ON public.orders(created_at DESC)'),
+            ('orders',     ARRAY['customer_phone'],        'CREATE INDEX IF NOT EXISTS idx_orders_customer_phone ON public.orders(customer_phone) WHERE customer_phone IS NOT NULL'),
+            ('orders',     ARRAY['agent_id'],               'CREATE INDEX IF NOT EXISTS idx_orders_agent_id ON public.orders(agent_id) WHERE agent_id IS NOT NULL'),
+            ('orders',     ARRAY['status', 'created_at'],  'CREATE INDEX IF NOT EXISTS idx_orders_status_created ON public.orders(status, created_at DESC)'),
+            ('products',   ARRAY['status'],                'CREATE INDEX IF NOT EXISTS idx_products_status ON public.products(status) WHERE status IS NOT NULL'),
+            ('products',   ARRAY['category'],              'CREATE INDEX IF NOT EXISTS idx_products_category ON public.products(category) WHERE category IS NOT NULL'),
+            ('products',   ARRAY['created_at'],            'CREATE INDEX IF NOT EXISTS idx_products_created_at ON public.products(created_at DESC)'),
+            ('profiles',   ARRAY['id'],                    'CREATE INDEX IF NOT EXISTS idx_profiles_user_id ON public.profiles(id)'),
+            ('profiles',   ARRAY['role'],                  'CREATE INDEX IF NOT EXISTS idx_profiles_role ON public.profiles(role) WHERE role IS NOT NULL'),
+            ('profiles',   ARRAY['mobile'],                'CREATE INDEX IF NOT EXISTS idx_profiles_mobile ON public.profiles(mobile) WHERE mobile IS NOT NULL'),
+            ('carts',      ARRAY['user_id'],                'CREATE INDEX IF NOT EXISTS idx_carts_user_id ON public.carts(user_id) WHERE user_id IS NOT NULL'),
+            ('carts',      ARRAY['status'],                'CREATE INDEX IF NOT EXISTS idx_carts_status ON public.carts(status)'),
+            ('carts',      ARRAY['updated_at'],             'CREATE INDEX IF NOT EXISTS idx_carts_updated_at ON public.carts(updated_at DESC)'),
+            ('blog_posts', ARRAY['slug'],                  'CREATE INDEX IF NOT EXISTS idx_blog_posts_slug ON public.blog_posts(slug)'),
+            ('blog_posts', ARRAY['status'],                'CREATE INDEX IF NOT EXISTS idx_blog_posts_status ON public.blog_posts(status)'),
+            ('blog_posts', ARRAY['published_at'],       'CREATE INDEX IF NOT EXISTS idx_blog_posts_published ON public.blog_posts(published_at DESC) WHERE published_at IS NOT NULL')
+        ) AS t(table_name, cols, ddl)
+    LOOP
+        IF (
+            SELECT COUNT(*) FROM information_schema.columns
+            WHERE table_schema = 'public' AND table_name = idx.table_name AND column_name = ANY(idx.cols)
+        ) = array_length(idx.cols, 1) THEN
+            EXECUTE idx.ddl;
+        END IF;
+    END LOOP;
+END $$;
 
--- orders: most common query patterns
-CREATE INDEX IF NOT EXISTS idx_orders_user_id       ON public.orders(user_id);
-CREATE INDEX IF NOT EXISTS idx_orders_status        ON public.orders(status);
-CREATE INDEX IF NOT EXISTS idx_orders_created_at    ON public.orders(created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_orders_customer_phone ON public.orders(customer_phone) WHERE customer_phone IS NOT NULL;
-CREATE INDEX IF NOT EXISTS idx_orders_agent_id      ON public.orders(agent_id) WHERE agent_id IS NOT NULL;
-CREATE INDEX IF NOT EXISTS idx_orders_status_created ON public.orders(status, created_at DESC);
+-- â”€â”€â”€ Table-level grants for legacy hot tables â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+-- These tables (products, orders, profiles, carts, blog_posts) were created
+-- outside the migration pipeline. The service_role bypasses RLS but still
+-- requires table-level GRANTs; without them INSERT/UPDATE fails with
+-- "permission denied for table ...". Grant appropriate privileges per role.
+DO $$
+DECLARE
+    tbl TEXT;
+BEGIN
+    FOR tbl IN SELECT unnest(ARRAY['products', 'orders', 'profiles', 'carts', 'blog_posts'])
+    LOOP
+        IF EXISTS (
+            SELECT 1 FROM information_schema.tables
+            WHERE table_schema = 'public' AND table_name = tbl
+        ) THEN
+            EXECUTE format('GRANT ALL ON public.%I TO service_role;', tbl);
+            EXECUTE format('GRANT SELECT, INSERT, UPDATE, DELETE ON public.%I TO authenticated;', tbl);
+            EXECUTE format('GRANT SELECT ON public.%I TO anon;', tbl);
+        END IF;
+    END LOOP;
+END $$;
 
--- products
-CREATE INDEX IF NOT EXISTS idx_products_status      ON public.products(status) WHERE status IS NOT NULL;
-CREATE INDEX IF NOT EXISTS idx_products_category    ON public.products(category) WHERE category IS NOT NULL;
-CREATE INDEX IF NOT EXISTS idx_products_created_at  ON public.products(created_at DESC);
-
--- profiles
-CREATE INDEX IF NOT EXISTS idx_profiles_user_id     ON public.profiles(id);
-CREATE INDEX IF NOT EXISTS idx_profiles_role        ON public.profiles(role) WHERE role IS NOT NULL;
-CREATE INDEX IF NOT EXISTS idx_profiles_mobile      ON public.profiles(mobile) WHERE mobile IS NOT NULL;
-
--- carts
-CREATE INDEX IF NOT EXISTS idx_carts_user_id        ON public.carts(user_id) WHERE user_id IS NOT NULL;
-CREATE INDEX IF NOT EXISTS idx_carts_status         ON public.carts(status);
-CREATE INDEX IF NOT EXISTS idx_carts_updated_at     ON public.carts(updated_at DESC);
-
--- blog_posts (created in Phase 3)
-CREATE INDEX IF NOT EXISTS idx_blog_posts_slug      ON public.blog_posts(slug);
-CREATE INDEX IF NOT EXISTS idx_blog_posts_status    ON public.blog_posts(status);
-CREATE INDEX IF NOT EXISTS idx_blog_posts_published ON public.blog_posts(published_at DESC) WHERE status = 'published';
-
--- ─── Notification preferences (Phase 4-6 new table) ───────────────────────
+-- â”€â”€â”€ Notification preferences (Phase 4-6 new table) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 CREATE TABLE IF NOT EXISTS public.notification_preferences (
   id         uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -5269,17 +5596,16 @@ CREATE TABLE IF NOT EXISTS public.notification_preferences (
   CONSTRAINT uq_notification_prefs_user UNIQUE (user_id)
 );
 
-CREATE INDEX IF NOT EXISTS idx_notification_prefs_user_id ON public.notification_preferences(user_id);
-
 ALTER TABLE public.notification_preferences ENABLE ROW LEVEL SECURITY;
 
-DROP POLICY IF EXISTS "users_own_notification_prefs" ON public.notification_preferences;
-CREATE POLICY "users_own_notification_prefs" ON public.notification_preferences
-  FOR ALL
-  USING (auth.uid() = user_id)
-  WITH CHECK (auth.uid() = user_id);
+DO $$
+BEGIN
+    EXECUTE 'CREATE INDEX IF NOT EXISTS idx_notification_prefs_user_id ON public.notification_preferences(user_id);';
+    EXECUTE 'DROP POLICY IF EXISTS "users_own_notification_prefs" ON public.notification_preferences;';
+    EXECUTE 'CREATE POLICY "users_own_notification_prefs" ON public.notification_preferences FOR ALL USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);';
+EXCEPTION WHEN undefined_column THEN null; END $$;
 
--- ─── Referral codes (Phase 4-1 new table) ─────────────────────────────────
+-- â”€â”€â”€ Referral codes (Phase 4-1 new table) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 CREATE TABLE IF NOT EXISTS public.referral_codes (
   id         uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -5291,22 +5617,23 @@ CREATE TABLE IF NOT EXISTS public.referral_codes (
   CONSTRAINT uq_referral_codes_code UNIQUE (code)
 );
 
-CREATE INDEX IF NOT EXISTS idx_referral_codes_user_id ON public.referral_codes(user_id);
 CREATE INDEX IF NOT EXISTS idx_referral_codes_code    ON public.referral_codes(code);
 
 ALTER TABLE public.referral_codes ENABLE ROW LEVEL SECURITY;
 
-DROP POLICY IF EXISTS "users_read_own_referral" ON public.referral_codes;
-CREATE POLICY "users_read_own_referral" ON public.referral_codes
-  FOR SELECT
-  USING (auth.uid() = user_id);
+DO $$
+BEGIN
+    EXECUTE 'CREATE INDEX IF NOT EXISTS idx_referral_codes_user_id ON public.referral_codes(user_id);';
+    EXECUTE 'DROP POLICY IF EXISTS "users_read_own_referral" ON public.referral_codes;';
+    EXECUTE 'CREATE POLICY "users_read_own_referral" ON public.referral_codes FOR SELECT USING (auth.uid() = user_id);';
+EXCEPTION WHEN undefined_column THEN null; END $$;
 
 DROP POLICY IF EXISTS "service_role_manage_referral" ON public.referral_codes;
 CREATE POLICY "service_role_manage_referral" ON public.referral_codes
   FOR ALL
   USING (auth.role() = 'service_role');
 
--- ─── Referral claims ──────────────────────────────────────────────────────
+-- â”€â”€â”€ Referral claims â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 CREATE TABLE IF NOT EXISTS public.referral_claims (
   id              uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -5317,17 +5644,20 @@ CREATE TABLE IF NOT EXISTS public.referral_claims (
   CONSTRAINT uq_referral_claim_user UNIQUE (referred_user)
 );
 
-CREATE INDEX IF NOT EXISTS idx_referral_claims_code     ON public.referral_claims(referral_code);
-CREATE INDEX IF NOT EXISTS idx_referral_claims_referrer ON public.referral_claims(referrer_user);
-
 ALTER TABLE public.referral_claims ENABLE ROW LEVEL SECURITY;
+
+DO $$
+BEGIN
+    EXECUTE 'CREATE INDEX IF NOT EXISTS idx_referral_claims_code     ON public.referral_claims(referral_code);';
+    EXECUTE 'CREATE INDEX IF NOT EXISTS idx_referral_claims_referrer ON public.referral_claims(referrer_user);';
+EXCEPTION WHEN undefined_column THEN null; END $$;
 
 DROP POLICY IF EXISTS "service_role_manage_claims" ON public.referral_claims;
 CREATE POLICY "service_role_manage_claims" ON public.referral_claims
   FOR ALL
   USING (auth.role() = 'service_role');
 
--- ─── Wishlist ─────────────────────────────────────────────────────────────
+-- â”€â”€â”€ Wishlist â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 CREATE TABLE IF NOT EXISTS public.wishlist_items (
   id         uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -5337,17 +5667,16 @@ CREATE TABLE IF NOT EXISTS public.wishlist_items (
   CONSTRAINT uq_wishlist_item UNIQUE (user_id, product_id)
 );
 
-CREATE INDEX IF NOT EXISTS idx_wishlist_user_id ON public.wishlist_items(user_id);
-
 ALTER TABLE public.wishlist_items ENABLE ROW LEVEL SECURITY;
 
-DROP POLICY IF EXISTS "users_own_wishlist" ON public.wishlist_items;
-CREATE POLICY "users_own_wishlist" ON public.wishlist_items
-  FOR ALL
-  USING (auth.uid() = user_id)
-  WITH CHECK (auth.uid() = user_id);
+DO $$
+BEGIN
+    EXECUTE 'CREATE INDEX IF NOT EXISTS idx_wishlist_user_id ON public.wishlist_items(user_id);';
+    EXECUTE 'DROP POLICY IF EXISTS "users_own_wishlist" ON public.wishlist_items;';
+    EXECUTE 'CREATE POLICY "users_own_wishlist" ON public.wishlist_items FOR ALL USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);';
+EXCEPTION WHEN undefined_column THEN null; END $$;
 
--- ─── Trigger: auto-update updated_at on notification_preferences ──────────
+-- â”€â”€â”€ Trigger: auto-update updated_at on notification_preferences â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 CREATE OR REPLACE FUNCTION public.set_updated_at()
 RETURNS TRIGGER LANGUAGE plpgsql AS $$
@@ -5370,7 +5699,7 @@ BEGIN
     FOR tbl IN 
         SELECT table_name 
         FROM information_schema.tables 
-        WHERE table_schema = 'public' 
+        WHERE table_schema = 'public' AND table_type = 'BASE TABLE' 
           AND (table_name LIKE 'org_%' OR table_name LIKE 'sys_%')
           AND table_name != 'sys_audit_logs'
           AND table_name != 'sys_auth_login_history'
@@ -5402,15 +5731,15 @@ BEGIN
         ', tbl, tbl);
         
         EXECUTE format('DROP POLICY IF EXISTS "Users view their org %I" ON public.%I', tbl, tbl);
-        IF tbl = 'org_organizations' THEN
-            EXECUTE format('DROP POLICY IF EXISTS "Users view their org %I" ON public.%I', tbl, tbl);
-        EXECUTE format('CREATE POLICY "Users view their org %I" ON public.%I FOR SELECT USING (id = public.get_current_org_id());
-        ', tbl, tbl);
-        ELSE
-            EXECUTE format('DROP POLICY IF EXISTS "Users view their org %I" ON public.%I', tbl, tbl);
-        EXECUTE format('CREATE POLICY "Users view their org %I" ON public.%I FOR SELECT USING (org_id = public.get_current_org_id());
-        ', tbl, tbl);
-        END IF;
+        BEGIN
+            IF tbl = 'org_organizations' THEN
+                EXECUTE format('CREATE POLICY "Users view their org %I" ON public.%I FOR SELECT USING (id = public.get_current_org_id());
+                ', tbl, tbl);
+            ELSE
+                EXECUTE format('CREATE POLICY "Users view their org %I" ON public.%I FOR SELECT USING (org_id = public.get_current_org_id());
+                ', tbl, tbl);
+            END IF;
+        EXCEPTION WHEN undefined_column THEN null; END;
     END LOOP;
 END $$;
 
@@ -5427,15 +5756,15 @@ BEGIN
         ', tbl, tbl);
         
         EXECUTE format('DROP POLICY IF EXISTS "Users manage their own %I" ON public.%I', tbl, tbl);
-        IF tbl = 'sys_auth_api_keys' THEN
-             EXECUTE format('DROP POLICY IF EXISTS "Users manage their own %I" ON public.%I', tbl, tbl);
-        EXECUTE format('CREATE POLICY "Users manage their own %I" ON public.%I FOR ALL USING (user_id = auth.uid() OR org_id = public.get_current_org_id());
-        ', tbl, tbl);
-        ELSE
-             EXECUTE format('DROP POLICY IF EXISTS "Users manage their own %I" ON public.%I', tbl, tbl);
-        EXECUTE format('CREATE POLICY "Users manage their own %I" ON public.%I FOR ALL USING (user_id = auth.uid());
-        ', tbl, tbl);
-        END IF;
+        BEGIN
+            IF tbl = 'sys_auth_api_keys' THEN
+                EXECUTE format('CREATE POLICY "Users manage their own %I" ON public.%I FOR ALL USING (user_id = auth.uid() OR org_id = public.get_current_org_id());
+                ', tbl, tbl);
+            ELSE
+                EXECUTE format('CREATE POLICY "Users manage their own %I" ON public.%I FOR ALL USING (user_id = auth.uid());
+                ', tbl, tbl);
+            END IF;
+        EXCEPTION WHEN undefined_column THEN null; END;
     END LOOP;
 END $$;
 
@@ -5446,7 +5775,7 @@ BEGIN
     FOR tbl IN 
         SELECT table_name 
         FROM information_schema.tables 
-        WHERE table_schema = 'public' 
+        WHERE table_schema = 'public' AND table_type = 'BASE TABLE' 
           AND (table_name LIKE 'prd_%' OR table_name LIKE 'inv_%')
           AND table_name != 'prd_price_history'
           AND table_name != 'inv_stock_history'
@@ -5466,7 +5795,7 @@ DECLARE
     tbl TEXT;
 BEGIN
     FOR tbl IN 
-        SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND (table_name LIKE 'prd_%' OR table_name LIKE 'inv_%')
+        SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_type = 'BASE TABLE' AND (table_name LIKE 'prd_%' OR table_name LIKE 'inv_%')
     LOOP
         EXECUTE format('DROP POLICY IF EXISTS "Superadmins manage %I" ON public.%I', tbl, tbl);
         EXECUTE format('DROP POLICY IF EXISTS "Superadmins manage %I" ON public.%I', tbl, tbl);
@@ -5482,7 +5811,7 @@ BEGIN
     FOR tbl IN 
         SELECT table_name 
         FROM information_schema.tables 
-        WHERE table_schema = 'public' 
+        WHERE table_schema = 'public' AND table_type = 'BASE TABLE' 
           AND table_name LIKE 'cms_%' 
           AND table_name != 'cms_blog_post_tags'
     LOOP
@@ -5506,7 +5835,7 @@ BEGIN
     FOR tbl IN 
         SELECT table_name 
         FROM information_schema.tables 
-        WHERE table_schema = 'public' 
+        WHERE table_schema = 'public' AND table_type = 'BASE TABLE' 
           AND table_name LIKE 'crm_%' 
           AND table_name NOT IN ('crm_wallet_transactions', 'crm_reward_point_ledger', 'crm_timeline')
     LOOP
@@ -5523,7 +5852,7 @@ DECLARE
     tbl TEXT;
 BEGIN
     FOR tbl IN 
-        SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name LIKE 'crm_%'
+        SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_type = 'BASE TABLE' AND table_name LIKE 'crm_%'
     LOOP
         EXECUTE format('DROP POLICY IF EXISTS "Superadmins manage %I" ON public.%I', tbl, tbl);
         EXECUTE format('CREATE POLICY "Superadmins manage %I" ON public.%I FOR ALL USING (public.is_superadmin());
@@ -5543,18 +5872,20 @@ DECLARE
     tbl TEXT;
 BEGIN
     FOR tbl IN 
-        SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name LIKE 'crm_%'
+        SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_type = 'BASE TABLE' AND table_name LIKE 'crm_%'
     LOOP
         IF tbl = 'crm_customers' THEN
             EXECUTE format('DROP POLICY IF EXISTS "Users manage own %I" ON public.%I', tbl, tbl);
-        EXECUTE format('CREATE POLICY "Users manage own %I" ON public.%I FOR ALL USING (user_id = auth.uid());
-        ', tbl, tbl);
+            BEGIN
+                EXECUTE format('CREATE POLICY "Users manage own %I" ON public.%I FOR ALL USING (user_id = auth.uid());
+                ', tbl, tbl);
+            EXCEPTION WHEN undefined_column THEN null; END;
         ELSIF tbl IN ('crm_addresses', 'crm_saved_cards', 'crm_preferences', 'crm_wishlists', 'crm_carts', 'crm_cart_items', 'crm_reward_points', 'crm_reward_point_ledger', 'crm_wallets', 'crm_wallet_transactions', 'crm_referrals', 'crm_timeline', 'crm_customer_group_mapping') THEN
             -- Tables that have a customer_id column
+            EXECUTE format('DROP POLICY IF EXISTS "Users manage own %I" ON public.%I', tbl, tbl);
             BEGIN
-                EXECUTE format('DROP POLICY IF EXISTS "Users manage own %I" ON public.%I', tbl, tbl);
-        EXECUTE format('CREATE POLICY "Users manage own %I" ON public.%I FOR ALL USING (customer_id IN (SELECT public.get_my_customer_ids()));
-        ', tbl, tbl);
+                EXECUTE format('CREATE POLICY "Users manage own %I" ON public.%I FOR ALL USING (customer_id IN (SELECT public.get_my_customer_ids()));
+                ', tbl, tbl);
             EXCEPTION WHEN undefined_column THEN null; END;
         END IF;
     END LOOP;
@@ -5567,7 +5898,7 @@ BEGIN
     FOR tbl IN 
         SELECT table_name 
         FROM information_schema.tables 
-        WHERE table_schema = 'public' 
+        WHERE table_schema = 'public' AND table_type = 'BASE TABLE' 
           AND table_name LIKE 'sls_%' 
           AND table_name NOT IN ('sls_lead_assignments', 'sls_timeline')
     LOOP
@@ -5584,7 +5915,7 @@ DECLARE
     tbl TEXT;
 BEGIN
     FOR tbl IN 
-        SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name LIKE 'sls_%'
+        SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_type = 'BASE TABLE' AND table_name LIKE 'sls_%'
     LOOP
         EXECUTE format('DROP POLICY IF EXISTS "Superadmins manage %I" ON public.%I', tbl, tbl);
         EXECUTE format('CREATE POLICY "Superadmins manage %I" ON public.%I FOR ALL USING (public.is_superadmin());
@@ -5606,7 +5937,7 @@ BEGIN
     FOR tbl IN 
         SELECT table_name 
         FROM information_schema.tables 
-        WHERE table_schema = 'public' 
+        WHERE table_schema = 'public' AND table_type = 'BASE TABLE' 
           AND table_name LIKE 'oms_%' 
           AND table_name NOT IN ('oms_payment_history', 'oms_tracking_history', 'oms_taxes')
     LOOP
@@ -5623,7 +5954,7 @@ DECLARE
     tbl TEXT;
 BEGIN
     FOR tbl IN 
-        SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name LIKE 'oms_%'
+        SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_type = 'BASE TABLE' AND table_name LIKE 'oms_%'
     LOOP
         EXECUTE format('DROP POLICY IF EXISTS "Superadmins manage %I" ON public.%I', tbl, tbl);
         EXECUTE format('CREATE POLICY "Superadmins manage %I" ON public.%I FOR ALL USING (public.is_superadmin());
@@ -5638,7 +5969,7 @@ BEGIN
     FOR tbl IN 
         SELECT table_name 
         FROM information_schema.tables 
-        WHERE table_schema = 'public' 
+        WHERE table_schema = 'public' AND table_type = 'BASE TABLE' 
           AND table_name LIKE 'wab_%' 
           -- Exclude immutable ledgers from updated_at triggers
           AND table_name NOT IN ('wab_messages', 'wab_message_status', 'wab_webhook_logs', 'wab_media', 'wab_ai_summaries', 'wab_ai_suggestions', 'wab_customer_timeline')
@@ -5656,7 +5987,7 @@ DECLARE
     tbl TEXT;
 BEGIN
     FOR tbl IN 
-        SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name LIKE 'wab_%'
+        SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_type = 'BASE TABLE' AND table_name LIKE 'wab_%'
     LOOP
         EXECUTE format('DROP POLICY IF EXISTS "Superadmins manage %I" ON public.%I', tbl, tbl);
         EXECUTE format('CREATE POLICY "Superadmins manage %I" ON public.%I FOR ALL USING (public.is_superadmin());
@@ -5671,7 +6002,7 @@ BEGIN
     FOR tbl IN 
         SELECT table_name 
         FROM information_schema.tables 
-        WHERE table_schema = 'public' 
+        WHERE table_schema = 'public' AND table_type = 'BASE TABLE' 
           AND table_name LIKE 'mkt_%' 
           AND table_name NOT IN ('mkt_google_reviews') -- Exclude external sync ledger
     LOOP
@@ -5688,7 +6019,7 @@ DECLARE
     tbl TEXT;
 BEGIN
     FOR tbl IN 
-        SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name LIKE 'mkt_%'
+        SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_type = 'BASE TABLE' AND table_name LIKE 'mkt_%'
     LOOP
         EXECUTE format('DROP POLICY IF EXISTS "Superadmins manage %I" ON public.%I', tbl, tbl);
         EXECUTE format('CREATE POLICY "Superadmins manage %I" ON public.%I FOR ALL USING (public.is_superadmin());
@@ -5703,7 +6034,7 @@ BEGIN
     FOR tbl IN 
         SELECT table_name 
         FROM information_schema.tables 
-        WHERE table_schema = 'public' 
+        WHERE table_schema = 'public' AND table_type = 'BASE TABLE' 
           AND table_name LIKE 'sup_%' 
           AND table_name NOT IN ('sup_ticket_attachments', 'sup_ticket_feedback')
     LOOP
@@ -5720,7 +6051,7 @@ DECLARE
     tbl TEXT;
 BEGIN
     FOR tbl IN 
-        SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name LIKE 'sup_%'
+        SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_type = 'BASE TABLE' AND table_name LIKE 'sup_%'
     LOOP
         EXECUTE format('DROP POLICY IF EXISTS "Superadmins manage %I" ON public.%I', tbl, tbl);
         EXECUTE format('CREATE POLICY "Superadmins manage %I" ON public.%I FOR ALL USING (public.is_superadmin());
@@ -5735,7 +6066,7 @@ BEGIN
     FOR tbl IN 
         SELECT table_name 
         FROM information_schema.tables 
-        WHERE table_schema = 'public' 
+        WHERE table_schema = 'public' AND table_type = 'BASE TABLE' 
           AND table_name LIKE 'fin_%' 
           -- Exclude immutable ledgers from updated_at triggers
           AND table_name NOT IN ('fin_ledger_lines', 'fin_credit_notes', 'fin_debit_notes', 'fin_bank_transactions', 'fin_tax_ledger', 'fin_commission_ledger')
@@ -5753,7 +6084,7 @@ DECLARE
     tbl TEXT;
 BEGIN
     FOR tbl IN 
-        SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name LIKE 'fin_%'
+        SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_type = 'BASE TABLE' AND table_name LIKE 'fin_%'
     LOOP
         EXECUTE format('DROP POLICY IF EXISTS "Superadmins manage %I" ON public.%I', tbl, tbl);
         EXECUTE format('CREATE POLICY "Superadmins manage %I" ON public.%I FOR ALL USING (public.is_superadmin());
@@ -5768,7 +6099,7 @@ BEGIN
     FOR tbl IN 
         SELECT table_name 
         FROM information_schema.tables 
-        WHERE table_schema = 'public' 
+        WHERE table_schema = 'public' AND table_type = 'BASE TABLE' 
           AND table_name LIKE 'hr_%' 
     LOOP
         EXECUTE format('DROP TRIGGER IF EXISTS trg_%I_updated_at ON public.%I', tbl, tbl);
@@ -5784,7 +6115,7 @@ DECLARE
     tbl TEXT;
 BEGIN
     FOR tbl IN 
-        SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name LIKE 'hr_%'
+        SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_type = 'BASE TABLE' AND table_name LIKE 'hr_%'
     LOOP
         EXECUTE format('DROP POLICY IF EXISTS "Superadmins manage %I" ON public.%I', tbl, tbl);
         EXECUTE format('CREATE POLICY "Superadmins manage %I" ON public.%I FOR ALL USING (public.is_superadmin());
@@ -5799,7 +6130,7 @@ BEGIN
     FOR tbl IN 
         SELECT table_name 
         FROM information_schema.tables 
-        WHERE table_schema = 'public' 
+        WHERE table_schema = 'public' AND table_type = 'BASE TABLE' 
           AND table_name LIKE 'ntf_%' 
           AND table_name NOT IN ('ntf_queue', 'ntf_delivery_logs') -- Exclude high velocity from update triggers
     LOOP
@@ -5816,7 +6147,7 @@ DECLARE
     tbl TEXT;
 BEGIN
     FOR tbl IN 
-        SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name LIKE 'ntf_%'
+        SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_type = 'BASE TABLE' AND table_name LIKE 'ntf_%'
     LOOP
         EXECUTE format('DROP POLICY IF EXISTS "Superadmins manage %I" ON public.%I', tbl, tbl);
         EXECUTE format('CREATE POLICY "Superadmins manage %I" ON public.%I FOR ALL USING (public.is_superadmin());
@@ -5831,7 +6162,7 @@ BEGIN
     FOR tbl IN 
         SELECT table_name 
         FROM information_schema.tables 
-        WHERE table_schema = 'public' 
+        WHERE table_schema = 'public' AND table_type = 'BASE TABLE' 
           AND table_name LIKE 'rpt_%' 
     LOOP
         EXECUTE format('ALTER TABLE public.%I ENABLE ROW LEVEL SECURITY;', tbl);
@@ -5848,7 +6179,7 @@ BEGIN
     FOR tbl IN 
         SELECT table_name 
         FROM information_schema.tables 
-        WHERE table_schema = 'public' 
+        WHERE table_schema = 'public' AND table_type = 'BASE TABLE' 
           AND (table_name LIKE 'sys_integration%' OR table_name LIKE 'sys_oauth%' OR table_name LIKE 'sys_webhooks%')
     LOOP
         EXECUTE format('DROP POLICY IF EXISTS "Superadmins manage %I" ON public.%I', tbl, tbl);
@@ -5864,7 +6195,7 @@ BEGIN
     FOR tbl IN 
         SELECT table_name 
         FROM information_schema.tables 
-        WHERE table_schema = 'public' 
+        WHERE table_schema = 'public' AND table_type = 'BASE TABLE' 
           AND table_name IN ('sys_app_settings', 'sys_background_jobs')
     LOOP
         EXECUTE format('DROP POLICY IF EXISTS "Superadmins manage %I" ON public.%I', tbl, tbl);
@@ -5880,7 +6211,7 @@ BEGIN
     FOR tbl IN 
         SELECT table_name 
         FROM information_schema.tables 
-        WHERE table_schema = 'public' 
+        WHERE table_schema = 'public' AND table_type = 'BASE TABLE' 
           AND (table_name LIKE 'sub_%' OR table_name LIKE 'pm_%')
     LOOP
         EXECUTE format('DROP TRIGGER IF EXISTS trg_%I_updated_at ON public.%I', tbl, tbl);
@@ -5896,7 +6227,7 @@ DECLARE
     tbl TEXT;
 BEGIN
     FOR tbl IN 
-        SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND (table_name LIKE 'sub_%' OR table_name LIKE 'pm_%')
+        SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_type = 'BASE TABLE' AND (table_name LIKE 'sub_%' OR table_name LIKE 'pm_%')
     LOOP
         EXECUTE format('DROP POLICY IF EXISTS "Superadmins manage %I" ON public.%I', tbl, tbl);
         EXECUTE format('CREATE POLICY "Superadmins manage %I" ON public.%I FOR ALL USING (public.is_superadmin());
@@ -6620,2872 +6951,3 @@ REVOKE ALL ON FUNCTION public.superadmin_connection_stats() FROM PUBLIC;
 REVOKE ALL ON FUNCTION public.superadmin_connection_stats() FROM anon;
 REVOKE ALL ON FUNCTION public.superadmin_connection_stats() FROM authenticated;
 GRANT EXECUTE ON FUNCTION public.superadmin_connection_stats() TO service_role;
-
-
--- ==========================================
--- MODULE: 202607190001_agent_redemption_transactions.sql
--- ==========================================
-
-
-CREATE OR REPLACE FUNCTION public.approve_agent_redemption(
-  p_redemption_id uuid
-)
-RETURNS jsonb
-LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path = public
-AS $$
-DECLARE
-  v_redemption public.agent_redemption_requests%ROWTYPE;
-BEGIN
-  UPDATE public.agent_redemption_requests
-  SET status = 'approved'
-  WHERE id = p_redemption_id
-    AND status = 'pending'
-  RETURNING * INTO v_redemption;
-
-  IF NOT FOUND THEN
-    SELECT * INTO v_redemption
-    FROM public.agent_redemption_requests
-    WHERE id = p_redemption_id;
-
-    IF NOT FOUND THEN
-      RAISE EXCEPTION 'Redemption request not found' USING ERRCODE = 'P0002';
-    END IF;
-
-    RAISE EXCEPTION 'Redemption must be pending to approve. Current status: %', v_redemption.status
-      USING ERRCODE = 'P0001';
-  END IF;
-
-  RETURN jsonb_build_object(
-    'id', v_redemption.id,
-    'agent_id', v_redemption.agent_id,
-    'status', v_redemption.status,
-    'points_to_redeem', v_redemption.points_to_redeem
-  );
-END;
-$$;
-
-CREATE OR REPLACE FUNCTION public.process_agent_redemption(
-  p_redemption_id uuid
-)
-RETURNS jsonb
-LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path = public
-AS $$
-DECLARE
-  v_redemption public.agent_redemption_requests%ROWTYPE;
-  v_balance numeric;
-BEGIN
-  SELECT * INTO v_redemption
-  FROM public.agent_redemption_requests
-  WHERE id = p_redemption_id
-  FOR UPDATE;
-
-  IF NOT FOUND THEN
-    RAISE EXCEPTION 'Redemption request not found' USING ERRCODE = 'P0002';
-  END IF;
-
-  IF v_redemption.status <> 'approved' THEN
-    RAISE EXCEPTION 'Redemption must be approved before processing. Current status: %', v_redemption.status
-      USING ERRCODE = 'P0001';
-  END IF;
-
-  SELECT points_balance INTO v_balance
-  FROM public.sales_agents
-  WHERE id = v_redemption.agent_id
-  FOR UPDATE;
-
-  IF NOT FOUND THEN
-    RAISE EXCEPTION 'Sales agent not found for redemption' USING ERRCODE = 'P0002';
-  END IF;
-
-  IF v_balance < v_redemption.points_to_redeem THEN
-    RAISE EXCEPTION 'Insufficient points balance' USING ERRCODE = 'P0001';
-  END IF;
-
-  UPDATE public.sales_agents
-  SET points_balance = points_balance - v_redemption.points_to_redeem,
-      updated_at = NOW()
-  WHERE id = v_redemption.agent_id;
-
-  UPDATE public.agent_redemption_requests
-  SET status = 'processed',
-      processed_at = NOW()
-  WHERE id = p_redemption_id
-  RETURNING * INTO v_redemption;
-
-  RETURN jsonb_build_object(
-    'id', v_redemption.id,
-    'agent_id', v_redemption.agent_id,
-    'status', v_redemption.status,
-    'points_to_redeem', v_redemption.points_to_redeem,
-    'processed_at', v_redemption.processed_at
-  );
-END;
-$$;
-
-
--- ==========================================
--- MODULE: 202607190002_waba_conversation_notes.sql
--- ==========================================
-
-
-CREATE TABLE IF NOT EXISTS public.waba_conversation_notes (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  sender_number TEXT NOT NULL,
-  note TEXT NOT NULL CHECK (char_length(trim(note)) > 0),
-  author_id TEXT,
-  author_name TEXT,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
-DO $$
-DECLARE
-  conversation_relkind "char";
-  target_table regclass;
-BEGIN
-  SELECT c.relkind
-    INTO conversation_relkind
-  FROM pg_class c
-  JOIN pg_namespace n ON n.oid = c.relnamespace
-  WHERE n.nspname = 'public'
-    AND c.relname = 'Conversation';
-
-  IF conversation_relkind IN ('r', 'p') THEN
-    target_table := 'public."Conversation"'::regclass;
-  ELSIF conversation_relkind = 'v' THEN
-    SELECT format('%I.%I', base_namespace.nspname, base_relation.relname)::regclass
-      INTO target_table
-    FROM pg_rewrite rewrite_rule
-    JOIN pg_depend dependency ON dependency.objid = rewrite_rule.oid
-    JOIN pg_class base_relation ON base_relation.oid = dependency.refobjid
-    JOIN pg_namespace base_namespace ON base_namespace.oid = base_relation.relnamespace
-    WHERE rewrite_rule.ev_class = 'public."Conversation"'::regclass
-      AND base_relation.relkind IN ('r', 'p')
-      AND NOT (base_namespace.nspname = 'public' AND base_relation.relname = 'Conversation')
-    ORDER BY base_namespace.nspname, base_relation.relname
-    LIMIT 1;
-  ELSIF to_regclass('public.wab_conversations') IS NOT NULL THEN
-    target_table := 'public.wab_conversations'::regclass;
-  END IF;
-
-  IF target_table IS NULL THEN
-    RAISE NOTICE 'No table target found for public."Conversation". Creating waba_conversation_notes without a conversation foreign key.';
-    RETURN;
-  END IF;
-
-  IF NOT EXISTS (
-    SELECT 1
-    FROM pg_attribute
-    WHERE attrelid = target_table
-      AND attname = 'sender_number'
-      AND NOT attisdropped
-  ) THEN
-    RAISE NOTICE 'Resolved conversation table % does not expose sender_number. Creating waba_conversation_notes without a conversation foreign key.', target_table;
-    RETURN;
-  END IF;
-
-  IF EXISTS (
-    SELECT 1
-    FROM pg_constraint
-    WHERE conname = 'waba_conversation_notes_sender_number_fkey'
-      AND conrelid = 'public.waba_conversation_notes'::regclass
-  ) THEN
-    RETURN;
-  END IF;
-
-  BEGIN
-    EXECUTE format(
-      'ALTER TABLE public.waba_conversation_notes ADD CONSTRAINT waba_conversation_notes_sender_number_fkey FOREIGN KEY (sender_number) REFERENCES %s(sender_number) ON DELETE CASCADE',
-      target_table
-    );
-  EXCEPTION
-    WHEN invalid_foreign_key THEN
-      RAISE NOTICE 'Resolved conversation table % cannot support a sender_number foreign key. Creating waba_conversation_notes without it.', target_table;
-    WHEN foreign_key_violation THEN
-      RAISE NOTICE 'Existing waba_conversation_notes rows do not all match %. Creating waba_conversation_notes without a conversation foreign key.', target_table;
-  END;
-END $$;
-
-CREATE INDEX IF NOT EXISTS idx_waba_conversation_notes_sender_created
-  ON public.waba_conversation_notes(sender_number, created_at DESC);
-
-
--- ==========================================
--- MODULE: 202607190003_waba_conversation_profile_fields.sql
--- ==========================================
-
-
-DO $$
-DECLARE
-  conversation_relkind "char";
-  target_table regclass;
-BEGIN
-  SELECT c.relkind
-    INTO conversation_relkind
-  FROM pg_class c
-  JOIN pg_namespace n ON n.oid = c.relnamespace
-  WHERE n.nspname = 'public'
-    AND c.relname = 'Conversation';
-
-  IF conversation_relkind IN ('r', 'p') THEN
-    target_table := 'public."Conversation"'::regclass;
-  ELSIF conversation_relkind = 'v' THEN
-    SELECT format('%I.%I', base_namespace.nspname, base_relation.relname)::regclass
-      INTO target_table
-    FROM pg_rewrite rewrite_rule
-    JOIN pg_depend dependency ON dependency.objid = rewrite_rule.oid
-    JOIN pg_class base_relation ON base_relation.oid = dependency.refobjid
-    JOIN pg_namespace base_namespace ON base_namespace.oid = base_relation.relnamespace
-    WHERE rewrite_rule.ev_class = 'public."Conversation"'::regclass
-      AND base_relation.relkind IN ('r', 'p')
-      AND NOT (base_namespace.nspname = 'public' AND base_relation.relname = 'Conversation')
-    ORDER BY base_namespace.nspname, base_relation.relname
-    LIMIT 1;
-  ELSIF to_regclass('public.wab_conversations') IS NOT NULL THEN
-    target_table := 'public.wab_conversations'::regclass;
-  END IF;
-
-  IF target_table IS NULL THEN
-    CREATE TABLE IF NOT EXISTS public."Conversation" (
-      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-      sender_number TEXT UNIQUE,
-      contact_name TEXT,
-      status TEXT DEFAULT 'OPEN',
-      last_interaction_timestamp TIMESTAMPTZ DEFAULT NOW(),
-      assigned_to UUID,
-      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-    );
-    target_table := 'public."Conversation"'::regclass;
-  END IF;
-
-  EXECUTE format($sql$
-    ALTER TABLE %s
-      ADD COLUMN IF NOT EXISTS ai_active BOOLEAN NOT NULL DEFAULT true,
-      ADD COLUMN IF NOT EXISTS deal_value TEXT,
-      ADD COLUMN IF NOT EXISTS active_flow TEXT
-  $sql$, target_table);
-END $$;
-
-
--- ==========================================
--- MODULE: 202607190004_waba_consent_and_status_events.sql
--- ==========================================
-
-
-CREATE TABLE IF NOT EXISTS public.waba_contact_consent (
-  phone TEXT PRIMARY KEY,
-  opted_in BOOLEAN NOT NULL DEFAULT false,
-  source TEXT NOT NULL DEFAULT 'unknown',
-  last_opt_in_at TIMESTAMPTZ,
-  opted_out_at TIMESTAMPTZ,
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
-CREATE INDEX IF NOT EXISTS idx_waba_contact_consent_opted_in
-  ON public.waba_contact_consent(opted_in, updated_at DESC);
-
-CREATE TABLE IF NOT EXISTS public.waba_message_status_events (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  message_id TEXT NOT NULL,
-  status TEXT NOT NULL,
-  occurred_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  provider_payload JSONB NOT NULL DEFAULT '{}'::jsonb,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
-CREATE INDEX IF NOT EXISTS idx_waba_message_status_events_message
-  ON public.waba_message_status_events(message_id, occurred_at DESC);
-
-CREATE TABLE IF NOT EXISTS public.mkt_campaigns (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  name TEXT NOT NULL,
-  description TEXT,
-  status TEXT NOT NULL DEFAULT 'DRAFT',
-  created_by UUID,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
-CREATE TABLE IF NOT EXISTS public.mkt_campaign_analytics (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  campaign_id UUID REFERENCES public.mkt_campaigns(id) ON DELETE CASCADE,
-  phone TEXT,
-  message_id TEXT,
-  status TEXT,
-  sent_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  provider_payload JSONB NOT NULL DEFAULT '{}'::jsonb,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
-ALTER TABLE public.mkt_campaign_analytics
-  ADD COLUMN IF NOT EXISTS phone TEXT,
-  ADD COLUMN IF NOT EXISTS message_id TEXT,
-  ADD COLUMN IF NOT EXISTS status TEXT,
-  ADD COLUMN IF NOT EXISTS sent_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  ADD COLUMN IF NOT EXISTS provider_payload JSONB NOT NULL DEFAULT '{}'::jsonb,
-  ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW();
-
-CREATE INDEX IF NOT EXISTS idx_mkt_campaign_analytics_message_id
-  ON public.mkt_campaign_analytics(message_id);
-
-CREATE INDEX IF NOT EXISTS idx_mkt_campaign_analytics_campaign_sent
-  ON public.mkt_campaign_analytics(campaign_id, sent_at DESC);
-
-CREATE INDEX IF NOT EXISTS idx_mkt_campaign_analytics_status_sent
-  ON public.mkt_campaign_analytics(status, sent_at DESC);
-
-
--- ==========================================
--- MODULE: 202607190005_waba_template_provider_metadata.sql
--- ==========================================
-
-
-DO $$
-DECLARE
-  template_relkind "char";
-  target_table regclass;
-BEGIN
-  SELECT c.relkind
-    INTO template_relkind
-  FROM pg_class c
-  JOIN pg_namespace n ON n.oid = c.relnamespace
-  WHERE n.nspname = 'public'
-    AND c.relname = 'Template';
-
-  IF template_relkind IN ('r', 'p') THEN
-    target_table := 'public."Template"'::regclass;
-  ELSIF template_relkind = 'v' THEN
-    SELECT format('%I.%I', base_namespace.nspname, base_relation.relname)::regclass
-      INTO target_table
-    FROM pg_rewrite rewrite_rule
-    JOIN pg_depend dependency ON dependency.objid = rewrite_rule.oid
-    JOIN pg_class base_relation ON base_relation.oid = dependency.refobjid
-    JOIN pg_namespace base_namespace ON base_namespace.oid = base_relation.relnamespace
-    WHERE rewrite_rule.ev_class = 'public."Template"'::regclass
-      AND base_relation.relkind IN ('r', 'p')
-      AND NOT (base_namespace.nspname = 'public' AND base_relation.relname = 'Template')
-    ORDER BY base_namespace.nspname, base_relation.relname
-    LIMIT 1;
-
-  END IF;
-
-  IF target_table IS NULL AND to_regclass('public.wab_templates') IS NOT NULL THEN
-    target_table := 'public.wab_templates'::regclass;
-  END IF;
-
-  IF target_table IS NULL AND template_relkind IS NULL THEN
-    CREATE TABLE IF NOT EXISTS public."Template" (
-      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-      name TEXT NOT NULL,
-      language TEXT NOT NULL DEFAULT 'en',
-      body TEXT,
-      status TEXT DEFAULT 'PENDING',
-      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-    );
-    target_table := 'public."Template"'::regclass;
-  END IF;
-
-  IF target_table IS NULL THEN
-    RAISE NOTICE 'No writable table target found for public."Template" or public.wab_templates. Skipping WABA template metadata column migration.';
-    RETURN;
-  END IF;
-
-  EXECUTE format($sql$
-    ALTER TABLE %s
-      ADD COLUMN IF NOT EXISTS category TEXT DEFAULT 'MARKETING',
-      ADD COLUMN IF NOT EXISTS provider_name TEXT DEFAULT 'infobip',
-      ADD COLUMN IF NOT EXISTS provider_template_id TEXT,
-      ADD COLUMN IF NOT EXISTS provider_status TEXT DEFAULT 'LOCAL_ONLY',
-      ADD COLUMN IF NOT EXISTS variable_count INTEGER NOT NULL DEFAULT 0,
-      ADD COLUMN IF NOT EXISTS last_synced_at TIMESTAMPTZ,
-      ADD COLUMN IF NOT EXISTS rejection_reason TEXT
-  $sql$, target_table);
-
-  IF EXISTS (
-    SELECT 1
-    FROM pg_attribute
-    WHERE attrelid = target_table
-      AND attname = 'status'
-      AND NOT attisdropped
-  ) THEN
-    EXECUTE format(
-      'CREATE INDEX IF NOT EXISTS idx_waba_template_provider_status ON %s(provider_status, status)',
-      target_table
-    );
-  ELSE
-    RAISE NOTICE 'Skipping idx_waba_template_provider_status because % does not expose a physical status column', target_table;
-  END IF;
-END $$;
-
-
--- ==========================================
--- MODULE: 202607190006_enterprise_analytics_logging.sql
--- ==========================================
-
-
-CREATE TABLE IF NOT EXISTS public.enterprise_analytics_events (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  event_name TEXT NOT NULL,
-  event_category TEXT NOT NULL DEFAULT 'feature_usage',
-  description TEXT,
-  application TEXT NOT NULL,
-  module TEXT,
-  screen TEXT,
-  action TEXT,
-  trigger_type TEXT,
-  priority TEXT NOT NULL DEFAULT 'medium' CHECK (priority IN ('low', 'medium', 'high', 'critical')),
-  user_id TEXT,
-  user_email TEXT,
-  role TEXT,
-  company_id TEXT,
-  company_name TEXT,
-  branch_id TEXT,
-  branch_name TEXT,
-  department TEXT,
-  session_id TEXT,
-  request_id TEXT,
-  entity_type TEXT,
-  entity_id TEXT,
-  database_table TEXT,
-  api_endpoint TEXT,
-  http_method TEXT,
-  http_status INTEGER,
-  execution_time_ms INTEGER,
-  success BOOLEAN NOT NULL DEFAULT true,
-  value_numeric NUMERIC,
-  currency TEXT,
-  device TEXT,
-  browser TEXT,
-  operating_system TEXT,
-  ip_address INET,
-  location JSONB NOT NULL DEFAULT '{}'::jsonb,
-  dashboard TEXT,
-  metadata JSONB NOT NULL DEFAULT '{}'::jsonb,
-  retention_period TEXT NOT NULL DEFAULT '26 months',
-  retention_until TIMESTAMPTZ,
-  occurred_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  received_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
-CREATE INDEX IF NOT EXISTS idx_enterprise_analytics_events_time
-  ON public.enterprise_analytics_events(application, event_category, occurred_at DESC);
-CREATE INDEX IF NOT EXISTS idx_enterprise_analytics_events_user
-  ON public.enterprise_analytics_events(user_id, occurred_at DESC);
-CREATE INDEX IF NOT EXISTS idx_enterprise_analytics_events_request
-  ON public.enterprise_analytics_events(request_id);
-CREATE INDEX IF NOT EXISTS idx_enterprise_analytics_events_metadata
-  ON public.enterprise_analytics_events USING GIN (metadata);
-
-CREATE TABLE IF NOT EXISTS public.enterprise_staff_activity_logs (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id TEXT,
-  user_email TEXT,
-  role TEXT,
-  company_id TEXT,
-  company_name TEXT,
-  branch_id TEXT,
-  branch_name TEXT,
-  department TEXT,
-  application TEXT NOT NULL,
-  module TEXT NOT NULL,
-  screen TEXT,
-  action TEXT NOT NULL,
-  description TEXT,
-  entity_type TEXT,
-  entity_id TEXT,
-  session_id TEXT,
-  request_id TEXT,
-  ip_address INET,
-  browser TEXT,
-  operating_system TEXT,
-  device TEXT,
-  api_endpoint TEXT,
-  http_method TEXT,
-  http_status INTEGER,
-  execution_time_ms INTEGER,
-  success BOOLEAN NOT NULL DEFAULT true,
-  metadata JSONB NOT NULL DEFAULT '{}'::jsonb,
-  retention_period TEXT NOT NULL DEFAULT '7 years',
-  retention_until TIMESTAMPTZ,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
-CREATE INDEX IF NOT EXISTS idx_enterprise_staff_activity_time
-  ON public.enterprise_staff_activity_logs(application, module, created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_enterprise_staff_activity_user
-  ON public.enterprise_staff_activity_logs(user_id, created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_enterprise_staff_activity_request
-  ON public.enterprise_staff_activity_logs(request_id);
-CREATE INDEX IF NOT EXISTS idx_enterprise_staff_activity_metadata
-  ON public.enterprise_staff_activity_logs USING GIN (metadata);
-
-CREATE TABLE IF NOT EXISTS public.enterprise_audit_logs (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id TEXT,
-  user_email TEXT,
-  role TEXT,
-  company_id TEXT,
-  company_name TEXT,
-  branch_id TEXT,
-  branch_name TEXT,
-  application TEXT NOT NULL,
-  module TEXT NOT NULL,
-  screen TEXT,
-  action TEXT NOT NULL,
-  entity_type TEXT NOT NULL,
-  entity_id TEXT,
-  old_value JSONB,
-  new_value JSONB,
-  reason TEXT,
-  ip_address INET,
-  browser TEXT,
-  operating_system TEXT,
-  request_id TEXT,
-  api_endpoint TEXT,
-  http_method TEXT,
-  http_status INTEGER,
-  execution_time_ms INTEGER,
-  success BOOLEAN NOT NULL DEFAULT true,
-  remarks TEXT,
-  metadata JSONB NOT NULL DEFAULT '{}'::jsonb,
-  retention_period TEXT NOT NULL DEFAULT '7 years',
-  retention_until TIMESTAMPTZ,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
-CREATE INDEX IF NOT EXISTS idx_enterprise_audit_logs_time
-  ON public.enterprise_audit_logs(application, module, created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_enterprise_audit_logs_entity
-  ON public.enterprise_audit_logs(entity_type, entity_id, created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_enterprise_audit_logs_request
-  ON public.enterprise_audit_logs(request_id);
-CREATE INDEX IF NOT EXISTS idx_enterprise_audit_logs_metadata
-  ON public.enterprise_audit_logs USING GIN (metadata);
-
-CREATE TABLE IF NOT EXISTS public.enterprise_kpi_snapshots (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  kpi_key TEXT NOT NULL,
-  kpi_name TEXT NOT NULL,
-  category TEXT NOT NULL,
-  application TEXT,
-  dashboard_role TEXT NOT NULL,
-  period_start TIMESTAMPTZ NOT NULL,
-  period_end TIMESTAMPTZ NOT NULL,
-  value_numeric NUMERIC NOT NULL DEFAULT 0,
-  target_numeric NUMERIC,
-  currency TEXT,
-  dimensions JSONB NOT NULL DEFAULT '{}'::jsonb,
-  source_tables TEXT[] NOT NULL DEFAULT '{}',
-  calculated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  UNIQUE (kpi_key, dashboard_role, period_start, period_end, dimensions)
-);
-
-CREATE INDEX IF NOT EXISTS idx_enterprise_kpi_snapshots_period
-  ON public.enterprise_kpi_snapshots(dashboard_role, category, period_start DESC);
-
-CREATE TABLE IF NOT EXISTS public.enterprise_saved_filters (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id TEXT NOT NULL,
-  name TEXT NOT NULL,
-  scope TEXT NOT NULL CHECK (scope IN ('analytics', 'staff_activity', 'audit', 'reports')),
-  filters JSONB NOT NULL DEFAULT '{}'::jsonb,
-  is_shared BOOLEAN NOT NULL DEFAULT false,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
-CREATE INDEX IF NOT EXISTS idx_enterprise_saved_filters_user
-  ON public.enterprise_saved_filters(user_id, scope, updated_at DESC);
-
-CREATE TABLE IF NOT EXISTS public.enterprise_report_exports (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  requested_by TEXT,
-  report_type TEXT NOT NULL,
-  format TEXT NOT NULL CHECK (format IN ('csv', 'excel', 'pdf', 'print')),
-  filters JSONB NOT NULL DEFAULT '{}'::jsonb,
-  status TEXT NOT NULL DEFAULT 'queued' CHECK (status IN ('queued', 'processing', 'completed', 'failed')),
-  file_url TEXT,
-  error_message TEXT,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  completed_at TIMESTAMPTZ
-);
-
-CREATE INDEX IF NOT EXISTS idx_enterprise_report_exports_user
-  ON public.enterprise_report_exports(requested_by, created_at DESC);
-
-CREATE TABLE IF NOT EXISTS public.enterprise_retention_policies (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  data_domain TEXT NOT NULL UNIQUE,
-  retention_period TEXT NOT NULL,
-  archive_after TEXT,
-  is_active BOOLEAN NOT NULL DEFAULT true,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
-INSERT INTO public.enterprise_retention_policies (data_domain, retention_period, archive_after)
-VALUES
-  ('analytics_events', '26 months', '13 months'),
-  ('staff_activity_logs', '7 years', '24 months'),
-  ('audit_logs', '7 years', '24 months'),
-  ('security_audit_logs', '10 years', '36 months'),
-  ('financial_audit_logs', '10 years', '36 months')
-ON CONFLICT (data_domain) DO NOTHING;
-
-CREATE OR REPLACE FUNCTION public.prevent_enterprise_log_mutation()
-RETURNS TRIGGER AS $$
-BEGIN
-  RAISE EXCEPTION 'Enterprise analytics, staff activity, and audit logs are immutable';
-END;
-$$ LANGUAGE plpgsql;
-
-DROP TRIGGER IF EXISTS prevent_staff_activity_update ON public.enterprise_staff_activity_logs;
-CREATE TRIGGER prevent_staff_activity_update
-  BEFORE UPDATE OR DELETE ON public.enterprise_staff_activity_logs
-  FOR EACH ROW EXECUTE FUNCTION public.prevent_enterprise_log_mutation();
-
-DROP TRIGGER IF EXISTS prevent_audit_log_update ON public.enterprise_audit_logs;
-CREATE TRIGGER prevent_audit_log_update
-  BEFORE UPDATE OR DELETE ON public.enterprise_audit_logs
-  FOR EACH ROW EXECUTE FUNCTION public.prevent_enterprise_log_mutation();
-
-ALTER TABLE public.enterprise_analytics_events ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.enterprise_staff_activity_logs ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.enterprise_audit_logs ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.enterprise_kpi_snapshots ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.enterprise_saved_filters ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.enterprise_report_exports ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.enterprise_retention_policies ENABLE ROW LEVEL SECURITY;
-
-
--- ==========================================
--- MODULE: 202607190007_mgmt_profile_preferences.sql
--- ==========================================
-
-
-ALTER TABLE public.profiles
-  ADD COLUMN IF NOT EXISTS avatar_url TEXT,
-  ADD COLUMN IF NOT EXISTS company_name TEXT,
-  ADD COLUMN IF NOT EXISTS branch_name TEXT,
-  ADD COLUMN IF NOT EXISTS department TEXT,
-  ADD COLUMN IF NOT EXISTS timezone TEXT DEFAULT 'Asia/Kolkata',
-  ADD COLUMN IF NOT EXISTS language TEXT DEFAULT 'en',
-  ADD COLUMN IF NOT EXISTS theme TEXT DEFAULT 'system',
-  ADD COLUMN IF NOT EXISTS signature TEXT,
-  ADD COLUMN IF NOT EXISTS notification_preferences JSONB NOT NULL DEFAULT '{}'::jsonb,
-  ADD COLUMN IF NOT EXISTS security_preferences JSONB NOT NULL DEFAULT '{}'::jsonb,
-  ADD COLUMN IF NOT EXISTS privacy_preferences JSONB NOT NULL DEFAULT '{}'::jsonb,
-  ADD COLUMN IF NOT EXISTS appearance_preferences JSONB NOT NULL DEFAULT '{}'::jsonb,
-  ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW();
-
-CREATE INDEX IF NOT EXISTS idx_profiles_company_name ON public.profiles(company_name);
-CREATE INDEX IF NOT EXISTS idx_profiles_branch_name ON public.profiles(branch_name);
-
-
--- ==========================================
--- MODULE: 202607190008_superadmin_command_center_ops.sql
--- ==========================================
-
-
--- Superadmin command center operations: alert acknowledgement lifecycle and
--- privileged database connection statistics for the executive dashboard.
-
-CREATE TABLE IF NOT EXISTS public.enterprise_alert_acknowledgements (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  alert_key TEXT NOT NULL,
-  module TEXT NOT NULL,
-  severity TEXT NOT NULL DEFAULT 'medium',
-  status TEXT NOT NULL DEFAULT 'acknowledged' CHECK (status IN ('acknowledged', 'resolved', 'dismissed')),
-  acknowledged_by TEXT,
-  note TEXT,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
-CREATE INDEX IF NOT EXISTS idx_enterprise_alert_ack_key
-  ON public.enterprise_alert_acknowledgements(alert_key, created_at DESC);
-
-ALTER TABLE public.enterprise_alert_acknowledgements ENABLE ROW LEVEL SECURITY;
-
--- Privileged connection statistics for the Superadmin dashboard. SECURITY DEFINER
--- so the service role can read pg_stat_activity without broad grants.
-CREATE OR REPLACE FUNCTION public.superadmin_connection_stats()
-RETURNS jsonb
-LANGUAGE sql
-STABLE
-SECURITY DEFINER
-SET search_path = public, pg_catalog
-AS $$
-  SELECT jsonb_build_object(
-    'total', COUNT(*),
-    'active', COUNT(*) FILTER (WHERE state = 'active'),
-    'idle', COUNT(*) FILTER (WHERE state = 'idle'),
-    'max_connections', (SELECT setting::int FROM pg_settings WHERE name = 'max_connections')
-  )
-  FROM pg_stat_activity
-  WHERE datname = current_database();
-$$;
-
-REVOKE ALL ON FUNCTION public.superadmin_connection_stats() FROM PUBLIC;
-REVOKE ALL ON FUNCTION public.superadmin_connection_stats() FROM anon;
-REVOKE ALL ON FUNCTION public.superadmin_connection_stats() FROM authenticated;
-GRANT EXECUTE ON FUNCTION public.superadmin_connection_stats() TO service_role;
-
-
--- ==========================================
--- MODULE: 202607190001_agent_redemption_transactions.sql
--- ==========================================
-
-
-CREATE OR REPLACE FUNCTION public.approve_agent_redemption(
-  p_redemption_id uuid
-)
-RETURNS jsonb
-LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path = public
-AS $$
-DECLARE
-  v_redemption public.agent_redemption_requests%ROWTYPE;
-BEGIN
-  UPDATE public.agent_redemption_requests
-  SET status = 'approved'
-  WHERE id = p_redemption_id
-    AND status = 'pending'
-  RETURNING * INTO v_redemption;
-
-  IF NOT FOUND THEN
-    SELECT * INTO v_redemption
-    FROM public.agent_redemption_requests
-    WHERE id = p_redemption_id;
-
-    IF NOT FOUND THEN
-      RAISE EXCEPTION 'Redemption request not found' USING ERRCODE = 'P0002';
-    END IF;
-
-    RAISE EXCEPTION 'Redemption must be pending to approve. Current status: %', v_redemption.status
-      USING ERRCODE = 'P0001';
-  END IF;
-
-  RETURN jsonb_build_object(
-    'id', v_redemption.id,
-    'agent_id', v_redemption.agent_id,
-    'status', v_redemption.status,
-    'points_to_redeem', v_redemption.points_to_redeem
-  );
-END;
-$$;
-
-CREATE OR REPLACE FUNCTION public.process_agent_redemption(
-  p_redemption_id uuid
-)
-RETURNS jsonb
-LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path = public
-AS $$
-DECLARE
-  v_redemption public.agent_redemption_requests%ROWTYPE;
-  v_balance numeric;
-BEGIN
-  SELECT * INTO v_redemption
-  FROM public.agent_redemption_requests
-  WHERE id = p_redemption_id
-  FOR UPDATE;
-
-  IF NOT FOUND THEN
-    RAISE EXCEPTION 'Redemption request not found' USING ERRCODE = 'P0002';
-  END IF;
-
-  IF v_redemption.status <> 'approved' THEN
-    RAISE EXCEPTION 'Redemption must be approved before processing. Current status: %', v_redemption.status
-      USING ERRCODE = 'P0001';
-  END IF;
-
-  SELECT points_balance INTO v_balance
-  FROM public.sales_agents
-  WHERE id = v_redemption.agent_id
-  FOR UPDATE;
-
-  IF NOT FOUND THEN
-    RAISE EXCEPTION 'Sales agent not found for redemption' USING ERRCODE = 'P0002';
-  END IF;
-
-  IF v_balance < v_redemption.points_to_redeem THEN
-    RAISE EXCEPTION 'Insufficient points balance' USING ERRCODE = 'P0001';
-  END IF;
-
-  UPDATE public.sales_agents
-  SET points_balance = points_balance - v_redemption.points_to_redeem,
-      updated_at = NOW()
-  WHERE id = v_redemption.agent_id;
-
-  UPDATE public.agent_redemption_requests
-  SET status = 'processed',
-      processed_at = NOW()
-  WHERE id = p_redemption_id
-  RETURNING * INTO v_redemption;
-
-  RETURN jsonb_build_object(
-    'id', v_redemption.id,
-    'agent_id', v_redemption.agent_id,
-    'status', v_redemption.status,
-    'points_to_redeem', v_redemption.points_to_redeem,
-    'processed_at', v_redemption.processed_at
-  );
-END;
-$$;
-
-
--- ==========================================
--- MODULE: 202607190002_waba_conversation_notes.sql
--- ==========================================
-
-
-CREATE TABLE IF NOT EXISTS public.waba_conversation_notes (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  sender_number TEXT NOT NULL,
-  note TEXT NOT NULL CHECK (char_length(trim(note)) > 0),
-  author_id TEXT,
-  author_name TEXT,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
-DO $$
-DECLARE
-  conversation_relkind "char";
-  target_table regclass;
-BEGIN
-  SELECT c.relkind
-    INTO conversation_relkind
-  FROM pg_class c
-  JOIN pg_namespace n ON n.oid = c.relnamespace
-  WHERE n.nspname = 'public'
-    AND c.relname = 'Conversation';
-
-  IF conversation_relkind IN ('r', 'p') THEN
-    target_table := 'public."Conversation"'::regclass;
-  ELSIF conversation_relkind = 'v' THEN
-    SELECT format('%I.%I', base_namespace.nspname, base_relation.relname)::regclass
-      INTO target_table
-    FROM pg_rewrite rewrite_rule
-    JOIN pg_depend dependency ON dependency.objid = rewrite_rule.oid
-    JOIN pg_class base_relation ON base_relation.oid = dependency.refobjid
-    JOIN pg_namespace base_namespace ON base_namespace.oid = base_relation.relnamespace
-    WHERE rewrite_rule.ev_class = 'public."Conversation"'::regclass
-      AND base_relation.relkind IN ('r', 'p')
-      AND NOT (base_namespace.nspname = 'public' AND base_relation.relname = 'Conversation')
-    ORDER BY base_namespace.nspname, base_relation.relname
-    LIMIT 1;
-  ELSIF to_regclass('public.wab_conversations') IS NOT NULL THEN
-    target_table := 'public.wab_conversations'::regclass;
-  END IF;
-
-  IF target_table IS NULL THEN
-    RAISE NOTICE 'No table target found for public."Conversation". Creating waba_conversation_notes without a conversation foreign key.';
-    RETURN;
-  END IF;
-
-  IF NOT EXISTS (
-    SELECT 1
-    FROM pg_attribute
-    WHERE attrelid = target_table
-      AND attname = 'sender_number'
-      AND NOT attisdropped
-  ) THEN
-    RAISE NOTICE 'Resolved conversation table % does not expose sender_number. Creating waba_conversation_notes without a conversation foreign key.', target_table;
-    RETURN;
-  END IF;
-
-  IF EXISTS (
-    SELECT 1
-    FROM pg_constraint
-    WHERE conname = 'waba_conversation_notes_sender_number_fkey'
-      AND conrelid = 'public.waba_conversation_notes'::regclass
-  ) THEN
-    RETURN;
-  END IF;
-
-  BEGIN
-    EXECUTE format(
-      'ALTER TABLE public.waba_conversation_notes ADD CONSTRAINT waba_conversation_notes_sender_number_fkey FOREIGN KEY (sender_number) REFERENCES %s(sender_number) ON DELETE CASCADE',
-      target_table
-    );
-  EXCEPTION
-    WHEN invalid_foreign_key THEN
-      RAISE NOTICE 'Resolved conversation table % cannot support a sender_number foreign key. Creating waba_conversation_notes without it.', target_table;
-    WHEN foreign_key_violation THEN
-      RAISE NOTICE 'Existing waba_conversation_notes rows do not all match %. Creating waba_conversation_notes without a conversation foreign key.', target_table;
-  END;
-END $$;
-
-CREATE INDEX IF NOT EXISTS idx_waba_conversation_notes_sender_created
-  ON public.waba_conversation_notes(sender_number, created_at DESC);
-
-
--- ==========================================
--- MODULE: 202607190003_waba_conversation_profile_fields.sql
--- ==========================================
-
-
-DO $$
-DECLARE
-  conversation_relkind "char";
-  target_table regclass;
-BEGIN
-  SELECT c.relkind
-    INTO conversation_relkind
-  FROM pg_class c
-  JOIN pg_namespace n ON n.oid = c.relnamespace
-  WHERE n.nspname = 'public'
-    AND c.relname = 'Conversation';
-
-  IF conversation_relkind IN ('r', 'p') THEN
-    target_table := 'public."Conversation"'::regclass;
-  ELSIF conversation_relkind = 'v' THEN
-    SELECT format('%I.%I', base_namespace.nspname, base_relation.relname)::regclass
-      INTO target_table
-    FROM pg_rewrite rewrite_rule
-    JOIN pg_depend dependency ON dependency.objid = rewrite_rule.oid
-    JOIN pg_class base_relation ON base_relation.oid = dependency.refobjid
-    JOIN pg_namespace base_namespace ON base_namespace.oid = base_relation.relnamespace
-    WHERE rewrite_rule.ev_class = 'public."Conversation"'::regclass
-      AND base_relation.relkind IN ('r', 'p')
-      AND NOT (base_namespace.nspname = 'public' AND base_relation.relname = 'Conversation')
-    ORDER BY base_namespace.nspname, base_relation.relname
-    LIMIT 1;
-  ELSIF to_regclass('public.wab_conversations') IS NOT NULL THEN
-    target_table := 'public.wab_conversations'::regclass;
-  END IF;
-
-  IF target_table IS NULL THEN
-    CREATE TABLE IF NOT EXISTS public."Conversation" (
-      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-      sender_number TEXT UNIQUE,
-      contact_name TEXT,
-      status TEXT DEFAULT 'OPEN',
-      last_interaction_timestamp TIMESTAMPTZ DEFAULT NOW(),
-      assigned_to UUID,
-      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-    );
-    target_table := 'public."Conversation"'::regclass;
-  END IF;
-
-  EXECUTE format($sql$
-    ALTER TABLE %s
-      ADD COLUMN IF NOT EXISTS ai_active BOOLEAN NOT NULL DEFAULT true,
-      ADD COLUMN IF NOT EXISTS deal_value TEXT,
-      ADD COLUMN IF NOT EXISTS active_flow TEXT
-  $sql$, target_table);
-END $$;
-
-
--- ==========================================
--- MODULE: 202607190004_waba_consent_and_status_events.sql
--- ==========================================
-
-
-CREATE TABLE IF NOT EXISTS public.waba_contact_consent (
-  phone TEXT PRIMARY KEY,
-  opted_in BOOLEAN NOT NULL DEFAULT false,
-  source TEXT NOT NULL DEFAULT 'unknown',
-  last_opt_in_at TIMESTAMPTZ,
-  opted_out_at TIMESTAMPTZ,
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
-CREATE INDEX IF NOT EXISTS idx_waba_contact_consent_opted_in
-  ON public.waba_contact_consent(opted_in, updated_at DESC);
-
-CREATE TABLE IF NOT EXISTS public.waba_message_status_events (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  message_id TEXT NOT NULL,
-  status TEXT NOT NULL,
-  occurred_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  provider_payload JSONB NOT NULL DEFAULT '{}'::jsonb,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
-CREATE INDEX IF NOT EXISTS idx_waba_message_status_events_message
-  ON public.waba_message_status_events(message_id, occurred_at DESC);
-
-CREATE TABLE IF NOT EXISTS public.mkt_campaigns (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  name TEXT NOT NULL,
-  description TEXT,
-  status TEXT NOT NULL DEFAULT 'DRAFT',
-  created_by UUID,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
-CREATE TABLE IF NOT EXISTS public.mkt_campaign_analytics (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  campaign_id UUID REFERENCES public.mkt_campaigns(id) ON DELETE CASCADE,
-  phone TEXT,
-  message_id TEXT,
-  status TEXT,
-  sent_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  provider_payload JSONB NOT NULL DEFAULT '{}'::jsonb,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
-ALTER TABLE public.mkt_campaign_analytics
-  ADD COLUMN IF NOT EXISTS phone TEXT,
-  ADD COLUMN IF NOT EXISTS message_id TEXT,
-  ADD COLUMN IF NOT EXISTS status TEXT,
-  ADD COLUMN IF NOT EXISTS sent_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  ADD COLUMN IF NOT EXISTS provider_payload JSONB NOT NULL DEFAULT '{}'::jsonb,
-  ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW();
-
-CREATE INDEX IF NOT EXISTS idx_mkt_campaign_analytics_message_id
-  ON public.mkt_campaign_analytics(message_id);
-
-CREATE INDEX IF NOT EXISTS idx_mkt_campaign_analytics_campaign_sent
-  ON public.mkt_campaign_analytics(campaign_id, sent_at DESC);
-
-CREATE INDEX IF NOT EXISTS idx_mkt_campaign_analytics_status_sent
-  ON public.mkt_campaign_analytics(status, sent_at DESC);
-
-
--- ==========================================
--- MODULE: 202607190005_waba_template_provider_metadata.sql
--- ==========================================
-
-
-DO $$
-DECLARE
-  template_relkind "char";
-  target_table regclass;
-BEGIN
-  SELECT c.relkind
-    INTO template_relkind
-  FROM pg_class c
-  JOIN pg_namespace n ON n.oid = c.relnamespace
-  WHERE n.nspname = 'public'
-    AND c.relname = 'Template';
-
-  IF template_relkind IN ('r', 'p') THEN
-    target_table := 'public."Template"'::regclass;
-  ELSIF template_relkind = 'v' THEN
-    SELECT format('%I.%I', base_namespace.nspname, base_relation.relname)::regclass
-      INTO target_table
-    FROM pg_rewrite rewrite_rule
-    JOIN pg_depend dependency ON dependency.objid = rewrite_rule.oid
-    JOIN pg_class base_relation ON base_relation.oid = dependency.refobjid
-    JOIN pg_namespace base_namespace ON base_namespace.oid = base_relation.relnamespace
-    WHERE rewrite_rule.ev_class = 'public."Template"'::regclass
-      AND base_relation.relkind IN ('r', 'p')
-      AND NOT (base_namespace.nspname = 'public' AND base_relation.relname = 'Template')
-    ORDER BY base_namespace.nspname, base_relation.relname
-    LIMIT 1;
-
-  END IF;
-
-  IF target_table IS NULL AND to_regclass('public.wab_templates') IS NOT NULL THEN
-    target_table := 'public.wab_templates'::regclass;
-  END IF;
-
-  IF target_table IS NULL AND template_relkind IS NULL THEN
-    CREATE TABLE IF NOT EXISTS public."Template" (
-      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-      name TEXT NOT NULL,
-      language TEXT NOT NULL DEFAULT 'en',
-      body TEXT,
-      status TEXT DEFAULT 'PENDING',
-      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-    );
-    target_table := 'public."Template"'::regclass;
-  END IF;
-
-  IF target_table IS NULL THEN
-    RAISE NOTICE 'No writable table target found for public."Template" or public.wab_templates. Skipping WABA template metadata column migration.';
-    RETURN;
-  END IF;
-
-  EXECUTE format($sql$
-    ALTER TABLE %s
-      ADD COLUMN IF NOT EXISTS category TEXT DEFAULT 'MARKETING',
-      ADD COLUMN IF NOT EXISTS provider_name TEXT DEFAULT 'infobip',
-      ADD COLUMN IF NOT EXISTS provider_template_id TEXT,
-      ADD COLUMN IF NOT EXISTS provider_status TEXT DEFAULT 'LOCAL_ONLY',
-      ADD COLUMN IF NOT EXISTS variable_count INTEGER NOT NULL DEFAULT 0,
-      ADD COLUMN IF NOT EXISTS last_synced_at TIMESTAMPTZ,
-      ADD COLUMN IF NOT EXISTS rejection_reason TEXT
-  $sql$, target_table);
-
-  IF EXISTS (
-    SELECT 1
-    FROM pg_attribute
-    WHERE attrelid = target_table
-      AND attname = 'status'
-      AND NOT attisdropped
-  ) THEN
-    EXECUTE format(
-      'CREATE INDEX IF NOT EXISTS idx_waba_template_provider_status ON %s(provider_status, status)',
-      target_table
-    );
-  ELSE
-    RAISE NOTICE 'Skipping idx_waba_template_provider_status because % does not expose a physical status column', target_table;
-  END IF;
-END $$;
-
-
--- ==========================================
--- MODULE: 202607190006_enterprise_analytics_logging.sql
--- ==========================================
-
-
-CREATE TABLE IF NOT EXISTS public.enterprise_analytics_events (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  event_name TEXT NOT NULL,
-  event_category TEXT NOT NULL DEFAULT 'feature_usage',
-  description TEXT,
-  application TEXT NOT NULL,
-  module TEXT,
-  screen TEXT,
-  action TEXT,
-  trigger_type TEXT,
-  priority TEXT NOT NULL DEFAULT 'medium' CHECK (priority IN ('low', 'medium', 'high', 'critical')),
-  user_id TEXT,
-  user_email TEXT,
-  role TEXT,
-  company_id TEXT,
-  company_name TEXT,
-  branch_id TEXT,
-  branch_name TEXT,
-  department TEXT,
-  session_id TEXT,
-  request_id TEXT,
-  entity_type TEXT,
-  entity_id TEXT,
-  database_table TEXT,
-  api_endpoint TEXT,
-  http_method TEXT,
-  http_status INTEGER,
-  execution_time_ms INTEGER,
-  success BOOLEAN NOT NULL DEFAULT true,
-  value_numeric NUMERIC,
-  currency TEXT,
-  device TEXT,
-  browser TEXT,
-  operating_system TEXT,
-  ip_address INET,
-  location JSONB NOT NULL DEFAULT '{}'::jsonb,
-  dashboard TEXT,
-  metadata JSONB NOT NULL DEFAULT '{}'::jsonb,
-  retention_period TEXT NOT NULL DEFAULT '26 months',
-  retention_until TIMESTAMPTZ,
-  occurred_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  received_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
-CREATE INDEX IF NOT EXISTS idx_enterprise_analytics_events_time
-  ON public.enterprise_analytics_events(application, event_category, occurred_at DESC);
-CREATE INDEX IF NOT EXISTS idx_enterprise_analytics_events_user
-  ON public.enterprise_analytics_events(user_id, occurred_at DESC);
-CREATE INDEX IF NOT EXISTS idx_enterprise_analytics_events_request
-  ON public.enterprise_analytics_events(request_id);
-CREATE INDEX IF NOT EXISTS idx_enterprise_analytics_events_metadata
-  ON public.enterprise_analytics_events USING GIN (metadata);
-
-CREATE TABLE IF NOT EXISTS public.enterprise_staff_activity_logs (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id TEXT,
-  user_email TEXT,
-  role TEXT,
-  company_id TEXT,
-  company_name TEXT,
-  branch_id TEXT,
-  branch_name TEXT,
-  department TEXT,
-  application TEXT NOT NULL,
-  module TEXT NOT NULL,
-  screen TEXT,
-  action TEXT NOT NULL,
-  description TEXT,
-  entity_type TEXT,
-  entity_id TEXT,
-  session_id TEXT,
-  request_id TEXT,
-  ip_address INET,
-  browser TEXT,
-  operating_system TEXT,
-  device TEXT,
-  api_endpoint TEXT,
-  http_method TEXT,
-  http_status INTEGER,
-  execution_time_ms INTEGER,
-  success BOOLEAN NOT NULL DEFAULT true,
-  metadata JSONB NOT NULL DEFAULT '{}'::jsonb,
-  retention_period TEXT NOT NULL DEFAULT '7 years',
-  retention_until TIMESTAMPTZ,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
-CREATE INDEX IF NOT EXISTS idx_enterprise_staff_activity_time
-  ON public.enterprise_staff_activity_logs(application, module, created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_enterprise_staff_activity_user
-  ON public.enterprise_staff_activity_logs(user_id, created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_enterprise_staff_activity_request
-  ON public.enterprise_staff_activity_logs(request_id);
-CREATE INDEX IF NOT EXISTS idx_enterprise_staff_activity_metadata
-  ON public.enterprise_staff_activity_logs USING GIN (metadata);
-
-CREATE TABLE IF NOT EXISTS public.enterprise_audit_logs (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id TEXT,
-  user_email TEXT,
-  role TEXT,
-  company_id TEXT,
-  company_name TEXT,
-  branch_id TEXT,
-  branch_name TEXT,
-  application TEXT NOT NULL,
-  module TEXT NOT NULL,
-  screen TEXT,
-  action TEXT NOT NULL,
-  entity_type TEXT NOT NULL,
-  entity_id TEXT,
-  old_value JSONB,
-  new_value JSONB,
-  reason TEXT,
-  ip_address INET,
-  browser TEXT,
-  operating_system TEXT,
-  request_id TEXT,
-  api_endpoint TEXT,
-  http_method TEXT,
-  http_status INTEGER,
-  execution_time_ms INTEGER,
-  success BOOLEAN NOT NULL DEFAULT true,
-  remarks TEXT,
-  metadata JSONB NOT NULL DEFAULT '{}'::jsonb,
-  retention_period TEXT NOT NULL DEFAULT '7 years',
-  retention_until TIMESTAMPTZ,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
-CREATE INDEX IF NOT EXISTS idx_enterprise_audit_logs_time
-  ON public.enterprise_audit_logs(application, module, created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_enterprise_audit_logs_entity
-  ON public.enterprise_audit_logs(entity_type, entity_id, created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_enterprise_audit_logs_request
-  ON public.enterprise_audit_logs(request_id);
-CREATE INDEX IF NOT EXISTS idx_enterprise_audit_logs_metadata
-  ON public.enterprise_audit_logs USING GIN (metadata);
-
-CREATE TABLE IF NOT EXISTS public.enterprise_kpi_snapshots (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  kpi_key TEXT NOT NULL,
-  kpi_name TEXT NOT NULL,
-  category TEXT NOT NULL,
-  application TEXT,
-  dashboard_role TEXT NOT NULL,
-  period_start TIMESTAMPTZ NOT NULL,
-  period_end TIMESTAMPTZ NOT NULL,
-  value_numeric NUMERIC NOT NULL DEFAULT 0,
-  target_numeric NUMERIC,
-  currency TEXT,
-  dimensions JSONB NOT NULL DEFAULT '{}'::jsonb,
-  source_tables TEXT[] NOT NULL DEFAULT '{}',
-  calculated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  UNIQUE (kpi_key, dashboard_role, period_start, period_end, dimensions)
-);
-
-CREATE INDEX IF NOT EXISTS idx_enterprise_kpi_snapshots_period
-  ON public.enterprise_kpi_snapshots(dashboard_role, category, period_start DESC);
-
-CREATE TABLE IF NOT EXISTS public.enterprise_saved_filters (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id TEXT NOT NULL,
-  name TEXT NOT NULL,
-  scope TEXT NOT NULL CHECK (scope IN ('analytics', 'staff_activity', 'audit', 'reports')),
-  filters JSONB NOT NULL DEFAULT '{}'::jsonb,
-  is_shared BOOLEAN NOT NULL DEFAULT false,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
-CREATE INDEX IF NOT EXISTS idx_enterprise_saved_filters_user
-  ON public.enterprise_saved_filters(user_id, scope, updated_at DESC);
-
-CREATE TABLE IF NOT EXISTS public.enterprise_report_exports (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  requested_by TEXT,
-  report_type TEXT NOT NULL,
-  format TEXT NOT NULL CHECK (format IN ('csv', 'excel', 'pdf', 'print')),
-  filters JSONB NOT NULL DEFAULT '{}'::jsonb,
-  status TEXT NOT NULL DEFAULT 'queued' CHECK (status IN ('queued', 'processing', 'completed', 'failed')),
-  file_url TEXT,
-  error_message TEXT,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  completed_at TIMESTAMPTZ
-);
-
-CREATE INDEX IF NOT EXISTS idx_enterprise_report_exports_user
-  ON public.enterprise_report_exports(requested_by, created_at DESC);
-
-CREATE TABLE IF NOT EXISTS public.enterprise_retention_policies (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  data_domain TEXT NOT NULL UNIQUE,
-  retention_period TEXT NOT NULL,
-  archive_after TEXT,
-  is_active BOOLEAN NOT NULL DEFAULT true,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
-INSERT INTO public.enterprise_retention_policies (data_domain, retention_period, archive_after)
-VALUES
-  ('analytics_events', '26 months', '13 months'),
-  ('staff_activity_logs', '7 years', '24 months'),
-  ('audit_logs', '7 years', '24 months'),
-  ('security_audit_logs', '10 years', '36 months'),
-  ('financial_audit_logs', '10 years', '36 months')
-ON CONFLICT (data_domain) DO NOTHING;
-
-CREATE OR REPLACE FUNCTION public.prevent_enterprise_log_mutation()
-RETURNS TRIGGER AS $$
-BEGIN
-  RAISE EXCEPTION 'Enterprise analytics, staff activity, and audit logs are immutable';
-END;
-$$ LANGUAGE plpgsql;
-
-DROP TRIGGER IF EXISTS prevent_staff_activity_update ON public.enterprise_staff_activity_logs;
-CREATE TRIGGER prevent_staff_activity_update
-  BEFORE UPDATE OR DELETE ON public.enterprise_staff_activity_logs
-  FOR EACH ROW EXECUTE FUNCTION public.prevent_enterprise_log_mutation();
-
-DROP TRIGGER IF EXISTS prevent_audit_log_update ON public.enterprise_audit_logs;
-CREATE TRIGGER prevent_audit_log_update
-  BEFORE UPDATE OR DELETE ON public.enterprise_audit_logs
-  FOR EACH ROW EXECUTE FUNCTION public.prevent_enterprise_log_mutation();
-
-ALTER TABLE public.enterprise_analytics_events ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.enterprise_staff_activity_logs ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.enterprise_audit_logs ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.enterprise_kpi_snapshots ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.enterprise_saved_filters ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.enterprise_report_exports ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.enterprise_retention_policies ENABLE ROW LEVEL SECURITY;
-
-
--- ==========================================
--- MODULE: 202607190007_mgmt_profile_preferences.sql
--- ==========================================
-
-
-ALTER TABLE public.profiles
-  ADD COLUMN IF NOT EXISTS avatar_url TEXT,
-  ADD COLUMN IF NOT EXISTS company_name TEXT,
-  ADD COLUMN IF NOT EXISTS branch_name TEXT,
-  ADD COLUMN IF NOT EXISTS department TEXT,
-  ADD COLUMN IF NOT EXISTS timezone TEXT DEFAULT 'Asia/Kolkata',
-  ADD COLUMN IF NOT EXISTS language TEXT DEFAULT 'en',
-  ADD COLUMN IF NOT EXISTS theme TEXT DEFAULT 'system',
-  ADD COLUMN IF NOT EXISTS signature TEXT,
-  ADD COLUMN IF NOT EXISTS notification_preferences JSONB NOT NULL DEFAULT '{}'::jsonb,
-  ADD COLUMN IF NOT EXISTS security_preferences JSONB NOT NULL DEFAULT '{}'::jsonb,
-  ADD COLUMN IF NOT EXISTS privacy_preferences JSONB NOT NULL DEFAULT '{}'::jsonb,
-  ADD COLUMN IF NOT EXISTS appearance_preferences JSONB NOT NULL DEFAULT '{}'::jsonb,
-  ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW();
-
-CREATE INDEX IF NOT EXISTS idx_profiles_company_name ON public.profiles(company_name);
-CREATE INDEX IF NOT EXISTS idx_profiles_branch_name ON public.profiles(branch_name);
-
-
--- ==========================================
--- MODULE: 202607190008_superadmin_command_center_ops.sql
--- ==========================================
-
-
--- Superadmin command center operations: alert acknowledgement lifecycle and
--- privileged database connection statistics for the executive dashboard.
-
-CREATE TABLE IF NOT EXISTS public.enterprise_alert_acknowledgements (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  alert_key TEXT NOT NULL,
-  module TEXT NOT NULL,
-  severity TEXT NOT NULL DEFAULT 'medium',
-  status TEXT NOT NULL DEFAULT 'acknowledged' CHECK (status IN ('acknowledged', 'resolved', 'dismissed')),
-  acknowledged_by TEXT,
-  note TEXT,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
-CREATE INDEX IF NOT EXISTS idx_enterprise_alert_ack_key
-  ON public.enterprise_alert_acknowledgements(alert_key, created_at DESC);
-
-ALTER TABLE public.enterprise_alert_acknowledgements ENABLE ROW LEVEL SECURITY;
-
--- Privileged connection statistics for the Superadmin dashboard. SECURITY DEFINER
--- so the service role can read pg_stat_activity without broad grants.
-CREATE OR REPLACE FUNCTION public.superadmin_connection_stats()
-RETURNS jsonb
-LANGUAGE sql
-STABLE
-SECURITY DEFINER
-SET search_path = public, pg_catalog
-AS $$
-  SELECT jsonb_build_object(
-    'total', COUNT(*),
-    'active', COUNT(*) FILTER (WHERE state = 'active'),
-    'idle', COUNT(*) FILTER (WHERE state = 'idle'),
-    'max_connections', (SELECT setting::int FROM pg_settings WHERE name = 'max_connections')
-  )
-  FROM pg_stat_activity
-  WHERE datname = current_database();
-$$;
-
-REVOKE ALL ON FUNCTION public.superadmin_connection_stats() FROM PUBLIC;
-REVOKE ALL ON FUNCTION public.superadmin_connection_stats() FROM anon;
-REVOKE ALL ON FUNCTION public.superadmin_connection_stats() FROM authenticated;
-GRANT EXECUTE ON FUNCTION public.superadmin_connection_stats() TO service_role;
-
-
--- ==========================================
--- MODULE: 202607190001_agent_redemption_transactions.sql
--- ==========================================
-
-
-CREATE OR REPLACE FUNCTION public.approve_agent_redemption(
-  p_redemption_id uuid
-)
-RETURNS jsonb
-LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path = public
-AS $$
-DECLARE
-  v_redemption public.agent_redemption_requests%ROWTYPE;
-BEGIN
-  UPDATE public.agent_redemption_requests
-  SET status = 'approved'
-  WHERE id = p_redemption_id
-    AND status = 'pending'
-  RETURNING * INTO v_redemption;
-
-  IF NOT FOUND THEN
-    SELECT * INTO v_redemption
-    FROM public.agent_redemption_requests
-    WHERE id = p_redemption_id;
-
-    IF NOT FOUND THEN
-      RAISE EXCEPTION 'Redemption request not found' USING ERRCODE = 'P0002';
-    END IF;
-
-    RAISE EXCEPTION 'Redemption must be pending to approve. Current status: %', v_redemption.status
-      USING ERRCODE = 'P0001';
-  END IF;
-
-  RETURN jsonb_build_object(
-    'id', v_redemption.id,
-    'agent_id', v_redemption.agent_id,
-    'status', v_redemption.status,
-    'points_to_redeem', v_redemption.points_to_redeem
-  );
-END;
-$$;
-
-CREATE OR REPLACE FUNCTION public.process_agent_redemption(
-  p_redemption_id uuid
-)
-RETURNS jsonb
-LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path = public
-AS $$
-DECLARE
-  v_redemption public.agent_redemption_requests%ROWTYPE;
-  v_balance numeric;
-BEGIN
-  SELECT * INTO v_redemption
-  FROM public.agent_redemption_requests
-  WHERE id = p_redemption_id
-  FOR UPDATE;
-
-  IF NOT FOUND THEN
-    RAISE EXCEPTION 'Redemption request not found' USING ERRCODE = 'P0002';
-  END IF;
-
-  IF v_redemption.status <> 'approved' THEN
-    RAISE EXCEPTION 'Redemption must be approved before processing. Current status: %', v_redemption.status
-      USING ERRCODE = 'P0001';
-  END IF;
-
-  SELECT points_balance INTO v_balance
-  FROM public.sales_agents
-  WHERE id = v_redemption.agent_id
-  FOR UPDATE;
-
-  IF NOT FOUND THEN
-    RAISE EXCEPTION 'Sales agent not found for redemption' USING ERRCODE = 'P0002';
-  END IF;
-
-  IF v_balance < v_redemption.points_to_redeem THEN
-    RAISE EXCEPTION 'Insufficient points balance' USING ERRCODE = 'P0001';
-  END IF;
-
-  UPDATE public.sales_agents
-  SET points_balance = points_balance - v_redemption.points_to_redeem,
-      updated_at = NOW()
-  WHERE id = v_redemption.agent_id;
-
-  UPDATE public.agent_redemption_requests
-  SET status = 'processed',
-      processed_at = NOW()
-  WHERE id = p_redemption_id
-  RETURNING * INTO v_redemption;
-
-  RETURN jsonb_build_object(
-    'id', v_redemption.id,
-    'agent_id', v_redemption.agent_id,
-    'status', v_redemption.status,
-    'points_to_redeem', v_redemption.points_to_redeem,
-    'processed_at', v_redemption.processed_at
-  );
-END;
-$$;
-
-
--- ==========================================
--- MODULE: 202607190002_waba_conversation_notes.sql
--- ==========================================
-
-
-CREATE TABLE IF NOT EXISTS public.waba_conversation_notes (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  sender_number TEXT NOT NULL,
-  note TEXT NOT NULL CHECK (char_length(trim(note)) > 0),
-  author_id TEXT,
-  author_name TEXT,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
-DO $$
-DECLARE
-  conversation_relkind "char";
-  target_table regclass;
-BEGIN
-  SELECT c.relkind
-    INTO conversation_relkind
-  FROM pg_class c
-  JOIN pg_namespace n ON n.oid = c.relnamespace
-  WHERE n.nspname = 'public'
-    AND c.relname = 'Conversation';
-
-  IF conversation_relkind IN ('r', 'p') THEN
-    target_table := 'public."Conversation"'::regclass;
-  ELSIF conversation_relkind = 'v' THEN
-    SELECT format('%I.%I', base_namespace.nspname, base_relation.relname)::regclass
-      INTO target_table
-    FROM pg_rewrite rewrite_rule
-    JOIN pg_depend dependency ON dependency.objid = rewrite_rule.oid
-    JOIN pg_class base_relation ON base_relation.oid = dependency.refobjid
-    JOIN pg_namespace base_namespace ON base_namespace.oid = base_relation.relnamespace
-    WHERE rewrite_rule.ev_class = 'public."Conversation"'::regclass
-      AND base_relation.relkind IN ('r', 'p')
-      AND NOT (base_namespace.nspname = 'public' AND base_relation.relname = 'Conversation')
-    ORDER BY base_namespace.nspname, base_relation.relname
-    LIMIT 1;
-  ELSIF to_regclass('public.wab_conversations') IS NOT NULL THEN
-    target_table := 'public.wab_conversations'::regclass;
-  END IF;
-
-  IF target_table IS NULL THEN
-    RAISE NOTICE 'No table target found for public."Conversation". Creating waba_conversation_notes without a conversation foreign key.';
-    RETURN;
-  END IF;
-
-  IF NOT EXISTS (
-    SELECT 1
-    FROM pg_attribute
-    WHERE attrelid = target_table
-      AND attname = 'sender_number'
-      AND NOT attisdropped
-  ) THEN
-    RAISE NOTICE 'Resolved conversation table % does not expose sender_number. Creating waba_conversation_notes without a conversation foreign key.', target_table;
-    RETURN;
-  END IF;
-
-  IF EXISTS (
-    SELECT 1
-    FROM pg_constraint
-    WHERE conname = 'waba_conversation_notes_sender_number_fkey'
-      AND conrelid = 'public.waba_conversation_notes'::regclass
-  ) THEN
-    RETURN;
-  END IF;
-
-  BEGIN
-    EXECUTE format(
-      'ALTER TABLE public.waba_conversation_notes ADD CONSTRAINT waba_conversation_notes_sender_number_fkey FOREIGN KEY (sender_number) REFERENCES %s(sender_number) ON DELETE CASCADE',
-      target_table
-    );
-  EXCEPTION
-    WHEN invalid_foreign_key THEN
-      RAISE NOTICE 'Resolved conversation table % cannot support a sender_number foreign key. Creating waba_conversation_notes without it.', target_table;
-    WHEN foreign_key_violation THEN
-      RAISE NOTICE 'Existing waba_conversation_notes rows do not all match %. Creating waba_conversation_notes without a conversation foreign key.', target_table;
-  END;
-END $$;
-
-CREATE INDEX IF NOT EXISTS idx_waba_conversation_notes_sender_created
-  ON public.waba_conversation_notes(sender_number, created_at DESC);
-
-
--- ==========================================
--- MODULE: 202607190003_waba_conversation_profile_fields.sql
--- ==========================================
-
-
-DO $$
-DECLARE
-  conversation_relkind "char";
-  target_table regclass;
-BEGIN
-  SELECT c.relkind
-    INTO conversation_relkind
-  FROM pg_class c
-  JOIN pg_namespace n ON n.oid = c.relnamespace
-  WHERE n.nspname = 'public'
-    AND c.relname = 'Conversation';
-
-  IF conversation_relkind IN ('r', 'p') THEN
-    target_table := 'public."Conversation"'::regclass;
-  ELSIF conversation_relkind = 'v' THEN
-    SELECT format('%I.%I', base_namespace.nspname, base_relation.relname)::regclass
-      INTO target_table
-    FROM pg_rewrite rewrite_rule
-    JOIN pg_depend dependency ON dependency.objid = rewrite_rule.oid
-    JOIN pg_class base_relation ON base_relation.oid = dependency.refobjid
-    JOIN pg_namespace base_namespace ON base_namespace.oid = base_relation.relnamespace
-    WHERE rewrite_rule.ev_class = 'public."Conversation"'::regclass
-      AND base_relation.relkind IN ('r', 'p')
-      AND NOT (base_namespace.nspname = 'public' AND base_relation.relname = 'Conversation')
-    ORDER BY base_namespace.nspname, base_relation.relname
-    LIMIT 1;
-  ELSIF to_regclass('public.wab_conversations') IS NOT NULL THEN
-    target_table := 'public.wab_conversations'::regclass;
-  END IF;
-
-  IF target_table IS NULL THEN
-    CREATE TABLE IF NOT EXISTS public."Conversation" (
-      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-      sender_number TEXT UNIQUE,
-      contact_name TEXT,
-      status TEXT DEFAULT 'OPEN',
-      last_interaction_timestamp TIMESTAMPTZ DEFAULT NOW(),
-      assigned_to UUID,
-      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-    );
-    target_table := 'public."Conversation"'::regclass;
-  END IF;
-
-  EXECUTE format($sql$
-    ALTER TABLE %s
-      ADD COLUMN IF NOT EXISTS ai_active BOOLEAN NOT NULL DEFAULT true,
-      ADD COLUMN IF NOT EXISTS deal_value TEXT,
-      ADD COLUMN IF NOT EXISTS active_flow TEXT
-  $sql$, target_table);
-END $$;
-
-
--- ==========================================
--- MODULE: 202607190004_waba_consent_and_status_events.sql
--- ==========================================
-
-
-CREATE TABLE IF NOT EXISTS public.waba_contact_consent (
-  phone TEXT PRIMARY KEY,
-  opted_in BOOLEAN NOT NULL DEFAULT false,
-  source TEXT NOT NULL DEFAULT 'unknown',
-  last_opt_in_at TIMESTAMPTZ,
-  opted_out_at TIMESTAMPTZ,
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
-CREATE INDEX IF NOT EXISTS idx_waba_contact_consent_opted_in
-  ON public.waba_contact_consent(opted_in, updated_at DESC);
-
-CREATE TABLE IF NOT EXISTS public.waba_message_status_events (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  message_id TEXT NOT NULL,
-  status TEXT NOT NULL,
-  occurred_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  provider_payload JSONB NOT NULL DEFAULT '{}'::jsonb,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
-CREATE INDEX IF NOT EXISTS idx_waba_message_status_events_message
-  ON public.waba_message_status_events(message_id, occurred_at DESC);
-
-CREATE TABLE IF NOT EXISTS public.mkt_campaigns (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  name TEXT NOT NULL,
-  description TEXT,
-  status TEXT NOT NULL DEFAULT 'DRAFT',
-  created_by UUID,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
-CREATE TABLE IF NOT EXISTS public.mkt_campaign_analytics (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  campaign_id UUID REFERENCES public.mkt_campaigns(id) ON DELETE CASCADE,
-  phone TEXT,
-  message_id TEXT,
-  status TEXT,
-  sent_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  provider_payload JSONB NOT NULL DEFAULT '{}'::jsonb,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
-ALTER TABLE public.mkt_campaign_analytics
-  ADD COLUMN IF NOT EXISTS phone TEXT,
-  ADD COLUMN IF NOT EXISTS message_id TEXT,
-  ADD COLUMN IF NOT EXISTS status TEXT,
-  ADD COLUMN IF NOT EXISTS sent_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  ADD COLUMN IF NOT EXISTS provider_payload JSONB NOT NULL DEFAULT '{}'::jsonb,
-  ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW();
-
-CREATE INDEX IF NOT EXISTS idx_mkt_campaign_analytics_message_id
-  ON public.mkt_campaign_analytics(message_id);
-
-CREATE INDEX IF NOT EXISTS idx_mkt_campaign_analytics_campaign_sent
-  ON public.mkt_campaign_analytics(campaign_id, sent_at DESC);
-
-CREATE INDEX IF NOT EXISTS idx_mkt_campaign_analytics_status_sent
-  ON public.mkt_campaign_analytics(status, sent_at DESC);
-
-
--- ==========================================
--- MODULE: 202607190005_waba_template_provider_metadata.sql
--- ==========================================
-
-
-DO $$
-DECLARE
-  template_relkind "char";
-  target_table regclass;
-BEGIN
-  SELECT c.relkind
-    INTO template_relkind
-  FROM pg_class c
-  JOIN pg_namespace n ON n.oid = c.relnamespace
-  WHERE n.nspname = 'public'
-    AND c.relname = 'Template';
-
-  IF template_relkind IN ('r', 'p') THEN
-    target_table := 'public."Template"'::regclass;
-  ELSIF template_relkind = 'v' THEN
-    SELECT format('%I.%I', base_namespace.nspname, base_relation.relname)::regclass
-      INTO target_table
-    FROM pg_rewrite rewrite_rule
-    JOIN pg_depend dependency ON dependency.objid = rewrite_rule.oid
-    JOIN pg_class base_relation ON base_relation.oid = dependency.refobjid
-    JOIN pg_namespace base_namespace ON base_namespace.oid = base_relation.relnamespace
-    WHERE rewrite_rule.ev_class = 'public."Template"'::regclass
-      AND base_relation.relkind IN ('r', 'p')
-      AND NOT (base_namespace.nspname = 'public' AND base_relation.relname = 'Template')
-    ORDER BY base_namespace.nspname, base_relation.relname
-    LIMIT 1;
-
-  END IF;
-
-  IF target_table IS NULL AND to_regclass('public.wab_templates') IS NOT NULL THEN
-    target_table := 'public.wab_templates'::regclass;
-  END IF;
-
-  IF target_table IS NULL AND template_relkind IS NULL THEN
-    CREATE TABLE IF NOT EXISTS public."Template" (
-      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-      name TEXT NOT NULL,
-      language TEXT NOT NULL DEFAULT 'en',
-      body TEXT,
-      status TEXT DEFAULT 'PENDING',
-      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-    );
-    target_table := 'public."Template"'::regclass;
-  END IF;
-
-  IF target_table IS NULL THEN
-    RAISE NOTICE 'No writable table target found for public."Template" or public.wab_templates. Skipping WABA template metadata column migration.';
-    RETURN;
-  END IF;
-
-  EXECUTE format($sql$
-    ALTER TABLE %s
-      ADD COLUMN IF NOT EXISTS category TEXT DEFAULT 'MARKETING',
-      ADD COLUMN IF NOT EXISTS provider_name TEXT DEFAULT 'infobip',
-      ADD COLUMN IF NOT EXISTS provider_template_id TEXT,
-      ADD COLUMN IF NOT EXISTS provider_status TEXT DEFAULT 'LOCAL_ONLY',
-      ADD COLUMN IF NOT EXISTS variable_count INTEGER NOT NULL DEFAULT 0,
-      ADD COLUMN IF NOT EXISTS last_synced_at TIMESTAMPTZ,
-      ADD COLUMN IF NOT EXISTS rejection_reason TEXT
-  $sql$, target_table);
-
-  IF EXISTS (
-    SELECT 1
-    FROM pg_attribute
-    WHERE attrelid = target_table
-      AND attname = 'status'
-      AND NOT attisdropped
-  ) THEN
-    EXECUTE format(
-      'CREATE INDEX IF NOT EXISTS idx_waba_template_provider_status ON %s(provider_status, status)',
-      target_table
-    );
-  ELSE
-    RAISE NOTICE 'Skipping idx_waba_template_provider_status because % does not expose a physical status column', target_table;
-  END IF;
-END $$;
-
-
--- ==========================================
--- MODULE: 202607190006_enterprise_analytics_logging.sql
--- ==========================================
-
-
-CREATE TABLE IF NOT EXISTS public.enterprise_analytics_events (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  event_name TEXT NOT NULL,
-  event_category TEXT NOT NULL DEFAULT 'feature_usage',
-  description TEXT,
-  application TEXT NOT NULL,
-  module TEXT,
-  screen TEXT,
-  action TEXT,
-  trigger_type TEXT,
-  priority TEXT NOT NULL DEFAULT 'medium' CHECK (priority IN ('low', 'medium', 'high', 'critical')),
-  user_id TEXT,
-  user_email TEXT,
-  role TEXT,
-  company_id TEXT,
-  company_name TEXT,
-  branch_id TEXT,
-  branch_name TEXT,
-  department TEXT,
-  session_id TEXT,
-  request_id TEXT,
-  entity_type TEXT,
-  entity_id TEXT,
-  database_table TEXT,
-  api_endpoint TEXT,
-  http_method TEXT,
-  http_status INTEGER,
-  execution_time_ms INTEGER,
-  success BOOLEAN NOT NULL DEFAULT true,
-  value_numeric NUMERIC,
-  currency TEXT,
-  device TEXT,
-  browser TEXT,
-  operating_system TEXT,
-  ip_address INET,
-  location JSONB NOT NULL DEFAULT '{}'::jsonb,
-  dashboard TEXT,
-  metadata JSONB NOT NULL DEFAULT '{}'::jsonb,
-  retention_period TEXT NOT NULL DEFAULT '26 months',
-  retention_until TIMESTAMPTZ,
-  occurred_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  received_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
-CREATE INDEX IF NOT EXISTS idx_enterprise_analytics_events_time
-  ON public.enterprise_analytics_events(application, event_category, occurred_at DESC);
-CREATE INDEX IF NOT EXISTS idx_enterprise_analytics_events_user
-  ON public.enterprise_analytics_events(user_id, occurred_at DESC);
-CREATE INDEX IF NOT EXISTS idx_enterprise_analytics_events_request
-  ON public.enterprise_analytics_events(request_id);
-CREATE INDEX IF NOT EXISTS idx_enterprise_analytics_events_metadata
-  ON public.enterprise_analytics_events USING GIN (metadata);
-
-CREATE TABLE IF NOT EXISTS public.enterprise_staff_activity_logs (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id TEXT,
-  user_email TEXT,
-  role TEXT,
-  company_id TEXT,
-  company_name TEXT,
-  branch_id TEXT,
-  branch_name TEXT,
-  department TEXT,
-  application TEXT NOT NULL,
-  module TEXT NOT NULL,
-  screen TEXT,
-  action TEXT NOT NULL,
-  description TEXT,
-  entity_type TEXT,
-  entity_id TEXT,
-  session_id TEXT,
-  request_id TEXT,
-  ip_address INET,
-  browser TEXT,
-  operating_system TEXT,
-  device TEXT,
-  api_endpoint TEXT,
-  http_method TEXT,
-  http_status INTEGER,
-  execution_time_ms INTEGER,
-  success BOOLEAN NOT NULL DEFAULT true,
-  metadata JSONB NOT NULL DEFAULT '{}'::jsonb,
-  retention_period TEXT NOT NULL DEFAULT '7 years',
-  retention_until TIMESTAMPTZ,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
-CREATE INDEX IF NOT EXISTS idx_enterprise_staff_activity_time
-  ON public.enterprise_staff_activity_logs(application, module, created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_enterprise_staff_activity_user
-  ON public.enterprise_staff_activity_logs(user_id, created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_enterprise_staff_activity_request
-  ON public.enterprise_staff_activity_logs(request_id);
-CREATE INDEX IF NOT EXISTS idx_enterprise_staff_activity_metadata
-  ON public.enterprise_staff_activity_logs USING GIN (metadata);
-
-CREATE TABLE IF NOT EXISTS public.enterprise_audit_logs (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id TEXT,
-  user_email TEXT,
-  role TEXT,
-  company_id TEXT,
-  company_name TEXT,
-  branch_id TEXT,
-  branch_name TEXT,
-  application TEXT NOT NULL,
-  module TEXT NOT NULL,
-  screen TEXT,
-  action TEXT NOT NULL,
-  entity_type TEXT NOT NULL,
-  entity_id TEXT,
-  old_value JSONB,
-  new_value JSONB,
-  reason TEXT,
-  ip_address INET,
-  browser TEXT,
-  operating_system TEXT,
-  request_id TEXT,
-  api_endpoint TEXT,
-  http_method TEXT,
-  http_status INTEGER,
-  execution_time_ms INTEGER,
-  success BOOLEAN NOT NULL DEFAULT true,
-  remarks TEXT,
-  metadata JSONB NOT NULL DEFAULT '{}'::jsonb,
-  retention_period TEXT NOT NULL DEFAULT '7 years',
-  retention_until TIMESTAMPTZ,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
-CREATE INDEX IF NOT EXISTS idx_enterprise_audit_logs_time
-  ON public.enterprise_audit_logs(application, module, created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_enterprise_audit_logs_entity
-  ON public.enterprise_audit_logs(entity_type, entity_id, created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_enterprise_audit_logs_request
-  ON public.enterprise_audit_logs(request_id);
-CREATE INDEX IF NOT EXISTS idx_enterprise_audit_logs_metadata
-  ON public.enterprise_audit_logs USING GIN (metadata);
-
-CREATE TABLE IF NOT EXISTS public.enterprise_kpi_snapshots (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  kpi_key TEXT NOT NULL,
-  kpi_name TEXT NOT NULL,
-  category TEXT NOT NULL,
-  application TEXT,
-  dashboard_role TEXT NOT NULL,
-  period_start TIMESTAMPTZ NOT NULL,
-  period_end TIMESTAMPTZ NOT NULL,
-  value_numeric NUMERIC NOT NULL DEFAULT 0,
-  target_numeric NUMERIC,
-  currency TEXT,
-  dimensions JSONB NOT NULL DEFAULT '{}'::jsonb,
-  source_tables TEXT[] NOT NULL DEFAULT '{}',
-  calculated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  UNIQUE (kpi_key, dashboard_role, period_start, period_end, dimensions)
-);
-
-CREATE INDEX IF NOT EXISTS idx_enterprise_kpi_snapshots_period
-  ON public.enterprise_kpi_snapshots(dashboard_role, category, period_start DESC);
-
-CREATE TABLE IF NOT EXISTS public.enterprise_saved_filters (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id TEXT NOT NULL,
-  name TEXT NOT NULL,
-  scope TEXT NOT NULL CHECK (scope IN ('analytics', 'staff_activity', 'audit', 'reports')),
-  filters JSONB NOT NULL DEFAULT '{}'::jsonb,
-  is_shared BOOLEAN NOT NULL DEFAULT false,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
-CREATE INDEX IF NOT EXISTS idx_enterprise_saved_filters_user
-  ON public.enterprise_saved_filters(user_id, scope, updated_at DESC);
-
-CREATE TABLE IF NOT EXISTS public.enterprise_report_exports (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  requested_by TEXT,
-  report_type TEXT NOT NULL,
-  format TEXT NOT NULL CHECK (format IN ('csv', 'excel', 'pdf', 'print')),
-  filters JSONB NOT NULL DEFAULT '{}'::jsonb,
-  status TEXT NOT NULL DEFAULT 'queued' CHECK (status IN ('queued', 'processing', 'completed', 'failed')),
-  file_url TEXT,
-  error_message TEXT,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  completed_at TIMESTAMPTZ
-);
-
-CREATE INDEX IF NOT EXISTS idx_enterprise_report_exports_user
-  ON public.enterprise_report_exports(requested_by, created_at DESC);
-
-CREATE TABLE IF NOT EXISTS public.enterprise_retention_policies (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  data_domain TEXT NOT NULL UNIQUE,
-  retention_period TEXT NOT NULL,
-  archive_after TEXT,
-  is_active BOOLEAN NOT NULL DEFAULT true,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
-INSERT INTO public.enterprise_retention_policies (data_domain, retention_period, archive_after)
-VALUES
-  ('analytics_events', '26 months', '13 months'),
-  ('staff_activity_logs', '7 years', '24 months'),
-  ('audit_logs', '7 years', '24 months'),
-  ('security_audit_logs', '10 years', '36 months'),
-  ('financial_audit_logs', '10 years', '36 months')
-ON CONFLICT (data_domain) DO NOTHING;
-
-CREATE OR REPLACE FUNCTION public.prevent_enterprise_log_mutation()
-RETURNS TRIGGER AS $$
-BEGIN
-  RAISE EXCEPTION 'Enterprise analytics, staff activity, and audit logs are immutable';
-END;
-$$ LANGUAGE plpgsql;
-
-DROP TRIGGER IF EXISTS prevent_staff_activity_update ON public.enterprise_staff_activity_logs;
-CREATE TRIGGER prevent_staff_activity_update
-  BEFORE UPDATE OR DELETE ON public.enterprise_staff_activity_logs
-  FOR EACH ROW EXECUTE FUNCTION public.prevent_enterprise_log_mutation();
-
-DROP TRIGGER IF EXISTS prevent_audit_log_update ON public.enterprise_audit_logs;
-CREATE TRIGGER prevent_audit_log_update
-  BEFORE UPDATE OR DELETE ON public.enterprise_audit_logs
-  FOR EACH ROW EXECUTE FUNCTION public.prevent_enterprise_log_mutation();
-
-ALTER TABLE public.enterprise_analytics_events ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.enterprise_staff_activity_logs ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.enterprise_audit_logs ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.enterprise_kpi_snapshots ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.enterprise_saved_filters ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.enterprise_report_exports ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.enterprise_retention_policies ENABLE ROW LEVEL SECURITY;
-
-
--- ==========================================
--- MODULE: 202607190007_mgmt_profile_preferences.sql
--- ==========================================
-
-
-ALTER TABLE public.profiles
-  ADD COLUMN IF NOT EXISTS avatar_url TEXT,
-  ADD COLUMN IF NOT EXISTS company_name TEXT,
-  ADD COLUMN IF NOT EXISTS branch_name TEXT,
-  ADD COLUMN IF NOT EXISTS department TEXT,
-  ADD COLUMN IF NOT EXISTS timezone TEXT DEFAULT 'Asia/Kolkata',
-  ADD COLUMN IF NOT EXISTS language TEXT DEFAULT 'en',
-  ADD COLUMN IF NOT EXISTS theme TEXT DEFAULT 'system',
-  ADD COLUMN IF NOT EXISTS signature TEXT,
-  ADD COLUMN IF NOT EXISTS notification_preferences JSONB NOT NULL DEFAULT '{}'::jsonb,
-  ADD COLUMN IF NOT EXISTS security_preferences JSONB NOT NULL DEFAULT '{}'::jsonb,
-  ADD COLUMN IF NOT EXISTS privacy_preferences JSONB NOT NULL DEFAULT '{}'::jsonb,
-  ADD COLUMN IF NOT EXISTS appearance_preferences JSONB NOT NULL DEFAULT '{}'::jsonb,
-  ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW();
-
-CREATE INDEX IF NOT EXISTS idx_profiles_company_name ON public.profiles(company_name);
-CREATE INDEX IF NOT EXISTS idx_profiles_branch_name ON public.profiles(branch_name);
-
-
--- ==========================================
--- MODULE: 202607190008_superadmin_command_center_ops.sql
--- ==========================================
-
-
--- Superadmin command center operations: alert acknowledgement lifecycle and
--- privileged database connection statistics for the executive dashboard.
-
-CREATE TABLE IF NOT EXISTS public.enterprise_alert_acknowledgements (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  alert_key TEXT NOT NULL,
-  module TEXT NOT NULL,
-  severity TEXT NOT NULL DEFAULT 'medium',
-  status TEXT NOT NULL DEFAULT 'acknowledged' CHECK (status IN ('acknowledged', 'resolved', 'dismissed')),
-  acknowledged_by TEXT,
-  note TEXT,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
-CREATE INDEX IF NOT EXISTS idx_enterprise_alert_ack_key
-  ON public.enterprise_alert_acknowledgements(alert_key, created_at DESC);
-
-ALTER TABLE public.enterprise_alert_acknowledgements ENABLE ROW LEVEL SECURITY;
-
--- Privileged connection statistics for the Superadmin dashboard. SECURITY DEFINER
--- so the service role can read pg_stat_activity without broad grants.
-CREATE OR REPLACE FUNCTION public.superadmin_connection_stats()
-RETURNS jsonb
-LANGUAGE sql
-STABLE
-SECURITY DEFINER
-SET search_path = public, pg_catalog
-AS $$
-  SELECT jsonb_build_object(
-    'total', COUNT(*),
-    'active', COUNT(*) FILTER (WHERE state = 'active'),
-    'idle', COUNT(*) FILTER (WHERE state = 'idle'),
-    'max_connections', (SELECT setting::int FROM pg_settings WHERE name = 'max_connections')
-  )
-  FROM pg_stat_activity
-  WHERE datname = current_database();
-$$;
-
-REVOKE ALL ON FUNCTION public.superadmin_connection_stats() FROM PUBLIC;
-REVOKE ALL ON FUNCTION public.superadmin_connection_stats() FROM anon;
-REVOKE ALL ON FUNCTION public.superadmin_connection_stats() FROM authenticated;
-GRANT EXECUTE ON FUNCTION public.superadmin_connection_stats() TO service_role;
-
-
--- ==========================================
--- MODULE: 202607190001_agent_redemption_transactions.sql
--- ==========================================
-
-
-CREATE OR REPLACE FUNCTION public.approve_agent_redemption(
-  p_redemption_id uuid
-)
-RETURNS jsonb
-LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path = public
-AS $$
-DECLARE
-  v_redemption public.agent_redemption_requests%ROWTYPE;
-BEGIN
-  UPDATE public.agent_redemption_requests
-  SET status = 'approved'
-  WHERE id = p_redemption_id
-    AND status = 'pending'
-  RETURNING * INTO v_redemption;
-
-  IF NOT FOUND THEN
-    SELECT * INTO v_redemption
-    FROM public.agent_redemption_requests
-    WHERE id = p_redemption_id;
-
-    IF NOT FOUND THEN
-      RAISE EXCEPTION 'Redemption request not found' USING ERRCODE = 'P0002';
-    END IF;
-
-    RAISE EXCEPTION 'Redemption must be pending to approve. Current status: %', v_redemption.status
-      USING ERRCODE = 'P0001';
-  END IF;
-
-  RETURN jsonb_build_object(
-    'id', v_redemption.id,
-    'agent_id', v_redemption.agent_id,
-    'status', v_redemption.status,
-    'points_to_redeem', v_redemption.points_to_redeem
-  );
-END;
-$$;
-
-CREATE OR REPLACE FUNCTION public.process_agent_redemption(
-  p_redemption_id uuid
-)
-RETURNS jsonb
-LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path = public
-AS $$
-DECLARE
-  v_redemption public.agent_redemption_requests%ROWTYPE;
-  v_balance numeric;
-BEGIN
-  SELECT * INTO v_redemption
-  FROM public.agent_redemption_requests
-  WHERE id = p_redemption_id
-  FOR UPDATE;
-
-  IF NOT FOUND THEN
-    RAISE EXCEPTION 'Redemption request not found' USING ERRCODE = 'P0002';
-  END IF;
-
-  IF v_redemption.status <> 'approved' THEN
-    RAISE EXCEPTION 'Redemption must be approved before processing. Current status: %', v_redemption.status
-      USING ERRCODE = 'P0001';
-  END IF;
-
-  SELECT points_balance INTO v_balance
-  FROM public.sales_agents
-  WHERE id = v_redemption.agent_id
-  FOR UPDATE;
-
-  IF NOT FOUND THEN
-    RAISE EXCEPTION 'Sales agent not found for redemption' USING ERRCODE = 'P0002';
-  END IF;
-
-  IF v_balance < v_redemption.points_to_redeem THEN
-    RAISE EXCEPTION 'Insufficient points balance' USING ERRCODE = 'P0001';
-  END IF;
-
-  UPDATE public.sales_agents
-  SET points_balance = points_balance - v_redemption.points_to_redeem,
-      updated_at = NOW()
-  WHERE id = v_redemption.agent_id;
-
-  UPDATE public.agent_redemption_requests
-  SET status = 'processed',
-      processed_at = NOW()
-  WHERE id = p_redemption_id
-  RETURNING * INTO v_redemption;
-
-  RETURN jsonb_build_object(
-    'id', v_redemption.id,
-    'agent_id', v_redemption.agent_id,
-    'status', v_redemption.status,
-    'points_to_redeem', v_redemption.points_to_redeem,
-    'processed_at', v_redemption.processed_at
-  );
-END;
-$$;
-
-
--- ==========================================
--- MODULE: 202607190002_waba_conversation_notes.sql
--- ==========================================
-
-
-CREATE TABLE IF NOT EXISTS public.waba_conversation_notes (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  sender_number TEXT NOT NULL,
-  note TEXT NOT NULL CHECK (char_length(trim(note)) > 0),
-  author_id TEXT,
-  author_name TEXT,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
-DO $$
-DECLARE
-  conversation_relkind "char";
-  target_table regclass;
-BEGIN
-  SELECT c.relkind
-    INTO conversation_relkind
-  FROM pg_class c
-  JOIN pg_namespace n ON n.oid = c.relnamespace
-  WHERE n.nspname = 'public'
-    AND c.relname = 'Conversation';
-
-  IF conversation_relkind IN ('r', 'p') THEN
-    target_table := 'public."Conversation"'::regclass;
-  ELSIF conversation_relkind = 'v' THEN
-    SELECT format('%I.%I', base_namespace.nspname, base_relation.relname)::regclass
-      INTO target_table
-    FROM pg_rewrite rewrite_rule
-    JOIN pg_depend dependency ON dependency.objid = rewrite_rule.oid
-    JOIN pg_class base_relation ON base_relation.oid = dependency.refobjid
-    JOIN pg_namespace base_namespace ON base_namespace.oid = base_relation.relnamespace
-    WHERE rewrite_rule.ev_class = 'public."Conversation"'::regclass
-      AND base_relation.relkind IN ('r', 'p')
-      AND NOT (base_namespace.nspname = 'public' AND base_relation.relname = 'Conversation')
-    ORDER BY base_namespace.nspname, base_relation.relname
-    LIMIT 1;
-  ELSIF to_regclass('public.wab_conversations') IS NOT NULL THEN
-    target_table := 'public.wab_conversations'::regclass;
-  END IF;
-
-  IF target_table IS NULL THEN
-    RAISE NOTICE 'No table target found for public."Conversation". Creating waba_conversation_notes without a conversation foreign key.';
-    RETURN;
-  END IF;
-
-  IF NOT EXISTS (
-    SELECT 1
-    FROM pg_attribute
-    WHERE attrelid = target_table
-      AND attname = 'sender_number'
-      AND NOT attisdropped
-  ) THEN
-    RAISE NOTICE 'Resolved conversation table % does not expose sender_number. Creating waba_conversation_notes without a conversation foreign key.', target_table;
-    RETURN;
-  END IF;
-
-  IF EXISTS (
-    SELECT 1
-    FROM pg_constraint
-    WHERE conname = 'waba_conversation_notes_sender_number_fkey'
-      AND conrelid = 'public.waba_conversation_notes'::regclass
-  ) THEN
-    RETURN;
-  END IF;
-
-  BEGIN
-    EXECUTE format(
-      'ALTER TABLE public.waba_conversation_notes ADD CONSTRAINT waba_conversation_notes_sender_number_fkey FOREIGN KEY (sender_number) REFERENCES %s(sender_number) ON DELETE CASCADE',
-      target_table
-    );
-  EXCEPTION
-    WHEN invalid_foreign_key THEN
-      RAISE NOTICE 'Resolved conversation table % cannot support a sender_number foreign key. Creating waba_conversation_notes without it.', target_table;
-    WHEN foreign_key_violation THEN
-      RAISE NOTICE 'Existing waba_conversation_notes rows do not all match %. Creating waba_conversation_notes without a conversation foreign key.', target_table;
-  END;
-END $$;
-
-CREATE INDEX IF NOT EXISTS idx_waba_conversation_notes_sender_created
-  ON public.waba_conversation_notes(sender_number, created_at DESC);
-
-
--- ==========================================
--- MODULE: 202607190003_waba_conversation_profile_fields.sql
--- ==========================================
-
-
-DO $$
-DECLARE
-  conversation_relkind "char";
-  target_table regclass;
-BEGIN
-  SELECT c.relkind
-    INTO conversation_relkind
-  FROM pg_class c
-  JOIN pg_namespace n ON n.oid = c.relnamespace
-  WHERE n.nspname = 'public'
-    AND c.relname = 'Conversation';
-
-  IF conversation_relkind IN ('r', 'p') THEN
-    target_table := 'public."Conversation"'::regclass;
-  ELSIF conversation_relkind = 'v' THEN
-    SELECT format('%I.%I', base_namespace.nspname, base_relation.relname)::regclass
-      INTO target_table
-    FROM pg_rewrite rewrite_rule
-    JOIN pg_depend dependency ON dependency.objid = rewrite_rule.oid
-    JOIN pg_class base_relation ON base_relation.oid = dependency.refobjid
-    JOIN pg_namespace base_namespace ON base_namespace.oid = base_relation.relnamespace
-    WHERE rewrite_rule.ev_class = 'public."Conversation"'::regclass
-      AND base_relation.relkind IN ('r', 'p')
-      AND NOT (base_namespace.nspname = 'public' AND base_relation.relname = 'Conversation')
-    ORDER BY base_namespace.nspname, base_relation.relname
-    LIMIT 1;
-  ELSIF to_regclass('public.wab_conversations') IS NOT NULL THEN
-    target_table := 'public.wab_conversations'::regclass;
-  END IF;
-
-  IF target_table IS NULL THEN
-    CREATE TABLE IF NOT EXISTS public."Conversation" (
-      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-      sender_number TEXT UNIQUE,
-      contact_name TEXT,
-      status TEXT DEFAULT 'OPEN',
-      last_interaction_timestamp TIMESTAMPTZ DEFAULT NOW(),
-      assigned_to UUID,
-      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-    );
-    target_table := 'public."Conversation"'::regclass;
-  END IF;
-
-  EXECUTE format($sql$
-    ALTER TABLE %s
-      ADD COLUMN IF NOT EXISTS ai_active BOOLEAN NOT NULL DEFAULT true,
-      ADD COLUMN IF NOT EXISTS deal_value TEXT,
-      ADD COLUMN IF NOT EXISTS active_flow TEXT
-  $sql$, target_table);
-END $$;
-
-
--- ==========================================
--- MODULE: 202607190004_waba_consent_and_status_events.sql
--- ==========================================
-
-
-CREATE TABLE IF NOT EXISTS public.waba_contact_consent (
-  phone TEXT PRIMARY KEY,
-  opted_in BOOLEAN NOT NULL DEFAULT false,
-  source TEXT NOT NULL DEFAULT 'unknown',
-  last_opt_in_at TIMESTAMPTZ,
-  opted_out_at TIMESTAMPTZ,
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
-CREATE INDEX IF NOT EXISTS idx_waba_contact_consent_opted_in
-  ON public.waba_contact_consent(opted_in, updated_at DESC);
-
-CREATE TABLE IF NOT EXISTS public.waba_message_status_events (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  message_id TEXT NOT NULL,
-  status TEXT NOT NULL,
-  occurred_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  provider_payload JSONB NOT NULL DEFAULT '{}'::jsonb,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
-CREATE INDEX IF NOT EXISTS idx_waba_message_status_events_message
-  ON public.waba_message_status_events(message_id, occurred_at DESC);
-
-CREATE TABLE IF NOT EXISTS public.mkt_campaigns (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  name TEXT NOT NULL,
-  description TEXT,
-  status TEXT NOT NULL DEFAULT 'DRAFT',
-  created_by UUID,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
-CREATE TABLE IF NOT EXISTS public.mkt_campaign_analytics (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  campaign_id UUID REFERENCES public.mkt_campaigns(id) ON DELETE CASCADE,
-  phone TEXT,
-  message_id TEXT,
-  status TEXT,
-  sent_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  provider_payload JSONB NOT NULL DEFAULT '{}'::jsonb,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
-ALTER TABLE public.mkt_campaign_analytics
-  ADD COLUMN IF NOT EXISTS phone TEXT,
-  ADD COLUMN IF NOT EXISTS message_id TEXT,
-  ADD COLUMN IF NOT EXISTS status TEXT,
-  ADD COLUMN IF NOT EXISTS sent_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  ADD COLUMN IF NOT EXISTS provider_payload JSONB NOT NULL DEFAULT '{}'::jsonb,
-  ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW();
-
-CREATE INDEX IF NOT EXISTS idx_mkt_campaign_analytics_message_id
-  ON public.mkt_campaign_analytics(message_id);
-
-CREATE INDEX IF NOT EXISTS idx_mkt_campaign_analytics_campaign_sent
-  ON public.mkt_campaign_analytics(campaign_id, sent_at DESC);
-
-CREATE INDEX IF NOT EXISTS idx_mkt_campaign_analytics_status_sent
-  ON public.mkt_campaign_analytics(status, sent_at DESC);
-
-
--- ==========================================
--- MODULE: 202607190005_waba_template_provider_metadata.sql
--- ==========================================
-
-
-DO $$
-DECLARE
-  template_relkind "char";
-  target_table regclass;
-BEGIN
-  SELECT c.relkind
-    INTO template_relkind
-  FROM pg_class c
-  JOIN pg_namespace n ON n.oid = c.relnamespace
-  WHERE n.nspname = 'public'
-    AND c.relname = 'Template';
-
-  IF template_relkind IN ('r', 'p') THEN
-    target_table := 'public."Template"'::regclass;
-  ELSIF template_relkind = 'v' THEN
-    SELECT format('%I.%I', base_namespace.nspname, base_relation.relname)::regclass
-      INTO target_table
-    FROM pg_rewrite rewrite_rule
-    JOIN pg_depend dependency ON dependency.objid = rewrite_rule.oid
-    JOIN pg_class base_relation ON base_relation.oid = dependency.refobjid
-    JOIN pg_namespace base_namespace ON base_namespace.oid = base_relation.relnamespace
-    WHERE rewrite_rule.ev_class = 'public."Template"'::regclass
-      AND base_relation.relkind IN ('r', 'p')
-      AND NOT (base_namespace.nspname = 'public' AND base_relation.relname = 'Template')
-    ORDER BY base_namespace.nspname, base_relation.relname
-    LIMIT 1;
-
-  END IF;
-
-  IF target_table IS NULL AND to_regclass('public.wab_templates') IS NOT NULL THEN
-    target_table := 'public.wab_templates'::regclass;
-  END IF;
-
-  IF target_table IS NULL AND template_relkind IS NULL THEN
-    CREATE TABLE IF NOT EXISTS public."Template" (
-      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-      name TEXT NOT NULL,
-      language TEXT NOT NULL DEFAULT 'en',
-      body TEXT,
-      status TEXT DEFAULT 'PENDING',
-      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-    );
-    target_table := 'public."Template"'::regclass;
-  END IF;
-
-  IF target_table IS NULL THEN
-    RAISE NOTICE 'No writable table target found for public."Template" or public.wab_templates. Skipping WABA template metadata column migration.';
-    RETURN;
-  END IF;
-
-  EXECUTE format($sql$
-    ALTER TABLE %s
-      ADD COLUMN IF NOT EXISTS category TEXT DEFAULT 'MARKETING',
-      ADD COLUMN IF NOT EXISTS provider_name TEXT DEFAULT 'infobip',
-      ADD COLUMN IF NOT EXISTS provider_template_id TEXT,
-      ADD COLUMN IF NOT EXISTS provider_status TEXT DEFAULT 'LOCAL_ONLY',
-      ADD COLUMN IF NOT EXISTS variable_count INTEGER NOT NULL DEFAULT 0,
-      ADD COLUMN IF NOT EXISTS last_synced_at TIMESTAMPTZ,
-      ADD COLUMN IF NOT EXISTS rejection_reason TEXT
-  $sql$, target_table);
-
-  IF EXISTS (
-    SELECT 1
-    FROM pg_attribute
-    WHERE attrelid = target_table
-      AND attname = 'status'
-      AND NOT attisdropped
-  ) THEN
-    EXECUTE format(
-      'CREATE INDEX IF NOT EXISTS idx_waba_template_provider_status ON %s(provider_status, status)',
-      target_table
-    );
-  ELSE
-    RAISE NOTICE 'Skipping idx_waba_template_provider_status because % does not expose a physical status column', target_table;
-  END IF;
-END $$;
-
-
--- ==========================================
--- MODULE: 202607190006_enterprise_analytics_logging.sql
--- ==========================================
-
-
-CREATE TABLE IF NOT EXISTS public.enterprise_analytics_events (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  event_name TEXT NOT NULL,
-  event_category TEXT NOT NULL DEFAULT 'feature_usage',
-  description TEXT,
-  application TEXT NOT NULL,
-  module TEXT,
-  screen TEXT,
-  action TEXT,
-  trigger_type TEXT,
-  priority TEXT NOT NULL DEFAULT 'medium' CHECK (priority IN ('low', 'medium', 'high', 'critical')),
-  user_id TEXT,
-  user_email TEXT,
-  role TEXT,
-  company_id TEXT,
-  company_name TEXT,
-  branch_id TEXT,
-  branch_name TEXT,
-  department TEXT,
-  session_id TEXT,
-  request_id TEXT,
-  entity_type TEXT,
-  entity_id TEXT,
-  database_table TEXT,
-  api_endpoint TEXT,
-  http_method TEXT,
-  http_status INTEGER,
-  execution_time_ms INTEGER,
-  success BOOLEAN NOT NULL DEFAULT true,
-  value_numeric NUMERIC,
-  currency TEXT,
-  device TEXT,
-  browser TEXT,
-  operating_system TEXT,
-  ip_address INET,
-  location JSONB NOT NULL DEFAULT '{}'::jsonb,
-  dashboard TEXT,
-  metadata JSONB NOT NULL DEFAULT '{}'::jsonb,
-  retention_period TEXT NOT NULL DEFAULT '26 months',
-  retention_until TIMESTAMPTZ,
-  occurred_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  received_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
-CREATE INDEX IF NOT EXISTS idx_enterprise_analytics_events_time
-  ON public.enterprise_analytics_events(application, event_category, occurred_at DESC);
-CREATE INDEX IF NOT EXISTS idx_enterprise_analytics_events_user
-  ON public.enterprise_analytics_events(user_id, occurred_at DESC);
-CREATE INDEX IF NOT EXISTS idx_enterprise_analytics_events_request
-  ON public.enterprise_analytics_events(request_id);
-CREATE INDEX IF NOT EXISTS idx_enterprise_analytics_events_metadata
-  ON public.enterprise_analytics_events USING GIN (metadata);
-
-CREATE TABLE IF NOT EXISTS public.enterprise_staff_activity_logs (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id TEXT,
-  user_email TEXT,
-  role TEXT,
-  company_id TEXT,
-  company_name TEXT,
-  branch_id TEXT,
-  branch_name TEXT,
-  department TEXT,
-  application TEXT NOT NULL,
-  module TEXT NOT NULL,
-  screen TEXT,
-  action TEXT NOT NULL,
-  description TEXT,
-  entity_type TEXT,
-  entity_id TEXT,
-  session_id TEXT,
-  request_id TEXT,
-  ip_address INET,
-  browser TEXT,
-  operating_system TEXT,
-  device TEXT,
-  api_endpoint TEXT,
-  http_method TEXT,
-  http_status INTEGER,
-  execution_time_ms INTEGER,
-  success BOOLEAN NOT NULL DEFAULT true,
-  metadata JSONB NOT NULL DEFAULT '{}'::jsonb,
-  retention_period TEXT NOT NULL DEFAULT '7 years',
-  retention_until TIMESTAMPTZ,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
-CREATE INDEX IF NOT EXISTS idx_enterprise_staff_activity_time
-  ON public.enterprise_staff_activity_logs(application, module, created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_enterprise_staff_activity_user
-  ON public.enterprise_staff_activity_logs(user_id, created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_enterprise_staff_activity_request
-  ON public.enterprise_staff_activity_logs(request_id);
-CREATE INDEX IF NOT EXISTS idx_enterprise_staff_activity_metadata
-  ON public.enterprise_staff_activity_logs USING GIN (metadata);
-
-CREATE TABLE IF NOT EXISTS public.enterprise_audit_logs (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id TEXT,
-  user_email TEXT,
-  role TEXT,
-  company_id TEXT,
-  company_name TEXT,
-  branch_id TEXT,
-  branch_name TEXT,
-  application TEXT NOT NULL,
-  module TEXT NOT NULL,
-  screen TEXT,
-  action TEXT NOT NULL,
-  entity_type TEXT NOT NULL,
-  entity_id TEXT,
-  old_value JSONB,
-  new_value JSONB,
-  reason TEXT,
-  ip_address INET,
-  browser TEXT,
-  operating_system TEXT,
-  request_id TEXT,
-  api_endpoint TEXT,
-  http_method TEXT,
-  http_status INTEGER,
-  execution_time_ms INTEGER,
-  success BOOLEAN NOT NULL DEFAULT true,
-  remarks TEXT,
-  metadata JSONB NOT NULL DEFAULT '{}'::jsonb,
-  retention_period TEXT NOT NULL DEFAULT '7 years',
-  retention_until TIMESTAMPTZ,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
-CREATE INDEX IF NOT EXISTS idx_enterprise_audit_logs_time
-  ON public.enterprise_audit_logs(application, module, created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_enterprise_audit_logs_entity
-  ON public.enterprise_audit_logs(entity_type, entity_id, created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_enterprise_audit_logs_request
-  ON public.enterprise_audit_logs(request_id);
-CREATE INDEX IF NOT EXISTS idx_enterprise_audit_logs_metadata
-  ON public.enterprise_audit_logs USING GIN (metadata);
-
-CREATE TABLE IF NOT EXISTS public.enterprise_kpi_snapshots (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  kpi_key TEXT NOT NULL,
-  kpi_name TEXT NOT NULL,
-  category TEXT NOT NULL,
-  application TEXT,
-  dashboard_role TEXT NOT NULL,
-  period_start TIMESTAMPTZ NOT NULL,
-  period_end TIMESTAMPTZ NOT NULL,
-  value_numeric NUMERIC NOT NULL DEFAULT 0,
-  target_numeric NUMERIC,
-  currency TEXT,
-  dimensions JSONB NOT NULL DEFAULT '{}'::jsonb,
-  source_tables TEXT[] NOT NULL DEFAULT '{}',
-  calculated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  UNIQUE (kpi_key, dashboard_role, period_start, period_end, dimensions)
-);
-
-CREATE INDEX IF NOT EXISTS idx_enterprise_kpi_snapshots_period
-  ON public.enterprise_kpi_snapshots(dashboard_role, category, period_start DESC);
-
-CREATE TABLE IF NOT EXISTS public.enterprise_saved_filters (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id TEXT NOT NULL,
-  name TEXT NOT NULL,
-  scope TEXT NOT NULL CHECK (scope IN ('analytics', 'staff_activity', 'audit', 'reports')),
-  filters JSONB NOT NULL DEFAULT '{}'::jsonb,
-  is_shared BOOLEAN NOT NULL DEFAULT false,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
-CREATE INDEX IF NOT EXISTS idx_enterprise_saved_filters_user
-  ON public.enterprise_saved_filters(user_id, scope, updated_at DESC);
-
-CREATE TABLE IF NOT EXISTS public.enterprise_report_exports (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  requested_by TEXT,
-  report_type TEXT NOT NULL,
-  format TEXT NOT NULL CHECK (format IN ('csv', 'excel', 'pdf', 'print')),
-  filters JSONB NOT NULL DEFAULT '{}'::jsonb,
-  status TEXT NOT NULL DEFAULT 'queued' CHECK (status IN ('queued', 'processing', 'completed', 'failed')),
-  file_url TEXT,
-  error_message TEXT,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  completed_at TIMESTAMPTZ
-);
-
-CREATE INDEX IF NOT EXISTS idx_enterprise_report_exports_user
-  ON public.enterprise_report_exports(requested_by, created_at DESC);
-
-CREATE TABLE IF NOT EXISTS public.enterprise_retention_policies (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  data_domain TEXT NOT NULL UNIQUE,
-  retention_period TEXT NOT NULL,
-  archive_after TEXT,
-  is_active BOOLEAN NOT NULL DEFAULT true,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
-INSERT INTO public.enterprise_retention_policies (data_domain, retention_period, archive_after)
-VALUES
-  ('analytics_events', '26 months', '13 months'),
-  ('staff_activity_logs', '7 years', '24 months'),
-  ('audit_logs', '7 years', '24 months'),
-  ('security_audit_logs', '10 years', '36 months'),
-  ('financial_audit_logs', '10 years', '36 months')
-ON CONFLICT (data_domain) DO NOTHING;
-
-CREATE OR REPLACE FUNCTION public.prevent_enterprise_log_mutation()
-RETURNS TRIGGER AS $$
-BEGIN
-  RAISE EXCEPTION 'Enterprise analytics, staff activity, and audit logs are immutable';
-END;
-$$ LANGUAGE plpgsql;
-
-DROP TRIGGER IF EXISTS prevent_staff_activity_update ON public.enterprise_staff_activity_logs;
-CREATE TRIGGER prevent_staff_activity_update
-  BEFORE UPDATE OR DELETE ON public.enterprise_staff_activity_logs
-  FOR EACH ROW EXECUTE FUNCTION public.prevent_enterprise_log_mutation();
-
-DROP TRIGGER IF EXISTS prevent_audit_log_update ON public.enterprise_audit_logs;
-CREATE TRIGGER prevent_audit_log_update
-  BEFORE UPDATE OR DELETE ON public.enterprise_audit_logs
-  FOR EACH ROW EXECUTE FUNCTION public.prevent_enterprise_log_mutation();
-
-ALTER TABLE public.enterprise_analytics_events ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.enterprise_staff_activity_logs ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.enterprise_audit_logs ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.enterprise_kpi_snapshots ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.enterprise_saved_filters ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.enterprise_report_exports ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.enterprise_retention_policies ENABLE ROW LEVEL SECURITY;
-
-
--- ==========================================
--- MODULE: 202607190007_mgmt_profile_preferences.sql
--- ==========================================
-
-
-ALTER TABLE public.profiles
-  ADD COLUMN IF NOT EXISTS avatar_url TEXT,
-  ADD COLUMN IF NOT EXISTS company_name TEXT,
-  ADD COLUMN IF NOT EXISTS branch_name TEXT,
-  ADD COLUMN IF NOT EXISTS department TEXT,
-  ADD COLUMN IF NOT EXISTS timezone TEXT DEFAULT 'Asia/Kolkata',
-  ADD COLUMN IF NOT EXISTS language TEXT DEFAULT 'en',
-  ADD COLUMN IF NOT EXISTS theme TEXT DEFAULT 'system',
-  ADD COLUMN IF NOT EXISTS signature TEXT,
-  ADD COLUMN IF NOT EXISTS notification_preferences JSONB NOT NULL DEFAULT '{}'::jsonb,
-  ADD COLUMN IF NOT EXISTS security_preferences JSONB NOT NULL DEFAULT '{}'::jsonb,
-  ADD COLUMN IF NOT EXISTS privacy_preferences JSONB NOT NULL DEFAULT '{}'::jsonb,
-  ADD COLUMN IF NOT EXISTS appearance_preferences JSONB NOT NULL DEFAULT '{}'::jsonb,
-  ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW();
-
-CREATE INDEX IF NOT EXISTS idx_profiles_company_name ON public.profiles(company_name);
-CREATE INDEX IF NOT EXISTS idx_profiles_branch_name ON public.profiles(branch_name);
-
-
--- ==========================================
--- MODULE: 202607190008_superadmin_command_center_ops.sql
--- ==========================================
-
-
--- Superadmin command center operations: alert acknowledgement lifecycle and
--- privileged database connection statistics for the executive dashboard.
-
-CREATE TABLE IF NOT EXISTS public.enterprise_alert_acknowledgements (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  alert_key TEXT NOT NULL,
-  module TEXT NOT NULL,
-  severity TEXT NOT NULL DEFAULT 'medium',
-  status TEXT NOT NULL DEFAULT 'acknowledged' CHECK (status IN ('acknowledged', 'resolved', 'dismissed')),
-  acknowledged_by TEXT,
-  note TEXT,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
-CREATE INDEX IF NOT EXISTS idx_enterprise_alert_ack_key
-  ON public.enterprise_alert_acknowledgements(alert_key, created_at DESC);
-
-ALTER TABLE public.enterprise_alert_acknowledgements ENABLE ROW LEVEL SECURITY;
-
--- Privileged connection statistics for the Superadmin dashboard. SECURITY DEFINER
--- so the service role can read pg_stat_activity without broad grants.
-CREATE OR REPLACE FUNCTION public.superadmin_connection_stats()
-RETURNS jsonb
-LANGUAGE sql
-STABLE
-SECURITY DEFINER
-SET search_path = public, pg_catalog
-AS $$
-  SELECT jsonb_build_object(
-    'total', COUNT(*),
-    'active', COUNT(*) FILTER (WHERE state = 'active'),
-    'idle', COUNT(*) FILTER (WHERE state = 'idle'),
-    'max_connections', (SELECT setting::int FROM pg_settings WHERE name = 'max_connections')
-  )
-  FROM pg_stat_activity
-  WHERE datname = current_database();
-$$;
-
-REVOKE ALL ON FUNCTION public.superadmin_connection_stats() FROM PUBLIC;
-REVOKE ALL ON FUNCTION public.superadmin_connection_stats() FROM anon;
-REVOKE ALL ON FUNCTION public.superadmin_connection_stats() FROM authenticated;
-GRANT EXECUTE ON FUNCTION public.superadmin_connection_stats() TO service_role;
-

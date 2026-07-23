@@ -165,6 +165,11 @@ function ActivityList({ items, empty }: { items: DashboardActivity[]; empty: str
 
 function NotificationList({ issues, onRefresh }: { issues: DashboardIssue[]; onRefresh: () => void }) {
   const [pendingKey, setPendingKey] = React.useState<string | null>(null);
+  const [assigningKey, setAssigningKey] = React.useState<string | null>(null);
+  const [ownerDraft, setOwnerDraft] = React.useState('');
+
+  const severityRank: Record<DashboardSeverity, number> = { critical: 0, high: 1, medium: 2, low: 3, ok: 4 };
+  const prioritized = [...issues].sort((a, b) => severityRank[a.severity] - severityRank[b.severity]);
 
   const acknowledge = async (issue: DashboardIssue, status: 'acknowledged' | 'resolved' = 'acknowledged') => {
     if (!issue.alertKey || pendingKey) return;
@@ -173,8 +178,32 @@ function NotificationList({ issues, onRefresh }: { issues: DashboardIssue[]; onR
       await fetch('/api/superadmin/dashboard/alerts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ alertKey: issue.alertKey, module: issue.module, severity: issue.severity, status }),
+        body: JSON.stringify({
+          alertKey: issue.alertKey,
+          module: issue.module,
+          severity: issue.severity,
+          status,
+          assignedTo: issue.assignedTo,
+        }),
       });
+      onRefresh();
+    } finally {
+      setPendingKey(null);
+    }
+  };
+
+  const assignOwner = async (issue: DashboardIssue) => {
+    const owner = ownerDraft.trim();
+    if (!issue.alertKey || pendingKey || !owner) return;
+    setPendingKey(issue.alertKey);
+    try {
+      await fetch('/api/superadmin/dashboard/alerts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ alertKey: issue.alertKey, module: issue.module, severity: issue.severity, status: 'assigned', assignedTo: owner }),
+      });
+      setAssigningKey(null);
+      setOwnerDraft('');
       onRefresh();
     } finally {
       setPendingKey(null);
@@ -191,7 +220,7 @@ function NotificationList({ issues, onRefresh }: { issues: DashboardIssue[]; onR
 
   return (
     <div className="space-y-3">
-      {issues.slice(0, 6).map((issue) => (
+      {prioritized.slice(0, 6).map((issue) => (
         <article key={`${issue.module}-${issue.rootCause}`} className={`rounded-lg border p-4 ${severityStyles[issue.severity]} ${issue.acknowledged ? 'opacity-60' : ''}`}>
           <div className="flex items-start gap-3">
             <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
@@ -199,30 +228,78 @@ function NotificationList({ issues, onRefresh }: { issues: DashboardIssue[]; onR
               <p className="text-sm font-black text-white">{issue.module}</p>
               <p className="mt-1 text-xs leading-5 text-zinc-300">{issue.businessImpact}</p>
               <p className="mt-2 text-[11px] font-semibold uppercase tracking-wider text-zinc-500">{issue.recommendedSolution}</p>
-              {issue.acknowledged ? (
-                <p className="mt-2 text-[10px] font-bold uppercase tracking-wider text-emerald-400">
-                  Acknowledged{issue.acknowledgedBy ? ` by ${issue.acknowledgedBy}` : ''}
-                </p>
+              <div className="mt-2 flex flex-wrap items-center gap-2">
+                {issue.acknowledged ? (
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-400">
+                    Acknowledged{issue.acknowledgedBy ? ` by ${issue.acknowledgedBy}` : ''}
+                  </p>
+                ) : null}
+                {issue.assignedTo ? (
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-sky-300">
+                    Owner: {issue.assignedTo}
+                  </p>
+                ) : null}
+              </div>
+              {issue.alertKey && assigningKey === issue.alertKey ? (
+                <div className="mt-2 flex items-center gap-2">
+                  <input
+                    autoFocus
+                    type="text"
+                    value={ownerDraft}
+                    onChange={(event) => setOwnerDraft(event.target.value)}
+                    placeholder="Owner name or email"
+                    className="min-w-0 flex-1 rounded border border-zinc-700 bg-zinc-950 px-2 py-1 text-[11px] text-zinc-200 outline-none focus:border-sky-500/60"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => void assignOwner(issue)}
+                    disabled={pendingKey === issue.alertKey || !ownerDraft.trim()}
+                    className="shrink-0 rounded border border-zinc-700 bg-zinc-900 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-zinc-300 transition hover:border-sky-500/60 hover:text-sky-300 disabled:opacity-50"
+                  >
+                    Save
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setAssigningKey(null); setOwnerDraft(''); }}
+                    className="shrink-0 rounded border border-zinc-700 bg-zinc-900 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-zinc-500 transition hover:text-zinc-300"
+                  >
+                    Cancel
+                  </button>
+                </div>
               ) : null}
             </div>
-            {issue.alertKey && !issue.acknowledged ? (
+            {issue.alertKey ? (
               <div className="flex shrink-0 flex-col gap-1">
-                <button
-                  type="button"
-                  onClick={() => void acknowledge(issue)}
-                  disabled={pendingKey === issue.alertKey}
-                  className="rounded border border-zinc-700 bg-zinc-900 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-zinc-300 transition hover:border-emerald-500/60 hover:text-emerald-300 disabled:opacity-50"
-                >
-                  {pendingKey === issue.alertKey ? 'Saving…' : 'Acknowledge'}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => void acknowledge(issue, 'resolved')}
-                  disabled={pendingKey === issue.alertKey}
-                  className="rounded border border-zinc-700 bg-zinc-900 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-zinc-300 transition hover:border-sky-500/60 hover:text-sky-300 disabled:opacity-50"
-                >
-                  Resolve
-                </button>
+                {!issue.acknowledged ? (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => void acknowledge(issue)}
+                      disabled={pendingKey === issue.alertKey}
+                      className="rounded border border-zinc-700 bg-zinc-900 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-zinc-300 transition hover:border-emerald-500/60 hover:text-emerald-300 disabled:opacity-50"
+                    >
+                      {pendingKey === issue.alertKey ? 'Saving…' : 'Acknowledge'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => void acknowledge(issue, 'resolved')}
+                      disabled={pendingKey === issue.alertKey}
+                      className="rounded border border-zinc-700 bg-zinc-900 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-zinc-300 transition hover:border-sky-500/60 hover:text-sky-300 disabled:opacity-50"
+                    >
+                      Resolve
+                    </button>
+                  </>
+                ) : null}
+                {assigningKey !== issue.alertKey ? (
+                  <button
+                    type="button"
+                    onClick={() => { setAssigningKey(issue.alertKey ?? null); setOwnerDraft(issue.assignedTo ?? ''); }}
+                    disabled={pendingKey === issue.alertKey}
+                    className="rounded border border-zinc-700 bg-zinc-900 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-zinc-300 transition hover:border-sky-500/60 hover:text-sky-300 disabled:opacity-50"
+                  >
+                    {issue.assignedTo ? 'Reassign' : 'Assign Owner'}
+                  </button>
+                ) : null}
               </div>
             ) : null}
           </div>

@@ -39,6 +39,7 @@ export type DashboardIssue = {
   alertKey?: string;
   acknowledged?: boolean;
   acknowledgedBy?: string;
+  assignedTo?: string;
 };
 
 export type DashboardInsight = {
@@ -405,7 +406,7 @@ export async function getSuperadminCommandCenterData(): Promise<SuperadminComman
   const acknowledgementRows = await fetchRows<Record<string, unknown>>(
     supabase,
     'enterprise_alert_acknowledgements',
-    'alert_key,status,acknowledged_by,created_at',
+    'alert_key,status,acknowledged_by,assigned_to,created_at',
     [],
     (query) => query.order('created_at', { ascending: false }).limit(500),
   );
@@ -500,11 +501,19 @@ export async function getSuperadminCommandCenterData(): Promise<SuperadminComman
   const apiRows24h = analyticsRows.filter((row) => row.api_endpoint && inRange(row.created_at, dayAgo));
   const apiErrors24h = apiRows24h.filter((row) => row.success === false || toNumber(row.http_status) >= 500).length;
   const apiAvailability24h = apiRows24h.length === 0 ? 100 : ((apiRows24h.length - apiErrors24h) / apiRows24h.length) * 100;
+  // Error-rate SLO thresholds: below sloWarningPercent raises a warning-tier alert,
+  // below sloTargetPercent (the hard SLO) raises a critical-tier alert.
+  const sloWarningPercent = 99.9;
   const sloTargetPercent = 99.5;
   const allowedErrors24h = apiRows24h.length * (1 - sloTargetPercent / 100);
   const errorBudgetRemaining = apiRows24h.length === 0 || allowedErrors24h === 0
     ? (apiErrors24h === 0 ? 100 : 0)
     : Math.max(0, Math.min(100, ((allowedErrors24h - apiErrors24h) / allowedErrors24h) * 100));
+  const reliabilitySeverity: DashboardSeverity = errors24h > allowedErrors24h || errorBudgetRemaining < 25 || apiAvailability24h < sloTargetPercent
+    ? 'critical'
+    : apiAvailability24h < sloWarningPercent || errorBudgetRemaining < 50
+      ? 'high'
+      : 'medium';
   const sortedLatencies = apiRows24h.map((row) => toNumber(row.execution_time_ms)).filter((value) => value > 0).sort((a, b) => a - b);
   const p95Latency = sortedLatencies.length === 0 ? 0 : sortedLatencies[Math.min(sortedLatencies.length - 1, Math.floor(sortedLatencies.length * 0.95))];
   const successfulLogins24h = loginRows.filter((row) => row.is_success === true && inRange(row.login_attempt_at, dayAgo)).length;
@@ -597,12 +606,12 @@ export async function getSuperadminCommandCenterData(): Promise<SuperadminComman
     }] : []),
     ...(errors24h > 0 ? [{
       module: 'Platform reliability',
-      severity: errors24h > allowedErrors24h || errorBudgetRemaining < 25 ? 'critical' as DashboardSeverity : 'high' as DashboardSeverity,
-      businessImpact: `${errors24h} failed API or telemetry events were recorded in the last 24 hours${topErrorEndpoints.length > 0 ? ` — top offender: ${topErrorEndpoints[0][0]} (${topErrorEndpoints[0][1]} failure${topErrorEndpoints[0][1] === 1 ? '' : 's'})` : ''}. Error budget remaining against the ${sloTargetPercent}% availability SLO: ${integer.format(errorBudgetRemaining)}%.`,
+      severity: reliabilitySeverity,
+      businessImpact: `${errors24h} failed API or telemetry events were recorded in the last 24 hours${topErrorEndpoints.length > 0 ? ` — top offender: ${topErrorEndpoints[0][0]} (${topErrorEndpoints[0][1]} failure${topErrorEndpoints[0][1] === 1 ? '' : 's'})` : ''}. API availability ${integer.format(apiAvailability24h)}% vs SLO thresholds (warn <${sloWarningPercent}%, critical <${sloTargetPercent}%); error budget remaining: ${integer.format(errorBudgetRemaining)}%.`,
       rootCause: `enterprise_analytics_events includes unsuccessful events or 5xx statuses. By endpoint: ${topErrorEndpoints.length > 0 ? topErrorEndpoints.map(([endpoint, count]) => `${endpoint} (${count})`).join(', ') : 'no api_endpoint recorded on the failing events'}.`,
       filesAffected: ['supabase/migrations/202607190006_enterprise_analytics_logging.sql', 'apps/superadmin/src/lib/superadmin-dashboard-data.ts'],
-      recommendedSolution: 'Create error-rate SLO thresholds and route failures into the notification center.',
-      implementationSteps: ['Group errors by endpoint.', 'Add SLO budget widget.', 'Add incident acknowledgement workflow.'],
+      recommendedSolution: `SLO thresholds are enforced (warn <${sloWarningPercent}%, critical <${sloTargetPercent}% availability) and this alert is already routed into the notification center below — acknowledge it, assign an owner, or resolve once the failing endpoint is fixed.`,
+      implementationSteps: ['Investigate the top failing endpoint listed above.', 'Acknowledge or assign an owner using the controls on this notification.', 'Escalate to on-call if the error budget stays below 25% across repeated 24h windows.'],
     }] : []),
   ];
   const notifications = [...domainIssues, ...sourceIssues].slice(0, 10).map((issue) => {
@@ -614,6 +623,7 @@ export async function getSuperadminCommandCenterData(): Promise<SuperadminComman
       alertKey,
       acknowledged: ackStatus === 'acknowledged' || ackStatus === 'resolved',
       acknowledgedBy: ack?.acknowledged_by ? String(ack.acknowledged_by) : undefined,
+      assignedTo: ack?.assigned_to ? String(ack.assigned_to) : undefined,
     };
   });
   const healthScore = Math.max(0, Math.min(100, 100 - notifications.reduce((total, issue) => {
@@ -718,7 +728,7 @@ export async function getSuperadminCommandCenterData(): Promise<SuperadminComman
     metric({ key: 'cache', label: 'Cache', value: runtime.cacheStatus === 'configured' ? 'External' : 'In-process', category: 'system', severity: runtime.cacheStatus === 'configured' ? 'ok' : 'low', source: 'cache configuration' }),
     metric({ key: 'background_workers', label: 'Background Workers', value: workerEvents24h, category: 'system', severity: 'ok', source: 'enterprise_analytics_events worker/job telemetry' }),
     metric({ key: 'error_rate', label: 'Error Rate', value: analyticsRows.length === 0 ? 0 : (errors24h / analyticsRows.length) * 100, category: 'system', severity: errors24h > 0 ? 'high' : 'ok', source: 'enterprise_analytics_events', percent: true }),
-    metric({ key: 'api_availability_slo', label: `API Availability (SLO ${sloTargetPercent}%)`, value: apiAvailability24h, category: 'system', severity: apiAvailability24h < sloTargetPercent ? 'high' : 'ok', source: 'enterprise_analytics_events 24h', percent: true }),
+    metric({ key: 'api_availability_slo', label: `API Availability (SLO warn <${sloWarningPercent}% / critical <${sloTargetPercent}%)`, value: apiAvailability24h, category: 'system', severity: apiAvailability24h < sloTargetPercent ? 'critical' : apiAvailability24h < sloWarningPercent ? 'medium' : 'ok', source: 'enterprise_analytics_events 24h', percent: true }),
     metric({ key: 'error_budget_remaining', label: 'Error Budget Remaining (24h)', value: errorBudgetRemaining, category: 'system', severity: errorBudgetRemaining < 25 ? 'high' : errorBudgetRemaining < 50 ? 'medium' : 'ok', source: `SLO ${sloTargetPercent}% over enterprise_analytics_events`, percent: true }),
     metric({ key: 'p95_latency', label: 'P95 API Latency (24h)', value: p95Latency, category: 'system', severity: p95Latency > 2000 ? 'high' : p95Latency > 1000 ? 'medium' : 'ok', source: 'enterprise_analytics_events.execution_time_ms', displayValue: `${integer.format(p95Latency)} ms` }),
     metric({ key: 'top_failing_endpoint', label: 'Top Failing Endpoint (24h)', value: topErrorEndpoints[0]?.[1] ?? 0, category: 'system', severity: topErrorEndpoints.length === 0 ? 'ok' : errors24h > allowedErrors24h ? 'critical' : 'high', source: 'enterprise_analytics_events grouped by api_endpoint', displayValue: topErrorEndpoints.length === 0 ? 'None' : `${topErrorEndpoints[0][0]} (${integer.format(topErrorEndpoints[0][1])})` }),

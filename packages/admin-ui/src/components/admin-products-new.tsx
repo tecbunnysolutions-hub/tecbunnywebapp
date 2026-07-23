@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { Pencil, Plus, Trash2, MoreHorizontal, Loader2, Upload, Download } from 'lucide-react';
+import { Pencil, Plus, Trash2, MoreHorizontal, Loader2, Upload, Download, CheckCircle2, Ban } from 'lucide-react';
 import { useToast } from "@tecbunny/ui";
 import { logger } from "@tecbunny/core/logger";
 import type { Product } from "@tecbunny/core/types";
@@ -79,6 +79,7 @@ export default function AdminProductsPage() {
   const [selectedProduct, setSelectedProduct] = React.useState<Product | null>(null);
   const [editedPrices, setEditedPrices] = React.useState<Record<string, { mrp: number; price: number }>>({});
   const [savingProductId, setSavingProductId] = React.useState<string | null>(null);
+  const [togglingStatusId, setTogglingStatusId] = React.useState<string | null>(null);
 
   // Bulk Edit State
   const [selectedProductIds, setSelectedProductIds] = React.useState<Set<string>>(new Set());
@@ -393,6 +394,36 @@ export default function AdminProductsPage() {
   const handleEditClick = (product: Product) => {
     setSelectedProduct(product);
     setEditDialogOpen(true);
+  };
+
+  const handleToggleStatus = async (product: Product) => {
+    const newStatus = product.status === 'active' ? 'draft' : 'active';
+    setTogglingStatusId(product.id);
+    try {
+      const response = await fetch(`/api/products/${product.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus }),
+      });
+      const data = await response.json().catch(() => null);
+      if (!response.ok) {
+        throw new Error(data?.error || 'Failed to update product status');
+      }
+      setProducts(prev => prev.map(p => p.id === product.id ? { ...p, status: newStatus } : p));
+      toast({
+        title: 'Success',
+        description: `Product marked as ${newStatus === 'active' ? 'Active' : 'Inactive'}.`,
+        duration: 2000,
+      });
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error?.message || 'Failed to update product status',
+        variant: 'destructive',
+      });
+    } finally {
+      setTogglingStatusId(null);
+    }
   };
 
   const handleDeleteClick = (product: Product) => {
@@ -794,9 +825,21 @@ export default function AdminProductsPage() {
                           {product.stock_quantity ?? 'N/A'}
                         </TableCell>
                         <TableCell className="hidden lg:table-cell">
-                          <Badge variant={product.status === 'active' ? 'default' : 'secondary'}>
-                            {product.status || 'Active'}
-                          </Badge>
+                          <button
+                            type="button"
+                            onClick={() => handleToggleStatus(product)}
+                            disabled={togglingStatusId === product.id}
+                            title={product.status === 'active' ? 'Click to set inactive' : 'Click to set active'}
+                            className="cursor-pointer disabled:cursor-wait disabled:opacity-60"
+                          >
+                            <Badge variant={product.status === 'active' ? 'default' : 'secondary'} className="hover:opacity-80 transition-opacity">
+                              {togglingStatusId === product.id ? (
+                                <Loader2 className="h-3 w-3 animate-spin" />
+                              ) : (
+                                product.status || 'Active'
+                              )}
+                            </Badge>
+                          </button>
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex gap-2 justify-end items-center">
@@ -839,6 +882,22 @@ export default function AdminProductsPage() {
                                 <DropdownMenuItem onClick={() => handleEditClick(product)}>
                                   <Pencil className="mr-2 h-4 w-4" />
                                   Edit
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onClick={() => handleToggleStatus(product)}
+                                  disabled={togglingStatusId === product.id}
+                                >
+                                  {product.status === 'active' ? (
+                                    <>
+                                      <Ban className="mr-2 h-4 w-4" />
+                                      Set Inactive
+                                    </>
+                                  ) : (
+                                    <>
+                                      <CheckCircle2 className="mr-2 h-4 w-4" />
+                                      Set Active
+                                    </>
+                                  )}
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem 
@@ -895,6 +954,20 @@ export default function AdminProductsPage() {
                             <DropdownMenuLabel>Actions</DropdownMenuLabel>
                             <DropdownMenuItem onClick={() => handleEditClick(product)}>
                               <Pencil className="mr-2 h-4 w-4" /> Edit
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => handleToggleStatus(product)}
+                              disabled={togglingStatusId === product.id}
+                            >
+                              {product.status === 'active' ? (
+                                <>
+                                  <Ban className="mr-2 h-4 w-4" /> Set Inactive
+                                </>
+                              ) : (
+                                <>
+                                  <CheckCircle2 className="mr-2 h-4 w-4" /> Set Active
+                                </>
+                              )}
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem onClick={() => handleDeleteClick(product)} className="text-red-600 focus:text-red-600">
@@ -962,9 +1035,21 @@ export default function AdminProductsPage() {
                         Stock: <span className="font-semibold text-foreground">{product.stock_quantity ?? 'N/A'}</span>
                       </div>
                       <div>
-                        <Badge variant={product.status === 'active' ? 'default' : 'secondary'}>
-                          {product.status || 'Active'}
-                        </Badge>
+                        <button
+                          type="button"
+                          onClick={() => handleToggleStatus(product)}
+                          disabled={togglingStatusId === product.id}
+                          title={product.status === 'active' ? 'Tap to set inactive' : 'Tap to set active'}
+                          className="cursor-pointer disabled:cursor-wait disabled:opacity-60"
+                        >
+                          <Badge variant={product.status === 'active' ? 'default' : 'secondary'}>
+                            {togglingStatusId === product.id ? (
+                              <Loader2 className="h-3 w-3 animate-spin" />
+                            ) : (
+                              product.status || 'Active'
+                            )}
+                          </Badge>
+                        </button>
                       </div>
                     </div>
                   </div>
