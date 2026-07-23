@@ -46,13 +46,12 @@ function actorContext(request: NextRequest, id: string) {
   };
 }
 
-// A response is only a real reliability failure on 4xx/5xx. 3xx redirects (e.g. an
-// unauthenticated visitor being redirected to the login page by middleware) are normal,
-// expected navigation outcomes -- `Response.ok` is FALSE for any non-2xx status including
-// redirects, so using it directly here mislabels every routine auth redirect as a failed
-// API/telemetry event and drags down the SLO availability metric with false positives.
+// A response is only a real reliability failure on 5xx server errors. 3xx redirects and 4xx client/security
+// responses (e.g. unauthenticated visitors, 401/403 security blocks, 404 missing routes, bot scans) are normal
+// policy enforcement, client error responses, or expected routing outcomes -- mislabeling routine 4xx security blocks
+// as failed API/telemetry events drags down the SLO availability metric with false positives.
 function isTelemetrySuccess(status: number) {
-  return status < 400;
+  return status < 500;
 }
 
 function basePayload(request: NextRequest, options: ProxyTelemetryOptions, id: string) {

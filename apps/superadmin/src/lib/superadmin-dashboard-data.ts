@@ -523,7 +523,7 @@ export async function getSuperadminCommandCenterData(): Promise<SuperadminComman
     const text = `${row.event_name ?? ''} ${row.module ?? ''} ${row.action ?? ''} ${row.api_endpoint ?? ''}`.toLowerCase();
     return text.includes('ai') || text.includes('gemini');
   }).length;
-  const errorRows24h = analyticsRows.filter((row) => (row.success === false || toNumber(row.http_status) >= 500) && inRange(row.created_at, dayAgo));
+  const errorRows24h = analyticsRows.filter((row) => toNumber(row.http_status) >= 500 && inRange(row.created_at, dayAgo));
   const errors24h = errorRows24h.length;
   const errorsByEndpoint = new Map<string, number>();
   const errorsByGroup = new Map<string, { endpoint: string; method: string; status: number; count: number; problem: string }>();
@@ -565,7 +565,7 @@ export async function getSuperadminCommandCenterData(): Promise<SuperadminComman
     ? analyticsRows.reduce((total, row) => total + toNumber(row.execution_time_ms), 0) / analyticsRows.length
     : 0;
   const apiRows24h = analyticsRows.filter((row) => row.api_endpoint && inRange(row.created_at, dayAgo));
-  const apiErrors24h = apiRows24h.filter((row) => row.success === false || toNumber(row.http_status) >= 500).length;
+  const apiErrors24h = apiRows24h.filter((row) => toNumber(row.http_status) >= 500).length;
   const apiAvailability24h = apiRows24h.length === 0 ? 100 : ((apiRows24h.length - apiErrors24h) / apiRows24h.length) * 100;
   // Error-rate SLO thresholds: below sloWarningPercent raises a warning-tier alert,
   // below sloTargetPercent (the hard SLO) raises a critical-tier alert.
