@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState, useDeferredValue } from 'react';
-import { RefreshCw, Save, Settings2, Package, Tag, ShieldCheck, DollarSign } from 'lucide-react';
+import { RefreshCw, Save, Settings2, Package, Tag, ShieldCheck, DollarSign, Plus, Layers, Sparkles, FolderPlus } from 'lucide-react';
 
 import { Badge } from "@tecbunny/ui";
 import { Button } from "@tecbunny/ui";
@@ -10,6 +10,16 @@ import { Input } from "@tecbunny/ui";
 import { Separator } from "@tecbunny/ui";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@tecbunny/ui";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@tecbunny/ui";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@tecbunny/ui";
+import { Label } from "@tecbunny/ui";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@tecbunny/ui";
 import { useToast } from "@tecbunny/ui";
 import { DEFAULT_CUSTOM_SETUP_TEMPLATE_SLUG } from "@tecbunny/core/custom-setup.constants";
 import {
@@ -60,11 +70,6 @@ type OptionUpdateRequest = {
   metadata?: JsonRecord | null;
 };
 
-type SelectionDraft = {
-  componentDefaultQuantities: Record<string, string>;
-  systemBaseFees: Record<string, string>;
-};
-
 const SALE_PRICE_KEY = 'sale_price';
 
 function roundToTwoDecimals(value: number): number {
@@ -82,32 +87,10 @@ function extractSalePrice(metadata: JsonRecord | null | undefined): number | nul
   return null;
 }
 
-function cloneMetadata(metadata: JsonRecord | null | undefined): JsonRecord | null {
-  return metadata ? { ...metadata } : null;
-}
-
 function normalizeMetadata(metadata: JsonRecord | null | undefined): JsonRecord | null {
   if (!metadata) return null;
   const entries = Object.entries(metadata).filter(([, value]) => value !== undefined);
   return entries.length ? (Object.fromEntries(entries) as JsonRecord) : null;
-}
-
-function metadataEquals(a: JsonRecord | null | undefined, b: JsonRecord | null | undefined): boolean {
-  return JSON.stringify(a ?? null) === JSON.stringify(b ?? null);
-}
-
-function parseNumericMetadata(value: unknown): number | null {
-  if (typeof value === 'number' && Number.isFinite(value)) return value;
-  if (typeof value === 'string' && value.trim().length > 0) {
-    const parsed = Number.parseFloat(value);
-    return Number.isFinite(parsed) ? parsed : null;
-  }
-  return null;
-}
-
-function formatCurrencyDisplay(amount: number | null | undefined): string {
-  if (amount === null || amount === undefined || Number.isNaN(amount)) return '₹0';
-  return `₹${Math.round(amount).toLocaleString('en-IN')}`;
 }
 
 export default function CustomSetupPriceManager() {
@@ -117,6 +100,14 @@ export default function CustomSetupPriceManager() {
   const [activeSystemSlug, setActiveSystemSlug] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [saving, setSaving] = useState<boolean>(false);
+
+  // Template creation modal state
+  const [createModalOpen, setCreateModalOpen] = useState(false);
+  const [newTemplateName, setNewTemplateName] = useState('');
+  const [newTemplateCategory, setNewTemplateCategory] = useState('Surveillance');
+  const [newTemplateDescription, setNewTemplateDescription] = useState('');
+  const [newTemplateBasePrice, setNewTemplateBasePrice] = useState('0');
+  const [creatingTemplate, setCreatingTemplate] = useState(false);
 
   const [blueprint, setBlueprint] = useState<CustomSetupBlueprintSummary | null>(null);
   const [pricingDrafts, setPricingDrafts] = useState<PricingDraftState>({});
@@ -171,6 +162,43 @@ export default function CustomSetupPriceManager() {
       fetchTemplateDetails(selectedSlug);
     }
   }, [selectedSlug, fetchTemplateDetails]);
+
+  const handleCreateTemplate = async () => {
+    if (!newTemplateName.trim()) {
+      toast({ variant: 'destructive', title: 'Validation Error', description: 'Template name is required.' });
+      return;
+    }
+    setCreatingTemplate(true);
+    try {
+      const res = await fetch('/api/admin/custom-setups', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: newTemplateName.trim(),
+          category: newTemplateCategory.trim(),
+          description: newTemplateDescription.trim(),
+          basePrice: Number(newTemplateBasePrice) || 0,
+        }),
+      });
+      const body = await res.json();
+      if (body.success && body.data) {
+        toast({ title: 'Template Created', description: `Successfully created setup template: ${body.data.name}` });
+        setCreateModalOpen(false);
+        setNewTemplateName('');
+        setNewTemplateDescription('');
+        await fetchTemplates();
+        if (body.data.slug) {
+          setSelectedSlug(body.data.slug);
+        }
+      } else {
+        throw new Error(body.error || 'Failed to create template');
+      }
+    } catch (err) {
+      toast({ variant: 'destructive', title: 'Creation Failed', description: err instanceof Error ? err.message : String(err) });
+    } finally {
+      setCreatingTemplate(false);
+    }
+  };
 
   const currentSystem = useMemo(() => {
     if (!blueprint || !activeSystemSlug) return null;
@@ -260,38 +288,87 @@ export default function CustomSetupPriceManager() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
+      {/* Control Header with Template Selector & Actions */}
+      <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 bg-zinc-900/60 border border-zinc-800 p-4 rounded-xl">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
             <DollarSign className="w-5 h-5 text-emerald-400" />
-            Customised Setup Price Manager
-          </h2>
-          <p className="text-xs text-zinc-400 mt-1">
+            <h2 className="text-xl font-bold tracking-tight text-white">Customised Setup Price Manager</h2>
+          </div>
+          <p className="text-xs text-zinc-400">
             Configure base prices, component MRP/Sale rates, accessories, and system packages for customized setup calculations.
           </p>
         </div>
-        <div className="flex items-center gap-2">
+
+        <div className="flex flex-wrap items-center gap-2.5 w-full lg:w-auto">
+          {/* Template Selector Dropdown */}
+          <div className="flex items-center gap-2 min-w-[220px]">
+            <Layers className="w-4 h-4 text-emerald-400 shrink-0" />
+            <Select value={selectedSlug} onValueChange={(val) => setSelectedSlug(val)}>
+              <SelectTrigger className="bg-zinc-950 border-zinc-800 text-white text-xs h-9 font-medium focus:ring-emerald-500">
+                <SelectValue placeholder="Select setup template..." />
+              </SelectTrigger>
+              <SelectContent className="bg-zinc-900 border-zinc-800 text-white">
+                {templates.map((tpl) => (
+                  <SelectItem key={tpl.id || tpl.slug} value={tpl.slug} className="text-xs focus:bg-emerald-600 focus:text-white">
+                    {tpl.name} {tpl.category ? `(${tpl.category})` : ''}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Create Template Button */}
+          <Button
+            size="sm"
+            onClick={() => setCreateModalOpen(true)}
+            className="bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-xs h-9"
+          >
+            <Plus className="w-3.5 h-3.5 mr-1" />
+            New Template
+          </Button>
+
+          {/* Refresh Button */}
           <Button
             variant="outline"
             size="sm"
             onClick={() => fetchTemplateDetails(selectedSlug)}
             disabled={loading}
-            className="border-zinc-800 text-zinc-300 hover:bg-zinc-800"
+            className="border-zinc-800 text-zinc-300 hover:bg-zinc-800 text-xs h-9"
           >
-            <RefreshCw className={`w-3.5 h-3.5 mr-1.5 ${loading ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`w-3.5 h-3.5 mr-1 ${loading ? 'animate-spin' : ''}`} />
             Refresh
           </Button>
+
+          {/* Save Overrides Button */}
           <Button
             size="sm"
             onClick={handleSaveChanges}
             disabled={saving || !Object.keys(pendingOptionState).length}
-            className="bg-emerald-600 hover:bg-emerald-500 text-white font-medium"
+            className="bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-xs h-9"
           >
-            <Save className="w-3.5 h-3.5 mr-1.5" />
-            {saving ? 'Saving...' : `Save Overrides (${Object.keys(pendingOptionState).length})`}
+            <Save className="w-3.5 h-3.5 mr-1" />
+            {saving ? 'Saving...' : `Save (${Object.keys(pendingOptionState).length})`}
           </Button>
         </div>
       </div>
+
+      {/* Current Template Details Meta */}
+      {blueprint && (
+        <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-2.5 bg-zinc-950/80 border border-zinc-800/80 rounded-lg text-xs">
+          <div className="flex items-center gap-3 text-zinc-300">
+            <span className="font-semibold text-white">{blueprint.name}</span>
+            <Badge variant="outline" className="border-emerald-500/40 text-emerald-400 text-[10px]">
+              {blueprint.category || 'Surveillance'}
+            </Badge>
+            <span className="text-zinc-500">Slug: <code className="text-zinc-300 font-mono">{blueprint.slug}</code></span>
+          </div>
+          <div className="text-zinc-400 flex items-center gap-4">
+            <span>Systems: <strong className="text-white">{blueprint.systems?.length ?? 0}</strong></span>
+            <span>Currency: <strong className="text-emerald-400">{blueprint.currency || 'INR'}</strong></span>
+          </div>
+        </div>
+      )}
 
       {/* Systems Tab Bar */}
       {blueprint?.systems && blueprint.systems.length > 0 && (
@@ -331,8 +408,20 @@ export default function CustomSetupPriceManager() {
           Loading customized setup catalog & blueprint...
         </div>
       ) : !currentSystem ? (
-        <div className="py-16 text-center text-sm text-zinc-400">
-          No system blueprint available. Please select a template.
+        <div className="py-16 text-center space-y-4 bg-zinc-900/40 border border-zinc-800 rounded-xl p-8">
+          <Package className="w-12 h-12 text-zinc-600 mx-auto" />
+          <div className="text-sm font-semibold text-zinc-300">No system blueprint loaded for this template</div>
+          <p className="text-xs text-zinc-500 max-w-md mx-auto">
+            Select an existing setup template from the dropdown above or initialize the default CCTV camera blueprint.
+          </p>
+          <Button
+            size="sm"
+            onClick={() => fetchTemplateDetails(DEFAULT_CUSTOM_SETUP_TEMPLATE_SLUG)}
+            className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs"
+          >
+            <Sparkles className="w-3.5 h-3.5 mr-1.5" />
+            Load Default Setup Blueprint
+          </Button>
         </div>
       ) : (
         <div className="space-y-6">
@@ -431,6 +520,90 @@ export default function CustomSetupPriceManager() {
             ))}
         </div>
       )}
+
+      {/* Create Template Dialog */}
+      <Dialog open={createModalOpen} onOpenChange={setCreateModalOpen}>
+        <DialogContent className="bg-zinc-950 border-zinc-800 text-white max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-lg font-bold text-white">
+              <FolderPlus className="w-5 h-5 text-emerald-400" />
+              Create Custom Setup Template
+            </DialogTitle>
+            <DialogDescription className="text-xs text-zinc-400">
+              Add a new customizable setup package template for products, hardware, or installation services.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-2">
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold text-zinc-300">Template Name</Label>
+              <Input
+                placeholder="e.g. Smart Home Security Package"
+                value={newTemplateName}
+                onChange={(e) => setNewTemplateName(e.target.value)}
+                className="bg-zinc-900 border-zinc-800 text-white text-xs"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold text-zinc-300">Category</Label>
+              <Select value={newTemplateCategory} onValueChange={setNewTemplateCategory}>
+                <SelectTrigger className="bg-zinc-900 border-zinc-800 text-white text-xs">
+                  <SelectValue placeholder="Select category" />
+                </SelectTrigger>
+                <SelectContent className="bg-zinc-900 border-zinc-800 text-white">
+                  <SelectItem value="Surveillance">Surveillance & CCTV</SelectItem>
+                  <SelectItem value="Automation">Home & Office Automation</SelectItem>
+                  <SelectItem value="Solar">Solar Power Systems</SelectItem>
+                  <SelectItem value="Networking">Networking & Racks</SelectItem>
+                  <SelectItem value="Security">Access Control & Security</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold text-zinc-300">Description (Optional)</Label>
+              <Input
+                placeholder="Brief summary of setup package components"
+                value={newTemplateDescription}
+                onChange={(e) => setNewTemplateDescription(e.target.value)}
+                className="bg-zinc-900 border-zinc-800 text-white text-xs"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold text-zinc-300">Base Setup Fee (₹)</Label>
+              <Input
+                type="number"
+                min={0}
+                placeholder="0"
+                value={newTemplateBasePrice}
+                onChange={(e) => setNewTemplateBasePrice(e.target.value)}
+                className="bg-zinc-900 border-zinc-800 text-white text-xs"
+              />
+            </div>
+          </div>
+
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCreateModalOpen(false)}
+              className="border-zinc-800 text-zinc-300 hover:bg-zinc-900 text-xs"
+            >
+              Cancel
+            </Button>
+            <Button
+              size="sm"
+              onClick={handleCreateTemplate}
+              disabled={creatingTemplate || !newTemplateName.trim()}
+              className="bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-xs"
+            >
+              {creatingTemplate ? 'Creating...' : 'Create Template'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

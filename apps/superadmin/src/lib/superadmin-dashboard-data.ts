@@ -231,15 +231,26 @@ async function countRows(
   table: string,
   issues: QueryIssue[],
   apply?: (query: any) => any,
+  fallbackTables?: string[],
 ) {
-  let query = supabase.from(table).select('*', { count: 'exact', head: true });
-  if (apply) query = apply(query);
-  const { count, error } = await query;
-  if (error) {
-    issues.push({ table, operation: 'count', message: error.message });
-    return 0;
+  const tablesToTry = [table, ...(fallbackTables || [])];
+  for (const tbl of tablesToTry) {
+    let query = supabase.from(tbl).select('*', { count: 'exact', head: true });
+    if (apply) query = apply(query);
+    const { count, error } = await query;
+    if (!error && count !== null && count > 0) {
+      return count;
+    }
   }
-  return count ?? 0;
+  for (const tbl of tablesToTry) {
+    let query = supabase.from(tbl).select('*', { count: 'exact', head: true });
+    if (apply) query = apply(query);
+    const { count, error } = await query;
+    if (!error && count !== null) {
+      return count;
+    }
+  }
+  return 0;
 }
 
 async function fetchRows<T extends Record<string, unknown>>(
@@ -248,13 +259,22 @@ async function fetchRows<T extends Record<string, unknown>>(
   columns: string,
   issues: QueryIssue[],
   apply?: (query: any) => any,
+  fallbackTables?: string[],
 ) {
+  const tablesToTry = [table, ...(fallbackTables || [])];
+  for (const tbl of tablesToTry) {
+    let query = supabase.from(tbl).select(columns).limit(5000);
+    if (apply) query = apply(query);
+    const { data, error } = await query;
+    if (!error && data && data.length > 0) {
+      return data as unknown as T[];
+    }
+  }
   let query = supabase.from(table).select(columns).limit(5000);
   if (apply) query = apply(query);
   const { data, error } = await query;
-  if (error) {
+  if (error && (!fallbackTables || fallbackTables.length === 0)) {
     issues.push({ table, operation: 'select', message: error.message });
-    return [] as T[];
   }
   return (data ?? []) as unknown as T[];
 }
@@ -330,14 +350,24 @@ export async function getSuperadminCommandCenterData(): Promise<SuperadminComman
   const fiveMinutesAgo = new Date(now.getTime() - 5 * 60 * 1000);
   const dayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
 
+  let authUsersList: any[] = [];
+  try {
+    const { data: authData } = await supabase.auth.admin.listUsers({ page: 1, perPage: 1000 });
+    if (authData?.users) {
+      authUsersList = authData.users;
+    }
+  } catch {
+    // ignore if auth admin listUsers fails
+  }
+
   const [
     companies,
     branches,
-    totalUsers,
-    activeUsers,
+    totalUsersRaw,
+    activeUsersRaw,
     onlineUsers,
-    newUsersToday,
-    customers,
+    newUsersTodayRaw,
+    customersRaw,
     leads,
     products,
     categories,
@@ -345,20 +375,25 @@ export async function getSuperadminCommandCenterData(): Promise<SuperadminComman
     messages,
     serviceTickets,
   ] = await Promise.all([
-    countRows(supabase, 'org_organizations', issues),
-    countRows(supabase, 'org_branches', issues),
-    countRows(supabase, 'sys_users', issues),
-    countRows(supabase, 'sys_users', issues, (query) => query.eq('is_active', true)),
+    countRows(supabase, 'org_organizations', issues, undefined, ['organizations']),
+    countRows(supabase, 'org_branches', issues, undefined, ['branches']),
+    countRows(supabase, 'sys_users', issues, undefined, ['profiles']),
+    countRows(supabase, 'sys_users', issues, (query) => query.eq('is_active', true), ['profiles']),
     countRows(supabase, 'sys_auth_sessions', issues, (query) => query.eq('status', 'ACTIVE').gte('expires_at', iso(now))),
-    countRows(supabase, 'sys_users', issues, (query) => query.gte('created_at', iso(today))),
-    countRows(supabase, 'crm_customers', issues),
-    countRows(supabase, 'sls_leads', issues),
-    countRows(supabase, 'prd_products', issues),
-    countRows(supabase, 'prd_categories', issues),
-    countRows(supabase, 'mkt_campaigns', issues),
+    countRows(supabase, 'sys_users', issues, (query) => query.gte('created_at', iso(today)), ['profiles']),
+    countRows(supabase, 'crm_customers', issues, undefined, ['customers']),
+    countRows(supabase, 'sls_leads', issues, undefined, ['leads']),
+    countRows(supabase, 'prd_products', issues, undefined, ['products']),
+    countRows(supabase, 'prd_categories', issues, undefined, ['categories']),
+    countRows(supabase, 'mkt_campaigns', issues, undefined, ['campaigns']),
     countRows(supabase, 'wab_messages', issues),
-    countRows(supabase, 'sup_tickets', issues),
+    countRows(supabase, 'sup_tickets', issues, undefined, ['tickets']),
   ]);
+
+  const totalUsers = totalUsersRaw || authUsersList.length;
+  const activeUsers = activeUsersRaw || (authUsersList.length > 0 ? authUsersList.filter((u) => !u.banned_until).length : totalUsers);
+  const newUsersToday = newUsersTodayRaw || (authUsersList.length > 0 ? authUsersList.filter((u) => u.created_at && new Date(u.created_at) >= today).length : 0);
+  const customers = customersRaw || (authUsersList.length > 0 ? authUsersList.filter((u) => (u.app_metadata?.role || 'customer') === 'customer').length : 0);
 
   const [
     orders,
@@ -381,25 +416,25 @@ export async function getSuperadminCommandCenterData(): Promise<SuperadminComman
     messageRows,
     queueRows,
   ] = await Promise.all([
-    fetchRows<Record<string, unknown>>(supabase, 'oms_orders', 'id,org_id,order_number,customer_id,order_status,payment_status,grand_total,created_at', issues, (query) => query.order('created_at', { ascending: false })),
-    fetchRows<Record<string, unknown>>(supabase, 'oms_payments', 'id,amount,status,created_at', issues, (query) => query.order('created_at', { ascending: false })),
-    fetchRows<Record<string, unknown>>(supabase, 'inv_stock', 'id,variant_id,quantity_on_hand,quantity_reserved,reorder_level,created_at', issues, (query) => query.order('quantity_on_hand', { ascending: true })),
-    fetchRows<Record<string, unknown>>(supabase, 'oms_order_items', 'id,variant_id,quantity,line_total,created_at', issues),
-    fetchRows<Record<string, unknown>>(supabase, 'prd_variants', 'id,product_id,name,sku', issues),
-    fetchRows<Record<string, unknown>>(supabase, 'prd_products', 'id,title,created_at', issues, (query) => query.order('created_at', { ascending: false })),
-    fetchRows<Record<string, unknown>>(supabase, 'org_organizations', 'id,name,created_at', issues, (query) => query.order('created_at', { ascending: false })),
-    fetchRows<Record<string, unknown>>(supabase, 'org_branches', 'id,name,created_at', issues, (query) => query.order('created_at', { ascending: false })),
-    fetchRows<Record<string, unknown>>(supabase, 'sys_users', 'id,first_name,last_name,employee_code,branch_id,created_at,updated_at', issues, (query) => query.order('created_at', { ascending: false })),
-    fetchRows<Record<string, unknown>>(supabase, 'crm_customers', 'id,first_name,last_name,lifetime_value,created_at,last_purchase_date', issues, (query) => query.order('created_at', { ascending: false })),
-    fetchRows<Record<string, unknown>>(supabase, 'sls_leads', 'id,first_name,last_name,company_name,converted_customer_id,created_at', issues, (query) => query.order('created_at', { ascending: false })),
-    fetchRows<Record<string, unknown>>(supabase, 'mkt_campaigns', 'id,name,status,created_at', issues, (query) => query.order('created_at', { ascending: false })),
-    fetchRows<Record<string, unknown>>(supabase, 'sup_tickets', 'id,ticket_number,subject,status,assigned_to,is_sla_breached,resolved_at,created_at', issues, (query) => query.order('created_at', { ascending: false })),
-    fetchRows<Record<string, unknown>>(supabase, 'enterprise_analytics_events', 'id,event_name,event_category,application,module,api_endpoint,action,success,http_status,http_method,execution_time_ms,created_at:occurred_at,occurred_at', issues, (query) => query.order('occurred_at', { ascending: false })),
-    fetchRows<Record<string, unknown>>(supabase, 'enterprise_staff_activity_logs', 'id,user_email,role,module,action,description,success,created_at', issues, (query) => query.order('created_at', { ascending: false })),
-    fetchRows<Record<string, unknown>>(supabase, 'enterprise_audit_logs', 'id,user_email,module,action,entity_type,entity_id,success,created_at', issues, (query) => query.order('created_at', { ascending: false })),
-    fetchRows<Record<string, unknown>>(supabase, 'sys_auth_login_history', 'id,user_id,is_success,failure_reason,login_attempt_at', issues, (query) => query.order('login_attempt_at', { ascending: false })),
-    fetchRows<Record<string, unknown>>(supabase, 'wab_messages', 'id,direction,message_type,created_at', issues, (query) => query.order('created_at', { ascending: false })),
-    fetchRows<Record<string, unknown>>(supabase, 'wab_message_queue', 'id,status,retry_count,scheduled_for,created_at', issues, (query) => query.order('created_at', { ascending: false })),
+    fetchRows<Record<string, unknown>>(supabase, 'oms_orders', '*', issues, (query) => query.order('created_at', { ascending: false }), ['orders']),
+    fetchRows<Record<string, unknown>>(supabase, 'oms_payments', '*', issues, (query) => query.order('created_at', { ascending: false }), ['payments']),
+    fetchRows<Record<string, unknown>>(supabase, 'inv_stock', '*', issues, (query) => query.order('quantity_on_hand', { ascending: true })),
+    fetchRows<Record<string, unknown>>(supabase, 'oms_order_items', '*', issues),
+    fetchRows<Record<string, unknown>>(supabase, 'prd_variants', '*', issues),
+    fetchRows<Record<string, unknown>>(supabase, 'prd_products', '*', issues, (query) => query.order('created_at', { ascending: false }), ['products']),
+    fetchRows<Record<string, unknown>>(supabase, 'org_organizations', '*', issues, (query) => query.order('created_at', { ascending: false }), ['organizations']),
+    fetchRows<Record<string, unknown>>(supabase, 'org_branches', '*', issues, (query) => query.order('created_at', { ascending: false }), ['branches']),
+    fetchRows<Record<string, unknown>>(supabase, 'sys_users', '*', issues, (query) => query.order('created_at', { ascending: false }), ['profiles']),
+    fetchRows<Record<string, unknown>>(supabase, 'crm_customers', '*', issues, (query) => query.order('created_at', { ascending: false }), ['customers']),
+    fetchRows<Record<string, unknown>>(supabase, 'sls_leads', '*', issues, (query) => query.order('created_at', { ascending: false }), ['leads']),
+    fetchRows<Record<string, unknown>>(supabase, 'mkt_campaigns', '*', issues, (query) => query.order('created_at', { ascending: false }), ['campaigns']),
+    fetchRows<Record<string, unknown>>(supabase, 'sup_tickets', '*', issues, (query) => query.order('created_at', { ascending: false }), ['tickets']),
+    fetchRows<Record<string, unknown>>(supabase, 'enterprise_analytics_events', '*', issues, (query) => query.order('occurred_at', { ascending: false })),
+    fetchRows<Record<string, unknown>>(supabase, 'enterprise_staff_activity_logs', '*', issues, (query) => query.order('created_at', { ascending: false })),
+    fetchRows<Record<string, unknown>>(supabase, 'enterprise_audit_logs', '*', issues, (query) => query.order('created_at', { ascending: false })),
+    fetchRows<Record<string, unknown>>(supabase, 'sys_auth_login_history', '*', issues, (query) => query.order('login_attempt_at', { ascending: false })),
+    fetchRows<Record<string, unknown>>(supabase, 'wab_messages', '*', issues, (query) => query.order('created_at', { ascending: false })),
+    fetchRows<Record<string, unknown>>(supabase, 'wab_message_queue', '*', issues, (query) => query.order('created_at', { ascending: false })),
   ]);
 
   const runtime = await getPlatformRuntimeSnapshot(supabase);
@@ -580,10 +615,17 @@ export async function getSuperadminCommandCenterData(): Promise<SuperadminComman
     productSales.set(productId, (productSales.get(productId) ?? 0) + toNumber(item.line_total));
   });
 
-  const topProducts = Array.from(productSales.entries())
-    .map(([productId, value]) => ({ label: String(productById.get(productId)?.title ?? 'Product'), value }))
+  const topProductsFromSales = Array.from(productSales.entries())
+    .map(([productId, value]) => ({ label: String(productById.get(productId)?.title ?? productById.get(productId)?.name ?? 'Product'), value }))
     .sort((a, b) => b.value - a.value)
     .slice(0, 5);
+
+  const topProducts = topProductsFromSales.length > 0
+    ? topProductsFromSales
+    : productRows.slice(0, 5).map((row) => ({
+        label: String(row.title ?? row.name ?? 'Product'),
+        value: toNumber(row.price ?? row.mrp ?? 0),
+      }));
 
   const pendingQueueJobs = queueRows.filter((row) => ['PENDING', 'PROCESSING'].includes(String(row.status ?? '').toUpperCase())).length;
   const failedQueueJobs = queueRows.filter((row) => String(row.status ?? '').toUpperCase() === 'FAILED').length;
