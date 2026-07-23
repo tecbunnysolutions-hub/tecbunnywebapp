@@ -46,8 +46,18 @@ function actorContext(request: NextRequest, id: string) {
   };
 }
 
+// A response is only a real reliability failure on 4xx/5xx. 3xx redirects (e.g. an
+// unauthenticated visitor being redirected to the login page by middleware) are normal,
+// expected navigation outcomes -- `Response.ok` is FALSE for any non-2xx status including
+// redirects, so using it directly here mislabels every routine auth redirect as a failed
+// API/telemetry event and drags down the SLO availability metric with false positives.
+function isTelemetrySuccess(status: number) {
+  return status < 400;
+}
+
 function basePayload(request: NextRequest, options: ProxyTelemetryOptions, id: string) {
   const pathname = request.nextUrl.pathname;
+  const success = isTelemetrySuccess(options.response.status);
   return {
     application: options.application,
     module: moduleFromPath(pathname),
@@ -58,7 +68,7 @@ function basePayload(request: NextRequest, options: ProxyTelemetryOptions, id: s
     httpMethod: request.method,
     httpStatus: options.response.status,
     executionTimeMs: Date.now() - options.startedAt,
-    success: options.response.ok,
+    success,
     requestId: id,
     context: actorContext(request, id),
     entityType: 'api_endpoint',
@@ -80,6 +90,7 @@ export function emitEnterpriseProxyTelemetry(request: NextRequest, options: Prox
 
   const id = requestId(request);
   const base = basePayload(request, options, id);
+  const success = base.success;
   const writes: Promise<unknown>[] = [
     fetch(url, {
       method: 'POST',
@@ -88,8 +99,8 @@ export function emitEnterpriseProxyTelemetry(request: NextRequest, options: Prox
         ...base,
         eventType: 'api_request',
         eventName: 'api_request',
-        eventCategory: options.response.ok ? 'api' : 'error',
-        priority: options.response.ok ? 'medium' : 'high',
+        eventCategory: success ? 'api' : 'error',
+        priority: success ? 'medium' : 'high',
       }),
     }).catch(() => undefined),
   ];
@@ -104,7 +115,7 @@ export function emitEnterpriseProxyTelemetry(request: NextRequest, options: Prox
         eventType: base.action,
         eventName: base.action,
         description: `${request.method} ${pathname}`,
-        priority: options.response.ok ? 'high' : 'critical',
+        priority: success ? 'high' : 'critical',
       }),
     }).catch(() => undefined));
   }
@@ -120,7 +131,7 @@ export function emitEnterpriseProxyTelemetry(request: NextRequest, options: Prox
         eventName: base.action,
         entityType: 'api_endpoint',
         reason: 'Automatic proxy-level audit for privileged or sensitive mutation. Route-level instrumentation should add old/new values where applicable.',
-        remarks: options.response.ok ? 'Request completed' : 'Request failed or was denied',
+        remarks: success ? 'Request completed' : 'Request failed or was denied',
         priority: 'critical',
       }),
     }).catch(() => undefined));
