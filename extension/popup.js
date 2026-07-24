@@ -77,8 +77,37 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  function formatErrorMessage(error) {
+    if (!error) return 'Unknown error.';
+    if (typeof error === 'object') {
+      if (error.message) return error.message;
+      try { return JSON.stringify(error); } catch (_) {}
+    }
+    if (typeof error === 'string') {
+      const trimmed = error.trim();
+      if (trimmed.includes('429') || trimmed.includes('RESOURCE_EXHAUSTED') || trimmed.includes('Quota exceeded')) {
+        return 'Gemini AI free tier quota limit reached (429 Rate Limit). Please wait 1-2 minutes or check your API key quota at https://ai.google.dev.';
+      }
+      if (trimmed.startsWith('{') && trimmed.endsWith('}')) {
+        try {
+          const parsed = JSON.parse(trimmed);
+          if (parsed.error) {
+            if (typeof parsed.error === 'object' && parsed.error.message) {
+              return parsed.error.message;
+            }
+            if (typeof parsed.error === 'string') {
+              return formatErrorMessage(parsed.error);
+            }
+          }
+        } catch (_) {}
+      }
+      return error;
+    }
+    return String(error);
+  }
+
   function showStatus(message, type) {
-    statusContainer.textContent = message;
+    statusContainer.textContent = formatErrorMessage(message);
     statusContainer.className = 'status-container'; // Reset
     
     if (type === 'success') {

@@ -128,27 +128,70 @@ export async function POST(request: NextRequest) {
       ${rawText.substring(0, 30000)} // Limiting to 30k chars to avoid token limits
     `;
 
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: prompt,
-      config: {
-        responseMimeType: 'application/json',
-        responseSchema: schema,
-        temperature: 0.1,
-      }
-    });
+    const modelsToTry = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-2.5-flash-lite'];
+    let lastError: any = null;
+    let result: any = null;
 
-    if (!response.text) {
-      throw new Error("AI returned empty response");
+    for (const modelName of modelsToTry) {
+      try {
+        const response = await ai.models.generateContent({
+          model: modelName,
+          contents: prompt,
+          config: {
+            responseMimeType: 'application/json',
+            responseSchema: schema,
+            temperature: 0.1,
+          }
+        });
+
+        if (response.text) {
+          result = JSON.parse(response.text);
+          logger.info('ai_scraper.success', { correlationId, model: modelName });
+          break;
+        }
+      } catch (modelErr: any) {
+        lastError = modelErr;
+        const msg = modelErr?.message || String(modelErr);
+        if (msg.includes('429') || msg.includes('RESOURCE_EXHAUSTED') || msg.includes('Quota exceeded') || msg.includes('quota')) {
+          logger.warn('ai_scraper.quota_exceeded_model_fallback', { model: modelName, correlationId, error: msg });
+          continue; // Try next fallback model
+        }
+        throw modelErr;
+      }
     }
 
-    const result = JSON.parse(response.text);
-    
-    logger.info('ai_scraper.success', { correlationId });
+    if (!result) {
+      const lastMsg = lastError?.message || String(lastError || '');
+      if (lastMsg.includes('429') || lastMsg.includes('RESOURCE_EXHAUSTED') || lastMsg.includes('Quota exceeded')) {
+        return extensionJson(
+          request,
+          { error: 'Gemini AI quota limit reached (429 Rate Limit). Please wait 1-2 minutes or check your API key quota at https://ai.google.dev.' },
+          { status: 429 }
+        );
+      }
+      throw lastError || new Error("AI returned empty response");
+    }
+
     return extensionJson(request, { success: true, data: result, correlationId });
 
   } catch (err: any) {
-    logger.error('ai_scraper.error', { correlationId: 'unknown', error: err.message, stack: err.stack });
-    return extensionJson(request, { error: err.message || 'Internal server error' }, { status: err instanceof ExtensionAuthError ? err.status : 500 });
+    const errMsg = err?.message || String(err || '');
+    logger.error('ai_scraper.error', { correlationId: 'unknown', error: errMsg, stack: err?.stack });
+
+    let userFriendlyError = errMsg;
+    if (errMsg.includes('429') || errMsg.includes('RESOURCE_EXHAUSTED') || errMsg.includes('Quota exceeded')) {
+      userFriendlyError = 'Gemini AI quota limit reached (429 Rate Limit). Please wait 1-2 minutes or check your API key quota at https://ai.google.dev.';
+    } else if (errMsg.startsWith('{') && errMsg.endsWith('}')) {
+      try {
+        const parsed = JSON.parse(errMsg);
+        userFriendlyError = parsed.error?.message || parsed.message || userFriendlyError;
+      } catch (_) {}
+    }
+
+    return extensionJson(
+      request,
+      { error: userFriendlyError },
+      { status: err instanceof ExtensionAuthError ? err.status : (errMsg.includes('429') ? 429 : 500) }
+    );
   }
 }
