@@ -65,6 +65,9 @@ export async function proxy(request: NextRequest, event: NextFetchEvent) {
         'GET /api/custom-setup-offers',
         'POST /api/promotions/claim-viral',
         'POST /api/promotions/free-installation-claim',
+        'POST /api/ai/research',
+        'GET /api/ai/research',
+        '/api/ai',
         'POST /api/quotes',
         'POST /api/uploads/quote-documents',
         // The tRPC catch-all route (/api/trpc/[trpc]) hosts a mix of public and

@@ -10,6 +10,7 @@ export async function middleware(request: NextRequest) {
   
   const publicRoutes = [
     '/api/auth',
+    '/api/ai',
       '/api/health',
       '/api/settings',
       '/api/metadata',
