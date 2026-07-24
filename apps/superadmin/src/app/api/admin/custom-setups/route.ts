@@ -209,7 +209,10 @@ function buildLegacySummary(inputRows: LegacyInventoryRow[]): CustomSetupBluepri
   };
 }
 
-async function fetchLegacyInventorySummary(serviceSupabase: Awaited<ReturnType<typeof requireAdminContext>>['serviceSupabase']) {
+async function fetchLegacyInventorySummary(serviceSupabase?: Awaited<ReturnType<typeof requireAdminContext>>['serviceSupabase']) {
+  if (!serviceSupabase) {
+    return buildLegacySummary([]);
+  }
   try {
     const { data, error } = await serviceSupabase
       .from('custom_setup_inventory')
@@ -233,8 +236,68 @@ async function fetchTemplateWithDetails(serviceSupabase: Awaited<ReturnType<type
   try {
     const { data, error } = await serviceSupabase
       .from('custom_setup_templates')
-      .select('id, name, config, status, metadata')
-      .eq('id', slug)
+      .select(`
+        id,
+        slug,
+        name,
+        description,
+        category,
+        hero_copy,
+        base_price,
+        currency,
+        metadata,
+        systems:custom_setup_systems(
+          id,
+          slug,
+          name,
+          description,
+          sort_order,
+          base_fee,
+          pricing_formula,
+          metadata,
+          is_default,
+          components:custom_setup_components(
+            id,
+            slug,
+            name,
+            description,
+            category,
+            is_required,
+            min_quantity,
+            max_quantity,
+            default_quantity,
+            quantity_variable,
+            pricing_mode,
+            base_price,
+            unit_price,
+            price_formula,
+            metadata,
+            sort_order,
+            options:custom_setup_component_options(
+              id,
+              label,
+              value,
+              description,
+              is_default,
+              unit_price,
+              metadata
+            )
+          )
+        ),
+        variables:custom_setup_variables(
+          id,
+          key,
+          label,
+          input_type,
+          description,
+          min_value,
+          max_value,
+          step_value,
+          default_value,
+          metadata
+        )
+      `)
+      .eq('slug', slug)
       .maybeSingle();
 
     if (error) throw error;
@@ -245,81 +308,77 @@ async function fetchTemplateWithDetails(serviceSupabase: Awaited<ReturnType<type
 }
 
 export async function GET(request: NextRequest) {
+  let serviceSupabase;
   try {
-    const { serviceSupabase } = await requireAdminContext();
+    const adminCtx = await requireAdminContext();
+    serviceSupabase = adminCtx.serviceSupabase;
+  } catch (error) {
+    if (error instanceof AdminAuthError) {
+      return NextResponse.json({ error: error.message }, { status: error.status });
+    }
+  }
+
+  try {
     const { searchParams } = new URL(request.url);
     const slug = searchParams.get('slug');
 
     if (!slug) {
       let templateList: Array<{ id: string; slug: string; name: string; category?: string; is_active?: boolean; base_price?: number; currency?: string }> = [];
-      try {
-        const { data } = await serviceSupabase
-          .from('custom_setup_templates')
-          .select('id, name, status, metadata');
+      if (serviceSupabase) {
+        try {
+          const { data } = await serviceSupabase
+            .from('custom_setup_templates')
+            .select('id, name, status, metadata');
 
-        if (data && data.length > 0) {
-          templateList = data.map((t) => {
-            const meta = (t.metadata as Record<string, unknown>) || {};
-            return {
-              id: t.id,
-              slug: (meta.slug as string) || String(t.id),
-              name: t.name,
-              category: (meta.category as string) || 'Surveillance',
-              is_active: t.status === 'active',
-              base_price: (meta.base_price as number) || 0,
-              currency: 'INR',
-            };
-          });
+          if (data && data.length > 0) {
+            templateList = data.map((t) => {
+              const meta = (t.metadata as Record<string, unknown>) || {};
+              return {
+                id: t.id,
+                slug: (meta.slug as string) || String(t.id),
+                name: t.name,
+                category: (meta.category as string) || 'Surveillance',
+                is_active: t.status === 'active',
+                base_price: (meta.base_price as number) || 0,
+                currency: 'INR',
+              };
+            });
+          }
+        } catch {
+          // use fallback list
         }
-      } catch {
-        // use fallback list
       }
 
-      const defaultSummary = buildLegacySummary([]);
-      const hasDefault = templateList.some((t) => t.slug === defaultSummary.slug);
+      const legacySummary = await fetchLegacyInventorySummary(serviceSupabase);
+      const hasDefault = templateList.some((t) => t.slug === legacySummary.slug);
       if (!hasDefault) {
         templateList.unshift({
-          id: defaultSummary.id,
-          slug: defaultSummary.slug,
-          name: defaultSummary.name,
-          category: defaultSummary.category ?? undefined,
+          id: legacySummary.id,
+          slug: legacySummary.slug,
+          name: legacySummary.name,
+          category: legacySummary.category ?? undefined,
           is_active: true,
-          base_price: defaultSummary.basePrice ?? 0,
-          currency: defaultSummary.currency ?? 'INR',
+          base_price: legacySummary.basePrice ?? 0,
+          currency: legacySummary.currency ?? 'INR',
         });
       }
 
       return NextResponse.json({ success: true, data: templateList });
     }
 
-    const defaultSummary = buildLegacySummary([]);
-    if (slug === DEFAULT_CUSTOM_SETUP_TEMPLATE_SLUG || slug === defaultSummary.slug || slug === defaultSummary.id) {
-      return NextResponse.json({
-        success: true,
-        data: {
-          template: {
-            id: defaultSummary.id,
-            slug: defaultSummary.slug,
-            name: defaultSummary.name,
-            currency: defaultSummary.currency,
-            systems: defaultSummary.systems,
-          },
-          summary: defaultSummary,
-        },
-      });
-    }
-
-    const templateData = await fetchTemplateWithDetails(serviceSupabase, slug);
+    const templateData = serviceSupabase ? await fetchTemplateWithDetails(serviceSupabase, slug) : null;
     if (templateData) {
-      const summary = (templateData.config as unknown as CustomSetupBlueprintSummary) || defaultSummary;
+      const summary = ((templateData as any).config as unknown as CustomSetupBlueprintSummary) ||
+        buildCustomSetupBlueprintSummary(templateData as any) ||
+        (await fetchLegacyInventorySummary(serviceSupabase));
       return NextResponse.json({
         success: true,
         data: {
           template: {
             id: templateData.id,
-            slug: ((templateData.metadata as any)?.slug as string) || templateData.id,
+            slug: ((templateData.metadata as any)?.slug as string) || templateData.slug || templateData.id,
             name: templateData.name,
-            currency: 'INR',
+            currency: (templateData as any).currency || 'INR',
             systems: summary.systems,
           },
           summary,
@@ -327,17 +386,18 @@ export async function GET(request: NextRequest) {
       });
     }
 
+    const legacySummary = await fetchLegacyInventorySummary(serviceSupabase);
     return NextResponse.json({
       success: true,
       data: {
         template: {
-          id: defaultSummary.id,
-          slug: defaultSummary.slug,
-          name: defaultSummary.name,
-          currency: defaultSummary.currency,
-          systems: defaultSummary.systems,
+          id: legacySummary.id,
+          slug: legacySummary.slug,
+          name: legacySummary.name,
+          currency: legacySummary.currency,
+          systems: legacySummary.systems,
         },
-        summary: defaultSummary,
+        summary: legacySummary,
       },
     });
   } catch (error) {
@@ -345,18 +405,18 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: error.status });
     }
 
-    const defaultSummary = buildLegacySummary([]);
+    const legacySummary = buildLegacySummary([]);
     return NextResponse.json({
       success: true,
       data: {
         template: {
-          id: defaultSummary.id,
-          slug: defaultSummary.slug,
-          name: defaultSummary.name,
-          currency: defaultSummary.currency,
-          systems: defaultSummary.systems,
+          id: legacySummary.id,
+          slug: legacySummary.slug,
+          name: legacySummary.name,
+          currency: legacySummary.currency,
+          systems: legacySummary.systems,
         },
-        summary: defaultSummary,
+        summary: legacySummary,
       },
     });
   }

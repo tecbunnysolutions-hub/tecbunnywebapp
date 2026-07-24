@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server';
 
 import { APIResponseBuilder } from "@tecbunny/core/api-response";
-import { buildCustomSetupBlueprintSummary, fetchCustomSetupTemplateBySlug } from "@tecbunny/core/custom-setup-service";
+import { getCustomSetupBlueprintSummary, fetchCustomSetupTemplateBySlug } from "@tecbunny/core/custom-setup-service";
 import { logger } from "@tecbunny/core";
 
 export async function GET(request: NextRequest) {
@@ -14,19 +14,14 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const template = await fetchCustomSetupTemplateBySlug(slug);
+    const summary = await getCustomSetupBlueprintSummary(slug);
 
-    if (!template) {
+    if (!summary) {
       return APIResponseBuilder.notFound('Custom setup template not found');
     }
 
-    const summary = buildCustomSetupBlueprintSummary(template);
-
-    if (!summary) {
-      return APIResponseBuilder.internalServerError('Unable to build template summary');
-    }
-
     if (includeRaw === 'true') {
+      const template = await fetchCustomSetupTemplateBySlug(slug);
       return APIResponseBuilder.success({ template, summary });
     }
 

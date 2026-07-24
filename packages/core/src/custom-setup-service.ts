@@ -4,6 +4,7 @@ import { logger } from './logger';
 import { createServiceClient, isSupabaseServiceConfigured } from '@tecbunny/database/admin';
 import { createClient } from '@tecbunny/database';
 import { getRedis } from './redis';
+import { getCustomSetupInventoryFromDb } from './config-db';
 
 export type JsonRecord = Record<string, unknown>;
 
@@ -387,6 +388,153 @@ export function buildCustomSetupBlueprintSummary(template: CustomSetupTemplateRo
   } satisfies CustomSetupBlueprintSummary;
 }
 
+function buildLegacyOptionsFromInventory(
+  rows: Array<{ id: string; category: string; label: string; capacity?: number | null; mrp?: number | null; sale?: number | null; metadata?: Record<string, unknown> | null }>,
+  category: string
+) {
+  return rows
+    .filter((row) => row.category === category)
+    .map((row, index) => ({
+      id: row.id,
+      label: row.label,
+      value: row.id,
+      unitPrice: row.mrp ?? row.sale ?? 0,
+      metadata: {
+        ...(row.metadata ?? {}),
+        sale_price: row.sale ?? row.mrp ?? 0,
+        capacity: row.capacity,
+      },
+      isDefault: index === 0,
+    }));
+}
+
+function buildLegacyComponentFromInventory(
+  rows: Array<{ id: string; category: string; label: string; capacity?: number | null; mrp?: number | null; sale?: number | null; metadata?: Record<string, unknown> | null }>,
+  category: string,
+  slug: string,
+  name: string,
+  quantityVariable: string | null
+) {
+  const options = buildLegacyOptionsFromInventory(rows, category);
+  return {
+    id: `legacy-${slug}`,
+    slug,
+    name,
+    description: null,
+    isRequired: true,
+    optionCount: options.length,
+    pricingMode: 'per_unit',
+    pricingFormula: null,
+    quantityVariable,
+    metadata: null,
+    defaultQuantity: 1,
+    defaultOption: options[0] ?? null,
+    options,
+    basePrice: null,
+    unitPrice: null,
+  };
+}
+
+export function buildSummaryFromInventoryRows(
+  rows: Array<{ id: string; category: string; label: string; capacity?: number | null; mrp?: number | null; sale?: number | null; metadata?: Record<string, unknown> | null }>
+): CustomSetupBlueprintSummary {
+  const analogComponents = [
+    buildLegacyComponentFromInventory(rows, 'analog_dvr', 'analog-dvr', 'DVR', null),
+    buildLegacyComponentFromInventory(rows, 'analog_camera', 'analog-camera', 'Analog Camera', 'camera_count'),
+    buildLegacyComponentFromInventory(rows, 'analog_smps', 'smps-power', 'SMPS Power Supply', null),
+    buildLegacyComponentFromInventory(rows, 'analog_cable', 'coaxial-cable', 'Coaxial Cable', 'total_cable_length_m'),
+  ].filter((component) => component.optionCount > 0);
+
+  const ipComponents = [
+    buildLegacyComponentFromInventory(rows, 'ip_nvr', 'ip-nvr', 'NVR', null),
+    buildLegacyComponentFromInventory(rows, 'ip_camera', 'ip-camera', 'IP Camera', 'camera_count'),
+    buildLegacyComponentFromInventory(rows, 'ip_poe', 'poe-switch', 'PoE Switch', null),
+    buildLegacyComponentFromInventory(rows, 'ip_cable', 'cat6-cable', 'LAN Cable', 'total_cable_length_m'),
+  ].filter((component) => component.optionCount > 0);
+
+  const accessoriesComponents = [
+    buildLegacyComponentFromInventory(rows, 'hdd', 'hdd-storage', 'Hard Drive Storage', null),
+    buildLegacyComponentFromInventory(rows, 'monitor', 'monitor-display', 'Display Monitor', null),
+    buildLegacyComponentFromInventory(rows, 'rack', 'network-rack', 'Network Rack', null),
+    buildLegacyComponentFromInventory(rows, 'conduit', 'conduit-pipe', 'Conduit Pipe', null),
+    buildLegacyComponentFromInventory(rows, 'accessory', 'hardware-accessories', 'General Accessories', null),
+    buildLegacyComponentFromInventory(rows, 'installation', 'installation-fee', 'Installation Charges', null),
+  ].filter((component) => component.optionCount > 0);
+
+  return {
+    id: 'cctv-camera-full-setup',
+    slug: 'cctv-camera-full-setup',
+    name: 'CCTV Camera Full Setup',
+    description: 'Complete customizable CCTV camera installation setup template.',
+    heroCopy: null,
+    category: 'Surveillance',
+    basePrice: null,
+    currency: 'INR',
+    metadata: { source: 'custom_setup_inventory' },
+    variables: [
+      {
+        key: 'camera_count',
+        label: 'Camera count',
+        description: null,
+        inputType: 'number',
+        minValue: 1,
+        maxValue: 64,
+        stepValue: 1,
+        defaultValue: 4,
+        defaultDisplay: '4',
+        metadata: null,
+      },
+      {
+        key: 'total_cable_length_m',
+        label: 'Cable length',
+        description: null,
+        inputType: 'number',
+        minValue: 100,
+        maxValue: 5000,
+        stepValue: 100,
+        defaultValue: 100,
+        defaultDisplay: '100',
+        metadata: null,
+      },
+    ],
+    systems: [
+      {
+        id: 'legacy-analog-system',
+        slug: 'analog-cctv',
+        name: 'Analog CCTV System',
+        description: null,
+        isDefault: true,
+        baseFee: null,
+        pricingFormula: null,
+        metadata: null,
+        components: analogComponents,
+      },
+      {
+        id: 'legacy-ip-system',
+        slug: 'ip-cctv',
+        name: 'IP CCTV System',
+        description: null,
+        isDefault: false,
+        baseFee: null,
+        pricingFormula: null,
+        metadata: null,
+        components: ipComponents,
+      },
+      {
+        id: 'legacy-accessories-system',
+        slug: 'accessories-hardware',
+        name: 'Accessories & Upgrades',
+        description: null,
+        isDefault: false,
+        baseFee: null,
+        pricingFormula: null,
+        metadata: null,
+        components: accessoriesComponents,
+      },
+    ].filter((system) => system.components.length > 0),
+  };
+}
+
 export async function getCustomSetupBlueprintSummary(slug: string): Promise<CustomSetupBlueprintSummary | null> {
   const redis = getRedis();
   const cacheKey = `blueprint:summary:${slug}`;
@@ -407,7 +555,18 @@ export async function getCustomSetupBlueprintSummary(slug: string): Promise<Cust
   }
 
   const template = await fetchCustomSetupTemplateBySlug(slug);
-  const summary = buildCustomSetupBlueprintSummary(template);
+  let summary = buildCustomSetupBlueprintSummary(template);
+
+  if (!summary) {
+    try {
+      const inventory = await getCustomSetupInventoryFromDb();
+      if (inventory && inventory.length > 0) {
+        summary = buildSummaryFromInventoryRows(inventory as any);
+      }
+    } catch (err) {
+      logger.warn('custom_setup.fallback_inventory_failed', { slug, error: String(err) });
+    }
+  }
 
   if (redis && summary) {
     try {
