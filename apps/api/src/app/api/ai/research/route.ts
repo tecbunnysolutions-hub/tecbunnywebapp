@@ -44,7 +44,7 @@ function cleanSearchText(value: string, maxLength = 80) {
     .slice(0, maxLength);
 }
 
-async function fetchWithTimeout(url: string, init: RequestInit = {}, timeoutMs = EXTERNAL_FETCH_TIMEOUT_MS) {
+async function fetchWithTimeout(url: string, init: RequestInit = {}, timeoutMs = 5000) {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
@@ -53,47 +53,57 @@ async function fetchWithTimeout(url: string, init: RequestInit = {}, timeoutMs =
       ...init,
       signal: controller.signal,
     });
+  } catch (_err) {
+    return new Response('', { status: 504 });
   } finally {
     clearTimeout(timeoutId);
   }
 }
 
 async function fetchSearchUrls(query: string): Promise<string[]> {
-  const encoded = encodeURIComponent(query);
-  const searchUrl = `https://r.jina.ai/http://duckduckgo.com/html/?q=${encoded}`;
-  const response = await fetchWithTimeout(searchUrl, { headers: { 'User-Agent': 'Mozilla/5.0' } });
-  if (!response.ok) return [];
-  const html = await response.text();
+  try {
+    const encoded = encodeURIComponent(query);
+    const searchUrl = `https://r.jina.ai/http://duckduckgo.com/html/?q=${encoded}`;
+    const response = await fetchWithTimeout(searchUrl, { headers: { 'User-Agent': 'Mozilla/5.0' } }, 4000);
+    if (!response.ok) return [];
+    const html = await response.text();
 
-  const urls: string[] = [];
-  const uddgMatches = [...html.matchAll(/uddg=([^&"']+)/gi)];
-  for (const match of uddgMatches) {
-    try {
-      const decoded = decodeURIComponent(match[1]);
-      if (decoded.startsWith('http')) {
-        urls.push(decoded);
+    const urls: string[] = [];
+    const uddgMatches = [...html.matchAll(/uddg=([^&"']+)/gi)];
+    for (const match of uddgMatches) {
+      try {
+        const decoded = decodeURIComponent(match[1]);
+        if (decoded.startsWith('http')) {
+          urls.push(decoded);
+        }
+      } catch {
+        // ignore decode errors
       }
-    } catch {
-      // ignore decode errors
     }
-  }
 
-  const hrefMatches = [...html.matchAll(/href="(https?:\/\/[^\"\s]+)"/gi)];
-  for (const match of hrefMatches) {
-    urls.push(match[1]);
-  }
+    const hrefMatches = [...html.matchAll(/href="(https?:\/\/[^\"\s]+)"/gi)];
+    for (const match of hrefMatches) {
+      urls.push(match[1]);
+    }
 
-  return uniqueStrings(urls)
-    .filter((url) => !url.includes('duckduckgo.com'))
-    .slice(0, MAX_SOURCES);
+    return uniqueStrings(urls)
+      .filter((url) => !url.includes('duckduckgo.com'))
+      .slice(0, MAX_SOURCES);
+  } catch (_err) {
+    return [];
+  }
 }
 
 async function fetchReadableContent(url: string): Promise<string> {
-  const readerUrl = `https://r.jina.ai/${url}`;
-  const response = await fetchWithTimeout(readerUrl, { headers: { 'User-Agent': 'Mozilla/5.0' } });
-  if (!response.ok) return '';
-  const text = await response.text();
-  return redactPrices(text).slice(0, MAX_SOURCE_CHARS);
+  try {
+    const readerUrl = `https://r.jina.ai/${url}`;
+    const response = await fetchWithTimeout(readerUrl, { headers: { 'User-Agent': 'Mozilla/5.0' } }, 4000);
+    if (!response.ok) return '';
+    const text = await response.text();
+    return redactPrices(text).slice(0, MAX_SOURCE_CHARS);
+  } catch (_err) {
+    return '';
+  }
 }
 
 export async function POST(request: NextRequest) {
@@ -233,8 +243,12 @@ The previous response was too brief. Expand each section with 2-4 sentences and 
 
     return NextResponse.json(responseData);
   } catch (error: any) {
+    const errMsg = error?.name === 'AbortError' || error?.message?.includes('aborted')
+      ? 'AI research request timed out. Please try asking again.'
+      : (error?.message || 'Failed to generate AI research.');
+    logger.error('ai_research.error', { error: errMsg, stack: error?.stack });
     return NextResponse.json(
-      { error: error?.message || 'Failed to generate AI research.' },
+      { error: errMsg },
       { status: 500 }
     );
   }
