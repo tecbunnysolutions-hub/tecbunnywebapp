@@ -12,7 +12,6 @@ export async function POST(request: NextRequest) {
 
   try {
     // 1. Authenticate Request Manually
-    // Since /api/products is public in middleware, we must verify the token here.
     await requireExtensionAdmin(request);
 
     // 2. Extract Data from Request Body
@@ -129,13 +128,16 @@ export async function POST(request: NextRequest) {
       ${rawText.substring(0, 30000)} // Limiting to 30k chars to avoid token limits
     `;
 
+    let result: any = null;
+    let lastError: any = null;
+
     // 1. Try OpenAI if configured
-    if (process.env.OPENAI_API_KEY) {
+    if (openaiApiKey) {
       try {
         const openaiRes = await fetch('https://api.openai.com/v1/chat/completions', {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+            'Authorization': `Bearer ${openaiApiKey}`,
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
@@ -161,35 +163,34 @@ export async function POST(request: NextRequest) {
     }
 
     // 2. Fallback to Gemini 2.0 active models
-    const modelsToTry = ['gemini-2.0-flash', 'gemini-2.0-flash-lite'];
-    let lastError: any = null;
-
     if (ai) {
+      const modelsToTry = ['gemini-2.0-flash', 'gemini-2.0-flash-lite'];
+
       for (const modelName of modelsToTry) {
         try {
           const response = await ai.models.generateContent({
-          model: modelName,
-          contents: prompt,
-          config: {
-            responseMimeType: 'application/json',
-            responseSchema: schema,
-            temperature: 0.1,
-          }
-        });
+            model: modelName,
+            contents: prompt,
+            config: {
+              responseMimeType: 'application/json',
+              responseSchema: schema,
+              temperature: 0.1,
+            }
+          });
 
-        if (response.text) {
-          result = JSON.parse(response.text);
-          logger.info('ai_scraper.success', { correlationId, model: modelName });
-          break;
+          if (response.text) {
+            result = JSON.parse(response.text);
+            logger.info('ai_scraper.success', { correlationId, model: modelName });
+            break;
+          }
+        } catch (modelErr: any) {
+          lastError = modelErr;
+          const msg = modelErr?.message || String(modelErr);
+          logger.warn('ai_scraper.model_fallback', { model: modelName, correlationId, error: msg });
+          continue;
         }
-      } catch (modelErr: any) {
-        lastError = modelErr;
-        const msg = modelErr?.message || String(modelErr);
-        logger.warn('ai_scraper.model_fallback', { model: modelName, correlationId, error: msg });
-        continue;
       }
     }
-  }
 
     if (!result) {
       const lastMsg = lastError?.message || String(lastError || '');
