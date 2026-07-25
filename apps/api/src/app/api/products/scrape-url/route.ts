@@ -181,21 +181,37 @@ export async function POST(request: NextRequest) {
       ${rawText.substring(0, 30000)}
     `;
 
-    const aiResponse = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: prompt,
-      config: {
-        responseMimeType: 'application/json',
-        responseSchema: schema,
-        temperature: 0.1,
-      }
-    });
+    const modelsToTry = ['gemini-2.0-flash', 'gemini-2.0-flash-lite', 'gemini-1.5-flash-8b', 'gemini-1.5-pro'];
+    let aiResponseText = '';
+    let lastError: any = null;
 
-    if (!aiResponse.text) {
-      throw new Error("AI returned empty response");
+    for (const modelName of modelsToTry) {
+      try {
+        const response = await ai.models.generateContent({
+          model: modelName,
+          contents: prompt,
+          config: {
+            responseMimeType: 'application/json',
+            responseSchema: schema,
+            temperature: 0.1,
+          }
+        });
+        if (response.text) {
+          aiResponseText = response.text;
+          break;
+        }
+      } catch (err: any) {
+        lastError = err;
+        logger.warn('url_scraper.model_fallback', { model: modelName, error: err?.message || String(err) });
+        continue;
+      }
     }
 
-    const result = JSON.parse(aiResponse.text);
+    if (!aiResponseText) {
+      throw lastError || new Error("AI returned empty response");
+    }
+
+    const result = JSON.parse(aiResponseText);
 
     let parsedPrice = 0;
     if (result.price) {

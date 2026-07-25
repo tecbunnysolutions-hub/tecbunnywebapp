@@ -282,7 +282,7 @@ function applyTaxClassificationToPayload(
   payload.gstRate = classification.gst_rate;
   payload.tax_ai_confidence = classification.confidence_score;
   payload.tax_ai_justification = classification.justification;
-  payload.tax_ai_model = 'gemini-2.5-flash-lite';
+  payload.tax_ai_model = 'gemini-2.0-flash-lite';
   payload.tax_ai_classified_at = new Date().toISOString();
   payload.tax_ai_reviewed = false;
   payload.tax_ai_reviewed_by = null;

@@ -43,7 +43,7 @@ export default function CheckoutPage() {
   const searchParams = useSearchParams();
   const quoteId = searchParams.get('quoteId');
   const pickupStores = PICKUP_STORES;
-  const { isEnabled } = useFeatureFlags();
+  const { isEnabled, isLoading: flagsLoading } = useFeatureFlags();
   
   const [quote, setQuote] = useState<any>(null);
   const [isPartPayment, setIsPartPayment] = useState(false);
@@ -575,7 +575,7 @@ export default function CheckoutPage() {
   const showAdvance = selectedMethod?.type === 'online' || selectedPaymentMethod === 'upi' || selectedPaymentMethod === 'payu';
   const advanceAmount = Math.round(displayTotal * 0.5 * 100) / 100;
 
-  if (authLoading || loadingQuote) {
+  if (authLoading || loadingQuote || flagsLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background text-foreground">
         <div className="text-muted-foreground">Loading checkout details...</div>
@@ -601,7 +601,7 @@ export default function CheckoutPage() {
     );
   }
 
-  const isCheckoutEnabled = isEnabled('checkout_enabled');
+  const isCheckoutEnabled = isEnabled('checkout_enabled', true);
   if (!isCheckoutEnabled) {
     return (
       <div className="min-h-screen bg-background py-16 text-foreground">

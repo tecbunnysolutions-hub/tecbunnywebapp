@@ -5,6 +5,11 @@ import { FeatureFlags, FeatureFlagDictionary } from '@tecbunny/config';
 
 export const featureFlagsRouter = router({
   getAll: publicProcedure.query(async ({ ctx }) => {
+    const defaultFlags: FeatureFlagDictionary = {
+      [FeatureFlags.CHECKOUT_ENABLED]: true,
+      [FeatureFlags.NEW_PAYMENT_GATEWAY]: false,
+    };
+
     try {
       const supabase = await createClient();
       const { data, error } = await supabase
@@ -12,17 +17,13 @@ export const featureFlagsRouter = router({
         .select('key, enabled');
 
       if (error) {
-        console.error('Error fetching feature flags:', error);
-        return {} as FeatureFlagDictionary;
+        console.error('Error fetching feature flags, returning default fallbacks:', error);
+        return defaultFlags;
       }
 
-      const flags: FeatureFlagDictionary = {};
-      
-      // Default fallbacks in case DB doesn't have them yet
-      flags[FeatureFlags.CHECKOUT_ENABLED] = true;
-      flags[FeatureFlags.NEW_PAYMENT_GATEWAY] = false;
+      const flags: FeatureFlagDictionary = { ...defaultFlags };
 
-      if (data) {
+      if (data && Array.isArray(data)) {
         data.forEach((flag: any) => {
           flags[flag.key] = flag.enabled;
         });
@@ -31,11 +32,7 @@ export const featureFlagsRouter = router({
       return flags;
     } catch (err) {
       console.error('Exception fetching feature flags:', err);
-      // Failsafe defaults
-      return {
-        [FeatureFlags.CHECKOUT_ENABLED]: true,
-        [FeatureFlags.NEW_PAYMENT_GATEWAY]: false,
-      } as FeatureFlagDictionary;
+      return defaultFlags;
     }
   }),
   
@@ -52,8 +49,10 @@ export const featureFlagsRouter = router({
       const supabase = await createClient();
       const { data, error } = await supabase
         .from('feature_flags')
-        .update({ enabled: input.enabled, updated_at: new Date().toISOString() })
-        .eq('key', input.key)
+        .upsert(
+          { key: input.key, enabled: input.enabled, updated_at: new Date().toISOString() },
+          { onConflict: 'key' }
+        )
         .select()
         .single();
 

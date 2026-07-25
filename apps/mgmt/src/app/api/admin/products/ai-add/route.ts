@@ -331,7 +331,7 @@ export async function POST(request: NextRequest) {
       payload.gst_rate = taxClassification.gst_rate;
       payload.tax_ai_confidence = taxClassification.confidence_score;
       payload.tax_ai_justification = taxClassification.justification;
-      payload.tax_ai_model = 'gemini-2.5-flash-lite';
+      payload.tax_ai_model = 'gemini-2.0-flash-lite';
       payload.tax_ai_classified_at = new Date().toISOString();
       if (auditUserId) {
         payload.tax_ai_requested_by = auditUserId;
@@ -400,7 +400,7 @@ export async function POST(request: NextRequest) {
         message: 'Product ingested and created successfully via AI',
         data: inserted,
         ai_metadata: {
-          model: 'gemini-2.5-flash-lite',
+          model: 'gemini-2.0-flash-lite',
           stripped_columns: strippedCols.length ? strippedCols : undefined,
         },
         correlationId,

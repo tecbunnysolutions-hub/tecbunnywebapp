@@ -128,7 +128,7 @@ export async function POST(request: NextRequest) {
       ${rawText.substring(0, 30000)} // Limiting to 30k chars to avoid token limits
     `;
 
-    const modelsToTry = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-2.5-flash-lite'];
+    const modelsToTry = ['gemini-2.0-flash', 'gemini-2.0-flash-lite', 'gemini-1.5-flash-8b', 'gemini-1.5-pro'];
     let lastError: any = null;
     let result: any = null;
 
@@ -152,11 +152,8 @@ export async function POST(request: NextRequest) {
       } catch (modelErr: any) {
         lastError = modelErr;
         const msg = modelErr?.message || String(modelErr);
-        if (msg.includes('429') || msg.includes('RESOURCE_EXHAUSTED') || msg.includes('Quota exceeded') || msg.includes('quota')) {
-          logger.warn('ai_scraper.quota_exceeded_model_fallback', { model: modelName, correlationId, error: msg });
-          continue; // Try next fallback model
-        }
-        throw modelErr;
+        logger.warn('ai_scraper.model_fallback', { model: modelName, correlationId, error: msg });
+        continue;
       }
     }
 

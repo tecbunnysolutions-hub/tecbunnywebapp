@@ -164,7 +164,7 @@ export async function PATCH(
         updateData.gst_rate = taxClassification.gst_rate;
         updateData.tax_ai_confidence = taxClassification.confidence_score;
         updateData.tax_ai_justification = taxClassification.justification;
-        updateData.tax_ai_model = 'gemini-2.5-flash-lite';
+        updateData.tax_ai_model = 'gemini-2.0-flash-lite';
         updateData.tax_ai_classified_at = new Date().toISOString();
         if (auditUserId) {
           updateData.tax_ai_requested_by = auditUserId;

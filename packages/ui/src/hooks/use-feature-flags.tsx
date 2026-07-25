@@ -35,8 +35,15 @@ export const useFeatureFlags = () => {
     throw new Error('useFeatureFlags must be used within a FeatureFlagProvider');
   }
 
-  const isEnabled = (key: FeatureFlagKey | string) => {
-    return !!context.flags[key];
+  const isEnabled = (key: FeatureFlagKey | string, defaultValue: boolean = true) => {
+    if (context.flags && context.flags[key] !== undefined) {
+      return !!context.flags[key];
+    }
+    // Default fallback: if key is undefined, default to true for checkout_enabled
+    if (key === 'checkout_enabled') {
+      return true;
+    }
+    return defaultValue;
   };
 
   return { ...context, isEnabled };
