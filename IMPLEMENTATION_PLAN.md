@@ -960,6 +960,387 @@
 
 *Implementation completed and verified across schema models, marketplace core pricing engine, settlement calculator, seller portal, superadmin governance console, and API routes.*
 
+---
+
+## Volume 16: Enterprise Operations Execution Plan (Phases 1–8)
+
+### Phase 1 — Foundation & Architecture (100% Detailed Specification)
+- **1.1 Project Architecture**:
+  - Apps Structure: `apps/public`, `apps/customer`, `apps/mgmt`, `apps/superadmin`, `apps/engineer`, `apps/webmail`, `apps/shared`.
+  - Shared Package: `@tecbunny/ui` & `@tecbunny/core` containing components, layouts, hooks, utils, types, constants, API clients, services, validators, permissions, icons, themes.
+- **1.2 Backend Architecture Pipeline**:
+  - Standard Pipeline: `API` → `Authentication` → `Authorization (RBAC)` → `Validation` → `Controllers` → `Business Logic` → `Database` → `Notifications` → `Audit Logs`.
+- **1.3 Database Foundation**:
+  - Core Tables: `users` (id, employee_code, first_name, last_name, email, mobile, password_hash, status, role_id, department_id), `roles` (Super Admin, Admin, Manager, Sales, Engineer, Inventory, Accounts, Customer), `permissions` (module.action pattern: customer.view, order.approve, inventory.transfer, etc.), `role_permissions` (M:N), `departments` (Sales, Operations, Accounts, Inventory, Support, Management, Engineering), `activity_logs` (user_id, module, action, old_data, new_data, ip, browser), `notifications`.
+- **1.4 Authentication**:
+  - Multi-identifier Login: Email, Mobile Number, Employee Code.
+  - Security: Argon2 password hashing, Session management (IP, Browser, Device fingerprinting, Refresh & Access JWT Tokens), OTP-based Forgot Password flow, Email verification pipeline.
+- **1.5 User Management**:
+  - Admin provisioned profiles: Employee Code, Department, Role, Reporting Manager, Joining Date, Active Status.
+- **1.6 Role-Based Access Control (RBAC)**:
+  - Granular permission checks on screens, dynamic buttons, API endpoints, and reports.
+- **1.7 Dynamic Navigation**:
+  - Role & Permission driven dynamic sidebar and dashboard widget layout generation upon user login.
+- **1.8 Global Settings Module**:
+  - Centralized controls: Company info, GSTIN, Addresses, Logo, Currency, Timezone, Date Format, Invoice/Quotation Prefixes, Email (SMTP), SMS, WhatsApp WABA credentials, DB Backup settings, Maintenance Mode.
+- **1.9 File Management System**:
+  - Auto-generated directory hierarchy: `customers/`, `products/`, `projects/`, `tickets/`, `quotations/`, `warranty/`. Support for PDF, Excel, Images, CAD Drawings, Videos, ZIP.
+- **1.10 Notification Engine**:
+  - Multi-channel dispatchers: Email, WhatsApp, SMS, In-App, Push Notifications with persistent delivery audit log.
+- **1.11 Unified Search Engine**:
+  - Cross-module indexing across Customers, Leads, Products, Orders, Quotations, Projects, Tickets, Field Engineers, and Inventory SKUs.
+- **1.12 Comprehensive Audit Logging**:
+  - Change tracking capturing old vs new state delta, timestamp, IP address, user ID, and browser fingerprint.
+- **1.13 Dashboard Framework**:
+  - Role-configurable modular widgets: Revenue, Orders, Leads, Inventory, Projects, Engineer Visits, Tasks, Calendar, Quick Actions.
+- **1.14 Common UI Component Library**:
+  - 25+ Standard reusable components: Button, Table, Data Grid, Modal, Drawer, Form Builder, Date/Time Picker, File/Image Upload, Pagination, Breadcrumbs, Tabs, Cards, Charts, Timeline, Kanban Board, Calendar, Status Badges, Toasts, Confirmation Dialogs, Skeletons.
+- **1.15 API Standards & Response Format**:
+  - Uniform REST endpoints & standard envelope: `{ success: boolean, message: string, data: object, errors: array, meta: object }`.
+- **1.16 Enterprise Security Baseline**:
+  - HTTPS, JWT Refresh Tokens, CSRF, Rate Limiting, SQLi/XSS Prevention, CSP, Supabase RLS, Secure File Upload Validation, Encrypted Backups.
+- **1.17 Completion Checklist**:
+  - Schema finalized, Authentication active, RBAC & Dynamic menus ready, Settings & Notifications live, Audit logs verified, UI Library built.
+
+---
+
+### Phase 2 — CRM (Customer Relationship Management) Module (100% Detailed Specification)
+- **2.1 Lead Management**:
+  - Sources: Website Form, Quote Request, WhatsApp, Call, Email, Social Ads, Referral, Walk-in, Manual, Excel/CSV Import.
+  - Data: Basic details (GSTIN, PAN, Industry), Addresses (Google Maps integration), Business details (Type, Revenue, Budget, Vendor), Classification (Hot, Warm, Cold, Lost, Duplicate, Spam).
+  - Statuses: `New` → `Assigned` → `Contacted` → `Meeting Scheduled` → `Quotation Sent` → `Negotiation` → `Won` → `Lost` → `Closed`.
+  - Immutable timeline logging. Automatic assignment engine (Location, Product, Salesperson workload, Availability).
+  - Duplicate detection matching Mobile, Email, GSTIN, and Company Name.
+- **2.2 Customer Management**:
+  - Automatic lead-to-customer conversion. Profiles with GSTIN & PAN.
+  - Multiple contact person roles (Owner, Manager, Accounts, Purchase, Technical, Billing).
+  - Multi-branch hierarchy support (Goa, Mumbai, Bangalore branches with separate orders & engineers).
+  - Secure Document vault (GST Cert, PAN, Agreements, POs, Drawings). Full customer lifecycle timeline.
+- **2.3 Opportunity Management**:
+  - Multi-opportunity mapping per customer (CCTV, Networking, RFID, AMC).
+  - Stages: `Discovery` → `Requirement Gathering` → `Proposal` → `Negotiation` → `Won` → `Lost`.
+- **2.4 Follow-up & 2.5 Meeting Management**:
+  - Phone, Meeting, Email, WhatsApp, Site Visit reminders. Today's/Missed/Upcoming follow-up dashboards.
+  - Site survey meeting records with Minutes, Photos, Attachments, and GPS location.
+- **2.6 Task Management & 2.7 Quotation Request**:
+  - Task delegation (BOQ prep, site survey, demo, installation) with priority and deadline tracking.
+  - 1-click Quotation Request auto-transferring customer, product, address, and GST rules to Quotation Engine.
+- **2.8 Customer Communication, Notes & Attachments**:
+  - Multi-channel communication timeline (Calls, WhatsApp, Email, SMS, Meetings). Tagging system (VIP, Govt, Corporate, Retail).
+- **2.13 CRM Reports & 2.14 Dashboard**:
+  - Lead source analysis, conversion rates, sales funnels, CLV, salesperson leaderboards. Drag-and-drop widget dashboard.
+- **2.15 Permission Matrix & 2.16 APIs**:
+  - Granular RBAC controls on lead creation, editing, deletion, merging, and exporting. Standard REST `/crm/*` endpoints.
+- **Database Tables (Phase 2)**:
+  - `leads`, `lead_sources`, `lead_statuses`, `lead_assignments`, `lead_notes`, `lead_activities`, `customers`, `customer_contacts`, `customer_branches`, `customer_documents`, `opportunities`, `followups`, `meetings`, `tasks`, `customer_tags`, `customer_tag_mapping`.
+
+---
+
+### Phase 3 — Quotation & Sales Management (100% Detailed Specification)
+- **3.1 Quotation Dashboard & 3.2 Quotation Creation**:
+  - Auto-formatting QT-YYYY-XXXXXX numbers, revision tracking (`QT-2026-00015-R1`).
+  - Auto-fill from Lead, Customer, Opportunity. Header details (expiry, payment/delivery terms, branch, project).
+- **3.3 Bill of Quantity (BOQ) & 3.4 Product/Service Selection**:
+  - Multi-line item BOQ: Products & Services (Installation, Testing, Configuration, Training, Transport).
+  - Real-time stock availability warnings (Current vs Reserved stock check).
+- **3.6 Pricing & 3.7 Tax Management Engine**:
+  - Automated GST calculation (CGST, SGST, IGST based on Customer State vs Company State, HSN/SAC rules).
+  - Percentage/Fixed discounts, Customer-specific/Dealer pricing rules.
+- **3.8 Discount Approval Workflow & 3.9 Statuses**:
+  - Tiered approvals: ≤5% Salesperson, 5–10% Manager, >10% Admin.
+  - Statuses: `Draft` → `Pending Approval` → `Approved` → `Sent` → `Viewed` → `Negotiation` → `Accepted` → `Rejected` → `Expired` → `Converted`.
+- **3.10 Revision Control & 3.11 Customer Approval**:
+  - Immutable revision logs. Customer portal online approval with OTP verification & digital signature capture.
+- **3.12 Quotation PDF Engine & 3.13 Multi-channel Sharing**:
+  - Dynamic PDF compiler with QR code verification, terms, GST breakdown. Email/WhatsApp dispatch.
+- **3.14 Sales Order Conversion & 3.15 Payment Tracking**:
+  - 1-click conversion to Sales Order (SO-YYYY-XXXXXX), auto stock reservation, project creation.
+  - Advance, partial, and full payment logging (UPI, Net Banking, Cards, Cheque).
+- **3.16 Invoice Integration**:
+  - Auto-generation of Tax Invoice from Sales Order with GST breakdown and E-Invoice compatibility.
+- **Database Tables (Phase 3)**:
+  - `quotations`, `quotation_items`, `quotation_revisions`, `quotation_approvals`, `quotation_comments`, `quotation_files`, `sales_orders`, `sales_order_items`, `payments`, `payment_receipts`, `invoices`, `invoice_items`, `tax_master`, `pricing_rules`, `discount_rules`.
+
+---
+
+
+### Phase 4 — Inventory & Warehouse Management (100% Detailed Specification)
+- **4.1 Inventory Dashboard & 4.2 Product Master**:
+  - Stock overview: Available, Reserved, Installed, Returned, Damaged, Low Stock, Dead Stock.
+  - SKU, Barcode, QR Code, Brand, Model, Category, Technical specs (Voltage, Power), HSN Code, GST Rate, Warranty.
+- **4.3 Category & 4.4 Brand Management**:
+  - Unlimited multi-level category tree (CCTV → Cameras → DVR; Networking → Switches → Routers). Brand warranty policies.
+- **4.5 Warehouse & 4.6 Stock Management**:
+  - Multi-Warehouse hubs (Main, Branch, Service Center, Engineer Vehicle).
+  - Stock states: Available, Reserved, Allocated, Installed, Returned, Damaged, Demo, Repair, Replacement.
+- **4.7 Serial Number Tracking**:
+  - Lifecycle: `Purchased` → `Received` → `Warehouse` → `Reserved` → `Installed` → `Customer` → `Warranty` → `Replacement` → `Returned`. Unique SN constraint.
+- **4.8 Barcode/QR Code & 4.9 Purchase Management**:
+  - ZPL/PDF label printing, mobile barcode/QR scanning.
+  - Purchase Orders (PO-YYYY-XXXXXX): Draft → Approved → Sent → Partially Received → Completed → Cancelled.
+- **4.10 Goods Receipt Note (GRN) & 4.11 Vendor Master**:
+  - GRN verification, barcode scanning, quality check, inventory update. Vendor profiles, ratings, PO history.
+- **4.12 Stock Transfer & 4.13 Stock Reservation**:
+  - Multi-warehouse transfer approval & transit logs. Auto-reservation on Sales Order confirmation.
+- **4.14 Inventory Adjustments & 4.15 Returns**:
+  - Physical count corrections (Damaged, Lost, Found, Expired). Customer, Vendor, Engineer return logs with photos.
+- **4.16 Engineer Inventory & 4.17 Alerts**:
+  - Engineer vehicle stock tracking (Assigned, Used, Returned, Damaged). Low stock & dead stock automated alerts.
+- **4.18 Audits, 4.19 Reports & 4.20 Dashboard**:
+  - Physical stock count audit logs. Stock valuation, aging reports, fast/slow-moving analytics.
+- **Database Tables (Phase 4)**:
+  - `products`, `product_categories`, `product_brands`, `product_files`, `warehouses`, `warehouse_stock`, `stock_movements`, `serial_numbers`, `vendors`, `purchase_orders`, `purchase_order_items`, `goods_receipts`, `goods_receipt_items`, `stock_transfers`, `stock_transfer_items`, `stock_adjustments`, `inventory_returns`, `engineer_inventory`, `inventory_audits`, `inventory_alerts`.
+
+
+---
+
+### Phase 5 — Order Processing & Project Management (100% Detailed Specification)
+- **5.1 Order Dashboard & 5.2 Order Progression**:
+  - Auto-creation of Sales Order from accepted quotation.
+  - Statuses: `Draft` → `Confirmed` → `Payment Pending` → `Inventory Reserved` → `Project Created` → `Installation Scheduled` → `In Progress` → `Completed` → `Closed` → `Cancelled`.
+- **5.3 Payment Verification & 5.4 Stock Reservation**:
+  - Payment modes (UPI, Bank Transfer, Cards, Cheque). Mandatory advance verification gate before order progression.
+  - Automatic inventory reservation & warehouse dispatch notification.
+- **5.5 Project Creation & 5.6 Project Dashboard**:
+  - Auto-project instantiation (`PRJ-YYYY-XXXXXX`). Statuses: `Created` → `Planning` → `Material Ready` → `Installation Scheduled` → `Started` → `Testing` → `Approved` → `Completed`.
+- **5.7 Tasks & 5.8 Milestone Management**:
+  - Task breakdown (Survey, Dispatch, Installation, Testing, Training, Handover). Milestone % tracking (20%, 40%, 70%, 90%, 100%).
+- **5.9 Resource Allocation & 5.10 Material Dispatch**:
+  - Assign Project Manager, Engineers, Vehicles, Tools with availability validation. Dispatch tracking (Vehicle, Driver, Engineer, Packing List).
+- **5.11 Site Survey & 5.12 Installation Scheduling**:
+  - Pre-installation survey photo/layout uploads. Calendar view scheduling with drag-and-drop support.
+- **5.13 Document Vault, 5.14 Communications & 5.15 Delay Management**:
+  - Centralized project file repository (Blueprints, Certificates, Signatures).
+  - Automated SMS/WhatsApp/Email milestones notifications. Mandatory delay reason logging & re-approval workflow.
+- **5.16 Budget Tracking & 5.18 Completion Checklist**:
+  - Material vs Labour vs Transport cost comparison; budget overrun alerts. Mandatory 9-step completion checklist before project closure.
+- **Database Tables (Phase 5)**:
+  - `sales_orders`, `sales_order_status_history`, `order_payments`, `projects`, `project_members`, `project_tasks`, `project_milestones`, `project_documents`, `project_timeline`, `installation_schedules`, `site_surveys`, `material_dispatch`, `material_dispatch_items`, `project_budget`, `completion_checklists`.
+
+---
+
+
+### Phase 6 — Field Service Management (100% Detailed Specification)
+- **6.1 Dashboard & 6.2 Service Request Management**:
+  - Channels: Customer Portal, Phone, Email, WhatsApp, Staff, AMC, Warranty.
+  - Priorities: Critical (SLA 30m response/4h resolution), High (2h/8h), Medium (4h/24h), Low (1d/3d).
+- **6.3 Ticket Lifecycle & 6.4 Engineer Skill Matrix**:
+  - States: `New` → `Assigned` → `Accepted` → `Travelling` → `On Site` → `Work Started` → `Waiting Parts` → `Testing` → `Completed` → `Customer Approved` → `Closed`.
+  - Skill mapping (CCTV, Networking, Access Control, Biometric, Server, Fiber, Electrical).
+- **6.5 Assignment & 6.6 Engineer Mobile Portal**:
+  - Automated assignment engine matching skills, GPS proximity, workload, SLA. Mobile app controls (Jobs, GPS navigation, start/pause/complete, QR scan, photos, signature).
+- **6.7 Live GPS Tracking & 6.8 Verified Check-In**:
+  - Live engineer map, route history, distance travelled. Geofenced GPS check-in/check-out verification.
+- **6.9 Work Report Evidence & 6.10 Product QR Verification**:
+  - Mandatory Before/After photos, videos, notes, parts used. QR scan serial lookup & warranty/AMC history verification.
+- **6.11 Spare Parts & 6.12/6.13 Checklists**:
+  - Engineer vehicle stock deduction & warehouse update. Product-specific installation & service checklists.
+- **6.14 Digital Signature & 6.15 Rating System**:
+  - Touchscreen digital signature capture with GPS timestamp. 5-star customer rating & feedback survey.
+- **6.16 AMC & 6.17 Warranty Management**:
+  - Automated AMC visit scheduler (Annual, Quarterly, Monthly). Warranty claim validation & replacement log.
+- **6.19 SLA & 6.20 Escalation Workflow**:
+  - Automated breach monitoring & multi-level management escalation trail (Engineer → PM → Ops Mgr → Admin).
+- **Database Tables (Phase 6)**:
+  - `service_tickets`, `service_ticket_history`, `engineers`, `engineer_skills`, `engineer_schedule`, `engineer_location_logs`, `engineer_inventory`, `service_reports`, `service_photos`, `installation_checklists`, `service_checklists`, `customer_signatures`, `customer_feedback`, `amc_contracts`, `amc_visits`, `warranty_claims`, `sla_rules`, `sla_logs`.
+
+
+---
+
+### Phase 7 — Customer Portal & Self-Service Platform (100% Detailed Specification)
+- **7.1 Authentication & 7.2 Dashboard**:
+  - Email, Mobile, OTP & Password login; session & device management. Quick actions (Raise Ticket, Download Invoice, View Warranty, Renew AMC, Track Installation, Pay Online).
+- **7.3 Profile & Contact Management**:
+  - Customer 360 profile, multi-contact roles (Owner, Accounts, Purchase, Technical), branch office address vault.
+- **7.4 Order Tracking & 7.5 Project Milestone Portal**:
+  - Real-time order progression tracking (`Order Confirmed` → `Inventory Reserved` → `Project Created` → `Engineer Assigned` → `Installation Scheduled` → `Completed`).
+  - Milestone progress breakdown (Survey, Material, Installation %, Testing), blueprint downloads.
+- **7.6 Service Ticket Portal & 7.7 Warranty Claim Vault**:
+  - 1-click Ticket Creation with photo/video uploads, live engineer tracking, 1-click warranty claim dispatcher.
+- **7.8 AMC Renewal Hub & 7.9 Online Invoice Payments**:
+  - Active contract management, visit scheduler, 1-click AMC renewal. Integrated online payments (UPI, Cards, Net Banking) with instant receipt download.
+- **7.10 Document Vault & 7.12 Product QR Registration**:
+  - Folder hierarchy (`Orders/`, `Projects/`, `Warranty/`, `AMC/`, `Invoices/`). Product QR scan serial registration & instant warranty activation.
+- **7.13 Appointment Booking & 7.14 Support Knowledge Base**:
+  - Slot-based appointment booking (Installation, Demo, Survey, Service Visit). FAQs, Video tutorials, User manuals.
+- **7.16 Rating Survey & 7.17 Download Center**:
+  - 5-Star rating system (Installation, Engineer, Service, Experience). Single dashboard for downloading PDF tax invoices, warranty cards, AMC certificates.
+- **Database Tables (Phase 7)**:
+  - `customer_accounts`, `customer_sessions`, `customer_profiles`, `customer_addresses`, `customer_notifications`, `customer_documents`, `customer_download_logs`, `customer_feedback`, `appointments`, `portal_activity_logs`, `portal_preferences`.
+
+---
+
+### Phase 8 — Administration, Finance & Business Operations (100% Detailed Specification)
+- **8.1 Admin Dashboard & 8.2 Company/Branch Management**:
+  - Executive financial summary (Revenue Today, Monthly Profit, Gross Margin, Receivables, Payables). Multi-branch isolation (Goa, Mumbai, Pune, Bangalore).
+- **8.4 Employee, 8.5 Attendance & 8.6 Leave Management**:
+  - Employee Master & Statuses. GPS & QR-code mobile attendance with check-in/out timestamps. Tiered leave approval workflow (Employee → Manager → HR).
+- **8.7 Payroll & 8.8/8.9 Procurement Approvals**:
+  - Salary generation, allowances, payslip compiler. Tiered procurement approval rules: ≤₹25,000 Manager, ₹25,001–₹100,000 Operations Head, >₹100,000 Admin.
+- **8.10 Expense & 8.12/8.13 Finance Ledger**:
+  - Expense reimbursement workflow (Fuel, Travel, Office, Marketing). Tax Invoices, Proforma, Credit/Debit Notes. Outgoing vendor & salary payments.
+- **8.14 Accounts Receivable & 8.15 Accounts Payable**:
+  - Customer aging reports with automated payment reminder triggers (7d, 3d, Due Date, Overdue). Vendor bill ledger & payment scheduling.
+- **8.16 Tax Management & 8.17 Universal Approval Engine**:
+  - GST, CGST, SGST, IGST & TDS registers. Unified approval engine for Discounts, Purchases, Expenses, Refunds, Stock Adjustments, and Leaves.
+- **8.18 Immutable Audit Logs & 8.20 BI Analytics**:
+  - Administrative audit log capturing user, module, old vs new values, IP, browser. Comparative BI analytics (Daily, Weekly, Monthly, Yearly).
+- **Database Tables (Phase 8)**:
+  - `companies`, `branches`, `employees`, `attendance`, `leave_requests`, `payroll`, `expenses`, `expense_approvals`, `vendors`, `purchase_requests`, `purchase_approvals`, `invoices`, `invoice_payments`, `receivables`, `payables`, `finance_ledgers`, `tax_register`, `approval_workflows`, `approval_history`, `admin_activity_logs`, `business_kpis`.
+
+---
+
+
+
+### Phase 4 — Workflow Automation
+- End-to-End Automated Business Execution:
+  `Order Confirmed` → `Create Project` → `Reserve Inventory` → `Assign Engineer` → `Notify Customer` → `Schedule Installation` → `Generate Invoice` → `Activate Warranty` → `Collect Customer Feedback`.
+
+### Phase 9 — Business Intelligence (BI), Analytics & Reporting (100% Detailed Specification)
+- **9.1 Executive Dashboard & 9.2 Sales Analytics**:
+  - Real-time financial KPIs (Today/Monthly/Quarterly/Annual Revenue, Gross/Net Profit, Receivables, Payables, Cash Flow). Sales breakdown by Day/Month/Product/Category/Brand/Branch/Salesperson with revenue forecasting.
+- **9.3 CRM & 9.4 Inventory Analytics**:
+  - Lead conversion funnel, CLV, CAC, customer segmentation. Stock turn velocity, dead stock, aging reports, warehouse capacity utilization.
+- **9.5 Purchase & 9.6 Project Analytics**:
+  - Vendor scorecards (delivery SLA, quality, pricing, return rate). Project cost vs budget variance, profitability analysis.
+- **9.7 Field Service & 9.8 Finance Analytics**:
+  - Ticket SLA compliance, first-visit resolution rate, engineer productivity, travel time vs on-site time. Cash flow trend, GST summary, accounts receivable aging.
+- **9.11 KPI Engine & 9.12 Report Builder**:
+  - Automated KPI calculation engine. Drag-and-drop custom report builder with grouping, sorting, filtering, and export to Excel/PDF/CSV.
+- **9.13 Scheduled Reports & 9.14 Dashboard Builder**:
+  - Automated daily/weekly/monthly email report dispatch. Configurable role-based dashboard layout builder with 10 chart types (Funnel, Heatmap, Gauge, Tree Map, KPI cards).
+- **9.16 Interactive Drill-Down & 9.19 Business Alerts**:
+  - Multi-level drill down (Revenue → Branch → Customer → Invoice → Payment). Automated business alerts (revenue drop, stock threshold, project delay, SLA breach, overdue payment).
+- **Database Tables (Phase 9)**:
+  - `analytics_snapshots`, `dashboard_widgets`, `dashboard_layouts`, `report_templates`, `report_schedules`, `report_exports`, `kpi_definitions`, `analytics_filters`, `business_alerts`, `business_alert_logs`, `executive_metrics`, `chart_configurations`.
+
+---
+
+### Phase 10 — Communication & Notification Center (100% Detailed Specification)
+- **10.1 Communication Dashboard & 10.2 Unified Inbox**:
+  - Outbound metrics (Sent, Delivered, Opened, Clicked, Failed, Retry Queue).
+  - Unified customer communication timeline aggregating Email, WhatsApp, SMS, Push, In-App, Internal Notes.
+- **10.3 Email & 10.4 WhatsApp Integration**:
+  - Transactional, marketing, invoice, quote dispatchers. WhatsApp Business WABA 2-way messaging, media, voice notes, location, PDF attachments.
+- **10.5 SMS Gateway & 10.6 Push Notifications**:
+  - DLT-registered SMS for OTP, reminders, emergencies. Android, iOS & Web Push notification engine.
+- **10.7 In-App Notifications & 10.8 Dynamic Templates**:
+  - Real-time portal alerts (New Lead, Order, Payment, Low Inventory, Project Delay, SLA breach).
+  - Variable template compiler (`{{customer_name}}`, `{{invoice_number}}`, `{{amount}}`, `{{ticket_number}}`).
+- **10.9 Campaign Management & 10.10 Announcement Center**:
+  - Multi-channel marketing campaigns with audience segmentation (Industry, Branch, AMC Expiry). Customer & Employee announcement boards.
+- **10.11 Automated Reminder Engine**:
+  - Chronological reminder scheduler (7d, 3d, 1d, Due Date, Overdue) for Invoices, AMC, Warranty, Appointments.
+- **10.14 Delivery Tracking & 10.15 Retry Queue**:
+  - End-to-end delivery status tracking & exponential backoff retry queue for failed messages.
+- **Database Tables (Phase 10)**:
+  - `communications`, `communication_channels`, `communication_templates`, `notification_queue`, `notification_history`, `notification_preferences`, `announcements`, `campaigns`, `campaign_recipients`, `campaign_statistics`, `reminders`, `communication_logs`, `failed_messages`, `push_devices`.
+
+---
+
+### Phase 11 — Automation & Workflow Engine (100% Detailed Specification)
+- **11.1 Dashboard & 11.2 Visual Builder**:
+  - Execution summary (Hours saved, tasks automated, SLA compliance). Drag-and-drop workflow node pipeline (`Trigger` → `Condition` → `Action` → `Delay` → `Approval` → `Loop`).
+- **11.3 Trigger Engine & 11.4 Condition Engine**:
+  - Event listeners across CRM, Sales, Inventory, Projects, Service, Finance, HR, and System. Boolean condition evaluator (AND, OR, NOT, nested rules).
+- **11.5 Action Engine & 11.6 Approval Routing**:
+  - Actions: Create Task/Ticket, Update Record, Dispatch Notifications, Generate PDF, Execute Webhook/API. Multi-level approval routing (Amount, Department, Branch).
+- **11.7 Task & 11.8 Assignment Engine**:
+  - Automatic task creation on project/order creation. Round-robin & skill/proximity assignment.
+- **11.9 Cron Scheduler & 11.10 Delay Steps**:
+  - Internal scheduler (Minutely, Hourly, Daily, Monthly). Delay & Wait nodes for asynchronous workflow execution.
+- **11.11 SLA Automation & 11.13 Escalations**:
+  - Automatic response & resolution SLA monitors with multi-tiered management escalation.
+- **11.14 Versioning, 11.15 Execution Logs & 11.17 Webhooks**:
+  - Workflow version control (Draft, Published, Rollback). Searchable execution audit log. Inbound & outbound webhook listeners with auto-retries.
+- **Database Tables (Phase 11)**:
+  - `workflows`, `workflow_versions`, `workflow_triggers`, `workflow_conditions`, `workflow_actions`, `workflow_executions`, `workflow_execution_logs`, `workflow_templates`, `scheduler_jobs`, `scheduler_history`, `business_rules`, `approval_rules`, `escalation_rules`, `webhook_subscriptions`, `webhook_delivery_logs`, `automation_metrics`.
+
+---
+
+### Phase 12 — Security, Compliance & Audit (100% Detailed Specification)
+- **12.1 Security Dashboard & 12.2 Authentication Security**:
+  - Live security indicators (Failed logins, locked accounts, suspicious sessions, API failures, risk metrics). Strong password policy (10+ chars, upper, lower, number, special char).
+- **12.3 Multi-Factor Authentication (MFA) & 12.4/12.5 Session/Device Management**:
+  - Mandatory MFA for Admins, Finance, Super Admins (TOTP/SMS/Email/Backup codes). Device registration, trusted/blocked device vault, remote force logout.
+- **12.6 RBAC & 12.7 Data Encryption**:
+  - 6-level privilege hierarchy (Super Admin → Admin → Manager → Staff → Engineer → Customer). TLS in transit, AES-256 at rest for PII, financial ledgers, backups.
+- **12.8 API Security & 12.9 File Security**:
+  - Rate limiting, IP allowlist, JWT validation. Restricted file extensions (blocking executable `.exe`, `.sh`, `.bat`, `.js`), malware scan hooks.
+- **12.10 Immutable Audit Logs & 12.12 Security Alerts**:
+  - Write-once read-many (WORM) audit logs capturing delta state, IP, user, browser. Real-time security alert dispatcher (Low, Medium, High, Critical).
+- **12.13 Compliance & 12.15/12.16 Backup & Disaster Recovery (DR)**:
+  - Legal hold, GDPR/GST compliance consent log, data retention policies. Automated daily incremental & weekly full backups. RPO (≤15m) & RTO (≤4h) tracking.
+- **12.18 Sensitive Data Export Controls**:
+  - Watermarked PDF/Excel reports, password-protected archives, export approval workflow, immutable export log.
+- **Database Tables (Phase 12)**:
+  - `user_sessions`, `trusted_devices`, `security_policies`, `security_alerts`, `security_alert_history`, `audit_logs`, `login_history`, `api_keys`, `api_request_logs`, `backup_jobs`, `backup_history`, `restore_history`, `compliance_records`, `data_retention_rules`, `export_logs`, `password_history`, `mfa_settings`.
+
+---
+
+### Phase 13 — Super Admin & System Configuration (100% Detailed Specification)
+- **13.1 Super Admin Dashboard & 13.2 Company/Branch Management**:
+  - Infrastructure health metrics (CPU, RAM, Disk, DBConnections, Queue size). Multi-tenant company lifecycle (Trial, Active, Suspended, Expired, Archived).
+- **13.4 User & 13.6 Subscription/Licensing Control**:
+  - User profile management & bulk actions. Tiered subscription engine (Trial, Starter, Professional, Enterprise, Custom) enforcing user, branch, storage, and API limits.
+- **13.7 Module & 13.8 Feature Flag Management**:
+  - Zero-downtime enable/disable of system modules (CRM, Sales, Inventory, Projects, Service, Portal, Finance, HR, BI, Automation, Communication). Scoped feature flags (Global, Company, Branch, Role).
+- **13.9 Global Settings & 13.10 Theme Branding**:
+  - Multi-currency, timezone, custom document prefixes (`INV-`, `QTN-`, `ORD-`, `TCK-`, `PRJ-`). Dynamic white-label CSS branding (Logo, Primary/Secondary palette, Favicon).
+- **13.12 Background Job & 13.13 Queue Monitor**:
+  - Real-time background worker & queue monitoring dashboard with 1-click manual retry capability.
+- **13.15 Maintenance Mode & 13.16 Reversible Configuration Audit**:
+  - Granular Maintenance Mode (Platform-wide, Company-level, Module-level). Immutable, reversible configuration audit trail with 1-click rollback.
+- **Database Tables (Phase 13)**:
+  - `companies`, `company_settings`, `branches`, `system_settings`, `feature_flags`, `licenses`, `license_history`, `modules`, `module_status`, `themes`, `master_data`, `maintenance_windows`, `background_jobs`, `job_execution_logs`, `queue_statistics`, `configuration_history`, `system_health_metrics`, `platform_alerts`.
+
+---
+
+
+
+
+
+
+### Phase 6 — Integrations
+- Module Integration Matrix:
+  - **CRM**: WhatsApp, Email, Calendar
+  - **Inventory**: Barcode/QR Scanners, Label Printers
+  - **Payments**: PayU, Razorpay, UPI QR
+  - **Accounting**: Tally Prime, Zoho Books, QuickBooks
+  - **Maps**: Google Maps Platform (Distance & Geocoding)
+  - **Notifications**: WhatsApp, SMS (DLT), Email
+  - **Authentication**: Supabase Auth
+  - **File Storage**: Cloudinary / Supabase Storage
+
+---
+
+### Phase 7 — Enterprise Reports
+- Automated & On-Demand Report Generators:
+  Sales Reports, Quotations Summary, Orders Ledger, Inventory Status, Purchase History, Vendor Performance, Stock Movement, Engineer SLA & Performance, AMC Renewal Forecasts, Warranty Claims Log, Customer Growth, Daily Activity Logs, System Audit Logs, User Login History.
+
+---
+
+### Phase 8 — Security & Governance
+- Security Controls:
+  Role-Based Access Control (RBAC), Supabase Row-Level Security (RLS) policies, Approval Workflows for high-value operations, Comprehensive Audit Logging, Session Management & Timeout Controls, Two-Factor Authentication (2FA), Data Encryption at Rest & In Transit, Automated Hourly Database Backups, API Rate Limiting, GDPR/GST Data Compliance Controls.
+
+---
+
+### Recommended Implementation Sequence & Scope
+1. **CRM Core** (Leads, Customers, Quotations)
+2. **Inventory & Warehouse Management**
+3. **Sales & Purchase Workflows**
+4. **Order-to-Project Automation**
+5. **Field Service & Engineer Management**
+6. **AMC & Warranty**
+7. **Customer Self-Service Portal**
+8. **Analytics & Reporting**
+9. **Security Hardening & Performance Optimization**
+10. **Production Testing & Deployment**
+
+*Estimated Database & System Scope: 40–60 DB Tables, 150–250 APIs, 250–400 UI Components, 100+ Workflow Automations, 40–80 Background Jobs.*
+
+
 
 
 
