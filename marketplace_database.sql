@@ -6,8 +6,10 @@
 --              Automated Settlements Engine, WMS Pickup Requests, and Audit Telemetry.
 -- ============================================================================
 
-CREATE DATABASE tecbunny_marketplace_db;
-\c tecbunny_marketplace_db;
+-- NOTE:
+-- This script is intended to run inside an already selected database
+-- (for example Supabase SQL Editor / migration runner).
+-- Do not use psql meta-commands like `\c` here.
 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";

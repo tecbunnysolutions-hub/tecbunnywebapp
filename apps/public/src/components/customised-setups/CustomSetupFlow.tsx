@@ -20,7 +20,7 @@ import { cn } from "@tecbunny/core/utils";
 import { ROICostEfficiencyBanner } from './ROICostEfficiencyBanner';
 import { useLeadCaptureTrigger } from '@/hooks/use-lead-capture-trigger';
 import { FreeInstallationOfferBanner } from "@tecbunny/ui";
-import { Share2, Sparkles } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 
 export interface CustomSetupFlowProps {
   blueprint: CustomSetupBlueprintSummary | null;
@@ -67,6 +67,7 @@ import { buildPricingCatalog } from "@tecbunny/core/custom-setup-pricing-server"
 
 export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupFlowProps) {
   const isTech = variant === 'tech';
+  const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1);
   const [pricingCatalog, setPricingCatalog] = useState<{
     analog: AnalogPricing;
     ip: IpPricing;
@@ -233,6 +234,11 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
     ? 'min-h-12 items-start py-2.5 text-slate-50 focus:bg-cyan-500/15 focus:text-cyan-100 data-[highlighted]:bg-cyan-500/15 data-[highlighted]:text-cyan-100'
     : undefined;
   const selectMutedClassName = isTech ? 'text-slate-300' : 'text-muted-foreground';
+  const stepLabels = [
+    { id: 1 as const, title: 'Scope' },
+    { id: 2 as const, title: 'Configure' },
+    { id: 3 as const, title: 'Review' },
+  ];
 
   // Handle camera count input changes
   const handleCameraCountChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -1592,66 +1598,6 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
         </CardContent>
       </Card>
 
-      {/* 3. SHARE-FOR-DISCOUNT CONVERSION BOOSTER */}
-      <Card className="mt-8 border-yellow-500/30 bg-yellow-500/5 backdrop-blur-md overflow-hidden relative group">
-        <div className="absolute top-0 right-0 p-2 opacity-20 group-hover:rotate-12 transition-transform">
-          <Share2 className="w-12 h-12 text-yellow-500" />
-        </div>
-        <CardContent className="p-6 relative z-10">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="flex-1">
-              <h4 className="text-lg font-bold text-white flex items-center gap-2">
-                <Sparkles className="h-5 w-5 text-yellow-400" /> Share & Unlock 10% Off
-              </h4>
-              <p className="text-sm text-slate-400 mt-1 leading-relaxed">
-                Publish your technical blueprint to our public explorer and share it with your network to receive an instant <span className="text-yellow-400 font-bold">10% discount</span> on this setup.
-              </p>
-            </div>
-            <div className="flex flex-wrap gap-3">
-              <Button 
-                onClick={async () => {
-                  try {
-                    // 1. Mock publish call (In real scenario, would save to DB)
-                    const blueprintId = `BP-${Math.random().toString(36).substring(2, 9).toUpperCase()}`;
-                    
-                    // 2. Execute secure webhook dispatch
-                    const res = await fetch('/api/auto-offers', {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({ 
-                        action: 'issue_share_discount', 
-                        blueprintId, 
-                        platform: 'X/LinkedIn' 
-                      })
-                    });
-                    
-                    const data = await res.json();
-                    if (data.success) {
-                      toast({ 
-                        title: 'Viral Discount Applied!', 
-                        description: 'Your 10% share-bonus has been added to the calculation.',
-                        variant: 'default'
-                      });
-                      // Logic to trigger cart refresh would go here
-                    }
-                    
-                    // 3. Open share dialog
-                    const shareUrl = `https://tecbunny.com/blueprints/${blueprintId}`;
-                    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(`Check out my custom security architecture on TecBunny! ${shareUrl}`)}`, '_blank');
-                    
-                  } catch (err) {
-                    console.error('Viral trigger failed', err);
-                  }
-                }}
-                className="bg-yellow-500 hover:bg-yellow-400 text-slate-950 font-bold h-12 px-6 rounded-xl shadow-lg shadow-yellow-500/20"
-              >
-                Publish & Share <Share2 className="ml-2 h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
       {isBidding && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
           <div className="bg-[#030712] border border-amber-500/30 rounded-xl max-w-md w-full p-6 shadow-2xl relative">
@@ -1731,64 +1677,490 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
 
   const techLayout = (
     <section className="blueprint-bg bg-[#050b14] py-10">
-      
-
       <div className="flex items-center justify-center mb-12">
         <div className="flex items-center">
-          <div className="step-circle active w-8 h-8 rounded-full border-2 border-white/20 flex items-center justify-center font-bold text-sm bg-[#030712] transition-colors">1</div>
-          <div className="step-line active w-16 h-1 bg-white/10 transition-colors"></div>
-          <div className="step-circle w-8 h-8 rounded-full border-2 border-white/20 flex items-center justify-center font-bold text-sm text-slate-500 bg-[#030712] transition-colors">2</div>
-          <div className="step-line w-16 h-1 bg-white/10 transition-colors"></div>
-          <div className="step-circle w-8 h-8 rounded-full border-2 border-white/20 flex items-center justify-center font-bold text-sm text-slate-500 bg-[#030712] transition-colors">3</div>
+          {stepLabels.map((step, index) => {
+            const isActive = currentStep === step.id;
+            const isComplete = currentStep > step.id;
+
+            return (
+              <div key={step.id} className="flex items-center">
+                <div className={cn(
+                  'step-circle flex h-10 w-10 flex-col items-center justify-center rounded-full border-2 text-xs font-bold transition-colors',
+                  isActive && 'border-primary bg-primary text-primary-foreground',
+                  isComplete && 'border-emerald-400 bg-emerald-400 text-slate-950',
+                  !isActive && !isComplete && 'border-white/20 bg-[#030712] text-slate-500'
+                )}>
+                  <span>{step.id}</span>
+                </div>
+                <div className="ml-3 mr-4 hidden min-w-20 md:block">
+                  <p className={cn('text-xs font-semibold uppercase tracking-[0.18em]', isActive ? 'text-primary' : isComplete ? 'text-emerald-300' : 'text-slate-500')}>
+                    {step.title}
+                  </p>
+                </div>
+                {index < stepLabels.length - 1 && (
+                  <div className={cn('h-1 w-10 rounded-full transition-colors md:w-16', currentStep > step.id ? 'bg-emerald-400' : 'bg-white/10')} />
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-8">
-          <Card className={cardClassName}>
-            <CardHeader className={cardHeaderClassName}>
-              <CardTitle className="text-white">Select Premises Type</CardTitle>
-              <CardDescription className={cardDescriptionClassName}>Choose the environment that best matches your site.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                {([
-                  { value: 'Residential', label: 'Residential', description: 'Villas & Apartments', icon: 'home' },
-                  { value: 'Commercial', label: 'Commercial', description: 'Shops & Offices', icon: 'building' },
-                  { value: 'Industrial', label: 'Industrial', description: 'Warehouses & Factories', icon: 'factory' },
-                ] as const).map((option) => (
-                  <button
-                    key={option.value}
-                    type="button"
-                    onClick={() => setPremiseType(option.value)}
-                    onMouseMove={(event) => {
-                      const rect = event.currentTarget.getBoundingClientRect();
-                      event.currentTarget.style.setProperty('--mouse-x', `${event.clientX - rect.left}px`);
-                      event.currentTarget.style.setProperty('--mouse-y', `${event.clientY - rect.top}px`);
-                    }}
-                    className={cn(
-                      'selection-card border border-border bg-card/60 p-6 rounded-2xl text-center flex flex-col items-center justify-center',
-                      premiseType === option.value && 'selected'
-                    )}
-                  >
-                    <div className="h-12 w-12 rounded-xl bg-muted/30 border border-border flex items-center justify-center mb-4 text-primary">
-                      <span className="text-xl">
-                        {option.icon === 'home' && '🏠'}
-                        {option.icon === 'building' && '🏢'}
-                        {option.icon === 'factory' && '🏭'}
+          {currentStep === 1 && (
+            <>
+              <Card className={cardClassName}>
+                <CardHeader className={cardHeaderClassName}>
+                  <CardTitle className="text-white">Select Premises Type</CardTitle>
+                  <CardDescription className={cardDescriptionClassName}>Choose the environment that best matches your site.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                    {([
+                      { value: 'Residential', label: 'Residential', description: 'Villas & Apartments', icon: 'home' },
+                      { value: 'Commercial', label: 'Commercial', description: 'Shops & Offices', icon: 'building' },
+                      { value: 'Industrial', label: 'Industrial', description: 'Warehouses & Factories', icon: 'factory' },
+                    ] as const).map((option) => (
+                      <button
+                        key={option.value}
+                        type="button"
+                        onClick={() => setPremiseType(option.value)}
+                        onMouseMove={(event) => {
+                          const rect = event.currentTarget.getBoundingClientRect();
+                          event.currentTarget.style.setProperty('--mouse-x', `${event.clientX - rect.left}px`);
+                          event.currentTarget.style.setProperty('--mouse-y', `${event.clientY - rect.top}px`);
+                        }}
+                        className={cn(
+                          'selection-card border border-border bg-card/60 p-6 rounded-2xl text-center flex flex-col items-center justify-center',
+                          premiseType === option.value && 'selected'
+                        )}
+                      >
+                        <div className="h-12 w-12 rounded-xl bg-muted/30 border border-border flex items-center justify-center mb-4 text-primary">
+                          <span className="text-xl">
+                            {option.icon === 'home' && '🏠'}
+                            {option.icon === 'building' && '🏢'}
+                            {option.icon === 'factory' && '🏭'}
+                          </span>
+                        </div>
+                        <h3 className="font-semibold text-foreground">{option.label}</h3>
+                        <p className="text-xs text-muted-foreground mt-2">{option.description}</p>
+                      </button>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className={cardClassName}>
+                <CardHeader className={cardHeaderClassName}>
+                  <CardTitle className={isTech ? 'text-white' : undefined}>Scope your surveillance stack</CardTitle>
+                  <CardDescription className={cardDescriptionClassName}>Start with the deployment path and camera quantity. Detailed hardware options come next.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="space-y-2">
+                    <Label>Choose recorder path</Label>
+                    <RadioGroup value={system} onValueChange={(value: SetupSystem) => setSystem(value)} className="grid gap-3 sm:grid-cols-2">
+                      <Label className={cn('flex cursor-pointer items-center justify-between rounded-lg border p-4', isTech && 'border-border bg-muted/40 text-foreground', system === 'analog' && (isTech ? 'border-primary bg-primary/10' : 'border-primary'))}
+                        htmlFor="system-analog-tech-step">
+                        <div>
+                          <span className="block text-lg font-semibold">Analog (DVR)</span>
+                          <span className={cn('text-xs', isTech ? 'text-muted-foreground' : 'text-muted-foreground')}>Best for coaxial retrofits and budget installations</span>
+                        </div>
+                        <RadioGroupItem value="analog" id="system-analog-tech-step" aria-label="Choose analog DVR system" />
+                      </Label>
+                      <Label className={cn('flex cursor-pointer items-center justify-between rounded-lg border p-4', isTech && 'border-border bg-muted/40 text-foreground', system === 'ip' && (isTech ? 'border-primary bg-primary/10' : 'border-primary'))}
+                        htmlFor="system-ip-tech-step">
+                        <div>
+                          <span className="block text-lg font-semibold">IP (NVR)</span>
+                          <span className={cn('text-xs', isTech ? 'text-muted-foreground' : 'text-muted-foreground')}>PoE-based deployments with smart analytics</span>
+                        </div>
+                        <RadioGroupItem value="ip" id="system-ip-tech-step" aria-label="Choose IP NVR system" />
+                      </Label>
+                    </RadioGroup>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="camera-count-tech-step">Number of cameras</Label>
+                    <Input
+                      id="camera-count-tech-step"
+                      type="number"
+                      min={1}
+                      max={32}
+                      value={cameraCountInput}
+                      onChange={handleCameraCountChange}
+                      onBlur={handleCameraCountBlur}
+                      placeholder="Enter number of cameras"
+                      className={inputClassName}
+                    />
+                    <p className={cn('text-xs', isTech ? 'text-slate-400' : 'text-muted-foreground')}>Supported range: 1 to 32 cameras.</p>
+                  </div>
+
+                  <div className="flex justify-end border-t border-border pt-4">
+                    <Button onClick={() => setCurrentStep(2)} className="bg-primary text-primary-foreground hover:bg-primary/90">
+                      Continue to hardware
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </>
+          )}
+
+          {currentStep === 2 && (
+            <>
+              {activeAnalog ? renderAnalogControls() : renderIpControls()}
+
+              <Card className={cardClassName}>
+                <CardHeader className={cardHeaderClassName}>
+                  <CardTitle className={isTech ? 'text-white' : undefined}>Storage & Add-ons</CardTitle>
+                  <CardDescription className={cardDescriptionClassName}>Select storage, monitor options, and finishing accessories for the deployment.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="hdd-option-step">Surveillance HDD</Label>
+                    <Select value={hddId} onValueChange={(value) => setHddId(value)}>
+                      <SelectTrigger id="hdd-option-step" className={selectTriggerClassName}>
+                        <SelectValue placeholder="Select drive capacity" />
+                      </SelectTrigger>
+                      <SelectContent className={selectContentClassName}>
+                        {selectableHddOptions.map((option: PriceEntry) => (
+                          <SelectItem key={option.id} value={option.id} className={selectItemClassName}>
+                            <div className="flex w-full flex-col gap-0.5 leading-normal">
+                              <span>{option.label}</span>
+                              <span className={cn('text-xs', selectMutedClassName)}>
+                                {option.mrp ? `${formatCurrency(option.mrp)} MRP · ` : ''}{formatCurrency(option.sale)} sale
+                              </span>
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <Card className={cardClassName}>
+                    <CardHeader>
+                      <CardTitle className={cardHeaderClassName}>Optional Accessories</CardTitle>
+                      <CardDescription className={cardDescriptionClassName}>Add-on options for your setup</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className={cn('flex items-start gap-3 rounded-md border p-3', isTech && 'border-white/10 bg-white/5')}>
+                        <Checkbox id="monitor-included-step" checked={monitorIncluded} onCheckedChange={(checked) => setMonitorIncluded(Boolean(checked))} />
+                        <div>
+                          <Label htmlFor="monitor-included-step" className="text-sm font-semibold">Include Surveillance Monitor</Label>
+                          <p className={cn('text-xs', isTech ? 'text-slate-400' : 'text-muted-foreground')}>
+                            Add a surveillance monitor to view your camera feeds on-site
+                          </p>
+                        </div>
+                      </div>
+
+                      {monitorIncluded && (
+                        <div className="space-y-2">
+                          <Label htmlFor="monitor-select-step">Monitor Size</Label>
+                          <Select value={monitorId} onValueChange={setMonitorId}>
+                            <SelectTrigger id="monitor-select-step" className={selectTriggerClassName}>
+                              <SelectValue placeholder="Select monitor size" />
+                            </SelectTrigger>
+                            <SelectContent className={selectContentClassName}>
+                              {pricingCatalog.monitorOptions?.map((option: PriceEntry) => {
+                                const resolved = resolveAccessoryPrice(option.id, option.mrp ?? 0, option.sale, accessoryPricing);
+                                return (
+                                  <SelectItem key={option.id} value={option.id} className={selectItemClassName}>
+                                    <div className="flex w-full flex-col gap-0.5 leading-normal">
+                                      <span>{option.label}</span>
+                                      <span className={cn('text-xs', selectMutedClassName)}>
+                                        {resolved.mrp ? `${formatCurrency(resolved.mrp)} MRP · ` : ''}{formatCurrency(resolved.sale)} sale
+                                      </span>
+                                    </div>
+                                  </SelectItem>
+                                );
+                              })}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      )}
+
+                      {monitorIncluded && (
+                        <div className="space-y-2 mt-4">
+                          <Label>Monitor Stand</Label>
+                          <RadioGroup
+                            value={monitorStand}
+                            onValueChange={(value: 'none' | 'static' | 'movable') => setMonitorStand(value)}
+                            className="grid gap-2"
+                          >
+                            <Label className={cn('flex cursor-pointer items-center justify-between rounded-md border p-3', isTech && 'border-border bg-muted/40 text-foreground', monitorStand === 'none' && (isTech ? 'border-primary bg-primary/10' : 'border-primary'))}>
+                              <div>
+                                <span className="block font-medium">Included Table Stand</span>
+                                <span className={cn('text-xs', isTech ? 'text-muted-foreground' : 'text-muted-foreground')}>Default</span>
+                              </div>
+                              <RadioGroupItem value="none" />
+                            </Label>
+                            <Label className={cn('flex cursor-pointer items-center justify-between rounded-md border p-3', isTech && 'border-border bg-muted/40 text-foreground', monitorStand === 'static' && (isTech ? 'border-primary bg-primary/10' : 'border-primary'))}>
+                              <div>
+                                <span className="block font-medium">Static Wall Mount</span>
+                                <span className={cn('text-xs', isTech ? 'text-muted-foreground' : 'text-muted-foreground')}>+₹399 hardware, +₹299 installation</span>
+                              </div>
+                              <RadioGroupItem value="static" />
+                            </Label>
+                            <Label className={cn('flex cursor-pointer items-center justify-between rounded-md border p-3', isTech && 'border-border bg-muted/40 text-foreground', monitorStand === 'movable' && (isTech ? 'border-primary bg-primary/10' : 'border-primary'))}>
+                              <div>
+                                <span className="block font-medium">Movable Wall Mount</span>
+                                <span className={cn('text-xs', isTech ? 'text-muted-foreground' : 'text-muted-foreground')}>+₹799 hardware, +₹299 installation</span>
+                              </div>
+                              <RadioGroupItem value="movable" />
+                            </Label>
+                          </RadioGroup>
+                        </div>
+                      )}
+
+                      <div className={cn('flex items-start gap-3 rounded-md border p-3', isTech && 'border-white/10 bg-white/5')}>
+                        <Checkbox id="spike-guard-step" checked={spikeGuardIncluded} onCheckedChange={(checked) => setSpikeGuardIncluded(Boolean(checked))} />
+                        <div>
+                          <Label htmlFor="spike-guard-step" className="text-sm font-semibold">{FALLBACK_SPIKE_GUARD_OPTION.label}</Label>
+                          <p className={cn('text-xs', isTech ? 'text-slate-400' : 'text-muted-foreground')}>
+                            +{formatCurrency(resolveAccessoryPrice('spike-guard', FALLBACK_SPIKE_GUARD_OPTION.mrp ?? 0, FALLBACK_SPIKE_GUARD_OPTION.sale, accessoryPricing).sale)}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="rack-select-step">Rack Cabinet (Optional)</Label>
+                        <Select value={rackId ?? 'none'} onValueChange={(val) => setRackId(val === 'none' ? null : val)}>
+                          <SelectTrigger id="rack-select-step" className={selectTriggerClassName}>
+                            <SelectValue placeholder="Select or skip rack cabinet" />
+                          </SelectTrigger>
+                          <SelectContent className={selectContentClassName}>
+                            <SelectItem value="none" className={selectItemClassName}>
+                              <span>None (Skip Rack)</span>
+                            </SelectItem>
+                            {pricingCatalog.rackOptions?.map((option: PriceEntry) => {
+                              const resolved = resolveAccessoryPrice(option.id, option.mrp ?? 0, option.sale, accessoryPricing);
+                              return (
+                                <SelectItem key={option.id} value={option.id} className={selectItemClassName}>
+                                  <div className="flex w-full flex-col gap-0.5 leading-normal">
+                                    <span>{option.label}</span>
+                                    <span className={cn('text-xs', selectMutedClassName)}>
+                                      {resolved.mrp ? `${formatCurrency(resolved.mrp)} MRP · ` : ''}{formatCurrency(resolved.sale)} sale
+                                    </span>
+                                  </div>
+                                </SelectItem>
+                              );
+                            })}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="conduit-select-step">Conduit Pipe Type (Optional)</Label>
+                        <Select value={conduitPipeId ?? 'none'} onValueChange={(val) => setConduitPipeId(val === 'none' ? null : val)}>
+                          <SelectTrigger id="conduit-select-step" className={selectTriggerClassName}>
+                            <SelectValue placeholder="Select or skip conduit pipe" />
+                          </SelectTrigger>
+                          <SelectContent className={selectContentClassName}>
+                            <SelectItem value="none" className={selectItemClassName}>
+                              <span>None (Skip Conduit)</span>
+                            </SelectItem>
+                            {pricingCatalog.conduitOptions?.map((option: PriceEntry) => {
+                              const resolved = resolveAccessoryPrice(option.id, option.mrp ?? 0, option.sale, accessoryPricing);
+                              return (
+                                <SelectItem key={option.id} value={option.id} className={selectItemClassName}>
+                                  <span>{option.label.split(' (')[0]} (₹{resolved.sale}/mtr)</span>
+                                </SelectItem>
+                              );
+                            })}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      {conduitPipeId && (
+                        <div className="space-y-2">
+                          <Label htmlFor="conduit-meters-step">Length in Meters</Label>
+                          <Input
+                            id="conduit-meters-step"
+                            type="number"
+                            min={0}
+                            max={500}
+                            value={conduitMeters}
+                            onChange={(e) => setConduitMeters(Math.max(0, Number.parseInt(e.target.value, 10) || 0))}
+                            placeholder="Enter length in meters"
+                            className={inputClassName}
+                          />
+                        </div>
+                      )}
+
+                      <div className="flex flex-col gap-3 border-t border-border pt-4 sm:flex-row sm:justify-between">
+                        <Button variant="outline" onClick={() => setCurrentStep(1)}>
+                          Back to scope
+                        </Button>
+                        <Button onClick={() => setCurrentStep(3)} className="bg-primary text-primary-foreground hover:bg-primary/90">
+                          Review proposal
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </CardContent>
+              </Card>
+            </>
+          )}
+
+          {currentStep === 3 && (
+            <>
+              {activeOffer && (
+                <div className={cn('rounded-xl overflow-hidden text-white shadow-xl', isTech ? 'bg-gradient-to-r from-emerald-500/20 to-teal-600/20 border border-emerald-500/30' : 'bg-gradient-to-r from-emerald-500 to-teal-600 shadow-emerald-500/20')}>
+                  <div className="p-4 sm:p-6 relative">
+                    <div className="absolute top-0 right-0 p-4 opacity-20">
+                      <Sparkles className="w-16 h-16" />
+                    </div>
+                    <h3 className={cn('text-xl font-bold mb-1', isTech && 'text-emerald-400')}>{activeOffer.title}</h3>
+                    <p className={cn('text-sm mb-4 max-w-lg', isTech ? 'text-emerald-100/70' : 'text-emerald-50')}>{activeOffer.description}</p>
+                    <div className="inline-flex items-center bg-black/20 rounded-full px-4 py-1.5 text-sm font-semibold backdrop-blur-sm border border-white/10">
+                      <span className="animate-pulse mr-2 w-2 h-2 rounded-full bg-red-400"></span>
+                      Offer Expires in {Math.max(0, Math.ceil((new Date(activeOffer.endDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)))} days
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <Card className="border-primary/30 bg-primary/5">
+                <CardHeader className={cardHeaderClassName}>
+                  <CardTitle className={isTech ? 'text-white' : undefined}>Proposal review</CardTitle>
+                  <CardDescription className={cardDescriptionClassName}>Review the calculated totals and choose the next action for this setup.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <p className={cn('flex items-center justify-between text-sm font-bold', isTech ? 'text-slate-200' : 'text-foreground')}>
+                      <span>1. {system === 'analog' ? 'Analog' : 'IP'} {cameraCount} Channel Complete Setup</span>
+                      <span className="flex flex-col items-end sm:flex-row sm:items-center gap-1 sm:gap-3">
+                        <span className="text-xs text-muted-foreground line-through decoration-red-500/50">MRP: {formatCurrency(totals.system.mrp)}</span>
+                        <span className="text-emerald-600 dark:text-emerald-400">Sale: {formatCurrency(totals.system.sale)}</span>
+                      </span>
+                    </p>
+                    <ul className={cn('space-y-1 text-sm pl-4 leading-relaxed', isTech ? 'text-slate-400' : 'text-muted-foreground')}>
+                      {totals.system.breakdown.map((line) => (
+                        <li key={line}>- {line}</li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <div className={cn('grid gap-3 text-sm font-bold', isTech ? 'text-slate-300' : 'text-foreground')}>
+                    <div className="flex items-center justify-between">
+                      <span>2. {totals.hdd.label}</span>
+                      <span className="flex flex-col items-end sm:flex-row sm:items-center gap-1 sm:gap-3">
+                        <span className="text-xs text-muted-foreground line-through decoration-red-500/50">MRP: {formatCurrency(totals.hdd.mrp)}</span>
+                        <span className="text-emerald-600 dark:text-emerald-400">Sale: {formatCurrency(totals.hdd.sale)}</span>
                       </span>
                     </div>
-                    <h3 className="font-semibold text-foreground">{option.label}</h3>
-                    <p className="text-xs text-muted-foreground mt-2">{option.description}</p>
-                  </button>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+                    <div className="flex items-center justify-between">
+                      <span>3. Monitor ({totals.monitor.included ? totals.monitor.label : 'Not included'})</span>
+                      {totals.monitor.included ? (
+                        <span className="flex flex-col items-end sm:flex-row sm:items-center gap-1 sm:gap-3">
+                          <span className="text-xs text-muted-foreground line-through decoration-red-500/50">MRP: {formatCurrency(totals.monitor.mrp)}</span>
+                          <span className="text-emerald-600 dark:text-emerald-400">Sale: {formatCurrency(totals.monitor.sale)}</span>
+                        </span>
+                      ) : (
+                        <Badge variant="outline" className={isTech ? 'border-white/20 text-slate-300' : undefined}>Not included</Badge>
+                      )}
+                    </div>
+                    {(totals.wallMount.included || totals.spikeGuard.included || totals.rack.selected || totals.conduit.selected) && (
+                      <div className="flex items-center justify-between">
+                        <span>4. Accessories & Hardware</span>
+                        <span className="flex flex-col items-end sm:flex-row sm:items-center gap-1 sm:gap-3">
+                          <span className="text-xs text-muted-foreground line-through decoration-red-500/50">MRP: {formatCurrency(totals.wallMount.mrp + totals.spikeGuard.mrp + totals.rack.mrp + totals.conduit.mrp)}</span>
+                          <span className="text-emerald-600 dark:text-emerald-400">Sale: {formatCurrency(totals.wallMount.sale + totals.spikeGuard.sale + totals.rack.sale + totals.conduit.sale)}</span>
+                        </span>
+                      </div>
+                    )}
+                    <div className="flex items-center justify-between">
+                      <span>5. Installation & Cable Setup</span>
+                      {totals.installation.included ? (
+                        <span className="flex flex-col items-end sm:flex-row sm:items-center gap-1 sm:gap-3">
+                          <span className="text-xs text-muted-foreground line-through decoration-red-500/50">MRP: {formatCurrency(totals.installation.mrp)}</span>
+                          <span className="text-emerald-600 dark:text-emerald-400">Sale: {formatCurrency(totals.installation.sale)}</span>
+                        </span>
+                      ) : (
+                        <Badge variant="outline" className={isTech ? 'border-white/20 text-slate-300' : undefined}>Not included</Badge>
+                      )}
+                    </div>
+                  </div>
 
-          {/* Scope card removed per request */}
+                  {totals.appliedOffer && (
+                    <div className={cn('flex flex-col sm:flex-row sm:items-center justify-between font-extrabold mt-4 p-3 rounded-md border', isTech ? 'bg-emerald-950/30 text-emerald-400 border-emerald-900/50' : 'bg-emerald-50 text-emerald-700 border-emerald-200')}>
+                      <div className="flex items-center gap-2 mb-1 sm:mb-0">
+                        <Sparkles className="w-4 h-4" />
+                        <span>Special Offer Applied: {totals.appliedOffer.title}</span>
+                      </div>
+                      <span className="text-right">- {formatCurrency(totals.appliedOffer.savings)}</span>
+                    </div>
+                  )}
 
-          {defaultLayout}
+                  {totals.installation.included && !totals.appliedOffer && (
+                    <div className="pt-2">
+                      <FreeInstallationOfferBanner 
+                        installationPrice={totals.installation.sale} 
+                        isEligible={true}
+                        variant="card"
+                      />
+                    </div>
+                  )}
+
+                  <div className={cn('rounded-lg p-4 text-sm shadow-inner', isTech ? 'bg-white/5 text-slate-200' : 'bg-white/70')}>
+                    {totals.appliedOffer && (
+                      <p className={cn('flex items-center justify-between text-sm mb-1', isTech ? 'text-slate-400 line-through' : 'text-slate-500 line-through')}>
+                        <span>Original Total</span>
+                        <span>{formatCurrency(totals.appliedOffer.originalSale)}</span>
+                      </p>
+                    )}
+                    <p className={cn('flex items-center justify-between text-base font-semibold', isTech ? 'text-white' : 'text-slate-900')}>
+                      <span>Sale Total</span>
+                      <span>{formatCurrency(totals.overall.sale)}</span>
+                    </p>
+                    <p className={cn('flex items-center justify-between text-sm', isTech ? 'text-slate-400' : 'text-slate-600')}>
+                      <span>MRP Total</span>
+                      <span>{formatCurrency(totals.overall.mrp)}</span>
+                    </p>
+                    <p className={cn('flex items-center justify-between text-sm', isTech ? 'text-emerald-300' : 'text-emerald-600')}>
+                      <span>Savings</span>
+                      <span>
+                        {formatCurrency(totals.overall.discountAmount)} ({totals.overall.discountPercent >= 10 ? totals.overall.discountPercent.toFixed(0) : totals.overall.discountPercent.toFixed(1)}%)
+                      </span>
+                    </p>
+                    <div className="mt-3 flex flex-col gap-3 border-t border-border pt-4 sm:flex-row sm:items-center sm:justify-between">
+                      <Button variant="outline" onClick={() => setCurrentStep(2)}>
+                        Back to hardware
+                      </Button>
+                      <div className="flex gap-2 flex-wrap justify-end">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className={isTech ? 'border-amber-500/50 text-amber-400 hover:bg-amber-500/10' : 'text-amber-600 border-amber-200'}
+                          onClick={() => setIsBidding(true)}
+                        >
+                          Negotiate Price
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant={isTech ? 'secondary' : 'outline'}
+                          onClick={handleInlineQuoteDownload}
+                          disabled={quoteDownloading}
+                        >
+                          {quoteDownloading ? 'Preparing…' : 'Download Quote'}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="default"
+                          onClick={handleBookNow}
+                          className={isTech ? 'bg-primary text-primary-foreground hover:bg-primary/90 font-bold' : ''}
+                        >
+                          Book Installation
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <ROICostEfficiencyBanner savingsPercentage={Math.round(totals.overall.discountPercent)} isTech={isTech} />
+            </>
+          )}
         </div>
 
         <div className="lg:col-span-1">
@@ -1837,32 +2209,43 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
 
               <div className="mt-6 pt-4 border-t border-border">
                 <div className="flex justify-between items-center mb-4">
-                  <span className="text-muted-foreground text-sm">Estimated Total</span>
+                  <span className="text-muted-foreground text-sm">{currentStep === 3 ? 'Final Total' : 'Estimated Total'}</span>
                   <span className="text-xl font-bold text-foreground">{formatCurrency(totals.overall.sale)}</span>
                 </div>
                 <div className="flex flex-col gap-2">
-                  <Button 
-                    onClick={handleBookNow} 
-                    className="w-full bg-primary hover:bg-primary/90 text-white font-bold uppercase tracking-wider"
-                  >
-                    Book Installation
-                  </Button>
-                  <Button 
-                    onClick={() => setIsBidding(true)} 
-                    variant="outline"
-                    className="w-full border-amber-500/30 text-amber-500 hover:bg-amber-500/10 font-bold uppercase tracking-wider"
-                  >
-                    Negotiate Price
-                  </Button>
-                  <Button 
-                    onClick={handleBookSiteInspection} 
-                    variant="secondary"
-                    className="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold uppercase tracking-wider border border-slate-600"
-                  >
-                    Book Site Inspection (₹999)
-                  </Button>
+                  {currentStep < 3 ? (
+                    <Button
+                      onClick={() => setCurrentStep(currentStep === 1 ? 2 : 3)}
+                      className="w-full bg-primary hover:bg-primary/90 text-white font-bold uppercase tracking-wider"
+                    >
+                      {currentStep === 1 ? 'Continue to hardware' : 'Review proposal'}
+                    </Button>
+                  ) : (
+                    <>
+                      <Button 
+                        onClick={handleBookNow} 
+                        className="w-full bg-primary hover:bg-primary/90 text-white font-bold uppercase tracking-wider"
+                      >
+                        Book Installation
+                      </Button>
+                      <Button 
+                        onClick={() => setIsBidding(true)} 
+                        variant="outline"
+                        className="w-full border-amber-500/30 text-amber-500 hover:bg-amber-500/10 font-bold uppercase tracking-wider"
+                      >
+                        Negotiate Price
+                      </Button>
+                      <Button 
+                        onClick={handleBookSiteInspection} 
+                        variant="secondary"
+                        className="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold uppercase tracking-wider border border-slate-600"
+                      >
+                        Book Site Inspection (₹999)
+                      </Button>
+                    </>
+                  )}
                   <div className="text-[10px] text-muted-foreground text-center mt-1 leading-tight space-y-1">
-                    <p className="font-semibold text-amber-500/80">⚠️ Ensure to generate quote and negotiate before booking site visit.</p>
+                    <p className="font-semibold text-amber-500/80">⚠️ Review the proposal and pricing before booking a paid site visit.</p>
                     <p>* ₹999/- will be adjusted on your bill if order is confirmed. The ₹999 is treated as the Visiting Charge; cancellation due to high prices will NOT be refunded.</p>
                   </div>
                 </div>

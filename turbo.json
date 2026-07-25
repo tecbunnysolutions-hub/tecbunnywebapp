@@ -12,6 +12,7 @@
     "INFOBIP_WHATSAPP_TEMPLATE_LANGUAGE",
     "INFOBIP_WHATSAPP_TEMPLATE_NAME",
     "NODE_ENV",
+    "OPENAI_API_KEY",
     "OTP_SECRET_PEPPER",
     "PAYU_CLIENT_ID",
     "PAYU_CLIENT_SECRET",
@@ -19,6 +20,7 @@
     "PAYU_MERCHANT_KEY",
     "PAYU_MERCHANT_SALT",
     "REDIS_URL",
+    "SARVAM_API_KEY",
     "SESSION_SECRET",
     "SMTP_FROM",
     "SMTP_HOST",
@@ -58,6 +60,28 @@
         "!../../apps/**"
       ],
       "outputs": [".next/**", "!.next/cache/**", "dist/**", "build/**"]
+    },
+    "@tecbunny/config#build": {
+      "dependsOn": ["^build", "lint"],
+      "inputs": [
+        "src/**",
+        "package.json",
+        "tsconfig.json",
+        "eslint.config.*",
+        "!../../apps/**"
+      ],
+      "outputs": []
+    },
+    "@tecbunny/rpc#build": {
+      "dependsOn": ["^build", "lint"],
+      "inputs": [
+        "src/**",
+        "package.json",
+        "tsconfig.json",
+        "eslint.config.*",
+        "!../../apps/**"
+      ],
+      "outputs": []
     },
     "lint": {
       "dependsOn": ["^lint"],

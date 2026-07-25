@@ -69,22 +69,58 @@ export default async function CustomisedSetupsPage({
           </p>
           <div className="mt-6 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
             <Button asChild size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90">
-              <Link href="/contact">Request a site survey</Link>
+              <Link href="#setup-planner">Start your setup</Link>
             </Button>
             <Button asChild size="lg" variant="outline" className="border-border text-foreground hover:bg-muted">
-              <Link href="mailto:solutions@tecbunny.com?subject=Customised%20Setup%20Enquiry">Email solutions desk</Link>
+              <Link href="/contact">Request a site survey</Link>
             </Button>
             <RefreshButton />
           </div>
         </div>
       </section>
 
-      <section className="px-4 pb-16 sm:px-6 lg:px-8">
-        <div className="max-w-5xl mx-auto mb-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-          <QuoteCTA />
-          <QuotationStatusLookup />
+      <section className="border-b border-border bg-muted/10 py-10">
+        <div className="mx-auto grid max-w-6xl gap-6 px-4 sm:px-6 lg:grid-cols-3 lg:px-8">
+          <div className="rounded-2xl border border-border bg-card/70 p-6">
+            <p className="text-sm font-semibold text-primary">1. Scope the site</p>
+            <p className="mt-2 text-sm text-muted-foreground">Choose the premises type, surveillance path, and approximate camera count before diving into component details.</p>
+          </div>
+          <div className="rounded-2xl border border-border bg-card/70 p-6">
+            <p className="text-sm font-semibold text-primary">2. Configure hardware</p>
+            <p className="mt-2 text-sm text-muted-foreground">Adjust recorder, cabling, storage, and accessories with live pricing matched to your selected capacity.</p>
+          </div>
+          <div className="rounded-2xl border border-border bg-card/70 p-6">
+            <p className="text-sm font-semibold text-primary">3. Review and proceed</p>
+            <p className="mt-2 text-sm text-muted-foreground">Review the blueprint, download a quote, negotiate pricing, or book installation once the proposal looks right.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="setup-planner" className="px-4 py-12 sm:px-6 lg:px-8">
+        <div className="mx-auto mb-8 max-w-6xl">
+          <div className="max-w-3xl space-y-3">
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-primary">Setup Planner</p>
+            <h2 className="text-3xl font-semibold text-foreground">Start with the essentials, then refine the build.</h2>
+            <p className="text-muted-foreground">
+              The configurator now follows the same sequence our solutions team uses: qualify the site, choose the hardware path, then confirm pricing and next steps.
+            </p>
+          </div>
         </div>
         <CustomSetupFlow key={refreshKey} blueprint={blueprint} variant="tech" />
+      </section>
+
+      <section className="border-t border-border bg-muted/10 py-12">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+          <div className="mb-6 max-w-3xl space-y-2">
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-primary">Quote Tools</p>
+            <h2 className="text-2xl font-semibold text-foreground">Already know what you need?</h2>
+            <p className="text-muted-foreground">Generate a formal quote or look up an existing quotation without interrupting the main setup flow.</p>
+          </div>
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <QuoteCTA />
+            <QuotationStatusLookup />
+          </div>
+        </div>
       </section>
 
       <section className="border-t border-border bg-muted/20 py-14">
