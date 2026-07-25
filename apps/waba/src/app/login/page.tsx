@@ -17,11 +17,14 @@ export default function LoginPage() {
     setError("");
     
     try {
-      if (email === 'superadmin' || email === 'Shubham6010' || email === process.env.NEXT_PUBLIC_SUPERADMIN_USER_ID) {
+      const configuredSuperadminId = (process.env.NEXT_PUBLIC_SUPERADMIN_USER_ID || '').trim().toLowerCase();
+      const isSuperadminLogin = configuredSuperadminId.length > 0 && email.trim().toLowerCase() === configuredSuperadminId;
+
+      if (isSuperadminLogin) {
         const res = await fetch('/api/auth/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: 'superadmin', password, isSuperadmin: true })
+          body: JSON.stringify({ email, password, isSuperadmin: true })
         });
         
         if (res.ok) {

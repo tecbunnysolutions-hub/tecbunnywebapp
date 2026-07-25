@@ -3,6 +3,7 @@ import { supabase } from '@/lib/supabase';
 import { sendWhatsAppMessage, sendWhatsAppLocation } from '@/services/infobipService';
 import { requireApiRole } from '@tecbunny/core/server-role-guard';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { canAccessConversationSender, getAccessibleConversationSenders, resolveActorScope } from '@/lib/authorization-scope';
 
 export const dynamic = 'force-dynamic';
 
@@ -45,10 +46,18 @@ export async function GET(req: Request) {
     if (auth.error) return auth.error;
     if (auth.role === 'customer') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
+    const scope = await resolveActorScope(auth.session.user.id, auth.role);
+    if (!scope) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+
     const { searchParams } = new URL(req.url);
     const conversationId = searchParams.get('conversation');
 
     if (conversationId) {
+      const allowed = await canAccessConversationSender(scope, conversationId);
+      if (!allowed) {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+      }
+
       const { limit, offset } = getPagination(searchParams, { limit: 100, maxLimit: 200 });
       const { data: messages, error } = await supabase
         .from('Message')
@@ -70,12 +79,30 @@ export async function GET(req: Request) {
 
     const { limit, offset } = getPagination(searchParams, { limit: 50, maxLimit: 100 });
 
+    const scopedSenderNumbers = await getAccessibleConversationSenders(scope);
+    if (scopedSenderNumbers && scopedSenderNumbers.length === 0) {
+      return NextResponse.json({
+        conversations: [],
+        pagination: {
+          limit,
+          offset,
+          hasMore: false,
+        },
+      });
+    }
+
     // Note: Since Prisma's relation 'messages' was used, we fetch conversations, then fetch latest message for each.
-    const { data: conversations, error: convError } = await supabase
+    let conversationsQuery = supabase
       .from('Conversation')
       .select('*')
       .order('last_interaction_timestamp', { ascending: false })
       .range(offset, offset + limit - 1);
+
+    if (scopedSenderNumbers) {
+      conversationsQuery = conversationsQuery.in('sender_number', scopedSenderNumbers);
+    }
+
+    const { data: conversations, error: convError } = await conversationsQuery;
 
     if (convError) throw convError;
 
@@ -128,11 +155,19 @@ export async function POST(req: Request) {
     if (auth.error) return auth.error;
     if (auth.role === 'customer') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
+    const scope = await resolveActorScope(auth.session.user.id, auth.role);
+    if (!scope) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+
     const body = await req.json();
     const { to, text, location } = body;
 
     if (!to) {
       return NextResponse.json({ error: 'Missing "to"' }, { status: 400 });
+    }
+
+    const allowed = await canAccessConversationSender(scope, String(to));
+    if (!allowed) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
     let result;
@@ -172,7 +207,6 @@ Manager's Draft:
           }
 
           finalMessage = parsed.rewritten_message || text;
-          console.log(`[AI Draft] Original: ${text} | Rewritten: ${finalMessage}`);
         } catch (err) {
           console.error("AI Draft Rewrite failed, falling back to original message:", err);
         }

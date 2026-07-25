@@ -82,7 +82,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    if (!role || !['admin', 'manager', 'superadmin'].includes(role)) {
+    if (!role || role !== 'superadmin') {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
@@ -152,7 +152,7 @@ export const POST = withValidation(CreateUserSchema, async (request: NextRequest
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    if (!role || !['admin', 'manager', 'superadmin'].includes(role)) {
+    if (!role || role !== 'superadmin') {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
@@ -193,7 +193,7 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    if (!role || !['admin', 'manager', 'superadmin'].includes(role)) {
+    if (!role || role !== 'superadmin') {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
@@ -230,7 +230,7 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    if (!role || !['admin', 'superadmin'].includes(role)) {
+    if (!role || role !== 'superadmin') {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 

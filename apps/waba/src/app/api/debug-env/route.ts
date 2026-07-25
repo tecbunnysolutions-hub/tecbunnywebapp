@@ -4,7 +4,11 @@ import { requireApiRole } from '@tecbunny/core/server-role-guard';
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
-  const auth = await requireApiRole({ allowedRoles: ['admin', 'superadmin'] });
+  if (process.env.NODE_ENV === 'production') {
+    return NextResponse.json({ error: 'Not found' }, { status: 404 });
+  }
+
+  const auth = await requireApiRole({ allowedRoles: ['superadmin'] });
   if (auth.error) return auth.error;
 
   return NextResponse.json({

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireApiRole } from '@tecbunny/core/server-role-guard';
+import { canAccessConversationSender, resolveActorScope } from '@/lib/authorization-scope';
 
 type CustomerOrderSummary = Record<string, never>;
 type CustomerInvoiceSummary = Record<string, never>;
@@ -13,11 +14,19 @@ export async function GET(req: Request) {
     if (auth.error) return auth.error;
     if (auth.role === 'customer') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
+    const scope = await resolveActorScope(auth.session.user.id, auth.role);
+    if (!scope) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+
     const url = new URL(req.url);
     const phone = url.searchParams.get('phone');
 
     if (!phone) {
       return NextResponse.json({ error: 'Missing phone parameter' }, { status: 400 });
+    }
+
+    const allowed = await canAccessConversationSender(scope, phone);
+    if (!allowed) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
     // Lazy load CRM Leads
