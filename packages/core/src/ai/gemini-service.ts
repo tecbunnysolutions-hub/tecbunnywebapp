@@ -56,45 +56,6 @@ async function generateOpenAIText(prompt: string, options: { temperature?: numbe
   }
 }
 
-async function generateOpenRouterText(prompt: string, options: { temperature?: number; maxOutputTokens?: number }): Promise<string> {
-  const apiKey = process.env.OPENROUTER_API_KEY;
-  if (!apiKey) throw new Error('OPENROUTER_API_KEY is not set');
-
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 45000);
-
-  try {
-    const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'HTTP-Referer': process.env.NEXT_PUBLIC_SITE_URL || 'https://tecbunny.com',
-        'X-Title': 'TecBunny Solutions',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'openai/gpt-4o',
-        messages: [{ role: 'user', content: prompt }],
-        temperature: options.temperature ?? 0.4,
-        max_tokens: options.maxOutputTokens ?? 2000,
-      }),
-      signal: controller.signal,
-    });
-
-    if (!res.ok) {
-      const errText = await res.text();
-      throw new Error(`OpenRouter API error ${res.status}: ${errText}`);
-    }
-
-    const data = await res.json();
-    const text = data.choices?.[0]?.message?.content;
-    if (!text) throw new Error('OpenRouter returned empty response');
-    return text.trim();
-  } finally {
-    clearTimeout(timeoutId);
-  }
-}
-
 export async function generateGeminiText({
   prompt,
   model = DEFAULT_GEMINI_MODEL,
@@ -107,23 +68,14 @@ export async function generateGeminiText({
     try {
       return await generateOpenAIText(prompt, { temperature, maxOutputTokens });
     } catch (err: any) {
-      console.warn('[AI Service] OpenAI primary failed, falling back to OpenRouter/Gemini:', err?.message || err);
+      console.warn('[AI Service] OpenAI primary failed, falling back to direct Gemini API:', err?.message || err);
     }
   }
 
-  // 2. Secondary: Use OpenRouter if configured
-  if (process.env.OPENROUTER_API_KEY) {
-    try {
-      return await generateOpenRouterText(prompt, { temperature, maxOutputTokens });
-    } catch (err: any) {
-      console.warn('[AI Service] OpenRouter secondary failed, falling back to direct Gemini API:', err?.message || err);
-    }
-  }
-
-  // 3. Fallback / Direct: Native Gemini API
+  // 2. Direct: Native Gemini API
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
-    throw new Error('No valid AI API key (OPENAI_API_KEY, OPENROUTER_API_KEY, or GEMINI_API_KEY) is configured.');
+    throw new Error('No valid AI API key (OPENAI_API_KEY or GEMINI_API_KEY) is configured.');
   }
   const modelName = model.startsWith('models/') ? model.slice('models/'.length) : model;
 
