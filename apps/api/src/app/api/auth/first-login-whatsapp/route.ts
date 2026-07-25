@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { logger } from "@tecbunny/core";
 import { sendWelcomeNotification, sendWhatsAppNotification } from "@tecbunny/core/whatsapp-service";
+import { createServerClient } from '@tecbunny/database/server';
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co';
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY || '';
@@ -52,6 +53,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'userId is required' }, { status: 400 });
     }
 
+    // Route is allowlisted in middleware for login flow stability, so enforce
+    // identity explicitly here to prevent cross-user abuse.
+    const supabaseSessionClient = await createServerClient();
+    const { data: { user: sessionUser }, error: sessionError } = await supabaseSessionClient.auth.getUser();
+    if (sessionError || !sessionUser) {
+      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+    }
+    if (sessionUser.id !== userId) {
+      return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 });
+    }
+
     const { data: profile, error: profileError } = await supabaseAdmin
       .from('profiles')
       .select('*')
@@ -97,13 +109,13 @@ export async function POST(request: NextRequest) {
     if (targetProfile.first_login_whatsapp_sent) {
       logger.info('first_login_whatsapp.already_sent', {
         userId,
-        sentAt: profile.first_login_notified_at
+        sentAt: targetProfile.first_login_notified_at
       });
 
       return NextResponse.json({
         success: false,
         alreadySent: true,
-        sentAt: profile.first_login_notified_at ?? null
+        sentAt: targetProfile.first_login_notified_at ?? null
       });
     }
 
@@ -122,7 +134,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, alreadySent: true, error: 'Concurrent request blocked' });
     }
 
-    const targetPhone = (phone || profile.mobile || '').trim();
+    const targetPhone = (phone || targetProfile.mobile || '').trim();
 
     if (!targetPhone) {
       logger.warn('first_login_whatsapp.missing_phone', { userId });
@@ -131,7 +143,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'No valid phone number available' }, { status: 400 });
     }
 
-    const customerName = (name || profile.name || '').trim() || 'there';
+    const customerName = (name || targetProfile.name || '').trim() || 'there';
 
     let sendResult: { success: boolean; error?: string; messageId?: string } = { success: false };
     try {

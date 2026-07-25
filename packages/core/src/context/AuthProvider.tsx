@@ -287,77 +287,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             return queryProfile(retryCount + 1);
           }
           
-          // Retries exhausted, attempt client-side creation as fallback
-          logger.info('Profile not found after retries, creating basic profile', { userId: supabaseUser.id });
-
-          const newProfile: User = {
-            id: supabaseUser.id,
-            name: supabaseUser.user_metadata?.name || supabaseUser.email?.split('@')[0] || 'User',
-            email: supabaseUser.email || '',
-            mobile: supabaseUser.user_metadata?.mobile || '',
-            role: resolvedRole,
-            permissions: Array.isArray(supabaseUser.app_metadata?.permissions) ? supabaseUser.app_metadata.permissions as string[] : []
-          };
-          
-          const { data: insertedProfiles, error: insertError } = await supabase
-            .from('profiles')
-            .insert([{
-              id: newProfile.id,
-              name: newProfile.name,
-              email: newProfile.email,
-              mobile: newProfile.mobile,
-              role: newProfile.role,
-            }])
-            .select();
-          const insertedProfile = insertedProfiles?.[0] || null;
-            
-          if (insertError) {
-            logger.error('Error inserting fallback profile', { error: insertError, userId: supabaseUser.id });
-            
-            const { data: lastChanceProfiles } = await supabase
-              .from('profiles')
-              .select('*')
-              .eq('id', supabaseUser.id);
-            const lastChanceProfile = lastChanceProfiles?.[0] || null;
-
-            if (lastChanceProfile) {
-              return {
-                ...lastChanceProfile,
-                email: supabaseUser.email || lastChanceProfile.email || '',
-                role: appMetadataRole ?? parseRole(lastChanceProfile.role) ?? 'customer',
-                permissions: Array.isArray(supabaseUser.app_metadata?.permissions) ? supabaseUser.app_metadata.permissions as string[] : [],
-                emailVerified: Boolean(supabaseUser.email_confirmed_at || lastChanceProfile.email_confirmed_at),
-                email_confirmed_at: supabaseUser.email_confirmed_at ?? lastChanceProfile.email_confirmed_at
-              } as User;
-            }
-
-            return {
-              ...newProfile,
-              emailVerified: Boolean(supabaseUser.email_confirmed_at),
-              email_confirmed_at: supabaseUser.email_confirmed_at ?? null,
-              first_login_whatsapp_sent: false,
-              first_login_notified_at: null
-            };
-          }
-          
-          if (!insertedProfile) {
-            return {
-              ...newProfile,
-              emailVerified: Boolean(supabaseUser.email_confirmed_at),
-              email_confirmed_at: supabaseUser.email_confirmed_at ?? null,
-              first_login_whatsapp_sent: false,
-              first_login_notified_at: null
-            };
-          }
-
+          // Retries exhausted: do not attempt client-side profile writes because
+          // RLS blocks anon/authenticated direct inserts in production. Use a
+          // safe fallback profile and let server-side profile sync complete.
+          logger.warn('Profile not found after retries; using fallback profile', { userId: supabaseUser.id });
           return {
-            ...insertedProfile,
-            email: newProfile.email,
-            emailVerified: Boolean(supabaseUser.email_confirmed_at || insertedProfile.email_confirmed_at),
-            email_confirmed_at: supabaseUser.email_confirmed_at ?? insertedProfile.email_confirmed_at,
-            first_login_whatsapp_sent: Boolean(insertedProfile.first_login_whatsapp_sent),
-            first_login_notified_at: insertedProfile.first_login_notified_at ?? null
-          } as User;
+            ...fallbackProfile,
+            role: resolvedRole,
+            permissions: Array.isArray(supabaseUser.app_metadata?.permissions) ? supabaseUser.app_metadata.permissions as string[] : [],
+            emailVerified: Boolean(supabaseUser.email_confirmed_at),
+            email_confirmed_at: supabaseUser.email_confirmed_at ?? null,
+            first_login_whatsapp_sent: false,
+            first_login_notified_at: null,
+          };
         }
 
         const profileRole = parseRole(profile.role as string | undefined);
