@@ -140,9 +140,147 @@ async function sendProductData(productData) {
   }
 }
 
+async function getAISettings() {
+  return new Promise(resolve => {
+    chrome.storage.local.get(['aiSource', 'aiProvider', 'aiApiKey', 'aiModel'], resolve);
+  });
+}
+
+function buildExtractorPrompt(rawText) {
+  return `You are an expert e-commerce data extraction assistant and copywriter.
+Extract the product fields from the raw webpage text below into a JSON object matching this structure EXACTLY:
+
+{
+  "title": "Short brand & model name only (max 6-7 words, e.g. Boat Rockerz 200 Black)",
+  "brand": "Brand name",
+  "modelNo": "Model number",
+  "mrp": "Original MRP price with currency symbol (e.g. ₹2,490)",
+  "price": "Sale price with currency symbol (e.g. ₹760)",
+  "category": "Product category breadcrumb",
+  "shortDescription": "Compelling 1-2 sentence short description",
+  "warrantyPeriod": "Warranty duration (e.g. 1 Year). Leave empty if omitted",
+  "warrantyType": "Brand Warranty, Dealer Warranty, or No Warranty. Leave empty if omitted",
+  "additional1": "Key specification or feature 1",
+  "additional2": "Key specification or feature 2",
+  "additional3": "Key specification or feature 3",
+  "seoTitle": "SEO Title under 60 chars",
+  "seoDescription": "SEO Meta Description under 160 chars",
+  "htmlDescription": "<p>Introductory paragraph...</p><h3>Key Features & Benefits</h3><ul><li><strong>Feature:</strong> Detail</li></ul>"
+}
+
+IMPORTANT: Respond ONLY with valid JSON and no markdown wrapping or extra text.
+
+RAW WEBPAGE TEXT:
+---------------------
+${rawText.slice(0, MAX_RAW_TEXT_LENGTH)}`;
+}
+
+async function enhanceWithDirectOpenAI(rawText, apiKey, model = 'gpt-4o-mini') {
+  const prompt = buildExtractorPrompt(rawText);
+  const response = await fetchWithTimeout('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${apiKey}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      model: model || 'gpt-4o-mini',
+      response_format: { type: 'json_object' },
+      messages: [{ role: 'user', content: prompt }],
+      temperature: 0.1
+    })
+  });
+
+  if (!response.ok) {
+    const errText = await response.text();
+    throw new Error(`OpenAI API error (${response.status}): ${errText}`);
+  }
+
+  const data = await response.json();
+  const text = data.choices?.[0]?.message?.content;
+  if (!text) throw new Error('OpenAI returned empty response');
+  return JSON.parse(text);
+}
+
+async function enhanceWithDirectGemini(rawText, apiKey, model = 'gemini-2.0-flash') {
+  const prompt = buildExtractorPrompt(rawText);
+  const selectedModel = model || 'gemini-2.0-flash';
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(selectedModel)}:generateContent?key=${encodeURIComponent(apiKey)}`;
+  
+  const response = await fetchWithTimeout(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      contents: [{ role: 'user', parts: [{ text: prompt }] }],
+      generationConfig: {
+        responseMimeType: 'application/json',
+        temperature: 0.1
+      }
+    })
+  });
+
+  if (!response.ok) {
+    const errText = await response.text();
+    throw new Error(`Gemini API error (${response.status}): ${errText}`);
+  }
+
+  const data = await response.json();
+  const text = data.candidates?.[0]?.content?.parts?.map(p => p.text).join('') || '';
+  if (!text) throw new Error('Gemini returned empty response');
+  return JSON.parse(text);
+}
+
+async function enhanceWithDirectClaude(rawText, apiKey, model = 'claude-3-5-sonnet-20241022') {
+  const prompt = buildExtractorPrompt(rawText);
+  const selectedModel = model || 'claude-3-5-sonnet-20241022';
+  const response = await fetchWithTimeout('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      model: selectedModel,
+      max_tokens: 2000,
+      messages: [{ role: 'user', content: prompt }]
+    })
+  });
+
+  if (!response.ok) {
+    const errText = await response.text();
+    throw new Error(`Claude API error (${response.status}): ${errText}`);
+  }
+
+  const data = await response.json();
+  const text = data.content?.[0]?.text || '';
+  if (!text) throw new Error('Claude returned empty response');
+  const cleanJson = text.replace(/```json/g, '').replace(/```/g, '').trim();
+  return JSON.parse(cleanJson);
+}
+
 async function enhanceProductWithAI(rawText) {
-  const url = `${API_BASE_URL}/products/scraper/ai`;
   const validatedRawText = validateRawText(rawText);
+  const aiSettings = await getAISettings();
+
+  if (aiSettings.aiSource === 'external' && aiSettings.aiApiKey) {
+    try {
+      let data = null;
+      const provider = (aiSettings.aiProvider || 'gemini').toLowerCase();
+      if (provider === 'openai') {
+        data = await enhanceWithDirectOpenAI(validatedRawText, aiSettings.aiApiKey, aiSettings.aiModel);
+      } else if (provider === 'claude') {
+        data = await enhanceWithDirectClaude(validatedRawText, aiSettings.aiApiKey, aiSettings.aiModel);
+      } else {
+        data = await enhanceWithDirectGemini(validatedRawText, aiSettings.aiApiKey, aiSettings.aiModel);
+      }
+      return { success: true, data };
+    } catch (directErr) {
+      console.warn('Direct AI provider failed, falling back to website API:', directErr);
+    }
+  }
+
+  const url = `${API_BASE_URL}/products/scraper/ai`;
   const token = await getAccessToken();
   
   try {

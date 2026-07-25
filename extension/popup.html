@@ -351,6 +351,7 @@
     </header>
 
     <div class="preview-card" style="margin-bottom: 24px;">
+      <h3 style="font-size: 0.9rem; margin-bottom: 8px; color: #f8fafc;">Website Authentication</h3>
       <p style="font-size: 0.8rem; color: #94a3b8; line-height: 1.4; margin-bottom: 12px;">
         To send product data directly to tecbunny.com, authenticate using your website's Superadmin credentials.
       </p>
@@ -363,6 +364,42 @@
       <div class="form-group">
         <label for="superadminPass">Password</label>
         <input type="password" id="superadminPass" placeholder="Superadmin password...">
+      </div>
+    </div>
+
+    <div class="preview-card" style="margin-bottom: 24px;">
+      <h3 style="font-size: 0.9rem; margin-bottom: 8px; color: #f8fafc;">AI Engine Settings</h3>
+      <p style="font-size: 0.8rem; color: #94a3b8; line-height: 1.4; margin-bottom: 12px;">
+        Select your AI processing source: Tecbunny Website API or your own external API key.
+      </p>
+
+      <div class="form-group">
+        <label for="aiSourceSelect">AI Source</label>
+        <select id="aiSourceSelect" style="width: 100%; background: #1e293b; border: 1px solid #334155; border-radius: 8px; color: #f8fafc; padding: 8px 12px; font-size: 0.85rem; outline: none;">
+          <option value="website">Website API (Tecbunny Server)</option>
+          <option value="external">Direct External API Key</option>
+        </select>
+      </div>
+
+      <div id="externalAiContainer" style="display: none;">
+        <div class="form-group">
+          <label for="aiProviderSelect">AI Provider</label>
+          <select id="aiProviderSelect" style="width: 100%; background: #1e293b; border: 1px solid #334155; border-radius: 8px; color: #f8fafc; padding: 8px 12px; font-size: 0.85rem; outline: none;">
+            <option value="gemini">Google Gemini</option>
+            <option value="openai">OpenAI</option>
+            <option value="claude">Anthropic Claude</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="aiApiKeyInput">API Key</label>
+          <input type="password" id="aiApiKeyInput" placeholder="Enter provider API Key...">
+        </div>
+
+        <div class="form-group">
+          <label for="aiModelInput">Model Override (Optional)</label>
+          <input type="text" id="aiModelInput" placeholder="e.g. gemini-2.0-flash, gpt-4o-mini, claude-3-5-sonnet-20241022">
+        </div>
       </div>
     </div>
 

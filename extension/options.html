@@ -98,6 +98,46 @@
       <p>Review the active extension session and clear local extension state when an operator changes device or role.</p>
     </header>
 
+    <section aria-labelledby="aiHeading" style="margin-bottom: 24px;">
+      <h2 id="aiHeading">AI Engine Settings</h2>
+      <p style="margin: 8px 0 16px;">Configure whether product enhancement uses the Tecbunny Website API or your own direct API key for OpenAI, Anthropic Claude, or Google Gemini.</p>
+      
+      <div style="display: flex; flex-direction: column; gap: 14px;">
+        <div>
+          <label for="aiSource" style="display: block; font-size: 0.78rem; font-weight: 700; color: #64748b; text-transform: uppercase; margin-bottom: 6px;">AI Source</label>
+          <select id="aiSource" style="width: 100%; padding: 8px 12px; border-radius: 6px; border: 1px solid #cbd5e1; font: inherit;">
+            <option value="website">Website API (Tecbunny Server)</option>
+            <option value="external">Direct External API Key</option>
+          </select>
+        </div>
+
+        <div id="externalOptionsContainer" style="display: none; flex-direction: column; gap: 14px;">
+          <div>
+            <label for="aiProvider" style="display: block; font-size: 0.78rem; font-weight: 700; color: #64748b; text-transform: uppercase; margin-bottom: 6px;">AI Provider</label>
+            <select id="aiProvider" style="width: 100%; padding: 8px 12px; border-radius: 6px; border: 1px solid #cbd5e1; font: inherit;">
+              <option value="gemini">Google Gemini</option>
+              <option value="openai">OpenAI</option>
+              <option value="claude">Anthropic Claude</option>
+            </select>
+          </div>
+
+          <div>
+            <label for="aiApiKey" style="display: block; font-size: 0.78rem; font-weight: 700; color: #64748b; text-transform: uppercase; margin-bottom: 6px;">API Key</label>
+            <input type="password" id="aiApiKey" placeholder="Enter provider API Key..." style="width: 100%; padding: 8px 12px; border-radius: 6px; border: 1px solid #cbd5e1; font: inherit;" />
+          </div>
+
+          <div>
+            <label for="aiModel" style="display: block; font-size: 0.78rem; font-weight: 700; color: #64748b; text-transform: uppercase; margin-bottom: 6px;">Model Override (Optional)</label>
+            <input type="text" id="aiModel" placeholder="e.g. gemini-2.0-flash, gpt-4o-mini, claude-3-5-sonnet-20241022" style="width: 100%; padding: 8px 12px; border-radius: 6px; border: 1px solid #cbd5e1; font: inherit;" />
+          </div>
+        </div>
+
+        <div>
+          <button id="saveAiSettingsBtn" type="button">Save AI Settings</button>
+        </div>
+      </div>
+    </section>
+
     <section aria-labelledby="sessionHeading">
       <h2 id="sessionHeading">Session</h2>
       <dl>

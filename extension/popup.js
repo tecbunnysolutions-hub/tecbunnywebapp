@@ -199,49 +199,92 @@ document.addEventListener('DOMContentLoaded', () => {
     scraperScreen.classList.add('active');
   });
 
-  // Save Credentials Click
+  // AI Settings UI Elements
+  const aiSourceSelect = document.getElementById('aiSourceSelect');
+  const aiProviderSelect = document.getElementById('aiProviderSelect');
+  const aiApiKeyInput = document.getElementById('aiApiKeyInput');
+  const aiModelInput = document.getElementById('aiModelInput');
+  const externalAiContainer = document.getElementById('externalAiContainer');
+
+  function loadAISettings() {
+    chrome.storage.local.get(['aiSource', 'aiProvider', 'aiApiKey', 'aiModel'], (aiConfig) => {
+      if (aiSourceSelect) aiSourceSelect.value = aiConfig.aiSource || 'website';
+      if (aiProviderSelect) aiProviderSelect.value = aiConfig.aiProvider || 'gemini';
+      if (aiApiKeyInput) aiApiKeyInput.value = aiConfig.aiApiKey || '';
+      if (aiModelInput) aiModelInput.value = aiConfig.aiModel || '';
+      if (externalAiContainer) {
+        externalAiContainer.style.display = (aiConfig.aiSource === 'external') ? 'block' : 'none';
+      }
+    });
+  }
+
+  if (aiSourceSelect) {
+    aiSourceSelect.addEventListener('change', () => {
+      if (externalAiContainer) {
+        externalAiContainer.style.display = (aiSourceSelect.value === 'external') ? 'block' : 'none';
+      }
+    });
+  }
+
+  loadAISettings();
+
+  // Save Credentials & Settings Click
   saveSettingsBtn.addEventListener('click', async () => {
     clearSettingsStatus();
     const email = superadminUser.value.trim();
     const pass = superadminPass.value.trim();
+    const aiSource = aiSourceSelect ? aiSourceSelect.value : 'website';
+    const aiProvider = aiProviderSelect ? aiProviderSelect.value : 'gemini';
+    const aiApiKey = aiApiKeyInput ? aiApiKeyInput.value.trim() : '';
+    const aiModel = aiModelInput ? aiModelInput.value.trim() : '';
 
-    if (!email || !pass) {
-      showSettingsStatus('Please fill in both email and password fields.', 'error');
+    if (!email && !pass && aiSource === 'website') {
+      showSettingsStatus('Please fill in email and password fields.', 'error');
       return;
     }
     
     saveSettingsBtn.disabled = true;
-    saveSettingsBtn.textContent = 'Authenticating...';
+    saveSettingsBtn.textContent = 'Saving Settings...';
 
     try {
-      const response = await fetch('https://www.tecbunny.com/api/auth/extension', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password: pass })
-      });
+      if (email && pass) {
+        const response = await fetch('https://www.tecbunny.com/api/auth/extension', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password: pass })
+        });
 
-      const data = await response.json();
+        const data = await response.json();
 
-      if (!response.ok || !data.success) {
-        throw new Error(data.error || 'Authentication failed');
-      }
+        if (!response.ok || !data.success) {
+          throw new Error(data.error || 'Authentication failed');
+        }
 
-      chrome.storage.local.set({ superadminUser: email }, () => {
-        chrome.storage.session.set({ accessToken: data.access_token }, () => {
-          chrome.storage.local.remove(['superadminPass', 'accessToken']);
-          superadminPass.value = '';
-          showSettingsStatus('Authenticated successfully!', 'success');
+        chrome.storage.local.set({ superadminUser: email, aiSource, aiProvider, aiApiKey, aiModel }, () => {
+          chrome.storage.session.set({ accessToken: data.access_token }, () => {
+            chrome.storage.local.remove(['superadminPass', 'accessToken']);
+            superadminPass.value = '';
+            showSettingsStatus('Settings saved and authenticated successfully!', 'success');
+            setTimeout(() => {
+              settingsScreen.classList.remove('active');
+              scraperScreen.classList.add('active');
+            }, 800);
+          });
+        });
+      } else {
+        chrome.storage.local.set({ aiSource, aiProvider, aiApiKey, aiModel }, () => {
+          showSettingsStatus('AI settings saved successfully!', 'success');
           setTimeout(() => {
             settingsScreen.classList.remove('active');
             scraperScreen.classList.add('active');
           }, 800);
         });
-      });
+      }
     } catch (error) {
-      showSettingsStatus(error.message || 'Network error during login.', 'error');
+      showSettingsStatus(error.message || 'Error saving settings.', 'error');
     } finally {
       saveSettingsBtn.disabled = false;
-      saveSettingsBtn.textContent = 'Save Credentials';
+      saveSettingsBtn.textContent = 'Save Settings';
     }
   });
 
