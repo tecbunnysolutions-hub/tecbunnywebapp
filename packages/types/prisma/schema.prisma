@@ -336,3 +336,330 @@ model Coupon {
 
   @@map("oms_coupons")
 }
+
+// ----------------------------------------
+// Marketplace & Seller Management Models
+// ----------------------------------------
+
+enum SellerStatus {
+  DRAFT
+  PENDING_VERIFICATION
+  PENDING_APPROVAL
+  APPROVED
+  SUSPENDED
+  REJECTED
+  BLOCKED
+  INACTIVE
+}
+
+enum KYCStatus {
+  DRAFT
+  SUBMITTED
+  PENDING_REVIEW
+  VERIFICATION_IN_PROGRESS
+  APPROVED
+  REJECTED
+  CHANGES_REQUESTED
+}
+
+enum DocumentType {
+  GST_CERTIFICATE
+  PAN_CARD
+  CANCELLED_CHEQUE
+  AADHAAR
+  BUSINESS_REGISTRATION
+  ADDRESS_PROOF
+  AUTHORIZED_SIGNATURE
+  LOGO
+}
+
+enum SettlementStatus {
+  DRAFT
+  GENERATED
+  UNDER_REVIEW
+  APPROVED
+  RELEASED
+  HELD
+}
+
+enum PickupStatus {
+  PENDING
+  ASSIGNED
+  READY_FOR_PICKUP
+  PICKED_UP
+  DELIVERED_TO_WAREHOUSE
+  CANCELLED
+}
+
+enum QCStatus {
+  PENDING
+  PASSED
+  PASSED_WITH_REMARKS
+  FAILED
+}
+
+model Seller {
+  id            String       @id @default(uuid())
+  business_name String
+  owner_name    String
+  email         String       @unique
+  phone         String       @unique
+  password_hash String
+  status        SellerStatus @default(DRAFT)
+  kyc_status    KYCStatus    @default(DRAFT)
+  rating        Float        @default(100.0)
+  created_at    DateTime     @default(now())
+  updated_at    DateTime     @updatedAt
+
+  profile       SellerProfile?
+  business      SellerBusiness?
+  addresses     SellerAddress[]
+  documents     SellerDocument[]
+  bank_account  SellerBankAccount?
+  kyc_record    SellerKYC?
+  wallet        SellerWallet?
+  ledger_items  SellerLedger[]
+  settlements   Settlement[]
+  pickup_reqs   PickupRequest[]
+  audit_logs    MarketplaceAuditLog[]
+
+  @@map("mkt_sellers")
+}
+
+model SellerProfile {
+  id            String   @id @default(uuid())
+  seller_id     String   @unique
+  logo_url      String?
+  description   String?
+  support_email String?
+  support_phone String?
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+
+  seller Seller @relation(fields: [seller_id], references: [id], onDelete: Cascade)
+
+  @@map("mkt_seller_profiles")
+}
+
+model SellerBusiness {
+  id               String   @id @default(uuid())
+  seller_id        String   @unique
+  entity_type      String   // PROPRIETORSHIP, PARTNERSHIP, LLP, PVT_LTD, PUBLIC_LTD, OPC
+  gst_number       String   @unique
+  gst_status       String   @default("UNVERIFIED")
+  pan_number       String   @unique
+  pan_status       String   @default("UNVERIFIED")
+  incorporation_dt DateTime?
+  annual_turnover  String?
+  created_at       DateTime @default(now())
+  updated_at       DateTime @updatedAt
+
+  seller Seller @relation(fields: [seller_id], references: [id], onDelete: Cascade)
+
+  @@map("mkt_seller_business")
+}
+
+model SellerAddress {
+  id            String   @id @default(uuid())
+  seller_id     String
+  type          String   // BUSINESS, BILLING, PICKUP
+  address_line1 String
+  address_line2 String?
+  city          String
+  state         String
+  pincode       String
+  landmark      String?
+  is_default    Boolean  @default(false)
+  created_at    DateTime @default(now())
+
+  seller Seller @relation(fields: [seller_id], references: [id], onDelete: Cascade)
+
+  @@map("mkt_seller_addresses")
+}
+
+model SellerDocument {
+  id               String       @id @default(uuid())
+  seller_id        String
+  type             DocumentType
+  file_url         String
+  status           String       @default("PENDING") // PENDING, VERIFIED, REJECTED
+  rejection_reason String?
+  verified_at      DateTime?
+  created_at       DateTime     @default(now())
+
+  seller Seller @relation(fields: [seller_id], references: [id], onDelete: Cascade)
+
+  @@map("mkt_seller_documents")
+}
+
+model SellerBankAccount {
+  id                String   @id @default(uuid())
+  seller_id         String   @unique
+  account_holder    String
+  account_number    String
+  ifsc_code         String
+  bank_name         String
+  branch            String?
+  penny_drop_status String   @default("PENDING") // PENDING, SUCCESS, FAILED
+  is_verified       Boolean  @default(false)
+  created_at        DateTime @default(now())
+  updated_at        DateTime @updatedAt
+
+  seller Seller @relation(fields: [seller_id], references: [id], onDelete: Cascade)
+
+  @@map("mkt_seller_bank_accounts")
+}
+
+model SellerKYC {
+  id               String    @id @default(uuid())
+  seller_id        String    @unique
+  status           KYCStatus @default(DRAFT)
+  submitted_at     DateTime?
+  reviewed_by      String?
+  reviewed_at      DateTime?
+  rejection_reason String?
+  notes            String?
+  created_at       DateTime  @default(now())
+  updated_at       DateTime  @updatedAt
+
+  seller Seller @relation(fields: [seller_id], references: [id], onDelete: Cascade)
+
+  @@map("mkt_seller_kyc")
+}
+
+model SellerWallet {
+  id                String   @id @default(uuid())
+  seller_id         String   @unique
+  available_balance Float    @default(0.0)
+  pending_balance   Float    @default(0.0)
+  hold_balance      Float    @default(0.0)
+  total_withdrawn   Float    @default(0.0)
+  updated_at        DateTime @updatedAt
+
+  seller Seller @relation(fields: [seller_id], references: [id], onDelete: Cascade)
+
+  @@map("mkt_seller_wallets")
+}
+
+model SellerLedger {
+  id               String   @id @default(uuid())
+  seller_id        String
+  order_id         String?
+  settlement_id    String?
+  transaction_type String   // CREDIT, DEBIT
+  amount           Float
+  description      String
+  balance_after    Float
+  created_at       DateTime @default(now())
+
+  seller Seller @relation(fields: [seller_id], references: [id], onDelete: Cascade)
+
+  @@map("mkt_seller_ledgers")
+}
+
+model Settlement {
+  id                 String           @id @default(uuid())
+  seller_id          String
+  period_start       DateTime
+  period_end         DateTime
+  gross_amount       Float
+  net_settlement     Float
+  shipping_deduction Float            @default(0.0)
+  commission_fee     Float            @default(0.0)
+  tds_deduction      Float            @default(0.0)
+  penalty_deduction  Float            @default(0.0)
+  gst_adjustment     Float            @default(0.0)
+  status             SettlementStatus @default(DRAFT)
+  created_at         DateTime         @default(now())
+  released_at        DateTime?
+
+  seller Seller           @relation(fields: [seller_id], references: [id], onDelete: Cascade)
+  items  SettlementItem[]
+
+  @@map("mkt_settlements")
+}
+
+model SettlementItem {
+  id                   String     @id @default(uuid())
+  settlement_id        String
+  order_id             String
+  order_item_id        String
+  seller_purchase_price Float
+  deductions           Float      @default(0.0)
+  net_amount           Float
+
+  settlement Settlement @relation(fields: [settlement_id], references: [id], onDelete: Cascade)
+
+  @@map("mkt_settlement_items")
+}
+
+model Warehouse {
+  id           String   @id @default(uuid())
+  name         String
+  code         String   @unique
+  type         String   @default("PRIMARY") // PRIMARY, REGIONAL, CITY, PICKUP_HUB, RETURN_CENTER
+  address      String
+  city         String
+  state        String
+  pincode      String
+  capacity     Int      @default(10000)
+  manager_name String?
+  manager_phone String?
+  is_active    Boolean  @default(true)
+  created_at   DateTime @default(now())
+
+  pickup_requests PickupRequest[]
+  quality_checks  QualityCheck[]
+
+  @@map("wms_warehouses")
+}
+
+model PickupRequest {
+  id           String       @id @default(uuid())
+  order_id     String
+  seller_id    String
+  warehouse_id String?
+  status       PickupStatus @default(PENDING)
+  pickup_date  DateTime?
+  otp_code     String?
+  qr_code      String?
+  created_at   DateTime     @default(now())
+  updated_at   DateTime     @updatedAt
+
+  seller    Seller     @relation(fields: [seller_id], references: [id], onDelete: Cascade)
+  warehouse Warehouse? @relation(fields: [warehouse_id], references: [id], onDelete: SetNull)
+
+  @@map("wms_pickup_requests")
+}
+
+model QualityCheck {
+  id            String   @id @default(uuid())
+  order_item_id String
+  warehouse_id  String
+  inspector_id  String?
+  status        QCStatus @default(PENDING)
+  remarks       String?
+  checked_at    DateTime @default(now())
+
+  warehouse Warehouse @relation(fields: [warehouse_id], references: [id], onDelete: Cascade)
+
+  @@map("wms_quality_checks")
+}
+
+model MarketplaceAuditLog {
+  id           String   @id @default(uuid())
+  user_id      String
+  user_type    String   // SUPERADMIN, ADMIN, SELLER, WAREHOUSE, CUSTOMER
+  action       String
+  module       String
+  before_state Json?
+  after_state  Json?
+  ip_address   String?
+  device_info  String?
+  created_at   DateTime @default(now())
+
+  seller Seller? @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("sys_marketplace_audit_logs")
+}
+
