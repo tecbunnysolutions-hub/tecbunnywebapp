@@ -268,87 +268,96 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const queryProfile = async (retryCount = 0): Promise<User> => {
       try {
-        const { data: profile, error } = await supabase
+        const { data: profiles, error } = await supabase
           .from('profiles')
           .select('*')
-          .eq('id', supabaseUser.id)
-          .single();
+          .eq('id', supabaseUser.id);
+        const profile = profiles?.[0] || null;
 
         if (error) {
-          if (error.code === 'PGRST116') {
-            if (retryCount < MAX_RETRIES) {
-              const delay = INITIAL_DELAY_MS * Math.pow(2, retryCount);
-              logger.warn(`Profile not found (race condition). Retrying in ${delay}ms...`, { userId: supabaseUser.id });
-              await new Promise((resolve) => setTimeout(resolve, delay));
-              return queryProfile(retryCount + 1);
-            }
-            
-            // Retries exhausted, attempt client-side creation as fallback
-            logger.info('Profile not found after retries, creating basic profile', { userId: supabaseUser.id });
+          logger.error('Error fetching profile', { error, userId: supabaseUser.id });
+          return fallbackProfile;
+        }
 
-            const newProfile: User = {
-              id: supabaseUser.id,
-              name: supabaseUser.user_metadata?.name || supabaseUser.email?.split('@')[0] || 'User',
-              email: supabaseUser.email || '',
-              mobile: supabaseUser.user_metadata?.mobile || '',
-              role: resolvedRole,
-              permissions: Array.isArray(supabaseUser.app_metadata?.permissions) ? supabaseUser.app_metadata.permissions as string[] : []
-            };
-            
-            const { data: insertedProfile, error: insertError } = await supabase
-              .from('profiles')
-              .insert([{
-                id: newProfile.id,
-                name: newProfile.name,
-                email: newProfile.email,
-                mobile: newProfile.mobile,
-                role: newProfile.role,
-                email_verified: Boolean(supabaseUser.email_confirmed_at)
-              }])
-              .select()
-              .single();
-              
-            if (insertError) {
-              logger.error('Error inserting fallback profile', { error: insertError, userId: supabaseUser.id });
-              
-              const { data: lastChanceProfile } = await supabase
-                .from('profiles')
-                .select('*')
-                .eq('id', supabaseUser.id)
-                .maybeSingle();
-
-              if (lastChanceProfile) {
-                return {
-                  ...lastChanceProfile,
-                  email: supabaseUser.email || lastChanceProfile.email || '',
-                  role: appMetadataRole ?? parseRole(lastChanceProfile.role) ?? 'customer',
-                  permissions: Array.isArray(supabaseUser.app_metadata?.permissions) ? supabaseUser.app_metadata.permissions as string[] : [],
-                  emailVerified: Boolean(supabaseUser.email_confirmed_at || lastChanceProfile.email_confirmed_at),
-                  email_confirmed_at: supabaseUser.email_confirmed_at ?? lastChanceProfile.email_confirmed_at
-                } as User;
-              }
-
-              return {
-                ...newProfile,
-                emailVerified: Boolean(supabaseUser.email_confirmed_at),
-                email_confirmed_at: supabaseUser.email_confirmed_at ?? null,
-                first_login_whatsapp_sent: false,
-                first_login_notified_at: null
-              };
-            }
-            
-            return {
-              ...insertedProfile,
-              email: newProfile.email,
-              emailVerified: Boolean(supabaseUser.email_confirmed_at || insertedProfile.email_confirmed_at),
-              email_confirmed_at: supabaseUser.email_confirmed_at ?? insertedProfile.email_confirmed_at,
-              first_login_whatsapp_sent: Boolean(insertedProfile.first_login_whatsapp_sent),
-              first_login_notified_at: insertedProfile.first_login_notified_at ?? null
-            } as User;
-          } else {
-            logger.error('Error fetching profile', { error, userId: supabaseUser.id });
-            return fallbackProfile;
+        if (!profile) {
+          if (retryCount < MAX_RETRIES) {
+            const delay = INITIAL_DELAY_MS * Math.pow(2, retryCount);
+            logger.warn(`Profile not found (race condition). Retrying in ${delay}ms...`, { userId: supabaseUser.id });
+            await new Promise((resolve) => setTimeout(resolve, delay));
+            return queryProfile(retryCount + 1);
           }
+          
+          // Retries exhausted, attempt client-side creation as fallback
+          logger.info('Profile not found after retries, creating basic profile', { userId: supabaseUser.id });
+
+          const newProfile: User = {
+            id: supabaseUser.id,
+            name: supabaseUser.user_metadata?.name || supabaseUser.email?.split('@')[0] || 'User',
+            email: supabaseUser.email || '',
+            mobile: supabaseUser.user_metadata?.mobile || '',
+            role: resolvedRole,
+            permissions: Array.isArray(supabaseUser.app_metadata?.permissions) ? supabaseUser.app_metadata.permissions as string[] : []
+          };
+          
+          const { data: insertedProfiles, error: insertError } = await supabase
+            .from('profiles')
+            .insert([{
+              id: newProfile.id,
+              name: newProfile.name,
+              email: newProfile.email,
+              mobile: newProfile.mobile,
+              role: newProfile.role,
+            }])
+            .select();
+          const insertedProfile = insertedProfiles?.[0] || null;
+            
+          if (insertError) {
+            logger.error('Error inserting fallback profile', { error: insertError, userId: supabaseUser.id });
+            
+            const { data: lastChanceProfiles } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('id', supabaseUser.id);
+            const lastChanceProfile = lastChanceProfiles?.[0] || null;
+
+            if (lastChanceProfile) {
+              return {
+                ...lastChanceProfile,
+                email: supabaseUser.email || lastChanceProfile.email || '',
+                role: appMetadataRole ?? parseRole(lastChanceProfile.role) ?? 'customer',
+                permissions: Array.isArray(supabaseUser.app_metadata?.permissions) ? supabaseUser.app_metadata.permissions as string[] : [],
+                emailVerified: Boolean(supabaseUser.email_confirmed_at || lastChanceProfile.email_confirmed_at),
+                email_confirmed_at: supabaseUser.email_confirmed_at ?? lastChanceProfile.email_confirmed_at
+              } as User;
+            }
+
+            return {
+              ...newProfile,
+              emailVerified: Boolean(supabaseUser.email_confirmed_at),
+              email_confirmed_at: supabaseUser.email_confirmed_at ?? null,
+              first_login_whatsapp_sent: false,
+              first_login_notified_at: null
+            };
+          }
+          
+          if (!insertedProfile) {
+            return {
+              ...newProfile,
+              emailVerified: Boolean(supabaseUser.email_confirmed_at),
+              email_confirmed_at: supabaseUser.email_confirmed_at ?? null,
+              first_login_whatsapp_sent: false,
+              first_login_notified_at: null
+            };
+          }
+
+          return {
+            ...insertedProfile,
+            email: newProfile.email,
+            emailVerified: Boolean(supabaseUser.email_confirmed_at || insertedProfile.email_confirmed_at),
+            email_confirmed_at: supabaseUser.email_confirmed_at ?? insertedProfile.email_confirmed_at,
+            first_login_whatsapp_sent: Boolean(insertedProfile.first_login_whatsapp_sent),
+            first_login_notified_at: insertedProfile.first_login_notified_at ?? null
+          } as User;
         }
 
         const profileRole = parseRole(profile.role as string | undefined);

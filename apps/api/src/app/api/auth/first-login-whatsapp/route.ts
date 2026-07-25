@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
       .from('profiles')
       .select('*')
       .eq('id', userId)
-      .single();
+      .maybeSingle();
 
     if (profileError) {
       logger.error('first_login_whatsapp.profile_lookup_failed', { userId, error: profileError });
@@ -67,11 +67,34 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!profile) {
+    let targetProfile = profile;
+
+    if (!targetProfile) {
+      const { data: authUserData } = await supabaseAdmin.auth.admin.getUserById(userId);
+      if (authUserData?.user) {
+        const { data: createdProfile } = await supabaseAdmin
+          .from('profiles')
+          .insert({
+            id: authUserData.user.id,
+            email: authUserData.user.email || '',
+            name: name || authUserData.user.user_metadata?.name || authUserData.user.email?.split('@')[0] || 'User',
+            mobile: phone || authUserData.user.user_metadata?.mobile || '',
+            role: authUserData.user.app_metadata?.role || 'customer'
+          })
+          .select()
+          .maybeSingle();
+
+        if (createdProfile) {
+          targetProfile = createdProfile;
+        }
+      }
+    }
+
+    if (!targetProfile) {
       return NextResponse.json({ success: false, error: 'Profile not found' }, { status: 404 });
     }
 
-    if (profile.first_login_whatsapp_sent) {
+    if (targetProfile.first_login_whatsapp_sent) {
       logger.info('first_login_whatsapp.already_sent', {
         userId,
         sentAt: profile.first_login_notified_at

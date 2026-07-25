@@ -179,7 +179,7 @@ function SignInForm() {
       .from('profiles')
       .select('role')
       .eq('id', user.id)
-      .single();
+      .maybeSingle();
 
     const userRole = normalizeRole(profile?.role) ?? 'customer';
     let redirectUrl: string;

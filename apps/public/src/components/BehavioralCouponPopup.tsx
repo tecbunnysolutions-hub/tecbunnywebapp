@@ -24,12 +24,12 @@ export function BehavioralCouponPopup() {
       const supabase = createClient();
       const { data, error } = await supabase
         .from('profiles')
-        .select('marketing_metadata')
+        .select('*')
         .eq('id', user.id)
-        .single();
+        .maybeSingle();
 
-      if (!error && data?.marketing_metadata?.suggested_coupon) {
-        const suggested = data.marketing_metadata.suggested_coupon;
+      if (!error && (data as any)?.marketing_metadata?.suggested_coupon) {
+        const suggested = (data as any).marketing_metadata.suggested_coupon;
         setCoupon(suggested);
         
         // Show after a short delay for impact

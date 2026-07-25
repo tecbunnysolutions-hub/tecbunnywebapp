@@ -207,7 +207,14 @@ export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       const result = await response.json().catch(() => null);
 
       if (!response.ok || !result?.success) {
-        const errorMessage = result?.error?.message || 'Failed to create order. Please try again.';
+        let errorMessage = result?.error?.message || 'Failed to create order. Please try again.';
+        const fieldErrors = result?.error?.details?.errors;
+        if (fieldErrors && typeof fieldErrors === 'object') {
+          const firstKey = Object.keys(fieldErrors).find(k => k !== '_errors');
+          if (firstKey && fieldErrors[firstKey]?._errors?.length) {
+            errorMessage = `${firstKey}: ${fieldErrors[firstKey]._errors.join(', ')}`;
+          }
+        }
         logger.error('OrderProvider API order creation failed', {
           status: response.status,
           error: result?.error,
