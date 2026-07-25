@@ -23,13 +23,14 @@ export async function POST(request: NextRequest) {
       return extensionJson(request, { error: 'rawText is required' }, { status: 400 });
     }
 
-    const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) {
+    const geminiApiKey = process.env.GEMINI_API_KEY;
+    const openaiApiKey = process.env.OPENAI_API_KEY;
+    if (!geminiApiKey && !openaiApiKey) {
       logger.error('ai_scraper.missing_api_key', { correlationId });
-      return extensionJson(request, { error: 'GEMINI_API_KEY is not configured on the server.' }, { status: 500 });
+      return extensionJson(request, { error: 'No valid AI API Key (GEMINI_API_KEY or OPENAI_API_KEY) is configured on the server.' }, { status: 500 });
     }
 
-    const ai = new GoogleGenAI({ apiKey });
+    const ai = geminiApiKey ? new GoogleGenAI({ apiKey: geminiApiKey }) : null;
 
     // We define a strict JSON schema for the response
     const schema = {
@@ -128,13 +129,45 @@ export async function POST(request: NextRequest) {
       ${rawText.substring(0, 30000)} // Limiting to 30k chars to avoid token limits
     `;
 
-    const modelsToTry = ['gemini-2.0-flash', 'gemini-2.0-flash-lite', 'gemini-2.5-flash'];
-    let lastError: any = null;
-    let result: any = null;
-
-    for (const modelName of modelsToTry) {
+    // 1. Try OpenAI if configured
+    if (process.env.OPENAI_API_KEY) {
       try {
-        const response = await ai.models.generateContent({
+        const openaiRes = await fetch('https://api.openai.com/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model: 'gpt-4o-mini',
+            response_format: { type: 'json_object' },
+            messages: [{ role: 'user', content: prompt }],
+            temperature: 0.1,
+          }),
+        });
+
+        if (openaiRes.ok) {
+          const data = await openaiRes.json();
+          const text = data.choices?.[0]?.message?.content;
+          if (text) {
+            result = JSON.parse(text);
+            logger.info('ai_scraper.openai_success', { correlationId });
+            return extensionJson(request, { success: true, data: result, correlationId });
+          }
+        }
+      } catch (openaiErr: any) {
+        logger.warn('ai_scraper.openai_failed_fallback_to_gemini', { correlationId, error: openaiErr?.message || String(openaiErr) });
+      }
+    }
+
+    // 2. Fallback to Gemini 2.0 active models
+    const modelsToTry = ['gemini-2.0-flash', 'gemini-2.0-flash-lite'];
+    let lastError: any = null;
+
+    if (ai) {
+      for (const modelName of modelsToTry) {
+        try {
+          const response = await ai.models.generateContent({
           model: modelName,
           contents: prompt,
           config: {
@@ -156,13 +189,14 @@ export async function POST(request: NextRequest) {
         continue;
       }
     }
+  }
 
     if (!result) {
       const lastMsg = lastError?.message || String(lastError || '');
       if (lastMsg.includes('429') || lastMsg.includes('RESOURCE_EXHAUSTED') || lastMsg.includes('Quota exceeded')) {
         return extensionJson(
           request,
-          { error: 'Gemini AI quota limit reached (429 Rate Limit). Please wait 1-2 minutes or check your API key quota at https://ai.google.dev.' },
+          { error: 'Gemini AI quota limit reached (429 Rate Limit). Please wait 1-2 minutes or set OPENAI_API_KEY on the server.' },
           { status: 429 }
         );
       }
