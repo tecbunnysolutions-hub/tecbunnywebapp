@@ -290,6 +290,7 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   try {
     const correlationId = request.headers.get('x-correlation-id') || null;
+    logger.info('shipping_update.audit.requested', { correlationId });
     const { searchParams } = new URL(request.url);
     const order_id = searchParams.get('order_id');
 
@@ -309,7 +310,7 @@ export async function GET(request: NextRequest) {
       .single();
 
     if (error && error.code !== 'PGRST116') { // PGRST116 is "not found"
-      logger.error('shipping_status_lookup_error', { error, order_id, correlationId });
+      logger.error('shipping_update.audit.failed', { error, order_id, correlationId });
       return apiError('DATABASE_ERROR', { correlationId });
     }
 
@@ -343,7 +344,7 @@ export async function GET(request: NextRequest) {
 
   } catch (error) {
     const correlationId = request.headers.get('x-correlation-id') || null;
-    logger.error('shipping_status_lookup_error', { error, correlationId });
+    logger.error('shipping_update.audit.failed', { error, correlationId });
     return apiError('INTERNAL_ERROR', { correlationId });
   }
 }

@@ -43,6 +43,7 @@ async function resolveProductColumns(supabase: any): Promise<Set<string>> {
 
 export async function GET(request: NextRequest) {
   try {
+    logger.info('admin_products.audit.requested');
     const supabase = await createClient();
     const {
       data: { user },
@@ -115,8 +116,10 @@ export async function GET(request: NextRequest) {
       image: getProductDisplayImage(product) || product.image || null
     }));
 
+    logger.info('admin_products.audit.success', { count: normalized.length });
     return NextResponse.json({ products: normalized });
   } catch (error) {
+    logger.error('admin_products.audit.failed', { error: error instanceof Error ? error.message : String(error) });
     logger.error('admin_products.unexpected_error', { error });
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }

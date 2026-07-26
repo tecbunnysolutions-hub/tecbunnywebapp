@@ -22,6 +22,7 @@ const CreatePostSchema = z.object({
 /** GET /api/blog — list published posts (public) or all posts (staff) */
 export async function GET(request: NextRequest) {
   try {
+    logger.info('blog_list.audit.requested');
     const { searchParams } = new URL(request.url);
     const page = Math.max(1, Number(searchParams.get('page') || '1'));
     const pageSize = Math.min(20, Math.max(1, Number(searchParams.get('pageSize') || '10')));
@@ -46,9 +47,10 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to fetch posts' }, { status: 500 });
     }
 
+    logger.info('blog_list.audit.success', { count: data?.length ?? 0, page, pageSize, isStaff });
     return NextResponse.json({ posts: data ?? [], total: count ?? 0, page, pageSize });
   } catch (err: any) {
-    logger.error('blog.get_uncaught', { error: err.message });
+    logger.error('blog_list.audit.failed', { error: err.message });
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

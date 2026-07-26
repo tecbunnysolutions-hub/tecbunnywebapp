@@ -3,6 +3,7 @@ import { withAuditEvent } from "@tecbunny/core/enterprise-analytics";
 import { createClient } from '@tecbunny/database';
 import { createServiceClient, isSupabaseServiceConfigured } from "@tecbunny/database/admin";
 import { NextResponse } from 'next/server';
+import { logger } from '@tecbunny/core/logger';
 
 import { requireRole } from "@tecbunny/core/auth/guard";
 
@@ -16,6 +17,7 @@ interface Body {
 
 // POST /api/admin/roles/set
 export async function POST(req: Request) {
+  logger.info('admin_roles_set.audit.requested');
   const ctx = await requireRole('superadmin');
   if ('error' in ctx) {
     return NextResponse.json({ error: ctx.error }, { status: ctx.status });
@@ -103,8 +105,10 @@ export async function POST(req: Request) {
       return null;
     });
 
+    logger.info('admin_roles_set.audit.success', { userId, newRole });
     return NextResponse.json({ success: true, userId, newRole });
   } catch (e: any) {
+    logger.error('admin_roles_set.audit.failed', { error: e?.message || 'Unexpected error' });
     return NextResponse.json({ error: e?.message || 'Unexpected error' }, { status: 500 });
   }
 }

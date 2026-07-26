@@ -42,6 +42,7 @@ export async function GET(request: NextRequest) {
 
   try {
     const { serviceSupabase, user, role } = await requireAdminContext();
+    logger.info('admin_dashboard.audit.requested', { userId: user.id, role });
 
     logger.info('admin_dashboard.fetch_start', { userId: user.id, role });
 
@@ -265,6 +266,7 @@ export async function GET(request: NextRequest) {
       metadata: { range: stats.range, monthlyOrders: stats.monthlyOrders, monthlyRevenue: stats.monthlyRevenue },
     });
 
+    logger.info('admin_dashboard.audit.success', { userId: user.id, role, monthlyOrders: stats.monthlyOrders });
     logger.info('admin_dashboard.fetch_success', { stats });
 
     return NextResponse.json({ success: true, stats });

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 import { pricingService } from "@tecbunny/core/pricing-service";
+import { logger } from '@tecbunny/core/logger';
 
 // export const dynamic = 'force-dynamic';
 
@@ -10,6 +11,7 @@ import { pricingService } from "@tecbunny/core/pricing-service";
  */
 export async function GET(request: NextRequest) {
   try {
+    logger.info('pricing_customer_type.audit.requested');
     const { searchParams } = new URL(request.url);
     const customerId = searchParams.get('customerId');
 
@@ -31,7 +33,7 @@ export async function GET(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('Error in customer type API:', error);
+    logger.error('pricing_customer_type.audit.failed', { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -45,6 +47,7 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
+    logger.info('pricing_customer_type.audit.verify_requested');
     const { gstin, businessName } = await request.json();
 
     if (!gstin || !businessName) {
@@ -63,7 +66,7 @@ export async function POST(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('Error in GSTIN verification API:', error);
+    logger.error('pricing_customer_type.audit.verify_failed', { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

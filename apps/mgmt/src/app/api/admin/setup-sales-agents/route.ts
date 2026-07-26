@@ -9,6 +9,7 @@ import { logger } from "@tecbunny/core/logger";
 // One-time setup endpoint to create the sales agent feature
 export async function POST(_request: Request) {
   try {
+    logger.info('admin_setup_sales_agents.audit.requested');
     const { serviceSupabase: supabase, user } = await requireAdminContext();
 
     // Create the sales_agents table with a simple approach
@@ -93,6 +94,7 @@ CREATE POLICY "Users can apply for sales agent" ON public.sales_agents
       logger.error('sales_agents_setup.policy_test_error', { error });
     }
 
+    logger.info('admin_setup_sales_agents.audit.success', { userId: user.id });
     return NextResponse.json({ 
       success: true, 
       message: 'Sales Agent feature has been set up successfully!' 
@@ -103,6 +105,7 @@ CREATE POLICY "Users can apply for sales agent" ON public.sales_agents
       return NextResponse.json({ error: err.message }, { status: err.status });
     }
 
+    logger.error('admin_setup_sales_agents.audit.failed', { error: err instanceof Error ? err.message : String(err) });
     logger.error('sales_agents_setup.error', { error: err });
     return NextResponse.json({ 
       error: 'Failed to set up Sales Agent feature',

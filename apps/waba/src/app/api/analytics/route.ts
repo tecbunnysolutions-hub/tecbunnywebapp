@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 
 import { supabase } from '@/lib/supabase';
+import { logger } from '@tecbunny/core/logger';
 import { requireApiRole } from '@tecbunny/core/server-role-guard';
 
 export const dynamic = 'force-dynamic';
@@ -24,46 +25,57 @@ async function safeRows<T>(query: PromiseLike<{ data: T[] | null; error: { messa
 }
 
 export async function GET() {
-  const auth = await requireApiRole({ allowedRoles: ['admin', 'sales_manager', 'marketing_manager', 'superadmin', 'manager'] });
-  if (auth.error) return auth.error;
+  try {
+    const auth = await requireApiRole({ allowedRoles: ['admin', 'sales_manager', 'marketing_manager', 'superadmin', 'manager'] });
+    if (auth.error) return auth.error;
+    logger.info('waba_analytics.audit.requested', { role: auth.role ?? null });
 
-  const now = new Date();
-  const startOfDay = new Date(now);
-  startOfDay.setHours(0, 0, 0, 0);
-  const since = startOfDay.toISOString();
+    const now = new Date();
+    const startOfDay = new Date(now);
+    startOfDay.setHours(0, 0, 0, 0);
+    const since = startOfDay.toISOString();
 
-  const [messagesToday, inboundToday, outboundToday, delivered, read, failed, optedIn, optedOut, recentCampaigns, recentEvents] = await Promise.all([
-    safeCount(supabase.from('Message').select('*', { count: 'exact', head: true }).gte('timestamp', since), 'messages_today'),
-    safeCount(supabase.from('Message').select('*', { count: 'exact', head: true }).eq('direction', 'INBOUND').gte('timestamp', since), 'inbound_today'),
-    safeCount(supabase.from('Message').select('*', { count: 'exact', head: true }).eq('direction', 'OUTBOUND').gte('timestamp', since), 'outbound_today'),
-    safeCount(supabase.from('Message').select('*', { count: 'exact', head: true }).eq('status', 'DELIVERED'), 'delivered'),
-    safeCount(supabase.from('Message').select('*', { count: 'exact', head: true }).eq('status', 'READ'), 'read'),
-    safeCount(supabase.from('Message').select('*', { count: 'exact', head: true }).eq('status', 'FAILED'), 'failed'),
-    safeCount(supabase.from('waba_contact_consent').select('*', { count: 'exact', head: true }).eq('opted_in', true).is('opted_out_at', null), 'opted_in'),
-    safeCount(supabase.from('waba_contact_consent').select('*', { count: 'exact', head: true }).eq('opted_in', false), 'opted_out'),
-    safeRows<Record<string, unknown>>(supabase.from('mkt_campaign_analytics').select('campaign_id, phone, message_id, status, sent_at').order('sent_at', { ascending: false }).limit(20), 'recent_campaigns'),
-    safeRows<Record<string, unknown>>(supabase.from('waba_message_status_events').select('message_id, status, occurred_at').order('occurred_at', { ascending: false }).limit(20), 'recent_events'),
-  ]);
+    const [messagesToday, inboundToday, outboundToday, delivered, read, failed, optedIn, optedOut, recentCampaigns, recentEvents] = await Promise.all([
+      safeCount(supabase.from('Message').select('*', { count: 'exact', head: true }).gte('timestamp', since), 'messages_today'),
+      safeCount(supabase.from('Message').select('*', { count: 'exact', head: true }).eq('direction', 'INBOUND').gte('timestamp', since), 'inbound_today'),
+      safeCount(supabase.from('Message').select('*', { count: 'exact', head: true }).eq('direction', 'OUTBOUND').gte('timestamp', since), 'outbound_today'),
+      safeCount(supabase.from('Message').select('*', { count: 'exact', head: true }).eq('status', 'DELIVERED'), 'delivered'),
+      safeCount(supabase.from('Message').select('*', { count: 'exact', head: true }).eq('status', 'READ'), 'read'),
+      safeCount(supabase.from('Message').select('*', { count: 'exact', head: true }).eq('status', 'FAILED'), 'failed'),
+      safeCount(supabase.from('waba_contact_consent').select('*', { count: 'exact', head: true }).eq('opted_in', true).is('opted_out_at', null), 'opted_in'),
+      safeCount(supabase.from('waba_contact_consent').select('*', { count: 'exact', head: true }).eq('opted_in', false), 'opted_out'),
+      safeRows<Record<string, unknown>>(supabase.from('mkt_campaign_analytics').select('campaign_id, phone, message_id, status, sent_at').order('sent_at', { ascending: false }).limit(20), 'recent_campaigns'),
+      safeRows<Record<string, unknown>>(supabase.from('waba_message_status_events').select('message_id, status, occurred_at').order('occurred_at', { ascending: false }).limit(20), 'recent_events'),
+    ]);
 
-  const deliveryBase = delivered + read + failed;
-  const deliveryRate = deliveryBase > 0 ? Math.round(((delivered + read) / deliveryBase) * 100) : 0;
-  const readRate = deliveryBase > 0 ? Math.round((read / deliveryBase) * 100) : 0;
+    const deliveryBase = delivered + read + failed;
+    const deliveryRate = deliveryBase > 0 ? Math.round(((delivered + read) / deliveryBase) * 100) : 0;
+    const readRate = deliveryBase > 0 ? Math.round((read / deliveryBase) * 100) : 0;
 
-  return NextResponse.json({
-    metrics: {
+    logger.info('waba_analytics.audit.success', {
       messagesToday,
-      inboundToday,
-      outboundToday,
-      delivered,
-      read,
-      failed,
-      deliveryRate,
-      readRate,
-      optedIn,
-      optedOut,
-    },
-    recentCampaigns,
-    recentEvents,
-    generatedAt: now.toISOString(),
-  });
+      recentCampaigns: recentCampaigns.length,
+      recentEvents: recentEvents.length,
+    });
+    return NextResponse.json({
+      metrics: {
+        messagesToday,
+        inboundToday,
+        outboundToday,
+        delivered,
+        read,
+        failed,
+        deliveryRate,
+        readRate,
+        optedIn,
+        optedOut,
+      },
+      recentCampaigns,
+      recentEvents,
+      generatedAt: now.toISOString(),
+    });
+  } catch (error) {
+    logger.error('waba_analytics.audit.failed', { error });
+    return NextResponse.json({ error: 'Failed to load analytics' }, { status: 500 });
+  }
 }

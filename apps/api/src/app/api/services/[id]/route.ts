@@ -17,6 +17,7 @@ export async function GET(
 ) {
   try {
     const correlationId = request.headers.get('x-correlation-id') || null;
+    logger.info('services_detail.audit.requested', { correlationId });
     const supabase = await createClient();
 
     // Verify authentication
@@ -50,11 +51,12 @@ export async function GET(
       return apiError('NOT_FOUND', { correlationId });
     }
 
+    logger.info('services_detail.audit.success', { correlationId, serviceId: id });
     return apiSuccess({ service }, correlationId);
 
   } catch (error: any) {
     const correlationId = request.headers.get('x-correlation-id') || null;
-    logger.error('Error fetching service', { error: error.message, correlationId });
+    logger.error('services_detail.audit.failed', { error: error.message, correlationId });
     return apiError('INTERNAL_ERROR', { correlationId });
   }
 }

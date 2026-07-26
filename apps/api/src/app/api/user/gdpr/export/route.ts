@@ -11,6 +11,7 @@ import { rateLimit } from '@tecbunny/core/rate-limit';
  */
 export async function GET(request: NextRequest) {
   try {
+    logger.info('user_gdpr_export.audit.requested');
     const supabase = await createClient();
     const { data: { user }, error: authErr } = await supabase.auth.getUser();
 
@@ -54,7 +55,7 @@ export async function GET(request: NextRequest) {
       notification_preferences: notifRes.data,
     };
 
-    logger.info('gdpr.export_requested', { userId: user.id });
+    logger.info('user_gdpr_export.audit.success', { userId: user.id });
 
     return new NextResponse(JSON.stringify(exportPayload, null, 2), {
       status: 200,
@@ -65,7 +66,7 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (err: any) {
-    logger.error('gdpr.export_failed', { error: err.message });
+    logger.error('user_gdpr_export.audit.failed', { error: err.message });
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

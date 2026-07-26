@@ -164,6 +164,7 @@ export async function POST(req: Request) {
 
 export async function GET(req: Request) {
   try {
+    logger.info('admin_quotes_advance_payment.audit.requested');
     const { searchParams } = new URL(req.url);
     const quoteId = searchParams.get('quote_id');
     const actionToken = searchParams.get('token');
@@ -200,12 +201,14 @@ export async function GET(req: Request) {
       throw error;
     }
 
+    logger.info('admin_quotes_advance_payment.audit.success', { quoteId: realQuoteId });
     return NextResponse.json({
       success: true,
       data: advancePayment || null,
     });
 
   } catch (error: any) {
+    logger.error('admin_quotes_advance_payment.audit.failed', { error: error.message });
     logger.error('Error fetching advance payment request:', error);
     return NextResponse.json(
       { success: false, error: error.message },

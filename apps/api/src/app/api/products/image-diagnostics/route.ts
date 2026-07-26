@@ -10,6 +10,7 @@ import { AdminAuthError, requireAdminContext } from "@tecbunny/core/auth/admin-g
  */
 export async function GET(_request: NextRequest) {
   try {
+    logger.info('products_image_diagnostics.audit.requested');
     const { serviceSupabase: supabase } = await requireAdminContext();
     
     // Fetch products with image fields
@@ -117,7 +118,7 @@ export async function GET(_request: NextRequest) {
     if (error instanceof AdminAuthError) {
       return NextResponse.json({ error: error.message }, { status: error.status });
     }
-    logger.error('image_diagnostics_error', { error: error?.message });
+    logger.error('products_image_diagnostics.audit.failed', { error: error?.message });
     return NextResponse.json(
       { error: 'Diagnostic check failed', details: error?.message },
       { status: 500 }

@@ -15,6 +15,7 @@ function buildPrompt(name: string, field: string) {
 export async function POST(request: NextRequest) {
   const auth = await requireSuperadminApi('superadmin_service_ai');
   if (!auth.authorized) return auth.response;
+  logger.info('superadmin_service_ai.audit.generate_requested', { userId: auth.user?.id ?? null });
 
   try {
     const body = await request.json().catch(() => ({}));
@@ -22,6 +23,7 @@ export async function POST(request: NextRequest) {
     const field = body.field === 'terms_and_conditions' ? 'terms_and_conditions' : 'description';
 
     if (name.length < 3) {
+      logger.warn('superadmin_service_ai.audit.generate_invalid_name');
       return NextResponse.json({ error: 'Service name must be at least 3 characters' }, { status: 400 });
     }
 
@@ -31,8 +33,10 @@ export async function POST(request: NextRequest) {
       maxOutputTokens: field === 'terms_and_conditions' ? 420 : 180,
     });
 
+    logger.info('superadmin_service_ai.audit.generate_success', { field, nameLength: name.length });
     return NextResponse.json({ text });
   } catch (error) {
+    logger.error('superadmin_service_ai.audit.generate_failed', { error });
     logger.error('superadmin_service_ai.generate_failed', { error });
     return NextResponse.json({ error: 'Failed to generate service copy' }, { status: 500 });
   }

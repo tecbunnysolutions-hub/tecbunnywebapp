@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 import { PERMS } from '@tecbunny/core/roles';
+import { logger } from '@tecbunny/core/logger';
 import { AdminAuthError, requireAdminContext } from '@tecbunny/core/auth/admin-guard';
 import { requirePermission } from '@tecbunny/core/server-role-guard';
 
@@ -9,8 +10,10 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
   try {
+    logger.info('release_notes.audit.requested');
     const permissionCheck = await requirePermission(PERMS.RELEASE_PRODUCTION_LOGS_VIEW);
     if ('error' in permissionCheck) {
+      logger.warn('release_notes.audit.forbidden');
       return permissionCheck.error;
     }
 
@@ -34,19 +37,24 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to fetch release notes', details: error.message }, { status: 500 });
     }
 
+    logger.info('release_notes.audit.success', { count: data?.length ?? 0 });
     return NextResponse.json({ success: true, data: data ?? [] });
   } catch (error) {
     if (error instanceof AdminAuthError) {
+      logger.warn('release_notes.audit.auth_error', { status: error.status });
       return NextResponse.json({ error: error.message }, { status: error.status });
     }
+    logger.error('release_notes.audit.failed', { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json({ error: 'Failed to fetch release notes' }, { status: 500 });
   }
 }
 
 export async function POST(request: NextRequest) {
   try {
+    logger.info('release_notes.audit.upsert_requested');
     const permissionCheck = await requirePermission(PERMS.RELEASE_GOLIVE_APPROVE);
     if ('error' in permissionCheck) {
+      logger.warn('release_notes.audit.upsert_forbidden');
       return permissionCheck.error;
     }
 
@@ -86,11 +94,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to save release notes', details: error.message }, { status: 500 });
     }
 
+    logger.info('release_notes.audit.upsert_success', { releaseId: payload.release_id });
     return NextResponse.json({ success: true, data });
   } catch (error) {
     if (error instanceof AdminAuthError) {
+      logger.warn('release_notes.audit.upsert_auth_error', { status: error.status });
       return NextResponse.json({ error: error.message }, { status: error.status });
     }
+    logger.error('release_notes.audit.upsert_failed', { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json({ error: 'Failed to save release notes' }, { status: 500 });
   }
 }

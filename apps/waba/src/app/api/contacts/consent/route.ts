@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 
 import { supabase } from '@/lib/supabase';
+import { logger } from '@tecbunny/core/logger';
 import { requireApiRole } from '@tecbunny/core/server-role-guard';
 
 export const dynamic = 'force-dynamic';
@@ -15,6 +16,7 @@ const consentSchema = z.object({
 export async function GET(request: Request) {
   const auth = await requireApiRole({ allowedRoles: ['admin', 'sales_manager', 'marketing_manager', 'superadmin', 'manager'] });
   if (auth.error) return auth.error;
+  logger.info('waba_contacts_consent.audit.list_requested', { role: auth.role ?? null });
 
   const { searchParams } = new URL(request.url);
   const query = searchParams.get('q')?.trim();
@@ -30,14 +32,19 @@ export async function GET(request: Request) {
   }
 
   const { data, error } = await builder;
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) {
+    logger.error('waba_contacts_consent.audit.list_failed', { error: error.message });
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
 
+  logger.info('waba_contacts_consent.audit.list_success', { count: (data ?? []).length, hasQuery: Boolean(query) });
   return NextResponse.json({ contacts: data ?? [] });
 }
 
 export async function PATCH(request: Request) {
   const auth = await requireApiRole({ allowedRoles: ['admin', 'sales_manager', 'marketing_manager', 'superadmin', 'manager'] });
   if (auth.error) return auth.error;
+  logger.info('waba_contacts_consent.audit.update_requested', { role: auth.role ?? null });
 
   const parsed = consentSchema.safeParse(await request.json().catch(() => ({})));
   if (!parsed.success) {
@@ -59,6 +66,10 @@ export async function PATCH(request: Request) {
     .select('phone, opted_in, source, last_opt_in_at, opted_out_at, updated_at')
     .single();
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) {
+    logger.error('waba_contacts_consent.audit.update_failed', { error: error.message });
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+  logger.info('waba_contacts_consent.audit.update_success', { phone, optedIn });
   return NextResponse.json({ success: true, contact: data });
 }

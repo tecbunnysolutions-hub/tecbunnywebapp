@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import { withAuditEvent } from '@tecbunny/core/enterprise-analytics';
+import { logger } from '@tecbunny/core/logger';
 import { requireApiRole } from '@tecbunny/core/server-role-guard';
 import { z } from 'zod';
 
@@ -23,6 +24,7 @@ export async function GET() {
     const auth = await requireApiRole();
     if (auth.error) return auth.error;
     if (auth.role === 'customer') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    logger.info('waba_templates.audit.list_requested', { role: auth.role ?? null });
 
     const { data: templates, error } = await supabase.from('Template').select('*').order('created_at', { ascending: false });
     if (error) throw error;
@@ -35,11 +37,14 @@ export async function GET() {
         { id: crypto.randomUUID(), name: 'out_of_office', content: 'Thank you for your message. We are currently out of the office. We will reply when we return.', status: 'DRAFT', provider_status: 'LOCAL_ONLY', variable_count: 0 }
       ];
       await supabase.from('Template').insert(demoTemplates);
+      logger.info('waba_templates.audit.list_success', { seeded: true, count: demoTemplates.length });
       return NextResponse.json({ templates: demoTemplates });
     }
 
+    logger.info('waba_templates.audit.list_success', { seeded: false, count: templates.length });
     return NextResponse.json({ templates });
   } catch (error: unknown) {
+    logger.error('waba_templates.audit.list_failed', { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json({ error: error instanceof Error ? error.message : String(error) }, { status: 500 });
   }
 }
@@ -49,6 +54,7 @@ export async function POST(req: Request) {
     const auth = await requireApiRole();
     if (auth.error) return auth.error;
     if (auth.role === 'customer') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    logger.info('waba_templates.audit.create_requested', { role: auth.role ?? null });
 
     const parsed = templateSchema.safeParse(await req.json().catch(() => ({})));
     if (!parsed.success) {
@@ -86,8 +92,10 @@ export async function POST(req: Request) {
       priority: 'high',
     }, async () => supabase.from('Template').insert(templatePayload).select().single());
     if (error) throw error;
+    logger.info('waba_templates.audit.create_success', { id });
     return NextResponse.json({ success: true, template: data });
   } catch (error: unknown) {
+    logger.error('waba_templates.audit.create_failed', { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json({ error: error instanceof Error ? error.message : String(error) }, { status: 500 });
   }
 }

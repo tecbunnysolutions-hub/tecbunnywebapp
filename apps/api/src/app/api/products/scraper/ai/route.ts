@@ -4,6 +4,7 @@ import { GoogleGenAI, Type } from '@google/genai';
 import { ExtensionAuthError, extensionJson, extensionOptionsResponse, requireExtensionAdmin } from '../../../extension-security';
 
 export async function OPTIONS(request: NextRequest) {
+  logger.info('products_scraper_ai.audit.options_requested');
   return extensionOptionsResponse(request);
 }
 

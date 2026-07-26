@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { requireSupabaseServiceEnv } from "@tecbunny/database";
+import { logger } from '@tecbunny/core/logger';
 
 let supabaseAdmin: any = null;
 
@@ -15,6 +16,7 @@ function getSupabaseAdmin(): any {
 
 export async function GET() {
   try {
+    logger.info('health_orders.audit.requested');
     const supabase = getSupabaseAdmin();
     const checks: any = { ok: true, db: {}, paymentSettings: {}, tables: {} };
 
@@ -41,8 +43,10 @@ export async function GET() {
       checks.tables[t] = error ? { ok: false, error: error.message } : { ok: true, count };
     }
 
+    logger.info('health_orders.audit.success', { ok: checks.ok });
     return NextResponse.json(checks);
   } catch (e) {
+    logger.error('health_orders.audit.failed', { error: e instanceof Error ? e.message : String(e) });
     return NextResponse.json({ ok: false, error: e instanceof Error ? e.message : 'Unknown error' }, { status: 500 });
   }
 }

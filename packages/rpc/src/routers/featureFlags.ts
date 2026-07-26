@@ -2,9 +2,11 @@ import { z } from 'zod';
 import { router, publicProcedure, protectedProcedure } from '../trpc';
 import { createClient } from '@tecbunny/database';
 import { FeatureFlags, FeatureFlagDictionary } from '@tecbunny/config';
+import { logger } from '@tecbunny/core';
 
 export const featureFlagsRouter = router({
   getAll: publicProcedure.query(async ({ ctx }) => {
+    logger.info('rpc_feature_flags.audit.get_all_requested');
     const defaultFlags: FeatureFlagDictionary = {
       [FeatureFlags.CHECKOUT_ENABLED]: true,
       [FeatureFlags.NEW_PAYMENT_GATEWAY]: false,
@@ -29,8 +31,10 @@ export const featureFlagsRouter = router({
         });
       }
 
+      logger.info('rpc_feature_flags.audit.get_all_success', { count: Object.keys(flags).length });
       return flags;
     } catch (err) {
+      logger.error('rpc_feature_flags.audit.get_all_failed', { error: err instanceof Error ? err.message : String(err) });
       console.error('Exception fetching feature flags:', err);
       return defaultFlags;
     }
@@ -42,6 +46,7 @@ export const featureFlagsRouter = router({
       enabled: z.boolean(),
     }))
     .mutation(async ({ input, ctx }) => {
+      logger.info('rpc_feature_flags.audit.toggle_requested', { key: input.key, enabled: input.enabled });
       if (ctx.role !== 'admin' && ctx.role !== 'superadmin') {
         throw new Error('Unauthorized to toggle feature flags');
       }
@@ -57,9 +62,11 @@ export const featureFlagsRouter = router({
         .single();
 
       if (error) {
+        logger.error('rpc_feature_flags.audit.toggle_failed', { key: input.key, error: error.message });
         throw new Error(`Failed to update feature flag: ${error.message}`);
       }
 
+      logger.info('rpc_feature_flags.audit.toggle_success', { key: input.key, enabled: input.enabled });
       return data;
     }),
 });

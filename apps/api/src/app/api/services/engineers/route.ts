@@ -65,6 +65,7 @@ export async function POST(request: NextRequest) {
  */
 export async function GET(request: NextRequest) {
   try {
+    logger.info('services_engineers.audit.requested');
     await requireAdminContext();
 
     const { searchParams } = new URL(request.url);
@@ -83,6 +84,7 @@ export async function GET(request: NextRequest) {
       undefined // Location parsing would need to be implemented if needed
     );
 
+    logger.info('services_engineers.audit.success', { count: engineers?.length ?? 0 });
     return NextResponse.json({
       success: true,
       engineers
@@ -93,7 +95,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: error.status });
     }
 
-    logger.error('Error in get engineers API:', { error });
+    logger.error('services_engineers.audit.failed', { error });
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

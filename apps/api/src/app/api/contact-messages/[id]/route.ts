@@ -92,7 +92,10 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
 
 
 
-export async function GET() { return Response.json({}) }
+export async function GET() {
+  logger.info('contact_messages_id.audit.read_placeholder');
+  return Response.json({});
+}
 
 
 

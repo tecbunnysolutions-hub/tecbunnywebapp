@@ -9,6 +9,7 @@ const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3
 
 // POST /api/admin/redemptions/approve { redemption_id }
 export async function POST(request: Request) {
+  logger.info('admin_redemptions_approve.audit.requested')
   let context
   try {
     context = await requireAdminContext()
@@ -29,6 +30,11 @@ export async function POST(request: Request) {
   })
 
   if (error) {
+    logger.error('admin_redemptions_approve.audit.failed', {
+      redemptionId: redemption_id,
+      error: error.message,
+      code: error.code,
+    })
     logger.warn('admin_redemptions.approve_failed', {
       redemptionId: redemption_id,
       error: error.message,
@@ -37,5 +43,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: error.message }, { status: error.code === 'P0002' ? 404 : 400 })
   }
 
+  logger.info('admin_redemptions_approve.audit.success', { redemptionId: redemption_id })
   return NextResponse.json({ success: true, redemption: data })
 }

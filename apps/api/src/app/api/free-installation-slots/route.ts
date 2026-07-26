@@ -21,6 +21,7 @@ function getSupabase() {
 
 export async function GET() {
   try {
+    logger.info('free_installation_slots.audit.requested');
     const supabase = getSupabase();
     const currentMonth = new Date();
     currentMonth.setDate(1);
@@ -39,6 +40,7 @@ export async function GET() {
 
     // If no record exists for this month, return 10 remaining (will be created on first update)
     if (!data) {
+      logger.info('free_installation_slots.audit.success', { hasRecord: false });
       return NextResponse.json({
         success: true,
         remainingSlots: 10,
@@ -47,6 +49,7 @@ export async function GET() {
       });
     }
 
+    logger.info('free_installation_slots.audit.success', { hasRecord: true, remainingSlots: data.remaining_slots });
     return NextResponse.json({
       success: true,
       remainingSlots: data.remaining_slots,

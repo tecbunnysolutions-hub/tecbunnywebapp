@@ -5,6 +5,7 @@ import { logger } from "@tecbunny/core/logger";
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    logger.info('admin_quote_respond.audit.requested');
     const supabase = await createClient();
     const { data: { session } } = await supabase.auth.getSession();
     
@@ -36,8 +37,10 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
     if (error) throw error;
 
+    logger.info('admin_quote_respond.audit.success', { quoteId: id, status: newStatus });
     return NextResponse.json({ success: true, status: newStatus });
   } catch (error) {
+    logger.error('admin_quote_respond.audit.failed', { error: error instanceof Error ? error.message : String(error) });
     logger.error('Failed to update quote bid', { error });
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }

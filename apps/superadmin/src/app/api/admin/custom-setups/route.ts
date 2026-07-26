@@ -319,6 +319,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
+    logger.info('admin_custom_setups.audit.get_requested');
     const { searchParams } = new URL(request.url);
     const slug = searchParams.get('slug');
 
@@ -363,6 +364,7 @@ export async function GET(request: NextRequest) {
         });
       }
 
+      logger.info('admin_custom_setups.audit.get_success', { mode: 'list', count: templateList.length });
       return NextResponse.json({ success: true, data: templateList });
     }
 
@@ -371,6 +373,7 @@ export async function GET(request: NextRequest) {
       const summary = ((templateData as any).config as unknown as CustomSetupBlueprintSummary) ||
         buildCustomSetupBlueprintSummary(templateData as any) ||
         (await fetchLegacyInventorySummary(serviceSupabase));
+      logger.info('admin_custom_setups.audit.get_success', { mode: 'detail', slug });
       return NextResponse.json({
         success: true,
         data: {
@@ -387,6 +390,7 @@ export async function GET(request: NextRequest) {
     }
 
     const legacySummary = await fetchLegacyInventorySummary(serviceSupabase);
+    logger.info('admin_custom_setups.audit.get_success', { mode: 'legacy_fallback', slug });
     return NextResponse.json({
       success: true,
       data: {
@@ -404,6 +408,10 @@ export async function GET(request: NextRequest) {
     if (error instanceof AdminAuthError) {
       return NextResponse.json({ error: error.message }, { status: error.status });
     }
+
+    logger.error('admin_custom_setups.audit.get_failed', {
+      error: error instanceof Error ? error.message : String(error),
+    });
 
     const legacySummary = buildLegacySummary([]);
     return NextResponse.json({
@@ -424,6 +432,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    logger.info('admin_custom_setups.audit.post_requested');
     const { serviceSupabase } = await requireAdminContext();
     const body = await request.json();
 
@@ -466,6 +475,7 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (error) {
+      logger.error('admin_custom_setups.audit.post_failed', { error: error.message });
       logger.error('admin_custom_setups.create_template_failed', { error: error.message });
       // Fallback response if insert fails
       return NextResponse.json({
@@ -481,6 +491,7 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    logger.info('admin_custom_setups.audit.post_success', { id: data.id });
     return NextResponse.json({
       success: true,
       data: {
@@ -496,6 +507,10 @@ export async function POST(request: NextRequest) {
     if (error instanceof AdminAuthError) {
       return NextResponse.json({ error: error.message }, { status: error.status });
     }
+
+    logger.error('admin_custom_setups.audit.post_unhandled', {
+      error: error instanceof Error ? error.message : String(error),
+    });
 
     logger.error('admin_custom_setups.post_unhandled', {
       error: error instanceof Error ? error.message : String(error),
@@ -566,6 +581,7 @@ function sanitizeNumber(value: unknown): number | null | undefined {
 
 export async function PATCH(request: NextRequest) {
   try {
+    logger.info('admin_custom_setups.audit.patch_requested');
     const { serviceSupabase } = await requireAdminContext();
     const body = await request.json();
     const updates = Array.isArray(body?.updates) ? (body.updates as UpdatePayload[]) : [];
@@ -721,11 +737,16 @@ export async function PATCH(request: NextRequest) {
       }
     }
 
+    logger.info('admin_custom_setups.audit.patch_success', { updates: applied.length });
     return NextResponse.json({ success: true, applied });
   } catch (error) {
     if (error instanceof AdminAuthError) {
       return NextResponse.json({ error: error.message }, { status: error.status });
     }
+
+    logger.error('admin_custom_setups.audit.patch_failed', {
+      error: error instanceof Error ? error.message : String(error),
+    });
 
     logger.error('admin_custom_setups.patch_unhandled', {
       error: error instanceof Error ? error.message : String(error),

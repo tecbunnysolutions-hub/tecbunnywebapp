@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
+import { logger } from '@tecbunny/core/logger';
 
 import { getProductDisplayImage } from '@tecbunny/core/image-utils';
 import { filterPubliclyVisibleProducts } from '@tecbunny/core/product-visibility';
@@ -51,11 +52,14 @@ export async function GET(request: NextRequest) {
   const search = (request.nextUrl.searchParams.get('search') ?? '').trim().slice(0, 80);
   const offset = (page - 1) * limit;
 
+  logger.info('public_products.audit.requested', { page, limit, hasSearch: Boolean(search), status: status ?? null, vendor: vendor ?? null });
+
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
     || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
   if (!url || !key) {
+    logger.warn('public_products.audit.not_configured');
     return fallback(page, limit, 'Product service is not configured.');
   }
 
@@ -67,6 +71,7 @@ export async function GET(request: NextRequest) {
       .range(offset, offset + limit - 1);
 
     if (error) {
+      logger.error('public_products.audit.query_failed', { error: error.message });
       return fallback(page, limit, 'Product service is temporarily unavailable.');
     }
 
@@ -81,6 +86,7 @@ export async function GET(request: NextRequest) {
         return new Date(right.created_at ?? 0).getTime() - new Date(left.created_at ?? 0).getTime();
       });
 
+    logger.info('public_products.audit.success', { count: products.length, page, limit });
     return json({
       success: true,
       data: products,
@@ -91,7 +97,8 @@ export async function GET(request: NextRequest) {
         pages: Math.ceil(products.length / limit),
       },
     });
-  } catch {
+  } catch (error) {
+    logger.error('public_products.audit.exception', { error: error instanceof Error ? error.message : String(error) });
     return fallback(page, limit, 'Product service is temporarily unavailable.');
   }
 }

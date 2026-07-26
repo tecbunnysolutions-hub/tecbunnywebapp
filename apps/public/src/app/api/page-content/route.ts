@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
+import { logger } from '@tecbunny/core/logger';
 
 const CACHE_CONTROL = 'no-store, max-age=0';
 
@@ -30,8 +31,10 @@ function normalizePage(row: Record<string, unknown> | null) {
 }
 
 export async function GET(request: NextRequest) {
+  logger.info('public_page_content.audit.requested');
   const pageKey = request.nextUrl.searchParams.get('key');
   if (!pageKey) {
+    logger.warn('public_page_content.audit.invalid_request');
     return json({ error: 'Page key is required' }, { status: 400 });
   }
 
@@ -40,6 +43,7 @@ export async function GET(request: NextRequest) {
     || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
   if (!url || !key) {
+    logger.warn('public_page_content.audit.not_configured');
     return json({ success: true, data: null });
   }
 
@@ -52,11 +56,14 @@ export async function GET(request: NextRequest) {
       .maybeSingle();
 
     if (error) {
+      logger.error('public_page_content.audit.query_failed', { error: error.message, pageKey });
       return json({ success: true, data: null });
     }
 
+    logger.info('public_page_content.audit.success', { pageKey, found: Boolean(data) });
     return json({ success: true, data: normalizePage(data) });
-  } catch {
+  } catch (error) {
+    logger.error('public_page_content.audit.exception', { error: error instanceof Error ? error.message : String(error), pageKey });
     return json({ success: true, data: null });
   }
 }

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { logger } from '@tecbunny/core/logger';
 
 import { AdminAuthError, requireAdminContext } from '@tecbunny/core/auth/admin-guard';
 import { dateRangeFromSearchParams } from '../../../../lib/enterprise-analytics';
@@ -17,6 +18,7 @@ async function countRows(supabase: Awaited<ReturnType<typeof requireAdminContext
 
 export async function GET(request: NextRequest) {
   try {
+    logger.info('enterprise_dashboard.audit.requested');
     const { serviceSupabase: supabase } = await requireAdminContext();
     const { searchParams } = new URL(request.url);
     const { from, to, days } = dateRangeFromSearchParams(searchParams);
@@ -49,6 +51,7 @@ export async function GET(request: NextRequest) {
       .order('period_end', { ascending: false })
       .limit(100);
 
+    logger.info('enterprise_dashboard.audit.success', { events, auditEvents });
     return NextResponse.json({
       success: true,
       range: { from, to, days },
@@ -69,6 +72,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     if (error instanceof AdminAuthError) return NextResponse.json({ error: error.message }, { status: error.status });
+    logger.error('enterprise_dashboard.audit.failed', { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json({ error: 'Failed to load enterprise analytics dashboard' }, { status: 500 });
   }
 }

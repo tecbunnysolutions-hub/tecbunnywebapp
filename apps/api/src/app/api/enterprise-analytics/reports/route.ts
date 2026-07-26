@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { logger } from '@tecbunny/core/logger';
 
 import { AdminAuthError, requireAdminContext } from '@tecbunny/core/auth/admin-guard';
 import { dateRangeFromSearchParams } from '../../../../lib/enterprise-analytics';
@@ -8,6 +9,7 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
   try {
+    logger.info('enterprise_reports.audit.requested');
     const { serviceSupabase: supabase } = await requireAdminContext();
     const { searchParams } = new URL(request.url);
     const { from, to } = dateRangeFromSearchParams(searchParams);
@@ -20,6 +22,7 @@ export async function GET(request: NextRequest) {
       supabase.from('enterprise_kpi_snapshots').select('*').gte('period_start', from).lte('period_end', to).limit(200),
     ]);
 
+    logger.info('enterprise_reports.audit.success', { reportType });
     return NextResponse.json({
       success: true,
       reportType,
@@ -30,6 +33,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     if (error instanceof AdminAuthError) return NextResponse.json({ error: error.message }, { status: error.status });
+    logger.error('enterprise_reports.audit.failed', { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json({ error: 'Failed to generate report' }, { status: 500 });
   }
 }

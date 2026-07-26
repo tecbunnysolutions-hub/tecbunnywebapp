@@ -1,5 +1,6 @@
 import { createClient } from '@tecbunny/database';
 import { NextRequest, NextResponse } from 'next/server';
+import { logger } from '@tecbunny/core/logger';
 
 
 
@@ -7,6 +8,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
   try {
+    logger.info('discounts_calculate.audit.requested');
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get('userId');
     const orderValue = searchParams.get('orderValue');
@@ -115,7 +117,7 @@ export async function GET(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('Error calculating discounts:', error);
+    logger.error('discounts_calculate.audit.failed', { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
       { message: 'Internal server error' },
       { status: 500 }

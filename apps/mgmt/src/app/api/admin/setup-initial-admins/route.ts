@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { rateLimit } from "@tecbunny/core/rate-limit";
+import { logger } from '@tecbunny/core/logger';
 import {  getAdminClient  } from '@tecbunny/database/admin';
 
 const getSupabaseAdmin = (): any => {
@@ -14,9 +15,11 @@ function getClientIp(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  logger.info('setup_initial_admins.audit.requested');
   const clientIp = getClientIp(request);
   const ipRl = await rateLimit(`setup_admins_ip:${clientIp}`, 3, 15 * 60 * 1000);
   if (!ipRl.allowed) {
+    logger.warn('setup_initial_admins.audit.rate_limited', { clientIp });
     return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
   }
 
@@ -24,6 +27,7 @@ export async function POST(request: NextRequest) {
   const isTokenConfigured = process.env.ADMIN_MAINT_TOKEN && process.env.ADMIN_MAINT_TOKEN.length >= 32;
 
   if (!isTokenConfigured || !token || token !== process.env.ADMIN_MAINT_TOKEN) {
+    logger.warn('setup_initial_admins.audit.unauthorized', { isTokenConfigured });
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
@@ -37,10 +41,12 @@ export async function POST(request: NextRequest) {
       .limit(1);
 
     if (adminCheckError) {
+      logger.error('setup_initial_admins.audit.db_check_failed', { error: adminCheckError.message });
       return NextResponse.json({ error: 'Database check failed' }, { status: 500 });
     }
 
     if (existingAdmins && existingAdmins.length > 0) {
+      logger.warn('setup_initial_admins.audit.locked');
       return NextResponse.json({ error: 'Initialization is already complete and locked' }, { status: 403 });
     }
 
@@ -60,6 +66,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (users.length === 0) {
+      logger.error('setup_initial_admins.audit.missing_env_credentials');
       return NextResponse.json({ error: 'Initial admin credentials environment variables are not configured.' }, { status: 500 });
     }
 
@@ -109,6 +116,7 @@ export async function POST(request: NextRequest) {
         });
 
         if (createErr || !created.user) {
+          logger.error('setup_initial_admins.audit.user_create_failed', { email, error: createErr?.message || 'Failed to create user' });
           results.push({ email, status: 'error', error: createErr?.message || 'Failed to create user' });
           continue;
         }
@@ -132,6 +140,7 @@ export async function POST(request: NextRequest) {
       results.push({ email, status: 'success', userId, role });
     }
 
+    logger.info('setup_initial_admins.audit.success', { resultCount: results.length });
     return NextResponse.json({
       success: true,
       message: 'Admin users setup completed',
@@ -140,6 +149,7 @@ export async function POST(request: NextRequest) {
 
   } catch (e) {
     const msg = e instanceof Error ? e.message : 'Unknown error';
+    logger.error('setup_initial_admins.audit.failed', { error: msg });
     if (msg.startsWith('[supabase]')) {
       return NextResponse.json({ error: 'Service configuration error. Please contact support.' }, { status: 503 });
     }

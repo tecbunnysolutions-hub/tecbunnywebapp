@@ -16,6 +16,7 @@ const SORT_COLUMNS = new Set(['created_at', 'updated_at', 'total', 'status', 'pa
 
 export async function GET(request: NextRequest) {
   try {
+    logger.info('admin_orders.audit.requested');
     const { supabase: authClient, session, role } = await getSessionWithRole(request);
 
     if (!session) {
@@ -138,6 +139,7 @@ export async function GET(request: NextRequest) {
       });
     }
 
+    logger.info('admin_orders.audit.success', { total, page, limit });
     return NextResponse.json({
       orders,
       pagination: {
@@ -159,6 +161,7 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
+    logger.error('admin_orders.audit.failed', { error: error instanceof Error ? error.message : String(error) });
     logger.error('admin_orders.unexpected_error', { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }

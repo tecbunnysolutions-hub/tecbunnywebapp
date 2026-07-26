@@ -11,8 +11,11 @@
 | /api/admin/ai/product-description | POST | none found | none found | available API endpoint | No unmatched caller exists; absence of a direct static frontend fetch is not a missing integration. |
 | /api/admin/ai/related-products | POST | none found | none found | available API endpoint | No unmatched caller exists; absence of a direct static frontend fetch is not a missing integration. |
 | /api/admin/crm/leads | POST | mgmt | apps/mgmt/src/app/mgmt/crm/crm-dashboard.tsx | direct frontend/shared caller detected | No unmatched caller exists; absence of a direct static frontend fetch is not a missing integration. |
-| /api/admin/custom-setups | GET | mgmt | apps/mgmt/src/app/mgmt/admin/custom-setups/price-manager.tsx | direct frontend/shared caller detected | No unmatched caller exists; absence of a direct static frontend fetch is not a missing integration. |
+| /api/admin/custom-setups | GET | mgmt, superadmin | apps/mgmt/src/app/mgmt/admin/custom-setups/price-manager.tsx<br>apps/superadmin/src/components/superadmin/CustomSetupPriceManager.tsx | direct frontend/shared caller detected | No unmatched caller exists; absence of a direct static frontend fetch is not a missing integration. |
+| /api/admin/custom-setups | GET | none found | none found | available API endpoint | No unmatched caller exists; absence of a direct static frontend fetch is not a missing integration. |
 | /api/admin/custom-setups | PATCH | none found | none found | available API endpoint | No unmatched caller exists; absence of a direct static frontend fetch is not a missing integration. |
+| /api/admin/custom-setups | PATCH | none found | none found | available API endpoint | No unmatched caller exists; absence of a direct static frontend fetch is not a missing integration. |
+| /api/admin/custom-setups | POST | none found | none found | available API endpoint | No unmatched caller exists; absence of a direct static frontend fetch is not a missing integration. |
 | /api/admin/dashboard | GET | none found | none found | available API endpoint | No unmatched caller exists; absence of a direct static frontend fetch is not a missing integration. |
 | /api/admin/faqs | GET | admin-ui | packages/admin-ui/src/components/FaqsManagement.tsx | direct frontend/shared caller detected | No unmatched caller exists; absence of a direct static frontend fetch is not a missing integration. |
 | /api/admin/faqs | POST | none found | none found | available API endpoint | No unmatched caller exists; absence of a direct static frontend fetch is not a missing integration. |
@@ -102,7 +105,7 @@
 | /api/auth/signout | POST | core, public | apps/public/src/app/auth/signout/page.tsx<br>packages/core/src/context/AuthProvider.tsx | direct frontend/shared caller detected | No unmatched caller exists; absence of a direct static frontend fetch is not a missing integration. |
 | /api/auth/signup | POST | core, public | apps/public/src/app/auth/signup/page.tsx<br>apps/public/src/app/quotes/[id]/page.tsx<br>packages/core/src/context/AuthProvider.tsx | direct frontend/shared caller detected | No unmatched caller exists; absence of a direct static frontend fetch is not a missing integration. |
 | /api/auth/verify-otp | POST | public | apps/public/src/app/auth/verify-otp/OTPVerificationContent.tsx<br>apps/public/src/app/quotes/[id]/page.tsx | direct frontend/shared caller detected | No unmatched caller exists; absence of a direct static frontend fetch is not a missing integration. |
-| /api/auto-offers | DELETE | mgmt, public | apps/mgmt/src/components/customised-setups/CustomSetupFlow.tsx<br>apps/public/src/components/customised-setups/CustomSetupFlow.tsx<br>apps/public/src/components/products/ShopPageContent.tsx | direct frontend/shared caller detected | No unmatched caller exists; absence of a direct static frontend fetch is not a missing integration. |
+| /api/auto-offers | DELETE | mgmt, public | apps/mgmt/src/components/customised-setups/CustomSetupFlow.tsx<br>apps/public/src/components/products/ShopPageContent.tsx | direct frontend/shared caller detected | No unmatched caller exists; absence of a direct static frontend fetch is not a missing integration. |
 | /api/auto-offers | GET | none found | none found | available API endpoint | No unmatched caller exists; absence of a direct static frontend fetch is not a missing integration. |
 | /api/auto-offers | POST | none found | none found | available API endpoint | No unmatched caller exists; absence of a direct static frontend fetch is not a missing integration. |
 | /api/auto-offers | PUT | none found | none found | available API endpoint | No unmatched caller exists; absence of a direct static frontend fetch is not a missing integration. |
@@ -154,11 +157,17 @@
 | /api/customers/register | GET | none found | none found | available API endpoint | No unmatched caller exists; absence of a direct static frontend fetch is not a missing integration. |
 | /api/customers/register | POST | none found | none found | available API endpoint | No unmatched caller exists; absence of a direct static frontend fetch is not a missing integration. |
 | /api/debug-env | GET | none found | none found | system integration endpoint | This endpoint is triggered by external systems, browser redirects, extensions, or server-side workflows. |
+| /api/deployment/production | POST | none found | none found | available API endpoint | No unmatched caller exists; absence of a direct static frontend fetch is not a missing integration. |
+| /api/deployment/rollback | POST | none found | none found | available API endpoint | No unmatched caller exists; absence of a direct static frontend fetch is not a missing integration. |
+| /api/deployment/staging | POST | none found | none found | available API endpoint | No unmatched caller exists; absence of a direct static frontend fetch is not a missing integration. |
+| /api/deployment/status | GET | none found | none found | available API endpoint | No unmatched caller exists; absence of a direct static frontend fetch is not a missing integration. |
 | /api/discounts | DELETE | admin-ui | packages/admin-ui/src/components/CreateDiscountDialog.tsx<br>packages/admin-ui/src/components/OffersManagement.tsx | direct frontend/shared caller detected | No unmatched caller exists; absence of a direct static frontend fetch is not a missing integration. |
 | /api/discounts | GET | none found | none found | available API endpoint | No unmatched caller exists; absence of a direct static frontend fetch is not a missing integration. |
 | /api/discounts | POST | none found | none found | available API endpoint | No unmatched caller exists; absence of a direct static frontend fetch is not a missing integration. |
 | /api/discounts | PUT | none found | none found | available API endpoint | No unmatched caller exists; absence of a direct static frontend fetch is not a missing integration. |
 | /api/discounts/calculate | GET | none found | none found | available API endpoint | No unmatched caller exists; absence of a direct static frontend fetch is not a missing integration. |
+| /api/docs | GET | none found | none found | available API endpoint | No unmatched caller exists; absence of a direct static frontend fetch is not a missing integration. |
+| /api/docs/openapi | GET | none found | none found | available API endpoint | No unmatched caller exists; absence of a direct static frontend fetch is not a missing integration. |
 | /api/email/abandoned-cart | POST | core | packages/core/src/store/cartStore.ts | direct frontend/shared caller detected | This endpoint is triggered by external systems, browser redirects, extensions, or server-side workflows. |
 | /api/email/email-change | POST | none found | none found | system integration endpoint | This endpoint is triggered by external systems, browser redirects, extensions, or server-side workflows. |
 | /api/email/marketing | POST | none found | none found | system integration endpoint | This endpoint is triggered by external systems, browser redirects, extensions, or server-side workflows. |
@@ -215,6 +224,7 @@
 | /api/messages/media | POST | waba | apps/waba/src/app/page.tsx | direct frontend/shared caller detected | No unmatched caller exists; absence of a direct static frontend fetch is not a missing integration. |
 | /api/messages/read | PATCH | none found | none found | available API endpoint | No unmatched caller exists; absence of a direct static frontend fetch is not a missing integration. |
 | /api/metadata | GET | api, ui | apps/api/src/app/dashboard/page.tsx<br>packages/ui/src/components/ui/logo.tsx | direct frontend/shared caller detected | No unmatched caller exists; absence of a direct static frontend fetch is not a missing integration. |
+| /api/monitoring/health | GET | none found | none found | available API endpoint | No unmatched caller exists; absence of a direct static frontend fetch is not a missing integration. |
 | /api/notifications/send | POST | none found | none found | system integration endpoint | This endpoint is triggered by external systems, browser redirects, extensions, or server-side workflows. |
 | /api/offers | DELETE | admin-ui, core | packages/admin-ui/src/components/OffersManagement.tsx<br>packages/core/src/offer-discount-service.ts | direct frontend/shared caller detected | No unmatched caller exists; absence of a direct static frontend fetch is not a missing integration. |
 | /api/offers | GET | none found | none found | available API endpoint | No unmatched caller exists; absence of a direct static frontend fetch is not a missing integration. |
@@ -292,6 +302,8 @@
 | /api/quotes/bid | POST | none found | none found | available API endpoint | No unmatched caller exists; absence of a direct static frontend fetch is not a missing integration. |
 | /api/referral | GET | none found | none found | available API endpoint | No unmatched caller exists; absence of a direct static frontend fetch is not a missing integration. |
 | /api/referral/claim | POST | none found | none found | available API endpoint | No unmatched caller exists; absence of a direct static frontend fetch is not a missing integration. |
+| /api/release-notes | GET | none found | none found | available API endpoint | No unmatched caller exists; absence of a direct static frontend fetch is not a missing integration. |
+| /api/release-notes | POST | none found | none found | available API endpoint | No unmatched caller exists; absence of a direct static frontend fetch is not a missing integration. |
 | /api/roles-public | GET | none found | none found | available API endpoint | No unmatched caller exists; absence of a direct static frontend fetch is not a missing integration. |
 | /api/roles | DELETE | superadmin | apps/superadmin/src/app/superadmin/mgmt/roles/page.tsx | direct frontend/shared caller detected | No unmatched caller exists; absence of a direct static frontend fetch is not a missing integration. |
 | /api/roles | GET | none found | none found | cross-app/admin endpoint | Admin API modules are often consumed by another deployed app, shared package, Postman collection, or server-rendered workflow. |
@@ -306,6 +318,11 @@
 | /api/security/settings | GET | admin-ui | packages/admin-ui/src/components/security-dashboard.tsx | direct frontend/shared caller detected | No unmatched caller exists; absence of a direct static frontend fetch is not a missing integration. |
 | /api/security/settings | POST | none found | none found | available API endpoint | No unmatched caller exists; absence of a direct static frontend fetch is not a missing integration. |
 | /api/security/validate-password | POST | admin-ui | packages/admin-ui/src/components/security-dashboard.tsx | direct frontend/shared caller detected | No unmatched caller exists; absence of a direct static frontend fetch is not a missing integration. |
+| /api/seller/auth | POST | none found | none found | available API endpoint | No unmatched caller exists; absence of a direct static frontend fetch is not a missing integration. |
+| /api/seller/kyc | POST | none found | none found | available API endpoint | No unmatched caller exists; absence of a direct static frontend fetch is not a missing integration. |
+| /api/seller/login | POST | public | apps/public/src/app/seller/login/page.tsx | direct frontend/shared caller detected | No unmatched caller exists; absence of a direct static frontend fetch is not a missing integration. |
+| /api/seller/products | POST | none found | none found | available API endpoint | No unmatched caller exists; absence of a direct static frontend fetch is not a missing integration. |
+| /api/seller/settlements | GET | none found | none found | available API endpoint | No unmatched caller exists; absence of a direct static frontend fetch is not a missing integration. |
 | /api/service-availability | GET | none found | none found | available API endpoint | No unmatched caller exists; absence of a direct static frontend fetch is not a missing integration. |
 | /api/services | GET | superadmin | apps/superadmin/src/app/superadmin/mgmt/services/page.tsx | direct frontend/shared caller detected | No unmatched caller exists; absence of a direct static frontend fetch is not a missing integration. |
 | /api/services | POST | none found | none found | available API endpoint | No unmatched caller exists; absence of a direct static frontend fetch is not a missing integration. |
@@ -346,7 +363,10 @@
 | /api/templates | GET | waba | apps/waba/src/app/page.tsx<br>apps/waba/src/app/templates/page.tsx | direct frontend/shared caller detected | No unmatched caller exists; absence of a direct static frontend fetch is not a missing integration. |
 | /api/templates | POST | none found | none found | available API endpoint | No unmatched caller exists; absence of a direct static frontend fetch is not a missing integration. |
 | /api/templates/sync | POST | waba | apps/waba/src/app/templates/page.tsx | direct frontend/shared caller detected | No unmatched caller exists; absence of a direct static frontend fetch is not a missing integration. |
-| /api/trpc/{trpc} | GET | mgmt, public | apps/mgmt/src/components/providers/TRPCProvider.tsx<br>apps/public/src/components/providers/TRPCProvider.tsx | direct frontend/shared caller detected | Webhook, cron, health, and tRPC procedure entries are not expected to have direct frontend fetch callers. |
+| /api/testing/coverage | GET | none found | none found | available API endpoint | No unmatched caller exists; absence of a direct static frontend fetch is not a missing integration. |
+| /api/testing/results | GET | none found | none found | available API endpoint | No unmatched caller exists; absence of a direct static frontend fetch is not a missing integration. |
+| /api/testing/results | POST | none found | none found | available API endpoint | No unmatched caller exists; absence of a direct static frontend fetch is not a missing integration. |
+| /api/trpc/{trpc} | GET | api, mgmt, public | apps/api/src/proxy.ts<br>apps/mgmt/src/components/providers/TRPCProvider.tsx<br>apps/public/src/components/providers/TRPCProvider.tsx | direct frontend/shared caller detected | Webhook, cron, health, and tRPC procedure entries are not expected to have direct frontend fetch callers. |
 | /api/trpc/{trpc} | POST | none found | none found | backend/service endpoint | Webhook, cron, health, and tRPC procedure entries are not expected to have direct frontend fetch callers. |
 | /api/trpc/contactMessages.submit | POST | none found | none found | backend/service endpoint | Webhook, cron, health, and tRPC procedure entries are not expected to have direct frontend fetch callers. |
 | /api/trpc/coupons.create | POST | none found | none found | backend/service endpoint | Webhook, cron, health, and tRPC procedure entries are not expected to have direct frontend fetch callers. |
@@ -390,7 +410,11 @@
 | /api/users | POST | none found | none found | available API endpoint | No unmatched caller exists; absence of a direct static frontend fetch is not a missing integration. |
 | /api/users | PUT | none found | none found | available API endpoint | No unmatched caller exists; absence of a direct static frontend fetch is not a missing integration. |
 | /api/users | PUT | none found | none found | available API endpoint | No unmatched caller exists; absence of a direct static frontend fetch is not a missing integration. |
+| /api/v1/admin-auth/login | POST | none found | none found | available API endpoint | No unmatched caller exists; absence of a direct static frontend fetch is not a missing integration. |
+| /api/v1/auth/send-otp | POST | none found | none found | available API endpoint | No unmatched caller exists; absence of a direct static frontend fetch is not a missing integration. |
+| /api/v1/auth/verify-otp | POST | none found | none found | available API endpoint | No unmatched caller exists; absence of a direct static frontend fetch is not a missing integration. |
 | /api/v1/embed/configurator | GET | none found | none found | available API endpoint | No unmatched caller exists; absence of a direct static frontend fetch is not a missing integration. |
+| /api/v2/status | GET | none found | none found | available API endpoint | No unmatched caller exists; absence of a direct static frontend fetch is not a missing integration. |
 | /api/walk-in-orders | GET | mgmt | apps/mgmt/src/components/sales/WalkInOrderManagement.tsx | direct frontend/shared caller detected | No unmatched caller exists; absence of a direct static frontend fetch is not a missing integration. |
 | /api/walk-in-orders | POST | none found | none found | available API endpoint | No unmatched caller exists; absence of a direct static frontend fetch is not a missing integration. |
 | /api/warranty/activate | POST | public | apps/public/src/app/activate-warranty/[serialNumber]/page.tsx | direct frontend/shared caller detected | No unmatched caller exists; absence of a direct static frontend fetch is not a missing integration. |

@@ -12,6 +12,7 @@ export const dynamic = 'force-dynamic';
  */
 export async function GET(request: NextRequest) {
   try {
+    logger.info('referral.audit.requested');
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -22,7 +23,10 @@ export async function GET(request: NextRequest) {
       .eq('user_id', user.id)
       .maybeSingle();
 
-    if (existing) return NextResponse.json({ referral: existing });
+    if (existing) {
+      logger.info('referral.audit.success', { source: 'existing', userId: user.id });
+      return NextResponse.json({ referral: existing });
+    }
 
     // Create a new code
     const code = randomBytes(4).toString('hex').toUpperCase(); // 8-char code e.g. "A3F7B2C1"
@@ -37,9 +41,10 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to create referral code' }, { status: 500 });
     }
 
+    logger.info('referral.audit.success', { source: 'created', userId: user.id });
     return NextResponse.json({ referral: created });
   } catch (err: any) {
-    logger.error('referral.get_uncaught', { error: err.message });
+    logger.error('referral.audit.failed', { error: err.message });
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

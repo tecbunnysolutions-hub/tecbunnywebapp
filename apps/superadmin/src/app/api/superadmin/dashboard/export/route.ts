@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 import { createSupabaseServiceClient } from '@tecbunny/database/admin';
+import { logger } from '@tecbunny/core/logger';
 
 import { requireSuperadminApi } from '@/lib/superadmin-api';
 
@@ -25,9 +26,11 @@ function csvEscape(value: unknown) {
 export async function GET(request: NextRequest) {
   const auth = await requireSuperadminApi('superadmin_dashboard_export');
   if (!auth.authorized) return auth.response;
+  logger.info('superadmin_dashboard_export.audit.requested', { userId: auth.user?.id ?? null });
 
   const type = request.nextUrl.searchParams.get('type');
   if (type !== 'audit' && type !== 'staff') {
+    logger.warn('superadmin_dashboard_export.audit.invalid_type', { type });
     return NextResponse.json({ error: 'type must be "audit" or "staff"' }, { status: 400 });
   }
 
@@ -44,6 +47,7 @@ export async function GET(request: NextRequest) {
     .limit(5000);
 
   if (error) {
+    logger.error('superadmin_dashboard_export.audit.failed', { type, error: error.message });
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
@@ -53,6 +57,7 @@ export async function GET(request: NextRequest) {
     ...rows.map((row) => columns.map((column) => csvEscape(row[column])).join(',')),
   ].join('\r\n');
 
+  logger.info('superadmin_dashboard_export.audit.success', { type, rows: rows.length, days });
   return new NextResponse(csv, {
     headers: {
       'Content-Type': 'text/csv; charset=utf-8',

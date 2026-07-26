@@ -4,7 +4,7 @@ import path from 'node:path';
 const ROOT = process.cwd();
 const OUT_DIR = path.join(ROOT, 'docs', 'api-audit');
 const HTTP_METHODS = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS', 'HEAD'];
-const SKIP_DIRS = new Set(['.git', '.next', '.turbo', 'node_modules', 'dist', 'build', 'coverage']);
+const SKIP_DIRS = new Set(['.git', '.next', '.turbo', 'node_modules', 'dist', 'build']);
 const SOURCE_EXTENSIONS = new Set(['.ts', '.tsx', '.js', '.jsx', '.mjs', '.cjs']);
 
 function toPosix(filePath) {
@@ -17,6 +17,41 @@ function rel(filePath) {
 
 function read(filePath) {
   return fs.readFileSync(filePath, 'utf8');
+}
+
+function resolveImportPath(baseFilePath, specifier) {
+  if (!specifier || !specifier.startsWith('.')) return null;
+  const baseDir = path.dirname(baseFilePath);
+  const resolved = path.resolve(baseDir, specifier);
+  const candidates = [
+    resolved,
+    `${resolved}.ts`,
+    `${resolved}.tsx`,
+    `${resolved}.js`,
+    `${resolved}.jsx`,
+    path.join(resolved, 'index.ts'),
+    path.join(resolved, 'index.tsx'),
+    path.join(resolved, 'index.js'),
+    path.join(resolved, 'index.jsx'),
+  ];
+  return candidates.find((candidate) => fs.existsSync(candidate)) || null;
+}
+
+function expandReExportSource(source, filePath, visited = new Set()) {
+  const visitKey = path.resolve(filePath);
+  if (visited.has(visitKey)) return source;
+  visited.add(visitKey);
+
+  let expanded = source;
+  const reExportRegex = /export\s*\{[^}]*\}\s*from\s*['"]([^'"]+)['"]/g;
+  for (const match of source.matchAll(reExportRegex)) {
+    const targetSpecifier = match[1];
+    const targetFile = resolveImportPath(filePath, targetSpecifier);
+    if (!targetFile) continue;
+    const targetSource = read(targetFile);
+    expanded += `\n/* expanded-from:${rel(targetFile)} */\n${expandReExportSource(targetSource, targetFile, visited)}`;
+  }
+  return expanded;
 }
 
 function ensureDir(dir) {
@@ -57,7 +92,8 @@ function exportedMethods(source) {
   for (const method of HTTP_METHODS) {
     const direct = new RegExp(`export\\s+async\\s+function\\s+${method}\\b|export\\s+function\\s+${method}\\b|export\\s+const\\s+${method}\\b`);
     const alias = new RegExp(`export\\s*\\{[^}]*\\bas\\s+${method}\\b[^}]*\\}`);
-    if (direct.test(source) || alias.test(source)) {
+    const reExport = new RegExp(`export\\s*\\{[^}]*\\b${method}\\b[^}]*\\}\\s*from\\s*['\"][^'\"]+['\"]`);
+    if (direct.test(source) || alias.test(source) || reExport.test(source)) {
       methods.add(method);
     }
   }
@@ -253,18 +289,19 @@ function discoverRouteEndpoints() {
   const endpoints = [];
   for (const filePath of routeFiles.sort()) {
     const source = read(filePath);
+    const expandedSource = expandReExportSource(source, filePath);
     const route = routePathFromFile(filePath);
     if (!route) continue;
     const methods = exportedMethods(source);
-    const sourceImports = extractImports(source);
-    const tables = extractTables(source);
+    const sourceImports = extractImports(expandedSource);
+    const tables = extractTables(expandedSource);
     const controls = appControls(route.app);
-    const signals = routeSignals(source, route.url);
+    const signals = routeSignals(expandedSource, route.url);
     const appBase = `{{${route.app.toUpperCase().replace(/-/g, '_')}_BASE_URL}}`;
     for (const method of methods.length ? methods : ['UNREGISTERED']) {
       const requiresAuth = !publicIntent(method, route.url, source);
       const requiresPermission = permissionIntent(method, route.url);
-      const methodSource = sourceForMethod(source, method);
+      const methodSource = sourceForMethod(expandedSource, method);
       const statusCodes = extractStatuses(methodSource);
       const endpoint = {
         id: `${route.app}:${method}:${route.url}`,

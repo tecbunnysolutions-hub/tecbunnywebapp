@@ -76,6 +76,7 @@ export async function POST(request: NextRequest) {
   const correlationId = request.headers.get('x-correlation-id') || crypto.randomUUID();
 
   try {
+    logger.info('admin_crm_leads.audit.requested', { correlationId });
     const { supabase: authClient, session, role } = await getSessionWithRole(request);
     if (!session) {
       return NextResponse.json({ error: 'Authentication required', correlationId }, { status: 401 });
@@ -131,6 +132,7 @@ export async function POST(request: NextRequest) {
         .single();
 
       if (error) throw error;
+      logger.info('admin_crm_leads.audit.success', { correlationId, isNew: false, leadId: data?.id ?? null });
       return NextResponse.json({ success: true, isNew: false, lead: data, correlationId });
     }
 
@@ -144,9 +146,11 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (error) throw error;
+    logger.info('admin_crm_leads.audit.success', { correlationId, isNew: true, leadId: data?.id ?? null });
     return NextResponse.json({ success: true, isNew: true, lead: data, correlationId });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to create CRM contact';
+    logger.error('admin_crm_leads.audit.failed', { correlationId, error: message });
     logger.error('mgmt.crm.leads.create_failed', { correlationId, error: message });
     return NextResponse.json({ error: message, correlationId }, { status: 500 });
   }

@@ -4,6 +4,7 @@ import { logger } from "@tecbunny/core";
 // GET /api/roles-public - Get available user roles (public endpoint for UI)
 export async function GET(_: NextRequest) {
   try {
+    logger.info('roles_public.audit.requested');
     // Public-safe roles only. Privileged role details are available through /api/roles after auth.
     const roles = [
       {
@@ -20,6 +21,7 @@ export async function GET(_: NextRequest) {
       }
     ];
 
+    logger.info('roles_public.audit.success', { total: roles.length });
     return NextResponse.json({
       roles,
       total: roles.length,

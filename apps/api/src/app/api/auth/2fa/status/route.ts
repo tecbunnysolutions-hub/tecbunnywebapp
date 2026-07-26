@@ -10,6 +10,7 @@ import { logger } from "@tecbunny/core";
 
 export async function GET(_request: NextRequest) {
   try {
+    logger.info('two_factor_status.audit.requested');
     const supabase = await createClient();
     const { data: { user }, error: authError } = await supabase.auth.getUser();
 
@@ -20,7 +21,7 @@ export async function GET(_request: NextRequest) {
       );
     }
 
-  const status = await twoFactorManager.getTwoFactorStatus(user.id, supabase);
+    const status = await twoFactorManager.getTwoFactorStatus(user.id, supabase);
 
     if (!status) {
       return NextResponse.json(
@@ -29,10 +30,11 @@ export async function GET(_request: NextRequest) {
       );
     }
 
+    logger.info('two_factor_status.audit.success', { userId: user.id });
     return NextResponse.json(status);
 
   } catch (error) {
-    logger.error('two_factor.status.error', { error });
+    logger.error('two_factor_status.audit.failed', { error });
     return NextResponse.json(
       { error: 'Failed to retrieve 2FA status' },
       { status: 500 }

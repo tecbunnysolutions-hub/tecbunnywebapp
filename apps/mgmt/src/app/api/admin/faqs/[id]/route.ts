@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 import { APIResponseBuilder } from "@tecbunny/core/api-response";
 import { requireApiRole } from "@tecbunny/core/server-role-guard";
+import { logger } from '@tecbunny/core/logger';
 
 export const dynamic = 'force-dynamic';
 
@@ -62,6 +63,7 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    logger.info('admin_faqs_by_id.audit.delete_requested');
     const authResult = await requireApiRole({ allowedRoles: ['admin'] });
     if ('error' in authResult) {
       return authResult.error;
@@ -80,13 +82,16 @@ export async function DELETE(
       .eq('id', id);
 
     if (error) {
+      logger.error('admin_faqs_by_id.audit.delete_failed', { faqId: id, error: error.message });
       return APIResponseBuilder.internalServerError('Failed to delete FAQ', {
         error: error.message,
       });
     }
 
+    logger.info('admin_faqs_by_id.audit.delete_success', { faqId: id });
     return APIResponseBuilder.success({ message: 'FAQ deleted successfully' });
   } catch (error: any) {
+    logger.error('admin_faqs_by_id.audit.delete_unhandled', { error: error.message });
     return APIResponseBuilder.internalServerError('An unexpected error occurred while deleting FAQ', {
       error: error.message,
     });

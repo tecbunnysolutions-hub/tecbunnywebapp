@@ -28,6 +28,7 @@ function enforceIndianFormatting(phone: string): string {
 
 export async function POST(req: Request) {
   try {
+    logger.info('admin_marketing_broadcast.audit.requested');
     const supabase = await createClient();
     const { data: { session } } = await supabase.auth.getSession();
     
@@ -76,6 +77,7 @@ export async function POST(req: Request) {
 
     processBatchDelivery(logEntry.id, campaignName, channelType, template, contacts);
 
+    logger.info('admin_marketing_broadcast.audit.success', { logId: logEntry.id, channelType, recipients: contacts.length });
     return NextResponse.json({ 
       success: true, 
       message: 'Batch pipeline initialized',
@@ -83,6 +85,7 @@ export async function POST(req: Request) {
     }, { status: 202 });
 
   } catch (error) {
+    logger.error('admin_marketing_broadcast.audit.failed', { error: error instanceof Error ? error.message : String(error) });
     logger.error('Broadcast Execution Route Error', { error });
     return NextResponse.json({ error: 'Internal Server Fault' }, { status: 500 });
   }

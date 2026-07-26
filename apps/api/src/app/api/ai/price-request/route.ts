@@ -1,11 +1,13 @@
 import { createClient } from '@tecbunny/database';
 import { createSupabaseServiceClient, isSupabaseServiceConfigured } from "@tecbunny/core/server";;
 import { NextRequest, NextResponse } from 'next/server';
+import { logger } from '@tecbunny/core/logger';
 
 
 
 export async function POST(request: NextRequest) {
   try {
+    logger.info('ai_price_request.audit.requested');
     const body = await request.json();
     const productId = typeof body?.productId === 'string' ? body.productId : null;
     const query = typeof body?.query === 'string' ? body.query.trim() : '';
@@ -42,11 +44,14 @@ export async function POST(request: NextRequest) {
       });
 
     if (error) {
+      logger.error('ai_price_request.audit.insert_failed', { error: error.message });
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
+    logger.info('ai_price_request.audit.success', { userId: user.id, productId });
     return NextResponse.json({ success: true });
   } catch (error: any) {
+    logger.error('ai_price_request.audit.failed', { error: error?.message || 'Failed to submit price request.' });
     return NextResponse.json(
       { error: error?.message || 'Failed to submit price request.' },
       { status: 500 }

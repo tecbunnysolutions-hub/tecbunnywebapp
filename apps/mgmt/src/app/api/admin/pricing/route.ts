@@ -2,6 +2,7 @@ import { isAdmin } from "@tecbunny/core/permissions";
 import { createClient } from '@tecbunny/database';
 import { createServiceClient, isSupabaseServiceConfigured } from "@tecbunny/database/admin";
 import { NextRequest, NextResponse } from 'next/server';
+import { logger } from '@tecbunny/core/logger';
 
 
 
@@ -14,6 +15,7 @@ import { NextRequest, NextResponse } from 'next/server';
  */
 export async function GET(_request: NextRequest) {
   try {
+    logger.info('admin_pricing.audit.requested');
     const supabase = await createClient();
     
     // Check authentication and authorization
@@ -43,6 +45,7 @@ export async function GET(_request: NextRequest) {
       .order('created_at', { ascending: false });
 
     if (error) {
+      logger.error('admin_pricing.audit.failed', { error: error.message });
       console.error('Error fetching pricing rules:', error);
       return NextResponse.json(
         { error: 'Failed to fetch pricing rules', details: error.message },
@@ -56,8 +59,10 @@ export async function GET(_request: NextRequest) {
       product_title: rule.products?.title || 'Unknown Product',
     }));
 
+    logger.info('admin_pricing.audit.success', { count: transformedRules?.length ?? 0 });
     return NextResponse.json({ rules: transformedRules || [] });
   } catch (error) {
+    logger.error('admin_pricing.audit.unhandled', { error: error instanceof Error ? error.message : String(error) });
     console.error('Unexpected error in GET /api/admin/pricing:', error);
     return NextResponse.json(
       { error: 'Internal server error' },

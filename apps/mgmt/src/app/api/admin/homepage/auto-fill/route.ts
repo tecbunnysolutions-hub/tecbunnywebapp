@@ -18,6 +18,7 @@ interface AutoFillOptions {
 // POST /api/admin/homepage/auto-fill
 export async function POST(request: NextRequest) {
   try {
+    logger.info('admin_homepage_autofill.audit.requested');
     const supabase = await createServerClient();
     // Use service client for product/order reads so RLS doesn't restrict catalog access
     const dataClient = isSupabaseServiceConfigured ? createServiceClient() : supabase;
@@ -115,9 +116,16 @@ export async function POST(request: NextRequest) {
       .slice(0, limit);
 
     // Return computed lists also for external use.
+    logger.info('admin_homepage_autofill.audit.success', {
+      featured: featured.length,
+      newArrivals: newArrivals.length,
+      trending: trendingSorted.length,
+      deals: deals.length,
+    });
     return NextResponse.json({ success: true, featured, newArrivals, trending: trendingSorted, deals });
 
   } catch (error) {
+    logger.error('admin_homepage_autofill.audit.failed', { error: error instanceof Error ? error.message : String(error) });
     logger.error('admin_homepage_autofill_error', { error });
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }

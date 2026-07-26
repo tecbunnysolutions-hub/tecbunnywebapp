@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { requireSuperadminApi } from '@/lib/superadmin-api';
 import { z } from 'zod';
 import { withAuditEvent } from '@tecbunny/core/enterprise-analytics';
+import { logger } from '@tecbunny/core/logger';
 
 const organizationCreateSchema = z.object({
   name: z.string().trim().min(2).max(120),
@@ -15,6 +16,7 @@ const organizationDeleteSchema = z.object({
 export async function GET(req: NextRequest) {
   const auth = await requireSuperadminApi('superadmin_organizations');
   if (!auth.authorized) return auth.response;
+  logger.info('superadmin_organizations.audit.list_requested', { userId: auth.user?.id ?? null });
   try {
     const orgs = await prisma.organization.findMany({
       include: {
@@ -24,8 +26,10 @@ export async function GET(req: NextRequest) {
       },
       orderBy: { created_at: 'desc' }
     });
+    logger.info('superadmin_organizations.audit.list_success', { count: orgs.length });
     return NextResponse.json(orgs);
   } catch (error: any) {
+    logger.error('superadmin_organizations.audit.list_failed', { error: error?.message ?? String(error) });
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
@@ -33,6 +37,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   const auth = await requireSuperadminApi('superadmin_organizations');
   if (!auth.authorized) return auth.response;
+  logger.info('superadmin_organizations.audit.create_requested', { userId: auth.user?.id ?? null });
   try {
     const parsed = organizationCreateSchema.safeParse(await req.json().catch(() => ({})));
     if (!parsed.success) return NextResponse.json({ error: 'A valid organization name is required' }, { status: 400 });
@@ -54,8 +59,10 @@ export async function POST(req: NextRequest) {
       databaseTable: 'organizations',
       priority: 'critical',
     }, async () => prisma.organization.create({ data: { name } }));
+    logger.info('superadmin_organizations.audit.create_success', { id: org.id });
     return NextResponse.json(org);
   } catch (error: any) {
+    logger.error('superadmin_organizations.audit.create_failed', { error: error?.message ?? String(error) });
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
@@ -63,6 +70,7 @@ export async function POST(req: NextRequest) {
 export async function DELETE(req: NextRequest) {
   const auth = await requireSuperadminApi('superadmin_organizations');
   if (!auth.authorized) return auth.response;
+  logger.info('superadmin_organizations.audit.delete_requested', { userId: auth.user?.id ?? null });
   try {
     const parsed = organizationDeleteSchema.safeParse(await req.json().catch(() => ({})));
     if (!parsed.success) return NextResponse.json({ error: 'A valid organization id is required' }, { status: 400 });
@@ -86,8 +94,10 @@ export async function DELETE(req: NextRequest) {
       databaseTable: 'organizations',
       priority: 'critical',
     }, async () => prisma.organization.delete({ where: { id } }));
+    logger.info('superadmin_organizations.audit.delete_success', { id });
     return NextResponse.json({ success: true });
   } catch (error: any) {
+    logger.error('superadmin_organizations.audit.delete_failed', { error: error?.message ?? String(error) });
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

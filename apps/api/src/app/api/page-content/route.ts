@@ -147,6 +147,7 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const pageKey = searchParams.get('key');
+    logger.info('page_content.audit.requested', { pageKey });
 
     if (!pageKey) {
       return NextResponse.json({ error: 'Page key is required' }, { status: 400 });
@@ -159,9 +160,10 @@ export async function GET(request: NextRequest) {
       return jsonWithCache({ success: true, data: null }, PUBLIC_PAGE_CONTENT_CACHE_CONTROL);
     }
 
+    logger.info('page_content.audit.success', { pageKey, found: Boolean(pageContent) });
     return jsonWithCache({ success: true, data: normalizePage(pageContent ?? null) }, PUBLIC_PAGE_CONTENT_CACHE_CONTROL);
   } catch (error) {
-    logger.error('page_content_api_error', { error });
+    logger.error('page_content.audit.failed', { error });
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

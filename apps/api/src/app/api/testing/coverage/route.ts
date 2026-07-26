@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import { QADeploymentService } from '@tecbunny/core';
 import { PERMS } from '@tecbunny/core/roles';
+import { logger } from '@tecbunny/core/logger';
 import { AdminAuthError, requireAdminContext } from '@tecbunny/core/auth/admin-guard';
 import { requirePermission } from '@tecbunny/core/server-role-guard';
 
@@ -10,6 +11,7 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
   try {
+    logger.info('testing_coverage.audit.requested');
     const permissionCheck = await requirePermission(PERMS.RELEASE_TEST_SUITE_RUN);
     if ('error' in permissionCheck) {
       return permissionCheck.error;
@@ -44,6 +46,7 @@ export async function GET(request: NextRequest) {
       minCoveragePercent: Number.isFinite(minCoverage) ? minCoverage : 80,
     });
 
+    logger.info('testing_coverage.audit.success', { modules: coverage.length, minCoverage });
     return NextResponse.json({
       success: true,
       data: {
@@ -53,6 +56,7 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
+    logger.error('testing_coverage.audit.failed', { error: error instanceof Error ? error.message : String(error) });
     if (error instanceof AdminAuthError) {
       return NextResponse.json({ error: error.message }, { status: error.status });
     }

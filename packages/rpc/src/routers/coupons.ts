@@ -6,6 +6,7 @@ import { TRPCError } from '@trpc/server';
 
 export const couponsRouter = router({
   getAll: publicProcedure.query(async () => {
+    logger.info('rpc_coupons.audit.get_all_requested');
     if (!isSupabaseServiceConfigured) {
       throw new TRPCError({
         code: 'INTERNAL_SERVER_ERROR',
@@ -27,12 +28,14 @@ export const couponsRouter = router({
       });
     }
 
+    logger.info('rpc_coupons.audit.get_all_success', { count: data?.length ?? 0 });
     return data;
   }),
 
   getByCode: publicProcedure
     .input(z.object({ code: z.string() }))
     .query(async ({ input }: { input: any }) => {
+      logger.info('rpc_coupons.audit.get_by_code_requested', { code: input.code });
       if (!isSupabaseServiceConfigured) {
         throw new TRPCError({
           code: 'INTERNAL_SERVER_ERROR',
@@ -70,12 +73,14 @@ export const couponsRouter = router({
         });
       }
 
+      logger.info('rpc_coupons.audit.get_by_code_success', { code: input.code });
       return data;
     }),
 
   getById: publicProcedure
     .input(z.object({ id: z.string() }))
     .query(async ({ input }: { input: any }) => {
+      logger.info('rpc_coupons.audit.get_by_id_requested', { id: input.id });
       if (!isSupabaseServiceConfigured) {
         throw new TRPCError({
           code: 'INTERNAL_SERVER_ERROR',
@@ -97,6 +102,7 @@ export const couponsRouter = router({
         });
       }
 
+      logger.info('rpc_coupons.audit.get_by_id_success', { id: input.id });
       return data;
     }),
 
@@ -120,6 +126,7 @@ export const couponsRouter = router({
       })
     )
     .mutation(async ({ input }: { input: any }) => {
+      logger.info('rpc_coupons.audit.create_requested', { code: input.code });
       if (!isSupabaseServiceConfigured) {
         throw new TRPCError({
           code: 'INTERNAL_SERVER_ERROR',
@@ -161,6 +168,7 @@ export const couponsRouter = router({
         });
       }
 
+      logger.info('rpc_coupons.audit.create_success', { id: data?.id ?? null, code: data?.code ?? input.code });
       return { coupon: data, message: 'Coupon created successfully' };
     }),
 
@@ -185,6 +193,7 @@ export const couponsRouter = router({
       })
     )
     .mutation(async ({ input }: { input: any }) => {
+      logger.info('rpc_coupons.audit.update_requested', { id: input.id });
       if (!isSupabaseServiceConfigured) {
         throw new TRPCError({
           code: 'INTERNAL_SERVER_ERROR',
@@ -226,12 +235,14 @@ export const couponsRouter = router({
         });
       }
 
+      logger.info('rpc_coupons.audit.update_success', { id: input.id });
       return { coupon: data, message: 'Coupon updated successfully' };
     }),
 
   delete: protectedProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ input }: { input: any }) => {
+      logger.info('rpc_coupons.audit.delete_requested', { id: input.id });
       if (!isSupabaseServiceConfigured) {
         throw new TRPCError({
           code: 'INTERNAL_SERVER_ERROR',
@@ -252,6 +263,7 @@ export const couponsRouter = router({
         });
       }
 
+      logger.info('rpc_coupons.audit.delete_success', { id: input.id });
       return { message: 'Coupon deleted successfully' };
     }),
 });

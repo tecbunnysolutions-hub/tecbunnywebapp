@@ -19,6 +19,7 @@ interface CommunicationPreferences {
 // Get user communication preferences
 export async function GET(request: NextRequest) {
   try {
+    logger.info('user_communication_preferences.audit.requested');
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get('userId');
 
@@ -79,10 +80,11 @@ export async function GET(request: NextRequest) {
 
     const publicPreferences = { ...(preferences as any) };
     delete publicPreferences[`s${'ms'}Notifications`];
+    logger.info('user_communication_preferences.audit.success', { userId });
     return NextResponse.json(publicPreferences);
 
   } catch (error) {
-    logger.error('Communication preferences GET error:', { 
+    logger.error('user_communication_preferences.audit.failed', { 
       error: error instanceof Error ? error.message : String(error) 
     });
     return NextResponse.json(

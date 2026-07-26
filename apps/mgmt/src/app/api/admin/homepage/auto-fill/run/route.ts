@@ -11,6 +11,7 @@ import { computeAutoFill } from "@tecbunny/core/homepage-auto-fill";
 
 export async function POST(request: NextRequest) {
   try {
+    logger.info('admin_homepage_autofill_run.audit.requested');
     const supabase = await createServerClient();
     const { data: { user } } = await supabase.auth.getUser();
 
@@ -112,9 +113,11 @@ export async function POST(request: NextRequest) {
     await serviceUpsert('dealProductIds', suggestions.deals.map(p => p.id));
 
     logger.info('admin_homepage_autofill_persisted', { by: user?.id ?? (isCronRequest ? 'cron' : undefined), counts: { featured: suggestions.featured.length, newArrivals: suggestions.newArrivals.length, trending: suggestions.trending.length, deals: suggestions.deals.length } });
+    logger.info('admin_homepage_autofill_run.audit.success', { by: user?.id ?? (isCronRequest ? 'cron' : undefined) });
 
     return NextResponse.json({ success: true, suggestions });
   } catch (error) {
+    logger.error('admin_homepage_autofill_run.audit.failed', { error: error instanceof Error ? error.message : String(error) });
     logger.error('admin_homepage_autofill_run_error', { error });
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }

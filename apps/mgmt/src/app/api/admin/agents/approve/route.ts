@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
 
 import { AdminAuthError, requireAdminContext } from "@tecbunny/core/auth/admin-guard"
+import { withAuditEvent } from '@tecbunny/core/enterprise-analytics'
+import { logger } from '@tecbunny/core/logger'
 
 // export const dynamic = 'force-dynamic'
 
@@ -11,18 +13,45 @@ export async function POST(request: Request) {
     context = await requireAdminContext()
   } catch (error) {
     const status = error instanceof AdminAuthError ? error.status : 401
+    logger.warn('mgmt_agents.approve.unauthorized', { status })
     return NextResponse.json({ error: 'Unauthorized' }, { status })
   }
 
   const { agent_id } = await request.json().catch(() => ({}))
-  if (!agent_id) return NextResponse.json({ error: 'agent_id required' }, { status: 400 })
+  if (!agent_id) {
+    logger.warn('mgmt_agents.approve.bad_request', { reason: 'missing_agent_id' })
+    return NextResponse.json({ error: 'agent_id required' }, { status: 400 })
+  }
 
   const supabase = context.serviceSupabase
-  const { error } = await supabase
-    .from('sales_agents')
-    .update({ status: 'approved' })
-    .eq('id', agent_id)
+  const actor = { userId: context.user.id, userEmail: context.user.email, role: context.role }
+  const { error } = await withAuditEvent({
+    application: 'mgmt',
+    module: 'agents',
+    screen: '/api/admin/agents/approve',
+    action: 'agent_approved',
+    description: `Approved agent ${agent_id}`,
+    entityType: 'sales_agent',
+    entityId: String(agent_id),
+    oldValue: null,
+    newValue: { status: 'approved' },
+    reason: 'mgmt_agent_approval',
+    context: actor,
+    apiEndpoint: '/api/admin/agents/approve',
+    httpMethod: 'POST',
+    databaseTable: 'sales_agents',
+    priority: 'high',
+  }, async () => supabase
+      .from('sales_agents')
+      .update({ status: 'approved' })
+      .eq('id', agent_id)
+  )
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+  if (error) {
+    logger.error('mgmt_agents.approve.update_failed', { agentId: agent_id, error: error.message })
+    return NextResponse.json({ error: error.message }, { status: 400 })
+  }
+
+  logger.info('mgmt_agents.approve.success', { agentId: agent_id, actor })
   return NextResponse.json({ success: true })
 }

@@ -20,10 +20,13 @@
     "validate:launch-evidence": "node scripts/validate-launch-evidence.mjs",
     "validate:theme-contract": "node scripts/validate-theme-contract.mjs",
     "validate:launch-readiness": "node scripts/validate-launch-readiness.mjs",
+    "validate:security-gate": "node scripts/validate-security-gate.mjs docs/security/npm-audit-2026-07-26.json docs/security/security-gate-allowlist.json",
+    "validate:db-readiness": "node scripts/validate-db-readiness.mjs",
+    "validate:infra-observability": "node scripts/validate-infra-observability.mjs",
     "validate:chrome-extension": "node scripts/validate-chrome-extension.mjs",
     "package:chrome-extension": "node scripts/package-chrome-extension.mjs",
     "audit:api": "node scripts/audit-api-surface.mjs",
-    "validate:product-ux": "npm run validate:ux-actions && npm run validate:no-browser-modals && npm run validate:accessibility-contract && npm run validate:product-telemetry && npm run validate:performance-budgets && npm run validate:visual-baselines && npm run validate:launch-evidence && npm run validate:theme-contract && npm run validate:launch-readiness && npx tsc --noEmit --pretty false -p apps/public/tsconfig.json && npx tsc --noEmit --pretty false -p apps/mgmt/tsconfig.json && npx tsc --noEmit --pretty false -p apps/waba/tsconfig.json && npx tsc --noEmit --pretty false -p apps/superadmin/tsconfig.json",
+    "validate:product-ux": "npm run validate:ux-actions && npm run validate:no-browser-modals && npm run validate:accessibility-contract && npm run validate:product-telemetry && npm run validate:performance-budgets && npm run validate:visual-baselines && npm run validate:launch-evidence && npm run validate:theme-contract && npm run validate:launch-readiness && npm run validate:infra-observability && npx tsc --noEmit --pretty false -p apps/public/tsconfig.json && npx tsc --noEmit --pretty false -p apps/mgmt/tsconfig.json && npx tsc --noEmit --pretty false -p apps/waba/tsconfig.json && npx tsc --noEmit --pretty false -p apps/superadmin/tsconfig.json",
     "clean": "turbo run clean",
     "prepare": "husky",
     "postinstall": "npm run db:generate",
@@ -32,21 +35,36 @@
     "test": "turbo run test"
   },
   "devDependencies": {
-    "eslint": "^9.39.5",
+    "eslint": "^9.39.1",
     "eslint-plugin-import": "^2.32.0",
     "husky": "^9.1.7",
     "lint-staged": "^17.0.8",
     "tsx": "^4.23.1",
     "turbo": "2.10.3",
     "typescript": "^5.9.3",
-    "typescript-eslint": "^8.64.0"
+    "typescript-eslint": "^8.62.1"
   },
   "overrides": {
     "@prisma/dev": {
-      "@hono/node-server": "1.19.13"
+      "@hono/node-server": "1.19.13",
+      "valibot": "1.4.2"
     },
-    "next": {
-      "postcss": "8.5.19"
+    "postcss": "8.5.19",
+    "fast-uri": "4.1.0",
+    "valibot": "1.4.2",
+    "sharp": "0.35.3",
+    "ajv": {
+      "fast-uri": "4.1.0"
+    },
+    "@storybook/mcp": {
+      "valibot": "1.4.2"
+    },
+    "tmcp": {
+      "valibot": "1.4.2"
+    },
+    "next@16.2.10": {
+      "postcss": "8.5.19",
+      "sharp": "0.35.3"
     }
   },
   "lint-staged": {

@@ -61,6 +61,7 @@ export async function POST(request: NextRequest) {
  */
 export async function GET(request: NextRequest) {
   try {
+    logger.info('services_tickets.audit.requested');
     await requireAdminContext();
 
     const { searchParams } = new URL(request.url);
@@ -82,6 +83,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    logger.info('services_tickets.audit.success', { count: tickets?.length ?? 0 });
     return NextResponse.json({
       success: true,
       tickets
@@ -92,7 +94,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: error.status });
     }
 
-    logger.error('Error in get service tickets API:', { error });
+    logger.error('services_tickets.audit.failed', { error });
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

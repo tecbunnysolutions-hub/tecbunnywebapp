@@ -20,6 +20,7 @@ export async function POST(
 ) {
   try {
     const { id } = await params;
+    logger.info('admin_orders_pending_actions.audit.requested', { orderId: id });
     
     // Auth & role check
     const supabase = await createServerClient();
@@ -149,6 +150,7 @@ export async function POST(
         }
       }
 
+      logger.info('admin_orders_pending_actions.audit.success', { orderId: id, action: 'request_pending' });
       return NextResponse.json({ success: true, message: 'Payment request sent' });
     }
 
@@ -210,6 +212,7 @@ export async function POST(
         }
       }
 
+      logger.info('admin_orders_pending_actions.audit.success', { orderId: id, action: 'accept_cash' });
       return NextResponse.json({ success: true, message: 'Cash payment confirmed' });
     }
 
@@ -286,12 +289,14 @@ export async function POST(
         }
       }
 
+      logger.info('admin_orders_pending_actions.audit.success', { orderId: id, action: 'upload_invoice' });
       return NextResponse.json({ success: true, invoiceUrl, message: 'Invoice uploaded and sent successfully' });
     }
 
     return NextResponse.json({ error: 'Unsupported action' }, { status: 400 });
 
   } catch (error: any) {
+    logger.error('admin_orders_pending_actions.audit.failed', { error: error.message });
     logger.error('pending_actions_unhandled', { error: error.message });
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }

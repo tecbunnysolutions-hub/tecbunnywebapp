@@ -12,7 +12,10 @@
 | /api/admin/ai/related-products | POST | products | Read |
 | /api/admin/crm/leads | POST | sls_leads | Insert, Update, Soft Delete, Read |
 | /api/admin/custom-setups | GET | custom_setup_component_options<br>custom_setup_components<br>custom_setup_inventory<br>custom_setup_systems<br>custom_setup_templates | Update, Read |
+| /api/admin/custom-setups | GET | custom_setup_component_options<br>custom_setup_components<br>custom_setup_inventory<br>custom_setup_systems<br>custom_setup_templates | Insert, Update, Read |
 | /api/admin/custom-setups | PATCH | custom_setup_component_options<br>custom_setup_components<br>custom_setup_inventory<br>custom_setup_systems<br>custom_setup_templates | Update, Read |
+| /api/admin/custom-setups | PATCH | custom_setup_component_options<br>custom_setup_components<br>custom_setup_inventory<br>custom_setup_systems<br>custom_setup_templates | Insert, Update, Read |
+| /api/admin/custom-setups | POST | custom_setup_component_options<br>custom_setup_components<br>custom_setup_inventory<br>custom_setup_systems<br>custom_setup_templates | Insert, Update, Read |
 | /api/admin/dashboard | GET | orders<br>products<br>profiles | Read |
 | /api/admin/faqs | GET | faqs | Insert, Read |
 | /api/admin/faqs | POST | faqs | Insert, Read |
@@ -28,8 +31,8 @@
 | /api/admin/mgmt/overview | GET | orders<br>products<br>service_tickets<br>sls_leads | Soft Delete, Read |
 | /api/admin/orders | GET | orders | Read |
 | /api/admin/orders/{id}/pending-actions | POST | orders<br>profiles | Update, Read |
-| /api/admin/payment-settings | GET | none detected | none detected |
-| /api/admin/payment-settings | PUT | none detected | none detected |
+| /api/admin/payment-settings | GET | none detected | Update |
+| /api/admin/payment-settings | PUT | none detected | Update |
 | /api/admin/payment-settings/dedupe | POST | settings | Delete, Read |
 | /api/admin/pricing | GET | product_pricing | Insert, Read |
 | /api/admin/pricing | POST | product_pricing | Insert, Read |
@@ -87,7 +90,7 @@
 | /api/auth/complete-signup | POST | otp_verifications<br>profiles | Update, Delete, Transaction, Read |
 | /api/auth/extension | OPTIONS | none detected | none detected |
 | /api/auth/extension | POST | none detected | none detected |
-| /api/auth/first-login-whatsapp | POST | profiles | Update, Transaction, Read |
+| /api/auth/first-login-whatsapp | POST | profiles | Insert, Update, Transaction, Read |
 | /api/auth/forgot-password | POST | profiles | Read |
 | /api/auth/login | POST | none detected | none detected |
 | /api/auth/me | GET | User | Read |
@@ -154,11 +157,17 @@
 | /api/customers/register | GET | customers | Insert, Update, Read |
 | /api/customers/register | POST | customers | Insert, Update, Read |
 | /api/debug-env | GET | none detected | none detected |
+| /api/deployment/production | POST | none detected | none detected |
+| /api/deployment/rollback | POST | none detected | Transaction |
+| /api/deployment/staging | POST | none detected | none detected |
+| /api/deployment/status | GET | none detected | none detected |
 | /api/discounts | DELETE | discounts | Insert, Update, Delete, Read |
 | /api/discounts | GET | discounts | Insert, Update, Delete, Read |
 | /api/discounts | POST | discounts | Insert, Update, Delete, Read |
 | /api/discounts | PUT | discounts | Insert, Update, Delete, Read |
 | /api/discounts/calculate | GET | customer_offers<br>profiles | Read |
+| /api/docs | GET | none detected | none detected |
+| /api/docs/openapi | GET | none detected | none detected |
 | /api/email/abandoned-cart | POST | none detected | none detected |
 | /api/email/email-change | POST | none detected | none detected |
 | /api/email/marketing | POST | none detected | none detected |
@@ -187,13 +196,13 @@
 | /api/enterprise-analytics/staff-logs | GET | enterprise_staff_activity_logs | Read |
 | /api/enterprise-analytics/staff-logs | POST | enterprise_staff_activity_logs | Read |
 | /api/faqs | GET | faqs | Read |
-| /api/free-installation-slots | GET | free_installation_slots | Insert, Update, Read |
-| /api/free-installation-slots | POST | free_installation_slots | Insert, Update, Read |
+| /api/free-installation-slots | GET | free_installation_slots | Update, Read |
+| /api/free-installation-slots | POST | free_installation_slots | Update, Read |
 | /api/gst-verify | GET | none detected | none detected |
 | /api/health | GET | otp_codes<br>products<br>user_communication_preferences | Read |
 | /api/health | GET | none detected | none detected |
 | /api/health | GET | none detected | none detected |
-| /api/health | GET | none detected | none detected |
+| /api/health | GET | enterprise_analytics_events | Read |
 | /api/health | GET | none detected | none detected |
 | /api/health | GET | none detected | none detected |
 | /api/health/email | GET | none detected | none detected |
@@ -215,6 +224,7 @@
 | /api/messages/media | POST | whatsapp_media | none detected |
 | /api/messages/read | PATCH | Conversation<br>Message | Update |
 | /api/metadata | GET | settings | Read |
+| /api/monitoring/health | GET | none detected | none detected |
 | /api/notifications/send | POST | notification_preferences<br>ntf_queue<br>profiles | Insert, Read |
 | /api/offers | DELETE | offer_usage<br>offers | Insert, Update, Delete, Read |
 | /api/offers | GET | offer_usage<br>offers | Insert, Update, Delete, Read |
@@ -292,6 +302,8 @@
 | /api/quotes/bid | POST | quotes | Insert, Update, Read |
 | /api/referral | GET | referral_codes | Insert, Read |
 | /api/referral/claim | POST | referral_claims<br>referral_codes<br>rpc:increment_referral_code_uses | Insert, Read |
+| /api/release-notes | GET | release_notes | Update, Read |
+| /api/release-notes | POST | release_notes | Update, Read |
 | /api/roles-public | GET | none detected | none detected |
 | /api/roles | DELETE | none detected | Delete |
 | /api/roles | GET | none detected | none detected |
@@ -306,6 +318,11 @@
 | /api/security/settings | GET | security_audit_log<br>security_settings<br>settings | Insert, Update, Read |
 | /api/security/settings | POST | security_audit_log<br>security_settings<br>settings | Insert, Update, Read |
 | /api/security/validate-password | POST | rpc:validate_password_strength | none detected |
+| /api/seller/auth | POST | none detected | none detected |
+| /api/seller/kyc | POST | none detected | none detected |
+| /api/seller/login | POST | none detected | none detected |
+| /api/seller/products | POST | none detected | none detected |
+| /api/seller/settlements | GET | none detected | none detected |
 | /api/service-availability | GET | none detected | none detected |
 | /api/services | GET | services | Insert, Read |
 | /api/services | POST | services | Insert, Read |
@@ -346,6 +363,9 @@
 | /api/templates | GET | Template | Insert, Read |
 | /api/templates | POST | Template | Insert, Read |
 | /api/templates/sync | POST | none detected | none detected |
+| /api/testing/coverage | GET | test_coverage_metrics | Read |
+| /api/testing/results | GET | none detected | none detected |
+| /api/testing/results | POST | none detected | none detected |
 | /api/trpc/{trpc} | GET | none detected | none detected |
 | /api/trpc/{trpc} | POST | none detected | none detected |
 | /api/trpc/contactMessages.submit | POST | contact_messages | Insert, Read |
@@ -381,16 +401,20 @@
 | /api/user/wishlist | POST | wishlists | Update, Delete, Read |
 | /api/users-admin | GET | profiles | Insert, Update, Read |
 | /api/users-admin | POST | profiles | Insert, Update, Read |
-| /api/users | DELETE | none detected | Update |
+| /api/users | DELETE | profiles | Update, Read |
 | /api/users | DELETE | none detected | none detected |
-| /api/users | GET | none detected | Update |
+| /api/users | GET | profiles | Update, Read |
 | /api/users | GET | none detected | none detected |
 | /api/users | GET | User | Read |
-| /api/users | POST | none detected | Update |
+| /api/users | POST | profiles | Update, Read |
 | /api/users | POST | none detected | none detected |
-| /api/users | PUT | none detected | Update |
+| /api/users | PUT | profiles | Update, Read |
 | /api/users | PUT | none detected | none detected |
+| /api/v1/admin-auth/login | POST | none detected | none detected |
+| /api/v1/auth/send-otp | POST | none detected | none detected |
+| /api/v1/auth/verify-otp | POST | none detected | none detected |
 | /api/v1/embed/configurator | GET | sales_agents | Read |
+| /api/v2/status | GET | none detected | none detected |
 | /api/walk-in-orders | GET | order_items<br>orders<br>products<br>rpc:allocate_order_inventory_atomic | Insert, Update, Read |
 | /api/walk-in-orders | POST | order_items<br>orders<br>products<br>rpc:allocate_order_inventory_atomic | Insert, Update, Read |
 | /api/warranty/activate | POST | inventory_items<br>warranties | Insert, Read |

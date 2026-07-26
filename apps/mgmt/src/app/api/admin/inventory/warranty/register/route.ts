@@ -19,6 +19,7 @@ const ADJACENT_COMPUTE_MATRIX: Record<string, string[]> = {
 
 export async function POST(req: Request) {
   try {
+    logger.info('admin_warranty_register.audit.requested');
     const { serviceSupabase: supabase } = await requireAdminContext();
     const parsed = PayloadSchema.safeParse(await req.json());
 
@@ -62,12 +63,14 @@ export async function POST(req: Request) {
     const whatsappService = new WhatsAppService();
     await whatsappService.sendMessage(phone, message, "text");
 
+    logger.info('admin_warranty_register.audit.success', { serialNumber, deviceType });
     return NextResponse.json({ success: true, recommendations });
   } catch (error) {
     if (error instanceof AdminAuthError) {
       return NextResponse.json({ error: error.message }, { status: error.status });
     }
 
+    logger.error('admin_warranty_register.audit.failed', { error: error instanceof Error ? error.message : String(error) });
     logger.error("warranty_register.unhandled", { error: error instanceof Error ? error.message : error });
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }

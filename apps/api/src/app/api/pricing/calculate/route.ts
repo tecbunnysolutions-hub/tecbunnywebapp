@@ -66,6 +66,7 @@ export async function POST(request: NextRequest) {
  */
 export async function GET(request: NextRequest) {
   try {
+    logger.info('pricing_calculate_get.audit.requested');
     const { searchParams } = new URL(request.url);
     const productId = searchParams.get('productId');
     const customerId = searchParams.get('customerId');
@@ -88,13 +89,14 @@ export async function GET(request: NextRequest) {
 
     // Get product from database (this would need to be implemented)
     // For now, we'll return an error indicating the product needs to be fetched first
+    logger.info('pricing_calculate_get.audit.success');
     return NextResponse.json(
       { error: 'Product pricing endpoint requires full product data. Use cart calculation instead.' },
       { status: 400 }
     );
 
   } catch (error) {
-    logger.error('pricing_calculate_get_error', { error });
+    logger.error('pricing_calculate_get.audit.failed', { error });
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

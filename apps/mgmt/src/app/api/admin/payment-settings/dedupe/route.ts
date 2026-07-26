@@ -18,6 +18,7 @@ function isAuthorized(req: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  logger.info('admin_payment_settings_dedupe.audit.requested');
   if (!isAuthorized(request)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
@@ -37,6 +38,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (!rows || rows.length <= 1) {
+      logger.info('admin_payment_settings_dedupe.audit.success', { removed: 0, keptId: rows?.[0]?.id ?? null });
       return NextResponse.json({ ok: true, removed: 0, keptId: rows?.[0]?.id ?? null });
     }
 
@@ -54,8 +56,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to remove duplicate payment settings' }, { status: 500 });
     }
 
+    logger.info('admin_payment_settings_dedupe.audit.success', { removed: deleteIds.length, keptId: keepId });
     return NextResponse.json({ ok: true, removed: deleteIds.length, keptId: keepId });
   } catch (e) {
+    logger.error('admin_payment_settings_dedupe.audit.failed', { error: e instanceof Error ? e.message : String(e) });
     logger.error('payment_settings_dedupe.unhandled', { error: e instanceof Error ? e.message : e });
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }

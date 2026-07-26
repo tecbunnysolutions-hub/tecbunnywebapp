@@ -4,6 +4,7 @@ import { logger } from "@tecbunny/core";
 
 export async function GET(_: NextRequest) {
   try {
+    logger.info('products_template.audit.requested');
     // Create template CSV with sample data and instructions
     const headers = [
       'name',
@@ -59,6 +60,7 @@ export async function GET(_: NextRequest) {
 
     const csvContent = instructions.join('\n');
 
+    logger.info('products_template.audit.success');
     return new NextResponse(csvContent, {
       status: 200,
       headers: {
@@ -67,7 +69,7 @@ export async function GET(_: NextRequest) {
       },
     });
   } catch (error) {
-    logger.error('Template generation error:', { error });
+    logger.error('products_template.audit.failed', { error });
     return NextResponse.json(
       { message: 'Failed to generate template' },
       { status: 500 }

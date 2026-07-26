@@ -2,6 +2,7 @@ import { isAdmin } from "@tecbunny/core/permissions";
 import { createClient } from '@tecbunny/database';
 import { createServiceClient, isSupabaseServiceConfigured } from "@tecbunny/database/admin";
 import { NextResponse } from 'next/server';
+import { logger } from '@tecbunny/core/logger';
 
 
 
@@ -69,7 +70,11 @@ export async function PATCH(
 
 
 
-export async function GET() { return Response.json({}) }
+export async function GET() {
+  logger.info('admin_sales_agent_by_id.audit.requested');
+  logger.info('admin_sales_agent_by_id.audit.success');
+  return Response.json({});
+}
 
 
 

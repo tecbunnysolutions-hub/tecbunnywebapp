@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createSuperadminSessionToken, SUPERADMIN_SESSION_TTL_SECONDS } from '@tecbunny/core/auth/superadmin-session';
+import { logger } from '@tecbunny/core/logger';
 import { rateLimit } from '@tecbunny/core/rate-limit';
 import { z } from 'zod';
 
@@ -21,14 +22,17 @@ function getClientIp(request: Request) {
 
 export async function POST(req: Request) {
   try {
+    logger.info('waba_auth_login.audit.requested');
     const ip = getClientIp(req);
     const rl = await rateLimit(`waba_login_ip:${ip}`, LOGIN_RATE_LIMIT.limit, LOGIN_RATE_LIMIT.windowMs);
     if (!rl.allowed) {
+      logger.warn('waba_auth_login.audit.rate_limited', { ip });
       return NextResponse.json({ error: 'Too many login attempts. Please try again in one minute.' }, { status: 429 });
     }
 
     const parsed = loginSchema.safeParse(await req.json());
     if (!parsed.success) {
+      logger.warn('waba_auth_login.audit.invalid_payload');
       return NextResponse.json({ error: 'Invalid login payload' }, { status: 400 });
     }
 
@@ -53,13 +57,17 @@ export async function POST(req: Request) {
           maxAge: SUPERADMIN_SESSION_TTL_SECONDS
         });
 
+        logger.info('waba_auth_login.audit.success', { isSuperadmin: true });
         return response;
       }
+      logger.warn('waba_auth_login.audit.invalid_superadmin_credentials', { isSuperadmin: true });
       return NextResponse.json({ error: 'Invalid superadmin credentials' }, { status: 401 });
     }
 
+    logger.warn('waba_auth_login.audit.unsupported_staff_flow');
     return NextResponse.json({ error: 'Staff should use Supabase auth directly' }, { status: 400 });
   } catch (error: unknown) {
+    logger.error('waba_auth_login.audit.failed', { error: error instanceof Error ? error.message : String(error) });
     console.error('Login error:', error);
     return NextResponse.json({ error: 'Login failed' }, { status: 500 });
   }

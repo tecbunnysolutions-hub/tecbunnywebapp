@@ -1,13 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@tecbunny/database';
 import { ExtensionAuthError, assertExtensionOrigin, extensionJson, extensionOptionsResponse, getExtensionCorsHeaders } from '../../extension-security';
+import { logger } from '@tecbunny/core/logger';
 
 export async function OPTIONS(request: NextRequest) {
+  logger.info('auth_extension.audit.options_requested');
   return extensionOptionsResponse(request);
 }
 
 export async function POST(request: NextRequest) {
   try {
+    logger.info('auth_extension.audit.requested');
     assertExtensionOrigin(request);
 
     const body = await request.json();
@@ -89,6 +92,7 @@ export async function POST(request: NextRequest) {
       { status: 200 }
     );
   } catch (error: any) {
+    logger.error('auth_extension.audit.failed', { error: error?.message || String(error) });
     if (error instanceof ExtensionAuthError) {
       return extensionJson(request, { error: error.message }, { status: error.status });
     }

@@ -327,6 +327,7 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
+    logger.info('customer_promotions.audit.requested');
     await requireAdminContext();
     const { searchParams } = new URL(request.url);
     const action = searchParams.get('action');
@@ -347,6 +348,7 @@ export async function GET(request: NextRequest) {
         body: JSON.stringify({ action: 'check-customer', customerId })
       }));
 
+      logger.info('customer_promotions.audit.success', { action });
       return response;
     }
 
@@ -356,6 +358,7 @@ export async function GET(request: NextRequest) {
         body: JSON.stringify({ action: 'get-statistics' })
       }));
 
+      logger.info('customer_promotions.audit.success', { action });
       return response;
     }
 
@@ -369,7 +372,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: error.status });
     }
 
-    logger.error('customer_promotions.get_unhandled', { error: error instanceof Error ? error.message : error });
+    logger.error('customer_promotions.audit.failed', { error: error instanceof Error ? error.message : error });
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

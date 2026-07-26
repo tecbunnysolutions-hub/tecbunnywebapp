@@ -60,11 +60,13 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const quoteId = (await params).id;
+  logger.info('admin_quote_download.audit.requested', { quoteId });
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   const { isAdmin } = await requireAdmin(user, supabase);
 
   if (!isAdmin) {
+    logger.warn('admin_quote_download.audit.unauthorized', { quoteId });
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
@@ -79,6 +81,7 @@ export async function GET(
   const { data: quote, error } = await query.single();
 
   if (error || !quote) {
+    logger.warn('admin_quote_download.audit.not_found', { quoteId });
     return NextResponse.json({ error: 'Quote not found' }, { status: 404 });
   }
 
@@ -97,6 +100,7 @@ export async function GET(
       quoteNumber: quote.quote_number,
     });
 
+    logger.info('admin_quote_download.audit.success', { quoteId });
     return new NextResponse(pdfBuffer, {
       status: 200,
       headers: {
@@ -123,6 +127,7 @@ export async function GET(
     }
 
     logger.error('admin_quote_pdf_failed', { quoteId, error: message });
+    logger.error('admin_quote_download.audit.failed', { quoteId, error: message });
     return NextResponse.json({ error: 'Failed to generate PDF' }, { status: 500 });
   } finally {
     releasePdfSlot?.();

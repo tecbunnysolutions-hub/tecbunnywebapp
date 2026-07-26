@@ -12,6 +12,7 @@ import { logger } from "@tecbunny/core/logger";
 // GET /api/admin/sales-agents
 // Fetches all sales agent applications for admin review.
 export async function GET(_request: Request) {
+  logger.info('admin_sales_agents.audit.requested');
   const supabase = await createClient();
 
   // 1. Check for an authenticated user and admin privileges
@@ -66,9 +67,11 @@ export async function GET(_request: Request) {
     }
 
     // 5. Return the list of applications
+    logger.info('admin_sales_agents.audit.success', { count: applications.length });
     return NextResponse.json(applications);
 
   } catch (error: any) {
+    logger.error('admin_sales_agents.audit.failed', { error: error.message });
     logger.error('admin.sales_agents.fetch_failed', { error });
     return NextResponse.json({ error: 'An unexpected error occurred.', details: error.message }, { status: 500 });
   }

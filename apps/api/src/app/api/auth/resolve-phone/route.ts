@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { requireSupabaseServiceEnv } from "@tecbunny/database";
+import { logger } from '@tecbunny/core/logger';
 
 let supabaseAdmin: any = null;
 
@@ -34,6 +35,7 @@ function maskEmail(email: string): string {
 
 export async function POST(request: NextRequest) {
   try {
+    logger.info('auth_resolve_phone.audit.requested');
     const ip = getClientIp(request);
     
     // Use dynamic import for rateLimit since this is a serverless function and we want the async version
@@ -59,15 +61,19 @@ export async function POST(request: NextRequest) {
       .maybeSingle();
 
     if (error) {
+      logger.warn('auth_resolve_phone.audit.lookup_failed', { phone });
       return NextResponse.json({ email: maskEmail(`${phone}@tecbunny.phone`) });
     }
 
     if (profile?.email) {
+      logger.info('auth_resolve_phone.audit.success', { matched: true });
       return NextResponse.json({ email: maskEmail(profile.email) });
     }
 
+    logger.info('auth_resolve_phone.audit.success', { matched: false });
     return NextResponse.json({ email: maskEmail(`${phone}@tecbunny.phone`) });
   } catch (error) {
+    logger.error('auth_resolve_phone.audit.failed', { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

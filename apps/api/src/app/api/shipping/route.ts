@@ -23,6 +23,7 @@ export async function GET(request: NextRequest) {
   const correlationId = request.headers.get('x-correlation-id') || undefined;
 
   try {
+    logger.info('shipping.audit.requested', { correlationId });
     const { session, role } = await getSessionWithRole(request as any);
     if (!session) return apiError('UNAUTHORIZED', { correlationId });
     if (!isAtLeast(role!, 'delivery')) return apiError('FORBIDDEN', { correlationId });
@@ -49,9 +50,10 @@ export async function GET(request: NextRequest) {
       return apiError('INTERNAL_ERROR', { correlationId });
     }
 
+    logger.info('shipping.audit.success', { correlationId, count: data?.length ?? 0 });
     return apiSuccess({ records: data || [], total: count ?? 0, page, pageSize }, correlationId);
   } catch (err: any) {
-    logger.error('dispatch.get_uncaught', { error: err.message });
+    logger.error('shipping.audit.failed', { error: err.message, correlationId });
     return apiError('INTERNAL_ERROR', { correlationId });
   }
 }

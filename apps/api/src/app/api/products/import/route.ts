@@ -76,6 +76,7 @@ interface ImportResult {
 // Export products as CSV template
 export async function GET(request: NextRequest) {
   try {
+    logger.info('products_import.audit.requested');
     await requireAdminContext();
     const { searchParams } = new URL(request.url);
     const template_only = searchParams.get('template_only') === 'true';
@@ -211,6 +212,7 @@ del123,Mouse M16 White,Gaming mouse with RGB lighting,Dell,Electronics,"gaming,m
       ...rows.map(row => row.map(cell => `"${cell.replace(/"/g, '""')}"`).join(','))
     ].join('\n');
 
+    logger.info('products_import.audit.success', { count: products?.length ?? 0 });
     return new Response(csvContent, {
       headers: {
         'Content-Type': 'text/csv',

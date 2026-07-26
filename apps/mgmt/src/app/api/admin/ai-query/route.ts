@@ -92,6 +92,7 @@ function buildFallbackAnswer(rawQuery: string, contextData: Record<string, unkno
 
 export async function POST(request: NextRequest) {
   try {
+    logger.info('admin_ai_query.audit.requested');
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
@@ -303,11 +304,13 @@ export async function POST(request: NextRequest) {
         AI_RESPONSE_TIMEOUT_MS,
         'AI response timeout'
       );
+      logger.info('admin_ai_query.audit.success', { mode: 'ai', hasDataPayload: !!dataPayload });
       return NextResponse.json({ answer, data: dataPayload });
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       logger.error('Gemini AI Service Error', { error: message });
       const fallbackAnswer = buildFallbackAnswer(rawQuery, contextData);
+      logger.info('admin_ai_query.audit.success', { mode: 'fallback', hasDataPayload: !!dataPayload });
       return NextResponse.json({
         answer: fallbackAnswer,
         data: dataPayload,
@@ -316,6 +319,7 @@ export async function POST(request: NextRequest) {
     }
 
   } catch (error) {
+    logger.error('admin_ai_query.audit.failed', { error: error instanceof Error ? error.message : String(error) });
     logger.error('AI Query Error', { error });
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }

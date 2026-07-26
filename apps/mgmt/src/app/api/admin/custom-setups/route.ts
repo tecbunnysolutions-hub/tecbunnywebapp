@@ -268,6 +268,7 @@ async function fetchTemplateWithDetails(serviceSupabase: Awaited<ReturnType<type
 
 export async function GET(request: NextRequest) {
   try {
+    logger.info('admin_custom_setups.audit.requested');
     const { serviceSupabase } = await requireAdminContext();
     const { searchParams } = new URL(request.url);
     const slug = searchParams.get('slug');
@@ -301,6 +302,7 @@ export async function GET(request: NextRequest) {
         throw error;
       }
 
+      logger.info('admin_custom_setups.audit.success', { mode: 'list' });
       return NextResponse.json({ success: true, data });
     }
 
@@ -339,6 +341,7 @@ export async function GET(request: NextRequest) {
 
     const summary = buildCustomSetupBlueprintSummary(template) ?? null;
 
+    logger.info('admin_custom_setups.audit.success', { mode: 'detail', slug });
     return NextResponse.json({ success: true, data: { template, summary } });
   } catch (error) {
     if (error instanceof AdminAuthError) {

@@ -21,6 +21,7 @@ const PreferencesSchema = z.object({
  * Returns the authenticated user's notification preferences.
  */
 export async function GET(request: NextRequest) {
+  logger.info('user_notifications.audit.requested');
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -32,7 +33,7 @@ export async function GET(request: NextRequest) {
     .maybeSingle();
 
   if (error) {
-    logger.error('notifications.prefs.get_failed', { error: error.message, userId: user.id });
+    logger.error('user_notifications.audit.failed', { error: error.message, userId: user.id });
     return NextResponse.json({ error: 'Failed to load preferences' }, { status: 500 });
   }
 
@@ -48,6 +49,7 @@ export async function GET(request: NextRequest) {
     push_order_updates: true,
   };
 
+  logger.info('user_notifications.audit.success', { userId: user.id });
   return NextResponse.json({ preferences: data ?? { user_id: user.id, ...defaults } });
 }
 

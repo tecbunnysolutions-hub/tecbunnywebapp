@@ -32,6 +32,7 @@ export async function GET(request: NextRequest) {
   const correlationId = request.headers.get('x-correlation-id') || undefined;
 
   try {
+    logger.info('analytics_reports.audit.requested', { correlationId });
     const { session, role } = await getSessionWithRole(request as any);
     if (!session) return apiError('UNAUTHORIZED', { correlationId });
     if (!isAtLeast(role!, 'accounts') && !isAtLeast(role!, 'admin')) {
@@ -96,6 +97,7 @@ export async function GET(request: NextRequest) {
         .sort(([a], [b]) => a.localeCompare(b))
         .map(([date, d]) => ({ date, ...d }));
 
+      logger.info('analytics_reports.audit.success', { correlationId, type, totalOrders });
       return apiSuccess({
         type,
         period: { from: startDate, to: endDate },
@@ -140,6 +142,7 @@ export async function GET(request: NextRequest) {
         .sort(([, a], [, b]) => b.gst - a.gst)
         .map(([hsn, d]) => ({ hsn, ...d }));
 
+      logger.info('analytics_reports.audit.success', { correlationId, type, totalOrders: rows.length });
       return apiSuccess({
         type,
         period: { from: startDate, to: endDate },
@@ -163,6 +166,7 @@ export async function GET(request: NextRequest) {
         byMethod[m].total += o.total || 0;
       }
 
+      logger.info('analytics_reports.audit.success', { correlationId, type, totalOrders: rows.length });
       return apiSuccess({
         type,
         period: { from: startDate, to: endDate },
@@ -179,10 +183,11 @@ export async function GET(request: NextRequest) {
       }, correlationId);
     }
 
+    logger.warn('analytics_reports.audit.unknown_type', { correlationId, type });
     return apiError('VALIDATION_ERROR', { correlationId, overrideMessage: 'Unknown report type' });
 
   } catch (err: any) {
-    logger.error('reports.uncaught', { error: err.message });
+    logger.error('analytics_reports.audit.failed', { error: err.message, correlationId });
     return apiError('INTERNAL_ERROR', { correlationId });
   }
 }

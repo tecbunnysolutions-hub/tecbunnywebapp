@@ -24,6 +24,7 @@ const UpdatePostSchema = z.object({
 export async function GET(_request: NextRequest, { params }: BlogRouteContext) {
   try {
     const { slug } = await params;
+    logger.info('blog_slug.audit.requested', { slug });
     const supabase = await createClient();
     const { data, error } = await supabase
       .from('blog_posts')
@@ -32,10 +33,12 @@ export async function GET(_request: NextRequest, { params }: BlogRouteContext) {
       .maybeSingle();
 
     if (error || !data) return NextResponse.json({ error: 'Post not found' }, { status: 404 });
+    logger.info('blog_slug.audit.success', { slug });
     return NextResponse.json({ post: data }, {
       headers: { 'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=900' },
     });
   } catch (err: any) {
+    logger.error('blog_slug.audit.failed', { error: err.message });
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

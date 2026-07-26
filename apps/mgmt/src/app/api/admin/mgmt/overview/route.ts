@@ -100,6 +100,7 @@ export async function GET(request: NextRequest) {
   const correlationId = request.headers.get('x-correlation-id') || crypto.randomUUID();
 
   try {
+    logger.info('admin_mgmt_overview.audit.requested', { correlationId });
     const { supabase: authClient, session, role } = await getSessionWithRole(request);
     if (!session) {
       return NextResponse.json({ error: 'Authentication required', correlationId }, { status: 401 });
@@ -221,6 +222,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to load management overview';
+    logger.error('admin_mgmt_overview.audit.failed', { correlationId, error: message });
     logger.error('mgmt.overview.failed', { correlationId, error: message });
     return NextResponse.json({ error: message, correlationId }, { status: 500 });
   }

@@ -2,6 +2,7 @@ import { isAdmin } from "@tecbunny/core/permissions";
 import { createClient } from '@tecbunny/database';
 import { createServiceClient, isSupabaseServiceConfigured } from "@tecbunny/database/admin";
 ﻿import { NextRequest, NextResponse } from 'next/server';
+import { logger } from '@tecbunny/core/logger';
 
 
 
@@ -90,6 +91,7 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    logger.info('admin_pricing_by_id.audit.delete_requested');
     const { id } = await params;
     const supabase = await createClient();
     
@@ -112,6 +114,7 @@ export async function DELETE(
       .eq('id', id);
 
     if (error) {
+      logger.error('admin_pricing_by_id.audit.delete_failed', { pricingId: id, error: error.message });
       console.error('Error deleting pricing rule:', error);
       return NextResponse.json(
         { error: 'Failed to delete pricing rule' },
@@ -119,8 +122,10 @@ export async function DELETE(
       );
     }
 
+    logger.info('admin_pricing_by_id.audit.delete_success', { pricingId: id });
     return NextResponse.json({ message: 'Pricing rule deleted successfully' });
   } catch (error) {
+    logger.error('admin_pricing_by_id.audit.delete_unhandled', { error: error instanceof Error ? error.message : String(error) });
     console.error('Unexpected error in DELETE /api/admin/pricing/[id]:', error);
     return NextResponse.json(
       { error: 'Internal server error' },

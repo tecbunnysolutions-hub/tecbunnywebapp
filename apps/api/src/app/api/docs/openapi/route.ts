@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { logger } from '@tecbunny/core';
 
 const spec = {
   openapi: '3.1.0',
@@ -129,9 +130,15 @@ const spec = {
 };
 
 export async function GET() {
-  return NextResponse.json(spec, {
-    headers: {
-      'Cache-Control': 'public, max-age=60',
-    },
-  });
+  try {
+    logger.info('api_docs.audit.openapi_requested');
+    return NextResponse.json(spec, {
+      headers: {
+        'Cache-Control': 'public, max-age=60',
+      },
+    });
+  } catch (error) {
+    logger.error('api_docs.audit.openapi_failed', { error: error instanceof Error ? error.message : String(error) });
+    return NextResponse.json({ error: 'Failed to load OpenAPI spec' }, { status: 500 });
+  }
 }

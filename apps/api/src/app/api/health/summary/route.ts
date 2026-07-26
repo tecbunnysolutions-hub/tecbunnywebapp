@@ -1,12 +1,14 @@
 import { createClient as createServerClient } from '@tecbunny/database';
 
 import { NextResponse } from 'next/server';
+import { logger } from '@tecbunny/core/logger';
 
 
 
 export const runtime = 'nodejs';
 
 export async function GET() {
+  logger.info('health_summary.audit.requested');
   const started = Date.now();
   const supabase = await createServerClient();
   let dbOk = false; let dbLatency = 0;
@@ -23,6 +25,7 @@ export async function GET() {
   const phonePeConfigured = !!process.env.PHONEPE_MERCHANT_ID;
   const razorpayConfigured = !!process.env.RAZORPAY_KEY_ID;
 
+  logger.info('health_summary.audit.success', { dbOk, dbLatency });
   return NextResponse.json({
     status: 'ok',
     uptimeSeconds: Math.round(process.uptime()),

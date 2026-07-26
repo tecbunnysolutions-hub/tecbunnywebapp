@@ -1,11 +1,13 @@
 import { NextRequest } from 'next/server';
 import { APIResponseBuilder } from "@tecbunny/core/api-response";
 import { requireApiRole } from "@tecbunny/core/server-role-guard";
+import { logger } from '@tecbunny/core/logger';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
+    logger.info('admin_faqs.audit.requested');
     const authResult = await requireApiRole({ allowedRoles: ['admin'] });
     if ('error' in authResult) {
       return authResult.error;
@@ -20,13 +22,16 @@ export async function GET() {
       .order('display_order', { ascending: true });
 
     if (error) {
+      logger.error('admin_faqs.audit.failed', { error: error.message });
       return APIResponseBuilder.internalServerError('Failed to fetch FAQs for admin', {
         error: error.message,
       });
     }
 
+    logger.info('admin_faqs.audit.success', { count: faqs?.length ?? 0 });
     return APIResponseBuilder.success({ faqs });
   } catch (error: any) {
+    logger.error('admin_faqs.audit.unhandled', { error: error.message });
     return APIResponseBuilder.internalServerError('An unexpected error occurred while fetching admin FAQs', {
       error: error.message,
     });

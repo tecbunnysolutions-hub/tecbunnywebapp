@@ -53,6 +53,7 @@ async function requireRole() {
 
 export async function GET(request: NextRequest) {
   try {
+    logger.info('auto_offers.audit.requested');
     if (!isServiceConfigured) {
       logger.error('auto-offers.get.missing_supabase_config');
       return NextResponse.json(
@@ -84,6 +85,7 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ error: error.message }, { status: 404 });
       }
 
+      logger.info('auto_offers.audit.success', { id });
       return NextResponse.json(data);
     } else {
       // Get all auto offers
@@ -106,11 +108,12 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ error: error.message }, { status: 500 });
       }
       
+      logger.info('auto_offers.audit.success', { count: data?.length || 0, activeOnly });
       return NextResponse.json(data || []);
     }
     
   } catch (error) {
-    console.error('Auto offers GET error:', error);
+    logger.error('auto_offers.audit.failed', { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

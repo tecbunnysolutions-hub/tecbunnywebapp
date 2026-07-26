@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { logger } from '@tecbunny/core/logger';
 
 // GET /api/users-admin - List all users (simplified admin endpoint)
 export async function GET(_request: NextRequest) {
+  logger.info('users_admin.audit.deprecated_endpoint_called');
   return NextResponse.json({ error: 'Deprecated endpoint. Use /api/users with session authentication.' }, { status: 410 })
 }
 

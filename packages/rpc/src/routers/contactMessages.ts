@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { router, publicProcedure, protectedProcedure } from '../trpc';
 import { getAdminDb } from '@tecbunny/core/db';
 import { TRPCError } from '@trpc/server';
+import { logger } from '@tecbunny/core';
 
 const createMessageSchema = z.object({
   name: z.string().min(2).max(120),
@@ -65,6 +66,10 @@ export const contactMessagesRouter = router({
     .input(createMessageSchema)
     .mutation(async ({ input, ctx }) => {
       try {
+        logger.info('rpc_contact_messages.audit.submit_requested', {
+          formIdentifier: input.form_identifier ?? null,
+          originPath: input.origin_path ?? null,
+        });
         const db = getAdminDb();
         const classification = classifyInquiry({
           originPath: input.origin_path,
@@ -93,10 +98,13 @@ export const contactMessagesRouter = router({
 
         const result = await db.from('contact_messages').insert(payload).select('id').single();
         if (result.error) {
+          logger.error('rpc_contact_messages.audit.submit_failed', { error: result.error.message });
           throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: result.error.message });
         }
+        logger.info('rpc_contact_messages.audit.submit_success', { id: result.data?.id ?? null });
         return { success: true, id: result.data.id };
       } catch (err) {
+        logger.error('rpc_contact_messages.audit.submit_unhandled', { error: err instanceof Error ? err.message : String(err) });
         if (err instanceof TRPCError) throw err;
         throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Unexpected error' });
       }

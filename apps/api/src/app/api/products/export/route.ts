@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { logger } from '@tecbunny/core/logger';
 
 import { AdminAuthError, requireAdminContext } from "@tecbunny/core/auth/admin-guard";
 
@@ -7,6 +8,7 @@ import { AdminAuthError, requireAdminContext } from "@tecbunny/core/auth/admin-g
 
 export async function GET(_request: NextRequest) {
   try {
+    logger.info('products_export.audit.requested');
     const { serviceSupabase: supabase } = await requireAdminContext();
 
     // Fetch all products
@@ -16,7 +18,7 @@ export async function GET(_request: NextRequest) {
       .order('created_at', { ascending: false });
 
     if (error) {
-      console.error('Database error:', error);
+      logger.error('products_export.audit.query_failed', { error: error.message });
       return NextResponse.json(
         { message: 'Failed to fetch products' },
         { status: 500 }
@@ -60,6 +62,7 @@ export async function GET(_request: NextRequest) {
     ].join('\n');
 
     // Create response with CSV content
+    logger.info('products_export.audit.success', { count: products?.length ?? 0 });
     return new NextResponse(csvContent, {
       status: 200,
       headers: {
@@ -71,7 +74,7 @@ export async function GET(_request: NextRequest) {
     if (error instanceof AdminAuthError) {
       return NextResponse.json({ message: error.message }, { status: error.status });
     }
-    console.error('Export error:', error);
+    logger.error('products_export.audit.failed', { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
       { message: 'Internal server error' },
       { status: 500 }

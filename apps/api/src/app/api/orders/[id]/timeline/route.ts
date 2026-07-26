@@ -1,5 +1,6 @@
 import { createClient } from '@tecbunny/database';
 import { NextRequest, NextResponse } from 'next/server';
+import { logger } from '@tecbunny/core/logger';
 
 /**
  * GET /api/orders/[id]/timeline
@@ -11,6 +12,7 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
+    logger.info('orders_timeline.audit.requested', { id });
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
@@ -59,6 +61,7 @@ export async function GET(
       active: !completedMap[step.key],
     }));
 
+    logger.info('orders_timeline.audit.success', { id });
     return NextResponse.json({
       order: {
         id: order.id,
@@ -70,6 +73,7 @@ export async function GET(
       timeline,
     });
   } catch (err) {
+    logger.error('orders_timeline.audit.failed', { error: err instanceof Error ? err.message : String(err) });
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

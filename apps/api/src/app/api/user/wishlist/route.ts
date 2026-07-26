@@ -14,6 +14,7 @@ const ToggleSchema = z.object({
  */
 export async function GET(request: NextRequest) {
   try {
+    logger.info('user_wishlist.audit.requested');
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return NextResponse.json({ wishlist: [] });
@@ -29,9 +30,10 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to fetch wishlist' }, { status: 500 });
     }
 
+    logger.info('user_wishlist.audit.success', { userId: user.id, count: data?.length ?? 0 });
     return NextResponse.json({ wishlist: data ?? [] });
   } catch (err: any) {
-    logger.error('wishlist.get_uncaught', { error: err.message });
+    logger.error('user_wishlist.audit.failed', { error: err.message });
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

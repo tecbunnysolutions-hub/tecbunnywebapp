@@ -143,6 +143,7 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
+    logger.info('quotes_advance_payment_confirm.audit.requested', { id });
     const supabase = getSupabaseAdmin();
 
     const { data: advancePayment, error } = await supabase
@@ -174,7 +175,7 @@ export async function GET(
     });
 
   } catch (error: any) {
-    logger.error('Error fetching advance payment request:', error);
+    logger.error('quotes_advance_payment_confirm.audit.failed', { error: error?.message || String(error) });
     return NextResponse.json(
       { success: false, error: error.message },
       { status: 500 }

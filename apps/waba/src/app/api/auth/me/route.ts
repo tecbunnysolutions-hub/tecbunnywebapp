@@ -2,11 +2,13 @@ import { NextResponse } from 'next/server';
 import { createSupabaseClient } from '@tecbunny/database/server';
 import { supabase } from '@/lib/supabase';
 import { verifySuperadminSessionToken } from '@tecbunny/core/auth/superadmin-session';
+import { logger } from '@tecbunny/core/logger';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: Request) {
   try {
+    logger.info('waba_auth_me.audit.requested');
     const cookieHeader = req.headers.get('cookie') || '';
 
     // Verify signed superadmin session token — no literal string comparisons
@@ -15,6 +17,7 @@ export async function GET(req: Request) {
     if (superadminToken) {
       const payload = await verifySuperadminSessionToken(superadminToken);
       if (payload) {
+        logger.info('waba_auth_me.audit.superadmin_session');
         return NextResponse.json({ user: { id: 'superadmin-root-id', name: 'Super Admin', email: payload.email, role: 'SUPERADMIN' } });
       }
     }
@@ -25,6 +28,7 @@ export async function GET(req: Request) {
     if (agentId) {
       const { data: user } = await supabase.from('User').select('*').eq('id', agentId).maybeSingle();
       if (user) {
+        logger.info('waba_auth_me.audit.legacy_agent_session');
         return NextResponse.json({ user });
       }
     }
@@ -34,6 +38,7 @@ export async function GET(req: Request) {
     const { data: { user } } = await supabaseClient.auth.getUser();
 
     if (user) {
+      logger.info('waba_auth_me.audit.supabase_session', { userId: user.id });
       return NextResponse.json({ 
         user: { 
           id: user.id, 
@@ -44,8 +49,10 @@ export async function GET(req: Request) {
       });
     }
 
+    logger.info('waba_auth_me.audit.no_session');
     return NextResponse.json({ user: null }, { status: 200 });
   } catch (error: unknown) {
+    logger.error('waba_auth_me.audit.failed', { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json({ error: error instanceof Error ? error.message : String(error) }, { status: 500 });
   }
 }

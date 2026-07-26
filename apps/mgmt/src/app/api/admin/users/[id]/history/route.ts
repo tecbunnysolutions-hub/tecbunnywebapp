@@ -1,6 +1,7 @@
 import { createClient } from '@tecbunny/database';
 import { createServiceClient, isSupabaseServiceConfigured } from "@tecbunny/database/admin";
 ﻿import { NextRequest, NextResponse } from 'next/server';
+import { logger } from '@tecbunny/core/logger';
 
 import { requireAdmin } from "@tecbunny/core/admin-auth";
 
@@ -18,6 +19,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    logger.info('admin_user_history.audit.requested');
     const supabase = await createClient();
     const {
       data: { user },
@@ -87,8 +89,10 @@ export async function GET(
       ...messages.map((message: any) => ({ ...message, type: 'message', timestamp: message.created_at })),
     ].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 
+    logger.info('admin_user_history.audit.success', { userId, timelineCount: timeline.length });
     return NextResponse.json({ profile, timeline });
   } catch (error) {
+    logger.error('admin_user_history.audit.failed', { error: error instanceof Error ? error.message : String(error) });
     console.error('Admin user history request failed:', error);
     return NextResponse.json({ error: 'Failed to load user history' }, { status: 500 });
   }

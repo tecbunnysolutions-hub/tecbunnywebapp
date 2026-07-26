@@ -6,6 +6,7 @@ import { logger } from "@tecbunny/core";
 const GST_VERIFY_RATE_LIMIT = { limit: 20, windowMs: 15 * 60 * 1000 };
 
 export async function GET(request: NextRequest) {
+  logger.info('gst_verify.audit.requested');
   const { searchParams } = new URL(request.url);
   const gstin = searchParams.get('gstin');
   const ip =
@@ -81,6 +82,7 @@ export async function GET(request: NextRequest) {
   }
 
   // Local development fallback if API credentials are not set or API fails.
+  logger.info('gst_verify.audit.fallback_response');
   return NextResponse.json({
     success: true,
     data: {

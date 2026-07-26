@@ -33,6 +33,7 @@ async function syncAssignments(supabase: any, areaId: string, userIds: string[],
 export async function GET() {
   const auth = await requireSuperadminApi('superadmin_areas');
   if (!auth.authorized) return auth.response;
+  logger.info('superadmin_areas.audit.list_requested', { userId: auth.user?.id ?? null });
 
   try {
     const supabase = createServiceClient();
@@ -85,8 +86,10 @@ export async function GET() {
       };
     });
 
+    logger.info('superadmin_areas.audit.list_success', { areaCount: responseAreas.length, staffCount: (staff ?? []).length });
     return NextResponse.json({ areas: responseAreas, staff: staff ?? [] });
   } catch (error) {
+    logger.error('superadmin_areas.audit.list_failed', { error });
     logger.error('superadmin_areas.list_failed', { error });
     return NextResponse.json({ error: 'Failed to load area configuration' }, { status: 500 });
   }
@@ -95,6 +98,7 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   const auth = await requireSuperadminApi('superadmin_areas');
   if (!auth.authorized) return auth.response;
+  logger.info('superadmin_areas.audit.save_requested', { userId: auth.user?.id ?? null });
 
   try {
     const body = await request.json().catch(() => ({}));
@@ -139,8 +143,10 @@ export async function POST(request: NextRequest) {
     await syncAssignments(supabase, area.id, normalizeIds(body.salesTeamIds), 'sales_team');
     await syncAssignments(supabase, area.id, normalizeIds(body.serviceEngineerIds), 'service_engineer');
 
+    logger.info('superadmin_areas.audit.save_success', { id: area.id });
     return NextResponse.json({ area });
   } catch (error) {
+    logger.error('superadmin_areas.audit.save_failed', { error });
     logger.error('superadmin_areas.save_failed', { error });
     return NextResponse.json({ error: 'Failed to save area' }, { status: 500 });
   }
@@ -149,6 +155,7 @@ export async function POST(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   const auth = await requireSuperadminApi('superadmin_areas');
   if (!auth.authorized) return auth.response;
+  logger.info('superadmin_areas.audit.delete_requested', { userId: auth.user?.id ?? null });
 
   try {
     const id = new URL(request.url).searchParams.get('id');
@@ -160,8 +167,10 @@ export async function DELETE(request: NextRequest) {
     const { error } = await supabase.from('areas').delete().eq('id', id);
     if (error) throw error;
 
+    logger.info('superadmin_areas.audit.delete_success', { id });
     return NextResponse.json({ success: true });
   } catch (error) {
+    logger.error('superadmin_areas.audit.delete_failed', { error });
     logger.error('superadmin_areas.delete_failed', { error });
     return NextResponse.json({ error: 'Failed to delete area' }, { status: 500 });
   }

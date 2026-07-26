@@ -12,6 +12,7 @@ import { logger } from "@tecbunny/core";
 // GET /api/roles - Return the canonical roles the current operator may assign.
 export async function GET(request: NextRequest) {
   try {
+    logger.info('roles.audit.requested');
     const { session, role } = await getSessionWithRole(request as any);
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -28,9 +29,10 @@ export async function GET(request: NextRequest) {
       permissions: Array.from(EFFECTIVE_PERMISSIONS[roleName]).sort(),
     }));
 
+    logger.info('roles.audit.success', { total: roles.length });
     return NextResponse.json({ roles, total: roles.length });
   } catch (error) {
-    logger.error('roles.list_failed', { error });
+    logger.error('roles.audit.failed', { error });
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import { QADeploymentService } from '@tecbunny/core';
 import { PERMS } from '@tecbunny/core/roles';
+import { logger } from '@tecbunny/core/logger';
 import { AdminAuthError, requireAdminContext } from '@tecbunny/core/auth/admin-guard';
 import { requirePermission } from '@tecbunny/core/server-role-guard';
 
@@ -10,8 +11,10 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {
   try {
+    logger.info('deployment_rollback.audit.requested');
     const permissionCheck = await requirePermission(PERMS.RELEASE_ROLLBACK);
     if ('error' in permissionCheck) {
+      logger.warn('deployment_rollback.audit.forbidden');
       return permissionCheck.error;
     }
 
@@ -37,14 +40,17 @@ export async function POST(request: NextRequest) {
       initiatedById: user.id,
     });
 
+    logger.info('deployment_rollback.audit.success', { deploymentId: body.deploymentId?.trim?.() ?? null });
     return NextResponse.json({
       success: true,
       data: rollback,
     });
   } catch (error) {
     if (error instanceof AdminAuthError) {
+      logger.warn('deployment_rollback.audit.auth_error', { status: error.status });
       return NextResponse.json({ error: error.message }, { status: error.status });
     }
+    logger.error('deployment_rollback.audit.failed', { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json({ error: 'Failed to rollback deployment' }, { status: 500 });
   }
 }

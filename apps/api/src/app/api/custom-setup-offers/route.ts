@@ -4,6 +4,7 @@ import { NextResponse } from 'next/server';
 
 export async function GET() {
   try {
+    logger.info('custom_setup_offers.audit.requested');
     const now = new Date().toISOString();
     const supabase = await createClient();
     const { data, error } = await supabase
@@ -23,9 +24,10 @@ export async function GET() {
       return NextResponse.json({ success: true, data: null });
     }
 
+    logger.info('custom_setup_offers.audit.success', { hasData: Boolean(data) });
     return NextResponse.json({ success: true, data: data ?? null });
   } catch (error) {
-    logger.warn('custom_setup_offers.unavailable', {
+    logger.warn('custom_setup_offers.audit.failed', {
       error: error instanceof Error ? error.message : error,
     });
     return NextResponse.json({ success: true, data: null });

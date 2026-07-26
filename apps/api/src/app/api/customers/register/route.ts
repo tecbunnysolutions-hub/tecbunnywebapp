@@ -184,6 +184,7 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   try {
     const correlationId = request.headers.get('x-correlation-id') || null;
+    logger.info('customers_register.audit.lookup_requested', { correlationId });
     const { searchParams } = new URL(request.url);
     const phone = searchParams.get('phone');
 
@@ -219,6 +220,7 @@ export async function GET(request: NextRequest) {
       }, { status: 404 });
     }
 
+    logger.info('customers_register.audit.lookup_success', { correlationId, customerId: customer.id });
     return apiSuccess({
       customer: {
         id: customer.id,
@@ -232,7 +234,7 @@ export async function GET(request: NextRequest) {
 
   } catch (error) {
     const correlationId = request.headers.get('x-correlation-id') || null;
-    logger.error('customer_lookup_error', { error, correlationId });
+    logger.error('customers_register.audit.lookup_failed', { error, correlationId });
     return apiError('INTERNAL_ERROR', { correlationId });
   }
 }

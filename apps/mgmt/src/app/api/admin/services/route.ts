@@ -8,6 +8,7 @@ export const revalidate = 0;
 
 export async function GET() {
   try {
+    logger.info('admin_services.audit.requested');
     const { serviceSupabase } = await requireAdminContext();
 
     const { data, error } = await serviceSupabase
@@ -20,8 +21,12 @@ export async function GET() {
       return NextResponse.json({ error: 'Failed to fetch services' }, { status: 500 });
     }
 
+    logger.info('admin_services.audit.success', { count: data?.length ?? 0 });
     return NextResponse.json({ services: data ?? [] });
   } catch (error) {
+    logger.error('admin_services.audit.failed', {
+      error: error instanceof Error ? error.message : String(error),
+    });
     logger.error('admin_services_fetch_failed', {
       error: error instanceof Error ? error.message : String(error),
     });

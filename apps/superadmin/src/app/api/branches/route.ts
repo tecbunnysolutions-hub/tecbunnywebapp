@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { requireSuperadminApi } from '@/lib/superadmin-api';
 import { z } from 'zod';
 import { withAuditEvent } from '@tecbunny/core/enterprise-analytics';
+import { logger } from '@tecbunny/core/logger';
 
 const branchCreateSchema = z.object({
   name: z.string().trim().min(2).max(120),
@@ -17,6 +18,7 @@ const branchDeleteSchema = z.object({
 export async function GET(req: NextRequest) {
   const auth = await requireSuperadminApi('superadmin_branches');
   if (!auth.authorized) return auth.response;
+  logger.info('superadmin_branches.audit.list_requested', { userId: auth.user?.id ?? null });
   try {
     const branches = await prisma.branch.findMany({
       include: {
@@ -24,8 +26,10 @@ export async function GET(req: NextRequest) {
       },
       orderBy: { created_at: 'desc' }
     });
+    logger.info('superadmin_branches.audit.list_success', { count: branches.length });
     return NextResponse.json(branches);
   } catch (error: any) {
+    logger.error('superadmin_branches.audit.list_failed', { error: error?.message ?? String(error) });
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
@@ -33,6 +37,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   const auth = await requireSuperadminApi('superadmin_branches');
   if (!auth.authorized) return auth.response;
+  logger.info('superadmin_branches.audit.create_requested', { userId: auth.user?.id ?? null });
   try {
     const parsed = branchCreateSchema.safeParse(await req.json().catch(() => ({})));
     if (!parsed.success) return NextResponse.json({ error: 'Name and a valid organization id are required' }, { status: 400 });
@@ -56,8 +61,10 @@ export async function POST(req: NextRequest) {
     }, async () => prisma.branch.create({
         data: { name, organization_id, location }
       }));
+    logger.info('superadmin_branches.audit.create_success', { id: branch.id });
     return NextResponse.json(branch);
   } catch (error: any) {
+    logger.error('superadmin_branches.audit.create_failed', { error: error?.message ?? String(error) });
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
@@ -65,6 +72,7 @@ export async function POST(req: NextRequest) {
 export async function DELETE(req: NextRequest) {
   const auth = await requireSuperadminApi('superadmin_branches');
   if (!auth.authorized) return auth.response;
+  logger.info('superadmin_branches.audit.delete_requested', { userId: auth.user?.id ?? null });
   try {
     const parsed = branchDeleteSchema.safeParse(await req.json().catch(() => ({})));
     if (!parsed.success) return NextResponse.json({ error: 'A valid branch id is required' }, { status: 400 });
@@ -88,8 +96,10 @@ export async function DELETE(req: NextRequest) {
       databaseTable: 'branches',
       priority: 'critical',
     }, async () => prisma.branch.delete({ where: { id } }));
+    logger.info('superadmin_branches.audit.delete_success', { id });
     return NextResponse.json({ success: true });
   } catch (error: any) {
+    logger.error('superadmin_branches.audit.delete_failed', { error: error?.message ?? String(error) });
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
