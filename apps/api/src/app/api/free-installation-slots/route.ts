@@ -75,37 +75,42 @@ export async function POST(request: NextRequest) {
     currentMonth.setDate(1);
     const monthStart = currentMonth.toISOString().split('T')[0];
 
-    // First try to get existing record
-    let { data: existingSlot } = await supabase
+    // Ensure monthly slot row exists before decrement attempts.
+    const { error: ensureError } = await supabase
       .from('free_installation_slots')
-      .select('remaining_slots, confirmed_count, total_slots, id')
-      .eq('month', monthStart)
-      .single();
+      .upsert({
+        month: monthStart,
+        total_slots: 10,
+        remaining_slots: 10,
+        confirmed_count: 0,
+      }, { onConflict: 'month', ignoreDuplicates: true });
 
-    // If no record exists, create one
-    if (!existingSlot) {
-      const { data: newSlot, error: createError } = await supabase
+    if (ensureError) throw ensureError;
+
+    const maxAttempts = 3;
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      const { data: existingSlot, error: readError } = await supabase
         .from('free_installation_slots')
-        .insert({
-          month: monthStart,
-          total_slots: 10,
-          remaining_slots: 10,
-          confirmed_count: 0,
-        })
-        .select()
+        .select('remaining_slots, confirmed_count, total_slots, id')
+        .eq('month', monthStart)
         .single();
 
-      if (createError) throw createError;
-      existingSlot = newSlot;
-    }
+      if (readError || !existingSlot?.id) {
+        throw readError || new Error('Failed to read free installation slots record');
+      }
 
-    // Ensure existingSlot is not null before proceeding
-    if (!existingSlot || !existingSlot.id) {
-      throw new Error('Failed to get or create free installation slots record');
-    }
+      if (existingSlot.remaining_slots <= 0) {
+        return NextResponse.json(
+          {
+            success: false,
+            message: 'No free installation slots remaining for this month',
+            remainingSlots: 0,
+            confirmedCount: existingSlot.confirmed_count,
+          },
+          { status: 400 }
+        );
+      }
 
-    // Decrement remaining slots if any left
-    if (existingSlot.remaining_slots > 0) {
       const { data: updatedSlot, error: updateError } = await supabase
         .from('free_installation_slots')
         .update({
@@ -114,28 +119,29 @@ export async function POST(request: NextRequest) {
           updated_at: new Date().toISOString(),
         })
         .eq('id', existingSlot.id)
-        .select()
-        .single();
+        .eq('remaining_slots', existingSlot.remaining_slots)
+        .eq('confirmed_count', existingSlot.confirmed_count)
+        .select('remaining_slots, confirmed_count')
+        .maybeSingle();
 
-      if (updateError) throw updateError;
+      if (updateError) {
+        throw updateError;
+      }
 
-      return NextResponse.json({
-        success: true,
-        message: 'Free installation slot decremented',
-        remainingSlots: updatedSlot.remaining_slots,
-        confirmedCount: updatedSlot.confirmed_count,
-      });
-    } else {
-      return NextResponse.json(
-        {
-          success: false,
-          message: 'No free installation slots remaining for this month',
-          remainingSlots: 0,
-          confirmedCount: existingSlot.confirmed_count,
-        },
-        { status: 400 }
-      );
+      if (updatedSlot) {
+        return NextResponse.json({
+          success: true,
+          message: 'Free installation slot decremented',
+          remainingSlots: updatedSlot.remaining_slots,
+          confirmedCount: updatedSlot.confirmed_count,
+        });
+      }
     }
+
+    return NextResponse.json(
+      { success: false, error: 'Conflict while updating free installation slots. Please retry.' },
+      { status: 409 }
+    );
   } catch (error: any) {
     logger.error('free_installation_slots.decrement_failed', { error: error instanceof Error ? error.message : error });
     return NextResponse.json(

@@ -31,6 +31,15 @@ export default function OrdersListPage() {
   const [notice, setNotice] = useState<{ tone: 'error' | 'success' | 'info'; message: string } | null>(null);
   const [statusOptions, setStatusOptions] = useState<string[]>([]);
 
+  const resolveOrderId = (value: unknown): string | null => {
+    if (typeof value !== 'string') return null;
+    const normalized = value.trim();
+    if (!normalized) return null;
+    const lowered = normalized.toLowerCase();
+    if (lowered === 'undefined' || lowered === 'null' || lowered === 'nan') return null;
+    return normalized;
+  };
+
   useEffect(() => {
     Promise.all([getOrderStatusFlow(), getServiceOrderStatusFlow()]).then(([orderStatusFlow, serviceOrderStatusFlow]) => {
       setStatusOptions(Array.from(new Set([...orderStatusFlow, ...serviceOrderStatusFlow])));
@@ -293,7 +302,17 @@ export default function OrdersListPage() {
                           variant="default"
                           size="sm"
                           className="bg-green-600 hover:bg-green-700 text-white border-none flex items-center gap-2"
-                          onClick={() => window.location.href = `/payment/payu/${order.id}`}
+                          onClick={() => {
+                            const orderId = resolveOrderId(order.id);
+                            if (!orderId) {
+                              setNotice({
+                                tone: 'error',
+                                message: 'Unable to start payment because this order reference is missing. Please refresh and try again.'
+                              });
+                              return;
+                            }
+                            window.location.href = `/payment/payu/${orderId}`;
+                          }}
                         >
                           <CreditCard className="h-4 w-4" />
                           Pay Now

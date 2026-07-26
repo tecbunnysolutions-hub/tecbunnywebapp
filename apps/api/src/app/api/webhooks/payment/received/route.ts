@@ -6,7 +6,7 @@ import { sendWhatsAppNotification } from "@tecbunny/core/whatsapp-service";
 import { logger } from "@tecbunny/core";
 import { validateWebhookSignature, validateWebhookTimestamp } from "@tecbunny/core/webhook-validator";
 import { logWebhookEvent } from "@tecbunny/core/webhook-logger";
-import { getRedis } from "@tecbunny/core/redis";
+import { claimWebhookEventId, getWebhookTimestampHeader, readWebhookJsonBody } from '../../_shared';
 
 const deriveWebhookEventId = (source: string, rawBody: string, signature: string | null): string => {
   return crypto
@@ -27,18 +27,17 @@ export async function POST(request: NextRequest) {
 
   try {
     const supabase = await createClient();
-    rawBody = await request.text();
-    let body: any;
-    try {
-      body = JSON.parse(rawBody);
-    } catch (e) {
-      logger.error('Failed to parse payment received webhook body', { error: e });
-      return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
+    const parsedPayload = await readWebhookJsonBody(request);
+    if (!parsedPayload.ok) {
+      return parsedPayload.response;
     }
+
+    rawBody = parsedPayload.rawBody;
+    const body = parsedPayload.body as any;
     
     const signature = request.headers.get('x-webhook-signature');
     const source = request.headers.get('x-webhook-source') || 'unknown';
-    const timestampStr = request.headers.get('x-webhook-timestamp') || request.headers.get('x-payu-timestamp');
+    const timestampStr = getWebhookTimestampHeader(request);
     const eventId = body.id || body.event_id || body.payment_id || body.transaction_id || deriveWebhookEventId(source, rawBody, signature);
 
     logger.info('Payment received webhook received', { source, eventId, correlationId });
@@ -62,16 +61,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Idempotency: every signed request gets either the gateway event id or a stable body fingerprint.
-    const redis = getRedis();
-    if (redis) {
-      const idempotencyKey = `webhook:payment:received:${eventId}`;
-      // Set key with 24h expiration, NX means only set if not exists.
-      const isNewEvent = await redis.set(idempotencyKey, 'processing', 'EX', 86400, 'NX');
-
-      if (!isNewEvent) {
-        logger.info('Duplicate payment received webhook event (Redis cache hit), skipping execution', { eventId, correlationId });
-        return NextResponse.json({ success: true, message: 'Event already processed (duplicate)' }, { status: 200 });
-      }
+    const isNewEvent = await claimWebhookEventId('webhook:payment:received', eventId);
+    if (!isNewEvent) {
+      logger.info('Duplicate payment received webhook event (Redis cache hit), skipping execution', { eventId, correlationId });
+      return NextResponse.json({ success: true, message: 'Event already processed (duplicate)' }, { status: 200 });
     }
 
     const { data: existingEvent } = await supabase

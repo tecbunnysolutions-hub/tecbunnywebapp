@@ -148,6 +148,15 @@ export default function CheckoutPage() {
   });
   const selectedPickupStore = pickupStores.find(store => store.id === selectedPickupStoreId) || pickupStores[0];
 
+  const resolveOrderId = (value: unknown): string | null => {
+    if (typeof value !== 'string') return null;
+    const normalized = value.trim();
+    if (!normalized) return null;
+    const lowered = normalized.toLowerCase();
+    if (lowered === 'undefined' || lowered === 'null' || lowered === 'nan') return null;
+    return normalized;
+  };
+
   const serviceOnlyCart = React.useMemo(() => {
     if (!cartItems.length) return false;
     return cartItems.every(item => item.product_type === 'service' || item.id.startsWith('service-'));
@@ -547,18 +556,24 @@ export default function CheckoutPage() {
       const order = await createOrder(orderData);
       
       if (order) {
+        const orderId = resolveOrderId((order as { id?: unknown }).id);
+        if (!orderId) {
+          setOrderError('Order was created but reference ID is missing. Please contact support.');
+          return;
+        }
+
         // Handle different payment methods
         if (selectedPaymentMethod === 'cod') {
           // Redirect to order confirmation page for COD
-          window.location.href = `/orders/${order.id}`;
+          window.location.href = `/orders/${orderId}`;
         } else if (selectedPaymentMethod === 'upi') {
           // Show UPI QR code or redirect to UPI payment
-          window.location.href = `/payment/upi/${order.id}`;
+          window.location.href = `/payment/upi/${orderId}`;
         } else if (selectedPaymentMethod === 'payu') {
-          window.location.href = `/payment/payu/${order.id}`;
+          window.location.href = `/payment/payu/${orderId}`;
         } else {
           // Redirect to other online payment gateway
-          window.location.href = `/payment/${selectedPaymentMethod}/${order.id}`;
+          window.location.href = `/payment/${selectedPaymentMethod}/${orderId}`;
         }
       } else {
         setOrderError('Failed to create order. Please try again.');

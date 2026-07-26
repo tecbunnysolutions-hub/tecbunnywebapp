@@ -1,6 +1,9 @@
 import { createClient, isSupabaseServiceConfigured, requireSupabaseServiceEnv } from '@tecbunny/database';
 import { createClient as createSupabaseServiceRoleClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server'
+import { z } from 'zod';
+
+import { rateLimit } from '@tecbunny/core/rate-limit';
 
 
 
@@ -20,6 +23,45 @@ type CustomerInput = {
   email?: string
   mobile?: string
   name?: string
+}
+
+const orderItemSchema = z.object({
+  productId: z.string().trim().min(1).max(128),
+  quantity: z.number().int().min(1).max(100),
+  price: z.number().nonnegative().max(1_000_000),
+  name: z.string().max(200).optional(),
+  gstRate: z.number().min(0).max(100).optional(),
+  hsnCode: z.string().max(32).optional(),
+  serialNumbers: z.array(z.string().max(120)).max(100).optional(),
+});
+
+const customerSchema = z.object({
+  email: z.string().email().max(160).optional(),
+  mobile: z.string().trim().min(6).max(20).optional(),
+  name: z.string().trim().min(1).max(120).optional(),
+});
+
+const configPayloadSchema = z.object({
+  cameraCount: z.number().int().min(0).max(200).optional(),
+  systemType: z.string().max(120).optional(),
+}).passthrough();
+
+const createOrderPayloadSchema = z.object({
+  customer: customerSchema.optional(),
+  items: z.array(orderItemSchema).max(50).optional(),
+  notes: z.string().max(2000).optional(),
+  type: z.string().trim().max(80).optional(),
+  referralCode: z.string().trim().min(3).max(80).regex(/^[A-Za-z0-9_-]+$/).optional(),
+  configPayload: configPayloadSchema.optional(),
+});
+
+function requesterKey(request: Request) {
+  const ip = request.headers.get('cf-connecting-ip')?.trim()
+    || request.headers.get('x-real-ip')?.trim()
+    || request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+    || 'unknown';
+  const ua = request.headers.get('user-agent')?.trim() || 'unknown';
+  return `${ip}|${ua}`.slice(0, 240);
 }
 
 function computeTotals(items: OrderItem[]) {
@@ -49,10 +91,28 @@ function createSupabaseServiceClient() {
 export async function POST(request: Request) {
   const anon = await createClient()
   const svc = isSupabaseServiceConfigured ? createSupabaseServiceClient() : await createClient()
-  const body = await request.json().catch(() => ({}))
-  
-  const referralCode: string | undefined = body?.referralCode
-  const configPayload: any = body?.configPayload
+  const rawBody = await request.json().catch(() => null)
+
+  const parsedBody = createOrderPayloadSchema.safeParse(rawBody)
+  if (!parsedBody.success) {
+    return NextResponse.json({ error: 'Invalid request payload', details: parsedBody.error.flatten() }, { status: 400 })
+  }
+
+  const body = parsedBody.data
+  const referralCode: string | undefined = body.referralCode
+  const configPayload = body.configPayload
+
+  const limitCheck = await rateLimit(
+    referralCode
+      ? `agents_order_referral:${referralCode}:${requesterKey(request)}`
+      : `agents_order_authenticated:${requesterKey(request)}`,
+    referralCode ? 20 : 60,
+    10 * 60 * 1000,
+  )
+
+  if (!limitCheck.allowed) {
+    return NextResponse.json({ error: 'Too many requests. Please try again later.' }, { status: 429 })
+  }
 
   let agentId: string | null = null;
   let user = null;
@@ -90,13 +150,23 @@ export async function POST(request: Request) {
     agentId = authAgent.id;
   }
 
-  const customer: CustomerInput = body?.customer || {}
-  const items: OrderItem[] = Array.isArray(body?.items) ? body.items : []
-  const notes: string | undefined = body?.notes
-  const type: string = body?.type || 'Delivery'
+  const customer: CustomerInput = body.customer || {}
+  const items: OrderItem[] = body.items || []
+  const notes: string | undefined = body.notes
+  const type: string = body.type || 'Delivery'
 
   // If it's a widget lead (configPayload exists), we might not have 'items' yet, just a 'Setup' type
   const isWidgetLead = !!configPayload;
+
+  if (isWidgetLead) {
+    const serializedConfig = JSON.stringify(configPayload || {});
+    if (serializedConfig.length > 4000) {
+      return NextResponse.json({ error: 'Configuration payload is too large' }, { status: 400 });
+    }
+    if (!customer.email && !customer.mobile) {
+      return NextResponse.json({ error: 'Customer email or mobile is required for referral leads' }, { status: 400 });
+    }
+  }
 
   if (!isWidgetLead && ((!customer.email && !customer.mobile) || items.length === 0)) {
     return NextResponse.json({ error: 'Provide customer email or mobile and at least one item' }, { status: 400 })
@@ -104,7 +174,7 @@ export async function POST(request: Request) {
 
   // 2. High-Tier Enterprise Lead Detection & WhatsApp Notification
   if (isWidgetLead && configPayload) {
-    const isHighTier = configPayload.cameraCount >= 16 || configPayload.systemType?.includes('IP');
+    const isHighTier = (configPayload.cameraCount ?? 0) >= 16 || configPayload.systemType?.includes('IP') === true;
     
     if (isHighTier) {
       try {

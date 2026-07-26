@@ -40,11 +40,20 @@ interface OrderExtras {
   payment_method?: string;
 }
 
+function normalizeOrderId(input: unknown): string | null {
+  if (typeof input !== 'string') return null;
+  const normalized = input.trim();
+  if (!normalized) return null;
+  const lowered = normalized.toLowerCase();
+  if (lowered === 'undefined' || lowered === 'null' || lowered === 'nan') return null;
+  return normalized;
+}
+
 export default function PaymentMethodPage() {
   const params = useParams();
   const router = useRouter();
   const { toast } = useToast();
-  const orderId = Array.isArray(params.orderId) ? params.orderId[0] : params.orderId;
+  const orderId = normalizeOrderId(Array.isArray(params.orderId) ? params.orderId[0] : params.orderId);
   const [order, setOrder] = useState<Order | null>(null);
   const [customerEmail, setCustomerEmail] = useState<string | null>(null);
   const [customerPhone, setCustomerPhone] = useState<string | null>(null);

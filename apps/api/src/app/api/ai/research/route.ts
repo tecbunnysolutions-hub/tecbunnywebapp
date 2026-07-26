@@ -44,6 +44,15 @@ function cleanSearchText(value: string, maxLength = 80) {
     .slice(0, maxLength);
 }
 
+function requesterKey(request: NextRequest) {
+  const ip = request.headers.get('cf-connecting-ip')?.trim()
+    || request.headers.get('x-real-ip')?.trim()
+    || request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+    || 'unknown';
+  const ua = request.headers.get('user-agent')?.trim() || 'unknown';
+  return `${ip}|${ua}`.slice(0, 240);
+}
+
 async function fetchWithTimeout(url: string, init: RequestInit = {}, timeoutMs = 5000) {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
@@ -108,7 +117,7 @@ async function fetchReadableContent(url: string): Promise<string> {
 
 export async function POST(request: NextRequest) {
   try {
-    const rateLimitKey = `ai:research:${request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'anon'}`;
+    const rateLimitKey = `ai:research:${requesterKey(request)}`;
     const limitCheck = await rateLimit(rateLimitKey, 10, 60000);
     if (!limitCheck.allowed) {
       logger.warn('ai_research_rate_limited', { rateLimitKey });

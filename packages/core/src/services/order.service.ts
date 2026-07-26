@@ -314,6 +314,17 @@ export class OrderService implements IOrderService {
       this.notificationService.sendOrderManagerNotification(createdOrder.id.toString(), orderData.customer_name, fullOrder.total, '');
     }
 
+    const normalizedOrderId = typeof fullOrder?.id === 'string' ? fullOrder.id.trim() : '';
+    if (!normalizedOrderId || ['undefined', 'null', 'nan'].includes(normalizedOrderId.toLowerCase())) {
+      logger.error('order_create_invalid_order_id', {
+        userId: effectiveUserId,
+        fullOrder,
+      });
+      throw new Error('Order created without a valid reference ID');
+    }
+
+    fullOrder.id = normalizedOrderId;
+
     publishEvent('ORDER_CREATED', {
       orderId: fullOrder.id,
       userId: effectiveUserId,

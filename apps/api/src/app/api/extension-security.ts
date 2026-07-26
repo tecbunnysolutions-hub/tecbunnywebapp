@@ -17,6 +17,14 @@ export class ExtensionAuthError extends Error {
 const DEFAULT_ALLOWED_ORIGINS = ['https://www.tecbunny.com', 'https://tecbunny.com'];
 const CHROME_EXTENSION_ID_PATTERN = /^[a-p]{32}$/;
 
+function normalizeOriginValue(origin: string) {
+  try {
+    return new URL(origin).origin;
+  } catch {
+    return null;
+  }
+}
+
 function createSupabaseServiceClient() {
   const { url, serviceKey } = requireSupabaseServiceEnv();
   return createSupabaseServiceRoleClient(url, serviceKey, {
@@ -28,10 +36,11 @@ function configuredExtensionOrigins() {
   const configured = (process.env.CHROME_EXTENSION_ALLOWED_ORIGINS || '')
     .split(',')
     .map((origin) => origin.trim())
-    .filter(Boolean);
+    .map((origin) => normalizeOriginValue(origin))
+    .filter((origin): origin is string => Boolean(origin));
 
   const extensionId = process.env.CHROME_EXTENSION_ID?.trim();
-  if (extensionId) {
+  if (extensionId && CHROME_EXTENSION_ID_PATTERN.test(extensionId)) {
     configured.push(`chrome-extension://${extensionId}`);
   }
 
@@ -42,22 +51,14 @@ function allowedOrigins() {
   return new Set([...DEFAULT_ALLOWED_ORIGINS, ...configuredExtensionOrigins()]);
 }
 
-function isChromeExtensionOrigin(origin: string) {
-  try {
-    const parsedOrigin = new URL(origin);
-    return parsedOrigin.protocol === 'chrome-extension:' && CHROME_EXTENSION_ID_PATTERN.test(parsedOrigin.hostname);
-  } catch {
-    return false;
-  }
-}
-
 function isAllowedOriginValue(origin: string) {
-  if (!origin) return true;
+  if (!origin) return false;
+
+  const normalizedOrigin = normalizeOriginValue(origin);
+  if (!normalizedOrigin) return false;
 
   const origins = allowedOrigins();
-  if (origins.has(origin)) return true;
-
-  return isChromeExtensionOrigin(origin);
+  return origins.has(normalizedOrigin);
 }
 
 export function getExtensionCorsHeaders(request: NextRequest) {

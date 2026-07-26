@@ -3,6 +3,7 @@ import { createClient } from '@tecbunny/database';
 import { NextRequest, NextResponse } from 'next/server';
 
 import { logger } from "@tecbunny/core";
+import { rateLimit } from "@tecbunny/core/rate-limit";
 import { insertEnterpriseEvent } from '../../../../lib/enterprise-analytics';
 
 const MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_ID || 'G-VCCMTMSVP4';
@@ -35,6 +36,15 @@ function getClientId(request: NextRequest, sessionId?: string | null) {
     return crypto.randomUUID();
   }
   return `${Date.now()}.${Math.floor(Math.random() * 1e9)}`;
+}
+
+function analyticsRequesterKey(request: NextRequest) {
+  const ip = request.headers.get('cf-connecting-ip')?.trim()
+    || request.headers.get('x-real-ip')?.trim()
+    || request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+    || 'unknown';
+  const ua = request.headers.get('user-agent')?.trim() || 'unknown';
+  return `${ip}|${ua}`.slice(0, 240);
 }
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
@@ -124,6 +134,11 @@ async function sendGaEvent(params: {
 
 export async function POST(request: NextRequest) {
   try {
+    const rl = await rateLimit(`analytics:track:${analyticsRequesterKey(request)}`, 120, 60 * 1000);
+    if (!rl.allowed) {
+      return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 });
+    }
+
     let body;
     try {
       body = await request.json();
@@ -253,8 +268,7 @@ export async function POST(request: NextRequest) {
     logger.error('Analytics API Error', { error });
     
     if (process.env.NODE_ENV === 'production') {
-        // Return 200 to client to avoid console errors, but log on server
-        return NextResponse.json({ success: false, skipped: 'Internal Error' }, { status: 200 }); 
+      return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
     }
 
     return NextResponse.json({ error: 'Internal Server Error', details: error instanceof Error ? error.message : String(error) }, { status: 500 });

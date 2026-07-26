@@ -91,6 +91,16 @@ export const POST = withApiHandler(
       orderData: validatedData
     });
 
+    const orderId = typeof fullOrder?.id === 'string' ? fullOrder.id.trim() : '';
+    if (!orderId || orderId.toLowerCase() === 'undefined' || orderId.toLowerCase() === 'null' || orderId.toLowerCase() === 'nan') {
+      logger.error('orders_create_invalid_order_id', {
+        correlationId,
+        effectiveUserId,
+        fullOrder,
+      });
+      return APIResponseBuilder.internalServerError('Order created but returned invalid reference ID.');
+    }
+
     try {
       if (effectiveUserId) {
         const { getAdminDb } = await import('@tecbunny/core/server');
@@ -104,6 +114,6 @@ export const POST = withApiHandler(
       logger.warn('Failed to mark cart as converted', { error: e.message });
     }
 
-    return APIResponseBuilder.created({ order: fullOrder });
+    return APIResponseBuilder.created({ order: fullOrder, orderId });
   }
 );

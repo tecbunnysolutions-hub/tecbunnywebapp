@@ -40,7 +40,24 @@ const parseCsvParam = (value: string | null) =>
     : [];
 
 async function getEffectiveUserRole(user: any) {
-  return user?.app_metadata?.role || 'customer';
+  if (!user?.id) return 'customer';
+
+  try {
+    const adminClient = getAdminBaseClient();
+    const { data: profile, error } = await adminClient.rawClient
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .maybeSingle();
+
+    if (!error && profile?.role) {
+      return profile.role;
+    }
+  } catch (error) {
+    logger.warn('users.resolve_role_from_profile_failed', { userId: user.id, error });
+  }
+
+  return user?.app_metadata?.role || user?.user_metadata?.role || 'customer';
 }
 
 async function createAuthenticatedClient(request: NextRequest) {

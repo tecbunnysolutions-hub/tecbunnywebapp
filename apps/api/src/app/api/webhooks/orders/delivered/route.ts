@@ -8,6 +8,7 @@ import { logger } from "@tecbunny/core";
 import { envConfig } from "@tecbunny/core/environment-validator";
 import { validateWebhookSignature, validateWebhookTimestamp } from "@tecbunny/core/webhook-validator";
 import { logWebhookEvent } from "@tecbunny/core/webhook-logger";
+import { claimWebhookEventId, getWebhookTimestampHeader, readWebhookJsonBody } from '../../_shared';
 
 const deriveWebhookEventId = (source: string, rawBody: string, signature: string | null): string => crypto
   .createHash('sha256')
@@ -27,18 +28,17 @@ export async function POST(request: NextRequest) {
 
   try {
     const supabase = await createClient();
-    rawBody = await request.text();
-
-    try {
-      body = JSON.parse(rawBody);
-    } catch (error) {
-      logger.error('Failed to parse order delivered webhook body', { error });
-      return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
+    const parsedPayload = await readWebhookJsonBody(request);
+    if (!parsedPayload.ok) {
+      return parsedPayload.response;
     }
+
+    rawBody = parsedPayload.rawBody;
+    body = parsedPayload.body;
 
     const signature = request.headers.get('x-webhook-signature');
     const source = request.headers.get('x-webhook-source') || 'unknown';
-    const timestampStr = request.headers.get('x-webhook-timestamp');
+    const timestampStr = getWebhookTimestampHeader(request);
     const eventId = body.id || body.event_id || body.order_id || body.order_number || deriveWebhookEventId(source, rawBody, signature);
 
     logger.info('Order delivered webhook received', { source, eventId, correlationId });
@@ -62,6 +62,12 @@ export async function POST(request: NextRequest) {
     
     if (!validateWebhookSignature(signature, rawBody, secret)) {
       return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
+    }
+
+    const isNewEvent = await claimWebhookEventId('webhook:order:delivered', eventId);
+    if (!isNewEvent) {
+      logger.info('Duplicate order delivered webhook event (Redis cache hit), skipping execution', { eventId, correlationId });
+      return NextResponse.json({ success: true, message: 'Event already processed (duplicate)' }, { status: 200 });
     }
 
     const { data: existingEvent } = await supabase

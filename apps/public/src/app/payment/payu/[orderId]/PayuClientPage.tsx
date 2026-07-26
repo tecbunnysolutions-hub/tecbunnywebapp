@@ -42,6 +42,15 @@ interface PayuInitiateResponse {
   environment: 'test' | 'production';
 }
 
+function normalizeOrderId(input: unknown): string | null {
+  if (typeof input !== 'string') return null;
+  const normalized = input.trim();
+  if (!normalized) return null;
+  const lowered = normalized.toLowerCase();
+  if (lowered === 'undefined' || lowered === 'null' || lowered === 'nan') return null;
+  return normalized;
+}
+
 function PayuPaymentContent() {
   const params = useParams();
   const router = useRouter();
@@ -58,7 +67,7 @@ function PayuPaymentContent() {
   const [payuData, setPayuData] = useState<PayuInitiateResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const orderId = Array.isArray(params.orderId) ? params.orderId[0] : params.orderId;
+  const orderId = normalizeOrderId(Array.isArray(params.orderId) ? params.orderId[0] : params.orderId);
 
   const resolveErrorMessage = (input: unknown): string | undefined => {
     if (!input) return undefined;

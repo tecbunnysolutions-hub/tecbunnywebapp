@@ -3,6 +3,30 @@ import { createServerClient } from '@supabase/ssr';
 import { requireSupabasePublicEnv } from "@tecbunny/database";
 import { cookies } from 'next/headers';
 
+function normalizeOrigin(origin: string) {
+  try {
+    return new URL(origin).origin;
+  } catch {
+    return null;
+  }
+}
+
+function allowedCallbackOrigins() {
+  const fromEnv = (process.env.AUTH_CALLBACK_ALLOWED_ORIGINS || '')
+    .split(',')
+    .map((value) => value.trim())
+    .filter(Boolean)
+    .map((value) => normalizeOrigin(value))
+    .filter((value): value is string => Boolean(value));
+
+  const siteOrigin = normalizeOrigin(process.env.NEXT_PUBLIC_SITE_URL?.trim() || '');
+  if (siteOrigin) {
+    fromEnv.push(siteOrigin);
+  }
+
+  return Array.from(new Set(fromEnv));
+}
+
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get('code');
@@ -55,15 +79,23 @@ export async function GET(request: Request) {
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     
     if (!error) {
-      const forwardedHost = request.headers.get('x-forwarded-host');
       const isLocalEnv = process.env.NODE_ENV === 'development';
+      let safeRedirectOrigin = origin;
+      const allowedOrigins = allowedCallbackOrigins();
+
+      if (!isLocalEnv && allowedOrigins.length > 0) {
+        const normalizedRequestOrigin = normalizeOrigin(origin);
+        if (normalizedRequestOrigin && allowedOrigins.includes(normalizedRequestOrigin)) {
+          safeRedirectOrigin = normalizedRequestOrigin;
+        } else {
+          safeRedirectOrigin = allowedOrigins[0];
+        }
+      }
       
       if (isLocalEnv) {
         return NextResponse.redirect(`${origin}${next}`);
-      } else if (forwardedHost) {
-        return NextResponse.redirect(`https://${forwardedHost}${next}`);
       } else {
-        return NextResponse.redirect(`${origin}${next}`);
+        return NextResponse.redirect(`${safeRedirectOrigin}${next}`);
       }
     } else {
       console.error('PKCE exchange error:', error.message);

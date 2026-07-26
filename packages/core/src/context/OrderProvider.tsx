@@ -35,6 +35,41 @@ export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const clearCart = useCallback(() => storeClearCart(user), [storeClearCart, user]);
   const supabase = createClient();
 
+  const resolveOrderId = useCallback((value: unknown): string | null => {
+    if (typeof value !== 'string') return null;
+    const normalized = value.trim();
+    if (!normalized) return null;
+    const lowered = normalized.toLowerCase();
+    if (lowered === 'undefined' || lowered === 'null' || lowered === 'nan') return null;
+    return normalized;
+  }, []);
+
+  const extractCreatedOrder = useCallback((payload: any): any | null => {
+    if (!payload || typeof payload !== 'object') {
+      return null;
+    }
+
+    if (payload.order && typeof payload.order === 'object') {
+      return payload.order;
+    }
+
+    const data = payload.data;
+    if (!data || typeof data !== 'object') {
+      return null;
+    }
+
+    if (data.order && typeof data.order === 'object') {
+      return data.order;
+    }
+
+    // Backward-compatible fallback for endpoints returning the entity directly in data.
+    if ('id' in data) {
+      return data;
+    }
+
+    return null;
+  }, []);
+
   const hydrateCartItemsWithProductData = useCallback(async (items: CartItem[]): Promise<CartItem[]> => {
     const itemsNeedingLookup = items.filter(item => {
       const missingHsn = !item.hsnCode || item.hsnCode === '9999';
@@ -228,7 +263,34 @@ export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       }
 
       // Merge the database result with our full order data
-      const createdOrder = deserializeOrder(result.order);
+      const createdOrderPayload = extractCreatedOrder(result);
+      if (!createdOrderPayload) {
+        logger.error('OrderProvider API returned success without order payload', {
+          resultKeys: Object.keys(result || {}),
+        });
+        toast({
+          title: "Order Failed",
+          description: "Order created response was invalid. Please try again.",
+          variant: "destructive"
+        });
+        return null;
+      }
+
+      const createdOrder = deserializeOrder(createdOrderPayload);
+      const createdOrderId = resolveOrderId((createdOrder as { id?: unknown }).id);
+      if (!createdOrderId) {
+        logger.error('OrderProvider created order is missing a valid id', {
+          createdOrder,
+        });
+        toast({
+          title: "Order Failed",
+          description: "Order reference could not be confirmed. Please contact support.",
+          variant: "destructive"
+        });
+        return null;
+      }
+
+      createdOrder.id = createdOrderId;
       const hydratedOrder: Order = {
         ...createdOrder,
         customer_email: createdOrder.customer_email ?? customerEmail,
@@ -269,7 +331,16 @@ export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       isProcessingRef.current = false;
       setIsProcessingOrder(false);
     }
-  }, [cartItems, clearCart, toast, user, hydrateCartItemsWithProductData, supabase.auth]);
+  }, [
+    cartItems,
+    clearCart,
+    toast,
+    user,
+    hydrateCartItemsWithProductData,
+    supabase.auth,
+    extractCreatedOrder,
+    resolveOrderId,
+  ]);
 
   const updateOrderStatus = useCallback(async (orderId: string, status: OrderStatus, additionalData?: Record<string, unknown>): Promise<boolean> => {
     try {

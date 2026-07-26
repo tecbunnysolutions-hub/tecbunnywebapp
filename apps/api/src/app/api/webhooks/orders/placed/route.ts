@@ -5,8 +5,19 @@ import { z } from 'zod';
 
 import { sendOrderNotification, sendWhatsAppNotification } from "@tecbunny/core/whatsapp-service";
 import { logger } from "@tecbunny/core";
-import { validateWebhookSignature } from "@tecbunny/core/webhook-validator";
+import { validateWebhookSignature, validateWebhookTimestamp } from "@tecbunny/core/webhook-validator";
 import { logWebhookEvent } from "@tecbunny/core/webhook-logger";
+import crypto from 'crypto';
+import { claimWebhookEventId, getWebhookTimestampHeader, readWebhookJsonBody } from '../../_shared';
+
+const deriveWebhookEventId = (source: string, rawBody: string, signature: string | null): string => crypto
+  .createHash('sha256')
+  .update(source)
+  .update('\0')
+  .update(signature ?? '')
+  .update('\0')
+  .update(rawBody)
+  .digest('hex');
 
 // Generic order placed webhook handler
 export async function POST(request: NextRequest) {
@@ -16,11 +27,16 @@ export async function POST(request: NextRequest) {
 
   try {
     const supabase = await createClient();
-    rawBody = await request.text();
+    const parsedPayload = await readWebhookJsonBody(request);
+    if (!parsedPayload.ok) {
+      return parsedPayload.response;
+    }
+
+    rawBody = parsedPayload.rawBody;
     
     let body: any;
     try {
-      const parsedJSON = JSON.parse(rawBody);
+      const parsedJSON = parsedPayload.body;
       const OrderPlacedWebhookSchema = z.object({
         id: z.string().optional(),
         event_id: z.string().optional(),
@@ -41,6 +57,19 @@ export async function POST(request: NextRequest) {
     // Validate webhook signature
     const signature = request.headers.get('x-webhook-signature');
     const source = request.headers.get('x-webhook-source') || 'unknown';
+    const timestampStr = getWebhookTimestampHeader(request);
+
+    if (timestampStr) {
+      try {
+        validateWebhookTimestamp(Number(timestampStr));
+      } catch (error) {
+        logger.error('Order placed webhook timestamp validation failed', {
+          error: error instanceof Error ? error.message : String(error),
+          correlationId,
+        });
+        return NextResponse.json({ error: 'Timestamp verification failed' }, { status: 403 });
+      }
+    }
     
     const secret = source === 'razorpay'
       ? process.env.RAZORPAY_WEBHOOK_SECRET
@@ -51,7 +80,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Idempotency: Check if this event was already processed
-    const eventId = body.id || body.event_id || body.order_id || body.order_number;
+    const eventId = body.id || body.event_id || body.order_id || body.order_number || deriveWebhookEventId(source, rawBody, signature);
+    const isNewEvent = await claimWebhookEventId('webhook:order:placed', eventId);
+    if (!isNewEvent) {
+      logger.info('Duplicate order placed webhook event (Redis cache hit), skipping execution', { eventId, correlationId });
+      return NextResponse.json({ success: true, message: 'Event already processed (duplicate)' }, { status: 200 });
+    }
+
     if (eventId) {
       const { data: existingEvent } = await supabase
         .from('webhook_events')

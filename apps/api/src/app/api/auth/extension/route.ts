@@ -21,11 +21,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Optional emergency fallback, disabled by default.
+    const allowSuperadminFallback = process.env.ALLOW_EXTENSION_SUPERADMIN_LOGIN === 'true';
+
     // Check for hardcoded Root Console credentials first
     const expectedUserId = process.env.SUPERADMIN_USER_ID;
     const expectedPassword = process.env.SUPERADMIN_PASSWORD;
 
-    if (expectedUserId && expectedPassword && email === expectedUserId && password === expectedPassword) {
+    if (allowSuperadminFallback && expectedUserId && expectedPassword && email === expectedUserId && password === expectedPassword) {
       const { createSuperadminSessionToken } = await import('@tecbunny/core/auth/superadmin-session');
       const token = await createSuperadminSessionToken(email, request);
       

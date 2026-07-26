@@ -6,6 +6,7 @@ import crypto from 'crypto';
 import { sendWhatsAppNotification, sendShipmentNotification } from "@tecbunny/core/whatsapp-service";
 import { logger } from "@tecbunny/core";
 import { logWebhookEvent } from "@tecbunny/core/webhook-logger";
+import { claimWebhookEventId, getWebhookTimestampHeader, readWebhookJsonBody } from '../../_shared';
 
 const deriveWebhookEventId = (source: string, rawBody: string, signature: string | null): string => crypto
   .createHash('sha256')
@@ -24,16 +25,16 @@ export async function POST(request: NextRequest) {
 
   try {
     const supabase = await createClient();
-    const rawBody = await request.text();
-    try {
-      body = JSON.parse(rawBody);
-    } catch (e) {
-      logger.error('Failed to parse webhook body', { error: e });
-      return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
+    const parsedPayload = await readWebhookJsonBody(request);
+    if (!parsedPayload.ok) {
+      return parsedPayload.response;
     }
+
+    const rawBody = parsedPayload.rawBody;
+    body = parsedPayload.body;
     
     const signature = request.headers.get('x-webhook-signature');
-    const timestamp = request.headers.get('x-webhook-timestamp');
+    const timestamp = getWebhookTimestampHeader(request);
     const source = request.headers.get('x-webhook-source') || 'unknown';
     const eventId = body.id || body.event_id || body.order_id || body.order_number || request.headers.get('x-webhook-id') || deriveWebhookEventId(source, rawBody, signature);
 
@@ -41,6 +42,12 @@ export async function POST(request: NextRequest) {
     
     if (!validateWebhookSignature(signature, timestamp, rawBody, source)) {
       return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
+    }
+
+    const isNewEvent = await claimWebhookEventId('webhook:order:shipped', eventId);
+    if (!isNewEvent) {
+      logger.info('Duplicate order shipped webhook event (Redis cache hit), skipping execution', { eventId, correlationId });
+      return NextResponse.json({ success: true, message: 'Event already processed (duplicate)' }, { status: 200 });
     }
 
     const { data: existingEvent } = await supabase
