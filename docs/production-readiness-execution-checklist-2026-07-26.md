@@ -201,6 +201,7 @@ Root scripts to include in phase evidence:
 - `npm run validate:launch-evidence`
 - `npm run validate:theme-contract`
 - `npm run validate:launch-readiness`
+- `npm run validate:runtime-readiness` (strict release gate; blocks production until runtime evidence checks are passing and fresh)
 - `npm run audit:api`
 - `npm run lint`
 - `npm run test`

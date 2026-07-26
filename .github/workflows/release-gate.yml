@@ -40,6 +40,9 @@ jobs:
       - name: Validate launch readiness contract
         run: npm run validate:launch-readiness
 
+      - name: Validate runtime readiness evidence (strict)
+        run: npm run validate:runtime-readiness
+
       - name: Verify security posture (non-zero allowed for governance handling)
         run: npm audit --audit-level=high || true
 

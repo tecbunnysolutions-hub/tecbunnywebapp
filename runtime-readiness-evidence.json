@@ -1,0 +1,276 @@
+{
+  "version": 1,
+  "policy": {
+    "maxEvidenceAgeDays": 14,
+    "owner": "engineering-release-governance"
+  },
+  "categories": {
+    "authenticationAuthorization": {
+      "checks": [
+        {
+          "id": "api-route-auth-coverage",
+          "status": "pending",
+          "lastVerifiedAt": "2026-07-26T00:00:00.000Z",
+          "evidence": [
+            "docs/api-audit/final-report.md",
+            "docs/api-audit/inventory.json"
+          ],
+          "notes": "Static coverage is available. Runtime auth verification suite still required for protected endpoints."
+        },
+        {
+          "id": "rbac-enforcement",
+          "status": "pending",
+          "lastVerifiedAt": "2026-07-26T00:00:00.000Z",
+          "evidence": [
+            "docs/api-audit/api-role-mapping.md"
+          ],
+          "notes": "Attach runtime role-denial and role-allow traces before release."
+        },
+        {
+          "id": "cross-tenant-cross-branch-isolation",
+          "status": "pending",
+          "lastVerifiedAt": "2026-07-26T00:00:00.000Z",
+          "evidence": [
+            "docs/production-readiness-execution-checklist-2026-07-26.md"
+          ],
+          "notes": "Provide replayable runtime evidence for tenant and branch boundary checks."
+        },
+        {
+          "id": "ownership-checks",
+          "status": "pending",
+          "lastVerifiedAt": "2026-07-26T00:00:00.000Z",
+          "evidence": [
+            "docs/production-readiness-execution-checklist-2026-07-26.md"
+          ],
+          "notes": "Provide forbidden-path evidence for user-owned resources across critical flows."
+        }
+      ]
+    },
+    "security": {
+      "checks": [
+        {
+          "id": "jwt-lifecycle",
+          "status": "pending",
+          "lastVerifiedAt": "2026-07-26T00:00:00.000Z",
+          "evidence": [
+            "docs/security/dependency-risk-acceptance-2026-07-26.md"
+          ],
+          "notes": "Need runtime evidence for token expiry, rejection, and renewal paths."
+        },
+        {
+          "id": "refresh-token-rotation",
+          "status": "pending",
+          "lastVerifiedAt": "2026-07-26T00:00:00.000Z",
+          "evidence": [
+            "docs/production-readiness-execution-checklist-2026-07-26.md"
+          ],
+          "notes": "Need runtime replay for token rotation and revocation behavior."
+        },
+        {
+          "id": "csrf-cookie-flows",
+          "status": "pending",
+          "lastVerifiedAt": "2026-07-26T00:00:00.000Z",
+          "evidence": [
+            "docs/production-readiness-execution-checklist-2026-07-26.md"
+          ],
+          "notes": "Need proof for CSRF defenses on cookie-based mutation flows."
+        },
+        {
+          "id": "rate-limiting-runtime",
+          "status": "pending",
+          "lastVerifiedAt": "2026-07-26T00:00:00.000Z",
+          "evidence": [
+            "docs/api-audit/final-report.md"
+          ],
+          "notes": "Static signal exists. Runtime threshold and 429 behavior evidence needed."
+        },
+        {
+          "id": "security-headers-runtime",
+          "status": "pending",
+          "lastVerifiedAt": "2026-07-26T00:00:00.000Z",
+          "evidence": [
+            "docs/production-readiness-execution-checklist-2026-07-26.md"
+          ],
+          "notes": "Need response-header captures for critical entry points."
+        },
+        {
+          "id": "secret-handling-runtime",
+          "status": "pending",
+          "lastVerifiedAt": "2026-07-26T00:00:00.000Z",
+          "evidence": [
+            "docs/go-live-signoff-approvals-2026-07-26.md"
+          ],
+          "notes": "Need secret-source and rotation evidence from production-like environment."
+        },
+        {
+          "id": "owasp-top10-runtime",
+          "status": "pending",
+          "lastVerifiedAt": "2026-07-26T00:00:00.000Z",
+          "evidence": [
+            "docs/production-readiness-execution-checklist-2026-07-26.md"
+          ],
+          "notes": "Need penetration test or DAST runtime report attached."
+        }
+      ]
+    },
+    "testing": {
+      "checks": [
+        {
+          "id": "ci-test-execution",
+          "status": "pass",
+          "lastVerifiedAt": "2026-07-26T00:00:00.000Z",
+          "evidence": [
+            ".github/workflows/ci.yml"
+          ],
+          "notes": "CI workflow includes test job running npm run test."
+        },
+        {
+          "id": "test-suite-pass",
+          "status": "pass",
+          "lastVerifiedAt": "2026-07-26T16:57:00.000Z",
+          "evidence": [
+            "docs/runtime-evidence/runtime-validation-2026-07-26.md"
+          ],
+          "notes": "Validated via local monorepo runtime run (npm run test) with passing exit code and passing core Vitest suites."
+        },
+        {
+          "id": "critical-workflow-coverage",
+          "status": "pending",
+          "lastVerifiedAt": "2026-07-26T00:00:00.000Z",
+          "evidence": [
+            "launch-qa-evidence.json"
+          ],
+          "notes": "Need executable tests for listed workflows, not only target definitions."
+        },
+        {
+          "id": "coverage-targets",
+          "status": "pending",
+          "lastVerifiedAt": "2026-07-26T00:00:00.000Z",
+          "evidence": [
+            "apps/api/src/app/api/testing/coverage/route.ts"
+          ],
+          "notes": "Need runtime coverage summary artifacts and enforced thresholds per release."
+        }
+      ]
+    },
+    "performance": {
+      "checks": [
+        {
+          "id": "build-size-report",
+          "status": "pending",
+          "lastVerifiedAt": "2026-07-26T00:00:00.000Z",
+          "evidence": [
+            "launch-quality-budgets.json"
+          ],
+          "notes": "Need measured build artifact report by app and route."
+        },
+        {
+          "id": "lighthouse-report",
+          "status": "pending",
+          "lastVerifiedAt": "2026-07-26T00:00:00.000Z",
+          "evidence": [
+            "launch-quality-budgets.json"
+          ],
+          "notes": "Need fresh Lighthouse run artifacts for critical journeys."
+        },
+        {
+          "id": "core-web-vitals-report",
+          "status": "pending",
+          "lastVerifiedAt": "2026-07-26T00:00:00.000Z",
+          "evidence": [
+            "launch-quality-budgets.json"
+          ],
+          "notes": "Need measured CWV report from production-like traffic or controlled test."
+        },
+        {
+          "id": "api-latency-report",
+          "status": "pending",
+          "lastVerifiedAt": "2026-07-26T00:00:00.000Z",
+          "evidence": [
+            "docs/api-audit/api-test-report.md"
+          ],
+          "notes": "Need real latency measurements and percentile distribution, not static report defaults."
+        },
+        {
+          "id": "database-query-performance-report",
+          "status": "pending",
+          "lastVerifiedAt": "2026-07-26T00:00:00.000Z",
+          "evidence": [
+            "docs/production-readiness-execution-checklist-2026-07-26.md"
+          ],
+          "notes": "Need query plan/perf evidence from production-like dataset."
+        },
+        {
+          "id": "load-testing-report",
+          "status": "pending",
+          "lastVerifiedAt": "2026-07-26T00:00:00.000Z",
+          "evidence": [
+            "docs/go-live-signoff-approvals-2026-07-26.md"
+          ],
+          "notes": "Need concurrency and sustained-load run artifacts for sign-off."
+        }
+      ]
+    },
+    "deployment": {
+      "checks": [
+        {
+          "id": "production-build-verification",
+          "status": "fail",
+          "lastVerifiedAt": "2026-07-26T16:58:00.000Z",
+          "evidence": [
+            ".github/workflows/ci.yml",
+            "docs/runtime-evidence/runtime-validation-2026-07-26.md"
+          ],
+          "notes": "Local production-style runtime build failed in superadmin during /api/users page-data collection due to missing supabase.anonKey and supabase.serviceRoleKey in effective runtime path."
+        },
+        {
+          "id": "migration-safety-rehearsal",
+          "status": "pending",
+          "lastVerifiedAt": "2026-07-26T00:00:00.000Z",
+          "evidence": [
+            "scripts/validate-db-readiness.mjs",
+            "database.sql",
+            "database.reset.sql"
+          ],
+          "notes": "Need runtime migration rehearsal output with timing and failure rollback behavior."
+        },
+        {
+          "id": "rollback-rehearsal",
+          "status": "pending",
+          "lastVerifiedAt": "2026-07-26T00:00:00.000Z",
+          "evidence": [
+            "docs/go-live-signoff-approvals-2026-07-26.md"
+          ],
+          "notes": "Need command trace and result proving rollback works end-to-end."
+        },
+        {
+          "id": "backup-restore-rehearsal",
+          "status": "pending",
+          "lastVerifiedAt": "2026-07-26T00:00:00.000Z",
+          "evidence": [
+            "docs/go-live-signoff-approvals-2026-07-26.md"
+          ],
+          "notes": "Need restore rehearsal proof with RTO/RPO outcomes."
+        },
+        {
+          "id": "health-check-runtime",
+          "status": "pending",
+          "lastVerifiedAt": "2026-07-26T00:00:00.000Z",
+          "evidence": [
+            "scripts/validate-infra-observability.mjs"
+          ],
+          "notes": "Static presence is validated; runtime probe logs and SLO trend evidence still required."
+        },
+        {
+          "id": "monitoring-alerting-runtime",
+          "status": "pending",
+          "lastVerifiedAt": "2026-07-26T00:00:00.000Z",
+          "evidence": [
+            "docs/go-live-signoff-approvals-2026-07-26.md"
+          ],
+          "notes": "Need alert routing test evidence and acknowledged incident drill."
+        }
+      ]
+    }
+  }
+}

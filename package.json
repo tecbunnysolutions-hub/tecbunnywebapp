@@ -21,6 +21,8 @@
     "validate:theme-contract": "node scripts/validate-theme-contract.mjs",
     "validate:launch-readiness": "node scripts/validate-launch-readiness.mjs",
     "validate:security-gate": "node scripts/validate-security-gate.mjs docs/security/npm-audit-2026-07-26.json docs/security/security-gate-allowlist.json",
+    "validate:runtime-readiness": "node scripts/validate-runtime-readiness.mjs runtime-readiness-evidence.json --mode=strict",
+    "validate:runtime-readiness:advisory": "node scripts/validate-runtime-readiness.mjs runtime-readiness-evidence.json --mode=advisory",
     "validate:db-readiness": "node scripts/validate-db-readiness.mjs",
     "validate:infra-observability": "node scripts/validate-infra-observability.mjs",
     "validate:chrome-extension": "node scripts/validate-chrome-extension.mjs",
