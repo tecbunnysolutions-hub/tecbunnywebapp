@@ -12,6 +12,11 @@ The strict validator (`npm run validate:runtime-readiness`) blocks release when 
 - stale (older than `policy.maxEvidenceAgeDays`),
 - marked `pending` or `fail`.
 
+Companion validator:
+
+- `npm run validate:runtime-evidence-artifacts` enforces required artifact files for every pending/failing runtime-gate check.
+- The validator fails when required artifact references are missing from `runtime-readiness-evidence.json`, when files are missing on disk, or when files are empty.
+
 ## How to provide valid evidence
 
 For each check in `runtime-readiness-evidence.json`:
@@ -53,3 +58,4 @@ For each check in `runtime-readiness-evidence.json`:
 
 - CI pipeline runs `npm run validate:runtime-readiness:advisory` to continuously expose gaps.
 - Release gate runs `npm run validate:runtime-readiness` in strict mode and blocks production when unresolved.
+- Release gate also runs `npm run validate:runtime-evidence-artifacts` to ensure unresolved checks have concrete, tracked runtime artifact paths.

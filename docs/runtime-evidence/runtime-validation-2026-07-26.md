@@ -78,3 +78,28 @@ Additional observation:
 1. Provide production-like secret set for build-time/runtime environment validation in all apps (including superadmin service-role requirements).
 2. Re-run full monorepo build and attach successful output for this same commit.
 3. Continue evidence collection for pending categories: authz runtime replay, CSRF/JWT lifecycle, latency/perf/load, migration rollback/restore drills, and monitoring alert drills.
+
+## 4) Follow-up Build Rehearsal (Same Date)
+
+Command:
+
+```powershell
+$env:NEXT_PUBLIC_SUPABASE_URL='https://demo.supabase.co';
+$env:NEXT_PUBLIC_SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlzcyI6InN1cGFiYXNlIiwiZXhwIjo0MTAyNDQ0ODAwfQ.sig';
+$env:NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY='sb_publishable_demo_key_1234567890';
+$env:SUPABASE_SERVICE_ROLE_KEY='sb_secret_demo_key_1234567890';
+$env:SUPABASE_SECRET_KEY='sb_secret_demo_key_1234567890';
+$env:TECBUNNY_VALIDATE_ENV='off';
+$env:CI='false';
+$env:NEXT_TELEMETRY_DISABLED='1';
+npm run build
+```
+
+Result: PASS
+
+Key output:
+- All build tasks completed (`Tasks: 13 successful, 13 total`).
+- Previous `superadmin` `/api/users` page-data build blocker did not reproduce under this env set.
+
+Related artifact:
+- `docs/runtime-evidence/production-build-rehearsal.md`
