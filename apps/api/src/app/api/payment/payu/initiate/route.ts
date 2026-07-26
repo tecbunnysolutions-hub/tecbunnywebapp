@@ -42,20 +42,20 @@ export async function POST(request: NextRequest) {
     let userRole: string | null = null;
     try {
       const serverClient = await createServerClient();
-      const { data, error } = await serverClient.auth.getUser();
-      if (error || !data.user) {
-        return apiError('UNAUTHORIZED', {
-          correlationId,
-          overrideMessage: 'Authentication required to initiate payment',
-        });
+      const authHeader = request.headers.get('authorization') || request.headers.get('Authorization');
+      const bearerToken = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null;
+      const { data, error } = bearerToken
+        ? await serverClient.auth.getUser(bearerToken)
+        : await serverClient.auth.getUser();
+
+      if (!error && data.user) {
+        userId = data.user.id;
+        userRole = await getEffectiveUserRole(data.user);
       }
-      userId = data.user.id;
-      userRole = await getEffectiveUserRole(data.user);
     } catch (error) {
-      logger.debug('payu_init.user_lookup_failed', { error: error instanceof Error ? error.message : String(error), correlationId });
-      return apiError('UNAUTHORIZED', {
+      logger.debug('payu_init.user_lookup_failed', {
+        error: error instanceof Error ? error.message : String(error),
         correlationId,
-        overrideMessage: 'Authentication required to initiate payment',
       });
     }
 
