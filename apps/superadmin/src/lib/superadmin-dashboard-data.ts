@@ -36,6 +36,13 @@ export type DashboardIssue = {
   filesAffected: string[];
   recommendedSolution: string;
   implementationSteps: string[];
+  failingEndpoints?: {
+    method: string;
+    endpoint: string;
+    status: number;
+    count: number;
+    problem: string;
+  }[];
   alertKey?: string;
   acknowledged?: boolean;
   acknowledgedBy?: string;
