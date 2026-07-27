@@ -1,7 +1,7 @@
 # Coverage Targets Runtime Evidence
 
 Date: 2026-07-26
-Status: Pending completion
+Status: Completed (measurement captured, threshold gate pending)
 
 ## Scope
 
@@ -27,21 +27,25 @@ Pass criteria:
 
 ## Execution Log
 
-- Environment: TBA
-- Command(s): coverage report generation (see runbook)
-- Commit SHA: TBA
-- Executed At (UTC): TBA
+- Environment: local workspace runtime validation
+- Command(s): `npx vitest run --coverage`
+- Commit SHA: c1b9506ea121ec7a1c62886b9cd2a580d1c45769
+- Executed At (UTC): 2026-07-26T23:36:48Z
 
 ## Results
 
-- Thresholds configured: TBA
-- Achieved coverage values: TBA
-- Pass/Fail: TBA
+- Thresholds configured: no explicit strict release thresholds found in repository policy files for this gate.
+- Achieved coverage values:
+	- Statements: 25% (162/648)
+	- Branches: 16.88% (102/604)
+	- Functions: 61.53% (64/104)
+	- Lines: 26.04% (156/599)
+- Pass/Fail: Not yet pass (threshold policy must be finalized and then re-evaluated)
 
 ## Evidence Attachments
 
-- Coverage summary output: TBA
-- Per-package or per-app breakdown: TBA
+- Coverage summary output: terminal execution output from `npx vitest run --coverage` (2026-07-26T23:36:48Z)
+- Per-package or per-app breakdown: included in V8 coverage table for `core/src`, `core/dist`, and subpaths
 
 ## Gate Update Instructions
 

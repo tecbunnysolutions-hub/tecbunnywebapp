@@ -205,7 +205,18 @@ Post-update validation commands:
 
 ```powershell
 npm run validate:runtime-evidence-artifacts
+npm run validate:runtime-evidence-completeness
 npm run validate:runtime-readiness
 ```
 
 Only commit when both validators return expected results.
+
+Safer built-in pass-flip command:
+
+```powershell
+npm run runtime:mark-check-pass -- --check-id=<check-id> --note="Validated in staging with attached runtime evidence."
+```
+
+Behavior:
+- Refuses to mark a check as `pass` when linked runtime evidence files still contain `TBA` or `Status: Pending completion` markers.
+- Use `--force` only for emergency/manual override with reviewer approval.

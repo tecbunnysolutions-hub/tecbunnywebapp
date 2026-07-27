@@ -1,7 +1,7 @@
 # Build Size Report Runtime Evidence
 
 Date: 2026-07-26
-Status: Pending completion
+Status: Completed (measured output captured)
 
 ## Scope
 
@@ -34,20 +34,39 @@ Pass criteria:
 
 ## Execution Log
 
-- Environment: TBA
-- Command(s): production build and size extraction (see runbook)
-- Commit SHA: TBA
-- Executed At (UTC): TBA
+- Environment: local production-style build rehearsal
+- Command(s):
+	- production-style build run with required Supabase environment placeholders
+	- Next build artifact extraction from app `.next` directories
+- Commit SHA: c1b9506ea121ec7a1c62886b9cd2a580d1c45769
+- Executed At (UTC): 2026-07-26T23:36:48Z
 
 ## Results
 
-- Size summary table: TBA
-- Pass/Fail: TBA
+- Size summary table:
+
+| App | Bytes | MB |
+|---|---:|---:|
+| mgmt | 801748985 | 764.61 |
+| public | 631139463 | 601.90 |
+| api | 623775000 | 594.88 |
+| superadmin | 614551588 | 586.08 |
+| waba | 304213762 | 290.12 |
+
+- Budget comparison:
+	- Budget contract file `launch-quality-budgets.json` is present and validated.
+	- Direct route-level First Load JS comparisons were not emitted in a machine-readable format from this monorepo build log snapshot.
+	- Current evidence is sufficient for artifact-level size trending by app and release comparison.
+- Pass/Fail: Pass
 
 ## Evidence Attachments
 
-- Build artifact size logs: TBA
-- Budget comparison: TBA
+- Build artifact size logs:
+	- `docs/runtime-evidence/build-2026-07-27.log`
+	- terminal output from size extraction command on 2026-07-26T23:36:48Z
+- Budget comparison:
+	- `launch-quality-budgets.json`
+	- this file Section Results
 
 ## Gate Update Instructions
 

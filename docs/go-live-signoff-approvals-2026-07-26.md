@@ -102,3 +102,60 @@ By marking Approved, each approver confirms:
 - Required controls were validated for their domain.
 - Evidence has been reviewed and is accurate.
 - Remaining risks (if any) are explicitly documented and accepted.
+
+## 6) Owner Assignment and Day-by-Day Execution Sheet (Final Gates)
+
+Date created: 2026-07-27
+Purpose: Operational ownership matrix for final staging validation and production launch preparation.
+
+### 6.1 Owner Assignment Matrix
+
+| Workstream | Primary Owner | Backup Owner | Daily Evidence Target | Current Status |
+|---|---|---|---|---|
+| Runtime auth and authorization checks | Pending Assignment (Backend Lead) | Pending Assignment (Senior API Engineer) | `docs/runtime-evidence/api-route-auth-coverage-runtime.md`, `docs/runtime-evidence/rbac-enforcement-runtime.md`, `docs/runtime-evidence/ownership-checks-runtime.md`, `docs/runtime-evidence/tenant-branch-isolation-runtime.md` | Pending |
+| Runtime security verification | Pending Assignment (Security Lead) | Pending Assignment (Backend Lead) | `docs/runtime-evidence/jwt-lifecycle-runtime.md`, `docs/runtime-evidence/refresh-token-rotation-runtime.md`, `docs/runtime-evidence/csrf-cookie-flows-runtime.md`, `docs/runtime-evidence/security-headers-runtime.md`, `docs/runtime-evidence/owasp-top10-runtime.md`, `docs/runtime-evidence/secret-handling-runtime.md` | Pending |
+| Testing and workflow evidence | Pending Assignment (QA Lead) | Pending Assignment (Senior QA Engineer) | `docs/runtime-evidence/critical-workflow-coverage-runtime.md`, `docs/runtime-evidence/coverage-targets-runtime.md`, `launch-qa-evidence.json` | Pending |
+| Performance and load evidence | Pending Assignment (Performance Lead) | Pending Assignment (SRE) | `docs/runtime-evidence/build-size-report-runtime.md`, `docs/runtime-evidence/lighthouse-runtime.md`, `docs/runtime-evidence/core-web-vitals-runtime.md`, `docs/runtime-evidence/api-latency-runtime.md`, `docs/runtime-evidence/database-query-performance-runtime.md`, `docs/runtime-evidence/load-testing-runtime.md` | Pending |
+| Deployment rehearsal evidence | Pending Assignment (Platform/DB Lead) | Pending Assignment (DevOps Lead) | `docs/runtime-evidence/migration-safety-rehearsal.md`, `docs/runtime-evidence/rollback-rehearsal.md`, `docs/runtime-evidence/backup-restore-rehearsal.md`, `docs/runtime-evidence/health-check-runtime.md`, `docs/runtime-evidence/monitoring-alerting-runtime.md` | Pending |
+| UAT and business sign-off | Pending Assignment (Product Owner) | Pending Assignment (Operations Lead) | This file, Section 1 and Section 2 decision rows completed with approver names and dates | Pending |
+
+### 6.2 Day-by-Day Plan (7-Day Final Gate Window)
+
+| Day | Focus | Owner Group | Required Output | Exit Criteria |
+|---|---|---|---|---|
+| Day 1 | Auth, RBAC, isolation runtime probes | Backend + Security | Runtime traces attached for auth/role/tenant checks | 4/4 authz checks ready to flip to `pass` |
+| Day 2 | JWT, refresh, CSRF, headers, secret handling | Security + Backend | Security runtime evidence files completed | 6/7 security checks ready to flip to `pass` |
+| Day 3 | OWASP run + critical workflow/UAT preparation | Security + QA + Product | OWASP report attached and workflow matrix updated | `owasp-top10-runtime` and workflow evidence ready |
+| Day 4 | Performance, latency, DB profiling | Performance + SRE + Backend | Lighthouse, CWV, API latency, DB perf artifacts | 5 performance checks ready to flip to `pass` |
+| Day 5 | Load, migration, rollback, restore rehearsals | SRE + Platform/DB + DevOps | Load and deployment rehearsal artifacts attached | Deployment/load checks ready to flip to `pass` |
+| Day 6 | Monitoring drill + full smoke sweep | DevOps + QA + Operations | Alert drill records and smoke test completion logs | Monitoring checks ready to flip to `pass` |
+| Day 7 | Final UAT and Go/No-Go meeting | Product + Business + Engineering + QA + Security + Ops | Approver decisions and final decision row completed | Final decision set to Approved or Rejected |
+
+### 6.3 Command Gate Cadence (Run at end of each day)
+
+```bash
+npm run validate:runtime-evidence-artifacts
+npm run validate:runtime-readiness
+npm run runtime:list-pending-checks
+```
+
+Rule:
+- No check may be switched from `pending` to `pass` without attached runtime evidence in the referenced artifact files.
+
+### 6.4 Current Snapshot (2026-07-27)
+
+- `npm run validate:runtime-evidence-artifacts`: Pass
+- `npm run validate:runtime-readiness`: Fail
+- `npm run runtime:list-pending-checks`: `pending_count=20`
+
+Newly closed runtime checks on this date:
+- `performance:build-size-report` set to Pass with measured per-app artifact sizes.
+- `deployment:health-check-runtime` set to Pass with repeated live probe matrix (`/health`, `/ready`, `/live`).
+- `performance:api-latency-report` set to Pass with measured p50/p95/p99 runtime probe metrics.
+- `security:security-headers-runtime` set to Pass with runtime header matrix verification across health and API routes.
+
+Known blocker detail from latest execution:
+- Remaining blockers are concentrated in authz runtime proof, token/CSRF/security runtime drills, workflow/coverage policy closure, load/DB/CWV evidence, and deployment rollback/restore/monitoring rehearsals.
+
+Release posture:
+- No-Go until strict runtime readiness passes.

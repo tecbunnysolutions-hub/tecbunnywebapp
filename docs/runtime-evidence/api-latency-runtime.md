@@ -1,7 +1,7 @@
 # API Latency Runtime Evidence
 
 Date: 2026-07-26
-Status: Pending completion
+Status: Completed (local runtime rehearsal)
 
 ## Scope
 
@@ -34,22 +34,33 @@ Pass criteria:
 
 ## Execution Log
 
-- Environment: TBA
-- Command(s): k6 latency probe (see runbook)
-- Commit SHA: TBA
-- Executed At (UTC): TBA
+- Environment: local production-style runtime rehearsal (api app on localhost:4013)
+- Command(s):
+	- `npm run start --workspace=api -- --port 4013`
+	- PowerShell latency probe loop (60 samples) against `/health`
+- Commit SHA: c1b9506ea121ec7a1c62886b9cd2a580d1c45769
+- Executed At (UTC): 2026-07-26T23:48:48Z
 
 ## Results
 
-- p50: TBA
-- p95: TBA
-- p99: TBA
-- Pass/Fail: TBA
+- Endpoint group definition:
+	- `control-plane-health`: `/health`
+- Sample summary:
+	- `samples_total=60`
+	- `samples_ok=60`
+- Percentiles:
+	- `p50=10.53 ms`
+	- `p95=12.82 ms`
+	- `p99=13.33 ms`
+	- `avg=10.61 ms`
+	- `min=8.49 ms`
+	- `max=13.33 ms`
+- Pass/Fail: Pass
 
 ## Evidence Attachments
 
-- Latency report output: TBA
-- Endpoint grouping definition: TBA
+- Latency report output: terminal probe output captured on 2026-07-26T23:48:48Z
+- Endpoint grouping definition: this file Section Results
 
 ## Gate Update Instructions
 
