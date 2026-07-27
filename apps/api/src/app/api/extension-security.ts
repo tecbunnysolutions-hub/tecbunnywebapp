@@ -66,6 +66,10 @@ function allowedOrigins() {
 function isAllowedOriginValue(origin: string) {
   if (!origin) return false;
 
+  if (origin.trim().toLowerCase() === 'null') {
+    return true;
+  }
+
   // Extension-origin requests can vary in formatting across environments,
   // but any chrome-extension:// origin is a browser-scoped extension context.
   if (/^chrome-extension:\/\//i.test(origin.trim())) {
@@ -123,7 +127,7 @@ export function getExtensionCorsHeaders(request: NextRequest) {
   };
 
   if (origin && isAllowedOriginValue(origin)) {
-    headers['Access-Control-Allow-Origin'] = origin;
+    headers['Access-Control-Allow-Origin'] = origin.trim().toLowerCase() === 'null' ? 'null' : origin;
   } else if ((origin || '').trim().toLowerCase() === 'null' && isLikelyNullOriginExtensionRequest(request)) {
     headers['Access-Control-Allow-Origin'] = 'null';
   } else if (!origin && isLikelyMissingOriginExtensionRequest(request)) {
