@@ -106,6 +106,30 @@ document.addEventListener('DOMContentLoaded', () => {
     return String(error);
   }
 
+  async function parseApiResponseBody(response) {
+    const rawBody = await response.text();
+    if (!rawBody) {
+      return { rawBody: '', json: null };
+    }
+
+    try {
+      return { rawBody, json: JSON.parse(rawBody) };
+    } catch (_) {
+      return { rawBody, json: null };
+    }
+  }
+
+  function inferDeploymentError(rawBody) {
+    const text = String(rawBody || '').trim();
+    if (!text) return '';
+
+    if (/^the deploy/i.test(text)) {
+      return 'API deployment returned a non-JSON response. Verify the production API deployment/domain routing and Vercel protection settings for https://api.tecbunny.com/api/auth/extension.';
+    }
+
+    return text;
+  }
+
   function showStatus(message, type) {
     statusContainer.textContent = formatErrorMessage(message);
     statusContainer.className = 'status-container'; // Reset
@@ -248,16 +272,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
     try {
       if (email && pass) {
-        const response = await fetch('https://www.tecbunny.com/api/auth/extension', {
+        const response = await fetch('https://api.tecbunny.com/api/auth/extension', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email, password: pass })
         });
 
-        const data = await response.json();
+        const { rawBody, json } = await parseApiResponseBody(response);
+        const data = json && typeof json === 'object' ? json : null;
 
-        if (!response.ok || !data.success) {
-          throw new Error(data.error || 'Authentication failed');
+        if (!response.ok) {
+          const notFoundHint = response.status === 404
+            ? 'Auth endpoint not found (404) at https://api.tecbunny.com/api/auth/extension. Verify API deployment routing.'
+            : '';
+          const serverError = (data && (data.error || data.message))
+            || inferDeploymentError(rawBody)
+            || notFoundHint
+            || `Authentication failed (${response.status})`;
+          throw new Error(String(serverError));
+        }
+
+        if (!data || !data.success || !data.access_token) {
+          const invalidPayloadHint = inferDeploymentError(rawBody);
+          throw new Error(invalidPayloadHint || 'Authentication endpoint returned an invalid response payload.');
         }
 
         chrome.storage.local.set({ superadminUser: email, aiSource, aiProvider, aiApiKey, aiModel }, () => {

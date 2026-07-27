@@ -66,12 +66,14 @@ function allowedOrigins() {
 function isAllowedOriginValue(origin: string) {
   if (!origin) return false;
 
-  const normalizedOrigin = normalizeOriginValue(origin);
-  if (!normalizedOrigin) return false;
-
-  if (normalizedOrigin.startsWith('chrome-extension://')) {
+  // Extension-origin requests can vary in formatting across environments,
+  // but any chrome-extension:// origin is a browser-scoped extension context.
+  if (/^chrome-extension:\/\//i.test(origin.trim())) {
     return true;
   }
+
+  const normalizedOrigin = normalizeOriginValue(origin);
+  if (!normalizedOrigin) return false;
 
   const origins = allowedOrigins();
   return origins.has(normalizedOrigin);

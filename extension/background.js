@@ -1,4 +1,4 @@
-const API_BASE_URL = 'https://www.tecbunny.com/api';
+const API_BASE_URL = 'https://api.tecbunny.com/api';
 const REQUEST_TIMEOUT_MS = 15000;
 const MAX_RAW_TEXT_LENGTH = 30000;
 const PRODUCT_TEXT_FIELDS = [
