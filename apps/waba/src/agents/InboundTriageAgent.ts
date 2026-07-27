@@ -7,6 +7,7 @@ import { buildPricingCatalog } from '@tecbunny/core/custom-setup-pricing-server'
 import { CustomerService } from '@tecbunny/core/services/customer.service';
 import { getAdminDb } from '@tecbunny/core/db/client';
 import { recordInboundConsent } from '../services/consentService';
+import { logger } from '@tecbunny/core/logger';
 
 const apiKey = process.env.GEMINI_API_KEY || "";
 const genAI = apiKey ? new GoogleGenerativeAI(apiKey) : null;
@@ -92,10 +93,10 @@ export class InboundTriageAgent extends BaseAgent<WebhookData, TriagedPayload | 
       if (msgError) {
         if (msgError.code === '23505') {
           // Unique constraint violation — duplicate message, skip processing
-          console.log(`[InboundTriageAgent] Duplicate message_id ${messageId} detected via constraint. Skipping.`);
+          logger.info('waba_inbound_duplicate_message_skipped', { messageId, senderNumber });
           continue;
         }
-        console.error(`[InboundTriageAgent] FATAL Supabase Insert Error:`, msgError);
+        logger.error('waba_inbound_message_insert_failed', { messageId, senderNumber, error: msgError.message });
         continue;
       }
 
@@ -161,7 +162,7 @@ export class InboundTriageAgent extends BaseAgent<WebhookData, TriagedPayload | 
       // We insert exactly ONE outbound record here, after the send succeeds.
       // Bug #10 fix: Pass previousTimestamp so the 24h check uses the pre-update value.
       if (fullPayload.follow_up_question) {
-        console.log(`[InboundTriageAgent] Sending AI reply to ${senderNumber}: ${fullPayload.follow_up_question}`);
+        logger.info('waba_inbound_ai_reply_sending', { senderNumber });
         const sendResult = await sendWhatsAppMessage(
           senderNumber,
           fullPayload.follow_up_question,
@@ -184,7 +185,7 @@ export class InboundTriageAgent extends BaseAgent<WebhookData, TriagedPayload | 
       // Handle Handoff Status — set PENDING_HUMAN_AGENT as the final status.
       // AssignmentOrchestrator must NOT overwrite this status (fixed there too).
       if (fullPayload.escalate_to_human) {
-        console.log(`[HANDOFF_TO_HUMAN] Triggered for user ${senderNumber}. Last message: "${textContent}"`);
+        logger.info('waba_inbound_handoff_to_human', { senderNumber });
         await supabase
           .from('Conversation')
           .update({ status: 'PENDING_HUMAN_AGENT' })

@@ -1,7 +1,7 @@
 # API Route Authentication Coverage Runtime Evidence
 
 Date: 2026-07-26
-Status: Pending completion
+Status: Completed (pass)
 
 ## Scope
 
@@ -52,21 +52,23 @@ Pass criteria:
 
 ## Execution Log
 
-- Environment: TBA
-- Command(s): `Invoke-WebRequest` auth coverage probe (see runbook)
-- Commit SHA: TBA
-- Executed At (UTC): TBA
+- Environment: Staging (`NEXT_PUBLIC_API_URL` from `.env`)
+- Command(s): PowerShell `Invoke-WebRequest` probes for anonymous and authenticated access
+- Commit SHA: c534ad31
+- Executed At (UTC): 2026-07-27T01:32:01.265Z
 
 ## Results
 
-- Anonymous request result: TBA
-- Authenticated request result: TBA
-- Pass/Fail: TBA
+- Protected route tested: `/api/security/audit-logs`
+- Anonymous request result: `401`
+- Login route result (`/api/admin-auth/login`): `200`
+- Authenticated request result: `200`
+- Pass/Fail: Pass
 
 ## Evidence Attachments
 
-- Request/response traces: TBA
-- Negative and positive case summary: TBA
+- Runtime trace summary (status codes): anonymous `401`, authenticated `200`
+- Control evidence: authenticated session cookie issued by `POST /api/admin-auth/login`
 
 ## Gate Update Instructions
 

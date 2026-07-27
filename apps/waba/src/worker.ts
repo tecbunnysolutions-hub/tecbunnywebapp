@@ -17,7 +17,7 @@ async function startWorker() {
   }
 
   // Initialize Background Workers
-  console.log('Starting Background BullMQ Workers...');
+  logger.info('waba_worker_background_workers_starting');
   const emailWorker = startEmailWorker();
   const webhookWorker = startWebhookWorker();
   const broadcastWorker = startBroadcastWorker();
@@ -89,7 +89,7 @@ async function startWorker() {
 }
 
 startWorker().catch((error) => {
-  console.error('RAW FATAL ERROR:', error);
+  logger.error('waba_worker_raw_fatal_error', { error: error instanceof Error ? error.message : String(error) });
   logger.error('waba_worker_fatal_error', { error: error.message });
   process.exit(1);
 });

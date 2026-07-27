@@ -4,6 +4,7 @@ import { supabase } from '@/lib/supabase';
 import nodemailer from 'nodemailer';
 import { sendWhatsAppMessage } from '../services/infobipService';
 import { LeadService } from '../services/leadService';
+import { logger } from '@tecbunny/core/logger';
 
 // Bug #18 fix: Nodemailer transporter is created lazily (on first use) rather
 // than at module load time. In serverless environments, module-level transporter
@@ -61,17 +62,22 @@ export class AssignmentOrchestrator extends BaseAgent<TriagedPayload, void> {
       .eq('sender_number', data.senderNumber);
 
     if (!data.is_actionable) {
-      console.warn(`[AssignmentOrchestrator] Received non-actionable payload for ${data.senderNumber}. CRM updated, but skipping assignment.`);
+      logger.warn('waba_assignment_non_actionable_payload', { senderNumber: data.senderNumber });
       return;
     }
 
     // We only strictly require a pincode if we are NOT escalating. If we ARE escalating, we try to assign but fallback to a general queue.
     if (!data.pincode && !data.escalate_to_human) {
-      console.warn(`[AssignmentOrchestrator] Actionable but missing pincode for ${data.senderNumber}. Skipping assignment.`);
+      logger.warn('waba_assignment_missing_pincode', { senderNumber: data.senderNumber });
       return;
     }
 
-    console.log(`[AssignmentOrchestrator] Processing lead for pincode ${data.pincode}, domain ${data.domain}, escalate: ${data.escalate_to_human}`);
+    logger.info('waba_assignment_processing_lead', {
+      senderNumber: data.senderNumber,
+      pincode: data.pincode,
+      domain: data.domain,
+      escalateToHuman: data.escalate_to_human,
+    });
 
     // Map domain to role
     let requiredRole: string | null = null;
@@ -100,12 +106,12 @@ export class AssignmentOrchestrator extends BaseAgent<TriagedPayload, void> {
       if (matchedManager) {
         assignedUserId = matchedManager.id;
         managerDetails = matchedManager;
-        console.log(`[AssignmentOrchestrator] Auto-assigned lead to manager ${assignedUserId}`);
+        logger.info('waba_assignment_manager_matched', { senderNumber: data.senderNumber, assignedUserId });
         
         // Update assigned_to on the Conversation as well
         await supabase.from('Conversation').update({ assigned_to: assignedUserId }).eq('sender_number', data.senderNumber);
       } else {
-        console.log(`[AssignmentOrchestrator] No matching territory manager found for pincode ${data.pincode}. Leave unassigned.`);
+        logger.info('waba_assignment_no_manager_match', { senderNumber: data.senderNumber, pincode: data.pincode });
       }
     }
 
@@ -124,7 +130,11 @@ export class AssignmentOrchestrator extends BaseAgent<TriagedPayload, void> {
       if (existingLead) {
         // Update the existing lead instead of creating a duplicate
         await LeadService.updateLeadStatus(existingLead.id, leadStatus, assignedUserId);
-        console.log(`[AssignmentOrchestrator] Updated existing lead ${existingLead.id} for ${data.senderNumber} to status ${leadStatus}`);
+        logger.info('waba_assignment_existing_lead_updated', {
+          leadId: existingLead.id,
+          senderNumber: data.senderNumber,
+          leadStatus,
+        });
       } else {
         await LeadService.createLead({
           domain: data.domain === 'UNKNOWN' ? 'TECHNICAL_SERVICE' : (data.domain as 'TECHNICAL_SERVICE' | 'PRODUCT_SALES'),
@@ -135,7 +145,7 @@ export class AssignmentOrchestrator extends BaseAgent<TriagedPayload, void> {
           status: leadStatus,
           assigned_to: assignedUserId,
         } as Parameters<typeof LeadService.createLead>[0]);
-        console.log(`[AssignmentOrchestrator] Created new lead for ${data.senderNumber} with status ${leadStatus}`);
+        logger.info('waba_assignment_new_lead_created', { senderNumber: data.senderNumber, leadStatus });
       }
 
       // Bug #31 fix: If escalation is triggered but no territory manager matched
@@ -145,14 +155,17 @@ export class AssignmentOrchestrator extends BaseAgent<TriagedPayload, void> {
         const alertTarget = managerDetails ?? await this.getDefaultAdminContact();
 
         if (alertTarget) {
-          console.log(`[AssignmentOrchestrator] Triggering human escalation protocol for ${alertTarget.name ?? 'default admin'}`);
+          logger.info('waba_assignment_human_escalation_triggered', {
+            senderNumber: data.senderNumber,
+            targetName: alertTarget.name ?? 'default admin',
+          });
 
           // WhatsApp Alert — pass null timestamp so it always uses a template
           // (manager-to-manager messages are always outside the customer 24h window)
           if (alertTarget.phone_number) {
             const alertMsg = `🚨 *AI Escalation Alert*\n\nManager ${alertTarget.name ?? 'Team'}, an AI chat with customer (${data.customer_name || data.senderNumber}) requires human intervention.\n\n*Domain:* ${data.domain}\n*Category:* ${data.sub_category}\n*Address:* ${data.address}\n\nPlease take over the chat in your TecBunny Dashboard immediately.`;
             await sendWhatsAppMessage(alertTarget.phone_number, alertMsg, null).catch(e =>
-              console.error('WA Alert fail:', e),
+              logger.error('waba_assignment_escalation_whatsapp_failed', { error: e instanceof Error ? e.message : String(e) }),
             );
           }
 
@@ -165,17 +178,20 @@ export class AssignmentOrchestrator extends BaseAgent<TriagedPayload, void> {
                 subject: `Action Required: AI Chat Escalation (${data.senderNumber})`,
                 text: `Hello ${alertTarget.name ?? 'Team'},\n\nThe AI Assistant could not resolve a customer request and has escalated it to you.\n\nCustomer: ${data.customer_name || data.senderNumber}\nNumber: ${data.senderNumber}\nDomain: ${data.domain}\nSub-Category: ${data.sub_category}\nAddress: ${data.address}\n\nPlease log in to the dashboard to reply to the customer.\n\nTecBunny AI`,
               });
-              console.log(`[AssignmentOrchestrator] Sent email alert to ${alertTarget.email}`);
+              logger.info('waba_assignment_escalation_email_sent', { email: alertTarget.email });
             } catch (e) {
-              console.error('[AssignmentOrchestrator] Email Alert fail:', e);
+              logger.error('waba_assignment_escalation_email_failed', { error: e instanceof Error ? e.message : String(e) });
             }
           }
         } else {
-          console.error(`[AssignmentOrchestrator] ESCALATION DROPPED: No manager or default admin found for ${data.senderNumber}. Configure ESCALATION_FALLBACK_EMAIL.`);
+          logger.error('waba_assignment_escalation_dropped_no_target', { senderNumber: data.senderNumber });
         }
       }
     } catch (error) {
-      console.error(`[AssignmentOrchestrator] Failed to save lead:`, error);
+      logger.error('waba_assignment_lead_save_failed', {
+        senderNumber: data.senderNumber,
+        error: error instanceof Error ? error.message : String(error),
+      });
     }
   }
 

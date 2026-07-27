@@ -9,14 +9,14 @@
       "checks": [
         {
           "id": "api-route-auth-coverage",
-          "status": "pending",
-          "lastVerifiedAt": "2026-07-26T00:00:00.000Z",
+          "status": "pass",
+          "lastVerifiedAt": "2026-07-27T01:32:14.034Z",
           "evidence": [
             "docs/api-audit/final-report.md",
             "docs/api-audit/inventory.json",
             "docs/runtime-evidence/api-route-auth-coverage-runtime.md"
           ],
-          "notes": "Static coverage is available. Runtime auth verification suite still required for protected endpoints."
+          "notes": "Validated in staging: /api/security/audit-logs anonymous=401, authenticated=200 via superadmin session login."
         },
         {
           "id": "rbac-enforcement",
@@ -159,7 +159,6 @@
           "status": "pending",
           "lastVerifiedAt": "2026-07-26T00:00:00.000Z",
           "evidence": [
-            "apps/api/src/app/api/testing/coverage/route.ts",
             "docs/runtime-evidence/coverage-targets-runtime.md"
           ],
           "notes": "Need runtime coverage summary artifacts and enforced thresholds per release."

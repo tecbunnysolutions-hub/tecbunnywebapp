@@ -2,7 +2,6 @@ import type {Metadata, Viewport} from 'next';
 import { headers } from 'next/headers';
 
 const BRAND_LOGO_URL = 'https://fbcsagupcxheyiusjfak.supabase.co/storage/v1/object/public/TecBunny%20Solution/TECBUNNY_SOLUTIONS_PVT_LTD-removebg-preview.png';
-import { Outfit } from 'next/font/google';
 import { Suspense } from 'react';
 
 import './globals.css';
@@ -293,12 +292,6 @@ const structuredData = {
 
 const serializeJsonLd = (data: unknown) => JSON.stringify(data).replace(/</g, '\\u003c');
 
-const outfit = Outfit({
-  subsets: ['latin'],
-  display: 'swap',
-  variable: '--font-body',
-});
-
 export default async function RootLayout({
   children,
 }: Readonly<{
@@ -308,7 +301,13 @@ export default async function RootLayout({
   const metaPixelId = process.env.NEXT_PUBLIC_META_PIXEL_ID;
   const nonce = (await headers()).get('x-nonce') ?? undefined;
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html
+      lang="en"
+      suppressHydrationWarning
+      style={{
+        ['--font-body' as string]: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+      }}
+    >
       <head>
         <link rel="preconnect" href="https://fbcsagupcxheyiusjfak.supabase.co" />
         <link rel="dns-prefetch" href="https://fbcsagupcxheyiusjfak.supabase.co" />
@@ -321,7 +320,7 @@ export default async function RootLayout({
             dangerouslySetInnerHTML={{ __html: serializeJsonLd(structuredData) }}
           />
       </head>
-      <body className={`${outfit.variable} font-body antialiased overflow-x-hidden w-full`} suppressHydrationWarning>
+      <body className="font-body antialiased overflow-x-hidden w-full" suppressHydrationWarning>
         <ThemeProvider nonce={nonce}>
           <TRPCProvider>
             <FeatureFlagProviderLoader>

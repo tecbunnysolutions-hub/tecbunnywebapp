@@ -11,14 +11,22 @@ Workspace: tecbunny
 - Strict release gate remains not ready: `npm run validate:runtime-readiness` has 24 pending runtime checks.
 - Evidence wiring is healthy: `npm run validate:runtime-evidence-artifacts` passes.
 
+## Phase Status Snapshot
+
+| Phase | Status |
+|---|---|
+| Staging Validation | 🔴 In progress (strict gate failed: 19 pending checks) |
+| Production Launch | ⏳ Blocked until staging passes |
+
 ## Latest Gate Re-Run Snapshot (2026-07-27)
 
 Commands executed:
 - `npm run validate:runtime-evidence-artifacts` -> Pass
-- `npm run validate:runtime-readiness` -> Fail (20 pending)
-- `npm run runtime:list-pending-checks` -> `pending_count=20`
+- `npm run validate:runtime-readiness` -> Fail (19 pending)
+- `npm run runtime:list-pending-checks` -> `pending_count=19`
 
 Checks closed in this run:
+- `authenticationAuthorization:api-route-auth-coverage` -> Pass
 - `performance:build-size-report` -> Pass
 - `deployment:health-check-runtime` -> Pass
 - `performance:api-latency-report` -> Pass
@@ -28,7 +36,6 @@ Security headers fix applied:
 - Added explicit header enforcement on health endpoints (`/health`, `/ready`, `/live`) and revalidated header presence with runtime probes.
 
 Current blocker set after re-run:
-- `authenticationAuthorization:api-route-auth-coverage`
 - `authenticationAuthorization:rbac-enforcement`
 - `authenticationAuthorization:cross-tenant-cross-branch-isolation`
 - `authenticationAuthorization:ownership-checks`
@@ -429,6 +436,132 @@ Day 7-30:
    - `npm run validate:runtime-evidence-artifacts`
    - `npm run validate:runtime-readiness`
 4. Approve go-live only when `validate:runtime-readiness` returns pass in strict mode.
+
+## Operational Recommendation (Medium)
+
+Runtime, storage, queue, cron, and worker visibility is now materially improved. The next executive layer should add governed natural-language operations analysis and optional provider-native infrastructure probes.
+
+### A) Governed Gemini Query Flow
+
+Objective:
+- Allow executive and operations users to ask natural-language health and risk questions while keeping responses policy-governed, auditable, and grounded.
+
+Execution model:
+- Use the existing governed Superadmin dashboard query endpoint as the primary flow.
+- Keep Gemini calls backend-only and never expose provider keys to browsers.
+- Require explicit RBAC at endpoint and route level.
+- Enforce prompt-template allowlist by query class (incident, performance, cost, reliability, capacity).
+- Ground answers only on approved telemetry payloads and database views already exposed by dashboard health APIs.
+- Enforce structured output contract so answers include confidence, evidence pointers, and recommended actions.
+- Persist prompt/response audit records with actor identity, timestamp, route, and policy outcome.
+
+Governance controls:
+- PII/secret redaction before model submission.
+- Request and token budget limits per role.
+- Rate limits and abuse controls.
+- Fallback deterministic response when Gemini provider is unavailable.
+
+Governed request lifecycle (required):
+1. Authenticate caller and enforce Superadmin-only scope.
+2. Classify query intent into an allowlisted class.
+3. Resolve class-specific prompt template and policy profile.
+4. Collect only approved telemetry slices (health API views, queue summaries, runtime artifacts).
+5. Redact sensitive fields and attach evidence references.
+6. Execute Gemini query with strict timeout and max-token guardrails.
+7. Validate structured response contract before returning to caller.
+8. Persist immutable audit record and policy outcome.
+
+Structured response contract (minimum fields):
+- `summary`: short executive answer.
+- `confidence`: low | medium | high.
+- `riskLevel`: low | medium | high | critical.
+- `evidence`: list of repository/runtime evidence pointers used to ground the answer.
+- `recommendedActions`: prioritized remediation actions with owners.
+- `policy`: applied policy profile, redaction status, and fallback status.
+
+Rollout phases:
+- Phase 1 (Read-only): incident and reliability classes only, audited but non-blocking.
+- Phase 2 (Expanded): performance and capacity classes with tighter budget quotas.
+- Phase 3 (Operationalized): cost class enabled with weekly governance review and trend reporting.
+
+Repository anchors:
+- Superadmin query API: `apps/superadmin/src/app/api/superadmin/dashboard/ask/route.ts`
+- Platform health API: `apps/superadmin/src/app/api/superadmin/dashboard/platform-health/route.ts`
+- Architecture plan: `docs/ai-first-gemini-architecture-plan.md`
+
+### B) Optional Provider-Native Infrastructure Probes
+
+Objective:
+- Complement application-level probes with provider-native metrics for faster root-cause isolation.
+
+Recommended probes (optional, non-blocking at runtime):
+- Redis provider metrics: ping latency, connected clients, memory pressure, evictions, replication lag (if applicable).
+- Database provider metrics: connection saturation, CPU, storage I/O, lock wait time, slow query counts.
+- Hosting/provider metrics: disk usage growth, network throughput, packet loss, error rates.
+
+Implementation pattern:
+- Add adapter-style collectors behind feature flags.
+- Set strict timeouts and fail-open behavior for probe unavailability.
+- Normalize all probe outputs into one health schema for dashboard and alerting usage.
+- Persist sampled metrics into the enterprise analytics layer for trend and SLO views.
+
+Probe matrix (recommended):
+- Redis
+   - Availability: ping/handshake latency and timeout rate.
+   - Capacity: used memory, max memory ratio, connected clients.
+   - Stability: evictions, keyspace misses, replication delay (if replicas exist).
+- Database
+   - Availability: connection failures, pool saturation, failover events.
+   - Performance: p95 query latency, lock wait time, slow query count.
+   - Capacity: CPU, storage IOPS, storage growth, buffer/cache pressure.
+- Hosting
+   - Availability: instance/container restart rate, health-check failure rate.
+   - Network: ingress/egress throughput, packet loss, retransmit rate.
+   - Capacity: disk usage growth, CPU throttling, memory pressure/OOM events.
+
+Operational safeguards:
+- Timebox each provider probe call (for example 1-2 seconds) and return partial health when timed out.
+- Never fail core health endpoints due to optional provider probe errors.
+- Tag each metric with `source=provider` versus `source=application` for traceability.
+- Keep retention and sampling cadence configurable per environment.
+
+### C) Evidence and Release-Gate Integration
+
+Track this work as a medium-priority enhancement track and wire evidence into existing runtime artifacts:
+- `docs/runtime-evidence/monitoring-alerting-runtime.md`
+- `docs/runtime-evidence/database-query-performance-runtime.md`
+- `docs/runtime-evidence/load-testing-runtime.md`
+
+Success criteria:
+- Executives can run governed natural-language reliability queries with full audit history.
+- Optional provider-native probes are visible in platform health and alert drill outputs.
+- No downgrade to existing strict runtime readiness controls.
+
+Suggested evidence artifacts to add:
+- `docs/runtime-evidence/gemini-governed-query-runtime.md` (query class tests, redaction tests, fallback drills, audit samples).
+- `docs/runtime-evidence/provider-native-probes-runtime.md` (probe enablement matrix, timeout behavior, partial-health screenshots/logs).
+
+Gate policy stance:
+- Keep both tracks medium priority and non-blocking for strict launch gates unless promoted by release authority.
+- If promoted later, map them explicitly to `deployment:monitoring-alerting-runtime` and `performance:database-query-performance-report` subcriteria.
+
+### D) 14-Day Implementation Slice (Recommended)
+
+Days 1-3:
+- Define allowlisted Gemini query classes and policy profiles.
+- Implement response contract validation and audit persistence fields.
+
+Days 4-7:
+- Integrate class-based prompt templates and telemetry grounding pipeline.
+- Add redaction + budget + rate limit controls and fallback deterministic responses.
+
+Days 8-10:
+- Add provider probe adapters for Redis, database, and hosting metrics behind feature flags.
+- Normalize output schema and surface in platform health payload.
+
+Days 11-14:
+- Run controlled drill sessions, capture artifacts, and complete operational sign-off.
+- Decide whether to keep optional/non-blocking or promote into strict release criteria.
 
 ## Final Recommendation
 

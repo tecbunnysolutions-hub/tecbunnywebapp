@@ -53,6 +53,9 @@ For each check in `runtime-readiness-evidence.json`:
   - Migration rehearsal logs.
   - Rollback and restore drill reports.
   - Health-check probes and alerting drill output.
+- Operations intelligence (optional medium-priority track):
+  - Governed Gemini natural-language query runtime evidence (RBAC, redaction, budget, fallback, audit).
+  - Provider-native infrastructure probe evidence (Redis/database/hosting metrics adapters, timeout behavior, normalized schema).
 
 ## CI behavior
 

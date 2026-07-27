@@ -1,14 +1,19 @@
+import { logger } from '@tecbunny/core/logger';
+
 export abstract class BaseAgent<TInput, TOutput> {
   constructor(protected agentName: string) {}
 
   public async execute(data: TInput): Promise<TOutput | void> {
     try {
-      console.log(`[${this.constructor.name}] Executing agent...`);
+      logger.info('waba_agent_execute_started', { agentName: this.constructor.name });
       const result = await this.process(data);
-      console.log(`[${this.constructor.name}] Execution complete.`);
+      logger.info('waba_agent_execute_completed', { agentName: this.constructor.name });
       return result;
     } catch (error) {
-      console.error(`[${this.constructor.name}] Error executing agent:`, error);
+      logger.error('waba_agent_execute_failed', {
+        agentName: this.constructor.name,
+        error: error instanceof Error ? error.message : String(error),
+      });
       throw error;
     }
   }

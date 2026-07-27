@@ -40,7 +40,6 @@ export type DashboardIssue = {
   acknowledged?: boolean;
   acknowledgedBy?: string;
   assignedTo?: string;
-  failingEndpoints?: { endpoint: string; method: string; status: number; count: number; problem: string }[];
 };
 
 export type DashboardInsight = {
@@ -231,26 +230,15 @@ async function countRows(
   table: string,
   issues: QueryIssue[],
   apply?: (query: any) => any,
-  fallbackTables?: string[],
 ) {
-  const tablesToTry = [table, ...(fallbackTables || [])];
-  for (const tbl of tablesToTry) {
-    let query = supabase.from(tbl).select('*', { count: 'exact', head: true });
-    if (apply) query = apply(query);
-    const { count, error } = await query;
-    if (!error && count !== null && count > 0) {
-      return count;
-    }
+  let query = supabase.from(table).select('*', { count: 'exact', head: true });
+  if (apply) query = apply(query);
+  const { count, error } = await query;
+  if (error) {
+    issues.push({ table, operation: 'count', message: error.message });
+    return 0;
   }
-  for (const tbl of tablesToTry) {
-    let query = supabase.from(tbl).select('*', { count: 'exact', head: true });
-    if (apply) query = apply(query);
-    const { count, error } = await query;
-    if (!error && count !== null) {
-      return count;
-    }
-  }
-  return 0;
+  return count ?? 0;
 }
 
 async function fetchRows<T extends Record<string, unknown>>(
@@ -259,22 +247,13 @@ async function fetchRows<T extends Record<string, unknown>>(
   columns: string,
   issues: QueryIssue[],
   apply?: (query: any) => any,
-  fallbackTables?: string[],
 ) {
-  const tablesToTry = [table, ...(fallbackTables || [])];
-  for (const tbl of tablesToTry) {
-    let query = supabase.from(tbl).select(columns).limit(5000);
-    if (apply) query = apply(query);
-    const { data, error } = await query;
-    if (!error && data && data.length > 0) {
-      return data as unknown as T[];
-    }
-  }
   let query = supabase.from(table).select(columns).limit(5000);
   if (apply) query = apply(query);
   const { data, error } = await query;
-  if (error && (!fallbackTables || fallbackTables.length === 0)) {
+  if (error) {
     issues.push({ table, operation: 'select', message: error.message });
+    return [] as T[];
   }
   return (data ?? []) as unknown as T[];
 }
@@ -350,24 +329,14 @@ export async function getSuperadminCommandCenterData(): Promise<SuperadminComman
   const fiveMinutesAgo = new Date(now.getTime() - 5 * 60 * 1000);
   const dayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
 
-  let authUsersList: any[] = [];
-  try {
-    const { data: authData } = await supabase.auth.admin.listUsers({ page: 1, perPage: 1000 });
-    if (authData?.users) {
-      authUsersList = authData.users;
-    }
-  } catch {
-    // ignore if auth admin listUsers fails
-  }
-
   const [
     companies,
     branches,
-    totalUsersRaw,
-    activeUsersRaw,
+    totalUsers,
+    activeUsers,
     onlineUsers,
-    newUsersTodayRaw,
-    customersRaw,
+    newUsersToday,
+    customers,
     leads,
     products,
     categories,
@@ -375,25 +344,20 @@ export async function getSuperadminCommandCenterData(): Promise<SuperadminComman
     messages,
     serviceTickets,
   ] = await Promise.all([
-    countRows(supabase, 'org_organizations', issues, undefined, ['organizations']),
-    countRows(supabase, 'org_branches', issues, undefined, ['branches']),
-    countRows(supabase, 'sys_users', issues, undefined, ['profiles']),
-    countRows(supabase, 'sys_users', issues, (query) => query.eq('is_active', true), ['profiles']),
+    countRows(supabase, 'org_organizations', issues),
+    countRows(supabase, 'org_branches', issues),
+    countRows(supabase, 'sys_users', issues),
+    countRows(supabase, 'sys_users', issues, (query) => query.eq('is_active', true)),
     countRows(supabase, 'sys_auth_sessions', issues, (query) => query.eq('status', 'ACTIVE').gte('expires_at', iso(now))),
-    countRows(supabase, 'sys_users', issues, (query) => query.gte('created_at', iso(today)), ['profiles']),
-    countRows(supabase, 'crm_customers', issues, undefined, ['customers']),
-    countRows(supabase, 'sls_leads', issues, undefined, ['leads']),
-    countRows(supabase, 'prd_products', issues, undefined, ['products']),
-    countRows(supabase, 'prd_categories', issues, undefined, ['categories']),
-    countRows(supabase, 'mkt_campaigns', issues, undefined, ['campaigns']),
+    countRows(supabase, 'sys_users', issues, (query) => query.gte('created_at', iso(today))),
+    countRows(supabase, 'crm_customers', issues),
+    countRows(supabase, 'sls_leads', issues),
+    countRows(supabase, 'prd_products', issues),
+    countRows(supabase, 'prd_categories', issues),
+    countRows(supabase, 'mkt_campaigns', issues),
     countRows(supabase, 'wab_messages', issues),
-    countRows(supabase, 'sup_tickets', issues, undefined, ['tickets']),
+    countRows(supabase, 'sup_tickets', issues),
   ]);
-
-  const totalUsers = totalUsersRaw || authUsersList.length;
-  const activeUsers = activeUsersRaw || (authUsersList.length > 0 ? authUsersList.filter((u) => !u.banned_until).length : totalUsers);
-  const newUsersToday = newUsersTodayRaw || (authUsersList.length > 0 ? authUsersList.filter((u) => u.created_at && new Date(u.created_at) >= today).length : 0);
-  const customers = customersRaw || (authUsersList.length > 0 ? authUsersList.filter((u) => (u.app_metadata?.role || 'customer') === 'customer').length : 0);
 
   const [
     orders,
@@ -416,25 +380,25 @@ export async function getSuperadminCommandCenterData(): Promise<SuperadminComman
     messageRows,
     queueRows,
   ] = await Promise.all([
-    fetchRows<Record<string, unknown>>(supabase, 'oms_orders', '*', issues, (query) => query.order('created_at', { ascending: false }), ['orders']),
-    fetchRows<Record<string, unknown>>(supabase, 'oms_payments', '*', issues, (query) => query.order('created_at', { ascending: false }), ['payments']),
-    fetchRows<Record<string, unknown>>(supabase, 'inv_stock', '*', issues, (query) => query.order('quantity_on_hand', { ascending: true })),
-    fetchRows<Record<string, unknown>>(supabase, 'oms_order_items', '*', issues),
-    fetchRows<Record<string, unknown>>(supabase, 'prd_variants', '*', issues),
-    fetchRows<Record<string, unknown>>(supabase, 'prd_products', '*', issues, (query) => query.order('created_at', { ascending: false }), ['products']),
-    fetchRows<Record<string, unknown>>(supabase, 'org_organizations', '*', issues, (query) => query.order('created_at', { ascending: false }), ['organizations']),
-    fetchRows<Record<string, unknown>>(supabase, 'org_branches', '*', issues, (query) => query.order('created_at', { ascending: false }), ['branches']),
-    fetchRows<Record<string, unknown>>(supabase, 'sys_users', '*', issues, (query) => query.order('created_at', { ascending: false }), ['profiles']),
-    fetchRows<Record<string, unknown>>(supabase, 'crm_customers', '*', issues, (query) => query.order('created_at', { ascending: false }), ['customers']),
-    fetchRows<Record<string, unknown>>(supabase, 'sls_leads', '*', issues, (query) => query.order('created_at', { ascending: false }), ['leads']),
-    fetchRows<Record<string, unknown>>(supabase, 'mkt_campaigns', '*', issues, (query) => query.order('created_at', { ascending: false }), ['campaigns']),
-    fetchRows<Record<string, unknown>>(supabase, 'sup_tickets', '*', issues, (query) => query.order('created_at', { ascending: false }), ['tickets']),
-    fetchRows<Record<string, unknown>>(supabase, 'enterprise_analytics_events', '*', issues, (query) => query.order('occurred_at', { ascending: false })),
-    fetchRows<Record<string, unknown>>(supabase, 'enterprise_staff_activity_logs', '*', issues, (query) => query.order('created_at', { ascending: false })),
-    fetchRows<Record<string, unknown>>(supabase, 'enterprise_audit_logs', '*', issues, (query) => query.order('created_at', { ascending: false })),
-    fetchRows<Record<string, unknown>>(supabase, 'sys_auth_login_history', '*', issues, (query) => query.order('login_attempt_at', { ascending: false })),
-    fetchRows<Record<string, unknown>>(supabase, 'wab_messages', '*', issues, (query) => query.order('created_at', { ascending: false })),
-    fetchRows<Record<string, unknown>>(supabase, 'wab_message_queue', '*', issues, (query) => query.order('created_at', { ascending: false })),
+    fetchRows<Record<string, unknown>>(supabase, 'oms_orders', 'id,org_id,order_number,customer_id,order_status,payment_status,grand_total,created_at', issues, (query) => query.order('created_at', { ascending: false })),
+    fetchRows<Record<string, unknown>>(supabase, 'oms_payments', 'id,amount,status,created_at', issues, (query) => query.order('created_at', { ascending: false })),
+    fetchRows<Record<string, unknown>>(supabase, 'inv_stock', 'id,variant_id,quantity_on_hand,quantity_reserved,reorder_level,created_at', issues, (query) => query.order('quantity_on_hand', { ascending: true })),
+    fetchRows<Record<string, unknown>>(supabase, 'oms_order_items', 'id,variant_id,quantity,line_total,created_at', issues),
+    fetchRows<Record<string, unknown>>(supabase, 'prd_variants', 'id,product_id,name,sku', issues),
+    fetchRows<Record<string, unknown>>(supabase, 'prd_products', 'id,title,created_at', issues, (query) => query.order('created_at', { ascending: false })),
+    fetchRows<Record<string, unknown>>(supabase, 'org_organizations', 'id,name,created_at', issues, (query) => query.order('created_at', { ascending: false })),
+    fetchRows<Record<string, unknown>>(supabase, 'org_branches', 'id,name,created_at', issues, (query) => query.order('created_at', { ascending: false })),
+    fetchRows<Record<string, unknown>>(supabase, 'sys_users', 'id,first_name,last_name,employee_code,branch_id,created_at,updated_at', issues, (query) => query.order('created_at', { ascending: false })),
+    fetchRows<Record<string, unknown>>(supabase, 'crm_customers', 'id,first_name,last_name,lifetime_value,created_at,last_purchase_date', issues, (query) => query.order('created_at', { ascending: false })),
+    fetchRows<Record<string, unknown>>(supabase, 'sls_leads', 'id,first_name,last_name,company_name,converted_customer_id,created_at', issues, (query) => query.order('created_at', { ascending: false })),
+    fetchRows<Record<string, unknown>>(supabase, 'mkt_campaigns', 'id,name,status,created_at', issues, (query) => query.order('created_at', { ascending: false })),
+    fetchRows<Record<string, unknown>>(supabase, 'sup_tickets', 'id,ticket_number,subject,status,assigned_to,is_sla_breached,resolved_at,created_at', issues, (query) => query.order('created_at', { ascending: false })),
+    fetchRows<Record<string, unknown>>(supabase, 'enterprise_analytics_events', 'id,event_name,event_category,application,module,api_endpoint,action,success,http_status,execution_time_ms,created_at:occurred_at,occurred_at', issues, (query) => query.order('occurred_at', { ascending: false })),
+    fetchRows<Record<string, unknown>>(supabase, 'enterprise_staff_activity_logs', 'id,user_email,role,module,action,description,success,created_at', issues, (query) => query.order('created_at', { ascending: false })),
+    fetchRows<Record<string, unknown>>(supabase, 'enterprise_audit_logs', 'id,user_email,module,action,entity_type,entity_id,success,created_at', issues, (query) => query.order('created_at', { ascending: false })),
+    fetchRows<Record<string, unknown>>(supabase, 'sys_auth_login_history', 'id,user_id,is_success,failure_reason,login_attempt_at', issues, (query) => query.order('login_attempt_at', { ascending: false })),
+    fetchRows<Record<string, unknown>>(supabase, 'wab_messages', 'id,direction,message_type,created_at', issues, (query) => query.order('created_at', { ascending: false })),
+    fetchRows<Record<string, unknown>>(supabase, 'wab_message_queue', 'id,status,retry_count,scheduled_for,created_at', issues, (query) => query.order('created_at', { ascending: false })),
   ]);
 
   const runtime = await getPlatformRuntimeSnapshot(supabase);
@@ -523,49 +487,19 @@ export async function getSuperadminCommandCenterData(): Promise<SuperadminComman
     const text = `${row.event_name ?? ''} ${row.module ?? ''} ${row.action ?? ''} ${row.api_endpoint ?? ''}`.toLowerCase();
     return text.includes('ai') || text.includes('gemini');
   }).length;
-  const errorRows24h = analyticsRows.filter((row) => toNumber(row.http_status) >= 500 && inRange(row.created_at, dayAgo));
+  const errorRows24h = analyticsRows.filter((row) => (row.success === false || toNumber(row.http_status) >= 500) && inRange(row.created_at, dayAgo));
   const errors24h = errorRows24h.length;
   const errorsByEndpoint = new Map<string, number>();
-  const errorsByGroup = new Map<string, { endpoint: string; method: string; status: number; count: number; problem: string }>();
-
   errorRows24h.forEach((row) => {
     const endpoint = String(row.api_endpoint ?? row.module ?? row.event_name ?? 'unknown');
     errorsByEndpoint.set(endpoint, (errorsByEndpoint.get(endpoint) ?? 0) + 1);
-
-    const method = String(row.http_method ?? 'GET');
-    const status = toNumber(row.http_status);
-    const key = `${method}:${endpoint}:${status}`;
-
-    let problem = 'Unspecified connection or application error.';
-    if (status === 400) problem = 'Bad Request - Malformed syntax or invalid parameters.';
-    else if (status === 401) problem = 'Unauthorized - Missing or invalid authentication token.';
-    else if (status === 403) problem = 'Forbidden - Client lacks permission to access resource.';
-    else if (status === 404) problem = 'Not Found - The requested API endpoint does not exist.';
-    else if (status === 405) problem = 'Method Not Allowed - HTTP method not supported for route.';
-    else if (status === 408) problem = 'Request Timeout - Server timed out waiting for request.';
-    else if (status === 422) problem = 'Unprocessable Entity - Request validation failed.';
-    else if (status === 429) problem = 'Too Many Requests - Rate limit exceeded.';
-    else if (status >= 500) {
-      if (status === 502) problem = 'Bad Gateway - Invalid response from upstream API worker.';
-      else if (status === 503) problem = 'Service Unavailable - Server overloaded or down.';
-      else if (status === 504) problem = 'Gateway Timeout - Upstream server timed out.';
-      else problem = `Internal Server Error (${status}) - Server encountered an unexpected error.`;
-    }
-
-    const existing = errorsByGroup.get(key);
-    if (existing) {
-      existing.count++;
-    } else {
-      errorsByGroup.set(key, { endpoint, method, status, count: 1, problem });
-    }
   });
   const topErrorEndpoints = Array.from(errorsByEndpoint.entries()).sort((a, b) => b[1] - a[1]).slice(0, 3);
-  const failingEndpoints = Array.from(errorsByGroup.values()).sort((a, b) => b.count - a.count);
   const avgExecution = analyticsRows.length > 0
     ? analyticsRows.reduce((total, row) => total + toNumber(row.execution_time_ms), 0) / analyticsRows.length
     : 0;
   const apiRows24h = analyticsRows.filter((row) => row.api_endpoint && inRange(row.created_at, dayAgo));
-  const apiErrors24h = apiRows24h.filter((row) => toNumber(row.http_status) >= 500).length;
+  const apiErrors24h = apiRows24h.filter((row) => row.success === false || toNumber(row.http_status) >= 500).length;
   const apiAvailability24h = apiRows24h.length === 0 ? 100 : ((apiRows24h.length - apiErrors24h) / apiRows24h.length) * 100;
   // Error-rate SLO thresholds: below sloWarningPercent raises a warning-tier alert,
   // below sloTargetPercent (the hard SLO) raises a critical-tier alert.
@@ -615,17 +549,10 @@ export async function getSuperadminCommandCenterData(): Promise<SuperadminComman
     productSales.set(productId, (productSales.get(productId) ?? 0) + toNumber(item.line_total));
   });
 
-  const topProductsFromSales = Array.from(productSales.entries())
-    .map(([productId, value]) => ({ label: String(productById.get(productId)?.title ?? productById.get(productId)?.name ?? 'Product'), value }))
+  const topProducts = Array.from(productSales.entries())
+    .map(([productId, value]) => ({ label: String(productById.get(productId)?.title ?? 'Product'), value }))
     .sort((a, b) => b.value - a.value)
     .slice(0, 5);
-
-  const topProducts = topProductsFromSales.length > 0
-    ? topProductsFromSales
-    : productRows.slice(0, 5).map((row) => ({
-        label: String(row.title ?? row.name ?? 'Product'),
-        value: toNumber(row.price ?? row.mrp ?? 0),
-      }));
 
   const pendingQueueJobs = queueRows.filter((row) => ['PENDING', 'PROCESSING'].includes(String(row.status ?? '').toUpperCase())).length;
   const failedQueueJobs = queueRows.filter((row) => String(row.status ?? '').toUpperCase() === 'FAILED').length;
@@ -685,7 +612,6 @@ export async function getSuperadminCommandCenterData(): Promise<SuperadminComman
       filesAffected: ['supabase/migrations/202607190006_enterprise_analytics_logging.sql', 'apps/superadmin/src/lib/superadmin-dashboard-data.ts'],
       recommendedSolution: `SLO thresholds are enforced (warn <${sloWarningPercent}%, critical <${sloTargetPercent}% availability) and this alert is already routed into the notification center below — acknowledge it, assign an owner, or resolve once the failing endpoint is fixed.`,
       implementationSteps: ['Investigate the top failing endpoint listed above.', 'Acknowledge or assign an owner using the controls on this notification.', 'Escalate to on-call if the error budget stays below 25% across repeated 24h windows.'],
-      failingEndpoints,
     }] : []),
   ];
   const notifications = [...domainIssues, ...sourceIssues].slice(0, 10).map((issue) => {

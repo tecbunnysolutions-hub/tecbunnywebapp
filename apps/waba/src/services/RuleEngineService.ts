@@ -1,6 +1,7 @@
 import { supabase } from '@/lib/supabase';
 import { TriagedPayload } from '../agents/InboundTriageAgent';
 import { sendWhatsAppMessage } from './infobipService';
+import { logger } from '@tecbunny/core/logger';
 
 type AutomationCondition = {
   field: string;
@@ -38,7 +39,7 @@ export class RuleEngineService {
 
     for (const rule of rules as AutomationRule[]) {
       if (await this.evaluateConditions(rule.conditions, rule.match_type, payload)) {
-        console.log(`[RuleEngine] Rule matched: ${rule.name}`);
+        logger.info('waba_rule_engine_rule_matched', { ruleName: rule.name, senderNumber: payload.senderNumber });
         await this.executeActions(rule.actions, payload);
         return true; // Stop processing rules after the first matching rule is executed
       }
@@ -89,7 +90,7 @@ export class RuleEngineService {
           try {
             return new RegExp(condition.value, 'i').test(strFieldValue);
           } catch (error) {
-            console.warn('[RuleEngine] Invalid regex condition skipped', { value: condition.value, error });
+            logger.warn('waba_rule_engine_invalid_regex_condition', { value: condition.value, error: error instanceof Error ? error.message : String(error) });
             return false;
           }
         case 'IS_TRUE':
@@ -129,28 +130,32 @@ export class RuleEngineService {
             const text = action.action_payload?.text;
             if (text) {
               await sendWhatsAppMessage(payload.senderNumber, text, null);
-              console.log(`[RuleEngine] Action: Sent WhatsApp Message to ${payload.senderNumber}`);
+              logger.info('waba_rule_engine_action_send_message', { senderNumber: payload.senderNumber, actionId: action.id });
             }
             break;
           case 'ASSIGN_AGENT':
             const agentId = action.action_payload?.agent_id;
             if (agentId) {
               await supabase.from('Conversation').update({ assigned_to: agentId }).eq('sender_number', payload.senderNumber);
-              console.log(`[RuleEngine] Action: Assigned ${payload.senderNumber} to agent ${agentId}`);
+              logger.info('waba_rule_engine_action_assign_agent', { senderNumber: payload.senderNumber, agentId, actionId: action.id });
             }
             break;
           case 'UPDATE_STATUS':
             const status = action.action_payload?.status;
             if (status) {
               await supabase.from('Conversation').update({ status }).eq('sender_number', payload.senderNumber);
-              console.log(`[RuleEngine] Action: Updated status for ${payload.senderNumber} to ${status}`);
+              logger.info('waba_rule_engine_action_update_status', { senderNumber: payload.senderNumber, status, actionId: action.id });
             }
             break;
           default:
-            console.warn(`[RuleEngine] Unknown action type: ${action.action_type}`);
+            logger.warn('waba_rule_engine_unknown_action_type', { actionType: action.action_type, actionId: action.id });
         }
       } catch (err) {
-        console.error(`[RuleEngine] Failed to execute action ${action.id}:`, err);
+        logger.error('waba_rule_engine_action_failed', {
+          actionId: action.id,
+          actionType: action.action_type,
+          error: err instanceof Error ? err.message : String(err),
+        });
       }
     }
   }
