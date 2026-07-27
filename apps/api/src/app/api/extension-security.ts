@@ -79,6 +79,15 @@ function isAllowedOriginValue(origin: string) {
   return origins.has(normalizedOrigin);
 }
 
+function isLikelyNullOriginExtensionRequest(request: NextRequest) {
+  const origin = (request.headers.get('origin') || '').trim().toLowerCase();
+  if (origin !== 'null') return false;
+
+  const fetchSite = (request.headers.get('sec-fetch-site') || '').trim().toLowerCase();
+  const fetchMode = (request.headers.get('sec-fetch-mode') || '').trim().toLowerCase();
+  return fetchSite === 'none' && fetchMode === 'cors';
+}
+
 export function getExtensionCorsHeaders(request: NextRequest) {
   const origin = request.headers.get('origin') || '';
   const headers: Record<string, string> = {
@@ -90,6 +99,8 @@ export function getExtensionCorsHeaders(request: NextRequest) {
 
   if (origin && isAllowedOriginValue(origin)) {
     headers['Access-Control-Allow-Origin'] = origin;
+  } else if ((origin || '').trim().toLowerCase() === 'null' && isLikelyNullOriginExtensionRequest(request)) {
+    headers['Access-Control-Allow-Origin'] = 'null';
   }
 
   return headers;
@@ -97,7 +108,7 @@ export function getExtensionCorsHeaders(request: NextRequest) {
 
 export function isAllowedExtensionOrigin(request: NextRequest) {
   const origin = request.headers.get('origin') || '';
-  return isAllowedOriginValue(origin);
+  return isAllowedOriginValue(origin) || isLikelyNullOriginExtensionRequest(request);
 }
 
 export function extensionOptionsResponse(request: NextRequest) {
