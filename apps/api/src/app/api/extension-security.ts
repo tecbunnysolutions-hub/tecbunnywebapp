@@ -17,7 +17,19 @@ export class ExtensionAuthError extends Error {
 const DEFAULT_ALLOWED_ORIGINS = ['https://www.tecbunny.com', 'https://tecbunny.com'];
 const CHROME_EXTENSION_ID_PATTERN = /^[a-p]{32}$/;
 
+function normalizeChromeExtensionOrigin(origin: string) {
+  const trimmedOrigin = origin.trim();
+  const match = /^chrome-extension:\/\/([a-p]{32})$/i.exec(trimmedOrigin);
+  if (!match) return null;
+  return `chrome-extension://${match[1].toLowerCase()}`;
+}
+
 function normalizeOriginValue(origin: string) {
+  const chromeExtensionOrigin = normalizeChromeExtensionOrigin(origin);
+  if (chromeExtensionOrigin) {
+    return chromeExtensionOrigin;
+  }
+
   try {
     return new URL(origin).origin;
   } catch {
@@ -56,6 +68,10 @@ function isAllowedOriginValue(origin: string) {
 
   const normalizedOrigin = normalizeOriginValue(origin);
   if (!normalizedOrigin) return false;
+
+  if (normalizedOrigin.startsWith('chrome-extension://')) {
+    return true;
+  }
 
   const origins = allowedOrigins();
   return origins.has(normalizedOrigin);
