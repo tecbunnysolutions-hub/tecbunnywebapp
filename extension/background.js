@@ -1,4 +1,4 @@
-const API_BASE_URL = 'https://api.tecbunny.com/api';
+const API_BASE_URL_CANDIDATES = ['https://api.tecbunny.com/api', 'https://www.tecbunny.com/api'];
 const REQUEST_TIMEOUT_MS = 15000;
 const MAX_RAW_TEXT_LENGTH = 30000;
 const PRODUCT_TEXT_FIELDS = [
@@ -78,6 +78,34 @@ async function fetchWithTimeout(url, options) {
   }
 }
 
+async function fetchApiWithFallback(path, options) {
+  const retriableStatuses = new Set([404, 408, 425, 429, 500, 502, 503, 504]);
+  let lastNetworkError = null;
+
+  for (let index = 0; index < API_BASE_URL_CANDIDATES.length; index += 1) {
+    const baseUrl = API_BASE_URL_CANDIDATES[index];
+    const requestUrl = `${baseUrl}${path}`;
+
+    try {
+      const response = await fetchWithTimeout(requestUrl, options);
+      if (response.ok || !retriableStatuses.has(response.status) || index === API_BASE_URL_CANDIDATES.length - 1) {
+        return response;
+      }
+    } catch (error) {
+      lastNetworkError = error;
+      if (index === API_BASE_URL_CANDIDATES.length - 1) {
+        throw error;
+      }
+    }
+  }
+
+  if (lastNetworkError) {
+    throw lastNetworkError;
+  }
+
+  throw new Error('No API host candidates configured for extension requests.');
+}
+
 chrome.runtime.onStartup.addListener(() => {
   chrome.storage.local.remove(['accessToken']);
 });
@@ -95,14 +123,12 @@ async function getAccessToken() {
 }
 
 async function sendProductData(productData) {
-  // Configured to point directly to the production tecbunny API endpoint
-  const url = `${API_BASE_URL}/products/scraper`;
   const validatedProductData = validateProductPayload(productData);
   
   const token = await getAccessToken();
   
   try {
-    const response = await fetchWithTimeout(url, {
+    const response = await fetchApiWithFallback('/products/scraper', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -280,11 +306,10 @@ async function enhanceProductWithAI(rawText) {
     }
   }
 
-  const url = `${API_BASE_URL}/products/scraper/ai`;
   const token = await getAccessToken();
   
   try {
-    const response = await fetchWithTimeout(url, {
+    const response = await fetchApiWithFallback('/products/scraper/ai', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

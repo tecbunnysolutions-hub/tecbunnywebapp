@@ -79,13 +79,38 @@ function isAllowedOriginValue(origin: string) {
   return origins.has(normalizedOrigin);
 }
 
+function isChromeExtensionReferer(referer: string) {
+  const trimmedReferer = referer.trim();
+  if (!trimmedReferer) return false;
+
+  return /^chrome-extension:\/\/[a-p]{32}(?:\/|$)/i.test(trimmedReferer);
+}
+
+function isLikelyExtensionFetchMetadata(request: NextRequest) {
+  const fetchSite = (request.headers.get('sec-fetch-site') || '').trim().toLowerCase();
+  const fetchMode = (request.headers.get('sec-fetch-mode') || '').trim().toLowerCase();
+
+  if (fetchSite !== 'none') return false;
+
+  // Extension popup/background fetches are typically cors and same-context (site=none).
+  // Some runtime variants can omit sec-fetch-mode, so we treat empty mode as acceptable.
+  return fetchMode === 'cors' || fetchMode === '';
+}
+
 function isLikelyNullOriginExtensionRequest(request: NextRequest) {
   const origin = (request.headers.get('origin') || '').trim().toLowerCase();
   if (origin !== 'null') return false;
 
-  const fetchSite = (request.headers.get('sec-fetch-site') || '').trim().toLowerCase();
-  const fetchMode = (request.headers.get('sec-fetch-mode') || '').trim().toLowerCase();
-  return fetchSite === 'none' && fetchMode === 'cors';
+  const referer = request.headers.get('referer') || '';
+  return isLikelyExtensionFetchMetadata(request) || isChromeExtensionReferer(referer);
+}
+
+function isLikelyMissingOriginExtensionRequest(request: NextRequest) {
+  const origin = (request.headers.get('origin') || '').trim();
+  if (origin) return false;
+
+  const referer = request.headers.get('referer') || '';
+  return isLikelyExtensionFetchMetadata(request) || isChromeExtensionReferer(referer);
 }
 
 export function getExtensionCorsHeaders(request: NextRequest) {
@@ -101,6 +126,8 @@ export function getExtensionCorsHeaders(request: NextRequest) {
     headers['Access-Control-Allow-Origin'] = origin;
   } else if ((origin || '').trim().toLowerCase() === 'null' && isLikelyNullOriginExtensionRequest(request)) {
     headers['Access-Control-Allow-Origin'] = 'null';
+  } else if (!origin && isLikelyMissingOriginExtensionRequest(request)) {
+    headers['Access-Control-Allow-Origin'] = '*';
   }
 
   return headers;
@@ -108,7 +135,9 @@ export function getExtensionCorsHeaders(request: NextRequest) {
 
 export function isAllowedExtensionOrigin(request: NextRequest) {
   const origin = request.headers.get('origin') || '';
-  return isAllowedOriginValue(origin) || isLikelyNullOriginExtensionRequest(request);
+  return isAllowedOriginValue(origin)
+    || isLikelyNullOriginExtensionRequest(request)
+    || isLikelyMissingOriginExtensionRequest(request);
 }
 
 export function extensionOptionsResponse(request: NextRequest) {

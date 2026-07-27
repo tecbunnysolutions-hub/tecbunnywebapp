@@ -1,4 +1,10 @@
 document.addEventListener('DOMContentLoaded', () => {
+  const API_AUTH_URL_CANDIDATES = [
+    'https://api.tecbunny.com/api/auth/extension',
+    'https://www.tecbunny.com/api/auth/extension'
+  ];
+  const REQUEST_TIMEOUT_MS = 15000;
+
   const ALLOWED_HTML_TAGS = new Set(['P', 'BR', 'STRONG', 'B', 'EM', 'I', 'UL', 'OL', 'LI', 'H3', 'H4', 'SPAN']);
   const ALLOWED_HTML_ATTRS = new Set(['href', 'title']);
 
@@ -124,10 +130,43 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!text) return '';
 
     if (/^the deploy/i.test(text)) {
-      return 'API deployment returned a non-JSON response. Verify the production API deployment/domain routing and Vercel protection settings for https://api.tecbunny.com/api/auth/extension.';
+      return 'API deployment returned a non-JSON response. Verify production API deployment/domain routing and Vercel protection settings for the auth endpoint.';
     }
 
     return text;
+  }
+
+  async function fetchWithTimeout(url, options) {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+
+    try {
+      return await fetch(url, { ...options, signal: controller.signal });
+    } finally {
+      clearTimeout(timeoutId);
+    }
+  }
+
+  async function postAuthWithFallback(payload) {
+    let lastError = null;
+
+    for (const authUrl of API_AUTH_URL_CANDIDATES) {
+      try {
+        const response = await fetchWithTimeout(authUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        return { response, authUrl };
+      } catch (error) {
+        lastError = error;
+      }
+    }
+
+    throw new Error(
+      `Unable to reach Tecbunny auth API on all configured hosts. Last error: ${formatErrorMessage(lastError)}`
+    );
   }
 
   function showStatus(message, type) {
@@ -272,23 +311,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
     try {
       if (email && pass) {
-        const response = await fetch('https://api.tecbunny.com/api/auth/extension', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password: pass })
-        });
+        const { response, authUrl } = await postAuthWithFallback({ email, password: pass });
 
         const { rawBody, json } = await parseApiResponseBody(response);
         const data = json && typeof json === 'object' ? json : null;
 
         if (!response.ok) {
           const notFoundHint = response.status === 404
-            ? 'Auth endpoint not found (404) at https://api.tecbunny.com/api/auth/extension. Verify API deployment routing.'
+            ? `Auth endpoint not found (404) at ${authUrl}. Verify API deployment routing.`
             : '';
           const serverError = (data && (data.error || data.message))
             || inferDeploymentError(rawBody)
             || notFoundHint
-            || `Authentication failed (${response.status})`;
+            || `Authentication failed (${response.status}) at ${authUrl}`;
           throw new Error(String(serverError));
         }
 
