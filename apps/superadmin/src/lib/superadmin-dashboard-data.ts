@@ -592,7 +592,17 @@ export async function getSuperadminCommandCenterData(): Promise<SuperadminComman
     .slice(0, 5);
 
   const sourceIssues = issues.map(makeIssue);
+  const hasOperationalRecords = [companies, branches, totalUsers, customers, products, orders.length].some((value) => value > 0);
   const domainIssues: DashboardIssue[] = [
+    ...(!hasOperationalRecords && issues.length === 0 ? [{
+      module: 'Platform data',
+      severity: 'medium' as DashboardSeverity,
+      businessImpact: 'The command center has no organizations, users, customers, products, or orders to report.',
+      rootCause: 'Canonical dashboard data sources are reachable but contain no operational records.',
+      filesAffected: ['apps/superadmin/src/lib/superadmin-dashboard-data.ts', 'packages/infra/db/seed.ts'],
+      recommendedSolution: 'Apply the baseline migration to the production Supabase project, then create the first organization, branch, users, and catalogue records through the application.',
+      implementationSteps: ['Verify the production Supabase project has the baseline migration.', 'Create the first organization and branch.', 'Add users, catalogue records, and transactional data through their application workflows.'],
+    }] : []),
     ...(lowStock.length > 0 ? [{
       module: 'Inventory',
       severity: 'high' as DashboardSeverity,
