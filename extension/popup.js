@@ -1,7 +1,8 @@
 document.addEventListener('DOMContentLoaded', () => {
   const API_AUTH_URL_CANDIDATES = [
     'https://api.tecbunny.com/api/auth/extension',
-    'https://www.tecbunny.com/api/auth/extension'
+    'https://www.tecbunny.com/api/auth/extension',
+    'https://superadmin.tecbunny.com/api/auth/extension'
   ];
   const REQUEST_TIMEOUT_MS = 15000;
 
@@ -149,6 +150,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   async function postAuthWithFallback(payload) {
     let lastError = null;
+    let lastResponse = null;
+    let lastAuthUrl = '';
 
     for (const authUrl of API_AUTH_URL_CANDIDATES) {
       try {
@@ -158,10 +161,28 @@ document.addEventListener('DOMContentLoaded', () => {
           body: JSON.stringify(payload)
         });
 
+        // If auth succeeded, return immediately
+        if (response.ok) {
+          return { response, authUrl };
+        }
+
+        // On 401/500/503, try the next candidate URL before giving up
+        if (response.status === 401 || response.status >= 500) {
+          lastResponse = response;
+          lastAuthUrl = authUrl;
+          continue;
+        }
+
+        // For other errors (400, 403, 404, 429), return as-is
         return { response, authUrl };
       } catch (error) {
         lastError = error;
       }
+    }
+
+    // If we got at least one HTTP response (e.g. 401 from all), return the last one
+    if (lastResponse) {
+      return { response: lastResponse, authUrl: lastAuthUrl };
     }
 
     throw new Error(

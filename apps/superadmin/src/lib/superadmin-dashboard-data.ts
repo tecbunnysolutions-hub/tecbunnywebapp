@@ -339,13 +339,13 @@ export async function getSuperadminCommandCenterData(): Promise<SuperadminComman
   const [
     companies,
     branches,
-    totalUsers,
-    activeUsers,
+    sysUserCount,
+    sysActiveUsers,
     onlineUsers,
-    newUsersToday,
-    customers,
+    sysNewUsersToday,
+    crmCustomerCount,
     leads,
-    products,
+    prdProductCount,
     categories,
     campaigns,
     messages,
@@ -365,6 +365,37 @@ export async function getSuperadminCommandCenterData(): Promise<SuperadminComman
     countRows(supabase, 'wab_messages', issues),
     countRows(supabase, 'sup_tickets', issues),
   ]);
+
+  // Fallback: if sys_users is empty, count from profiles (Supabase Auth users)
+  let totalUsers = sysUserCount;
+  let activeUsers = sysActiveUsers;
+  let newUsersToday = sysNewUsersToday;
+  if (sysUserCount === 0) {
+    const profileCount = await countRows(supabase, 'profiles', []);
+    if (profileCount > 0) {
+      totalUsers = profileCount;
+      activeUsers = profileCount;
+      newUsersToday = await countRows(supabase, 'profiles', [], (query) => query.gte('created_at', iso(today)));
+    }
+  }
+
+  // Fallback: if prd_products is empty, count from legacy products table
+  let products = prdProductCount;
+  if (products === 0) {
+    const legacyProductCount = await countRows(supabase, 'products', []);
+    if (legacyProductCount > 0) {
+      products = legacyProductCount;
+    }
+  }
+
+  // Fallback: if crm_customers is empty, count from legacy customers table
+  let customers = crmCustomerCount;
+  if (customers === 0) {
+    const legacyCustomerCount = await countRows(supabase, 'customers', []);
+    if (legacyCustomerCount > 0) {
+      customers = legacyCustomerCount;
+    }
+  }
 
   const [
     orders,
@@ -407,6 +438,17 @@ export async function getSuperadminCommandCenterData(): Promise<SuperadminComman
     fetchRows<Record<string, unknown>>(supabase, 'wab_messages', 'id,direction,message_type,created_at', issues, (query) => query.order('created_at', { ascending: false })),
     fetchRows<Record<string, unknown>>(supabase, 'wab_message_queue', 'id,status,retry_count,scheduled_for,created_at', issues, (query) => query.order('created_at', { ascending: false })),
   ]);
+
+  let finalProductRows = productRows;
+  if (finalProductRows.length === 0) {
+    finalProductRows = await fetchRows<Record<string, unknown>>(
+      supabase,
+      'products',
+      'id,title,name,created_at',
+      [],
+      (query) => query.order('created_at', { ascending: false })
+    );
+  }
 
   const runtime = await getPlatformRuntimeSnapshot(supabase);
 
@@ -654,14 +696,15 @@ export async function getSuperadminCommandCenterData(): Promise<SuperadminComman
     return total + 2;
   }, 0)));
 
+  const userSource = sysUserCount > 0 ? 'sys_users' : 'profiles';
   const executiveMetrics = [
     metric({ key: 'companies', label: 'Total Companies', value: companies, category: 'executive', severity: 'ok', source: 'org_organizations', href: '/superadmin/mgmt/organizations' }),
     metric({ key: 'branches', label: 'Total Branches', value: branches, category: 'executive', severity: 'ok', source: 'org_branches', href: '/superadmin/mgmt/branches' }),
-    metric({ key: 'users', label: 'Total Users', value: totalUsers, category: 'executive', severity: 'ok', source: 'sys_users', href: '/superadmin/mgmt/users' }),
-    metric({ key: 'active_users', label: 'Active Users', value: activeUsers, category: 'executive', severity: 'ok', source: 'sys_users.is_active' }),
+    metric({ key: 'users', label: 'Total Users', value: totalUsers, category: 'executive', severity: 'ok', source: userSource, href: '/superadmin/mgmt/users' }),
+    metric({ key: 'active_users', label: 'Active Users', value: activeUsers, category: 'executive', severity: 'ok', source: `${userSource}.is_active` }),
     metric({ key: 'online_users', label: 'Online Users', value: onlineUsers, category: 'realtime', severity: onlineUsers > 0 ? 'ok' : 'low', source: 'sys_auth_sessions' }),
-    metric({ key: 'new_users_today', label: 'New Users Today', value: newUsersToday, category: 'executive', severity: 'ok', source: 'sys_users.created_at' }),
-    metric({ key: 'staff_count', label: 'Staff Count', value: totalUsers, category: 'executive', severity: 'ok', source: 'sys_users' }),
+    metric({ key: 'new_users_today', label: 'New Users Today', value: newUsersToday, category: 'executive', severity: 'ok', source: `${userSource}.created_at` }),
+    metric({ key: 'staff_count', label: 'Staff Count', value: totalUsers, category: 'executive', severity: 'ok', source: userSource }),
     metric({ key: 'customers', label: 'Customers', value: customers, category: 'executive', severity: 'ok', source: 'crm_customers' }),
     metric({ key: 'leads', label: 'Leads', value: leads, category: 'executive', severity: 'ok', source: 'sls_leads' }),
     metric({ key: 'products', label: 'Products', value: products, category: 'executive', severity: 'ok', source: 'prd_products', href: '/superadmin/mgmt/products' }),
@@ -779,7 +822,7 @@ export async function getSuperadminCommandCenterData(): Promise<SuperadminComman
     ...recentFromRows(orders, 'order_number', 'Order captured', 'oms_orders'),
     ...recentFromRows(payments, 'id', 'Payment event', 'oms_payments'),
     ...recentFromRows(customerRows.map((row) => ({ ...row, name: `${row.first_name ?? ''} ${row.last_name ?? ''}`.trim() || row.id })), 'name', 'Customer created', 'crm_customers'),
-    ...recentFromRows(productRows, 'title', 'Product created', 'prd_products', '/superadmin/mgmt/products'),
+    ...recentFromRows(finalProductRows, 'title', 'Product created', 'prd_products', '/superadmin/mgmt/products'),
     ...recentFromRows(ticketRows, 'ticket_number', 'Service ticket', 'sup_tickets'),
     ...recentFromRows(campaignRows, 'name', 'Campaign created', 'mkt_campaigns', '/superadmin/mgmt/marketing'),
   ].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()).slice(0, 14);
