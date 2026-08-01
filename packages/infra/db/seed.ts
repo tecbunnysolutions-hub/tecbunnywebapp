@@ -259,12 +259,122 @@ async function seedData(db: any) {
   }
 }
 
+async function seedDataSafe(db: any) {
+  console.log('🌱 Safely initializing organization, branch, and linking existing users (skip wipe)...');
+
+  // 1. Ensure/Create Organization
+  let orgId = faker.string.uuid();
+  const orgName = 'Tecbunny Platform Org';
+  
+  // Check if we already have an organization
+  const { data: existingOrgs } = await db.supabase.from('org_organizations').select('id').limit(1);
+  if (existingOrgs && existingOrgs.length > 0) {
+    orgId = existingOrgs[0].id;
+    console.log(`ℹ️ Using existing organization: ${orgId}`);
+  } else {
+    const { error: orgError } = await db.supabase.from('org_organizations').insert({
+      id: orgId,
+      name: orgName,
+      registration_number: faker.string.numeric(8),
+      tax_id: `GST${faker.string.numeric(10)}`,
+      industry: 'Technology',
+      status: 'ACTIVE'
+    });
+    if (orgError) {
+      console.error('❌ Error seeding organization:', orgError);
+      return;
+    }
+    console.log(`✅ Created initial organization: ${orgId}`);
+  }
+
+  // 2. Ensure/Create Branch
+  let branchId = faker.string.uuid();
+  const { data: existingBranches } = await db.supabase.from('org_branches').select('id').eq('org_id', orgId).limit(1);
+  if (existingBranches && existingBranches.length > 0) {
+    branchId = existingBranches[0].id;
+    console.log(`ℹ️ Using existing branch: ${branchId}`);
+  } else {
+    const { error: branchError } = await db.supabase.from('org_branches').insert({
+      id: branchId,
+      org_id: orgId,
+      name: `${orgName} Headquarters`,
+      code: 'HQ',
+      is_headquarters: true
+    });
+    if (branchError) {
+      console.error('❌ Error seeding branch:', branchError);
+      return;
+    }
+    console.log(`✅ Created initial branch: ${branchId}`);
+  }
+
+  // 3. Link Existing Auth Users to sys_users
+  try {
+    const { data: authUsersData, error: listError } = await db.supabase.auth.admin.listUsers();
+    if (listError) {
+      console.error('❌ Failed to retrieve existing auth users:', listError);
+    } else {
+      const usersList = authUsersData?.users || [];
+      console.log(`ℹ️ Found ${usersList.length} users in Supabase Auth.`);
+      
+      for (const user of usersList) {
+        // Check if user already exists in sys_users
+        const { data: existingUser } = await db.supabase
+          .from('sys_users')
+          .select('id')
+          .eq('id', user.id)
+          .maybeSingle();
+
+        if (!existingUser) {
+          const firstName = user.user_metadata?.first_name || user.email?.split('@')[0] || 'User';
+          const lastName = user.user_metadata?.last_name || '';
+
+          const { error: userError } = await db.supabase.from('sys_users').insert({
+            id: user.id,
+            org_id: orgId,
+            branch_id: branchId,
+            employee_code: `EMP-${faker.string.numeric(4)}`,
+            first_name: firstName,
+            last_name: lastName,
+            phone: user.phone || faker.string.numeric(10),
+            is_active: true
+          });
+
+          if (userError) {
+            console.error(`❌ Error inserting sys_user for ${user.email}:`, userError);
+          } else {
+            console.log(`✅ Linked existing user ${user.email} to sys_users.`);
+          }
+
+          // Also populate profiles table if missing
+          await db.supabase.from('profiles').insert({
+            id: user.id,
+            full_name: `${firstName} ${lastName}`.trim(),
+            phone: user.phone || faker.string.numeric(10),
+            email: user.email,
+            role: 'admin'
+          }).maybeSingle();
+        } else {
+          console.log(`ℹ️ User ${user.email} is already linked.`);
+        }
+      }
+    }
+  } catch (err) {
+    console.error('❌ Error during safe user linking:', err);
+  }
+}
+
 async function main() {
-  console.log('🚀 Starting database reset & seed process...');
+  const isSafeMode = process.argv.includes('--safe');
+  console.log(`🚀 Starting database reset & seed process... [Safe Mode: ${isSafeMode}]`);
   try {
     const db = getAdminDb();
-    await clearDatabase(db);
-    await seedData(db);
+    if (!isSafeMode) {
+      await clearDatabase(db);
+      await seedData(db);
+    } else {
+      await seedDataSafe(db);
+    }
     console.log('🎉 Database seeding completed successfully!');
   } catch (err) {
     console.error('❌ Seeding process failed:', err);
