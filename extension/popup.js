@@ -302,7 +302,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const aiModel = aiModelInput ? aiModelInput.value.trim() : '';
 
     if (!email && !pass && aiSource === 'website') {
-      showSettingsStatus('Please fill in email and password fields.', 'error');
+      showSettingsStatus('Please fill in username and password fields.', 'error');
       return;
     }
     
