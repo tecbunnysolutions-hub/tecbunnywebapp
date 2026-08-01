@@ -631,18 +631,22 @@ export async function getSuperadminCommandCenterData(): Promise<SuperadminComman
       implementationSteps: ['Investigate the top failing endpoint listed above.', 'Acknowledge or assign an owner using the controls on this notification.', 'Escalate to on-call if the error budget stays below 25% across repeated 24h windows.'],
     }] : []),
   ];
-  const notifications = [...domainIssues, ...sourceIssues].slice(0, 10).map((issue) => {
-    const alertKey = makeAlertKey(issue.module, issue.rootCause);
-    const ack = latestAckByKey.get(alertKey);
-    const ackStatus = String(ack?.status ?? '');
-    return {
-      ...issue,
-      alertKey,
-      acknowledged: ackStatus === 'acknowledged' || ackStatus === 'resolved',
-      acknowledgedBy: ack?.acknowledged_by ? String(ack.acknowledged_by) : undefined,
-      assignedTo: ack?.assigned_to ? String(ack.assigned_to) : undefined,
-    };
-  });
+  const notifications = [...domainIssues, ...sourceIssues]
+    .map((issue) => {
+      const alertKey = makeAlertKey(issue.module, issue.rootCause);
+      const ack = latestAckByKey.get(alertKey);
+      const ackStatus = String(ack?.status ?? '');
+      return {
+        ...issue,
+        alertKey,
+        acknowledged: ackStatus === 'acknowledged' || ackStatus === 'resolved',
+        acknowledgedBy: ack?.acknowledged_by ? String(ack.acknowledged_by) : undefined,
+        assignedTo: ack?.assigned_to ? String(ack.assigned_to) : undefined,
+        status: ackStatus,
+      };
+    })
+    .filter((issue) => issue.status !== 'resolved')
+    .slice(0, 10);
   const healthScore = Math.max(0, Math.min(100, 100 - notifications.reduce((total, issue) => {
     if (issue.severity === 'critical') return total + 20;
     if (issue.severity === 'high') return total + 12;
