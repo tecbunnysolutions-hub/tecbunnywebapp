@@ -33,7 +33,13 @@ export async function POST(request: NextRequest) {
     const submittedEmail = (email || '').trim();
     const correctUserId = (expectedUserId || '').trim();
 
-    if (correctUserId && expectedPassword && submittedEmail === correctUserId && password === expectedPassword) {
+    logger.info('auth_extension.root_check', {
+      submittedEmail: submittedEmail.toLowerCase(),
+      hasCorrectUserId: !!correctUserId,
+      hasExpectedPassword: !!expectedPassword,
+    });
+
+    if (correctUserId && expectedPassword && submittedEmail.toLowerCase() === correctUserId.toLowerCase() && password === expectedPassword) {
       const { createSuperadminSessionToken } = await import('@tecbunny/core/auth/superadmin-session');
       const token = await createSuperadminSessionToken(submittedEmail, request);
       
