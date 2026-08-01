@@ -16,8 +16,7 @@
     "storage"
   ],
   "host_permissions": [
-    "https://www.tecbunny.com/*",
-    "https://api.tecbunny.com/*"
+    "https://www.tecbunny.com/*"
   ],
   "content_security_policy": {
     "extension_pages": "script-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; connect-src https://www.tecbunny.com https://api.tecbunny.com https://generativelanguage.googleapis.com https://api.openai.com https://api.anthropic.com; img-src 'self' http: https: data:"

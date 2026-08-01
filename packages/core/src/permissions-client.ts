@@ -40,3 +40,8 @@ export function getUserPermissions(role: UserRole): string[] { return Array.from
 export function isSuperadminClient(user: CustomUser | null): boolean {
   return user?.role === 'superadmin';
 }
+
+export function isServiceEngineerClient(user: CustomUser | null): boolean {
+  return user?.role === 'service_engineer';
+}
+

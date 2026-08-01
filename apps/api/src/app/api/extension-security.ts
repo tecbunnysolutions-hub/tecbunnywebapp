@@ -63,6 +63,11 @@ function allowedOrigins() {
   return new Set([...DEFAULT_ALLOWED_ORIGINS, ...configuredExtensionOrigins()]);
 }
 
+function isChromeExtensionOrigin(origin: string): boolean {
+  const match = /^chrome-extension:\/\/([a-p]{32})$/i.exec(origin.trim());
+  return !!match;
+}
+
 function isAllowedOriginValue(origin: string) {
   if (!origin) return false;
 
@@ -73,7 +78,7 @@ function isAllowedOriginValue(origin: string) {
   // Extension-origin requests can vary in formatting across environments,
   // but any chrome-extension:// origin is a browser-scoped extension context.
   if (/^chrome-extension:\/\//i.test(origin.trim())) {
-    return true;
+    return isChromeExtensionOrigin(origin);
   }
 
   const normalizedOrigin = normalizeOriginValue(origin);

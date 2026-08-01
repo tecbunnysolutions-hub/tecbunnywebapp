@@ -80,7 +80,8 @@ export async function executeUnifiedPolicyMiddleware(
         if (
           url.hostname === 'localhost' || 
           url.hostname === 'tecbunny.com' || 
-          url.hostname.endsWith('.tecbunny.com')
+          url.hostname.endsWith('.tecbunny.com') ||
+          (url.protocol === 'chrome-extension:' && /^[a-p]{32}$/i.test(url.hostname))
         ) {
           allowedOrigin = origin;
         }

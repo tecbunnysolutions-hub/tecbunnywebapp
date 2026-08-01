@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@tecbunny/database';
-import { ExtensionAuthError, extensionJson, extensionOptionsResponse, getExtensionCorsHeaders } from '../../extension-security';
+import { ExtensionAuthError, assertExtensionOrigin, extensionJson, extensionOptionsResponse, getExtensionCorsHeaders } from '../../extension-security';
 import { logger } from '@tecbunny/core/logger';
 
 export async function OPTIONS(request: NextRequest) {
@@ -11,6 +11,7 @@ export async function OPTIONS(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     logger.info('auth_extension.audit.requested');
+    assertExtensionOrigin(request);
 
     const body = await request.json();
     const { email, password } = body;
