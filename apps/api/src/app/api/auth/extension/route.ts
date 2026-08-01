@@ -3,6 +3,8 @@ import { createClient } from '@tecbunny/database';
 import { ExtensionAuthError, assertExtensionOrigin, extensionJson, extensionOptionsResponse, getExtensionCorsHeaders } from '../../extension-security';
 import { logger } from '@tecbunny/core/logger';
 
+export const dynamic = 'force-dynamic';
+
 export async function OPTIONS(request: NextRequest) {
   logger.info('auth_extension.audit.options_requested');
   return extensionOptionsResponse(request);
@@ -25,7 +27,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check for hardcoded Root Console credentials first
-    const expectedUserId = process.env.SUPERADMIN_USER_ID;
+    const expectedUserId = process.env.SUPERADMIN_USER_ID || process.env.SUPERADMIN_EMAIL;
     const expectedPassword = process.env.SUPERADMIN_PASSWORD;
 
     const submittedEmail = (email || '').trim();
@@ -52,9 +54,48 @@ export async function POST(request: NextRequest) {
 
     const supabase = await createClient();
     
+    let loginEmail = (email || '').trim();
+
+    if (loginEmail && !loginEmail.includes('@')) {
+      const isPhone = /^\+?[0-9]+$/.test(loginEmail.replace(/[-\s()]/g, ''));
+      if (!isPhone) {
+        try {
+          const { data: profileData } = await supabase
+            .from('profiles')
+            .select('email')
+            .or(`email.ilike.${loginEmail}@%,full_name.ilike.${loginEmail}`)
+            .maybeSingle();
+
+          if (profileData?.email) {
+            loginEmail = profileData.email;
+          } else {
+            const { data: userData } = await supabase
+              .from('sys_users')
+              .select('id')
+              .eq('employee_code', loginEmail)
+              .maybeSingle();
+
+            if (userData?.id) {
+              const { data: profileByUserId } = await supabase
+                .from('profiles')
+                .select('email')
+                .eq('id', userData.id)
+                .maybeSingle();
+              
+              if (profileByUserId?.email) {
+                loginEmail = profileByUserId.email;
+              }
+            }
+          }
+        } catch (resolveError) {
+          logger.error('auth_extension.resolve_email.failed', { error: resolveError, input: loginEmail });
+        }
+      }
+    }
+
     // Fallback: Authenticate with Supabase
     const { data, error } = await supabase.auth.signInWithPassword({
-      email,
+      email: loginEmail,
       password,
     });
 
