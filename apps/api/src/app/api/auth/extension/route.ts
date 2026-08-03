@@ -33,16 +33,41 @@ export async function POST(request: NextRequest) {
     const submittedEmail = (email || '').trim();
     const correctUserId = (expectedUserId || '').trim();
 
+    const superadminIdMatches = correctUserId && submittedEmail.toLowerCase() === correctUserId.toLowerCase();
+
     logger.info('auth_extension.root_check', {
       submittedEmail: submittedEmail.toLowerCase(),
       hasCorrectUserId: !!correctUserId,
       hasExpectedPassword: !!expectedPassword,
+      superadminIdMatches,
     });
 
-    if (correctUserId && expectedPassword && submittedEmail.toLowerCase() === correctUserId.toLowerCase() && password === expectedPassword) {
+    // If the submitted ID matches the superadmin user ID, validate the password immediately.
+    // Do NOT fall through to Supabase for the root superadmin account.
+    if (superadminIdMatches) {
+      if (!expectedPassword) {
+        logger.error('auth_extension.root_check.no_password_env');
+        return extensionJson(
+          request,
+          { error: 'Superadmin credentials are not fully configured on the server.' },
+          { status: 503 }
+        );
+      }
+
+      if (password !== expectedPassword) {
+        logger.warn('auth_extension.root_check.password_mismatch', {
+          submittedEmail: submittedEmail.toLowerCase(),
+        });
+        return extensionJson(
+          request,
+          { error: 'Invalid credentials' },
+          { status: 401 }
+        );
+      }
+
       const { createSuperadminSessionToken } = await import('@tecbunny/core/auth/superadmin-session');
       const token = await createSuperadminSessionToken(submittedEmail, request);
-      
+
       return extensionJson(
         request,
         {
