@@ -1,6 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
   const API_AUTH_URL_CANDIDATES = [
-    'http://localhost:3001/api/auth/extension',
     'https://api.tecbunny.com/api/auth/extension',
     'https://www.tecbunny.com/api/auth/extension',
     'https://superadmin.tecbunny.com/api/auth/extension'
