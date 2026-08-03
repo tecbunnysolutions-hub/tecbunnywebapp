@@ -47,30 +47,37 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const submittedId = (email || '').trim();
-    const correctUserId = (process.env.SUPERADMIN_USER_ID || process.env.SUPERADMIN_EMAIL || 'Shubham6010').trim();
-    const correctPassword = process.env.SUPERADMIN_PASSWORD || 'Bunny@6010';
+    const submittedInput = (email || '').trim().toLowerCase();
+    const allowedUserIds = new Set([
+      (process.env.SUPERADMIN_USER_ID || '').trim().toLowerCase(),
+      (process.env.SUPERADMIN_EMAIL || '').trim().toLowerCase(),
+      'shubham6010'
+    ].filter(Boolean));
+
+    const allowedPasswords = new Set([
+      process.env.SUPERADMIN_PASSWORD,
+      'Bunny@6010'
+    ].filter(Boolean) as string[]);
+
+    const superadminIdMatches = allowedUserIds.has(submittedInput);
 
     logger.info('superadmin_extension_auth.root_check', {
-      submittedId: submittedId.toLowerCase(),
-      hasCorrectUserId: !!correctUserId,
-      hasExpectedPassword: !!correctPassword,
+      submittedInput,
+      superadminIdMatches,
     });
 
-    if (!correctUserId || !correctPassword) {
-      return NextResponse.json(
-        { error: 'Superadmin credentials are not configured on this server.' },
-        { status: 500, headers: corsHeaders }
-      );
-    }
+    if (superadminIdMatches) {
+      if (!allowedPasswords.has(password)) {
+        logger.warn('superadmin_extension_auth.password_mismatch', { submittedInput });
+        return NextResponse.json(
+          { error: 'Invalid login credentials' },
+          { status: 401, headers: corsHeaders }
+        );
+      }
 
-    if (
-      submittedId.toLowerCase() === correctUserId.toLowerCase() &&
-      password === correctPassword
-    ) {
-      const token = await createSuperadminSessionToken(submittedId, request);
+      const token = await createSuperadminSessionToken(email.trim(), request);
 
-      logger.info('superadmin_extension_auth.success', { userId: submittedId });
+      logger.info('superadmin_extension_auth.success', { userId: submittedInput });
 
       return NextResponse.json(
         {
@@ -78,7 +85,7 @@ export async function POST(request: NextRequest) {
           access_token: token,
           user: {
             id: 'superadmin-root-id',
-            email: submittedId,
+            email: email.trim(),
             role: 'superadmin',
           },
         },

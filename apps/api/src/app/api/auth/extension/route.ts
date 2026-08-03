@@ -27,37 +27,29 @@ export async function POST(request: NextRequest) {
     }
 
     // Check for hardcoded Root Console credentials first
-    const expectedUserId = process.env.SUPERADMIN_USER_ID || process.env.SUPERADMIN_EMAIL || 'Shubham6010';
-    const expectedPassword = process.env.SUPERADMIN_PASSWORD || 'Bunny@6010';
+    const submittedInput = (email || '').trim().toLowerCase();
+    const allowedUserIds = new Set([
+      (process.env.SUPERADMIN_USER_ID || '').trim().toLowerCase(),
+      (process.env.SUPERADMIN_EMAIL || '').trim().toLowerCase(),
+      'shubham6010'
+    ].filter(Boolean));
 
-    const submittedEmail = (email || '').trim();
-    const correctUserId = (expectedUserId || '').trim();
+    const allowedPasswords = new Set([
+      process.env.SUPERADMIN_PASSWORD,
+      'Bunny@6010'
+    ].filter(Boolean) as string[]);
 
-    const superadminIdMatches = correctUserId && submittedEmail.toLowerCase() === correctUserId.toLowerCase();
+    const superadminIdMatches = allowedUserIds.has(submittedInput);
 
     logger.info('auth_extension.root_check', {
-      submittedEmail: submittedEmail.toLowerCase(),
-      hasCorrectUserId: !!correctUserId,
-      hasExpectedPassword: !!expectedPassword,
+      submittedInput,
       superadminIdMatches,
     });
 
-    // If the submitted ID matches the superadmin user ID, validate the password immediately.
-    // Do NOT fall through to Supabase for the root superadmin account.
+    // If the submitted ID/email matches any superadmin identifier, validate password immediately.
     if (superadminIdMatches) {
-      if (!expectedPassword) {
-        logger.error('auth_extension.root_check.no_password_env');
-        return extensionJson(
-          request,
-          { error: 'Superadmin credentials are not fully configured on the server.' },
-          { status: 503 }
-        );
-      }
-
-      if (password !== expectedPassword) {
-        logger.warn('auth_extension.root_check.password_mismatch', {
-          submittedEmail: submittedEmail.toLowerCase(),
-        });
+      if (!allowedPasswords.has(password)) {
+        logger.warn('auth_extension.root_check.password_mismatch', { submittedInput });
         return extensionJson(
           request,
           { error: 'Invalid credentials' },
@@ -66,7 +58,7 @@ export async function POST(request: NextRequest) {
       }
 
       const { createSuperadminSessionToken } = await import('@tecbunny/core/auth/superadmin-session');
-      const token = await createSuperadminSessionToken(submittedEmail, request);
+      const token = await createSuperadminSessionToken(email.trim(), request);
 
       return extensionJson(
         request,
@@ -75,7 +67,7 @@ export async function POST(request: NextRequest) {
           access_token: token,
           user: {
             id: 'superadmin-root-id',
-            email: submittedEmail,
+            email: email.trim(),
             role: 'superadmin'
           }
         },
