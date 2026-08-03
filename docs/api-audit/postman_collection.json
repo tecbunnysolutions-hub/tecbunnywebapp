@@ -32,9 +32,30 @@
                 }
               }
             },
-            "description": "Route file: apps/api/src/app/api/admin-auth/login/route.ts\nDatabase tables: none detected\nFrontend usage: apps/api/src/app/login/page.tsx"
+            "description": "Route file: apps/api/src/app/api/admin-auth/login/route.ts\nDatabase tables: none detected\nFrontend usage: apps/api/src/app/login/page.tsx, apps/superadmin/src/app/superadmin/login/page.tsx"
           },
-          "response": []
+          "response": [
+            {
+              "name": "401 sample",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{API_BASE_URL}}/api/admin-auth/login"
+              },
+              "status": "401",
+              "code": 401,
+              "body": "{}"
+            },
+            {
+              "name": "500 sample",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{API_BASE_URL}}/api/admin-auth/login"
+              },
+              "status": "500",
+              "code": 500,
+              "body": "{}"
+            }
+          ]
         },
         {
           "name": "POST /api/admin-auth/logout",
@@ -61,7 +82,7 @@
                 }
               }
             },
-            "description": "Route file: apps/api/src/app/api/admin-auth/logout/route.ts\nDatabase tables: none detected\nFrontend usage: apps/api/src/app/dashboard/page.tsx"
+            "description": "Route file: apps/api/src/app/api/admin-auth/logout/route.ts\nDatabase tables: none detected\nFrontend usage: apps/api/src/app/dashboard/page.tsx, apps/superadmin/src/components/superadmin/SuperadminShell.tsx"
           },
           "response": []
         },
@@ -238,16 +259,6 @@
               },
               "status": "403",
               "code": 403,
-              "body": "{}"
-            },
-            {
-              "name": "429 sample",
-              "originalRequest": {
-                "method": "POST",
-                "url": "{{API_BASE_URL}}/api/agents/orders/create"
-              },
-              "status": "429",
-              "code": 429,
               "body": "{}"
             },
             {
@@ -601,16 +612,6 @@
               "status": "401",
               "code": 401,
               "body": "{}"
-            },
-            {
-              "name": "500 sample",
-              "originalRequest": {
-                "method": "GET",
-                "url": "{{API_BASE_URL}}/api/analytics/dashboard"
-              },
-              "status": "500",
-              "code": 500,
-              "body": "{}"
             }
           ]
         },
@@ -659,9 +660,19 @@
                 }
               }
             },
-            "description": "Route file: apps/api/src/app/api/analytics/track/route.ts\nDatabase tables: analytics_events, leads\nFrontend usage: packages/core/src/enterprise-analytics-proxy.ts, packages/core/src/enterprise-analytics.ts, packages/core/src/hooks/use-analytics.ts"
+            "description": "Route file: apps/api/src/app/api/analytics/track/route.ts\nDatabase tables: analytics_events, leads\nFrontend usage: packages/core/src/hooks/use-analytics.ts"
           },
           "response": [
+            {
+              "name": "200 sample",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{API_BASE_URL}}/api/analytics/track"
+              },
+              "status": "200",
+              "code": 200,
+              "body": "{}"
+            },
             {
               "name": "400 sample",
               "originalRequest": {
@@ -670,16 +681,6 @@
               },
               "status": "400",
               "code": 400,
-              "body": "{}"
-            },
-            {
-              "name": "429 sample",
-              "originalRequest": {
-                "method": "POST",
-                "url": "{{API_BASE_URL}}/api/analytics/track"
-              },
-              "status": "429",
-              "code": 429,
               "body": "{}"
             },
             {
@@ -1141,26 +1142,6 @@
               },
               "status": "400",
               "code": 400,
-              "body": "{}"
-            },
-            {
-              "name": "401 sample",
-              "originalRequest": {
-                "method": "POST",
-                "url": "{{API_BASE_URL}}/api/auth/first-login-whatsapp"
-              },
-              "status": "401",
-              "code": 401,
-              "body": "{}"
-            },
-            {
-              "name": "403 sample",
-              "originalRequest": {
-                "method": "POST",
-                "url": "{{API_BASE_URL}}/api/auth/first-login-whatsapp"
-              },
-              "status": "403",
-              "code": 403,
               "body": "{}"
             },
             {
@@ -1740,7 +1721,7 @@
                 "{{API_BASE_URL}}/api/auto-offers"
               ]
             },
-            "description": "Route file: apps/api/src/app/api/auto-offers/route.ts\nDatabase tables: auto_offers, coupons, profiles\nFrontend usage: apps/mgmt/src/components/customised-setups/CustomSetupFlow.tsx, apps/public/src/components/products/ShopPageContent.tsx"
+            "description": "Route file: apps/api/src/app/api/auto-offers/route.ts\nDatabase tables: auto_offers, coupons, profiles\nFrontend usage: apps/mgmt/src/components/customised-setups/CustomSetupFlow.tsx, apps/public/src/components/customised-setups/CustomSetupFlow.tsx, apps/public/src/components/products/ShopPageContent.tsx"
           },
           "response": [
             {
@@ -2254,7 +2235,7 @@
                 }
               }
             },
-            "description": "Route file: apps/api/src/app/api/blueprints/attribution/conversion/route.ts\nDatabase tables: published_blueprints, user_milestones\nFrontend usage: none detected"
+            "description": "Route file: apps/api/src/app/api/blueprints/attribution/conversion/route.ts\nDatabase tables: published_blueprints, user_milestones\nFrontend usage: apps/mgmt/src/hooks/use-viral-attribution.ts"
           },
           "response": [
             {
@@ -3685,167 +3666,6 @@
           "response": []
         },
         {
-          "name": "POST /api/deployment/production",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{API_BASE_URL}}/api/deployment/production",
-              "host": [
-                "{{API_BASE_URL}}/api/deployment/production"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "description": "Route file: apps/api/src/app/api/deployment/production/route.ts\nDatabase tables: none detected\nFrontend usage: none detected"
-          },
-          "response": [
-            {
-              "name": "500 sample",
-              "originalRequest": {
-                "method": "POST",
-                "url": "{{API_BASE_URL}}/api/deployment/production"
-              },
-              "status": "500",
-              "code": 500,
-              "body": "{}"
-            }
-          ]
-        },
-        {
-          "name": "POST /api/deployment/rollback",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{API_BASE_URL}}/api/deployment/rollback",
-              "host": [
-                "{{API_BASE_URL}}/api/deployment/rollback"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "description": "Route file: apps/api/src/app/api/deployment/rollback/route.ts\nDatabase tables: none detected\nFrontend usage: none detected"
-          },
-          "response": [
-            {
-              "name": "400 sample",
-              "originalRequest": {
-                "method": "POST",
-                "url": "{{API_BASE_URL}}/api/deployment/rollback"
-              },
-              "status": "400",
-              "code": 400,
-              "body": "{}"
-            },
-            {
-              "name": "500 sample",
-              "originalRequest": {
-                "method": "POST",
-                "url": "{{API_BASE_URL}}/api/deployment/rollback"
-              },
-              "status": "500",
-              "code": 500,
-              "body": "{}"
-            }
-          ]
-        },
-        {
-          "name": "POST /api/deployment/staging",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{API_BASE_URL}}/api/deployment/staging",
-              "host": [
-                "{{API_BASE_URL}}/api/deployment/staging"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "description": "Route file: apps/api/src/app/api/deployment/staging/route.ts\nDatabase tables: none detected\nFrontend usage: none detected"
-          },
-          "response": [
-            {
-              "name": "500 sample",
-              "originalRequest": {
-                "method": "POST",
-                "url": "{{API_BASE_URL}}/api/deployment/staging"
-              },
-              "status": "500",
-              "code": 500,
-              "body": "{}"
-            }
-          ]
-        },
-        {
-          "name": "GET /api/deployment/status",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{API_BASE_URL}}/api/deployment/status",
-              "host": [
-                "{{API_BASE_URL}}/api/deployment/status"
-              ]
-            },
-            "description": "Route file: apps/api/src/app/api/deployment/status/route.ts\nDatabase tables: none detected\nFrontend usage: none detected"
-          },
-          "response": [
-            {
-              "name": "500 sample",
-              "originalRequest": {
-                "method": "GET",
-                "url": "{{API_BASE_URL}}/api/deployment/status"
-              },
-              "status": "500",
-              "code": 500,
-              "body": "{}"
-            }
-          ]
-        },
-        {
           "name": "DELETE /api/discounts",
           "request": {
             "method": "DELETE",
@@ -4079,57 +3899,6 @@
           ]
         },
         {
-          "name": "GET /api/docs",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{API_BASE_URL}}/api/docs",
-              "host": [
-                "{{API_BASE_URL}}/api/docs"
-              ]
-            },
-            "description": "Route file: apps/api/src/app/api/docs/route.ts\nDatabase tables: none detected\nFrontend usage: none detected"
-          },
-          "response": []
-        },
-        {
-          "name": "GET /api/docs/openapi",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{API_BASE_URL}}/api/docs/openapi",
-              "host": [
-                "{{API_BASE_URL}}/api/docs/openapi"
-              ]
-            },
-            "description": "Route file: apps/api/src/app/api/docs/openapi/route.ts\nDatabase tables: none detected\nFrontend usage: none detected"
-          },
-          "response": [
-            {
-              "name": "500 sample",
-              "originalRequest": {
-                "method": "GET",
-                "url": "{{API_BASE_URL}}/api/docs/openapi"
-              },
-              "status": "500",
-              "code": 500,
-              "body": "{}"
-            }
-          ]
-        },
-        {
           "name": "POST /api/email/abandoned-cart",
           "request": {
             "method": "POST",
@@ -4216,18 +3985,7 @@
             },
             "description": "Route file: apps/api/src/app/api/email/email-change/route.ts\nDatabase tables: none detected\nFrontend usage: none detected"
           },
-          "response": [
-            {
-              "name": "500 sample",
-              "originalRequest": {
-                "method": "POST",
-                "url": "{{API_BASE_URL}}/api/email/email-change"
-              },
-              "status": "500",
-              "code": 500,
-              "body": "{}"
-            }
-          ]
+          "response": []
         },
         {
           "name": "POST /api/email/marketing",
@@ -4866,18 +4624,7 @@
             },
             "description": "Route file: apps/api/src/app/api/email/payment-pending/route.ts\nDatabase tables: none detected\nFrontend usage: none detected"
           },
-          "response": [
-            {
-              "name": "500 sample",
-              "originalRequest": {
-                "method": "POST",
-                "url": "{{API_BASE_URL}}/api/email/payment-pending"
-              },
-              "status": "500",
-              "code": 500,
-              "body": "{}"
-            }
-          ]
+          "response": []
         },
         {
           "name": "POST /api/email/pickup",
@@ -5106,364 +4853,7 @@
             },
             "description": "Route file: apps/api/src/app/api/email/welcome/route.ts\nDatabase tables: none detected\nFrontend usage: none detected"
           },
-          "response": [
-            {
-              "name": "500 sample",
-              "originalRequest": {
-                "method": "POST",
-                "url": "{{API_BASE_URL}}/api/email/welcome"
-              },
-              "status": "500",
-              "code": 500,
-              "body": "{}"
-            }
-          ]
-        },
-        {
-          "name": "GET /api/enterprise-analytics/audit-logs",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{API_BASE_URL}}/api/enterprise-analytics/audit-logs",
-              "host": [
-                "{{API_BASE_URL}}/api/enterprise-analytics/audit-logs"
-              ]
-            },
-            "description": "Route file: apps/api/src/app/api/enterprise-analytics/audit-logs/route.ts\nDatabase tables: enterprise_audit_logs\nFrontend usage: packages/core/src/enterprise-analytics.ts"
-          },
-          "response": [
-            {
-              "name": "500 sample",
-              "originalRequest": {
-                "method": "GET",
-                "url": "{{API_BASE_URL}}/api/enterprise-analytics/audit-logs"
-              },
-              "status": "500",
-              "code": 500,
-              "body": "{}"
-            }
-          ]
-        },
-        {
-          "name": "POST /api/enterprise-analytics/audit-logs",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{API_BASE_URL}}/api/enterprise-analytics/audit-logs",
-              "host": [
-                "{{API_BASE_URL}}/api/enterprise-analytics/audit-logs"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "description": "Route file: apps/api/src/app/api/enterprise-analytics/audit-logs/route.ts\nDatabase tables: enterprise_audit_logs\nFrontend usage: none detected"
-          },
-          "response": [
-            {
-              "name": "500 sample",
-              "originalRequest": {
-                "method": "POST",
-                "url": "{{API_BASE_URL}}/api/enterprise-analytics/audit-logs"
-              },
-              "status": "500",
-              "code": 500,
-              "body": "{}"
-            }
-          ]
-        },
-        {
-          "name": "GET /api/enterprise-analytics/dashboard",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{API_BASE_URL}}/api/enterprise-analytics/dashboard",
-              "host": [
-                "{{API_BASE_URL}}/api/enterprise-analytics/dashboard"
-              ]
-            },
-            "description": "Route file: apps/api/src/app/api/enterprise-analytics/dashboard/route.ts\nDatabase tables: enterprise_analytics_events, enterprise_kpi_snapshots\nFrontend usage: none detected"
-          },
-          "response": [
-            {
-              "name": "500 sample",
-              "originalRequest": {
-                "method": "GET",
-                "url": "{{API_BASE_URL}}/api/enterprise-analytics/dashboard"
-              },
-              "status": "500",
-              "code": 500,
-              "body": "{}"
-            }
-          ]
-        },
-        {
-          "name": "POST /api/enterprise-analytics/exports",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{API_BASE_URL}}/api/enterprise-analytics/exports",
-              "host": [
-                "{{API_BASE_URL}}/api/enterprise-analytics/exports"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "description": "Route file: apps/api/src/app/api/enterprise-analytics/exports/route.ts\nDatabase tables: enterprise_report_exports\nFrontend usage: none detected"
-          },
-          "response": [
-            {
-              "name": "500 sample",
-              "originalRequest": {
-                "method": "POST",
-                "url": "{{API_BASE_URL}}/api/enterprise-analytics/exports"
-              },
-              "status": "500",
-              "code": 500,
-              "body": "{}"
-            }
-          ]
-        },
-        {
-          "name": "GET /api/enterprise-analytics/filters",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{API_BASE_URL}}/api/enterprise-analytics/filters",
-              "host": [
-                "{{API_BASE_URL}}/api/enterprise-analytics/filters"
-              ]
-            },
-            "description": "Route file: apps/api/src/app/api/enterprise-analytics/filters/route.ts\nDatabase tables: enterprise_saved_filters\nFrontend usage: none detected"
-          },
-          "response": [
-            {
-              "name": "500 sample",
-              "originalRequest": {
-                "method": "GET",
-                "url": "{{API_BASE_URL}}/api/enterprise-analytics/filters"
-              },
-              "status": "500",
-              "code": 500,
-              "body": "{}"
-            }
-          ]
-        },
-        {
-          "name": "POST /api/enterprise-analytics/filters",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{API_BASE_URL}}/api/enterprise-analytics/filters",
-              "host": [
-                "{{API_BASE_URL}}/api/enterprise-analytics/filters"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "description": "Route file: apps/api/src/app/api/enterprise-analytics/filters/route.ts\nDatabase tables: enterprise_saved_filters\nFrontend usage: none detected"
-          },
-          "response": [
-            {
-              "name": "500 sample",
-              "originalRequest": {
-                "method": "POST",
-                "url": "{{API_BASE_URL}}/api/enterprise-analytics/filters"
-              },
-              "status": "500",
-              "code": 500,
-              "body": "{}"
-            }
-          ]
-        },
-        {
-          "name": "GET /api/enterprise-analytics/reports",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{API_BASE_URL}}/api/enterprise-analytics/reports",
-              "host": [
-                "{{API_BASE_URL}}/api/enterprise-analytics/reports"
-              ]
-            },
-            "description": "Route file: apps/api/src/app/api/enterprise-analytics/reports/route.ts\nDatabase tables: enterprise_analytics_events, enterprise_audit_logs, enterprise_kpi_snapshots, enterprise_staff_activity_logs\nFrontend usage: none detected"
-          },
-          "response": [
-            {
-              "name": "500 sample",
-              "originalRequest": {
-                "method": "GET",
-                "url": "{{API_BASE_URL}}/api/enterprise-analytics/reports"
-              },
-              "status": "500",
-              "code": 500,
-              "body": "{}"
-            }
-          ]
-        },
-        {
-          "name": "GET /api/enterprise-analytics/search",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{API_BASE_URL}}/api/enterprise-analytics/search",
-              "host": [
-                "{{API_BASE_URL}}/api/enterprise-analytics/search"
-              ]
-            },
-            "description": "Route file: apps/api/src/app/api/enterprise-analytics/search/route.ts\nDatabase tables: none detected\nFrontend usage: none detected"
-          },
-          "response": [
-            {
-              "name": "500 sample",
-              "originalRequest": {
-                "method": "GET",
-                "url": "{{API_BASE_URL}}/api/enterprise-analytics/search"
-              },
-              "status": "500",
-              "code": 500,
-              "body": "{}"
-            }
-          ]
-        },
-        {
-          "name": "GET /api/enterprise-analytics/staff-logs",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{API_BASE_URL}}/api/enterprise-analytics/staff-logs",
-              "host": [
-                "{{API_BASE_URL}}/api/enterprise-analytics/staff-logs"
-              ]
-            },
-            "description": "Route file: apps/api/src/app/api/enterprise-analytics/staff-logs/route.ts\nDatabase tables: enterprise_staff_activity_logs\nFrontend usage: packages/core/src/enterprise-analytics.ts"
-          },
-          "response": [
-            {
-              "name": "500 sample",
-              "originalRequest": {
-                "method": "GET",
-                "url": "{{API_BASE_URL}}/api/enterprise-analytics/staff-logs"
-              },
-              "status": "500",
-              "code": 500,
-              "body": "{}"
-            }
-          ]
-        },
-        {
-          "name": "POST /api/enterprise-analytics/staff-logs",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{API_BASE_URL}}/api/enterprise-analytics/staff-logs",
-              "host": [
-                "{{API_BASE_URL}}/api/enterprise-analytics/staff-logs"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "description": "Route file: apps/api/src/app/api/enterprise-analytics/staff-logs/route.ts\nDatabase tables: enterprise_staff_activity_logs\nFrontend usage: none detected"
-          },
-          "response": [
-            {
-              "name": "500 sample",
-              "originalRequest": {
-                "method": "POST",
-                "url": "{{API_BASE_URL}}/api/enterprise-analytics/staff-logs"
-              },
-              "status": "500",
-              "code": 500,
-              "body": "{}"
-            }
-          ]
+          "response": []
         },
         {
           "name": "GET /api/faqs",
@@ -5567,16 +4957,6 @@
               },
               "status": "401",
               "code": 401,
-              "body": "{}"
-            },
-            {
-              "name": "409 sample",
-              "originalRequest": {
-                "method": "POST",
-                "url": "{{API_BASE_URL}}/api/free-installation-slots"
-              },
-              "status": "409",
-              "code": 409,
               "body": "{}"
             },
             {
@@ -5774,18 +5154,7 @@
             },
             "description": "Route file: apps/api/src/app/api/hello/route.ts\nDatabase tables: none detected\nFrontend usage: none detected"
           },
-          "response": [
-            {
-              "name": "500 sample",
-              "originalRequest": {
-                "method": "GET",
-                "url": "{{API_BASE_URL}}/api/hello"
-              },
-              "status": "500",
-              "code": 500,
-              "body": "{}"
-            }
-          ]
+          "response": []
         },
         {
           "name": "POST /api/inquiries",
@@ -6208,32 +5577,6 @@
             "description": "Route file: apps/api/src/app/api/metadata/route.ts\nDatabase tables: settings\nFrontend usage: apps/api/src/app/dashboard/page.tsx, packages/ui/src/components/ui/logo.tsx"
           },
           "response": []
-        },
-        {
-          "name": "GET /api/monitoring/health",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{API_BASE_URL}}/api/monitoring/health",
-              "host": [
-                "{{API_BASE_URL}}/api/monitoring/health"
-              ]
-            },
-            "description": "Route file: apps/api/src/app/api/monitoring/health/route.ts\nDatabase tables: none detected\nFrontend usage: none detected"
-          },
-          "response": [
-            {
-              "name": "500 sample",
-              "originalRequest": {
-                "method": "GET",
-                "url": "{{API_BASE_URL}}/api/monitoring/health"
-              },
-              "status": "500",
-              "code": 500,
-              "body": "{}"
-            }
-          ]
         },
         {
           "name": "POST /api/notifications/send",
@@ -6674,16 +6017,6 @@
               },
               "status": "429",
               "code": 429,
-              "body": "{}"
-            },
-            {
-              "name": "500 sample",
-              "originalRequest": {
-                "method": "POST",
-                "url": "{{API_BASE_URL}}/api/orders"
-              },
-              "status": "500",
-              "code": 500,
               "body": "{}"
             }
           ]
@@ -8656,18 +7989,7 @@
             },
             "description": "Route file: apps/api/src/app/api/products/recommendations/route.ts\nDatabase tables: analytics_events, products\nFrontend usage: none detected"
           },
-          "response": [
-            {
-              "name": "500 sample",
-              "originalRequest": {
-                "method": "GET",
-                "url": "{{API_BASE_URL}}/api/products/recommendations"
-              },
-              "status": "500",
-              "code": 500,
-              "body": "{}"
-            }
-          ]
+          "response": []
         },
         {
           "name": "POST /api/products/scrape-url",
@@ -8865,16 +8187,6 @@
               },
               "status": "400",
               "code": 400,
-              "body": "{}"
-            },
-            {
-              "name": "429 sample",
-              "originalRequest": {
-                "method": "POST",
-                "url": "{{API_BASE_URL}}/api/products/scraper/ai"
-              },
-              "status": "429",
-              "code": 429,
               "body": "{}"
             },
             {
@@ -9972,87 +9284,6 @@
           ]
         },
         {
-          "name": "GET /api/release-notes",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{API_BASE_URL}}/api/release-notes",
-              "host": [
-                "{{API_BASE_URL}}/api/release-notes"
-              ]
-            },
-            "description": "Route file: apps/api/src/app/api/release-notes/route.ts\nDatabase tables: release_notes\nFrontend usage: none detected"
-          },
-          "response": [
-            {
-              "name": "500 sample",
-              "originalRequest": {
-                "method": "GET",
-                "url": "{{API_BASE_URL}}/api/release-notes"
-              },
-              "status": "500",
-              "code": 500,
-              "body": "{}"
-            }
-          ]
-        },
-        {
-          "name": "POST /api/release-notes",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{API_BASE_URL}}/api/release-notes",
-              "host": [
-                "{{API_BASE_URL}}/api/release-notes"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "description": "Route file: apps/api/src/app/api/release-notes/route.ts\nDatabase tables: release_notes\nFrontend usage: none detected"
-          },
-          "response": [
-            {
-              "name": "400 sample",
-              "originalRequest": {
-                "method": "POST",
-                "url": "{{API_BASE_URL}}/api/release-notes"
-              },
-              "status": "400",
-              "code": 400,
-              "body": "{}"
-            },
-            {
-              "name": "500 sample",
-              "originalRequest": {
-                "method": "POST",
-                "url": "{{API_BASE_URL}}/api/release-notes"
-              },
-              "status": "500",
-              "code": 500,
-              "body": "{}"
-            }
-          ]
-        },
-        {
           "name": "GET /api/roles-public",
           "request": {
             "method": "GET",
@@ -10094,7 +9325,7 @@
                 "{{API_BASE_URL}}/api/roles"
               ]
             },
-            "description": "Route file: apps/api/src/app/api/roles/route.ts\nDatabase tables: none detected\nFrontend usage: none detected"
+            "description": "Route file: apps/api/src/app/api/roles/route.ts\nDatabase tables: none detected\nFrontend usage: apps/superadmin/src/app/superadmin/mgmt/roles/page.tsx"
           },
           "response": [
             {
@@ -10545,18 +9776,7 @@
             },
             "description": "Route file: apps/api/src/app/api/service-availability/route.ts\nDatabase tables: none detected\nFrontend usage: none detected"
           },
-          "response": [
-            {
-              "name": "500 sample",
-              "originalRequest": {
-                "method": "GET",
-                "url": "{{API_BASE_URL}}/api/service-availability"
-              },
-              "status": "500",
-              "code": 500,
-              "body": "{}"
-            }
-          ]
+          "response": []
         },
         {
           "name": "GET /api/services",
@@ -11321,118 +10541,6 @@
           "response": []
         },
         {
-          "name": "GET /api/testing/coverage",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{API_BASE_URL}}/api/testing/coverage",
-              "host": [
-                "{{API_BASE_URL}}/api/testing/coverage"
-              ]
-            },
-            "description": "Route file: apps/api/src/app/api/testing/coverage/route.ts\nDatabase tables: test_coverage_metrics\nFrontend usage: none detected"
-          },
-          "response": [
-            {
-              "name": "500 sample",
-              "originalRequest": {
-                "method": "GET",
-                "url": "{{API_BASE_URL}}/api/testing/coverage"
-              },
-              "status": "500",
-              "code": 500,
-              "body": "{}"
-            }
-          ]
-        },
-        {
-          "name": "GET /api/testing/results",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{API_BASE_URL}}/api/testing/results",
-              "host": [
-                "{{API_BASE_URL}}/api/testing/results"
-              ]
-            },
-            "description": "Route file: apps/api/src/app/api/testing/results/route.ts\nDatabase tables: none detected\nFrontend usage: none detected"
-          },
-          "response": [
-            {
-              "name": "500 sample",
-              "originalRequest": {
-                "method": "GET",
-                "url": "{{API_BASE_URL}}/api/testing/results"
-              },
-              "status": "500",
-              "code": 500,
-              "body": "{}"
-            }
-          ]
-        },
-        {
-          "name": "POST /api/testing/results",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{API_BASE_URL}}/api/testing/results",
-              "host": [
-                "{{API_BASE_URL}}/api/testing/results"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "description": "Route file: apps/api/src/app/api/testing/results/route.ts\nDatabase tables: none detected\nFrontend usage: none detected"
-          },
-          "response": [
-            {
-              "name": "400 sample",
-              "originalRequest": {
-                "method": "POST",
-                "url": "{{API_BASE_URL}}/api/testing/results"
-              },
-              "status": "400",
-              "code": 400,
-              "body": "{}"
-            },
-            {
-              "name": "500 sample",
-              "originalRequest": {
-                "method": "POST",
-                "url": "{{API_BASE_URL}}/api/testing/results"
-              },
-              "status": "500",
-              "code": 500,
-              "body": "{}"
-            }
-          ]
-        },
-        {
           "name": "GET /api/trpc/{trpc}",
           "request": {
             "method": "GET",
@@ -11443,20 +10551,9 @@
                 "{{API_BASE_URL}}/api/trpc/{trpc}"
               ]
             },
-            "description": "Route file: apps/api/src/app/api/trpc/[trpc]/route.ts\nDatabase tables: none detected\nFrontend usage: apps/api/src/proxy.ts, apps/mgmt/src/components/providers/TRPCProvider.tsx, apps/public/src/components/providers/TRPCProvider.tsx"
+            "description": "Route file: apps/api/src/app/api/trpc/[trpc]/route.ts\nDatabase tables: none detected\nFrontend usage: apps/mgmt/src/components/providers/TRPCProvider.tsx, apps/public/src/components/providers/TRPCProvider.tsx"
           },
-          "response": [
-            {
-              "name": "500 sample",
-              "originalRequest": {
-                "method": "GET",
-                "url": "{{API_BASE_URL}}/api/trpc/{trpc}"
-              },
-              "status": "500",
-              "code": 500,
-              "body": "{}"
-            }
-          ]
+          "response": []
         },
         {
           "name": "POST /api/trpc/{trpc}",
@@ -11485,18 +10582,7 @@
             },
             "description": "Route file: apps/api/src/app/api/trpc/[trpc]/route.ts\nDatabase tables: none detected\nFrontend usage: none detected"
           },
-          "response": [
-            {
-              "name": "500 sample",
-              "originalRequest": {
-                "method": "POST",
-                "url": "{{API_BASE_URL}}/api/trpc/{trpc}"
-              },
-              "status": "500",
-              "code": 500,
-              "body": "{}"
-            }
-          ]
+          "response": []
         },
         {
           "name": "POST /api/upload-from-url",
@@ -12278,7 +11364,7 @@
                 "{{API_BASE_URL}}/api/users"
               ]
             },
-            "description": "Route file: apps/api/src/app/api/users/route.ts\nDatabase tables: profiles\nFrontend usage: packages/admin-ui/src/components/AddUserDialog.tsx, packages/admin-ui/src/components/EditUserDialog.tsx"
+            "description": "Route file: apps/api/src/app/api/users/route.ts\nDatabase tables: none detected\nFrontend usage: packages/admin-ui/src/components/AddUserDialog.tsx, packages/admin-ui/src/components/EditUserDialog.tsx"
           },
           "response": [
             {
@@ -12349,7 +11435,7 @@
                 "{{API_BASE_URL}}/api/users"
               ]
             },
-            "description": "Route file: apps/api/src/app/api/users/route.ts\nDatabase tables: profiles\nFrontend usage: none detected"
+            "description": "Route file: apps/api/src/app/api/users/route.ts\nDatabase tables: none detected\nFrontend usage: none detected"
           },
           "response": [
             {
@@ -12419,7 +11505,7 @@
                 }
               }
             },
-            "description": "Route file: apps/api/src/app/api/users/route.ts\nDatabase tables: profiles\nFrontend usage: none detected"
+            "description": "Route file: apps/api/src/app/api/users/route.ts\nDatabase tables: none detected\nFrontend usage: none detected"
           },
           "response": [
             {
@@ -12499,7 +11585,7 @@
                 }
               }
             },
-            "description": "Route file: apps/api/src/app/api/users/route.ts\nDatabase tables: profiles\nFrontend usage: none detected"
+            "description": "Route file: apps/api/src/app/api/users/route.ts\nDatabase tables: none detected\nFrontend usage: none detected"
           },
           "response": [
             {
@@ -12555,83 +11641,6 @@
           ]
         },
         {
-          "name": "POST /api/v1/admin-auth/login",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{API_BASE_URL}}/api/v1/admin-auth/login",
-              "host": [
-                "{{API_BASE_URL}}/api/v1/admin-auth/login"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "description": "Route file: apps/api/src/app/api/v1/admin-auth/login/route.ts\nDatabase tables: none detected\nFrontend usage: none detected"
-          },
-          "response": []
-        },
-        {
-          "name": "POST /api/v1/auth/send-otp",
-          "request": {
-            "method": "POST",
-            "header": [],
-            "url": {
-              "raw": "{{API_BASE_URL}}/api/v1/auth/send-otp",
-              "host": [
-                "{{API_BASE_URL}}/api/v1/auth/send-otp"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "description": "Route file: apps/api/src/app/api/v1/auth/send-otp/route.ts\nDatabase tables: none detected\nFrontend usage: none detected"
-          },
-          "response": []
-        },
-        {
-          "name": "POST /api/v1/auth/verify-otp",
-          "request": {
-            "method": "POST",
-            "header": [],
-            "url": {
-              "raw": "{{API_BASE_URL}}/api/v1/auth/verify-otp",
-              "host": [
-                "{{API_BASE_URL}}/api/v1/auth/verify-otp"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "description": "Route file: apps/api/src/app/api/v1/auth/verify-otp/route.ts\nDatabase tables: none detected\nFrontend usage: none detected"
-          },
-          "response": []
-        },
-        {
           "name": "GET /api/v1/embed/configurator",
           "request": {
             "method": "GET",
@@ -12681,26 +11690,6 @@
               "body": "{}"
             }
           ]
-        },
-        {
-          "name": "GET /api/v2/status",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{API_BASE_URL}}/api/v2/status",
-              "host": [
-                "{{API_BASE_URL}}/api/v2/status"
-              ]
-            },
-            "description": "Route file: apps/api/src/app/api/v2/status/route.ts\nDatabase tables: none detected\nFrontend usage: none detected"
-          },
-          "response": []
         },
         {
           "name": "GET /api/walk-in-orders",
@@ -12972,6 +11961,16 @@
               "body": "{}"
             },
             {
+              "name": "400 sample",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{API_BASE_URL}}/api/webhooks/customer/signup"
+              },
+              "status": "400",
+              "code": 400,
+              "body": "{}"
+            },
+            {
               "name": "401 sample",
               "originalRequest": {
                 "method": "POST",
@@ -13034,6 +12033,16 @@
               },
               "status": "200",
               "code": 200,
+              "body": "{}"
+            },
+            {
+              "name": "400 sample",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{API_BASE_URL}}/api/webhooks/orders/cancelled"
+              },
+              "status": "400",
+              "code": 400,
               "body": "{}"
             },
             {
@@ -13102,6 +12111,16 @@
               "body": "{}"
             },
             {
+              "name": "400 sample",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{API_BASE_URL}}/api/webhooks/orders/delayed"
+              },
+              "status": "400",
+              "code": 400,
+              "body": "{}"
+            },
+            {
               "name": "401 sample",
               "originalRequest": {
                 "method": "POST",
@@ -13164,6 +12183,16 @@
               },
               "status": "200",
               "code": 200,
+              "body": "{}"
+            },
+            {
+              "name": "400 sample",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{API_BASE_URL}}/api/webhooks/orders/delivered"
+              },
+              "status": "400",
+              "code": 400,
               "body": "{}"
             },
             {
@@ -13232,6 +12261,16 @@
               "body": "{}"
             },
             {
+              "name": "400 sample",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{API_BASE_URL}}/api/webhooks/orders/notconfirmed"
+              },
+              "status": "400",
+              "code": 400,
+              "body": "{}"
+            },
+            {
               "name": "401 sample",
               "originalRequest": {
                 "method": "POST",
@@ -13297,6 +12336,16 @@
               "body": "{}"
             },
             {
+              "name": "400 sample",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{API_BASE_URL}}/api/webhooks/orders/outfordelivery"
+              },
+              "status": "400",
+              "code": 400,
+              "body": "{}"
+            },
+            {
               "name": "401 sample",
               "originalRequest": {
                 "method": "POST",
@@ -13352,16 +12401,6 @@
           },
           "response": [
             {
-              "name": "200 sample",
-              "originalRequest": {
-                "method": "POST",
-                "url": "{{API_BASE_URL}}/api/webhooks/orders/placed"
-              },
-              "status": "200",
-              "code": 200,
-              "body": "{}"
-            },
-            {
               "name": "400 sample",
               "originalRequest": {
                 "method": "POST",
@@ -13379,16 +12418,6 @@
               },
               "status": "401",
               "code": 401,
-              "body": "{}"
-            },
-            {
-              "name": "403 sample",
-              "originalRequest": {
-                "method": "POST",
-                "url": "{{API_BASE_URL}}/api/webhooks/orders/placed"
-              },
-              "status": "403",
-              "code": 403,
               "body": "{}"
             },
             {
@@ -13434,6 +12463,16 @@
               },
               "status": "200",
               "code": 200,
+              "body": "{}"
+            },
+            {
+              "name": "400 sample",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{API_BASE_URL}}/api/webhooks/orders/shipped"
+              },
+              "status": "400",
+              "code": 400,
               "body": "{}"
             },
             {
@@ -13489,6 +12528,16 @@
               },
               "status": "200",
               "code": 200,
+              "body": "{}"
+            },
+            {
+              "name": "400 sample",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{API_BASE_URL}}/api/webhooks/payment/failed"
+              },
+              "status": "400",
+              "code": 400,
               "body": "{}"
             },
             {
@@ -13554,6 +12603,16 @@
               },
               "status": "200",
               "code": 200,
+              "body": "{}"
+            },
+            {
+              "name": "400 sample",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{API_BASE_URL}}/api/webhooks/payment/received"
+              },
+              "status": "400",
+              "code": 400,
               "body": "{}"
             },
             {
@@ -13956,76 +13015,6 @@
           ]
         },
         {
-          "name": "POST /api/admin/crm/leads",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{MGMT_BASE_URL}}/api/admin/crm/leads",
-              "host": [
-                "{{MGMT_BASE_URL}}/api/admin/crm/leads"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "description": "Route file: apps/mgmt/src/app/api/admin/crm/leads/route.ts\nDatabase tables: sls_leads\nFrontend usage: apps/mgmt/src/app/mgmt/crm/crm-dashboard.tsx"
-          },
-          "response": [
-            {
-              "name": "400 sample",
-              "originalRequest": {
-                "method": "POST",
-                "url": "{{MGMT_BASE_URL}}/api/admin/crm/leads"
-              },
-              "status": "400",
-              "code": 400,
-              "body": "{}"
-            },
-            {
-              "name": "401 sample",
-              "originalRequest": {
-                "method": "POST",
-                "url": "{{MGMT_BASE_URL}}/api/admin/crm/leads"
-              },
-              "status": "401",
-              "code": 401,
-              "body": "{}"
-            },
-            {
-              "name": "403 sample",
-              "originalRequest": {
-                "method": "POST",
-                "url": "{{MGMT_BASE_URL}}/api/admin/crm/leads"
-              },
-              "status": "403",
-              "code": 403,
-              "body": "{}"
-            },
-            {
-              "name": "500 sample",
-              "originalRequest": {
-                "method": "POST",
-                "url": "{{MGMT_BASE_URL}}/api/admin/crm/leads"
-              },
-              "status": "500",
-              "code": 500,
-              "body": "{}"
-            }
-          ]
-        },
-        {
           "name": "GET /api/admin/custom-setups",
           "request": {
             "method": "GET",
@@ -14036,7 +13025,7 @@
                 "{{MGMT_BASE_URL}}/api/admin/custom-setups"
               ]
             },
-            "description": "Route file: apps/mgmt/src/app/api/admin/custom-setups/route.ts\nDatabase tables: custom_setup_component_options, custom_setup_components, custom_setup_inventory, custom_setup_systems, custom_setup_templates\nFrontend usage: apps/mgmt/src/app/mgmt/admin/custom-setups/price-manager.tsx, apps/superadmin/src/components/superadmin/CustomSetupPriceManager.tsx"
+            "description": "Route file: apps/mgmt/src/app/api/admin/custom-setups/route.ts\nDatabase tables: custom_setup_component_options, custom_setup_components, custom_setup_inventory, custom_setup_systems, custom_setup_templates\nFrontend usage: apps/mgmt/src/app/mgmt/admin/custom-setups/price-manager.tsx"
           },
           "response": [
             {
@@ -14766,57 +13755,6 @@
           ]
         },
         {
-          "name": "GET /api/admin/mgmt/overview",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{MGMT_BASE_URL}}/api/admin/mgmt/overview",
-              "host": [
-                "{{MGMT_BASE_URL}}/api/admin/mgmt/overview"
-              ]
-            },
-            "description": "Route file: apps/mgmt/src/app/api/admin/mgmt/overview/route.ts\nDatabase tables: orders, products, service_tickets, sls_leads\nFrontend usage: apps/mgmt/src/app/mgmt/page.tsx"
-          },
-          "response": [
-            {
-              "name": "401 sample",
-              "originalRequest": {
-                "method": "GET",
-                "url": "{{MGMT_BASE_URL}}/api/admin/mgmt/overview"
-              },
-              "status": "401",
-              "code": 401,
-              "body": "{}"
-            },
-            {
-              "name": "403 sample",
-              "originalRequest": {
-                "method": "GET",
-                "url": "{{MGMT_BASE_URL}}/api/admin/mgmt/overview"
-              },
-              "status": "403",
-              "code": 403,
-              "body": "{}"
-            },
-            {
-              "name": "500 sample",
-              "originalRequest": {
-                "method": "GET",
-                "url": "{{MGMT_BASE_URL}}/api/admin/mgmt/overview"
-              },
-              "status": "500",
-              "code": 500,
-              "body": "{}"
-            }
-          ]
-        },
-        {
           "name": "GET /api/admin/orders",
           "request": {
             "method": "GET",
@@ -14965,18 +13903,7 @@
             },
             "description": "Route file: apps/mgmt/src/app/api/admin/payment-settings/route.ts\nDatabase tables: none detected\nFrontend usage: none detected"
           },
-          "response": [
-            {
-              "name": "500 sample",
-              "originalRequest": {
-                "method": "GET",
-                "url": "{{MGMT_BASE_URL}}/api/admin/payment-settings"
-              },
-              "status": "500",
-              "code": 500,
-              "body": "{}"
-            }
-          ]
+          "response": []
         },
         {
           "name": "PUT /api/admin/payment-settings",
@@ -15014,16 +13941,6 @@
               },
               "status": "403",
               "code": 403,
-              "body": "{}"
-            },
-            {
-              "name": "500 sample",
-              "originalRequest": {
-                "method": "PUT",
-                "url": "{{MGMT_BASE_URL}}/api/admin/payment-settings"
-              },
-              "status": "500",
-              "code": 500,
               "body": "{}"
             }
           ]
@@ -15773,19 +14690,9 @@
                 }
               }
             },
-            "description": "Route file: apps/mgmt/src/app/api/admin/products/bulk/route.ts\nDatabase tables: products, rpc:soft_delete_product\nFrontend usage: packages/admin-ui/src/components/admin-products-new.tsx"
+            "description": "Route file: apps/mgmt/src/app/api/admin/products/bulk/route.ts\nDatabase tables: products\nFrontend usage: packages/admin-ui/src/components/admin-products-new.tsx"
           },
           "response": [
-            {
-              "name": "207 sample",
-              "originalRequest": {
-                "method": "POST",
-                "url": "{{MGMT_BASE_URL}}/api/admin/products/bulk"
-              },
-              "status": "207",
-              "code": 207,
-              "body": "{}"
-            },
             {
               "name": "400 sample",
               "originalRequest": {
@@ -15801,137 +14708,6 @@
               "originalRequest": {
                 "method": "POST",
                 "url": "{{MGMT_BASE_URL}}/api/admin/products/bulk"
-              },
-              "status": "500",
-              "code": 500,
-              "body": "{}"
-            }
-          ]
-        },
-        {
-          "name": "GET /api/admin/profile",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{MGMT_BASE_URL}}/api/admin/profile",
-              "host": [
-                "{{MGMT_BASE_URL}}/api/admin/profile"
-              ]
-            },
-            "description": "Route file: apps/mgmt/src/app/api/admin/profile/route.ts\nDatabase tables: profiles\nFrontend usage: apps/mgmt/src/app/mgmt/profile/page.tsx"
-          },
-          "response": [
-            {
-              "name": "500 sample",
-              "originalRequest": {
-                "method": "GET",
-                "url": "{{MGMT_BASE_URL}}/api/admin/profile"
-              },
-              "status": "500",
-              "code": 500,
-              "body": "{}"
-            }
-          ]
-        },
-        {
-          "name": "PATCH /api/admin/profile",
-          "request": {
-            "method": "PATCH",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{MGMT_BASE_URL}}/api/admin/profile",
-              "host": [
-                "{{MGMT_BASE_URL}}/api/admin/profile"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "description": "Route file: apps/mgmt/src/app/api/admin/profile/route.ts\nDatabase tables: profiles\nFrontend usage: none detected"
-          },
-          "response": [
-            {
-              "name": "400 sample",
-              "originalRequest": {
-                "method": "PATCH",
-                "url": "{{MGMT_BASE_URL}}/api/admin/profile"
-              },
-              "status": "400",
-              "code": 400,
-              "body": "{}"
-            },
-            {
-              "name": "500 sample",
-              "originalRequest": {
-                "method": "PATCH",
-                "url": "{{MGMT_BASE_URL}}/api/admin/profile"
-              },
-              "status": "500",
-              "code": 500,
-              "body": "{}"
-            }
-          ]
-        },
-        {
-          "name": "POST /api/admin/profile",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{MGMT_BASE_URL}}/api/admin/profile",
-              "host": [
-                "{{MGMT_BASE_URL}}/api/admin/profile"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "description": "Route file: apps/mgmt/src/app/api/admin/profile/route.ts\nDatabase tables: profiles\nFrontend usage: none detected"
-          },
-          "response": [
-            {
-              "name": "400 sample",
-              "originalRequest": {
-                "method": "POST",
-                "url": "{{MGMT_BASE_URL}}/api/admin/profile"
-              },
-              "status": "400",
-              "code": 400,
-              "body": "{}"
-            },
-            {
-              "name": "500 sample",
-              "originalRequest": {
-                "method": "POST",
-                "url": "{{MGMT_BASE_URL}}/api/admin/profile"
               },
               "status": "500",
               "code": 500,
@@ -16272,7 +15048,7 @@
                 }
               }
             },
-            "description": "Route file: apps/mgmt/src/app/api/admin/redemptions/approve/route.ts\nDatabase tables: rpc:approve_agent_redemption\nFrontend usage: none detected"
+            "description": "Route file: apps/mgmt/src/app/api/admin/redemptions/approve/route.ts\nDatabase tables: agent_redemption_requests\nFrontend usage: none detected"
           },
           "response": [
             {
@@ -16335,16 +15111,6 @@
               "status": "401",
               "code": 401,
               "body": "{}"
-            },
-            {
-              "name": "500 sample",
-              "originalRequest": {
-                "method": "GET",
-                "url": "{{MGMT_BASE_URL}}/api/admin/redemptions/list"
-              },
-              "status": "500",
-              "code": 500,
-              "body": "{}"
             }
           ]
         },
@@ -16373,7 +15139,7 @@
                 }
               }
             },
-            "description": "Route file: apps/mgmt/src/app/api/admin/redemptions/process/route.ts\nDatabase tables: rpc:process_agent_redemption\nFrontend usage: none detected"
+            "description": "Route file: apps/mgmt/src/app/api/admin/redemptions/process/route.ts\nDatabase tables: agent_redemption_requests, rpc:increment_agent_points\nFrontend usage: none detected"
           },
           "response": [
             {
@@ -16394,6 +15160,16 @@
               },
               "status": "401",
               "code": 401,
+              "body": "{}"
+            },
+            {
+              "name": "404 sample",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{MGMT_BASE_URL}}/api/admin/redemptions/process"
+              },
+              "status": "404",
+              "code": 404,
               "body": "{}"
             }
           ]
@@ -16854,1595 +15630,6 @@
               "status": "200",
               "code": 200,
               "body": "{}"
-            },
-            {
-              "name": "500 sample",
-              "originalRequest": {
-                "method": "GET",
-                "url": "{{MGMT_BASE_URL}}/api/health"
-              },
-              "status": "500",
-              "code": 500,
-              "body": "{}"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "superadmin",
-      "item": [
-        {
-          "name": "GET /api/admin/custom-setups",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{SUPERADMIN_BASE_URL}}/api/admin/custom-setups",
-              "host": [
-                "{{SUPERADMIN_BASE_URL}}/api/admin/custom-setups"
-              ]
-            },
-            "description": "Route file: apps/superadmin/src/app/api/admin/custom-setups/route.ts\nDatabase tables: custom_setup_component_options, custom_setup_components, custom_setup_inventory, custom_setup_systems, custom_setup_templates\nFrontend usage: none detected"
-          },
-          "response": []
-        },
-        {
-          "name": "PATCH /api/admin/custom-setups",
-          "request": {
-            "method": "PATCH",
-            "header": [],
-            "url": {
-              "raw": "{{SUPERADMIN_BASE_URL}}/api/admin/custom-setups",
-              "host": [
-                "{{SUPERADMIN_BASE_URL}}/api/admin/custom-setups"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "description": "Route file: apps/superadmin/src/app/api/admin/custom-setups/route.ts\nDatabase tables: custom_setup_component_options, custom_setup_components, custom_setup_inventory, custom_setup_systems, custom_setup_templates\nFrontend usage: none detected"
-          },
-          "response": [
-            {
-              "name": "400 sample",
-              "originalRequest": {
-                "method": "PATCH",
-                "url": "{{SUPERADMIN_BASE_URL}}/api/admin/custom-setups"
-              },
-              "status": "400",
-              "code": 400,
-              "body": "{}"
-            },
-            {
-              "name": "500 sample",
-              "originalRequest": {
-                "method": "PATCH",
-                "url": "{{SUPERADMIN_BASE_URL}}/api/admin/custom-setups"
-              },
-              "status": "500",
-              "code": 500,
-              "body": "{}"
-            }
-          ]
-        },
-        {
-          "name": "POST /api/admin/custom-setups",
-          "request": {
-            "method": "POST",
-            "header": [],
-            "url": {
-              "raw": "{{SUPERADMIN_BASE_URL}}/api/admin/custom-setups",
-              "host": [
-                "{{SUPERADMIN_BASE_URL}}/api/admin/custom-setups"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "description": "Route file: apps/superadmin/src/app/api/admin/custom-setups/route.ts\nDatabase tables: custom_setup_component_options, custom_setup_components, custom_setup_inventory, custom_setup_systems, custom_setup_templates\nFrontend usage: none detected"
-          },
-          "response": [
-            {
-              "name": "400 sample",
-              "originalRequest": {
-                "method": "POST",
-                "url": "{{SUPERADMIN_BASE_URL}}/api/admin/custom-setups"
-              },
-              "status": "400",
-              "code": 400,
-              "body": "{}"
-            },
-            {
-              "name": "500 sample",
-              "originalRequest": {
-                "method": "POST",
-                "url": "{{SUPERADMIN_BASE_URL}}/api/admin/custom-setups"
-              },
-              "status": "500",
-              "code": 500,
-              "body": "{}"
-            }
-          ]
-        },
-        {
-          "name": "DELETE /api/branches",
-          "request": {
-            "method": "DELETE",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{SUPERADMIN_BASE_URL}}/api/branches",
-              "host": [
-                "{{SUPERADMIN_BASE_URL}}/api/branches"
-              ]
-            },
-            "description": "Route file: apps/superadmin/src/app/api/branches/route.ts\nDatabase tables: none detected\nFrontend usage: apps/superadmin/src/app/superadmin/mgmt/branches/page.tsx"
-          },
-          "response": [
-            {
-              "name": "400 sample",
-              "originalRequest": {
-                "method": "DELETE",
-                "url": "{{SUPERADMIN_BASE_URL}}/api/branches"
-              },
-              "status": "400",
-              "code": 400,
-              "body": "{}"
-            },
-            {
-              "name": "404 sample",
-              "originalRequest": {
-                "method": "DELETE",
-                "url": "{{SUPERADMIN_BASE_URL}}/api/branches"
-              },
-              "status": "404",
-              "code": 404,
-              "body": "{}"
-            },
-            {
-              "name": "500 sample",
-              "originalRequest": {
-                "method": "DELETE",
-                "url": "{{SUPERADMIN_BASE_URL}}/api/branches"
-              },
-              "status": "500",
-              "code": 500,
-              "body": "{}"
-            }
-          ]
-        },
-        {
-          "name": "GET /api/branches",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{SUPERADMIN_BASE_URL}}/api/branches",
-              "host": [
-                "{{SUPERADMIN_BASE_URL}}/api/branches"
-              ]
-            },
-            "description": "Route file: apps/superadmin/src/app/api/branches/route.ts\nDatabase tables: none detected\nFrontend usage: none detected"
-          },
-          "response": [
-            {
-              "name": "500 sample",
-              "originalRequest": {
-                "method": "GET",
-                "url": "{{SUPERADMIN_BASE_URL}}/api/branches"
-              },
-              "status": "500",
-              "code": 500,
-              "body": "{}"
-            }
-          ]
-        },
-        {
-          "name": "POST /api/branches",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{SUPERADMIN_BASE_URL}}/api/branches",
-              "host": [
-                "{{SUPERADMIN_BASE_URL}}/api/branches"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "description": "Route file: apps/superadmin/src/app/api/branches/route.ts\nDatabase tables: none detected\nFrontend usage: none detected"
-          },
-          "response": [
-            {
-              "name": "400 sample",
-              "originalRequest": {
-                "method": "POST",
-                "url": "{{SUPERADMIN_BASE_URL}}/api/branches"
-              },
-              "status": "400",
-              "code": 400,
-              "body": "{}"
-            },
-            {
-              "name": "500 sample",
-              "originalRequest": {
-                "method": "POST",
-                "url": "{{SUPERADMIN_BASE_URL}}/api/branches"
-              },
-              "status": "500",
-              "code": 500,
-              "body": "{}"
-            }
-          ]
-        },
-        {
-          "name": "GET /api/health",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{SUPERADMIN_BASE_URL}}/api/health",
-              "host": [
-                "{{SUPERADMIN_BASE_URL}}/api/health"
-              ]
-            },
-            "description": "Route file: apps/superadmin/src/app/api/health/route.ts\nDatabase tables: enterprise_analytics_events\nFrontend usage: none detected"
-          },
-          "response": [
-            {
-              "name": "200 sample",
-              "originalRequest": {
-                "method": "GET",
-                "url": "{{SUPERADMIN_BASE_URL}}/api/health"
-              },
-              "status": "200",
-              "code": 200,
-              "body": "{}"
-            }
-          ]
-        },
-        {
-          "name": "DELETE /api/organizations",
-          "request": {
-            "method": "DELETE",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{SUPERADMIN_BASE_URL}}/api/organizations",
-              "host": [
-                "{{SUPERADMIN_BASE_URL}}/api/organizations"
-              ]
-            },
-            "description": "Route file: apps/superadmin/src/app/api/organizations/route.ts\nDatabase tables: none detected\nFrontend usage: apps/superadmin/src/app/superadmin/mgmt/branches/page.tsx, apps/superadmin/src/app/superadmin/mgmt/organizations/page.tsx"
-          },
-          "response": [
-            {
-              "name": "400 sample",
-              "originalRequest": {
-                "method": "DELETE",
-                "url": "{{SUPERADMIN_BASE_URL}}/api/organizations"
-              },
-              "status": "400",
-              "code": 400,
-              "body": "{}"
-            },
-            {
-              "name": "404 sample",
-              "originalRequest": {
-                "method": "DELETE",
-                "url": "{{SUPERADMIN_BASE_URL}}/api/organizations"
-              },
-              "status": "404",
-              "code": 404,
-              "body": "{}"
-            },
-            {
-              "name": "500 sample",
-              "originalRequest": {
-                "method": "DELETE",
-                "url": "{{SUPERADMIN_BASE_URL}}/api/organizations"
-              },
-              "status": "500",
-              "code": 500,
-              "body": "{}"
-            }
-          ]
-        },
-        {
-          "name": "GET /api/organizations",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{SUPERADMIN_BASE_URL}}/api/organizations",
-              "host": [
-                "{{SUPERADMIN_BASE_URL}}/api/organizations"
-              ]
-            },
-            "description": "Route file: apps/superadmin/src/app/api/organizations/route.ts\nDatabase tables: none detected\nFrontend usage: none detected"
-          },
-          "response": [
-            {
-              "name": "500 sample",
-              "originalRequest": {
-                "method": "GET",
-                "url": "{{SUPERADMIN_BASE_URL}}/api/organizations"
-              },
-              "status": "500",
-              "code": 500,
-              "body": "{}"
-            }
-          ]
-        },
-        {
-          "name": "POST /api/organizations",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{SUPERADMIN_BASE_URL}}/api/organizations",
-              "host": [
-                "{{SUPERADMIN_BASE_URL}}/api/organizations"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "description": "Route file: apps/superadmin/src/app/api/organizations/route.ts\nDatabase tables: none detected\nFrontend usage: none detected"
-          },
-          "response": [
-            {
-              "name": "400 sample",
-              "originalRequest": {
-                "method": "POST",
-                "url": "{{SUPERADMIN_BASE_URL}}/api/organizations"
-              },
-              "status": "400",
-              "code": 400,
-              "body": "{}"
-            },
-            {
-              "name": "500 sample",
-              "originalRequest": {
-                "method": "POST",
-                "url": "{{SUPERADMIN_BASE_URL}}/api/organizations"
-              },
-              "status": "500",
-              "code": 500,
-              "body": "{}"
-            }
-          ]
-        },
-        {
-          "name": "GET /api/permissions",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{SUPERADMIN_BASE_URL}}/api/permissions",
-              "host": [
-                "{{SUPERADMIN_BASE_URL}}/api/permissions"
-              ]
-            },
-            "description": "Route file: apps/superadmin/src/app/api/permissions/route.ts\nDatabase tables: none detected\nFrontend usage: apps/superadmin/src/app/superadmin/mgmt/roles/page.tsx"
-          },
-          "response": [
-            {
-              "name": "500 sample",
-              "originalRequest": {
-                "method": "GET",
-                "url": "{{SUPERADMIN_BASE_URL}}/api/permissions"
-              },
-              "status": "500",
-              "code": 500,
-              "body": "{}"
-            }
-          ]
-        },
-        {
-          "name": "DELETE /api/roles",
-          "request": {
-            "method": "DELETE",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{SUPERADMIN_BASE_URL}}/api/roles",
-              "host": [
-                "{{SUPERADMIN_BASE_URL}}/api/roles"
-              ]
-            },
-            "description": "Route file: apps/superadmin/src/app/api/roles/route.ts\nDatabase tables: none detected\nFrontend usage: apps/superadmin/src/app/superadmin/mgmt/roles/page.tsx"
-          },
-          "response": [
-            {
-              "name": "400 sample",
-              "originalRequest": {
-                "method": "DELETE",
-                "url": "{{SUPERADMIN_BASE_URL}}/api/roles"
-              },
-              "status": "400",
-              "code": 400,
-              "body": "{}"
-            },
-            {
-              "name": "404 sample",
-              "originalRequest": {
-                "method": "DELETE",
-                "url": "{{SUPERADMIN_BASE_URL}}/api/roles"
-              },
-              "status": "404",
-              "code": 404,
-              "body": "{}"
-            },
-            {
-              "name": "409 sample",
-              "originalRequest": {
-                "method": "DELETE",
-                "url": "{{SUPERADMIN_BASE_URL}}/api/roles"
-              },
-              "status": "409",
-              "code": 409,
-              "body": "{}"
-            },
-            {
-              "name": "500 sample",
-              "originalRequest": {
-                "method": "DELETE",
-                "url": "{{SUPERADMIN_BASE_URL}}/api/roles"
-              },
-              "status": "500",
-              "code": 500,
-              "body": "{}"
-            }
-          ]
-        },
-        {
-          "name": "GET /api/roles",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{SUPERADMIN_BASE_URL}}/api/roles",
-              "host": [
-                "{{SUPERADMIN_BASE_URL}}/api/roles"
-              ]
-            },
-            "description": "Route file: apps/superadmin/src/app/api/roles/route.ts\nDatabase tables: none detected\nFrontend usage: none detected"
-          },
-          "response": [
-            {
-              "name": "500 sample",
-              "originalRequest": {
-                "method": "GET",
-                "url": "{{SUPERADMIN_BASE_URL}}/api/roles"
-              },
-              "status": "500",
-              "code": 500,
-              "body": "{}"
-            }
-          ]
-        },
-        {
-          "name": "POST /api/roles",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{SUPERADMIN_BASE_URL}}/api/roles",
-              "host": [
-                "{{SUPERADMIN_BASE_URL}}/api/roles"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "description": "Route file: apps/superadmin/src/app/api/roles/route.ts\nDatabase tables: none detected\nFrontend usage: none detected"
-          },
-          "response": [
-            {
-              "name": "400 sample",
-              "originalRequest": {
-                "method": "POST",
-                "url": "{{SUPERADMIN_BASE_URL}}/api/roles"
-              },
-              "status": "400",
-              "code": 400,
-              "body": "{}"
-            },
-            {
-              "name": "500 sample",
-              "originalRequest": {
-                "method": "POST",
-                "url": "{{SUPERADMIN_BASE_URL}}/api/roles"
-              },
-              "status": "500",
-              "code": 500,
-              "body": "{}"
-            }
-          ]
-        },
-        {
-          "name": "DELETE /api/superadmin/areas",
-          "request": {
-            "method": "DELETE",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{SUPERADMIN_BASE_URL}}/api/superadmin/areas",
-              "host": [
-                "{{SUPERADMIN_BASE_URL}}/api/superadmin/areas"
-              ]
-            },
-            "description": "Route file: apps/superadmin/src/app/api/superadmin/areas/route.ts\nDatabase tables: area_pincodes, areas, profiles, user_area_assignments\nFrontend usage: apps/superadmin/src/app/superadmin/mgmt/areas/page.tsx"
-          },
-          "response": [
-            {
-              "name": "400 sample",
-              "originalRequest": {
-                "method": "DELETE",
-                "url": "{{SUPERADMIN_BASE_URL}}/api/superadmin/areas"
-              },
-              "status": "400",
-              "code": 400,
-              "body": "{}"
-            },
-            {
-              "name": "500 sample",
-              "originalRequest": {
-                "method": "DELETE",
-                "url": "{{SUPERADMIN_BASE_URL}}/api/superadmin/areas"
-              },
-              "status": "500",
-              "code": 500,
-              "body": "{}"
-            }
-          ]
-        },
-        {
-          "name": "GET /api/superadmin/areas",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{SUPERADMIN_BASE_URL}}/api/superadmin/areas",
-              "host": [
-                "{{SUPERADMIN_BASE_URL}}/api/superadmin/areas"
-              ]
-            },
-            "description": "Route file: apps/superadmin/src/app/api/superadmin/areas/route.ts\nDatabase tables: area_pincodes, areas, profiles, user_area_assignments\nFrontend usage: none detected"
-          },
-          "response": [
-            {
-              "name": "500 sample",
-              "originalRequest": {
-                "method": "GET",
-                "url": "{{SUPERADMIN_BASE_URL}}/api/superadmin/areas"
-              },
-              "status": "500",
-              "code": 500,
-              "body": "{}"
-            }
-          ]
-        },
-        {
-          "name": "POST /api/superadmin/areas",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{SUPERADMIN_BASE_URL}}/api/superadmin/areas",
-              "host": [
-                "{{SUPERADMIN_BASE_URL}}/api/superadmin/areas"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "description": "Route file: apps/superadmin/src/app/api/superadmin/areas/route.ts\nDatabase tables: area_pincodes, areas, profiles, user_area_assignments\nFrontend usage: none detected"
-          },
-          "response": [
-            {
-              "name": "400 sample",
-              "originalRequest": {
-                "method": "POST",
-                "url": "{{SUPERADMIN_BASE_URL}}/api/superadmin/areas"
-              },
-              "status": "400",
-              "code": 400,
-              "body": "{}"
-            },
-            {
-              "name": "500 sample",
-              "originalRequest": {
-                "method": "POST",
-                "url": "{{SUPERADMIN_BASE_URL}}/api/superadmin/areas"
-              },
-              "status": "500",
-              "code": 500,
-              "body": "{}"
-            }
-          ]
-        },
-        {
-          "name": "POST /api/superadmin/catalogue/generate",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{SUPERADMIN_BASE_URL}}/api/superadmin/catalogue/generate",
-              "host": [
-                "{{SUPERADMIN_BASE_URL}}/api/superadmin/catalogue/generate"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "description": "Route file: apps/superadmin/src/app/api/superadmin/catalogue/generate/route.ts\nDatabase tables: products, services\nFrontend usage: apps/superadmin/src/app/superadmin/mgmt/catalogue/page.tsx"
-          },
-          "response": [
-            {
-              "name": "200 sample",
-              "originalRequest": {
-                "method": "POST",
-                "url": "{{SUPERADMIN_BASE_URL}}/api/superadmin/catalogue/generate"
-              },
-              "status": "200",
-              "code": 200,
-              "body": "{}"
-            },
-            {
-              "name": "400 sample",
-              "originalRequest": {
-                "method": "POST",
-                "url": "{{SUPERADMIN_BASE_URL}}/api/superadmin/catalogue/generate"
-              },
-              "status": "400",
-              "code": 400,
-              "body": "{}"
-            },
-            {
-              "name": "500 sample",
-              "originalRequest": {
-                "method": "POST",
-                "url": "{{SUPERADMIN_BASE_URL}}/api/superadmin/catalogue/generate"
-              },
-              "status": "500",
-              "code": 500,
-              "body": "{}"
-            }
-          ]
-        },
-        {
-          "name": "DELETE /api/superadmin/custom-setup-offers",
-          "request": {
-            "method": "DELETE",
-            "header": [],
-            "url": {
-              "raw": "{{SUPERADMIN_BASE_URL}}/api/superadmin/custom-setup-offers",
-              "host": [
-                "{{SUPERADMIN_BASE_URL}}/api/superadmin/custom-setup-offers"
-              ]
-            },
-            "description": "Route file: apps/superadmin/src/app/api/superadmin/custom-setup-offers/route.ts\nDatabase tables: custom_setup_offers\nFrontend usage: apps/superadmin/src/components/superadmin/CustomSetupOffersManager.tsx"
-          },
-          "response": [
-            {
-              "name": "400 sample",
-              "originalRequest": {
-                "method": "DELETE",
-                "url": "{{SUPERADMIN_BASE_URL}}/api/superadmin/custom-setup-offers"
-              },
-              "status": "400",
-              "code": 400,
-              "body": "{}"
-            },
-            {
-              "name": "404 sample",
-              "originalRequest": {
-                "method": "DELETE",
-                "url": "{{SUPERADMIN_BASE_URL}}/api/superadmin/custom-setup-offers"
-              },
-              "status": "404",
-              "code": 404,
-              "body": "{}"
-            },
-            {
-              "name": "500 sample",
-              "originalRequest": {
-                "method": "DELETE",
-                "url": "{{SUPERADMIN_BASE_URL}}/api/superadmin/custom-setup-offers"
-              },
-              "status": "500",
-              "code": 500,
-              "body": "{}"
-            }
-          ]
-        },
-        {
-          "name": "GET /api/superadmin/custom-setup-offers",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{SUPERADMIN_BASE_URL}}/api/superadmin/custom-setup-offers",
-              "host": [
-                "{{SUPERADMIN_BASE_URL}}/api/superadmin/custom-setup-offers"
-              ]
-            },
-            "description": "Route file: apps/superadmin/src/app/api/superadmin/custom-setup-offers/route.ts\nDatabase tables: custom_setup_offers\nFrontend usage: none detected"
-          },
-          "response": [
-            {
-              "name": "500 sample",
-              "originalRequest": {
-                "method": "GET",
-                "url": "{{SUPERADMIN_BASE_URL}}/api/superadmin/custom-setup-offers"
-              },
-              "status": "500",
-              "code": 500,
-              "body": "{}"
-            }
-          ]
-        },
-        {
-          "name": "POST /api/superadmin/custom-setup-offers",
-          "request": {
-            "method": "POST",
-            "header": [],
-            "url": {
-              "raw": "{{SUPERADMIN_BASE_URL}}/api/superadmin/custom-setup-offers",
-              "host": [
-                "{{SUPERADMIN_BASE_URL}}/api/superadmin/custom-setup-offers"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "description": "Route file: apps/superadmin/src/app/api/superadmin/custom-setup-offers/route.ts\nDatabase tables: custom_setup_offers\nFrontend usage: none detected"
-          },
-          "response": [
-            {
-              "name": "201 sample",
-              "originalRequest": {
-                "method": "POST",
-                "url": "{{SUPERADMIN_BASE_URL}}/api/superadmin/custom-setup-offers"
-              },
-              "status": "201",
-              "code": 201,
-              "body": "{}"
-            },
-            {
-              "name": "400 sample",
-              "originalRequest": {
-                "method": "POST",
-                "url": "{{SUPERADMIN_BASE_URL}}/api/superadmin/custom-setup-offers"
-              },
-              "status": "400",
-              "code": 400,
-              "body": "{}"
-            },
-            {
-              "name": "500 sample",
-              "originalRequest": {
-                "method": "POST",
-                "url": "{{SUPERADMIN_BASE_URL}}/api/superadmin/custom-setup-offers"
-              },
-              "status": "500",
-              "code": 500,
-              "body": "{}"
-            }
-          ]
-        },
-        {
-          "name": "PUT /api/superadmin/custom-setup-offers",
-          "request": {
-            "method": "PUT",
-            "header": [],
-            "url": {
-              "raw": "{{SUPERADMIN_BASE_URL}}/api/superadmin/custom-setup-offers",
-              "host": [
-                "{{SUPERADMIN_BASE_URL}}/api/superadmin/custom-setup-offers"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "description": "Route file: apps/superadmin/src/app/api/superadmin/custom-setup-offers/route.ts\nDatabase tables: custom_setup_offers\nFrontend usage: none detected"
-          },
-          "response": [
-            {
-              "name": "400 sample",
-              "originalRequest": {
-                "method": "PUT",
-                "url": "{{SUPERADMIN_BASE_URL}}/api/superadmin/custom-setup-offers"
-              },
-              "status": "400",
-              "code": 400,
-              "body": "{}"
-            },
-            {
-              "name": "404 sample",
-              "originalRequest": {
-                "method": "PUT",
-                "url": "{{SUPERADMIN_BASE_URL}}/api/superadmin/custom-setup-offers"
-              },
-              "status": "404",
-              "code": 404,
-              "body": "{}"
-            },
-            {
-              "name": "500 sample",
-              "originalRequest": {
-                "method": "PUT",
-                "url": "{{SUPERADMIN_BASE_URL}}/api/superadmin/custom-setup-offers"
-              },
-              "status": "500",
-              "code": 500,
-              "body": "{}"
-            }
-          ]
-        },
-        {
-          "name": "GET /api/superadmin/dashboard/alerts",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{SUPERADMIN_BASE_URL}}/api/superadmin/dashboard/alerts",
-              "host": [
-                "{{SUPERADMIN_BASE_URL}}/api/superadmin/dashboard/alerts"
-              ]
-            },
-            "description": "Route file: apps/superadmin/src/app/api/superadmin/dashboard/alerts/route.ts\nDatabase tables: enterprise_alert_acknowledgements\nFrontend usage: apps/superadmin/src/components/superadmin/SuperadminCommandCenter.tsx"
-          },
-          "response": [
-            {
-              "name": "500 sample",
-              "originalRequest": {
-                "method": "GET",
-                "url": "{{SUPERADMIN_BASE_URL}}/api/superadmin/dashboard/alerts"
-              },
-              "status": "500",
-              "code": 500,
-              "body": "{}"
-            }
-          ]
-        },
-        {
-          "name": "POST /api/superadmin/dashboard/alerts",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{SUPERADMIN_BASE_URL}}/api/superadmin/dashboard/alerts",
-              "host": [
-                "{{SUPERADMIN_BASE_URL}}/api/superadmin/dashboard/alerts"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "description": "Route file: apps/superadmin/src/app/api/superadmin/dashboard/alerts/route.ts\nDatabase tables: enterprise_alert_acknowledgements\nFrontend usage: none detected"
-          },
-          "response": [
-            {
-              "name": "400 sample",
-              "originalRequest": {
-                "method": "POST",
-                "url": "{{SUPERADMIN_BASE_URL}}/api/superadmin/dashboard/alerts"
-              },
-              "status": "400",
-              "code": 400,
-              "body": "{}"
-            },
-            {
-              "name": "500 sample",
-              "originalRequest": {
-                "method": "POST",
-                "url": "{{SUPERADMIN_BASE_URL}}/api/superadmin/dashboard/alerts"
-              },
-              "status": "500",
-              "code": 500,
-              "body": "{}"
-            }
-          ]
-        },
-        {
-          "name": "POST /api/superadmin/dashboard/ask",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{SUPERADMIN_BASE_URL}}/api/superadmin/dashboard/ask",
-              "host": [
-                "{{SUPERADMIN_BASE_URL}}/api/superadmin/dashboard/ask"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "description": "Route file: apps/superadmin/src/app/api/superadmin/dashboard/ask/route.ts\nDatabase tables: enterprise_audit_logs\nFrontend usage: apps/superadmin/src/components/superadmin/SuperadminCommandCenter.tsx"
-          },
-          "response": [
-            {
-              "name": "400 sample",
-              "originalRequest": {
-                "method": "POST",
-                "url": "{{SUPERADMIN_BASE_URL}}/api/superadmin/dashboard/ask"
-              },
-              "status": "400",
-              "code": 400,
-              "body": "{}"
-            },
-            {
-              "name": "500 sample",
-              "originalRequest": {
-                "method": "POST",
-                "url": "{{SUPERADMIN_BASE_URL}}/api/superadmin/dashboard/ask"
-              },
-              "status": "500",
-              "code": 500,
-              "body": "{}"
-            }
-          ]
-        },
-        {
-          "name": "GET /api/superadmin/dashboard/command-center",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{SUPERADMIN_BASE_URL}}/api/superadmin/dashboard/command-center",
-              "host": [
-                "{{SUPERADMIN_BASE_URL}}/api/superadmin/dashboard/command-center"
-              ]
-            },
-            "description": "Route file: apps/superadmin/src/app/api/superadmin/dashboard/command-center/route.ts\nDatabase tables: none detected\nFrontend usage: apps/superadmin/src/components/superadmin/SuperadminCommandCenter.tsx"
-          },
-          "response": [
-            {
-              "name": "500 sample",
-              "originalRequest": {
-                "method": "GET",
-                "url": "{{SUPERADMIN_BASE_URL}}/api/superadmin/dashboard/command-center"
-              },
-              "status": "500",
-              "code": 500,
-              "body": "{}"
-            }
-          ]
-        },
-        {
-          "name": "GET /api/superadmin/dashboard/export",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{SUPERADMIN_BASE_URL}}/api/superadmin/dashboard/export",
-              "host": [
-                "{{SUPERADMIN_BASE_URL}}/api/superadmin/dashboard/export"
-              ]
-            },
-            "description": "Route file: apps/superadmin/src/app/api/superadmin/dashboard/export/route.ts\nDatabase tables: none detected\nFrontend usage: apps/superadmin/src/components/superadmin/SuperadminCommandCenter.tsx"
-          },
-          "response": [
-            {
-              "name": "400 sample",
-              "originalRequest": {
-                "method": "GET",
-                "url": "{{SUPERADMIN_BASE_URL}}/api/superadmin/dashboard/export"
-              },
-              "status": "400",
-              "code": 400,
-              "body": "{}"
-            },
-            {
-              "name": "500 sample",
-              "originalRequest": {
-                "method": "GET",
-                "url": "{{SUPERADMIN_BASE_URL}}/api/superadmin/dashboard/export"
-              },
-              "status": "500",
-              "code": 500,
-              "body": "{}"
-            }
-          ]
-        },
-        {
-          "name": "GET /api/superadmin/dashboard/platform-health",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{SUPERADMIN_BASE_URL}}/api/superadmin/dashboard/platform-health",
-              "host": [
-                "{{SUPERADMIN_BASE_URL}}/api/superadmin/dashboard/platform-health"
-              ]
-            },
-            "description": "Route file: apps/superadmin/src/app/api/superadmin/dashboard/platform-health/route.ts\nDatabase tables: none detected\nFrontend usage: none detected"
-          },
-          "response": [
-            {
-              "name": "500 sample",
-              "originalRequest": {
-                "method": "GET",
-                "url": "{{SUPERADMIN_BASE_URL}}/api/superadmin/dashboard/platform-health"
-              },
-              "status": "500",
-              "code": 500,
-              "body": "{}"
-            }
-          ]
-        },
-        {
-          "name": "GET /api/superadmin/inquiries",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{SUPERADMIN_BASE_URL}}/api/superadmin/inquiries",
-              "host": [
-                "{{SUPERADMIN_BASE_URL}}/api/superadmin/inquiries"
-              ]
-            },
-            "description": "Route file: apps/superadmin/src/app/api/superadmin/inquiries/route.ts\nDatabase tables: none detected\nFrontend usage: apps/superadmin/src/app/superadmin/mgmt/leads/inquiry-pipeline.tsx"
-          },
-          "response": [
-            {
-              "name": "500 sample",
-              "originalRequest": {
-                "method": "GET",
-                "url": "{{SUPERADMIN_BASE_URL}}/api/superadmin/inquiries"
-              },
-              "status": "500",
-              "code": 500,
-              "body": "{}"
-            }
-          ]
-        },
-        {
-          "name": "PATCH /api/superadmin/inquiries/{id}/assignment",
-          "request": {
-            "method": "PATCH",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{SUPERADMIN_BASE_URL}}/api/superadmin/inquiries/{id}/assignment",
-              "host": [
-                "{{SUPERADMIN_BASE_URL}}/api/superadmin/inquiries/{id}/assignment"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "description": "Route file: apps/superadmin/src/app/api/superadmin/inquiries/[id]/assignment/route.ts\nDatabase tables: none detected\nFrontend usage: none detected"
-          },
-          "response": [
-            {
-              "name": "500 sample",
-              "originalRequest": {
-                "method": "PATCH",
-                "url": "{{SUPERADMIN_BASE_URL}}/api/superadmin/inquiries/{id}/assignment"
-              },
-              "status": "500",
-              "code": 500,
-              "body": "{}"
-            }
-          ]
-        },
-        {
-          "name": "POST /api/superadmin/services/ai-generate",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{SUPERADMIN_BASE_URL}}/api/superadmin/services/ai-generate",
-              "host": [
-                "{{SUPERADMIN_BASE_URL}}/api/superadmin/services/ai-generate"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "description": "Route file: apps/superadmin/src/app/api/superadmin/services/ai-generate/route.ts\nDatabase tables: none detected\nFrontend usage: apps/superadmin/src/app/superadmin/mgmt/services/page.tsx"
-          },
-          "response": [
-            {
-              "name": "400 sample",
-              "originalRequest": {
-                "method": "POST",
-                "url": "{{SUPERADMIN_BASE_URL}}/api/superadmin/services/ai-generate"
-              },
-              "status": "400",
-              "code": 400,
-              "body": "{}"
-            },
-            {
-              "name": "500 sample",
-              "originalRequest": {
-                "method": "POST",
-                "url": "{{SUPERADMIN_BASE_URL}}/api/superadmin/services/ai-generate"
-              },
-              "status": "500",
-              "code": 500,
-              "body": "{}"
-            }
-          ]
-        },
-        {
-          "name": "DELETE /api/users",
-          "request": {
-            "method": "DELETE",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{SUPERADMIN_BASE_URL}}/api/users",
-              "host": [
-                "{{SUPERADMIN_BASE_URL}}/api/users"
-              ]
-            },
-            "description": "Route file: apps/superadmin/src/app/api/users/route.ts\nDatabase tables: none detected\nFrontend usage: none detected"
-          },
-          "response": [
-            {
-              "name": "400 sample",
-              "originalRequest": {
-                "method": "DELETE",
-                "url": "{{SUPERADMIN_BASE_URL}}/api/users"
-              },
-              "status": "400",
-              "code": 400,
-              "body": "{}"
-            },
-            {
-              "name": "401 sample",
-              "originalRequest": {
-                "method": "DELETE",
-                "url": "{{SUPERADMIN_BASE_URL}}/api/users"
-              },
-              "status": "401",
-              "code": 401,
-              "body": "{}"
-            },
-            {
-              "name": "403 sample",
-              "originalRequest": {
-                "method": "DELETE",
-                "url": "{{SUPERADMIN_BASE_URL}}/api/users"
-              },
-              "status": "403",
-              "code": 403,
-              "body": "{}"
-            },
-            {
-              "name": "500 sample",
-              "originalRequest": {
-                "method": "DELETE",
-                "url": "{{SUPERADMIN_BASE_URL}}/api/users"
-              },
-              "status": "500",
-              "code": 500,
-              "body": "{}"
-            },
-            {
-              "name": "503 sample",
-              "originalRequest": {
-                "method": "DELETE",
-                "url": "{{SUPERADMIN_BASE_URL}}/api/users"
-              },
-              "status": "503",
-              "code": 503,
-              "body": "{}"
-            }
-          ]
-        },
-        {
-          "name": "GET /api/users",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{SUPERADMIN_BASE_URL}}/api/users",
-              "host": [
-                "{{SUPERADMIN_BASE_URL}}/api/users"
-              ]
-            },
-            "description": "Route file: apps/superadmin/src/app/api/users/route.ts\nDatabase tables: none detected\nFrontend usage: none detected"
-          },
-          "response": [
-            {
-              "name": "401 sample",
-              "originalRequest": {
-                "method": "GET",
-                "url": "{{SUPERADMIN_BASE_URL}}/api/users"
-              },
-              "status": "401",
-              "code": 401,
-              "body": "{}"
-            },
-            {
-              "name": "403 sample",
-              "originalRequest": {
-                "method": "GET",
-                "url": "{{SUPERADMIN_BASE_URL}}/api/users"
-              },
-              "status": "403",
-              "code": 403,
-              "body": "{}"
-            },
-            {
-              "name": "500 sample",
-              "originalRequest": {
-                "method": "GET",
-                "url": "{{SUPERADMIN_BASE_URL}}/api/users"
-              },
-              "status": "500",
-              "code": 500,
-              "body": "{}"
-            },
-            {
-              "name": "503 sample",
-              "originalRequest": {
-                "method": "GET",
-                "url": "{{SUPERADMIN_BASE_URL}}/api/users"
-              },
-              "status": "503",
-              "code": 503,
-              "body": "{}"
-            }
-          ]
-        },
-        {
-          "name": "POST /api/users",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{SUPERADMIN_BASE_URL}}/api/users",
-              "host": [
-                "{{SUPERADMIN_BASE_URL}}/api/users"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "description": "Route file: apps/superadmin/src/app/api/users/route.ts\nDatabase tables: none detected\nFrontend usage: none detected"
-          },
-          "response": [
-            {
-              "name": "400 sample",
-              "originalRequest": {
-                "method": "POST",
-                "url": "{{SUPERADMIN_BASE_URL}}/api/users"
-              },
-              "status": "400",
-              "code": 400,
-              "body": "{}"
-            },
-            {
-              "name": "401 sample",
-              "originalRequest": {
-                "method": "POST",
-                "url": "{{SUPERADMIN_BASE_URL}}/api/users"
-              },
-              "status": "401",
-              "code": 401,
-              "body": "{}"
-            },
-            {
-              "name": "403 sample",
-              "originalRequest": {
-                "method": "POST",
-                "url": "{{SUPERADMIN_BASE_URL}}/api/users"
-              },
-              "status": "403",
-              "code": 403,
-              "body": "{}"
-            },
-            {
-              "name": "500 sample",
-              "originalRequest": {
-                "method": "POST",
-                "url": "{{SUPERADMIN_BASE_URL}}/api/users"
-              },
-              "status": "500",
-              "code": 500,
-              "body": "{}"
-            },
-            {
-              "name": "503 sample",
-              "originalRequest": {
-                "method": "POST",
-                "url": "{{SUPERADMIN_BASE_URL}}/api/users"
-              },
-              "status": "503",
-              "code": 503,
-              "body": "{}"
-            }
-          ]
-        },
-        {
-          "name": "PUT /api/users",
-          "request": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{SUPERADMIN_BASE_URL}}/api/users",
-              "host": [
-                "{{SUPERADMIN_BASE_URL}}/api/users"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "description": "Route file: apps/superadmin/src/app/api/users/route.ts\nDatabase tables: none detected\nFrontend usage: none detected"
-          },
-          "response": [
-            {
-              "name": "400 sample",
-              "originalRequest": {
-                "method": "PUT",
-                "url": "{{SUPERADMIN_BASE_URL}}/api/users"
-              },
-              "status": "400",
-              "code": 400,
-              "body": "{}"
-            },
-            {
-              "name": "401 sample",
-              "originalRequest": {
-                "method": "PUT",
-                "url": "{{SUPERADMIN_BASE_URL}}/api/users"
-              },
-              "status": "401",
-              "code": 401,
-              "body": "{}"
-            },
-            {
-              "name": "403 sample",
-              "originalRequest": {
-                "method": "PUT",
-                "url": "{{SUPERADMIN_BASE_URL}}/api/users"
-              },
-              "status": "403",
-              "code": 403,
-              "body": "{}"
-            },
-            {
-              "name": "500 sample",
-              "originalRequest": {
-                "method": "PUT",
-                "url": "{{SUPERADMIN_BASE_URL}}/api/users"
-              },
-              "status": "500",
-              "code": 500,
-              "body": "{}"
-            },
-            {
-              "name": "503 sample",
-              "originalRequest": {
-                "method": "PUT",
-                "url": "{{SUPERADMIN_BASE_URL}}/api/users"
-              },
-              "status": "503",
-              "code": 503,
-              "body": "{}"
             }
           ]
         }
@@ -18451,37 +15638,6 @@
     {
       "name": "waba",
       "item": [
-        {
-          "name": "GET /api/analytics",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{WABA_BASE_URL}}/api/analytics",
-              "host": [
-                "{{WABA_BASE_URL}}/api/analytics"
-              ]
-            },
-            "description": "Route file: apps/waba/src/app/api/analytics/route.ts\nDatabase tables: Message, mkt_campaign_analytics, waba_contact_consent, waba_message_status_events\nFrontend usage: apps/waba/src/app/analytics/page.tsx"
-          },
-          "response": [
-            {
-              "name": "500 sample",
-              "originalRequest": {
-                "method": "GET",
-                "url": "{{WABA_BASE_URL}}/api/analytics"
-              },
-              "status": "500",
-              "code": 500,
-              "body": "{}"
-            }
-          ]
-        },
         {
           "name": "POST /api/auth/login",
           "request": {
@@ -18523,16 +15679,6 @@
               },
               "status": "401",
               "code": 401,
-              "body": "{}"
-            },
-            {
-              "name": "429 sample",
-              "originalRequest": {
-                "method": "POST",
-                "url": "{{WABA_BASE_URL}}/api/auth/login"
-              },
-              "status": "429",
-              "code": 429,
               "body": "{}"
             },
             {
@@ -18608,7 +15754,7 @@
                 }
               }
             },
-            "description": "Route file: apps/waba/src/app/api/campaigns/route.ts\nDatabase tables: Conversation, Template, mkt_campaigns\nFrontend usage: apps/waba/src/app/campaigns/page.tsx"
+            "description": "Route file: apps/waba/src/app/api/campaigns/route.ts\nDatabase tables: Conversation, Message\nFrontend usage: apps/waba/src/app/campaigns/page.tsx"
           },
           "response": [
             {
@@ -18626,97 +15772,6 @@
               "originalRequest": {
                 "method": "POST",
                 "url": "{{WABA_BASE_URL}}/api/campaigns"
-              },
-              "status": "500",
-              "code": 500,
-              "body": "{}"
-            },
-            {
-              "name": "503 sample",
-              "originalRequest": {
-                "method": "POST",
-                "url": "{{WABA_BASE_URL}}/api/campaigns"
-              },
-              "status": "503",
-              "code": 503,
-              "body": "{}"
-            }
-          ]
-        },
-        {
-          "name": "GET /api/contacts/consent",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{WABA_BASE_URL}}/api/contacts/consent",
-              "host": [
-                "{{WABA_BASE_URL}}/api/contacts/consent"
-              ]
-            },
-            "description": "Route file: apps/waba/src/app/api/contacts/consent/route.ts\nDatabase tables: waba_contact_consent\nFrontend usage: apps/waba/src/app/contacts/page.tsx"
-          },
-          "response": [
-            {
-              "name": "500 sample",
-              "originalRequest": {
-                "method": "GET",
-                "url": "{{WABA_BASE_URL}}/api/contacts/consent"
-              },
-              "status": "500",
-              "code": 500,
-              "body": "{}"
-            }
-          ]
-        },
-        {
-          "name": "PATCH /api/contacts/consent",
-          "request": {
-            "method": "PATCH",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{WABA_BASE_URL}}/api/contacts/consent",
-              "host": [
-                "{{WABA_BASE_URL}}/api/contacts/consent"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "description": "Route file: apps/waba/src/app/api/contacts/consent/route.ts\nDatabase tables: waba_contact_consent\nFrontend usage: none detected"
-          },
-          "response": [
-            {
-              "name": "400 sample",
-              "originalRequest": {
-                "method": "PATCH",
-                "url": "{{WABA_BASE_URL}}/api/contacts/consent"
-              },
-              "status": "400",
-              "code": 400,
-              "body": "{}"
-            },
-            {
-              "name": "500 sample",
-              "originalRequest": {
-                "method": "PATCH",
-                "url": "{{WABA_BASE_URL}}/api/contacts/consent"
               },
               "status": "500",
               "code": 500,
@@ -18843,131 +15898,10 @@
               "body": "{}"
             },
             {
-              "name": "404 sample",
-              "originalRequest": {
-                "method": "PATCH",
-                "url": "{{WABA_BASE_URL}}/api/conversations/{id}/assign"
-              },
-              "status": "404",
-              "code": 404,
-              "body": "{}"
-            },
-            {
               "name": "500 sample",
               "originalRequest": {
                 "method": "PATCH",
                 "url": "{{WABA_BASE_URL}}/api/conversations/{id}/assign"
-              },
-              "status": "500",
-              "code": 500,
-              "body": "{}"
-            }
-          ]
-        },
-        {
-          "name": "GET /api/conversations/{sender}/notes",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{WABA_BASE_URL}}/api/conversations/{sender}/notes",
-              "host": [
-                "{{WABA_BASE_URL}}/api/conversations/{sender}/notes"
-              ]
-            },
-            "description": "Route file: apps/waba/src/app/api/conversations/[sender]/notes/route.ts\nDatabase tables: waba_conversation_notes\nFrontend usage: none detected"
-          },
-          "response": [
-            {
-              "name": "400 sample",
-              "originalRequest": {
-                "method": "GET",
-                "url": "{{WABA_BASE_URL}}/api/conversations/{sender}/notes"
-              },
-              "status": "400",
-              "code": 400,
-              "body": "{}"
-            },
-            {
-              "name": "403 sample",
-              "originalRequest": {
-                "method": "GET",
-                "url": "{{WABA_BASE_URL}}/api/conversations/{sender}/notes"
-              },
-              "status": "403",
-              "code": 403,
-              "body": "{}"
-            },
-            {
-              "name": "500 sample",
-              "originalRequest": {
-                "method": "GET",
-                "url": "{{WABA_BASE_URL}}/api/conversations/{sender}/notes"
-              },
-              "status": "500",
-              "code": 500,
-              "body": "{}"
-            }
-          ]
-        },
-        {
-          "name": "POST /api/conversations/{sender}/notes",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{WABA_BASE_URL}}/api/conversations/{sender}/notes",
-              "host": [
-                "{{WABA_BASE_URL}}/api/conversations/{sender}/notes"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "description": "Route file: apps/waba/src/app/api/conversations/[sender]/notes/route.ts\nDatabase tables: waba_conversation_notes\nFrontend usage: none detected"
-          },
-          "response": [
-            {
-              "name": "400 sample",
-              "originalRequest": {
-                "method": "POST",
-                "url": "{{WABA_BASE_URL}}/api/conversations/{sender}/notes"
-              },
-              "status": "400",
-              "code": 400,
-              "body": "{}"
-            },
-            {
-              "name": "403 sample",
-              "originalRequest": {
-                "method": "POST",
-                "url": "{{WABA_BASE_URL}}/api/conversations/{sender}/notes"
-              },
-              "status": "403",
-              "code": 403,
-              "body": "{}"
-            },
-            {
-              "name": "500 sample",
-              "originalRequest": {
-                "method": "POST",
-                "url": "{{WABA_BASE_URL}}/api/conversations/{sender}/notes"
               },
               "status": "500",
               "code": 500,
@@ -19104,18 +16038,7 @@
             },
             "description": "Route file: apps/waba/src/app/api/debug-env/route.ts\nDatabase tables: none detected\nFrontend usage: none detected"
           },
-          "response": [
-            {
-              "name": "404 sample",
-              "originalRequest": {
-                "method": "GET",
-                "url": "{{WABA_BASE_URL}}/api/debug-env"
-              },
-              "status": "404",
-              "code": 404,
-              "body": "{}"
-            }
-          ]
+          "response": []
         },
         {
           "name": "GET /api/health",
@@ -19139,16 +16062,6 @@
               },
               "status": "200",
               "code": 200,
-              "body": "{}"
-            },
-            {
-              "name": "500 sample",
-              "originalRequest": {
-                "method": "GET",
-                "url": "{{WABA_BASE_URL}}/api/health"
-              },
-              "status": "500",
-              "code": 500,
               "body": "{}"
             }
           ]
@@ -19514,16 +16427,6 @@
           },
           "response": [
             {
-              "name": "400 sample",
-              "originalRequest": {
-                "method": "POST",
-                "url": "{{WABA_BASE_URL}}/api/templates"
-              },
-              "status": "400",
-              "code": 400,
-              "body": "{}"
-            },
-            {
               "name": "403 sample",
               "originalRequest": {
                 "method": "POST",
@@ -19538,46 +16441,6 @@
               "originalRequest": {
                 "method": "POST",
                 "url": "{{WABA_BASE_URL}}/api/templates"
-              },
-              "status": "500",
-              "code": 500,
-              "body": "{}"
-            }
-          ]
-        },
-        {
-          "name": "POST /api/templates/sync",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{WABA_BASE_URL}}/api/templates/sync",
-              "host": [
-                "{{WABA_BASE_URL}}/api/templates/sync"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "description": "Route file: apps/waba/src/app/api/templates/sync/route.ts\nDatabase tables: none detected\nFrontend usage: apps/waba/src/app/templates/page.tsx"
-          },
-          "response": [
-            {
-              "name": "500 sample",
-              "originalRequest": {
-                "method": "POST",
-                "url": "{{WABA_BASE_URL}}/api/templates/sync"
               },
               "status": "500",
               "code": 500,
@@ -19704,6 +16567,1355 @@
       ]
     },
     {
+      "name": "superadmin",
+      "item": [
+        {
+          "name": "DELETE /api/branches",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{SUPERADMIN_BASE_URL}}/api/branches",
+              "host": [
+                "{{SUPERADMIN_BASE_URL}}/api/branches"
+              ]
+            },
+            "description": "Route file: apps/superadmin/src/app/api/branches/route.ts\nDatabase tables: none detected\nFrontend usage: apps/superadmin/src/app/superadmin/mgmt/branches/page.tsx"
+          },
+          "response": [
+            {
+              "name": "400 sample",
+              "originalRequest": {
+                "method": "DELETE",
+                "url": "{{SUPERADMIN_BASE_URL}}/api/branches"
+              },
+              "status": "400",
+              "code": 400,
+              "body": "{}"
+            },
+            {
+              "name": "403 sample",
+              "originalRequest": {
+                "method": "DELETE",
+                "url": "{{SUPERADMIN_BASE_URL}}/api/branches"
+              },
+              "status": "403",
+              "code": 403,
+              "body": "{}"
+            },
+            {
+              "name": "500 sample",
+              "originalRequest": {
+                "method": "DELETE",
+                "url": "{{SUPERADMIN_BASE_URL}}/api/branches"
+              },
+              "status": "500",
+              "code": 500,
+              "body": "{}"
+            }
+          ]
+        },
+        {
+          "name": "GET /api/branches",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{SUPERADMIN_BASE_URL}}/api/branches",
+              "host": [
+                "{{SUPERADMIN_BASE_URL}}/api/branches"
+              ]
+            },
+            "description": "Route file: apps/superadmin/src/app/api/branches/route.ts\nDatabase tables: none detected\nFrontend usage: none detected"
+          },
+          "response": [
+            {
+              "name": "403 sample",
+              "originalRequest": {
+                "method": "GET",
+                "url": "{{SUPERADMIN_BASE_URL}}/api/branches"
+              },
+              "status": "403",
+              "code": 403,
+              "body": "{}"
+            },
+            {
+              "name": "500 sample",
+              "originalRequest": {
+                "method": "GET",
+                "url": "{{SUPERADMIN_BASE_URL}}/api/branches"
+              },
+              "status": "500",
+              "code": 500,
+              "body": "{}"
+            }
+          ]
+        },
+        {
+          "name": "POST /api/branches",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{SUPERADMIN_BASE_URL}}/api/branches",
+              "host": [
+                "{{SUPERADMIN_BASE_URL}}/api/branches"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Route file: apps/superadmin/src/app/api/branches/route.ts\nDatabase tables: none detected\nFrontend usage: none detected"
+          },
+          "response": [
+            {
+              "name": "400 sample",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{SUPERADMIN_BASE_URL}}/api/branches"
+              },
+              "status": "400",
+              "code": 400,
+              "body": "{}"
+            },
+            {
+              "name": "403 sample",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{SUPERADMIN_BASE_URL}}/api/branches"
+              },
+              "status": "403",
+              "code": 403,
+              "body": "{}"
+            },
+            {
+              "name": "500 sample",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{SUPERADMIN_BASE_URL}}/api/branches"
+              },
+              "status": "500",
+              "code": 500,
+              "body": "{}"
+            }
+          ]
+        },
+        {
+          "name": "GET /api/health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{SUPERADMIN_BASE_URL}}/api/health",
+              "host": [
+                "{{SUPERADMIN_BASE_URL}}/api/health"
+              ]
+            },
+            "description": "Route file: apps/superadmin/src/app/api/health/route.ts\nDatabase tables: none detected\nFrontend usage: none detected"
+          },
+          "response": [
+            {
+              "name": "200 sample",
+              "originalRequest": {
+                "method": "GET",
+                "url": "{{SUPERADMIN_BASE_URL}}/api/health"
+              },
+              "status": "200",
+              "code": 200,
+              "body": "{}"
+            }
+          ]
+        },
+        {
+          "name": "DELETE /api/organizations",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{SUPERADMIN_BASE_URL}}/api/organizations",
+              "host": [
+                "{{SUPERADMIN_BASE_URL}}/api/organizations"
+              ]
+            },
+            "description": "Route file: apps/superadmin/src/app/api/organizations/route.ts\nDatabase tables: none detected\nFrontend usage: apps/superadmin/src/app/superadmin/mgmt/branches/page.tsx, apps/superadmin/src/app/superadmin/mgmt/organizations/page.tsx"
+          },
+          "response": [
+            {
+              "name": "400 sample",
+              "originalRequest": {
+                "method": "DELETE",
+                "url": "{{SUPERADMIN_BASE_URL}}/api/organizations"
+              },
+              "status": "400",
+              "code": 400,
+              "body": "{}"
+            },
+            {
+              "name": "403 sample",
+              "originalRequest": {
+                "method": "DELETE",
+                "url": "{{SUPERADMIN_BASE_URL}}/api/organizations"
+              },
+              "status": "403",
+              "code": 403,
+              "body": "{}"
+            },
+            {
+              "name": "500 sample",
+              "originalRequest": {
+                "method": "DELETE",
+                "url": "{{SUPERADMIN_BASE_URL}}/api/organizations"
+              },
+              "status": "500",
+              "code": 500,
+              "body": "{}"
+            }
+          ]
+        },
+        {
+          "name": "GET /api/organizations",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{SUPERADMIN_BASE_URL}}/api/organizations",
+              "host": [
+                "{{SUPERADMIN_BASE_URL}}/api/organizations"
+              ]
+            },
+            "description": "Route file: apps/superadmin/src/app/api/organizations/route.ts\nDatabase tables: none detected\nFrontend usage: none detected"
+          },
+          "response": [
+            {
+              "name": "403 sample",
+              "originalRequest": {
+                "method": "GET",
+                "url": "{{SUPERADMIN_BASE_URL}}/api/organizations"
+              },
+              "status": "403",
+              "code": 403,
+              "body": "{}"
+            },
+            {
+              "name": "500 sample",
+              "originalRequest": {
+                "method": "GET",
+                "url": "{{SUPERADMIN_BASE_URL}}/api/organizations"
+              },
+              "status": "500",
+              "code": 500,
+              "body": "{}"
+            }
+          ]
+        },
+        {
+          "name": "POST /api/organizations",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{SUPERADMIN_BASE_URL}}/api/organizations",
+              "host": [
+                "{{SUPERADMIN_BASE_URL}}/api/organizations"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Route file: apps/superadmin/src/app/api/organizations/route.ts\nDatabase tables: none detected\nFrontend usage: none detected"
+          },
+          "response": [
+            {
+              "name": "400 sample",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{SUPERADMIN_BASE_URL}}/api/organizations"
+              },
+              "status": "400",
+              "code": 400,
+              "body": "{}"
+            },
+            {
+              "name": "403 sample",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{SUPERADMIN_BASE_URL}}/api/organizations"
+              },
+              "status": "403",
+              "code": 403,
+              "body": "{}"
+            },
+            {
+              "name": "500 sample",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{SUPERADMIN_BASE_URL}}/api/organizations"
+              },
+              "status": "500",
+              "code": 500,
+              "body": "{}"
+            }
+          ]
+        },
+        {
+          "name": "GET /api/permissions",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{SUPERADMIN_BASE_URL}}/api/permissions",
+              "host": [
+                "{{SUPERADMIN_BASE_URL}}/api/permissions"
+              ]
+            },
+            "description": "Route file: apps/superadmin/src/app/api/permissions/route.ts\nDatabase tables: none detected\nFrontend usage: apps/superadmin/src/app/superadmin/mgmt/roles/page.tsx"
+          },
+          "response": [
+            {
+              "name": "403 sample",
+              "originalRequest": {
+                "method": "GET",
+                "url": "{{SUPERADMIN_BASE_URL}}/api/permissions"
+              },
+              "status": "403",
+              "code": 403,
+              "body": "{}"
+            },
+            {
+              "name": "500 sample",
+              "originalRequest": {
+                "method": "GET",
+                "url": "{{SUPERADMIN_BASE_URL}}/api/permissions"
+              },
+              "status": "500",
+              "code": 500,
+              "body": "{}"
+            }
+          ]
+        },
+        {
+          "name": "GET /api/roles",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{SUPERADMIN_BASE_URL}}/api/roles",
+              "host": [
+                "{{SUPERADMIN_BASE_URL}}/api/roles"
+              ]
+            },
+            "description": "Route file: apps/superadmin/src/app/api/roles/route.ts\nDatabase tables: none detected\nFrontend usage: none detected"
+          },
+          "response": [
+            {
+              "name": "403 sample",
+              "originalRequest": {
+                "method": "GET",
+                "url": "{{SUPERADMIN_BASE_URL}}/api/roles"
+              },
+              "status": "403",
+              "code": 403,
+              "body": "{}"
+            },
+            {
+              "name": "500 sample",
+              "originalRequest": {
+                "method": "GET",
+                "url": "{{SUPERADMIN_BASE_URL}}/api/roles"
+              },
+              "status": "500",
+              "code": 500,
+              "body": "{}"
+            }
+          ]
+        },
+        {
+          "name": "POST /api/roles",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{SUPERADMIN_BASE_URL}}/api/roles",
+              "host": [
+                "{{SUPERADMIN_BASE_URL}}/api/roles"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Route file: apps/superadmin/src/app/api/roles/route.ts\nDatabase tables: none detected\nFrontend usage: none detected"
+          },
+          "response": [
+            {
+              "name": "400 sample",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{SUPERADMIN_BASE_URL}}/api/roles"
+              },
+              "status": "400",
+              "code": 400,
+              "body": "{}"
+            },
+            {
+              "name": "403 sample",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{SUPERADMIN_BASE_URL}}/api/roles"
+              },
+              "status": "403",
+              "code": 403,
+              "body": "{}"
+            },
+            {
+              "name": "500 sample",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{SUPERADMIN_BASE_URL}}/api/roles"
+              },
+              "status": "500",
+              "code": 500,
+              "body": "{}"
+            }
+          ]
+        },
+        {
+          "name": "DELETE /api/superadmin/areas",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{SUPERADMIN_BASE_URL}}/api/superadmin/areas",
+              "host": [
+                "{{SUPERADMIN_BASE_URL}}/api/superadmin/areas"
+              ]
+            },
+            "description": "Route file: apps/superadmin/src/app/api/superadmin/areas/route.ts\nDatabase tables: area_pincodes, areas, profiles, user_area_assignments\nFrontend usage: apps/superadmin/src/app/superadmin/mgmt/areas/page.tsx"
+          },
+          "response": [
+            {
+              "name": "400 sample",
+              "originalRequest": {
+                "method": "DELETE",
+                "url": "{{SUPERADMIN_BASE_URL}}/api/superadmin/areas"
+              },
+              "status": "400",
+              "code": 400,
+              "body": "{}"
+            },
+            {
+              "name": "403 sample",
+              "originalRequest": {
+                "method": "DELETE",
+                "url": "{{SUPERADMIN_BASE_URL}}/api/superadmin/areas"
+              },
+              "status": "403",
+              "code": 403,
+              "body": "{}"
+            },
+            {
+              "name": "500 sample",
+              "originalRequest": {
+                "method": "DELETE",
+                "url": "{{SUPERADMIN_BASE_URL}}/api/superadmin/areas"
+              },
+              "status": "500",
+              "code": 500,
+              "body": "{}"
+            }
+          ]
+        },
+        {
+          "name": "GET /api/superadmin/areas",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{SUPERADMIN_BASE_URL}}/api/superadmin/areas",
+              "host": [
+                "{{SUPERADMIN_BASE_URL}}/api/superadmin/areas"
+              ]
+            },
+            "description": "Route file: apps/superadmin/src/app/api/superadmin/areas/route.ts\nDatabase tables: area_pincodes, areas, profiles, user_area_assignments\nFrontend usage: none detected"
+          },
+          "response": [
+            {
+              "name": "403 sample",
+              "originalRequest": {
+                "method": "GET",
+                "url": "{{SUPERADMIN_BASE_URL}}/api/superadmin/areas"
+              },
+              "status": "403",
+              "code": 403,
+              "body": "{}"
+            },
+            {
+              "name": "500 sample",
+              "originalRequest": {
+                "method": "GET",
+                "url": "{{SUPERADMIN_BASE_URL}}/api/superadmin/areas"
+              },
+              "status": "500",
+              "code": 500,
+              "body": "{}"
+            }
+          ]
+        },
+        {
+          "name": "POST /api/superadmin/areas",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{SUPERADMIN_BASE_URL}}/api/superadmin/areas",
+              "host": [
+                "{{SUPERADMIN_BASE_URL}}/api/superadmin/areas"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Route file: apps/superadmin/src/app/api/superadmin/areas/route.ts\nDatabase tables: area_pincodes, areas, profiles, user_area_assignments\nFrontend usage: none detected"
+          },
+          "response": [
+            {
+              "name": "400 sample",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{SUPERADMIN_BASE_URL}}/api/superadmin/areas"
+              },
+              "status": "400",
+              "code": 400,
+              "body": "{}"
+            },
+            {
+              "name": "403 sample",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{SUPERADMIN_BASE_URL}}/api/superadmin/areas"
+              },
+              "status": "403",
+              "code": 403,
+              "body": "{}"
+            },
+            {
+              "name": "500 sample",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{SUPERADMIN_BASE_URL}}/api/superadmin/areas"
+              },
+              "status": "500",
+              "code": 500,
+              "body": "{}"
+            }
+          ]
+        },
+        {
+          "name": "POST /api/superadmin/catalogue/generate",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{SUPERADMIN_BASE_URL}}/api/superadmin/catalogue/generate",
+              "host": [
+                "{{SUPERADMIN_BASE_URL}}/api/superadmin/catalogue/generate"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Route file: apps/superadmin/src/app/api/superadmin/catalogue/generate/route.ts\nDatabase tables: products, services\nFrontend usage: apps/superadmin/src/app/superadmin/mgmt/catalogue/page.tsx"
+          },
+          "response": [
+            {
+              "name": "200 sample",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{SUPERADMIN_BASE_URL}}/api/superadmin/catalogue/generate"
+              },
+              "status": "200",
+              "code": 200,
+              "body": "{}"
+            },
+            {
+              "name": "400 sample",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{SUPERADMIN_BASE_URL}}/api/superadmin/catalogue/generate"
+              },
+              "status": "400",
+              "code": 400,
+              "body": "{}"
+            },
+            {
+              "name": "403 sample",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{SUPERADMIN_BASE_URL}}/api/superadmin/catalogue/generate"
+              },
+              "status": "403",
+              "code": 403,
+              "body": "{}"
+            },
+            {
+              "name": "500 sample",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{SUPERADMIN_BASE_URL}}/api/superadmin/catalogue/generate"
+              },
+              "status": "500",
+              "code": 500,
+              "body": "{}"
+            }
+          ]
+        },
+        {
+          "name": "DELETE /api/superadmin/custom-setup-offers",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{SUPERADMIN_BASE_URL}}/api/superadmin/custom-setup-offers",
+              "host": [
+                "{{SUPERADMIN_BASE_URL}}/api/superadmin/custom-setup-offers"
+              ]
+            },
+            "description": "Route file: apps/superadmin/src/app/api/superadmin/custom-setup-offers/route.ts\nDatabase tables: custom_setup_offers\nFrontend usage: apps/superadmin/src/components/superadmin/CustomSetupOffersManager.tsx"
+          },
+          "response": [
+            {
+              "name": "400 sample",
+              "originalRequest": {
+                "method": "DELETE",
+                "url": "{{SUPERADMIN_BASE_URL}}/api/superadmin/custom-setup-offers"
+              },
+              "status": "400",
+              "code": 400,
+              "body": "{}"
+            },
+            {
+              "name": "403 sample",
+              "originalRequest": {
+                "method": "DELETE",
+                "url": "{{SUPERADMIN_BASE_URL}}/api/superadmin/custom-setup-offers"
+              },
+              "status": "403",
+              "code": 403,
+              "body": "{}"
+            },
+            {
+              "name": "500 sample",
+              "originalRequest": {
+                "method": "DELETE",
+                "url": "{{SUPERADMIN_BASE_URL}}/api/superadmin/custom-setup-offers"
+              },
+              "status": "500",
+              "code": 500,
+              "body": "{}"
+            }
+          ]
+        },
+        {
+          "name": "GET /api/superadmin/custom-setup-offers",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{SUPERADMIN_BASE_URL}}/api/superadmin/custom-setup-offers",
+              "host": [
+                "{{SUPERADMIN_BASE_URL}}/api/superadmin/custom-setup-offers"
+              ]
+            },
+            "description": "Route file: apps/superadmin/src/app/api/superadmin/custom-setup-offers/route.ts\nDatabase tables: custom_setup_offers\nFrontend usage: none detected"
+          },
+          "response": [
+            {
+              "name": "403 sample",
+              "originalRequest": {
+                "method": "GET",
+                "url": "{{SUPERADMIN_BASE_URL}}/api/superadmin/custom-setup-offers"
+              },
+              "status": "403",
+              "code": 403,
+              "body": "{}"
+            },
+            {
+              "name": "500 sample",
+              "originalRequest": {
+                "method": "GET",
+                "url": "{{SUPERADMIN_BASE_URL}}/api/superadmin/custom-setup-offers"
+              },
+              "status": "500",
+              "code": 500,
+              "body": "{}"
+            }
+          ]
+        },
+        {
+          "name": "POST /api/superadmin/custom-setup-offers",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{SUPERADMIN_BASE_URL}}/api/superadmin/custom-setup-offers",
+              "host": [
+                "{{SUPERADMIN_BASE_URL}}/api/superadmin/custom-setup-offers"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Route file: apps/superadmin/src/app/api/superadmin/custom-setup-offers/route.ts\nDatabase tables: custom_setup_offers\nFrontend usage: none detected"
+          },
+          "response": [
+            {
+              "name": "201 sample",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{SUPERADMIN_BASE_URL}}/api/superadmin/custom-setup-offers"
+              },
+              "status": "201",
+              "code": 201,
+              "body": "{}"
+            },
+            {
+              "name": "400 sample",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{SUPERADMIN_BASE_URL}}/api/superadmin/custom-setup-offers"
+              },
+              "status": "400",
+              "code": 400,
+              "body": "{}"
+            },
+            {
+              "name": "403 sample",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{SUPERADMIN_BASE_URL}}/api/superadmin/custom-setup-offers"
+              },
+              "status": "403",
+              "code": 403,
+              "body": "{}"
+            },
+            {
+              "name": "500 sample",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{SUPERADMIN_BASE_URL}}/api/superadmin/custom-setup-offers"
+              },
+              "status": "500",
+              "code": 500,
+              "body": "{}"
+            }
+          ]
+        },
+        {
+          "name": "PUT /api/superadmin/custom-setup-offers",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{SUPERADMIN_BASE_URL}}/api/superadmin/custom-setup-offers",
+              "host": [
+                "{{SUPERADMIN_BASE_URL}}/api/superadmin/custom-setup-offers"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Route file: apps/superadmin/src/app/api/superadmin/custom-setup-offers/route.ts\nDatabase tables: custom_setup_offers\nFrontend usage: none detected"
+          },
+          "response": [
+            {
+              "name": "400 sample",
+              "originalRequest": {
+                "method": "PUT",
+                "url": "{{SUPERADMIN_BASE_URL}}/api/superadmin/custom-setup-offers"
+              },
+              "status": "400",
+              "code": 400,
+              "body": "{}"
+            },
+            {
+              "name": "403 sample",
+              "originalRequest": {
+                "method": "PUT",
+                "url": "{{SUPERADMIN_BASE_URL}}/api/superadmin/custom-setup-offers"
+              },
+              "status": "403",
+              "code": 403,
+              "body": "{}"
+            },
+            {
+              "name": "500 sample",
+              "originalRequest": {
+                "method": "PUT",
+                "url": "{{SUPERADMIN_BASE_URL}}/api/superadmin/custom-setup-offers"
+              },
+              "status": "500",
+              "code": 500,
+              "body": "{}"
+            }
+          ]
+        },
+        {
+          "name": "GET /api/superadmin/inquiries",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{SUPERADMIN_BASE_URL}}/api/superadmin/inquiries",
+              "host": [
+                "{{SUPERADMIN_BASE_URL}}/api/superadmin/inquiries"
+              ]
+            },
+            "description": "Route file: apps/superadmin/src/app/api/superadmin/inquiries/route.ts\nDatabase tables: contact_messages, profiles\nFrontend usage: apps/superadmin/src/app/superadmin/mgmt/leads/inquiry-pipeline.tsx"
+          },
+          "response": [
+            {
+              "name": "403 sample",
+              "originalRequest": {
+                "method": "GET",
+                "url": "{{SUPERADMIN_BASE_URL}}/api/superadmin/inquiries"
+              },
+              "status": "403",
+              "code": 403,
+              "body": "{}"
+            },
+            {
+              "name": "500 sample",
+              "originalRequest": {
+                "method": "GET",
+                "url": "{{SUPERADMIN_BASE_URL}}/api/superadmin/inquiries"
+              },
+              "status": "500",
+              "code": 500,
+              "body": "{}"
+            }
+          ]
+        },
+        {
+          "name": "PATCH /api/superadmin/inquiries/{id}/assignment",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{SUPERADMIN_BASE_URL}}/api/superadmin/inquiries/{id}/assignment",
+              "host": [
+                "{{SUPERADMIN_BASE_URL}}/api/superadmin/inquiries/{id}/assignment"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Route file: apps/superadmin/src/app/api/superadmin/inquiries/[id]/assignment/route.ts\nDatabase tables: contact_messages, profiles\nFrontend usage: none detected"
+          },
+          "response": [
+            {
+              "name": "400 sample",
+              "originalRequest": {
+                "method": "PATCH",
+                "url": "{{SUPERADMIN_BASE_URL}}/api/superadmin/inquiries/{id}/assignment"
+              },
+              "status": "400",
+              "code": 400,
+              "body": "{}"
+            },
+            {
+              "name": "403 sample",
+              "originalRequest": {
+                "method": "PATCH",
+                "url": "{{SUPERADMIN_BASE_URL}}/api/superadmin/inquiries/{id}/assignment"
+              },
+              "status": "403",
+              "code": 403,
+              "body": "{}"
+            },
+            {
+              "name": "500 sample",
+              "originalRequest": {
+                "method": "PATCH",
+                "url": "{{SUPERADMIN_BASE_URL}}/api/superadmin/inquiries/{id}/assignment"
+              },
+              "status": "500",
+              "code": 500,
+              "body": "{}"
+            }
+          ]
+        },
+        {
+          "name": "POST /api/superadmin/services/ai-generate",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{SUPERADMIN_BASE_URL}}/api/superadmin/services/ai-generate",
+              "host": [
+                "{{SUPERADMIN_BASE_URL}}/api/superadmin/services/ai-generate"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Route file: apps/superadmin/src/app/api/superadmin/services/ai-generate/route.ts\nDatabase tables: none detected\nFrontend usage: apps/superadmin/src/app/superadmin/mgmt/services/page.tsx"
+          },
+          "response": [
+            {
+              "name": "400 sample",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{SUPERADMIN_BASE_URL}}/api/superadmin/services/ai-generate"
+              },
+              "status": "400",
+              "code": 400,
+              "body": "{}"
+            },
+            {
+              "name": "403 sample",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{SUPERADMIN_BASE_URL}}/api/superadmin/services/ai-generate"
+              },
+              "status": "403",
+              "code": 403,
+              "body": "{}"
+            },
+            {
+              "name": "500 sample",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{SUPERADMIN_BASE_URL}}/api/superadmin/services/ai-generate"
+              },
+              "status": "500",
+              "code": 500,
+              "body": "{}"
+            }
+          ]
+        },
+        {
+          "name": "DELETE /api/users",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{SUPERADMIN_BASE_URL}}/api/users",
+              "host": [
+                "{{SUPERADMIN_BASE_URL}}/api/users"
+              ]
+            },
+            "description": "Route file: apps/superadmin/src/app/api/users/route.ts\nDatabase tables: none detected\nFrontend usage: none detected"
+          },
+          "response": [
+            {
+              "name": "400 sample",
+              "originalRequest": {
+                "method": "DELETE",
+                "url": "{{SUPERADMIN_BASE_URL}}/api/users"
+              },
+              "status": "400",
+              "code": 400,
+              "body": "{}"
+            },
+            {
+              "name": "401 sample",
+              "originalRequest": {
+                "method": "DELETE",
+                "url": "{{SUPERADMIN_BASE_URL}}/api/users"
+              },
+              "status": "401",
+              "code": 401,
+              "body": "{}"
+            },
+            {
+              "name": "403 sample",
+              "originalRequest": {
+                "method": "DELETE",
+                "url": "{{SUPERADMIN_BASE_URL}}/api/users"
+              },
+              "status": "403",
+              "code": 403,
+              "body": "{}"
+            },
+            {
+              "name": "500 sample",
+              "originalRequest": {
+                "method": "DELETE",
+                "url": "{{SUPERADMIN_BASE_URL}}/api/users"
+              },
+              "status": "500",
+              "code": 500,
+              "body": "{}"
+            },
+            {
+              "name": "503 sample",
+              "originalRequest": {
+                "method": "DELETE",
+                "url": "{{SUPERADMIN_BASE_URL}}/api/users"
+              },
+              "status": "503",
+              "code": 503,
+              "body": "{}"
+            }
+          ]
+        },
+        {
+          "name": "GET /api/users",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{SUPERADMIN_BASE_URL}}/api/users",
+              "host": [
+                "{{SUPERADMIN_BASE_URL}}/api/users"
+              ]
+            },
+            "description": "Route file: apps/superadmin/src/app/api/users/route.ts\nDatabase tables: none detected\nFrontend usage: none detected"
+          },
+          "response": [
+            {
+              "name": "401 sample",
+              "originalRequest": {
+                "method": "GET",
+                "url": "{{SUPERADMIN_BASE_URL}}/api/users"
+              },
+              "status": "401",
+              "code": 401,
+              "body": "{}"
+            },
+            {
+              "name": "403 sample",
+              "originalRequest": {
+                "method": "GET",
+                "url": "{{SUPERADMIN_BASE_URL}}/api/users"
+              },
+              "status": "403",
+              "code": 403,
+              "body": "{}"
+            },
+            {
+              "name": "500 sample",
+              "originalRequest": {
+                "method": "GET",
+                "url": "{{SUPERADMIN_BASE_URL}}/api/users"
+              },
+              "status": "500",
+              "code": 500,
+              "body": "{}"
+            },
+            {
+              "name": "503 sample",
+              "originalRequest": {
+                "method": "GET",
+                "url": "{{SUPERADMIN_BASE_URL}}/api/users"
+              },
+              "status": "503",
+              "code": 503,
+              "body": "{}"
+            }
+          ]
+        },
+        {
+          "name": "POST /api/users",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{SUPERADMIN_BASE_URL}}/api/users",
+              "host": [
+                "{{SUPERADMIN_BASE_URL}}/api/users"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Route file: apps/superadmin/src/app/api/users/route.ts\nDatabase tables: none detected\nFrontend usage: none detected"
+          },
+          "response": [
+            {
+              "name": "400 sample",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{SUPERADMIN_BASE_URL}}/api/users"
+              },
+              "status": "400",
+              "code": 400,
+              "body": "{}"
+            },
+            {
+              "name": "401 sample",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{SUPERADMIN_BASE_URL}}/api/users"
+              },
+              "status": "401",
+              "code": 401,
+              "body": "{}"
+            },
+            {
+              "name": "403 sample",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{SUPERADMIN_BASE_URL}}/api/users"
+              },
+              "status": "403",
+              "code": 403,
+              "body": "{}"
+            },
+            {
+              "name": "500 sample",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{SUPERADMIN_BASE_URL}}/api/users"
+              },
+              "status": "500",
+              "code": 500,
+              "body": "{}"
+            },
+            {
+              "name": "503 sample",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{SUPERADMIN_BASE_URL}}/api/users"
+              },
+              "status": "503",
+              "code": 503,
+              "body": "{}"
+            }
+          ]
+        },
+        {
+          "name": "PUT /api/users",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{SUPERADMIN_BASE_URL}}/api/users",
+              "host": [
+                "{{SUPERADMIN_BASE_URL}}/api/users"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Route file: apps/superadmin/src/app/api/users/route.ts\nDatabase tables: none detected\nFrontend usage: none detected"
+          },
+          "response": [
+            {
+              "name": "400 sample",
+              "originalRequest": {
+                "method": "PUT",
+                "url": "{{SUPERADMIN_BASE_URL}}/api/users"
+              },
+              "status": "400",
+              "code": 400,
+              "body": "{}"
+            },
+            {
+              "name": "401 sample",
+              "originalRequest": {
+                "method": "PUT",
+                "url": "{{SUPERADMIN_BASE_URL}}/api/users"
+              },
+              "status": "401",
+              "code": 401,
+              "body": "{}"
+            },
+            {
+              "name": "403 sample",
+              "originalRequest": {
+                "method": "PUT",
+                "url": "{{SUPERADMIN_BASE_URL}}/api/users"
+              },
+              "status": "403",
+              "code": 403,
+              "body": "{}"
+            },
+            {
+              "name": "500 sample",
+              "originalRequest": {
+                "method": "PUT",
+                "url": "{{SUPERADMIN_BASE_URL}}/api/users"
+              },
+              "status": "500",
+              "code": 500,
+              "body": "{}"
+            },
+            {
+              "name": "503 sample",
+              "originalRequest": {
+                "method": "PUT",
+                "url": "{{SUPERADMIN_BASE_URL}}/api/users"
+              },
+              "status": "503",
+              "code": 503,
+              "body": "{}"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "name": "public",
       "item": [
         {
@@ -19728,16 +17940,6 @@
               },
               "status": "200",
               "code": 200,
-              "body": "{}"
-            },
-            {
-              "name": "500 sample",
-              "originalRequest": {
-                "method": "GET",
-                "url": "{{PUBLIC_BASE_URL}}/api/health"
-              },
-              "status": "500",
-              "code": 500,
               "body": "{}"
             }
           ]
@@ -19782,237 +17984,6 @@
             "description": "Route file: apps/public/src/app/api/products/route.ts\nDatabase tables: products\nFrontend usage: none detected"
           },
           "response": []
-        },
-        {
-          "name": "POST /api/seller/auth",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{PUBLIC_BASE_URL}}/api/seller/auth",
-              "host": [
-                "{{PUBLIC_BASE_URL}}/api/seller/auth"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "description": "Route file: apps/public/src/app/api/seller/auth/route.ts\nDatabase tables: none detected\nFrontend usage: none detected"
-          },
-          "response": [
-            {
-              "name": "400 sample",
-              "originalRequest": {
-                "method": "POST",
-                "url": "{{PUBLIC_BASE_URL}}/api/seller/auth"
-              },
-              "status": "400",
-              "code": 400,
-              "body": "{}"
-            },
-            {
-              "name": "500 sample",
-              "originalRequest": {
-                "method": "POST",
-                "url": "{{PUBLIC_BASE_URL}}/api/seller/auth"
-              },
-              "status": "500",
-              "code": 500,
-              "body": "{}"
-            }
-          ]
-        },
-        {
-          "name": "POST /api/seller/kyc",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{PUBLIC_BASE_URL}}/api/seller/kyc",
-              "host": [
-                "{{PUBLIC_BASE_URL}}/api/seller/kyc"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "description": "Route file: apps/public/src/app/api/seller/kyc/route.ts\nDatabase tables: none detected\nFrontend usage: none detected"
-          },
-          "response": [
-            {
-              "name": "400 sample",
-              "originalRequest": {
-                "method": "POST",
-                "url": "{{PUBLIC_BASE_URL}}/api/seller/kyc"
-              },
-              "status": "400",
-              "code": 400,
-              "body": "{}"
-            },
-            {
-              "name": "500 sample",
-              "originalRequest": {
-                "method": "POST",
-                "url": "{{PUBLIC_BASE_URL}}/api/seller/kyc"
-              },
-              "status": "500",
-              "code": 500,
-              "body": "{}"
-            }
-          ]
-        },
-        {
-          "name": "POST /api/seller/login",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{PUBLIC_BASE_URL}}/api/seller/login",
-              "host": [
-                "{{PUBLIC_BASE_URL}}/api/seller/login"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "description": "Route file: apps/public/src/app/api/seller/login/route.ts\nDatabase tables: none detected\nFrontend usage: apps/public/src/app/seller/login/page.tsx"
-          },
-          "response": [
-            {
-              "name": "400 sample",
-              "originalRequest": {
-                "method": "POST",
-                "url": "{{PUBLIC_BASE_URL}}/api/seller/login"
-              },
-              "status": "400",
-              "code": 400,
-              "body": "{}"
-            },
-            {
-              "name": "500 sample",
-              "originalRequest": {
-                "method": "POST",
-                "url": "{{PUBLIC_BASE_URL}}/api/seller/login"
-              },
-              "status": "500",
-              "code": 500,
-              "body": "{}"
-            }
-          ]
-        },
-        {
-          "name": "POST /api/seller/products",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{PUBLIC_BASE_URL}}/api/seller/products",
-              "host": [
-                "{{PUBLIC_BASE_URL}}/api/seller/products"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "description": "Route file: apps/public/src/app/api/seller/products/route.ts\nDatabase tables: none detected\nFrontend usage: none detected"
-          },
-          "response": [
-            {
-              "name": "400 sample",
-              "originalRequest": {
-                "method": "POST",
-                "url": "{{PUBLIC_BASE_URL}}/api/seller/products"
-              },
-              "status": "400",
-              "code": 400,
-              "body": "{}"
-            },
-            {
-              "name": "500 sample",
-              "originalRequest": {
-                "method": "POST",
-                "url": "{{PUBLIC_BASE_URL}}/api/seller/products"
-              },
-              "status": "500",
-              "code": 500,
-              "body": "{}"
-            }
-          ]
-        },
-        {
-          "name": "GET /api/seller/settlements",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{PUBLIC_BASE_URL}}/api/seller/settlements",
-              "host": [
-                "{{PUBLIC_BASE_URL}}/api/seller/settlements"
-              ]
-            },
-            "description": "Route file: apps/public/src/app/api/seller/settlements/route.ts\nDatabase tables: none detected\nFrontend usage: none detected"
-          },
-          "response": [
-            {
-              "name": "500 sample",
-              "originalRequest": {
-                "method": "GET",
-                "url": "{{PUBLIC_BASE_URL}}/api/seller/settlements"
-              },
-              "status": "500",
-              "code": 500,
-              "body": "{}"
-            }
-          ]
         }
       ]
     },
@@ -20041,16 +18012,6 @@
               },
               "status": "200",
               "code": 200,
-              "body": "{}"
-            },
-            {
-              "name": "500 sample",
-              "originalRequest": {
-                "method": "GET",
-                "url": "{{WEBMAIL_BASE_URL}}/api/health"
-              },
-              "status": "500",
-              "code": 500,
               "body": "{}"
             }
           ]

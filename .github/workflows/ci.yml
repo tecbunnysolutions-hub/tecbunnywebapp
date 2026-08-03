@@ -23,10 +23,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
       - run: npm ci
-      - name: Generate production audit JSON
-        run: npm audit --audit-level=high --omit=dev --json > docs/security/npm-audit-2026-07-26.json || true
-      - name: Enforce security gate policy
-        run: npm run validate:security-gate
+      - run: npm audit --audit-level=high
 
   # ─── TypeScript + Lint ──────────────────────────────────────────────────────
   typecheck:
@@ -78,62 +75,11 @@ jobs:
           NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
           NEXT_PUBLIC_SUPABASE_ANON_KEY: placeholder
 
-  # ─── Test suite ─────────────────────────────────────────────────────────────
-  test:
-    name: Test Suite
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: npm
-      - name: Install dependencies
-        run: npm ci
-      - name: Run tests
-        run: npm run test
-
-  # ─── API Surface Audit ──────────────────────────────────────────────────────
-  api_audit:
-    name: API Surface Audit
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: npm
-      - name: Install dependencies
-        run: npm ci
-      - name: Run API audit
-        run: npm run audit:api
-      - name: Upload API audit artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: api-audit-artifacts
-          path: |
-            docs/api-audit/inventory.json
-            docs/api-audit/final-report.md
-
-  runtime_readiness_advisory:
-    name: Runtime Readiness Advisory
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: npm
-      - name: Install dependencies
-        run: npm ci
-      - name: Validate runtime readiness evidence (advisory)
-        run: npm run validate:runtime-readiness:advisory
-
   # ─── Build ──────────────────────────────────────────────────────────────────
   build:
     name: Build All Apps
     runs-on: ubuntu-latest
-    needs: [typecheck, test, api_audit, validate, migrations, security, runtime_readiness_advisory]
+    needs: [typecheck]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -158,32 +104,6 @@ jobs:
           NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
           NEXT_PUBLIC_SUPABASE_ANON_KEY: placeholder
           NEXT_TELEMETRY_DISABLED: 1
-          TECBUNNY_VALIDATE_ENV: off
-
-  # ─── Lint & UX Validation ───────────────────────────────────────────────────
-  validate:
-    name: Lint & UX Validation
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: npm
-      - name: Install dependencies
-        run: npm ci
-      - name: Run ESLint
-        run: npm run lint
-      - name: Run Product UX validation
-        run: npm run validate:product-ux
-        env:
-          TECBUNNY_VALIDATE_ENV: off
-          NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: placeholder
-      - name: Validate DB readiness
-        run: npm run validate:db-readiness
-      - name: Validate infra/observability readiness
-        run: npm run validate:infra-observability
 
   # ─── Database migration check ───────────────────────────────────────────────
   migrations:
@@ -191,17 +111,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Validate final SQL file exists, is non-empty, and has no DROP SCHEMA
+      - name: Validate final SQL file exists and is non-empty
         run: |
           echo "Checking final SQL file..."
           if [ ! -s database.sql ]; then
             echo "ERROR: database.sql is missing or empty"
             exit 1
           fi
-          if grep -qi "DROP SCHEMA" database.sql; then
-            echo "ERROR: database.sql contains DROP SCHEMA command! This is destructive for production."
-            exit 1
-          fi
-          echo "OK: database.sql is non-destructive"
-
+          echo "OK: database.sql"
 

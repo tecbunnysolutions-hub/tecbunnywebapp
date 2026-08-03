@@ -19,16 +19,8 @@
       "parameters": 
 []
       "responses": 
-        "200": 
-          "description": "Observed or expected 200 response"
-        "400": 
-          "description": "Observed or expected 400 response"
         "401": 
           "description": "Observed or expected 401 response"
-        "403": 
-          "description": "Observed or expected 403 response"
-        "404": 
-          "description": "Observed or expected 404 response"
         "500": 
           "description": "Observed or expected 500 response"
       "security": 
@@ -40,6 +32,7 @@
 []
       "x-frontend-usage": 
         - "apps/api/src/app/login/page.tsx"
+        - "apps/superadmin/src/app/superadmin/login/page.tsx"
   "/api/admin-auth/logout": 
     "post": 
       "description": "POST /api/admin-auth/logout"
@@ -67,6 +60,7 @@
 []
       "x-frontend-usage": 
         - "apps/api/src/app/dashboard/page.tsx"
+        - "apps/superadmin/src/components/superadmin/SuperadminShell.tsx"
   "/api/admin/agents/approve": 
     "post": 
       "description": "POST /api/admin/agents/approve"
@@ -189,50 +183,19 @@
         - "products"
       "x-frontend-usage": 
 []
-  "/api/admin/crm/leads": 
-    "post": 
-      "description": "POST /api/admin/crm/leads"
-      "parameters": 
-[]
-      "responses": 
-        "400": 
-          "description": "Observed or expected 400 response"
-        "401": 
-          "description": "Observed or expected 401 response"
-        "403": 
-          "description": "Observed or expected 403 response"
-        "500": 
-          "description": "Observed or expected 500 response"
-      "security": 
-        - 
-          "bearerAuth": 
-[]
-      "x-route-file": "apps/mgmt/src/app/api/admin/crm/leads/route.ts"
-      "x-database-tables": 
-        - "sls_leads"
-      "x-frontend-usage": 
-        - "apps/mgmt/src/app/mgmt/crm/crm-dashboard.tsx"
   "/api/admin/custom-setups": 
     "get": 
       "description": "GET /api/admin/custom-setups"
       "parameters": 
 []
       "responses": 
-        "200": 
-          "description": "Observed or expected 200 response"
-        "400": 
-          "description": "Observed or expected 400 response"
-        "401": 
-          "description": "Observed or expected 401 response"
-        "403": 
-          "description": "Observed or expected 403 response"
         "404": 
           "description": "Observed or expected 404 response"
         "500": 
           "description": "Observed or expected 500 response"
       "security": 
 []
-      "x-route-file": "apps/superadmin/src/app/api/admin/custom-setups/route.ts"
+      "x-route-file": "apps/mgmt/src/app/api/admin/custom-setups/route.ts"
       "x-database-tables": 
         - "custom_setup_component_options"
         - "custom_setup_components"
@@ -240,7 +203,7 @@
         - "custom_setup_systems"
         - "custom_setup_templates"
       "x-frontend-usage": 
-[]
+        - "apps/mgmt/src/app/mgmt/admin/custom-setups/price-manager.tsx"
     "patch": 
       "description": "PATCH /api/admin/custom-setups"
       "parameters": 
@@ -252,27 +215,7 @@
           "description": "Observed or expected 500 response"
       "security": 
 []
-      "x-route-file": "apps/superadmin/src/app/api/admin/custom-setups/route.ts"
-      "x-database-tables": 
-        - "custom_setup_component_options"
-        - "custom_setup_components"
-        - "custom_setup_inventory"
-        - "custom_setup_systems"
-        - "custom_setup_templates"
-      "x-frontend-usage": 
-[]
-    "post": 
-      "description": "POST /api/admin/custom-setups"
-      "parameters": 
-[]
-      "responses": 
-        "400": 
-          "description": "Observed or expected 400 response"
-        "500": 
-          "description": "Observed or expected 500 response"
-      "security": 
-[]
-      "x-route-file": "apps/superadmin/src/app/api/admin/custom-setups/route.ts"
+      "x-route-file": "apps/mgmt/src/app/api/admin/custom-setups/route.ts"
       "x-database-tables": 
         - "custom_setup_component_options"
         - "custom_setup_components"
@@ -551,30 +494,6 @@
       "x-frontend-usage": 
         - "apps/mgmt/src/app/mgmt/admin/broadcast-desk/page.tsx"
         - "apps/mgmt/src/app/mgmt/admin/promotional-broadcast/page.tsx"
-  "/api/admin/mgmt/overview": 
-    "get": 
-      "description": "GET /api/admin/mgmt/overview"
-      "parameters": 
-[]
-      "responses": 
-        "401": 
-          "description": "Observed or expected 401 response"
-        "403": 
-          "description": "Observed or expected 403 response"
-        "500": 
-          "description": "Observed or expected 500 response"
-      "security": 
-        - 
-          "bearerAuth": 
-[]
-      "x-route-file": "apps/mgmt/src/app/api/admin/mgmt/overview/route.ts"
-      "x-database-tables": 
-        - "orders"
-        - "products"
-        - "service_tickets"
-        - "sls_leads"
-      "x-frontend-usage": 
-        - "apps/mgmt/src/app/mgmt/page.tsx"
   "/api/admin/orders": 
     "get": 
       "description": "GET /api/admin/orders"
@@ -633,6 +552,16 @@
       "parameters": 
 []
       "responses": 
+        "200": 
+          "description": "Observed or expected 200 response"
+        "400": 
+          "description": "Observed or expected 400 response"
+        "401": 
+          "description": "Observed or expected 401 response"
+        "403": 
+          "description": "Observed or expected 403 response"
+        "404": 
+          "description": "Observed or expected 404 response"
         "500": 
           "description": "Observed or expected 500 response"
       "security": 
@@ -651,8 +580,6 @@
       "responses": 
         "403": 
           "description": "Observed or expected 403 response"
-        "500": 
-          "description": "Observed or expected 500 response"
       "security": 
         - 
           "bearerAuth": 
@@ -977,8 +904,6 @@
       "parameters": 
 []
       "responses": 
-        "207": 
-          "description": "Observed or expected 207 response"
         "400": 
           "description": "Observed or expected 400 response"
         "500": 
@@ -990,62 +915,8 @@
       "x-route-file": "apps/mgmt/src/app/api/admin/products/bulk/route.ts"
       "x-database-tables": 
         - "products"
-        - "rpc:soft_delete_product"
       "x-frontend-usage": 
         - "packages/admin-ui/src/components/admin-products-new.tsx"
-  "/api/admin/profile": 
-    "get": 
-      "description": "GET /api/admin/profile"
-      "parameters": 
-[]
-      "responses": 
-        "500": 
-          "description": "Observed or expected 500 response"
-      "security": 
-        - 
-          "bearerAuth": 
-[]
-      "x-route-file": "apps/mgmt/src/app/api/admin/profile/route.ts"
-      "x-database-tables": 
-        - "profiles"
-      "x-frontend-usage": 
-        - "apps/mgmt/src/app/mgmt/profile/page.tsx"
-    "patch": 
-      "description": "PATCH /api/admin/profile"
-      "parameters": 
-[]
-      "responses": 
-        "400": 
-          "description": "Observed or expected 400 response"
-        "500": 
-          "description": "Observed or expected 500 response"
-      "security": 
-        - 
-          "bearerAuth": 
-[]
-      "x-route-file": "apps/mgmt/src/app/api/admin/profile/route.ts"
-      "x-database-tables": 
-        - "profiles"
-      "x-frontend-usage": 
-[]
-    "post": 
-      "description": "POST /api/admin/profile"
-      "parameters": 
-[]
-      "responses": 
-        "400": 
-          "description": "Observed or expected 400 response"
-        "500": 
-          "description": "Observed or expected 500 response"
-      "security": 
-        - 
-          "bearerAuth": 
-[]
-      "x-route-file": "apps/mgmt/src/app/api/admin/profile/route.ts"
-      "x-database-tables": 
-        - "profiles"
-      "x-frontend-usage": 
-[]
   "/api/admin/quotes": 
     "get": 
       "description": "GET /api/admin/quotes"
@@ -1187,7 +1058,7 @@
 []
       "x-route-file": "apps/mgmt/src/app/api/admin/redemptions/approve/route.ts"
       "x-database-tables": 
-        - "rpc:approve_agent_redemption"
+        - "agent_redemption_requests"
       "x-frontend-usage": 
 []
   "/api/admin/redemptions/list": 
@@ -1200,8 +1071,6 @@
           "description": "Observed or expected 400 response"
         "401": 
           "description": "Observed or expected 401 response"
-        "500": 
-          "description": "Observed or expected 500 response"
       "security": 
         - 
           "bearerAuth": 
@@ -1221,13 +1090,16 @@
           "description": "Observed or expected 400 response"
         "401": 
           "description": "Observed or expected 401 response"
+        "404": 
+          "description": "Observed or expected 404 response"
       "security": 
         - 
           "bearerAuth": 
 []
       "x-route-file": "apps/mgmt/src/app/api/admin/redemptions/process/route.ts"
       "x-database-tables": 
-        - "rpc:process_agent_redemption"
+        - "agent_redemption_requests"
+        - "rpc:increment_agent_points"
       "x-frontend-usage": 
 []
   "/api/admin/roles/set": 
@@ -1496,8 +1368,6 @@
           "description": "Observed or expected 401 response"
         "403": 
           "description": "Observed or expected 403 response"
-        "429": 
-          "description": "Observed or expected 429 response"
         "500": 
           "description": "Observed or expected 500 response"
       "security": 
@@ -1635,26 +1505,6 @@
         - "products"
       "x-frontend-usage": 
         - "apps/public/src/app/ai-research/page.tsx"
-  "/api/analytics": 
-    "get": 
-      "description": "GET /api/analytics"
-      "parameters": 
-[]
-      "responses": 
-        "500": 
-          "description": "Observed or expected 500 response"
-      "security": 
-        - 
-          "bearerAuth": 
-[]
-      "x-route-file": "apps/waba/src/app/api/analytics/route.ts"
-      "x-database-tables": 
-        - "Message"
-        - "mkt_campaign_analytics"
-        - "waba_contact_consent"
-        - "waba_message_status_events"
-      "x-frontend-usage": 
-        - "apps/waba/src/app/analytics/page.tsx"
   "/api/analytics/dashboard": 
     "get": 
       "description": "GET /api/analytics/dashboard"
@@ -1663,8 +1513,6 @@
       "responses": 
         "401": 
           "description": "Observed or expected 401 response"
-        "500": 
-          "description": "Observed or expected 500 response"
       "security": 
         - 
           "bearerAuth": 
@@ -1709,10 +1557,10 @@
       "parameters": 
 []
       "responses": 
+        "200": 
+          "description": "Observed or expected 200 response"
         "400": 
           "description": "Observed or expected 400 response"
-        "429": 
-          "description": "Observed or expected 429 response"
         "500": 
           "description": "Observed or expected 500 response"
       "security": 
@@ -1724,8 +1572,6 @@
         - "analytics_events"
         - "leads"
       "x-frontend-usage": 
-        - "packages/core/src/enterprise-analytics-proxy.ts"
-        - "packages/core/src/enterprise-analytics.ts"
         - "packages/core/src/hooks/use-analytics.ts"
   "/api/auth/2fa/disable": 
     "post": 
@@ -1924,10 +1770,6 @@
       "responses": 
         "400": 
           "description": "Observed or expected 400 response"
-        "401": 
-          "description": "Observed or expected 401 response"
-        "403": 
-          "description": "Observed or expected 403 response"
         "404": 
           "description": "Observed or expected 404 response"
         "500": 
@@ -1972,8 +1814,6 @@
           "description": "Observed or expected 400 response"
         "401": 
           "description": "Observed or expected 401 response"
-        "429": 
-          "description": "Observed or expected 429 response"
         "500": 
           "description": "Observed or expected 500 response"
       "security": 
@@ -2250,6 +2090,7 @@
         - "profiles"
       "x-frontend-usage": 
         - "apps/mgmt/src/components/customised-setups/CustomSetupFlow.tsx"
+        - "apps/public/src/components/customised-setups/CustomSetupFlow.tsx"
         - "apps/public/src/components/products/ShopPageContent.tsx"
     "get": 
       "description": "GET /api/auto-offers"
@@ -2455,7 +2296,7 @@
         - "published_blueprints"
         - "user_milestones"
       "x-frontend-usage": 
-[]
+        - "apps/mgmt/src/hooks/use-viral-attribution.ts"
   "/api/branches": 
     "delete": 
       "description": "DELETE /api/branches"
@@ -2464,8 +2305,8 @@
       "responses": 
         "400": 
           "description": "Observed or expected 400 response"
-        "404": 
-          "description": "Observed or expected 404 response"
+        "403": 
+          "description": "Observed or expected 403 response"
         "500": 
           "description": "Observed or expected 500 response"
       "security": 
@@ -2482,6 +2323,8 @@
       "parameters": 
 []
       "responses": 
+        "403": 
+          "description": "Observed or expected 403 response"
         "500": 
           "description": "Observed or expected 500 response"
       "security": 
@@ -2500,6 +2343,8 @@
       "responses": 
         "400": 
           "description": "Observed or expected 400 response"
+        "403": 
+          "description": "Observed or expected 403 response"
         "500": 
           "description": "Observed or expected 500 response"
       "security": 
@@ -2521,8 +2366,6 @@
           "description": "Observed or expected 400 response"
         "500": 
           "description": "Observed or expected 500 response"
-        "503": 
-          "description": "Observed or expected 503 response"
       "security": 
         - 
           "bearerAuth": 
@@ -2530,8 +2373,7 @@
       "x-route-file": "apps/waba/src/app/api/campaigns/route.ts"
       "x-database-tables": 
         - "Conversation"
-        - "Template"
-        - "mkt_campaigns"
+        - "Message"
       "x-frontend-usage": 
         - "apps/waba/src/app/campaigns/page.tsx"
   "/api/captcha/config": 
@@ -2843,41 +2685,6 @@
         - "contact_messages"
       "x-frontend-usage": 
 []
-  "/api/contacts/consent": 
-    "get": 
-      "description": "GET /api/contacts/consent"
-      "parameters": 
-[]
-      "responses": 
-        "500": 
-          "description": "Observed or expected 500 response"
-      "security": 
-        - 
-          "bearerAuth": 
-[]
-      "x-route-file": "apps/waba/src/app/api/contacts/consent/route.ts"
-      "x-database-tables": 
-        - "waba_contact_consent"
-      "x-frontend-usage": 
-        - "apps/waba/src/app/contacts/page.tsx"
-    "patch": 
-      "description": "PATCH /api/contacts/consent"
-      "parameters": 
-[]
-      "responses": 
-        "400": 
-          "description": "Observed or expected 400 response"
-        "500": 
-          "description": "Observed or expected 500 response"
-      "security": 
-        - 
-          "bearerAuth": 
-[]
-      "x-route-file": "apps/waba/src/app/api/contacts/consent/route.ts"
-      "x-database-tables": 
-        - "waba_contact_consent"
-      "x-frontend-usage": 
-[]
   "/api/conversations": 
     "patch": 
       "description": "PATCH /api/conversations"
@@ -2916,8 +2723,6 @@
           "description": "Observed or expected 400 response"
         "403": 
           "description": "Observed or expected 403 response"
-        "404": 
-          "description": "Observed or expected 404 response"
         "500": 
           "description": "Observed or expected 500 response"
       "security": 
@@ -2927,57 +2732,6 @@
       "x-route-file": "apps/waba/src/app/api/conversations/[id]/assign/route.ts"
       "x-database-tables": 
 []
-      "x-frontend-usage": 
-[]
-  "/api/conversations/{sender}/notes": 
-    "get": 
-      "description": "GET /api/conversations/{sender}/notes"
-      "parameters": 
-        - 
-          "name": "sender"
-          "in": "path"
-          "required": true
-          "schema": 
-            "type": "string"
-      "responses": 
-        "400": 
-          "description": "Observed or expected 400 response"
-        "403": 
-          "description": "Observed or expected 403 response"
-        "500": 
-          "description": "Observed or expected 500 response"
-      "security": 
-        - 
-          "bearerAuth": 
-[]
-      "x-route-file": "apps/waba/src/app/api/conversations/[sender]/notes/route.ts"
-      "x-database-tables": 
-        - "waba_conversation_notes"
-      "x-frontend-usage": 
-[]
-    "post": 
-      "description": "POST /api/conversations/{sender}/notes"
-      "parameters": 
-        - 
-          "name": "sender"
-          "in": "path"
-          "required": true
-          "schema": 
-            "type": "string"
-      "responses": 
-        "400": 
-          "description": "Observed or expected 400 response"
-        "403": 
-          "description": "Observed or expected 403 response"
-        "500": 
-          "description": "Observed or expected 500 response"
-      "security": 
-        - 
-          "bearerAuth": 
-[]
-      "x-route-file": "apps/waba/src/app/api/conversations/[sender]/notes/route.ts"
-      "x-database-tables": 
-        - "waba_conversation_notes"
       "x-frontend-usage": 
 []
   "/api/copilot/command": 
@@ -3332,83 +3086,23 @@
       "parameters": 
 []
       "responses": 
+        "200": 
+          "description": "Observed or expected 200 response"
+        "400": 
+          "description": "Observed or expected 400 response"
+        "401": 
+          "description": "Observed or expected 401 response"
+        "403": 
+          "description": "Observed or expected 403 response"
         "404": 
           "description": "Observed or expected 404 response"
+        "500": 
+          "description": "Observed or expected 500 response"
       "security": 
         - 
           "bearerAuth": 
 []
       "x-route-file": "apps/waba/src/app/api/debug-env/route.ts"
-      "x-database-tables": 
-[]
-      "x-frontend-usage": 
-[]
-  "/api/deployment/production": 
-    "post": 
-      "description": "POST /api/deployment/production"
-      "parameters": 
-[]
-      "responses": 
-        "500": 
-          "description": "Observed or expected 500 response"
-      "security": 
-        - 
-          "bearerAuth": 
-[]
-      "x-route-file": "apps/api/src/app/api/deployment/production/route.ts"
-      "x-database-tables": 
-[]
-      "x-frontend-usage": 
-[]
-  "/api/deployment/rollback": 
-    "post": 
-      "description": "POST /api/deployment/rollback"
-      "parameters": 
-[]
-      "responses": 
-        "400": 
-          "description": "Observed or expected 400 response"
-        "500": 
-          "description": "Observed or expected 500 response"
-      "security": 
-        - 
-          "bearerAuth": 
-[]
-      "x-route-file": "apps/api/src/app/api/deployment/rollback/route.ts"
-      "x-database-tables": 
-[]
-      "x-frontend-usage": 
-[]
-  "/api/deployment/staging": 
-    "post": 
-      "description": "POST /api/deployment/staging"
-      "parameters": 
-[]
-      "responses": 
-        "500": 
-          "description": "Observed or expected 500 response"
-      "security": 
-        - 
-          "bearerAuth": 
-[]
-      "x-route-file": "apps/api/src/app/api/deployment/staging/route.ts"
-      "x-database-tables": 
-[]
-      "x-frontend-usage": 
-[]
-  "/api/deployment/status": 
-    "get": 
-      "description": "GET /api/deployment/status"
-      "parameters": 
-[]
-      "responses": 
-        "500": 
-          "description": "Observed or expected 500 response"
-      "security": 
-        - 
-          "bearerAuth": 
-[]
-      "x-route-file": "apps/api/src/app/api/deployment/status/route.ts"
       "x-database-tables": 
 []
       "x-frontend-usage": 
@@ -3509,50 +3203,6 @@
         - "profiles"
       "x-frontend-usage": 
 []
-  "/api/docs": 
-    "get": 
-      "description": "GET /api/docs"
-      "parameters": 
-[]
-      "responses": 
-        "200": 
-          "description": "Observed or expected 200 response"
-        "400": 
-          "description": "Observed or expected 400 response"
-        "401": 
-          "description": "Observed or expected 401 response"
-        "403": 
-          "description": "Observed or expected 403 response"
-        "404": 
-          "description": "Observed or expected 404 response"
-        "500": 
-          "description": "Observed or expected 500 response"
-      "security": 
-        - 
-          "bearerAuth": 
-[]
-      "x-route-file": "apps/api/src/app/api/docs/route.ts"
-      "x-database-tables": 
-[]
-      "x-frontend-usage": 
-[]
-  "/api/docs/openapi": 
-    "get": 
-      "description": "GET /api/docs/openapi"
-      "parameters": 
-[]
-      "responses": 
-        "500": 
-          "description": "Observed or expected 500 response"
-      "security": 
-        - 
-          "bearerAuth": 
-[]
-      "x-route-file": "apps/api/src/app/api/docs/openapi/route.ts"
-      "x-database-tables": 
-[]
-      "x-frontend-usage": 
-[]
   "/api/email/abandoned-cart": 
     "post": 
       "description": "POST /api/email/abandoned-cart"
@@ -3580,6 +3230,16 @@
       "parameters": 
 []
       "responses": 
+        "200": 
+          "description": "Observed or expected 200 response"
+        "400": 
+          "description": "Observed or expected 400 response"
+        "401": 
+          "description": "Observed or expected 401 response"
+        "403": 
+          "description": "Observed or expected 403 response"
+        "404": 
+          "description": "Observed or expected 404 response"
         "500": 
           "description": "Observed or expected 500 response"
       "security": 
@@ -3812,6 +3472,16 @@
       "parameters": 
 []
       "responses": 
+        "200": 
+          "description": "Observed or expected 200 response"
+        "400": 
+          "description": "Observed or expected 400 response"
+        "401": 
+          "description": "Observed or expected 401 response"
+        "403": 
+          "description": "Observed or expected 403 response"
+        "404": 
+          "description": "Observed or expected 404 response"
         "500": 
           "description": "Observed or expected 500 response"
       "security": 
@@ -3897,6 +3567,16 @@
       "parameters": 
 []
       "responses": 
+        "200": 
+          "description": "Observed or expected 200 response"
+        "400": 
+          "description": "Observed or expected 400 response"
+        "401": 
+          "description": "Observed or expected 401 response"
+        "403": 
+          "description": "Observed or expected 403 response"
+        "404": 
+          "description": "Observed or expected 404 response"
         "500": 
           "description": "Observed or expected 500 response"
       "security": 
@@ -3906,177 +3586,6 @@
       "x-route-file": "apps/api/src/app/api/email/welcome/route.ts"
       "x-database-tables": 
 []
-      "x-frontend-usage": 
-[]
-  "/api/enterprise-analytics/audit-logs": 
-    "get": 
-      "description": "GET /api/enterprise-analytics/audit-logs"
-      "parameters": 
-[]
-      "responses": 
-        "500": 
-          "description": "Observed or expected 500 response"
-      "security": 
-        - 
-          "bearerAuth": 
-[]
-      "x-route-file": "apps/api/src/app/api/enterprise-analytics/audit-logs/route.ts"
-      "x-database-tables": 
-        - "enterprise_audit_logs"
-      "x-frontend-usage": 
-        - "packages/core/src/enterprise-analytics.ts"
-    "post": 
-      "description": "POST /api/enterprise-analytics/audit-logs"
-      "parameters": 
-[]
-      "responses": 
-        "500": 
-          "description": "Observed or expected 500 response"
-      "security": 
-        - 
-          "bearerAuth": 
-[]
-      "x-route-file": "apps/api/src/app/api/enterprise-analytics/audit-logs/route.ts"
-      "x-database-tables": 
-        - "enterprise_audit_logs"
-      "x-frontend-usage": 
-[]
-  "/api/enterprise-analytics/dashboard": 
-    "get": 
-      "description": "GET /api/enterprise-analytics/dashboard"
-      "parameters": 
-[]
-      "responses": 
-        "500": 
-          "description": "Observed or expected 500 response"
-      "security": 
-        - 
-          "bearerAuth": 
-[]
-      "x-route-file": "apps/api/src/app/api/enterprise-analytics/dashboard/route.ts"
-      "x-database-tables": 
-        - "enterprise_analytics_events"
-        - "enterprise_kpi_snapshots"
-      "x-frontend-usage": 
-[]
-  "/api/enterprise-analytics/exports": 
-    "post": 
-      "description": "POST /api/enterprise-analytics/exports"
-      "parameters": 
-[]
-      "responses": 
-        "500": 
-          "description": "Observed or expected 500 response"
-      "security": 
-        - 
-          "bearerAuth": 
-[]
-      "x-route-file": "apps/api/src/app/api/enterprise-analytics/exports/route.ts"
-      "x-database-tables": 
-        - "enterprise_report_exports"
-      "x-frontend-usage": 
-[]
-  "/api/enterprise-analytics/filters": 
-    "get": 
-      "description": "GET /api/enterprise-analytics/filters"
-      "parameters": 
-[]
-      "responses": 
-        "500": 
-          "description": "Observed or expected 500 response"
-      "security": 
-        - 
-          "bearerAuth": 
-[]
-      "x-route-file": "apps/api/src/app/api/enterprise-analytics/filters/route.ts"
-      "x-database-tables": 
-        - "enterprise_saved_filters"
-      "x-frontend-usage": 
-[]
-    "post": 
-      "description": "POST /api/enterprise-analytics/filters"
-      "parameters": 
-[]
-      "responses": 
-        "500": 
-          "description": "Observed or expected 500 response"
-      "security": 
-        - 
-          "bearerAuth": 
-[]
-      "x-route-file": "apps/api/src/app/api/enterprise-analytics/filters/route.ts"
-      "x-database-tables": 
-        - "enterprise_saved_filters"
-      "x-frontend-usage": 
-[]
-  "/api/enterprise-analytics/reports": 
-    "get": 
-      "description": "GET /api/enterprise-analytics/reports"
-      "parameters": 
-[]
-      "responses": 
-        "500": 
-          "description": "Observed or expected 500 response"
-      "security": 
-        - 
-          "bearerAuth": 
-[]
-      "x-route-file": "apps/api/src/app/api/enterprise-analytics/reports/route.ts"
-      "x-database-tables": 
-        - "enterprise_analytics_events"
-        - "enterprise_audit_logs"
-        - "enterprise_kpi_snapshots"
-        - "enterprise_staff_activity_logs"
-      "x-frontend-usage": 
-[]
-  "/api/enterprise-analytics/search": 
-    "get": 
-      "description": "GET /api/enterprise-analytics/search"
-      "parameters": 
-[]
-      "responses": 
-        "500": 
-          "description": "Observed or expected 500 response"
-      "security": 
-        - 
-          "bearerAuth": 
-[]
-      "x-route-file": "apps/api/src/app/api/enterprise-analytics/search/route.ts"
-      "x-database-tables": 
-[]
-      "x-frontend-usage": 
-[]
-  "/api/enterprise-analytics/staff-logs": 
-    "get": 
-      "description": "GET /api/enterprise-analytics/staff-logs"
-      "parameters": 
-[]
-      "responses": 
-        "500": 
-          "description": "Observed or expected 500 response"
-      "security": 
-        - 
-          "bearerAuth": 
-[]
-      "x-route-file": "apps/api/src/app/api/enterprise-analytics/staff-logs/route.ts"
-      "x-database-tables": 
-        - "enterprise_staff_activity_logs"
-      "x-frontend-usage": 
-        - "packages/core/src/enterprise-analytics.ts"
-    "post": 
-      "description": "POST /api/enterprise-analytics/staff-logs"
-      "parameters": 
-[]
-      "responses": 
-        "500": 
-          "description": "Observed or expected 500 response"
-      "security": 
-        - 
-          "bearerAuth": 
-[]
-      "x-route-file": "apps/api/src/app/api/enterprise-analytics/staff-logs/route.ts"
-      "x-database-tables": 
-        - "enterprise_staff_activity_logs"
       "x-frontend-usage": 
 []
   "/api/faqs": 
@@ -4133,8 +3642,6 @@
           "description": "Observed or expected 400 response"
         "401": 
           "description": "Observed or expected 401 response"
-        "409": 
-          "description": "Observed or expected 409 response"
         "500": 
           "description": "Observed or expected 500 response"
       "security": 
@@ -4173,8 +3680,6 @@
       "responses": 
         "200": 
           "description": "Observed or expected 200 response"
-        "500": 
-          "description": "Observed or expected 500 response"
       "security": 
 []
       "x-route-file": "apps/webmail/src/app/api/health/route.ts"
@@ -4258,6 +3763,16 @@
       "parameters": 
 []
       "responses": 
+        "200": 
+          "description": "Observed or expected 200 response"
+        "400": 
+          "description": "Observed or expected 400 response"
+        "401": 
+          "description": "Observed or expected 401 response"
+        "403": 
+          "description": "Observed or expected 403 response"
+        "404": 
+          "description": "Observed or expected 404 response"
         "500": 
           "description": "Observed or expected 500 response"
       "security": 
@@ -4563,21 +4078,6 @@
       "x-frontend-usage": 
         - "apps/api/src/app/dashboard/page.tsx"
         - "packages/ui/src/components/ui/logo.tsx"
-  "/api/monitoring/health": 
-    "get": 
-      "description": "GET /api/monitoring/health"
-      "parameters": 
-[]
-      "responses": 
-        "500": 
-          "description": "Observed or expected 500 response"
-      "security": 
-[]
-      "x-route-file": "apps/api/src/app/api/monitoring/health/route.ts"
-      "x-database-tables": 
-[]
-      "x-frontend-usage": 
-[]
   "/api/notifications/send": 
     "post": 
       "description": "POST /api/notifications/send"
@@ -4729,8 +4229,6 @@
           "description": "Observed or expected 403 response"
         "429": 
           "description": "Observed or expected 429 response"
-        "500": 
-          "description": "Observed or expected 500 response"
       "security": 
         - 
           "bearerAuth": 
@@ -4879,8 +4377,8 @@
       "responses": 
         "400": 
           "description": "Observed or expected 400 response"
-        "404": 
-          "description": "Observed or expected 404 response"
+        "403": 
+          "description": "Observed or expected 403 response"
         "500": 
           "description": "Observed or expected 500 response"
       "security": 
@@ -4898,6 +4396,8 @@
       "parameters": 
 []
       "responses": 
+        "403": 
+          "description": "Observed or expected 403 response"
         "500": 
           "description": "Observed or expected 500 response"
       "security": 
@@ -4916,6 +4416,8 @@
       "responses": 
         "400": 
           "description": "Observed or expected 400 response"
+        "403": 
+          "description": "Observed or expected 403 response"
         "500": 
           "description": "Observed or expected 500 response"
       "security": 
@@ -5244,6 +4746,8 @@
       "parameters": 
 []
       "responses": 
+        "403": 
+          "description": "Observed or expected 403 response"
         "500": 
           "description": "Observed or expected 500 response"
       "security": 
@@ -5676,6 +5180,16 @@
       "parameters": 
 []
       "responses": 
+        "200": 
+          "description": "Observed or expected 200 response"
+        "400": 
+          "description": "Observed or expected 400 response"
+        "401": 
+          "description": "Observed or expected 401 response"
+        "403": 
+          "description": "Observed or expected 403 response"
+        "404": 
+          "description": "Observed or expected 404 response"
         "500": 
           "description": "Observed or expected 500 response"
       "security": 
@@ -5788,8 +5302,6 @@
       "responses": 
         "400": 
           "description": "Observed or expected 400 response"
-        "429": 
-          "description": "Observed or expected 429 response"
         "500": 
           "description": "Observed or expected 500 response"
       "security": 
@@ -6252,41 +5764,6 @@
         - "rpc:increment_referral_code_uses"
       "x-frontend-usage": 
 []
-  "/api/release-notes": 
-    "get": 
-      "description": "GET /api/release-notes"
-      "parameters": 
-[]
-      "responses": 
-        "500": 
-          "description": "Observed or expected 500 response"
-      "security": 
-        - 
-          "bearerAuth": 
-[]
-      "x-route-file": "apps/api/src/app/api/release-notes/route.ts"
-      "x-database-tables": 
-        - "release_notes"
-      "x-frontend-usage": 
-[]
-    "post": 
-      "description": "POST /api/release-notes"
-      "parameters": 
-[]
-      "responses": 
-        "400": 
-          "description": "Observed or expected 400 response"
-        "500": 
-          "description": "Observed or expected 500 response"
-      "security": 
-        - 
-          "bearerAuth": 
-[]
-      "x-route-file": "apps/api/src/app/api/release-notes/route.ts"
-      "x-database-tables": 
-        - "release_notes"
-      "x-frontend-usage": 
-[]
   "/api/roles-public": 
     "get": 
       "description": "GET /api/roles-public"
@@ -6303,33 +5780,13 @@
       "x-frontend-usage": 
 []
   "/api/roles": 
-    "delete": 
-      "description": "DELETE /api/roles"
-      "parameters": 
-[]
-      "responses": 
-        "400": 
-          "description": "Observed or expected 400 response"
-        "404": 
-          "description": "Observed or expected 404 response"
-        "409": 
-          "description": "Observed or expected 409 response"
-        "500": 
-          "description": "Observed or expected 500 response"
-      "security": 
-        - 
-          "bearerAuth": 
-[]
-      "x-route-file": "apps/superadmin/src/app/api/roles/route.ts"
-      "x-database-tables": 
-[]
-      "x-frontend-usage": 
-        - "apps/superadmin/src/app/superadmin/mgmt/roles/page.tsx"
     "get": 
       "description": "GET /api/roles"
       "parameters": 
 []
       "responses": 
+        "403": 
+          "description": "Observed or expected 403 response"
         "500": 
           "description": "Observed or expected 500 response"
       "security": 
@@ -6348,6 +5805,8 @@
       "responses": 
         "400": 
           "description": "Observed or expected 400 response"
+        "403": 
+          "description": "Observed or expected 403 response"
         "500": 
           "description": "Observed or expected 500 response"
       "security": 
@@ -6510,105 +5969,22 @@
         - "rpc:validate_password_strength"
       "x-frontend-usage": 
         - "packages/admin-ui/src/components/security-dashboard.tsx"
-  "/api/seller/auth": 
-    "post": 
-      "description": "POST /api/seller/auth"
-      "parameters": 
-[]
-      "responses": 
-        "400": 
-          "description": "Observed or expected 400 response"
-        "500": 
-          "description": "Observed or expected 500 response"
-      "security": 
-        - 
-          "bearerAuth": 
-[]
-      "x-route-file": "apps/public/src/app/api/seller/auth/route.ts"
-      "x-database-tables": 
-[]
-      "x-frontend-usage": 
-[]
-  "/api/seller/kyc": 
-    "post": 
-      "description": "POST /api/seller/kyc"
-      "parameters": 
-[]
-      "responses": 
-        "400": 
-          "description": "Observed or expected 400 response"
-        "500": 
-          "description": "Observed or expected 500 response"
-      "security": 
-        - 
-          "bearerAuth": 
-[]
-      "x-route-file": "apps/public/src/app/api/seller/kyc/route.ts"
-      "x-database-tables": 
-[]
-      "x-frontend-usage": 
-[]
-  "/api/seller/login": 
-    "post": 
-      "description": "POST /api/seller/login"
-      "parameters": 
-[]
-      "responses": 
-        "400": 
-          "description": "Observed or expected 400 response"
-        "500": 
-          "description": "Observed or expected 500 response"
-      "security": 
-        - 
-          "bearerAuth": 
-[]
-      "x-route-file": "apps/public/src/app/api/seller/login/route.ts"
-      "x-database-tables": 
-[]
-      "x-frontend-usage": 
-        - "apps/public/src/app/seller/login/page.tsx"
-  "/api/seller/products": 
-    "post": 
-      "description": "POST /api/seller/products"
-      "parameters": 
-[]
-      "responses": 
-        "400": 
-          "description": "Observed or expected 400 response"
-        "500": 
-          "description": "Observed or expected 500 response"
-      "security": 
-        - 
-          "bearerAuth": 
-[]
-      "x-route-file": "apps/public/src/app/api/seller/products/route.ts"
-      "x-database-tables": 
-[]
-      "x-frontend-usage": 
-[]
-  "/api/seller/settlements": 
-    "get": 
-      "description": "GET /api/seller/settlements"
-      "parameters": 
-[]
-      "responses": 
-        "500": 
-          "description": "Observed or expected 500 response"
-      "security": 
-        - 
-          "bearerAuth": 
-[]
-      "x-route-file": "apps/public/src/app/api/seller/settlements/route.ts"
-      "x-database-tables": 
-[]
-      "x-frontend-usage": 
-[]
   "/api/service-availability": 
     "get": 
       "description": "GET /api/service-availability"
       "parameters": 
 []
       "responses": 
+        "200": 
+          "description": "Observed or expected 200 response"
+        "400": 
+          "description": "Observed or expected 400 response"
+        "401": 
+          "description": "Observed or expected 401 response"
+        "403": 
+          "description": "Observed or expected 403 response"
+        "404": 
+          "description": "Observed or expected 404 response"
         "500": 
           "description": "Observed or expected 500 response"
       "security": 
@@ -7096,6 +6472,8 @@
       "responses": 
         "400": 
           "description": "Observed or expected 400 response"
+        "403": 
+          "description": "Observed or expected 403 response"
         "500": 
           "description": "Observed or expected 500 response"
       "security": 
@@ -7115,6 +6493,8 @@
       "parameters": 
 []
       "responses": 
+        "403": 
+          "description": "Observed or expected 403 response"
         "500": 
           "description": "Observed or expected 500 response"
       "security": 
@@ -7136,6 +6516,8 @@
       "responses": 
         "400": 
           "description": "Observed or expected 400 response"
+        "403": 
+          "description": "Observed or expected 403 response"
         "500": 
           "description": "Observed or expected 500 response"
       "security": 
@@ -7160,6 +6542,8 @@
           "description": "Observed or expected 200 response"
         "400": 
           "description": "Observed or expected 400 response"
+        "403": 
+          "description": "Observed or expected 403 response"
         "500": 
           "description": "Observed or expected 500 response"
       "security": 
@@ -7180,8 +6564,8 @@
       "responses": 
         "400": 
           "description": "Observed or expected 400 response"
-        "404": 
-          "description": "Observed or expected 404 response"
+        "403": 
+          "description": "Observed or expected 403 response"
         "500": 
           "description": "Observed or expected 500 response"
       "security": 
@@ -7196,6 +6580,8 @@
       "parameters": 
 []
       "responses": 
+        "403": 
+          "description": "Observed or expected 403 response"
         "500": 
           "description": "Observed or expected 500 response"
       "security": 
@@ -7214,6 +6600,8 @@
           "description": "Observed or expected 201 response"
         "400": 
           "description": "Observed or expected 400 response"
+        "403": 
+          "description": "Observed or expected 403 response"
         "500": 
           "description": "Observed or expected 500 response"
       "security": 
@@ -7230,8 +6618,8 @@
       "responses": 
         "400": 
           "description": "Observed or expected 400 response"
-        "404": 
-          "description": "Observed or expected 404 response"
+        "403": 
+          "description": "Observed or expected 403 response"
         "500": 
           "description": "Observed or expected 500 response"
       "security": 
@@ -7241,126 +6629,22 @@
         - "custom_setup_offers"
       "x-frontend-usage": 
 []
-  "/api/superadmin/dashboard/alerts": 
-    "get": 
-      "description": "GET /api/superadmin/dashboard/alerts"
-      "parameters": 
-[]
-      "responses": 
-        "500": 
-          "description": "Observed or expected 500 response"
-      "security": 
-        - 
-          "bearerAuth": 
-[]
-      "x-route-file": "apps/superadmin/src/app/api/superadmin/dashboard/alerts/route.ts"
-      "x-database-tables": 
-        - "enterprise_alert_acknowledgements"
-      "x-frontend-usage": 
-        - "apps/superadmin/src/components/superadmin/SuperadminCommandCenter.tsx"
-    "post": 
-      "description": "POST /api/superadmin/dashboard/alerts"
-      "parameters": 
-[]
-      "responses": 
-        "400": 
-          "description": "Observed or expected 400 response"
-        "500": 
-          "description": "Observed or expected 500 response"
-      "security": 
-        - 
-          "bearerAuth": 
-[]
-      "x-route-file": "apps/superadmin/src/app/api/superadmin/dashboard/alerts/route.ts"
-      "x-database-tables": 
-        - "enterprise_alert_acknowledgements"
-      "x-frontend-usage": 
-[]
-  "/api/superadmin/dashboard/ask": 
-    "post": 
-      "description": "POST /api/superadmin/dashboard/ask"
-      "parameters": 
-[]
-      "responses": 
-        "400": 
-          "description": "Observed or expected 400 response"
-        "500": 
-          "description": "Observed or expected 500 response"
-      "security": 
-        - 
-          "bearerAuth": 
-[]
-      "x-route-file": "apps/superadmin/src/app/api/superadmin/dashboard/ask/route.ts"
-      "x-database-tables": 
-        - "enterprise_audit_logs"
-      "x-frontend-usage": 
-        - "apps/superadmin/src/components/superadmin/SuperadminCommandCenter.tsx"
-  "/api/superadmin/dashboard/command-center": 
-    "get": 
-      "description": "GET /api/superadmin/dashboard/command-center"
-      "parameters": 
-[]
-      "responses": 
-        "500": 
-          "description": "Observed or expected 500 response"
-      "security": 
-        - 
-          "bearerAuth": 
-[]
-      "x-route-file": "apps/superadmin/src/app/api/superadmin/dashboard/command-center/route.ts"
-      "x-database-tables": 
-[]
-      "x-frontend-usage": 
-        - "apps/superadmin/src/components/superadmin/SuperadminCommandCenter.tsx"
-  "/api/superadmin/dashboard/export": 
-    "get": 
-      "description": "GET /api/superadmin/dashboard/export"
-      "parameters": 
-[]
-      "responses": 
-        "400": 
-          "description": "Observed or expected 400 response"
-        "500": 
-          "description": "Observed or expected 500 response"
-      "security": 
-        - 
-          "bearerAuth": 
-[]
-      "x-route-file": "apps/superadmin/src/app/api/superadmin/dashboard/export/route.ts"
-      "x-database-tables": 
-[]
-      "x-frontend-usage": 
-        - "apps/superadmin/src/components/superadmin/SuperadminCommandCenter.tsx"
-  "/api/superadmin/dashboard/platform-health": 
-    "get": 
-      "description": "GET /api/superadmin/dashboard/platform-health"
-      "parameters": 
-[]
-      "responses": 
-        "500": 
-          "description": "Observed or expected 500 response"
-      "security": 
-        - 
-          "bearerAuth": 
-[]
-      "x-route-file": "apps/superadmin/src/app/api/superadmin/dashboard/platform-health/route.ts"
-      "x-database-tables": 
-[]
-      "x-frontend-usage": 
-[]
   "/api/superadmin/inquiries": 
     "get": 
       "description": "GET /api/superadmin/inquiries"
       "parameters": 
 []
       "responses": 
+        "403": 
+          "description": "Observed or expected 403 response"
         "500": 
           "description": "Observed or expected 500 response"
       "security": 
 []
       "x-route-file": "apps/superadmin/src/app/api/superadmin/inquiries/route.ts"
       "x-database-tables": 
-[]
+        - "contact_messages"
+        - "profiles"
       "x-frontend-usage": 
         - "apps/superadmin/src/app/superadmin/mgmt/leads/inquiry-pipeline.tsx"
   "/api/superadmin/inquiries/{id}/assignment": 
@@ -7374,6 +6658,10 @@
           "schema": 
             "type": "string"
       "responses": 
+        "400": 
+          "description": "Observed or expected 400 response"
+        "403": 
+          "description": "Observed or expected 403 response"
         "500": 
           "description": "Observed or expected 500 response"
       "security": 
@@ -7382,7 +6670,8 @@
 []
       "x-route-file": "apps/superadmin/src/app/api/superadmin/inquiries/[id]/assignment/route.ts"
       "x-database-tables": 
-[]
+        - "contact_messages"
+        - "profiles"
       "x-frontend-usage": 
 []
   "/api/superadmin/services/ai-generate": 
@@ -7393,6 +6682,8 @@
       "responses": 
         "400": 
           "description": "Observed or expected 400 response"
+        "403": 
+          "description": "Observed or expected 403 response"
         "500": 
           "description": "Observed or expected 500 response"
       "security": 
@@ -7429,8 +6720,6 @@
       "parameters": 
 []
       "responses": 
-        "400": 
-          "description": "Observed or expected 400 response"
         "403": 
           "description": "Observed or expected 403 response"
         "500": 
@@ -7444,75 +6733,6 @@
         - "Template"
       "x-frontend-usage": 
 []
-  "/api/templates/sync": 
-    "post": 
-      "description": "POST /api/templates/sync"
-      "parameters": 
-[]
-      "responses": 
-        "500": 
-          "description": "Observed or expected 500 response"
-      "security": 
-        - 
-          "bearerAuth": 
-[]
-      "x-route-file": "apps/waba/src/app/api/templates/sync/route.ts"
-      "x-database-tables": 
-[]
-      "x-frontend-usage": 
-        - "apps/waba/src/app/templates/page.tsx"
-  "/api/testing/coverage": 
-    "get": 
-      "description": "GET /api/testing/coverage"
-      "parameters": 
-[]
-      "responses": 
-        "500": 
-          "description": "Observed or expected 500 response"
-      "security": 
-        - 
-          "bearerAuth": 
-[]
-      "x-route-file": "apps/api/src/app/api/testing/coverage/route.ts"
-      "x-database-tables": 
-        - "test_coverage_metrics"
-      "x-frontend-usage": 
-[]
-  "/api/testing/results": 
-    "get": 
-      "description": "GET /api/testing/results"
-      "parameters": 
-[]
-      "responses": 
-        "500": 
-          "description": "Observed or expected 500 response"
-      "security": 
-        - 
-          "bearerAuth": 
-[]
-      "x-route-file": "apps/api/src/app/api/testing/results/route.ts"
-      "x-database-tables": 
-[]
-      "x-frontend-usage": 
-[]
-    "post": 
-      "description": "POST /api/testing/results"
-      "parameters": 
-[]
-      "responses": 
-        "400": 
-          "description": "Observed or expected 400 response"
-        "500": 
-          "description": "Observed or expected 500 response"
-      "security": 
-        - 
-          "bearerAuth": 
-[]
-      "x-route-file": "apps/api/src/app/api/testing/results/route.ts"
-      "x-database-tables": 
-[]
-      "x-frontend-usage": 
-[]
   "/api/trpc/{trpc}": 
     "get": 
       "description": "GET /api/trpc/{trpc}"
@@ -7524,6 +6744,16 @@
           "schema": 
             "type": "string"
       "responses": 
+        "200": 
+          "description": "Observed or expected 200 response"
+        "400": 
+          "description": "Observed or expected 400 response"
+        "401": 
+          "description": "Observed or expected 401 response"
+        "403": 
+          "description": "Observed or expected 403 response"
+        "404": 
+          "description": "Observed or expected 404 response"
         "500": 
           "description": "Observed or expected 500 response"
       "security": 
@@ -7532,7 +6762,6 @@
       "x-database-tables": 
 []
       "x-frontend-usage": 
-        - "apps/api/src/proxy.ts"
         - "apps/mgmt/src/components/providers/TRPCProvider.tsx"
         - "apps/public/src/components/providers/TRPCProvider.tsx"
     "post": 
@@ -7545,6 +6774,16 @@
           "schema": 
             "type": "string"
       "responses": 
+        "200": 
+          "description": "Observed or expected 200 response"
+        "400": 
+          "description": "Observed or expected 400 response"
+        "401": 
+          "description": "Observed or expected 401 response"
+        "403": 
+          "description": "Observed or expected 403 response"
+        "404": 
+          "description": "Observed or expected 404 response"
         "500": 
           "description": "Observed or expected 500 response"
       "security": 
@@ -8466,83 +7705,6 @@
 []
       "x-frontend-usage": 
 []
-  "/api/v1/admin-auth/login": 
-    "post": 
-      "description": "POST /api/v1/admin-auth/login"
-      "parameters": 
-[]
-      "responses": 
-        "200": 
-          "description": "Observed or expected 200 response"
-        "400": 
-          "description": "Observed or expected 400 response"
-        "401": 
-          "description": "Observed or expected 401 response"
-        "403": 
-          "description": "Observed or expected 403 response"
-        "404": 
-          "description": "Observed or expected 404 response"
-        "500": 
-          "description": "Observed or expected 500 response"
-      "security": 
-        - 
-          "bearerAuth": 
-[]
-      "x-route-file": "apps/api/src/app/api/v1/admin-auth/login/route.ts"
-      "x-database-tables": 
-[]
-      "x-frontend-usage": 
-[]
-  "/api/v1/auth/send-otp": 
-    "post": 
-      "description": "POST /api/v1/auth/send-otp"
-      "parameters": 
-[]
-      "responses": 
-        "200": 
-          "description": "Observed or expected 200 response"
-        "400": 
-          "description": "Observed or expected 400 response"
-        "401": 
-          "description": "Observed or expected 401 response"
-        "403": 
-          "description": "Observed or expected 403 response"
-        "404": 
-          "description": "Observed or expected 404 response"
-        "500": 
-          "description": "Observed or expected 500 response"
-      "security": 
-[]
-      "x-route-file": "apps/api/src/app/api/v1/auth/send-otp/route.ts"
-      "x-database-tables": 
-[]
-      "x-frontend-usage": 
-[]
-  "/api/v1/auth/verify-otp": 
-    "post": 
-      "description": "POST /api/v1/auth/verify-otp"
-      "parameters": 
-[]
-      "responses": 
-        "200": 
-          "description": "Observed or expected 200 response"
-        "400": 
-          "description": "Observed or expected 400 response"
-        "401": 
-          "description": "Observed or expected 401 response"
-        "403": 
-          "description": "Observed or expected 403 response"
-        "404": 
-          "description": "Observed or expected 404 response"
-        "500": 
-          "description": "Observed or expected 500 response"
-      "security": 
-[]
-      "x-route-file": "apps/api/src/app/api/v1/auth/verify-otp/route.ts"
-      "x-database-tables": 
-[]
-      "x-frontend-usage": 
-[]
   "/api/v1/embed/configurator": 
     "get": 
       "description": "GET /api/v1/embed/configurator"
@@ -8562,33 +7724,6 @@
       "x-route-file": "apps/api/src/app/api/v1/embed/configurator/route.ts"
       "x-database-tables": 
         - "sales_agents"
-      "x-frontend-usage": 
-[]
-  "/api/v2/status": 
-    "get": 
-      "description": "GET /api/v2/status"
-      "parameters": 
-[]
-      "responses": 
-        "200": 
-          "description": "Observed or expected 200 response"
-        "400": 
-          "description": "Observed or expected 400 response"
-        "401": 
-          "description": "Observed or expected 401 response"
-        "403": 
-          "description": "Observed or expected 403 response"
-        "404": 
-          "description": "Observed or expected 404 response"
-        "500": 
-          "description": "Observed or expected 500 response"
-      "security": 
-        - 
-          "bearerAuth": 
-[]
-      "x-route-file": "apps/api/src/app/api/v2/status/route.ts"
-      "x-database-tables": 
-[]
       "x-frontend-usage": 
 []
   "/api/walk-in-orders": 
@@ -8717,6 +7852,8 @@
       "responses": 
         "200": 
           "description": "Observed or expected 200 response"
+        "400": 
+          "description": "Observed or expected 400 response"
         "401": 
           "description": "Observed or expected 401 response"
         "403": 
@@ -8740,6 +7877,8 @@
       "responses": 
         "200": 
           "description": "Observed or expected 200 response"
+        "400": 
+          "description": "Observed or expected 400 response"
         "401": 
           "description": "Observed or expected 401 response"
         "403": 
@@ -8765,6 +7904,8 @@
       "responses": 
         "200": 
           "description": "Observed or expected 200 response"
+        "400": 
+          "description": "Observed or expected 400 response"
         "401": 
           "description": "Observed or expected 401 response"
         "403": 
@@ -8790,6 +7931,8 @@
       "responses": 
         "200": 
           "description": "Observed or expected 200 response"
+        "400": 
+          "description": "Observed or expected 400 response"
         "401": 
           "description": "Observed or expected 401 response"
         "403": 
@@ -8814,6 +7957,8 @@
       "responses": 
         "200": 
           "description": "Observed or expected 200 response"
+        "400": 
+          "description": "Observed or expected 400 response"
         "401": 
           "description": "Observed or expected 401 response"
         "403": 
@@ -8838,6 +7983,8 @@
       "responses": 
         "200": 
           "description": "Observed or expected 200 response"
+        "400": 
+          "description": "Observed or expected 400 response"
         "401": 
           "description": "Observed or expected 401 response"
         "403": 
@@ -8860,14 +8007,10 @@
       "parameters": 
 []
       "responses": 
-        "200": 
-          "description": "Observed or expected 200 response"
         "400": 
           "description": "Observed or expected 400 response"
         "401": 
           "description": "Observed or expected 401 response"
-        "403": 
-          "description": "Observed or expected 403 response"
         "500": 
           "description": "Observed or expected 500 response"
       "security": 
@@ -8888,6 +8031,8 @@
       "responses": 
         "200": 
           "description": "Observed or expected 200 response"
+        "400": 
+          "description": "Observed or expected 400 response"
         "401": 
           "description": "Observed or expected 401 response"
         "500": 
@@ -8910,6 +8055,8 @@
       "responses": 
         "200": 
           "description": "Observed or expected 200 response"
+        "400": 
+          "description": "Observed or expected 400 response"
         "401": 
           "description": "Observed or expected 401 response"
         "403": 
@@ -8935,6 +8082,8 @@
       "responses": 
         "200": 
           "description": "Observed or expected 200 response"
+        "400": 
+          "description": "Observed or expected 400 response"
         "401": 
           "description": "Observed or expected 401 response"
         "403": 

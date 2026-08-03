@@ -93,7 +93,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    logger.warn('superadmin_extension_auth.invalid_credentials', { submittedId });
+    logger.warn('superadmin_extension_auth.invalid_credentials', { submittedInput });
     return NextResponse.json(
       { error: 'Invalid login credentials' },
       { status: 401, headers: corsHeaders }
