@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
   const API_AUTH_URL_CANDIDATES = [
-    'https://api.tecbunny.com/api/auth/extension',
     'https://www.tecbunny.com/api/auth/extension',
+    'https://api.tecbunny.com/api/auth/extension',
     'https://superadmin.tecbunny.com/api/auth/extension'
   ];
   const REQUEST_TIMEOUT_MS = 15000;
