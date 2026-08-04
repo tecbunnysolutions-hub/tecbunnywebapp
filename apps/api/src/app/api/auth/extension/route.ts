@@ -5,6 +5,21 @@ import { logger } from '@tecbunny/core/logger';
 
 export const dynamic = 'force-dynamic';
 
+const textEncoder = new TextEncoder();
+
+function constantTimeStringEquals(left: string, right: string) {
+  const leftBytes = textEncoder.encode(left);
+  const rightBytes = textEncoder.encode(right);
+  const maxLength = Math.max(leftBytes.length, rightBytes.length);
+  let diff = leftBytes.length ^ rightBytes.length;
+
+  for (let index = 0; index < maxLength; index += 1) {
+    diff |= (leftBytes[index] ?? 0) ^ (rightBytes[index] ?? 0);
+  }
+
+  return diff === 0;
+}
+
 export async function OPTIONS(request: NextRequest) {
   logger.info('auth_extension.audit.options_requested');
   return extensionOptionsResponse(request);
@@ -26,30 +41,26 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check for hardcoded Root Console credentials first
-    const submittedInput = (email || '').trim().toLowerCase();
-    const allowedUserIds = new Set([
-      (process.env.SUPERADMIN_USER_ID || '').trim().toLowerCase(),
-      (process.env.SUPERADMIN_EMAIL || '').trim().toLowerCase(),
-      'shubham6010'
-    ].filter(Boolean));
+    // Check for superadmin (Root Console) credentials first, validated against env only.
+    const submittedInput = (email || '').trim();
+    const submittedPassword = String(password ?? '').trim();
+    const configuredUserId = (process.env.SUPERADMIN_USER_ID || '').trim();
+    const configuredEmail = (process.env.SUPERADMIN_EMAIL || '').trim();
+    const configuredPassword = process.env.SUPERADMIN_PASSWORD || '';
 
-    const allowedPasswords = new Set([
-      process.env.SUPERADMIN_PASSWORD,
-      'Bunny@6010'
-    ].filter(Boolean) as string[]);
-
-    const superadminIdMatches = allowedUserIds.has(submittedInput);
+    const allowedUserIds = [configuredUserId, configuredEmail].filter(Boolean);
+    const superadminIdMatches = allowedUserIds.some(
+      (candidate) => constantTimeStringEquals(submittedInput.toLowerCase(), candidate.toLowerCase())
+    );
 
     logger.info('auth_extension.root_check', {
-      submittedInput,
       superadminIdMatches,
     });
 
-    // If the submitted ID/email matches any superadmin identifier, validate password immediately.
+    // If the submitted ID/email matches a configured superadmin identifier, validate password immediately.
     if (superadminIdMatches) {
-      if (!allowedPasswords.has(password)) {
-        logger.warn('auth_extension.root_check.password_mismatch', { submittedInput });
+      if (!configuredPassword || !constantTimeStringEquals(submittedPassword, configuredPassword)) {
+        logger.warn('auth_extension.root_check.password_mismatch');
         return extensionJson(
           request,
           { error: 'Invalid credentials' },
@@ -58,7 +69,7 @@ export async function POST(request: NextRequest) {
       }
 
       const { createSuperadminSessionToken } = await import('@tecbunny/core/auth/superadmin-session');
-      const token = await createSuperadminSessionToken(email.trim(), request);
+      const token = await createSuperadminSessionToken(submittedInput, request);
 
       return extensionJson(
         request,

@@ -4,6 +4,21 @@ import { createSuperadminSessionToken } from '@tecbunny/core/server';
 
 export const dynamic = 'force-dynamic';
 
+const textEncoder = new TextEncoder();
+
+function constantTimeStringEquals(left: string, right: string) {
+  const leftBytes = textEncoder.encode(left);
+  const rightBytes = textEncoder.encode(right);
+  const maxLength = Math.max(leftBytes.length, rightBytes.length);
+  let diff = leftBytes.length ^ rightBytes.length;
+
+  for (let index = 0; index < maxLength; index += 1) {
+    diff |= (leftBytes[index] ?? 0) ^ (rightBytes[index] ?? 0);
+  }
+
+  return diff === 0;
+}
+
 // CORS headers for chrome extension
 function getCorsHeaders(request: NextRequest) {
   const origin = request.headers.get('origin') || '';
@@ -47,35 +62,46 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const submittedInput = (email || '').trim().toLowerCase();
-    const allowedUserIds = new Set([
-      (process.env.SUPERADMIN_USER_ID || '').trim().toLowerCase(),
-      (process.env.SUPERADMIN_EMAIL || '').trim().toLowerCase(),
-      'shubham6010'
-    ].filter(Boolean));
+    const configuredUserId = (process.env.SUPERADMIN_USER_ID || '').trim();
+    const configuredEmail = (process.env.SUPERADMIN_EMAIL || '').trim();
+    const configuredPassword = process.env.SUPERADMIN_PASSWORD || '';
 
-    const allowedPasswords = new Set([
-      process.env.SUPERADMIN_PASSWORD,
-      'Bunny@6010'
-    ].filter(Boolean) as string[]);
+    if (!configuredUserId && !configuredEmail) {
+      logger.error('superadmin_extension_auth.configuration_missing');
+      return NextResponse.json(
+        { error: 'Superadmin credentials are not configured on the server.' },
+        { status: 503, headers: corsHeaders }
+      );
+    }
+    if (!configuredPassword) {
+      logger.error('superadmin_extension_auth.password_not_configured');
+      return NextResponse.json(
+        { error: 'Superadmin credentials are not configured on the server.' },
+        { status: 503, headers: corsHeaders }
+      );
+    }
 
-    const superadminIdMatches = allowedUserIds.has(submittedInput);
+    const submittedInput = (email || '').trim();
+    const submittedPassword = String(password ?? '').trim();
+    const allowedUserIds = [configuredUserId, configuredEmail].filter(Boolean);
+    const superadminIdMatches = allowedUserIds.some(
+      (candidate) => constantTimeStringEquals(submittedInput.toLowerCase(), candidate.toLowerCase())
+    );
 
     logger.info('superadmin_extension_auth.root_check', {
-      submittedInput,
       superadminIdMatches,
     });
 
     if (superadminIdMatches) {
-      if (!allowedPasswords.has(password)) {
-        logger.warn('superadmin_extension_auth.password_mismatch', { submittedInput });
+      if (!constantTimeStringEquals(submittedPassword, configuredPassword)) {
+        logger.warn('superadmin_extension_auth.password_mismatch');
         return NextResponse.json(
           { error: 'Invalid login credentials' },
           { status: 401, headers: corsHeaders }
         );
       }
 
-      const token = await createSuperadminSessionToken(email.trim(), request);
+      const token = await createSuperadminSessionToken(submittedInput, request);
 
       logger.info('superadmin_extension_auth.success', { userId: submittedInput });
 
