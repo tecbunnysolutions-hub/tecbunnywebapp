@@ -265,7 +265,7 @@ ${form.details.trim()}
   };
 
   return (
-    <div className="relative min-h-screen bg-[#09090B] text-zinc-200 selection:bg-blue-500/20 selection:text-white overflow-hidden py-16 sm:py-24">
+    <div className="relative min-h-screen bg-[#09090B] text-zinc-200 selection:bg-blue-500/20 selection:text-white overflow-hidden py-12 sm:py-16">
       {/* Background Gradients */}
       <div className="pointer-events-none absolute inset-0 -z-10">
         <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:5rem_5rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]" />
@@ -273,14 +273,14 @@ ${form.details.trim()}
         <div className="absolute -right-40 top-1/4 h-[50rem] w-[50rem] rounded-full bg-indigo-500/5 blur-[200px]" />
       </div>
 
-      <div className="mx-auto flex max-w-6xl flex-col gap-20 px-6 sm:px-8">
+      <div className="mx-auto flex max-w-6xl flex-col gap-12 px-6 sm:px-8">
         {/* Page Hero */}
-        <section className="text-center space-y-6 max-w-3xl mx-auto">
+        <section className="text-center space-y-4 max-w-3xl mx-auto">
           <div className="inline-flex items-center gap-2 rounded-full border border-blue-500/20 bg-blue-500/5 px-4.5 py-1.5 text-xs font-semibold text-blue-400">
             <Building2 size={14} className="text-blue-400" />
             <span>Corporate Solutions Division</span>
           </div>
-          <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl md:text-6xl font-tech leading-tight text-white">
+          <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl md:text-5xl font-tech leading-tight text-white">
             Enterprise IT & Physical <span className="bg-gradient-to-r from-blue-400 via-indigo-200 to-white bg-clip-text text-transparent">Infrastructure</span>
           </h1>
           <p className="text-base sm:text-lg font-light leading-relaxed text-zinc-400 max-w-2xl mx-auto">

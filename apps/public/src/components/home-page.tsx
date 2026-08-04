@@ -116,14 +116,14 @@ export default function HomePage({
     <div className="tb-page relative overflow-hidden selection:bg-blue-500/20 selection:text-white">
       <DynamicBehavioralCouponPopup />
 
-      <section className="relative flex min-h-[86vh] items-center overflow-hidden py-20 sm:py-28 lg:py-32">
+      <section className="relative flex min-h-[72vh] items-center overflow-hidden py-14 sm:py-20 lg:py-24">
         <DynamicAmbientEffects />
         <div className="pointer-events-none absolute inset-0 bg-noise opacity-[0.06] brightness-100 contrast-150" />
 
         <div className="tb-container relative z-10">
           <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-[1.05fr_0.95fr] xl:gap-16">
-            <div className="reveal-section is-revealed max-w-3xl space-y-8" data-reveal-id="hero-copy">
-              <h1 className="text-4xl font-extrabold leading-[1.02] text-white sm:text-5xl md:text-6xl xl:text-7xl font-tech tracking-tight" aria-label="Powering Your Operations. Securing Your Enterprise.">
+            <div className="reveal-section is-revealed max-w-3xl space-y-6" data-reveal-id="hero-copy">
+              <h1 className="text-3xl font-extrabold leading-[1.05] text-white sm:text-4xl md:text-5xl xl:text-6xl font-tech tracking-tight" aria-label="Powering Your Operations. Securing Your Enterprise.">
                 <span className="glitch-text block pb-3 text-blue-400" data-text="Powering Your Operations.">Powering Your Operations.</span>
                 <span className="block text-zinc-100">
                   Securing Your Enterprise.

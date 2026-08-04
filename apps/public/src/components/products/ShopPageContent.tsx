@@ -765,10 +765,10 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
         </div>
       )}
 
-      <div className="relative mx-auto max-w-7xl px-6 pb-24 pt-24 sm:px-8 sm:pt-32">
-        <div className="flex flex-col gap-12">
+      <div className="relative mx-auto max-w-7xl px-6 pb-16 pt-20 sm:px-8 sm:pt-24">
+        <div className="flex flex-col gap-6">
           {/* Hero Header */}
-          <div className="reveal-section flex flex-col items-center text-center gap-6" data-reveal-id="products-hero">
+          <div className="reveal-section flex flex-col items-center text-center gap-5" data-reveal-id="products-hero">
             <div className={cn('reveal-item flex flex-col items-center gap-4', revealDelayClass(0))}>
               <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-semibold text-primary">
                 <Sparkles size={14} className="animate-pulse" />
@@ -780,7 +780,7 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
                   Hardware & Gear
                 </span>
               </h1>
-              <p className="max-w-xl text-base leading-relaxed text-zinc-300 font-light mt-2">
+              <p className="max-w-xl text-base leading-relaxed text-zinc-300 font-light">
                 {searchQuery 
                   ? `Found results matching "${searchQuery}"` 
                   : 'High-performance infrastructure and components, engineered for maximum reliability.'
@@ -789,7 +789,7 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
             </div>
 
             {/* Command-bar style search */}
-            <form onSubmit={handleSearch} className={cn('reveal-item w-full max-w-lg mt-4', revealDelayClass(90))}>
+            <form onSubmit={handleSearch} className={cn('reveal-item w-full max-w-lg', revealDelayClass(90))}>
               <div className="relative group shadow-2xl rounded-xl">
                 <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary" />
                 <input
@@ -809,7 +809,7 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
         </div>
 
         {/* Layout container */}
-        <div className="flex flex-col lg:flex-row gap-8 items-start mt-8 w-full">
+        <div className="flex flex-col lg:flex-row gap-8 items-start mt-6 w-full">
           
           {/* Sidebar Filters - Desktop only */}
           <aside className="w-full lg:w-64 shrink-0 bg-zinc-950 border border-border rounded-2xl p-6 lg:sticky lg:top-[90px] space-y-6 reveal-section hidden lg:block" data-reveal-id="products-sidebar">

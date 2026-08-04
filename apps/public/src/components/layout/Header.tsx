@@ -61,7 +61,6 @@ const navLinks = [
       { name: 'Software & System Administration', href: '/services/software-system-admin' },
     ]
   },
-  { name: 'Portfolio', href: '/portfolio' },
   { name: 'About', href: '/about' },
   { name: 'Contact', href: '/contact' },
   {
