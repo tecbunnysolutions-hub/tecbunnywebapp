@@ -115,40 +115,40 @@ export const getCustomerCategoriesFromDb = safeCache(
 
 /**
  * Fetch Custom Setup Constants
+ *
+ * This pricing path must stay live. The admin price manager can update
+ * constants at any time, so a 1-hour cache here leaves the public builder
+ * showing stale totals after a save.
  */
-export const getCustomSetupConstantsFromDb = safeCache(
-  async () => {
-    try {
-      const supabase = createServiceClient();
-      const { data } = await supabase.from('custom_setup_constants').select('key, value');
-      const constants: Record<string, number> = {};
-      if (data) {
-        data.forEach((row) => {
-          constants[row.key] = Number(row.value);
-        });
-      }
-      return constants;
-    } catch (e) {
-      return {};
+export async function getCustomSetupConstantsFromDb(): Promise<Record<string, number>> {
+  try {
+    const supabase = createServiceClient();
+    const { data } = await supabase.from('custom_setup_constants').select('key, value');
+    const constants: Record<string, number> = {};
+    if (data) {
+      data.forEach((row) => {
+        constants[row.key] = Number(row.value);
+      });
     }
-  },
-  ['db_custom_setup_constants'],
-  { revalidate: 3600, tags: ['custom_setup_constants'] }
-);
+    return constants;
+  } catch (e) {
+    return {};
+  }
+}
 
 /**
  * Fetch Custom Setup Inventory
+ *
+ * This drives the public custom setup calculator pricing. It must not be
+ * served from the long-lived Next.js cache because admin pricing edits are
+ * expected to reflect immediately on the customer page.
  */
-export const getCustomSetupInventoryFromDb = safeCache(
-  async () => {
-    try {
-      const supabase = createServiceClient();
-      const { data } = await supabase.from('custom_setup_inventory').select('*').eq('is_active', true);
-      return data || [];
-    } catch (e) {
-      return [];
-    }
-  },
-  ['db_custom_setup_inventory'],
-  { revalidate: 3600, tags: ['custom_setup_inventory'] }
-);
+export async function getCustomSetupInventoryFromDb(): Promise<any[]> {
+  try {
+    const supabase = createServiceClient();
+    const { data } = await supabase.from('custom_setup_inventory').select('*').eq('is_active', true);
+    return data || [];
+  } catch (e) {
+    return [];
+  }
+}
