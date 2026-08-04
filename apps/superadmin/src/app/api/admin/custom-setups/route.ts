@@ -601,50 +601,28 @@ export async function PATCH(request: NextRequest) {
           return NextResponse.json({ error: 'Missing option id' }, { status: 400 });
         }
 
-        const unitPrice = sanitizeNumber(update.unitPrice ?? null);
+        const unitPrice = sanitizeNumber(update.unitPrice);
+        const salePrice = update.metadata && typeof update.metadata === 'object'
+          ? sanitizeNumber((update.metadata as Record<string, unknown>).sale_price)
+          : undefined;
 
-        const { error } = await serviceSupabase
+        const { data: updatedOptionRows, error } = await serviceSupabase
           .from('custom_setup_component_options')
           .update({
             ...(update.label !== undefined ? { label: update.label } : {}),
             ...(update.metadata !== undefined ? { metadata: update.metadata } : {}),
             ...(unitPrice !== undefined ? { unit_price: unitPrice } : {}),
           })
-          .eq('id', update.id);
+          .eq('id', update.id)
+          .select('id');
 
-        if (error) {
-          if (isMissingCustomSetupRelation(error)) {
-            const salePrice = update.metadata && typeof update.metadata === 'object'
-              ? sanitizeNumber((update.metadata as Record<string, unknown>).sale_price)
-              : undefined;
-            const legacyUpdate: Record<string, unknown> = {
-              ...(unitPrice !== undefined ? { mrp: unitPrice } : {}),
-              ...(salePrice !== undefined ? { sale: salePrice } : {}),
-              ...(update.metadata !== undefined ? { metadata: update.metadata } : {}),
-            };
+        const relationMissing = error ? isMissingCustomSetupRelation(error) : false;
+        // Supabase returns no error when the id lives in the legacy inventory
+        // table (0 rows matched). Treat that as a signal to fall back too.
+        const noBlueprintRowUpdated = !error && (!updatedOptionRows || updatedOptionRows.length === 0);
 
-            if (Object.keys(legacyUpdate).length === 0) {
-              applied.push({ target: 'option', id: update.id });
-              continue;
-            }
-
-            const { error: legacyError } = await serviceSupabase
-              .from('custom_setup_inventory')
-              .update(legacyUpdate)
-              .eq('id', update.id);
-
-            if (legacyError) {
-              logger.error('admin_custom_setups.update_legacy_option_failed', {
-                id: update.id,
-                error: legacyError.message,
-                code: legacyError.code,
-              });
-              throw legacyError;
-            }
-
-            applied.push({ target: 'legacy-option', id: update.id });
-            continue;
-          }
+        // Non-recoverable error from the blueprint options table.
+        if (error && !relationMissing) {
           logger.error('admin_custom_setups.update_option_failed', {
             id: update.id,
             error: error.message,
@@ -653,7 +631,44 @@ export async function PATCH(request: NextRequest) {
           throw error;
         }
 
-        applied.push({ target: 'option', id: update.id });
+        // Blueprint option updated successfully.
+        if (!error && !noBlueprintRowUpdated) {
+          applied.push({ target: 'option', id: update.id });
+          continue;
+        }
+
+        // Fall back to the legacy custom_setup_inventory price catalogue.
+        const legacyUpdate: Record<string, unknown> = {
+          ...(unitPrice !== undefined ? { mrp: unitPrice } : {}),
+          ...(salePrice !== undefined ? { sale: salePrice } : {}),
+          ...(update.metadata !== undefined ? { metadata: update.metadata } : {}),
+        };
+
+        if (Object.keys(legacyUpdate).length === 0) {
+          applied.push({ target: 'option', id: update.id });
+          continue;
+        }
+
+        const { data: legacyRows, error: legacyError } = await serviceSupabase
+          .from('custom_setup_inventory')
+          .update(legacyUpdate)
+          .eq('id', update.id)
+          .select('id');
+
+        if (legacyError) {
+          logger.error('admin_custom_setups.update_legacy_option_failed', {
+            id: update.id,
+            error: legacyError.message,
+            code: legacyError.code,
+          });
+          throw legacyError;
+        }
+
+        if (!legacyRows || legacyRows.length === 0) {
+          logger.warn('admin_custom_setups.update_option_no_match', { id: update.id });
+        }
+
+        applied.push({ target: 'legacy-option', id: update.id });
         continue;
       }
 
