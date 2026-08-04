@@ -14,18 +14,48 @@ function normalizePayload(body: any) {
     return { error: 'Title, start date, and end date are required' } as const;
   }
 
+  const metadata = {
+    offer_type: body.offer_type || 'PERCENTAGE_DISCOUNT',
+    offer_value: body.offer_value == null ? null : String(body.offer_value),
+    start_date: startDate,
+    end_date: endDate,
+    is_active: body.is_active !== false,
+  };
+
   return {
     data: {
       title,
       description: typeof body.description === 'string' ? body.description.trim() : '',
-      offer_type: body.offer_type || 'PERCENTAGE_DISCOUNT',
-      offer_value: body.offer_value == null ? null : String(body.offer_value),
-      start_date: startDate,
-      end_date: endDate,
-      is_active: body.is_active !== false,
+      price: 0,
+      status: body.is_active === false ? 'inactive' : 'active',
+      metadata,
       updated_at: new Date().toISOString(),
     },
   } as const;
+}
+
+function shapeOfferResponse(row: any) {
+  const metadata = row?.metadata && typeof row.metadata === 'object' && !Array.isArray(row.metadata)
+    ? row.metadata as Record<string, unknown>
+    : {};
+
+  const offerType = typeof metadata.offer_type === 'string' ? metadata.offer_type : 'PERCENTAGE_DISCOUNT';
+  const offerValue = typeof metadata.offer_value === 'string' ? metadata.offer_value : '';
+  const startDate = typeof metadata.start_date === 'string' ? metadata.start_date : '';
+  const endDate = typeof metadata.end_date === 'string' ? metadata.end_date : '';
+  const isActive = row?.status !== 'inactive' && metadata.is_active !== false;
+
+  return {
+    id: row.id,
+    title: row.title,
+    description: row.description || '',
+    offer_type: offerType,
+    offer_value: offerValue,
+    start_date: startDate,
+    end_date: endDate,
+    is_active: isActive,
+    created_at: row.created_at,
+  };
 }
 
 export async function GET() {
@@ -39,7 +69,7 @@ export async function GET() {
       .order('created_at', { ascending: false });
 
     if (error) throw error;
-    return NextResponse.json({ offers: data ?? [] });
+    return NextResponse.json({ offers: (data ?? []).map(shapeOfferResponse) });
   } catch (error) {
     logger.error('superadmin_custom_setup_offers.list_failed', { error });
     return NextResponse.json({ error: 'Failed to load offers' }, { status: 500 });
@@ -72,12 +102,20 @@ export async function POST(request: NextRequest) {
       priority: 'high',
     }, async () => createServiceClient()
       .from('custom_setup_offers')
-      .insert({ ...parsed.data, created_at: new Date().toISOString() })
+      .insert({
+        title: parsed.data.title,
+        description: parsed.data.description,
+        price: parsed.data.price,
+        status: parsed.data.status,
+        metadata: parsed.data.metadata,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })
       .select('*')
       .single());
 
     if (error) throw error;
-    return NextResponse.json({ message: 'Offer created successfully', offer: data }, { status: 201 });
+    return NextResponse.json({ message: 'Offer created successfully', offer: shapeOfferResponse(data) }, { status: 201 });
   } catch (error) {
     logger.error('superadmin_custom_setup_offers.create_failed', { error });
     return NextResponse.json({ error: 'Failed to create offer' }, { status: 500 });
@@ -124,13 +162,20 @@ export async function PUT(request: NextRequest) {
       priority: 'high',
     }, async () => supabase
         .from('custom_setup_offers')
-        .update(parsed.data)
+        .update({
+          title: parsed.data.title,
+          description: parsed.data.description,
+          price: parsed.data.price,
+          status: parsed.data.status,
+          metadata: parsed.data.metadata,
+          updated_at: new Date().toISOString(),
+        })
         .eq('id', id)
         .select('*')
         .single());
 
     if (error) throw error;
-    return NextResponse.json({ message: 'Offer updated successfully', offer: data });
+    return NextResponse.json({ message: 'Offer updated successfully', offer: shapeOfferResponse(data) });
   } catch (error) {
     logger.error('superadmin_custom_setup_offers.update_failed', { error });
     return NextResponse.json({ error: 'Failed to update offer' }, { status: 500 });
