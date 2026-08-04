@@ -558,6 +558,12 @@ function isSystemUpdatePayload(payload: UpdatePayload): payload is SystemUpdateP
   return payload.target === 'system';
 }
 
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+function isUuid(value: string): boolean {
+  return UUID_PATTERN.test(value);
+}
+
 function sanitizeNumber(value: unknown): number | null | undefined {
   if (value === undefined) {
     return undefined;
@@ -605,34 +611,44 @@ export async function PATCH(request: NextRequest) {
         const salePrice = update.metadata && typeof update.metadata === 'object'
           ? sanitizeNumber((update.metadata as Record<string, unknown>).sale_price)
           : undefined;
+        const idIsUuid = isUuid(update.id);
 
-        const { data: updatedOptionRows, error } = await serviceSupabase
-          .from('custom_setup_component_options')
-          .update({
-            ...(update.label !== undefined ? { label: update.label } : {}),
-            ...(update.metadata !== undefined ? { metadata: update.metadata } : {}),
-            ...(unitPrice !== undefined ? { unit_price: unitPrice } : {}),
-          })
-          .eq('id', update.id)
-          .select('id');
+        // Only the blueprint options table uses UUID primary keys. Legacy seed
+        // ids (e.g. "opt-dvr-4ch") would raise a 22P02 uuid parse error, so we
+        // only probe that table when the id is actually a UUID.
+        let updatedOptionRows: Array<{ id: string }> | null = null;
+        let optionError: { code?: string; message?: string } | null = null;
+        if (idIsUuid) {
+          const res = await serviceSupabase
+            .from('custom_setup_component_options')
+            .update({
+              ...(update.label !== undefined ? { label: update.label } : {}),
+              ...(update.metadata !== undefined ? { metadata: update.metadata } : {}),
+              ...(unitPrice !== undefined ? { unit_price: unitPrice } : {}),
+            })
+            .eq('id', update.id)
+            .select('id');
+          updatedOptionRows = res.data as Array<{ id: string }> | null;
+          optionError = res.error;
+        }
 
-        const relationMissing = error ? isMissingCustomSetupRelation(error) : false;
+        const relationMissing = optionError ? isMissingCustomSetupRelation(optionError) : false;
         // Supabase returns no error when the id lives in the legacy inventory
         // table (0 rows matched). Treat that as a signal to fall back too.
-        const noBlueprintRowUpdated = !error && (!updatedOptionRows || updatedOptionRows.length === 0);
+        const noBlueprintRowUpdated = idIsUuid && !optionError && (!updatedOptionRows || updatedOptionRows.length === 0);
 
         // Non-recoverable error from the blueprint options table.
-        if (error && !relationMissing) {
+        if (optionError && !relationMissing) {
           logger.error('admin_custom_setups.update_option_failed', {
             id: update.id,
-            error: error.message,
-            code: error.code,
+            error: optionError.message,
+            code: optionError.code,
           });
-          throw error;
+          throw optionError;
         }
 
         // Blueprint option updated successfully.
-        if (!error && !noBlueprintRowUpdated) {
+        if (idIsUuid && !optionError && !noBlueprintRowUpdated) {
           applied.push({ target: 'option', id: update.id });
           continue;
         }
@@ -649,13 +665,30 @@ export async function PATCH(request: NextRequest) {
           continue;
         }
 
+        // UUID ids come from custom_setup_inventory.id; legacy seed ids match
+        // the natural key custom_setup_inventory.code.
+        const legacyMatchColumn = idIsUuid ? 'id' : 'code';
         const { data: legacyRows, error: legacyError } = await serviceSupabase
           .from('custom_setup_inventory')
           .update(legacyUpdate)
-          .eq('id', update.id)
+          .eq(legacyMatchColumn, update.id)
           .select('id');
 
         if (legacyError) {
+          if (isMissingCustomSetupRelation(legacyError)) {
+            logger.error('admin_custom_setups.price_catalogue_not_provisioned', {
+              id: update.id,
+              error: legacyError.message,
+              code: legacyError.code,
+            });
+            return NextResponse.json(
+              {
+                error:
+                  'Custom setup price catalogue is not provisioned in the database. Apply the custom_setup_prices migration before editing prices.',
+              },
+              { status: 503 }
+            );
+          }
           logger.error('admin_custom_setups.update_legacy_option_failed', {
             id: update.id,
             error: legacyError.message,
@@ -665,7 +698,7 @@ export async function PATCH(request: NextRequest) {
         }
 
         if (!legacyRows || legacyRows.length === 0) {
-          logger.warn('admin_custom_setups.update_option_no_match', { id: update.id });
+          logger.warn('admin_custom_setups.update_option_no_match', { id: update.id, matchColumn: legacyMatchColumn });
         }
 
         applied.push({ target: 'legacy-option', id: update.id });
