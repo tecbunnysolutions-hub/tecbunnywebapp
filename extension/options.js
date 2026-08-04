@@ -13,12 +13,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function renderAISettings() {
     chrome.storage.local.get(['aiSource', 'aiProvider', 'aiApiKey', 'aiModel'], (data) => {
-      if (aiSource) aiSource.value = data.aiSource || 'website';
-      if (aiProvider) aiProvider.value = data.aiProvider || 'gemini';
+      if (aiSource) aiSource.value = data.aiSource || 'external';
+      if (aiProvider) aiProvider.value = data.aiProvider || 'groq';
       if (aiApiKey) aiApiKey.value = data.aiApiKey || '';
       if (aiModel) aiModel.value = data.aiModel || '';
       if (externalOptionsContainer) {
-        externalOptionsContainer.style.display = (data.aiSource === 'external') ? 'flex' : 'none';
+        externalOptionsContainer.style.display = ((data.aiSource || 'external') === 'external') ? 'flex' : 'none';
       }
     });
   }

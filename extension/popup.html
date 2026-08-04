@@ -385,6 +385,7 @@
         <div class="form-group">
           <label for="aiProviderSelect">AI Provider</label>
           <select id="aiProviderSelect" style="width: 100%; background: #1e293b; border: 1px solid #334155; border-radius: 8px; color: #f8fafc; padding: 8px 12px; font-size: 0.85rem; outline: none;">
+            <option value="groq">Groq (Free)</option>
             <option value="gemini">Google Gemini</option>
             <option value="openai">OpenAI</option>
             <option value="claude">Anthropic Claude</option>
@@ -398,7 +399,7 @@
 
         <div class="form-group">
           <label for="aiModelInput">Model Override (Optional)</label>
-          <input type="text" id="aiModelInput" placeholder="e.g. gemini-2.0-flash, gpt-4o-mini, claude-3-5-sonnet-20241022">
+          <input type="text" id="aiModelInput" placeholder="e.g. groq/compound, llama-3.3-70b-versatile, llama-3.1-8b-instant">
         </div>
       </div>
     </div>

@@ -774,7 +774,7 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
                 <Sparkles size={14} className="animate-pulse" />
                 Equipment Manifest
               </div>
-              <h1 className="text-4xl font-black tracking-tight text-white sm:text-6xl md:text-7xl uppercase leading-none">
+              <h1 className="text-2xl font-black tracking-tight text-white sm:text-3xl md:text-4xl uppercase leading-tight">
                 Enterprise-Grade <br className="sm:hidden" />
                 <span className="bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-500 bg-clip-text text-transparent">
                   Hardware & Gear

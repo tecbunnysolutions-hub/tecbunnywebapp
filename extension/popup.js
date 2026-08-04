@@ -93,8 +93,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (typeof error === 'string') {
       const trimmed = error.trim();
       if (trimmed.includes('429') || trimmed.includes('RESOURCE_EXHAUSTED') || trimmed.includes('Quota exceeded')) {
-        return 'Gemini AI free tier quota limit reached (429 Rate Limit). Please wait 1-2 minutes or check your API key quota at https://ai.google.dev.';
-      }
+      return 'AI provider rate limit reached (429). Please wait a minute and try again, or check your API key quota.';
+    }
       if (trimmed.startsWith('{') && trimmed.endsWith('}')) {
         try {
           const parsed = JSON.parse(trimmed);
@@ -292,12 +292,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function loadAISettings() {
     chrome.storage.local.get(['aiSource', 'aiProvider', 'aiApiKey', 'aiModel'], (aiConfig) => {
-      if (aiSourceSelect) aiSourceSelect.value = aiConfig.aiSource || 'website';
-      if (aiProviderSelect) aiProviderSelect.value = aiConfig.aiProvider || 'gemini';
+      if (aiSourceSelect) aiSourceSelect.value = aiConfig.aiSource || 'external';
+      if (aiProviderSelect) aiProviderSelect.value = aiConfig.aiProvider || 'groq';
       if (aiApiKeyInput) aiApiKeyInput.value = aiConfig.aiApiKey || '';
       if (aiModelInput) aiModelInput.value = aiConfig.aiModel || '';
       if (externalAiContainer) {
-        externalAiContainer.style.display = (aiConfig.aiSource === 'external') ? 'block' : 'none';
+        externalAiContainer.style.display = ((aiConfig.aiSource || 'external') === 'external') ? 'block' : 'none';
       }
     });
   }

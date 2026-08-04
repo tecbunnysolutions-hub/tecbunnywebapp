@@ -100,7 +100,7 @@
 
     <section aria-labelledby="aiHeading" style="margin-bottom: 24px;">
       <h2 id="aiHeading">AI Engine Settings</h2>
-      <p style="margin: 8px 0 16px;">Configure whether product enhancement uses the Tecbunny Website API or your own direct API key for OpenAI, Anthropic Claude, or Google Gemini.</p>
+      <p style="margin: 8px 0 16px;">Configure whether product enhancement uses the Tecbunny Website API or your own direct API key for Groq (free), OpenAI, Anthropic Claude, or Google Gemini.</p>
       
       <div style="display: flex; flex-direction: column; gap: 14px;">
         <div>
@@ -115,6 +115,7 @@
           <div>
             <label for="aiProvider" style="display: block; font-size: 0.78rem; font-weight: 700; color: #64748b; text-transform: uppercase; margin-bottom: 6px;">AI Provider</label>
             <select id="aiProvider" style="width: 100%; padding: 8px 12px; border-radius: 6px; border: 1px solid #cbd5e1; font: inherit;">
+              <option value="groq">Groq (Free)</option>
               <option value="gemini">Google Gemini</option>
               <option value="openai">OpenAI</option>
               <option value="claude">Anthropic Claude</option>
@@ -128,7 +129,7 @@
 
           <div>
             <label for="aiModel" style="display: block; font-size: 0.78rem; font-weight: 700; color: #64748b; text-transform: uppercase; margin-bottom: 6px;">Model Override (Optional)</label>
-            <input type="text" id="aiModel" placeholder="e.g. gemini-2.0-flash, gpt-4o-mini, claude-3-5-sonnet-20241022" style="width: 100%; padding: 8px 12px; border-radius: 6px; border: 1px solid #cbd5e1; font: inherit;" />
+            <input type="text" id="aiModel" placeholder="e.g. groq/compound, llama-3.3-70b-versatile, llama-3.1-8b-instant" style="width: 100%; padding: 8px 12px; border-radius: 6px; border: 1px solid #cbd5e1; font: inherit;" />
           </div>
         </div>
 
