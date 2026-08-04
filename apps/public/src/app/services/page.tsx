@@ -37,6 +37,8 @@ type ServiceRow = {
   is_active?: boolean | null;
   status?: string | boolean | null;
   price?: number | string | null;
+  base_price?: number | string | null;
+  metadata?: Record<string, unknown> | null;
   duration_days?: number | null;
   category?: Service['category'] | string | null;
   display_order?: number | null;
@@ -79,28 +81,37 @@ function normalizeService(row: ServiceRow): Service {
     : (typeof statusValue === 'boolean'
         ? statusValue
         : String(statusValue || '').toLowerCase() === 'active');
-  const title = stripHtmlToPlainText(row.title || row.name, 90) || 'Service';
+  const metadata = (row.metadata && typeof row.metadata === 'object') ? row.metadata as Record<string, unknown> : {};
+  const metaTitle = typeof metadata.title === 'string' ? metadata.title : null;
+  const metaIcon = typeof metadata.icon === 'string' ? metadata.icon : null;
+  const metaTerms = typeof metadata.terms_and_conditions === 'string' ? metadata.terms_and_conditions : null;
+  const metaDisplayOrder = typeof metadata.display_order === 'number' ? metadata.display_order : null;
+  const title = stripHtmlToPlainText(metaTitle || row.title || row.name, 90) || 'Service';
   const description = stripHtmlToPlainText(row.description || row.details, 220);
+
+  // Live `services` table stores the amount in `base_price`; older/local rows may use `price`.
+  const rawPrice = row.base_price ?? row.price;
+  const numericPrice = typeof rawPrice === 'number' ? rawPrice : Number(rawPrice ?? 0);
 
   return {
     id: String(row.id),
     title,
     description,
-    icon: row.icon || row.icon_name || 'Wrench',
-    features: parseFeatures(row.features ?? row.feature_list ?? [])
+    icon: metaIcon || row.icon || row.icon_name || 'Wrench',
+    features: parseFeatures(metadata.features ?? row.features ?? row.feature_list ?? [])
       .map((feature) => stripHtmlToPlainText(feature, 120))
       .filter((feature) => feature.length > 0),
     badge: row.badge === 'Popular' || row.badge === 'Recommended' || row.badge === 'New' || row.badge === 'Featured'
       ? row.badge
       : null,
     is_active: isActive ?? true,
-    price: typeof row.price === 'number' ? row.price : Number(row.price ?? 0) || undefined,
+    price: numericPrice > 0 ? numericPrice : undefined,
     duration_days: typeof row.duration_days === 'number' ? row.duration_days : undefined,
     category: (row.category || 'Support') as Service['category'],
-    display_order: typeof row.display_order === 'number' ? row.display_order : 0,
+    display_order: metaDisplayOrder ?? (typeof row.display_order === 'number' ? row.display_order : 0),
     created_at: row.created_at || new Date(0).toISOString(),
     updated_at: row.updated_at || new Date(0).toISOString(),
-    terms_and_conditions: row.terms_and_conditions || undefined,
+    terms_and_conditions: metaTerms || row.terms_and_conditions || undefined,
   };
 }
 
