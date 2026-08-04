@@ -28,9 +28,13 @@ function generateNonce(): string {
 }
 
 function generateCSP(nonce: string) {
-  // Replace 'unsafe-inline' with nonce-based approach for scripts and styles
+  // Scripts stay strictly nonce-based (the primary XSS defence). Styles allow
+  // 'unsafe-inline' because runtime CSS-in-JS libraries (e.g. goober via
+  // react-hot-toast) inject <style> tags without a nonce, and per the CSP spec
+  // a nonce in style-src causes 'unsafe-inline' to be ignored — which blocks
+  // those tags. Style-based CSP bypass is far lower risk than script injection.
   const scriptSrc = `script-src 'self' 'nonce-${nonce}' https://challenges.cloudflare.com https://cs.iubenda.com https://cdn.iubenda.com https://static.cloudflareinsights.com https://www.googletagmanager.com https://www.google-analytics.com https://va.vercel-scripts.com https://connect.facebook.net`;
-  const styleSrc  = `style-src 'self' 'nonce-${nonce}' https://fonts.googleapis.com`;
+  const styleSrc  = `style-src 'self' 'unsafe-inline' https://fonts.googleapis.com`;
   return [
     "default-src 'self'",
     scriptSrc,

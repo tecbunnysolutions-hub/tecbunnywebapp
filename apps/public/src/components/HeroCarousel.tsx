@@ -58,7 +58,9 @@ function normalizeSlides(pageKey: HeroCarouselPageKey, raw: unknown): HeroCarous
   return raw
     .filter((item): item is Record<string, unknown> => isRecord(item))
     .map((item, index) => {
-      const fallbackId = `slide-${pageKey}-${index}-${Math.random().toString(36).slice(2, 8)}`;
+      // Deterministic fallback id — must be identical on server and client to
+      // avoid a hydration mismatch (Math.random() would differ per render).
+      const fallbackId = `slide-${pageKey}-${index}`;
       const id = typeof item.id === 'string' && item.id.length > 0 ? item.id : fallbackId;
       const imageUrl =
         typeof item.imageUrl === 'string' && item.imageUrl.length > 0
