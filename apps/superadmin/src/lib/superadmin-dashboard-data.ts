@@ -205,11 +205,11 @@ function toNumber(value: unknown) {
 }
 
 function isPaid(status: unknown) {
-  return ['PAID', 'SUCCESS', 'CAPTURED', 'COMPLETED'].includes(String(status ?? '').toUpperCase());
+  return ['PAID', 'SUCCESS', 'CAPTURED', 'COMPLETED', 'PAYMENT RECEIVED', 'RECEIVED'].includes(String(status ?? '').toUpperCase());
 }
 
 function isPending(status: unknown) {
-  return ['PENDING', 'UNPAID', 'PROCESSING'].includes(String(status ?? '').toUpperCase());
+  return ['PENDING', 'UNPAID', 'PROCESSING', 'AWAITING PAYMENT', 'AWAITING'].includes(String(status ?? '').toUpperCase());
 }
 
 function inRange(value: unknown, start: Date, end?: Date) {
@@ -350,6 +350,8 @@ export async function getSuperadminCommandCenterData(): Promise<SuperadminComman
     campaigns,
     messages,
     serviceTickets,
+    emailsSent,
+    staffActivityCount,
   ] = await Promise.all([
     countRows(supabase, 'org_organizations', issues),
     countRows(supabase, 'org_branches', issues),
@@ -364,42 +366,50 @@ export async function getSuperadminCommandCenterData(): Promise<SuperadminComman
     countRows(supabase, 'mkt_campaigns', issues),
     countRows(supabase, 'wab_messages', issues),
     countRows(supabase, 'sup_tickets', issues),
+    countRows(supabase, 'mkt_email_broadcasts', issues, (query) => query.eq('status', 'SENT').is('deleted_at', null)),
+    countRows(supabase, 'enterprise_staff_activity_logs', issues),
   ]);
 
-  // Fallback: if sys_users is empty, count from profiles (Supabase Auth users)
-  let totalUsers = sysUserCount;
-  let activeUsers = sysActiveUsers;
-  let newUsersToday = sysNewUsersToday;
-  if (sysUserCount === 0) {
-    const profileCount = await countRows(supabase, 'profiles', []);
-    if (profileCount > 0) {
-      totalUsers = profileCount;
-      activeUsers = profileCount;
-      newUsersToday = await countRows(supabase, 'profiles', [], (query) => query.gte('created_at', iso(today)));
-    }
+  // Users live in the legacy `profiles` table (Supabase Auth) that every app uses for
+  // authentication, roles, and staff/customer accounts. Prefer it; fall back to the
+  // modular sys_users table only when profiles is empty.
+  const profileTotal = await countRows(supabase, 'profiles', issues, (query) => query.is('deleted_at', null));
+  const profileCustomers = await countRows(supabase, 'profiles', issues, (query) => query.eq('role', 'customer').is('deleted_at', null));
+  let totalUsers = profileTotal;
+  let activeUsers = await countRows(supabase, 'profiles', issues, (query) => query.eq('is_active', true).is('deleted_at', null));
+  let newUsersToday = await countRows(supabase, 'profiles', issues, (query) => query.gte('created_at', iso(today)).is('deleted_at', null));
+  let staffUsers = Math.max(0, profileTotal - profileCustomers);
+  let userSource = 'profiles';
+  if (profileTotal === 0) {
+    totalUsers = sysUserCount;
+    activeUsers = sysActiveUsers;
+    newUsersToday = sysNewUsersToday;
+    staffUsers = sysUserCount;
+    userSource = 'sys_users';
   }
 
-  // Fallback: if prd_products is empty, count from legacy products table
-  let products = prdProductCount;
+  // The legacy `products` table is the canonical catalog used by the storefront, api,
+  // mgmt console, and core packages. Prefer it; fall back to modular prd_products only
+  // when the legacy table is empty.
+  const legacyProductCount = await countRows(supabase, 'products', issues);
+  let products = legacyProductCount;
+  let productSource = 'products';
   if (products === 0) {
-    const legacyProductCount = await countRows(supabase, 'products', []);
-    if (legacyProductCount > 0) {
-      products = legacyProductCount;
-    }
+    products = prdProductCount;
+    productSource = 'prd_products';
   }
 
-  // Fallback: if crm_customers is empty, count from legacy customers table
-  let customers = crmCustomerCount;
+  // Customers are auth accounts with role='customer' in profiles (what the storefront
+  // creates on signup). Fall back to modular crm_customers only when there are none.
+  let customers = profileCustomers;
+  let customerSource = 'profiles.role';
   if (customers === 0) {
-    const legacyCustomerCount = await countRows(supabase, 'customers', []);
-    if (legacyCustomerCount > 0) {
-      customers = legacyCustomerCount;
-    }
+    customers = crmCustomerCount;
+    customerSource = 'crm_customers';
   }
 
   const [
-    orders,
-    payments,
+    rawOrders,
     stock,
     orderItems,
     variants,
@@ -418,16 +428,15 @@ export async function getSuperadminCommandCenterData(): Promise<SuperadminComman
     messageRows,
     queueRows,
   ] = await Promise.all([
-    fetchRows<Record<string, unknown>>(supabase, 'oms_orders', 'id,org_id,order_number,customer_id,order_status,payment_status,grand_total,created_at', issues, (query) => query.order('created_at', { ascending: false })),
-    fetchRows<Record<string, unknown>>(supabase, 'oms_payments', 'id,amount,status,created_at', issues, (query) => query.order('created_at', { ascending: false })),
+    fetchRows<Record<string, unknown>>(supabase, 'orders', 'id,company_id,customer_id,order_number,customer_name,status,payment_status,total,total_amount,created_at', issues, (query) => query.is('deleted_at', null).order('created_at', { ascending: false })),
     fetchRows<Record<string, unknown>>(supabase, 'inv_stock', 'id,variant_id,quantity_on_hand,quantity_reserved,reorder_level,created_at', issues, (query) => query.order('quantity_on_hand', { ascending: true })),
     fetchRows<Record<string, unknown>>(supabase, 'oms_order_items', 'id,variant_id,quantity,line_total,created_at', issues),
     fetchRows<Record<string, unknown>>(supabase, 'prd_variants', 'id,product_id,name,sku', issues),
     fetchRows<Record<string, unknown>>(supabase, 'prd_products', 'id,title,created_at', issues, (query) => query.order('created_at', { ascending: false })),
     fetchRows<Record<string, unknown>>(supabase, 'org_organizations', 'id,name,created_at', issues, (query) => query.order('created_at', { ascending: false })),
     fetchRows<Record<string, unknown>>(supabase, 'org_branches', 'id,name,created_at', issues, (query) => query.order('created_at', { ascending: false })),
-    fetchRows<Record<string, unknown>>(supabase, 'sys_users', 'id,first_name,last_name,employee_code,branch_id,created_at,updated_at', issues, (query) => query.order('created_at', { ascending: false })),
-    fetchRows<Record<string, unknown>>(supabase, 'crm_customers', 'id,first_name,last_name,lifetime_value,created_at,last_purchase_date', issues, (query) => query.order('created_at', { ascending: false })),
+    fetchRows<Record<string, unknown>>(supabase, 'profiles', 'id,name,full_name,email,role,branch_id,created_at,updated_at', issues, (query) => query.is('deleted_at', null).order('created_at', { ascending: false })),
+    fetchRows<Record<string, unknown>>(supabase, 'profiles', 'id,name,full_name,email,created_at', issues, (query) => query.eq('role', 'customer').is('deleted_at', null).order('created_at', { ascending: false })),
     fetchRows<Record<string, unknown>>(supabase, 'sls_leads', 'id,first_name,last_name,company_name,converted_customer_id,created_at', issues, (query) => query.order('created_at', { ascending: false })),
     fetchRows<Record<string, unknown>>(supabase, 'mkt_campaigns', 'id,name,status,created_at', issues, (query) => query.order('created_at', { ascending: false })),
     fetchRows<Record<string, unknown>>(supabase, 'sup_tickets', 'id,ticket_number,subject,status,assigned_to,is_sla_breached,resolved_at,created_at', issues, (query) => query.order('created_at', { ascending: false })),
@@ -439,15 +448,32 @@ export async function getSuperadminCommandCenterData(): Promise<SuperadminComman
     fetchRows<Record<string, unknown>>(supabase, 'wab_message_queue', 'id,status,retry_count,scheduled_for,created_at', issues, (query) => query.order('created_at', { ascending: false })),
   ]);
 
-  let finalProductRows = productRows;
+  // Normalize legacy orders into the fields the dashboard expects (grand_total, org_id,
+  // order_status). Revenue and payment signals are derived from orders because both the
+  // legacy and modular payments tables are empty — orders.payment_status is the real source.
+  const orders = rawOrders.map((row) => ({
+    ...row,
+    grand_total: toNumber(row.total ?? row.total_amount),
+    org_id: row.company_id ?? null,
+    order_status: row.status,
+  })) as Record<string, unknown>[];
+  const payments = orders.map((row) => ({
+    id: row.id,
+    amount: row.grand_total,
+    status: row.payment_status,
+    created_at: row.created_at,
+  })) as Record<string, unknown>[];
+
+  // Prefer the canonical legacy `products` catalog; fall back to modular prd_products.
+  let finalProductRows = await fetchRows<Record<string, unknown>>(
+    supabase,
+    'products',
+    'id,title,name,created_at',
+    issues,
+    (query) => query.order('created_at', { ascending: false })
+  );
   if (finalProductRows.length === 0) {
-    finalProductRows = await fetchRows<Record<string, unknown>>(
-      supabase,
-      'products',
-      'id,title,name,created_at',
-      [],
-      (query) => query.order('created_at', { ascending: false })
-    );
+    finalProductRows = productRows;
   }
 
   const runtime = await getPlatformRuntimeSnapshot(supabase);
@@ -531,8 +557,10 @@ export async function getSuperadminCommandCenterData(): Promise<SuperadminComman
   const aging0to30 = agingBucket(30);
   const aging31to60 = agingBucket(60, 30);
   const aging60plus = agingBucket(Infinity, 60);
+  const events24h = analyticsRows.filter((row) => inRange(row.created_at, dayAgo));
   const apiCalls24h = analyticsRows.filter((row) => row.api_endpoint && inRange(row.created_at, dayAgo)).length;
   const aiRequests24h = analyticsRows.filter((row) => {
+    if (!inRange(row.created_at, dayAgo)) return false;
     const text = `${row.event_name ?? ''} ${row.module ?? ''} ${row.action ?? ''} ${row.api_endpoint ?? ''}`.toLowerCase();
     return text.includes('ai') || text.includes('gemini');
   }).length;
@@ -544,8 +572,8 @@ export async function getSuperadminCommandCenterData(): Promise<SuperadminComman
     errorsByEndpoint.set(endpoint, (errorsByEndpoint.get(endpoint) ?? 0) + 1);
   });
   const topErrorEndpoints = Array.from(errorsByEndpoint.entries()).sort((a, b) => b[1] - a[1]).slice(0, 3);
-  const avgExecution = analyticsRows.length > 0
-    ? analyticsRows.reduce((total, row) => total + toNumber(row.execution_time_ms), 0) / analyticsRows.length
+  const avgExecution = events24h.length > 0
+    ? events24h.reduce((total, row) => total + toNumber(row.execution_time_ms), 0) / events24h.length
     : 0;
   const apiRows24h = analyticsRows.filter((row) => row.api_endpoint && inRange(row.created_at, dayAgo));
   const apiErrors24h = apiRows24h.filter((row) => row.success === false || toNumber(row.http_status) >= 500).length;
@@ -570,12 +598,11 @@ export async function getSuperadminCommandCenterData(): Promise<SuperadminComman
 
   const leadConversionRate = leads === 0 ? 0 : (leadRows.filter((row) => row.converted_customer_id).length / leads) * 100;
   const averageOrderValue = orders.length === 0 ? 0 : totalOrderValue / orders.length;
-  const customerLifetimeValue = customerRows.length === 0
-    ? 0
-    : customerRows.reduce((total, row) => total + toNumber(row.lifetime_value), 0) / customerRows.length;
+  // profiles has no lifetime_value column, so derive CLV from real order value per customer.
+  const customerLifetimeValue = customers === 0 ? 0 : totalOrderValue / customers;
 
   const variantById = new Map(variants.map((row) => [String(row.id), row]));
-  const productById = new Map(productRows.map((row) => [String(row.id), row]));
+  const productById = new Map(finalProductRows.map((row) => [String(row.id), row]));
   const branchUserCounts = new Map<string, number>();
   userRows.forEach((row) => {
     const branchId = String(row.branch_id ?? '');
@@ -696,7 +723,6 @@ export async function getSuperadminCommandCenterData(): Promise<SuperadminComman
     return total + 2;
   }, 0)));
 
-  const userSource = sysUserCount > 0 ? 'sys_users' : 'profiles';
   const executiveMetrics = [
     metric({ key: 'companies', label: 'Total Companies', value: companies, category: 'executive', severity: 'ok', source: 'org_organizations', href: '/superadmin/mgmt/organizations' }),
     metric({ key: 'branches', label: 'Total Branches', value: branches, category: 'executive', severity: 'ok', source: 'org_branches', href: '/superadmin/mgmt/branches' }),
@@ -704,21 +730,21 @@ export async function getSuperadminCommandCenterData(): Promise<SuperadminComman
     metric({ key: 'active_users', label: 'Active Users', value: activeUsers, category: 'executive', severity: 'ok', source: `${userSource}.is_active` }),
     metric({ key: 'online_users', label: 'Online Users', value: onlineUsers, category: 'realtime', severity: onlineUsers > 0 ? 'ok' : 'low', source: 'sys_auth_sessions' }),
     metric({ key: 'new_users_today', label: 'New Users Today', value: newUsersToday, category: 'executive', severity: 'ok', source: `${userSource}.created_at` }),
-    metric({ key: 'staff_count', label: 'Staff Count', value: totalUsers, category: 'executive', severity: 'ok', source: userSource }),
-    metric({ key: 'customers', label: 'Customers', value: customers, category: 'executive', severity: 'ok', source: 'crm_customers' }),
+    metric({ key: 'staff_count', label: 'Staff Count', value: staffUsers, category: 'executive', severity: 'ok', source: `${userSource}.role` }),
+    metric({ key: 'customers', label: 'Customers', value: customers, category: 'executive', severity: 'ok', source: customerSource }),
     metric({ key: 'leads', label: 'Leads', value: leads, category: 'executive', severity: 'ok', source: 'sls_leads' }),
-    metric({ key: 'products', label: 'Products', value: products, category: 'executive', severity: 'ok', source: 'prd_products', href: '/superadmin/mgmt/products' }),
+    metric({ key: 'products', label: 'Products', value: products, category: 'executive', severity: 'ok', source: productSource, href: '/superadmin/mgmt/products' }),
     metric({ key: 'categories', label: 'Categories', value: categories, category: 'executive', severity: 'ok', source: 'prd_categories' }),
-    metric({ key: 'orders', label: 'Orders', value: orders.length, category: 'executive', severity: 'ok', source: 'oms_orders' }),
-    metric({ key: 'revenue', label: 'Revenue', value: totalRevenue, category: 'business', severity: 'ok', source: 'oms_payments', money: true }),
-    metric({ key: 'payments', label: 'Payments', value: paidPaymentCount, category: 'business', severity: 'ok', source: 'oms_payments' }),
-    metric({ key: 'pending_payments', label: 'Pending Payments', value: pendingPayments, category: 'business', severity: pendingPayments > 0 ? 'medium' : 'ok', source: 'oms_payments.status', money: true }),
+    metric({ key: 'orders', label: 'Orders', value: orders.length, category: 'executive', severity: 'ok', source: 'orders' }),
+    metric({ key: 'revenue', label: 'Revenue', value: totalRevenue, category: 'business', severity: 'ok', source: 'orders.payment_status', money: true }),
+    metric({ key: 'payments', label: 'Payments', value: paidPaymentCount, category: 'business', severity: 'ok', source: 'orders.payment_status' }),
+    metric({ key: 'pending_payments', label: 'Pending Payments', value: pendingPayments, category: 'business', severity: pendingPayments > 0 ? 'medium' : 'ok', source: 'orders.payment_status', money: true }),
     metric({ key: 'inventory_value', label: 'Inventory Units', value: inventoryUnits, category: 'business', severity: lowStock.length > 0 ? 'high' : 'ok', source: 'inv_stock.quantity_on_hand' }),
     metric({ key: 'service_tickets', label: 'Service Tickets', value: serviceTickets, category: 'executive', severity: activeTickets > 0 ? 'medium' : 'ok', source: 'sup_tickets' }),
     metric({ key: 'active_engineers', label: 'Active Engineers', value: activeEngineers, category: 'executive', severity: 'ok', source: 'sup_tickets.assigned_to' }),
     metric({ key: 'marketing_campaigns', label: 'Marketing Campaigns', value: campaigns, category: 'executive', severity: 'ok', source: 'mkt_campaigns', href: '/superadmin/mgmt/marketing' }),
     metric({ key: 'whatsapp_messages', label: 'WhatsApp Messages', value: messages, category: 'executive', severity: 'ok', source: 'wab_messages' }),
-    metric({ key: 'emails_sent', label: 'Emails Sent', value: 0, category: 'executive', severity: 'low', source: 'mkt_email_broadcasts instrumentation pending' }),
+    metric({ key: 'emails_sent', label: 'Emails Sent', value: emailsSent, category: 'executive', severity: 'ok', source: 'mkt_email_broadcasts.status' }),
     metric({ key: 'storage_usage', label: 'Storage Usage', value: runtime.storageBuckets, category: 'system', severity: runtime.storageStatus === 'operational' ? 'ok' : 'medium', source: 'Supabase storage buckets', displayValue: `${integer.format(runtime.storageBuckets)} buckets` }),
     metric({ key: 'api_requests', label: 'API Requests', value: apiCalls24h, category: 'system', severity: 'ok', source: 'enterprise_analytics_events.api_endpoint' }),
     metric({ key: 'ai_requests', label: 'AI Requests', value: aiRequests24h, category: 'analytics', severity: 'ok', source: 'enterprise_analytics_events' }),
@@ -728,20 +754,20 @@ export async function getSuperadminCommandCenterData(): Promise<SuperadminComman
   ];
 
   const businessMetrics = [
-    metric({ key: 'today_revenue', label: "Today's Revenue", value: todayRevenue, category: 'business', severity: 'ok', source: 'oms_payments', money: true }),
-    metric({ key: 'yesterday_revenue', label: "Yesterday's Revenue", value: yesterdayRevenue, category: 'business', severity: 'ok', source: 'oms_payments', money: true }),
-    metric({ key: 'weekly_revenue', label: 'Weekly Revenue', value: weeklyRevenue, category: 'business', severity: 'ok', source: 'oms_payments', money: true }),
-    metric({ key: 'monthly_revenue', label: 'Monthly Revenue', value: monthlyRevenue, category: 'business', severity: 'ok', source: 'oms_payments', money: true }),
-    metric({ key: 'yearly_revenue', label: 'Yearly Revenue', value: yearlyRevenue, category: 'business', severity: 'ok', source: 'oms_payments', money: true }),
-    metric({ key: 'revenue_growth', label: 'Revenue Growth', value: pct(monthlyRevenue, previousMonthRevenue), category: 'business', severity: monthlyRevenue >= previousMonthRevenue ? 'ok' : 'medium', source: 'oms_payments', displayValue: formatPct(pct(monthlyRevenue, previousMonthRevenue)) }),
-    metric({ key: 'sales_growth', label: 'Sales Growth', value: pct(monthlyRevenue, previousMonthRevenue), category: 'business', severity: monthlyRevenue >= previousMonthRevenue ? 'ok' : 'medium', source: 'oms_payments', displayValue: formatPct(pct(monthlyRevenue, previousMonthRevenue)) }),
-    metric({ key: 'order_growth', label: 'Order Growth', value: pct(monthOrders, previousMonthOrders), category: 'business', severity: monthOrders >= previousMonthOrders ? 'ok' : 'medium', source: 'oms_orders', displayValue: formatPct(pct(monthOrders, previousMonthOrders)) }),
-    metric({ key: 'customer_growth', label: 'Customer Growth', value: pct(monthCustomers, previousMonthCustomers), category: 'business', severity: monthCustomers >= previousMonthCustomers ? 'ok' : 'medium', source: 'crm_customers', displayValue: formatPct(pct(monthCustomers, previousMonthCustomers)) }),
+    metric({ key: 'today_revenue', label: "Today's Revenue", value: todayRevenue, category: 'business', severity: 'ok', source: 'orders.payment_status', money: true }),
+    metric({ key: 'yesterday_revenue', label: "Yesterday's Revenue", value: yesterdayRevenue, category: 'business', severity: 'ok', source: 'orders.payment_status', money: true }),
+    metric({ key: 'weekly_revenue', label: 'Weekly Revenue', value: weeklyRevenue, category: 'business', severity: 'ok', source: 'orders.payment_status', money: true }),
+    metric({ key: 'monthly_revenue', label: 'Monthly Revenue', value: monthlyRevenue, category: 'business', severity: 'ok', source: 'orders.payment_status', money: true }),
+    metric({ key: 'yearly_revenue', label: 'Yearly Revenue', value: yearlyRevenue, category: 'business', severity: 'ok', source: 'orders.payment_status', money: true }),
+    metric({ key: 'revenue_growth', label: 'Revenue Growth', value: pct(monthlyRevenue, previousMonthRevenue), category: 'business', severity: monthlyRevenue >= previousMonthRevenue ? 'ok' : 'medium', source: 'orders.payment_status', displayValue: formatPct(pct(monthlyRevenue, previousMonthRevenue)) }),
+    metric({ key: 'sales_growth', label: 'Sales Growth', value: pct(monthlyRevenue, previousMonthRevenue), category: 'business', severity: monthlyRevenue >= previousMonthRevenue ? 'ok' : 'medium', source: 'orders.payment_status', displayValue: formatPct(pct(monthlyRevenue, previousMonthRevenue)) }),
+    metric({ key: 'order_growth', label: 'Order Growth', value: pct(monthOrders, previousMonthOrders), category: 'business', severity: monthOrders >= previousMonthOrders ? 'ok' : 'medium', source: 'orders', displayValue: formatPct(pct(monthOrders, previousMonthOrders)) }),
+    metric({ key: 'customer_growth', label: 'Customer Growth', value: pct(monthCustomers, previousMonthCustomers), category: 'business', severity: monthCustomers >= previousMonthCustomers ? 'ok' : 'medium', source: 'profiles.role', displayValue: formatPct(pct(monthCustomers, previousMonthCustomers)) }),
     metric({ key: 'lead_conversion_rate', label: 'Lead Conversion Rate', value: leadConversionRate, category: 'business', severity: leadConversionRate > 20 ? 'ok' : 'medium', source: 'sls_leads.converted_customer_id', percent: true }),
-    metric({ key: 'average_order_value', label: 'Average Order Value', value: averageOrderValue, category: 'business', severity: 'ok', source: 'oms_orders.grand_total', money: true }),
-    metric({ key: 'repeat_customers', label: 'Repeat Customers', value: Array.from(repeatCustomers.values()).filter((count) => count > 1).length, category: 'business', severity: 'ok', source: 'oms_orders.customer_id' }),
-    metric({ key: 'customer_lifetime_value', label: 'Customer Lifetime Value', value: customerLifetimeValue, category: 'business', severity: 'ok', source: 'crm_customers.lifetime_value', money: true }),
-    metric({ key: 'outstanding_payments', label: 'Outstanding Payments', value: pendingPayments, category: 'business', severity: pendingPayments > 0 ? 'high' : 'ok', source: 'oms_payments.status', money: true }),
+    metric({ key: 'average_order_value', label: 'Average Order Value', value: averageOrderValue, category: 'business', severity: 'ok', source: 'orders.total', money: true }),
+    metric({ key: 'repeat_customers', label: 'Repeat Customers', value: Array.from(repeatCustomers.values()).filter((count) => count > 1).length, category: 'business', severity: 'ok', source: 'orders.customer_id' }),
+    metric({ key: 'customer_lifetime_value', label: 'Customer Lifetime Value', value: customerLifetimeValue, category: 'business', severity: 'ok', source: 'orders / customers', money: true }),
+    metric({ key: 'outstanding_payments', label: 'Outstanding Payments', value: pendingPayments, category: 'business', severity: pendingPayments > 0 ? 'high' : 'ok', source: 'orders.payment_status', money: true }),
     metric({ key: 'support_sla_rate', label: 'Support SLA Compliance', value: supportSlaRate, category: 'business', severity: supportSlaRate < 90 ? 'high' : supportSlaRate < 97 ? 'medium' : 'ok', source: 'sup_tickets.is_sla_breached / resolved_at', percent: true }),
     metric({ key: 'avg_resolution_hours', label: 'Avg Ticket Resolution', value: avgResolutionHours, category: 'business', severity: avgResolutionHours > 72 ? 'high' : avgResolutionHours > 48 ? 'medium' : 'ok', source: 'sup_tickets.resolved_at - created_at', displayValue: `${decimal.format(avgResolutionHours)} h` }),
     metric({ key: 'payment_aging_0_30', label: 'Payment Aging 0-30d', value: aging0to30, category: 'business', severity: 'ok', source: 'oms_payments pending age', money: true }),
@@ -791,7 +817,7 @@ export async function getSuperadminCommandCenterData(): Promise<SuperadminComman
     metric({ key: 'cron_jobs', label: 'Cron Jobs', value: cronEvents24h, category: 'system', severity: 'ok', source: 'enterprise_analytics_events cron telemetry' }),
     metric({ key: 'cache', label: 'Cache', value: runtime.cacheStatus === 'configured' ? 'External' : 'In-process', category: 'system', severity: runtime.cacheStatus === 'configured' ? 'ok' : 'low', source: 'cache configuration' }),
     metric({ key: 'background_workers', label: 'Background Workers', value: workerEvents24h, category: 'system', severity: 'ok', source: 'enterprise_analytics_events worker/job telemetry' }),
-    metric({ key: 'error_rate', label: 'Error Rate', value: analyticsRows.length === 0 ? 0 : (errors24h / analyticsRows.length) * 100, category: 'system', severity: errors24h > 0 ? 'high' : 'ok', source: 'enterprise_analytics_events', percent: true }),
+    metric({ key: 'error_rate', label: 'Error Rate', value: events24h.length === 0 ? 0 : (errors24h / events24h.length) * 100, category: 'system', severity: errors24h > 0 ? 'high' : 'ok', source: 'enterprise_analytics_events', percent: true }),
     metric({ key: 'api_availability_slo', label: `API Availability (SLO warn <${sloWarningPercent}% / critical <${sloTargetPercent}%)`, value: apiAvailability24h, category: 'system', severity: apiAvailability24h < sloTargetPercent ? 'critical' : apiAvailability24h < sloWarningPercent ? 'medium' : 'ok', source: 'enterprise_analytics_events 24h', percent: true }),
     metric({ key: 'error_budget_remaining', label: 'Error Budget Remaining (24h)', value: errorBudgetRemaining, category: 'system', severity: errorBudgetRemaining < 25 ? 'high' : errorBudgetRemaining < 50 ? 'medium' : 'ok', source: `SLO ${sloTargetPercent}% over enterprise_analytics_events`, percent: true }),
     metric({ key: 'p95_latency', label: 'P95 API Latency (24h)', value: p95Latency, category: 'system', severity: p95Latency > 2000 ? 'high' : p95Latency > 1000 ? 'medium' : 'ok', source: 'enterprise_analytics_events.execution_time_ms', displayValue: `${integer.format(p95Latency)} ms` }),
@@ -799,13 +825,13 @@ export async function getSuperadminCommandCenterData(): Promise<SuperadminComman
   ];
 
   const analyticsMetrics = [
-    metric({ key: 'user_analytics', label: 'User Analytics', value: totalUsers, category: 'analytics', severity: 'ok', source: 'sys_users' }),
-    metric({ key: 'revenue_analytics', label: 'Revenue Analytics', value: monthlyRevenue, category: 'analytics', severity: 'ok', source: 'oms_payments', money: true }),
+    metric({ key: 'user_analytics', label: 'User Analytics', value: totalUsers, category: 'analytics', severity: 'ok', source: userSource }),
+    metric({ key: 'revenue_analytics', label: 'Revenue Analytics', value: monthlyRevenue, category: 'analytics', severity: 'ok', source: 'orders.payment_status', money: true }),
     metric({ key: 'sales_analytics', label: 'Sales Analytics', value: leadConversionRate, category: 'analytics', severity: 'ok', source: 'sls_leads', percent: true }),
-    metric({ key: 'order_analytics', label: 'Order Analytics', value: orders.length, category: 'analytics', severity: 'ok', source: 'oms_orders' }),
-    metric({ key: 'customer_analytics', label: 'Customer Analytics', value: customers, category: 'analytics', severity: 'ok', source: 'crm_customers' }),
+    metric({ key: 'order_analytics', label: 'Order Analytics', value: orders.length, category: 'analytics', severity: 'ok', source: 'orders' }),
+    metric({ key: 'customer_analytics', label: 'Customer Analytics', value: customers, category: 'analytics', severity: 'ok', source: customerSource }),
     metric({ key: 'inventory_analytics', label: 'Inventory Analytics', value: lowStock.length, category: 'analytics', severity: lowStock.length > 0 ? 'high' : 'ok', source: 'inv_stock' }),
-    metric({ key: 'staff_analytics', label: 'Staff Analytics', value: staffRows.length, category: 'analytics', severity: 'ok', source: 'enterprise_staff_activity_logs' }),
+    metric({ key: 'staff_analytics', label: 'Staff Analytics', value: staffActivityCount, category: 'analytics', severity: 'ok', source: 'enterprise_staff_activity_logs' }),
     metric({ key: 'company_analytics', label: 'Company Analytics', value: companies, category: 'analytics', severity: 'ok', source: 'org_organizations' }),
     metric({ key: 'api_analytics', label: 'API Analytics', value: apiCalls24h, category: 'analytics', severity: 'ok', source: 'enterprise_analytics_events' }),
     metric({ key: 'performance_analytics', label: 'Performance Analytics', value: avgExecution, category: 'analytics', severity: avgExecution > 1000 ? 'high' : 'ok', source: 'enterprise_analytics_events.execution_time_ms', displayValue: `${integer.format(avgExecution)} ms avg` }),
@@ -818,10 +844,10 @@ export async function getSuperadminCommandCenterData(): Promise<SuperadminComman
   const recentActivity = [
     ...recentFromRows(companyRows, 'name', 'Company created', 'org_organizations', '/superadmin/mgmt/organizations'),
     ...recentFromRows(branchRows, 'name', 'Branch created', 'org_branches', '/superadmin/mgmt/branches'),
-    ...recentFromRows(userRows.map((row) => ({ ...row, name: `${row.first_name ?? ''} ${row.last_name ?? ''}`.trim() || row.employee_code || row.id })), 'name', 'User created', 'sys_users', '/superadmin/mgmt/users'),
-    ...recentFromRows(orders, 'order_number', 'Order captured', 'oms_orders'),
-    ...recentFromRows(payments, 'id', 'Payment event', 'oms_payments'),
-    ...recentFromRows(customerRows.map((row) => ({ ...row, name: `${row.first_name ?? ''} ${row.last_name ?? ''}`.trim() || row.id })), 'name', 'Customer created', 'crm_customers'),
+    ...recentFromRows(userRows.map((row) => ({ ...row, name: String(row.name ?? row.full_name ?? row.email ?? row.id) })), 'name', 'User created', 'profiles', '/superadmin/mgmt/users'),
+    ...recentFromRows(orders, 'order_number', 'Order captured', 'orders'),
+    ...recentFromRows(payments, 'id', 'Payment event', 'orders.payment_status'),
+    ...recentFromRows(customerRows.map((row) => ({ ...row, name: String(row.name ?? row.full_name ?? row.email ?? row.id) })), 'name', 'Customer created', 'profiles'),
     ...recentFromRows(finalProductRows, 'title', 'Product created', 'prd_products', '/superadmin/mgmt/products'),
     ...recentFromRows(ticketRows, 'ticket_number', 'Service ticket', 'sup_tickets'),
     ...recentFromRows(campaignRows, 'name', 'Campaign created', 'mkt_campaigns', '/superadmin/mgmt/marketing'),
