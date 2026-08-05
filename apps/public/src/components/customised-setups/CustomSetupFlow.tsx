@@ -206,21 +206,6 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
   };
 
   const cameraCountLabel = cameraCount <= 0 ? 'None' : `${cameraCount} Camera${cameraCount > 1 ? 's' : ''}`;
-  const recommendationLines = useMemo(() => {
-    if (cameraCount <= 0) {
-      return ['> No Surveillance Selected'];
-    }
-    if (cameraCount <= 4) {
-      return ['> 4CH CP PLUS DVR', '> 1TB Surveillance HDD', `> ${cameraCount}x 2.4MP Cameras`];
-    }
-    if (cameraCount <= 8) {
-      return ['> 8CH CP PLUS DVR', '> 2TB Surveillance HDD', `> ${cameraCount}x 2.4MP Cameras`];
-    }
-    if (cameraCount <= 16) {
-      return ['> 16CH CP PLUS DVR', '> 4TB Surveillance HDD', `> ${cameraCount}x 5MP Cameras`];
-    }
-    return ['> 32CH NVR (Enterprise)', '> 2x 6TB HDD', `> ${cameraCount}x IP Cameras`];
-  }, [cameraCount]);
 
   const cardClassName = isTech ? 'border-border bg-card/60 text-card-foreground' : undefined;
   const cardHeaderClassName = isTech ? 'text-foreground font-semibold' : undefined;
@@ -2194,17 +2179,29 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
               </div>
 
               <div className="mt-6 pt-6 border-t border-border">
-                <p className="text-xs text-muted-foreground mb-2">Recommended Hardware Kit:</p>
-                <div className="bg-muted/30 rounded-lg p-3 text-xs text-muted-foreground font-mono">
-                  {recommendationLines.map((line) => (
-                    <div key={line}>{line}</div>
-                  ))}
+                <p className="text-xs text-muted-foreground mb-3">Selected kit rates</p>
+                <div className="space-y-2 text-[11px]">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-muted-foreground">System</span>
+                    <span className="font-semibold text-foreground">{formatCurrency(totals.system.sale)}</span>
+                  </div>
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-muted-foreground">HDD</span>
+                    <span className="font-semibold text-foreground">{formatCurrency(totals.hdd.sale)}</span>
+                  </div>
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-muted-foreground">Monitor</span>
+                    <span className="font-semibold text-foreground">{totals.monitor.included ? formatCurrency(totals.monitor.sale) : 'Not included'}</span>
+                  </div>
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-muted-foreground">Accessories</span>
+                    <span className="font-semibold text-foreground">{formatCurrency(totals.wallMount.sale + totals.spikeGuard.sale + totals.rack.sale + totals.conduit.sale)}</span>
+                  </div>
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-muted-foreground">Installation</span>
+                    <span className="font-semibold text-foreground">{totals.installation.included ? formatCurrency(totals.installation.sale) : 'Not included'}</span>
+                  </div>
                 </div>
-              </div>
-
-              <div className="mt-6 flex gap-2 items-center">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                <span className="text-xs text-emerald-500 font-bold">SYSTEM COMPATIBLE</span>
               </div>
 
               <div className="mt-6 pt-4 border-t border-border">
@@ -2246,7 +2243,6 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
                   )}
                   <div className="text-[10px] text-muted-foreground text-center mt-1 leading-tight space-y-1">
                     <p className="font-semibold text-amber-500/80">⚠️ Review the proposal and pricing before booking a paid site visit.</p>
-                    <p>* ₹999/- will be adjusted on your bill if order is confirmed. The ₹999 is treated as the Visiting Charge; cancellation due to high prices will NOT be refunded.</p>
                   </div>
                 </div>
               </div>

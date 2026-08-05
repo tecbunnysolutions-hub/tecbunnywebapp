@@ -110,40 +110,41 @@ async function HomePageDataLoader() {
       process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
     );
 
-    // Sequential fetching to prevent Next.js internal fetch cache deadlocks that can happen with Promise.all
-    const productsRes = await supabase.from('products').select('*').eq('status', 'active').limit(12);
-    const brandsRes = await supabase.from('settings').select('value').eq('key', 'partnerBrands').maybeSingle();
-    const heroRes = await supabase.from('page_content').select('data').eq('key', 'hero-carousels').maybeSingle();
+    const [productsResult, brandsResult, heroResult] = await Promise.allSettled([
+      supabase.from('products').select('*').eq('status', 'active').limit(12),
+      supabase.from('settings').select('value').eq('key', 'partnerBrands').maybeSingle(),
+      supabase.from('page_content').select('data').eq('key', 'hero-carousels').maybeSingle(),
+    ]);
 
-    if (productsRes.data && !productsRes.error) {
-      const items = Array.isArray(productsRes.data) ? productsRes.data : [];
-      
+    if (productsResult.status === 'fulfilled' && productsResult.value.data && !productsResult.value.error) {
+      const items = Array.isArray(productsResult.value.data) ? productsResult.value.data : [];
+
       const hasAnyImage = (item: any) => {
         if (item.image) return true;
         if (Array.isArray(item.images) && item.images.length) return true;
         if (item.image_urls) return true;
         return false;
       };
-      
+
       const itemsWithImages = items.filter(hasAnyImage);
       initialProducts = (itemsWithImages.length ? itemsWithImages : items).slice(0, 4);
     }
 
-    if (brandsRes.data && !brandsRes.error) {
-      initialPartnerBrands = parsePartnerBrands(brandsRes.data.value);
+    if (brandsResult.status === 'fulfilled' && brandsResult.value.data && !brandsResult.value.error) {
+      initialPartnerBrands = parsePartnerBrands(brandsResult.value.data.value);
     }
 
-    if (heroRes.data && !heroRes.error) {
-      initialHeroCarousel = heroRes.data.data ?? null;
+    if (heroResult.status === 'fulfilled' && heroResult.value.data && !heroResult.value.error) {
+      initialHeroCarousel = heroResult.value.data.data ?? null;
     }
   } catch (error) {
     console.error('Error prefetching data for homepage:', error);
   }
 
   return (
-    <HomePage 
-      initialProducts={initialProducts} 
-      initialPartnerBrands={initialPartnerBrands} 
+    <HomePage
+      initialProducts={initialProducts}
+      initialPartnerBrands={initialPartnerBrands}
       initialHeroCarousel={initialHeroCarousel}
     />
   );

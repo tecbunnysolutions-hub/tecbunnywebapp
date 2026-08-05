@@ -296,5 +296,10 @@
         }
       ]
     }
+  },
+  "observability": {
+    "logs": true,
+    "metrics": true,
+    "traces": true
   }
 }

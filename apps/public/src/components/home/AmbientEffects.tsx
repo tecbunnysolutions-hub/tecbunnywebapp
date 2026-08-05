@@ -44,12 +44,12 @@ export function AmbientEffects() {
     let animationId = 0;
     let width = 0;
     let height = 0;
-    const particles = Array.from({ length: 50 }, () => ({
+    const particles = Array.from({ length: 18 }, () => ({
       x: Math.random() * window.innerWidth,
       y: Math.random() * window.innerHeight,
-      vx: (Math.random() - 0.5) * 0.4,
-      vy: (Math.random() - 0.5) * 0.4,
-      size: Math.random() * 2 + 1,
+      vx: (Math.random() - 0.5) * 0.28,
+      vy: (Math.random() - 0.5) * 0.28,
+      size: Math.random() * 1.6 + 0.8,
     }));
 
     const resize = () => {
@@ -58,7 +58,7 @@ export function AmbientEffects() {
     };
 
     let lastTime = 0;
-    const fpsInterval = 1000 / 30; // 30 FPS max
+    const fpsInterval = 1000 / 20;
 
     const draw = (currentTime: number) => {
       animationId = window.requestAnimationFrame(draw);
