@@ -147,6 +147,7 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
   const [rackId, setRackId] = useState<string | null>(null);
   const [conduitPipeId, setConduitPipeId] = useState<string | null>(null);
   const [conduitMeters, setConduitMeters] = useState<number>(0);
+  const [cableMeters, setCableMeters] = useState<number | ''>('');
   const [installationIncluded, setInstallationIncluded] = useState<boolean>(true);
   const [quoteDownloading, setQuoteDownloading] = useState<boolean>(false);
   const [isBidding, setIsBidding] = useState(false);
@@ -368,10 +369,20 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
     }
   }, [cameraCount, ipPricing, ipSelections.nvrId, ipSelections.poeId, poeType]);
 
+  const recommendedCableMeters = useMemo(() => {
+    const cable = system === 'analog'
+      ? (pricingCatalog.analog.cable.find((entry) => entry.id === analogSelections.cableId) ?? pricingCatalog.analog.cable[0])
+      : (pricingCatalog.ip.cable.find((entry) => entry.id === ipSelections.cableId) ?? pricingCatalog.ip.cable[0]);
+    if (!cable) return 100;
+    const quantity = calculateCableQuantity(cameraCount, cable, undefined, pricingCatalog.constants);
+    return quantity * 100;
+  }, [system, cameraCount, analogSelections.cableId, ipSelections.cableId, pricingCatalog]);
+
   const totals = useMemo(() => {
     return calculateTotals({
       system,
       cameraCount,
+      cableUnits: typeof cableMeters === 'number' && cableMeters > 0 ? Math.ceil(cableMeters / 100) : undefined,
       analogSelections,
       ipSelections,
       hddId,
@@ -392,6 +403,7 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
   }, [
     system,
     cameraCount,
+    cableMeters,
     analogSelections,
     ipSelections,
     hddId,
@@ -513,11 +525,10 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
         monitorId,
         wallMountIncluded,
         spikeGuardIncluded,
-        rackId,
-        conduitPipeId,
         conduitMeters,
         installationIncluded,
         automationEnabled,
+        cableUnits: typeof cableMeters === 'number' && cableMeters > 0 ? Math.ceil(cableMeters / 100) : undefined,
       };
 
       const finalSelections = {
@@ -685,11 +696,10 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
         monitorId,
         wallMountIncluded,
         spikeGuardIncluded,
-        rackId,
-        conduitPipeId,
         conduitMeters,
         installationIncluded,
         automationEnabled,
+        cableUnits: typeof cableMeters === 'number' && cableMeters > 0 ? Math.ceil(cableMeters / 100) : undefined,
       };
 
       const finalSelections = {
@@ -810,6 +820,7 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
         installationIncluded,
         automationEnabled,
         totals,
+        cableUnits: typeof cableMeters === 'number' && cableMeters > 0 ? Math.ceil(cableMeters / 100) : undefined,
       };
 
       const res = await fetch('/api/quotes/bid', {
@@ -1007,6 +1018,30 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
               </SelectContent>
             </Select>
           </div>
+          <div className="space-y-2">
+            <Label htmlFor="analog-cable-meters">Custom Cable Length (Meters, Optional)</Label>
+            <Input
+              id="analog-cable-meters"
+              type="number"
+              min={0}
+              max={5000}
+              placeholder={`e.g. 100 (Est. ${recommendedCableMeters}m)`}
+              value={cableMeters}
+              onChange={(e) => {
+                const val = e.target.value;
+                if (val === '') {
+                  setCableMeters('');
+                } else {
+                  const num = Number.parseInt(val, 10);
+                  setCableMeters(isNaN(num) ? '' : num);
+                }
+              }}
+              className={inputClassName}
+            />
+            <p className={cn('text-xs', selectMutedClassName)}>
+              Leave blank to auto-calculate based on camera count. Supplied in 100m rolls.
+            </p>
+          </div>
         </CardContent>
       </Card>
     </div>
@@ -1185,6 +1220,30 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
                 })}
               </SelectContent>
             </Select>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="ip-cable-meters">Custom Cable Length (Meters, Optional)</Label>
+            <Input
+              id="ip-cable-meters"
+              type="number"
+              min={0}
+              max={5000}
+              placeholder={`e.g. 100 (Est. ${recommendedCableMeters}m)`}
+              value={cableMeters}
+              onChange={(e) => {
+                const val = e.target.value;
+                if (val === '') {
+                  setCableMeters('');
+                } else {
+                  const num = Number.parseInt(val, 10);
+                  setCableMeters(isNaN(num) ? '' : num);
+                }
+              }}
+              className={inputClassName}
+            />
+            <p className={cn('text-xs', selectMutedClassName)}>
+              Leave blank to auto-calculate based on camera count. Supplied in 100m rolls.
+            </p>
           </div>
         </CardContent>
       </Card>
