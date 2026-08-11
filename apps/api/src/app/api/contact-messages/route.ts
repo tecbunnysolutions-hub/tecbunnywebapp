@@ -1,7 +1,8 @@
 import { createClient as createServerClient } from '@tecbunny/database';
 
 import { createSupabaseServiceClient, isSupabaseServiceConfigured } from "@tecbunny/core/server";;
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse, after } from 'next/server';
+import crypto from 'crypto';
 import { z } from 'zod';
 
 import { rateLimit } from "@tecbunny/core/rate-limit";
@@ -22,6 +23,7 @@ const createMessageSchema = z.object({
   subject: z.string().min(2).max(160).optional().or(z.literal('').transform(() => undefined)),
   message: z.string().min(10).max(5000),
   company_name: z.string().max(160).optional().or(z.literal('').transform(() => undefined)),
+  service_interest: z.string().max(120).optional().or(z.literal('').transform(() => undefined)),
   origin_path: z.string().max(240).optional(),
   form_identifier: z.string().max(100).optional(),
   utm_source: z.string().max(160).optional(),
@@ -88,6 +90,14 @@ function classifyInquiry(input: {
       category: 'Services' as const,
       originKey: 'services_core_desk',
       originPath: originPath || '/services',
+    };
+  }
+
+  if (originPath === '/lead-capture' || formIdentifier === 'lead_capture_webhook') {
+    return {
+      category: 'Services' as const,
+      originKey: 'lead_capture_webhook',
+      originPath: '/lead-capture',
     };
   }
 
@@ -162,6 +172,44 @@ export async function POST(request: NextRequest) {
     }
 
     logger.info('contact_message_created', { messageId: data?.id, ip: submissionIp });
+
+    if (parsed.data.form_identifier?.trim().toLowerCase() === 'lead_capture_webhook') {
+      const n8nWebhookUrl = process.env.N8N_LEAD_WEBHOOK_URL;
+      if (n8nWebhookUrl) {
+        after(async () => {
+          try {
+            const webhookBody = JSON.stringify({
+              id: data?.id,
+              name: payload.name,
+              company_name: payload.company_name,
+              email: payload.email,
+              phone: payload.phone,
+              service_interest: parsed.data.service_interest ?? null,
+              submitted_at: payload.last_activity_at,
+            });
+            const secret = process.env.TECBUNNY_WEBHOOK_SECRET;
+            const signature = secret
+              ? crypto.createHmac('sha256', secret).update(webhookBody).digest('hex')
+              : undefined;
+
+            await fetch(n8nWebhookUrl, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'x-webhook-source': 'tecbunny-lead-capture',
+                ...(signature ? { 'x-webhook-signature': signature } : {}),
+              },
+              body: webhookBody,
+            });
+          } catch (err) {
+            logger.error('lead_capture_n8n_forward_failed', {
+              error: err instanceof Error ? err.message : String(err),
+              messageId: data?.id,
+            });
+          }
+        });
+      }
+    }
 
     return NextResponse.json({ success: true, id: data?.id }, { status: 201 });
   } catch (error) {
