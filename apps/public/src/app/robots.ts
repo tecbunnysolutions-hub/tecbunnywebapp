@@ -23,7 +23,19 @@ export default function robots(): MetadataRoute.Robots {
       },
       {
         userAgent: ['GPTBot', 'ChatGPT-User', 'ClaudeBot', 'Claude-Web', 'CCBot', 'Google-Extended', 'Anthropic-AI', 'Omgilibot', 'FacebookBot'],
-        disallow: '/',
+        allow: '/',
+        disallow: [
+          '/api/',
+          '/mgmt/',
+          '/auth/',
+          '/checkout/',
+          '/cart/',
+          '/profile/',
+          '/admin/',
+          '/superadmin/',
+          '/staff/',
+          '/dashboard/',
+        ],
       },
       {
         userAgent: '*',

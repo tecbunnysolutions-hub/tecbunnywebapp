@@ -153,6 +153,34 @@ const structuredData = {
         'TecBunny Solutions provides CCTV installation, IT services, AMC support, networking, home automation, and RFID lock systems in Goa and Maharashtra.',
       publisher: { '@id': 'https://www.tecbunny.com/#organization' },
       author: { '@id': 'https://www.tecbunny.com/#organization' },
+      potentialAction: {
+        '@type': 'SearchAction',
+        target: {
+          '@type': 'EntryPoint',
+          urlTemplate: 'https://www.tecbunny.com/products?search={search_term_string}',
+        },
+        'query-input': 'required name=search_term_string',
+      },
+    },
+    {
+      '@type': 'WebPage',
+      '@id': 'https://www.tecbunny.com/#webpage',
+      url: 'https://www.tecbunny.com',
+      name: 'TecBunny Solutions | CCTV, IT Services & Home Automation in Goa',
+      isPartOf: { '@id': 'https://www.tecbunny.com/#website' },
+      about: { '@id': 'https://www.tecbunny.com/#localbusiness' },
+      primaryImageOfPage: { '@id': 'https://www.tecbunny.com/#logo' },
+      speakable: {
+        '@type': 'SpeakableSpecification',
+        cssSelector: ['h1', 'main p'],
+      },
+    },
+    {
+      '@type': 'ImageObject',
+      '@id': 'https://www.tecbunny.com/#logo',
+      url: BRAND_LOGO_URL,
+      contentUrl: BRAND_LOGO_URL,
+      caption: 'TecBunny Solutions logo',
     },
     {
       '@type': 'Organization',
