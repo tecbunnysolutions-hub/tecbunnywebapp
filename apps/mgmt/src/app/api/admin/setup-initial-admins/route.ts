@@ -15,6 +15,13 @@ function getClientIp(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  // Endpoint is disabled by default. Enable only during initial deployment by
+  // setting ADMIN_SETUP_ENDPOINT_ENABLED=true, then remove that variable once
+  // at least one admin exists (the endpoint self-locks after first use anyway).
+  if (process.env.ADMIN_SETUP_ENDPOINT_ENABLED !== 'true') {
+    return NextResponse.json({ error: 'Not Found' }, { status: 404 });
+  }
+
   logger.info('setup_initial_admins.audit.requested');
   const clientIp = getClientIp(request);
   const ipRl = await rateLimit(`setup_admins_ip:${clientIp}`, 3, 15 * 60 * 1000);
@@ -153,7 +160,7 @@ export async function POST(request: NextRequest) {
     if (msg.startsWith('[supabase]')) {
       return NextResponse.json({ error: 'Service configuration error. Please contact support.' }, { status: 503 });
     }
-    return NextResponse.json({ error: msg }, { status: 500 });
+    return NextResponse.json({ error: 'Setup operation failed. Check server logs.' }, { status: 500 });
   }
 }
 
