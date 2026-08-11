@@ -3,6 +3,7 @@
 import React, { Suspense } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
+import HeroCarousel from './HeroCarousel';
 import {
   ArrowRight,
   ChevronRight,
@@ -23,6 +24,7 @@ import type { Product } from '@tecbunny/core';
 import { RegionalTrustBanner } from './RegionalTrustBanner';
 import { HeroRotator } from './home/HeroRotator';
 
+// HeroCarousel is statically imported so next/image emits a <link rel="preload"> for the LCP slide image in the initial HTML.
 const DynamicBehavioralCouponPopup = dynamic(() => import('./BehavioralCouponPopup').then(mod => mod.BehavioralCouponPopup), { ssr: false });
 const DynamicAmbientEffects = dynamic(() => import('./home/AmbientEffects').then(mod => mod.AmbientEffects), { ssr: false });
 const DynamicHeroVisuals = dynamic(() => import('./home/HeroVisuals').then(mod => mod.HeroVisuals), { ssr: false });
@@ -32,16 +34,6 @@ const AddToCartButton = dynamic(
   () => import('@/components/cart/AddToCartButton').then((module) => module.AddToCartButton),
   { ssr: false }
 );
-
-const HeroCarousel = dynamic(() => import('./HeroCarousel'), {
-  loading: () => (
-    <section className="py-10 sm:py-14" aria-hidden="true">
-      <div className="container mx-auto px-4">
-        <div className="h-[340px] sm:h-[420px] w-full animate-pulse rounded-lg bg-slate-900/60 border border-white/5" />
-      </div>
-    </section>
-  ),
-});
 
 type DbProduct = {
   id: string;

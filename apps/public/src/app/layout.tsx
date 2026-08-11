@@ -339,7 +339,7 @@ export default async function RootLayout({
       <head>
         <link rel="preconnect" href="https://fbcsagupcxheyiusjfak.supabase.co" />
         <link rel="dns-prefetch" href="https://fbcsagupcxheyiusjfak.supabase.co" />
-        <link rel="preconnect" href="https://www.googletagmanager.com" />
+        <link rel="dns-prefetch" href="https://cdn.grofers.com" />
         <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
         <link rel="dns-prefetch" href="https://www.google-analytics.com" />
         <link rel="dns-prefetch" href="https://www.facebook.com" />
