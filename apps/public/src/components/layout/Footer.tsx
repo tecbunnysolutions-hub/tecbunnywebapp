@@ -240,7 +240,7 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
           {/* Column 1: Services */}
           <div>
-            <h4 className="text-white text-base font-tech font-black uppercase tracking-[0.2em] mb-6">CCTV &amp; IT Services</h4>
+            <h4 className="text-white text-base font-tech font-black uppercase tracking-[0.2em] mb-6">Services</h4>
             <ul className="space-y-3.5 text-base font-medium">
               <li>
                 <Link href="/services/network-infrastructure" className="hover:text-primary transition-all hover:translate-x-1 inline-block text-slate-300">

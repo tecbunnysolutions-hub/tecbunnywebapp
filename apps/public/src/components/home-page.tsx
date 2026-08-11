@@ -64,28 +64,28 @@ type DbProduct = {
 
 const FEATURE_PILLARS = [
   {
-    title: 'Core IT Infrastructure',
+    title: 'Core IT and Network Infrastructure for Your Business',
     desc: 'Resilient digital foundations, seamless cloud migrations, and managed IT support.',
     icon: Server,
     accent: 'from-zinc-900 to-zinc-950',
     href: '/services/network-infrastructure',
   },
   {
-    title: 'Cybersecurity & Compliance',
+    title: 'IT Security and Compliance for Your Business Network',
     desc: 'Continuous threat detection, data backup, and uncompromised protection.',
     icon: ShieldCheck,
     accent: 'from-zinc-900 to-zinc-950',
     href: '/services/software-system-admin',
   },
   {
-    title: 'Physical Tech Infrastructure',
-    desc: 'CCTV installation, IP surveillance, RFID access control, smart automation, and enterprise structured cabling.',
+    title: 'Physical Tech and Smart Building Infrastructure in Goa',
+    desc: 'CCTV installation, IP surveillance, RFID access control, smart automation, and structured cabling.',
     icon: Zap,
     accent: 'from-zinc-900 to-zinc-950',
     href: '/services/physical-security',
   },
   {
-    title: 'Managed ITES',
+    title: 'Managed ITES and Business Process Outsourcing Services',
     desc: 'Optimized business processes, technical support desks, and back-office automation.',
     icon: Layers,
     accent: 'from-zinc-900 to-zinc-950',
@@ -125,7 +125,7 @@ export default function HomePage({
               <HeroRotator />
 
               <p className="tb-lede max-w-2xl text-lg sm:text-xl">
-                From robust IT infrastructure to seamless business process outsourcing, we provide the end-to-end technology foundation scaling businesses rely on.
+                We build IT systems, handle CCTV, and run back-office work — so your business can grow and stay safe.
               </p>
 
               <div className="flex flex-col sm:flex-row gap-5 pt-4">
@@ -133,9 +133,9 @@ export default function HomePage({
                 <div className="flex-1 p-5 rounded-2xl border border-blue-500/20 bg-blue-500/5 hover:border-blue-500/40 hover:bg-blue-500/10 transition-all duration-300 flex flex-col justify-between backdrop-blur-sm">
                   <div>
                     <span className="text-[10px] font-bold tracking-widest uppercase text-blue-400">B2B Solutions</span>
-                    <h3 className="text-lg font-bold text-white mt-1 font-tech">Enterprise IT Infrastructure</h3>
+                    <h3 className="text-lg font-bold text-white mt-1 font-tech">Enterprise IT Infrastructure and Managed Services in Goa</h3>
                     <p className="text-xs text-zinc-400 mt-2 mb-4 leading-relaxed font-light">
-                      Custom corporate networks, smart biometrics, server systems, and dedicated SLAs for Goa hotels/resorts.
+                      CCTV, networks, smart locks, and IT support for Goa hotels, resorts, and offices.
                     </p>
                   </div>
                   <Link
@@ -151,7 +151,7 @@ export default function HomePage({
                 <div className="flex-1 p-5 rounded-2xl border border-zinc-800 bg-zinc-900/10 hover:border-zinc-700 hover:bg-zinc-900/20 transition-all duration-300 flex flex-col justify-between backdrop-blur-sm">
                   <div>
                     <span className="text-[10px] font-bold tracking-widest uppercase text-zinc-500">B2C Retail Store</span>
-                    <h3 className="text-lg font-bold text-white mt-1 font-tech">Bespoke Tech Storefront</h3>
+                    <h3 className="text-lg font-bold text-white mt-1 font-tech">Our Bespoke Tech Storefront for IT Hardware in Goa</h3>
                     <p className="text-xs text-zinc-450 mt-2 mb-4 leading-relaxed font-light">
                       High-performance custom gaming PCs, NVR hardware, core components, and fast next-day delivery in Goa.
                     </p>
@@ -194,8 +194,8 @@ export default function HomePage({
                 Instant Quotation & Live Negotiation
               </div>
               <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-white font-tech leading-tight animate-reveal">
-                Design Your Perfect System. <br />
-                <span className="text-zinc-200">Name Your Price.</span>
+                Design Your Custom IT System. <br />
+                <span className="text-zinc-200">Name Your Price, Get an Instant Quote.</span>
               </h2>
               <p className="tb-lede max-w-2xl text-base">
                 Stop waiting for quotes. Pick exactly what you need, see the real price, and get a custom deal instantly.
@@ -309,7 +309,7 @@ export default function HomePage({
         <div className="tb-container">
           <div className="mb-14 max-w-2xl">
             <span className="tb-kicker">Core pillars</span>
-            <h2 className="mt-4 text-3xl font-semibold text-white sm:text-4xl">Engineered for Scale, Designed for Security.</h2>
+            <h2 className="mt-4 text-3xl font-semibold text-white sm:text-4xl">Systems Engineered for Scale and Designed for Security</h2>
             <p className="tb-lede mt-4 text-sm sm:text-base">
               Comprehensive IT and ITES solutions tailored to the demands of modern business.
             </p>
@@ -345,46 +345,46 @@ export default function HomePage({
         <div className="tb-container">
           <div className="mb-10 max-w-2xl">
             <span className="tb-kicker">What we deliver</span>
-            <h2 className="mt-4 text-3xl font-semibold text-white sm:text-4xl">CCTV, Networking & Managed IT Services</h2>
+            <h2 className="mt-4 text-3xl font-semibold text-white sm:text-4xl">CCTV Installation, Networking and Managed IT Services</h2>
             <p className="tb-lede mt-4 text-sm sm:text-base">
-              From professional CCTV installation across Goa and Maharashtra to full-stack managed IT services, smart home automation, and AMC contracts — TecBunny Solutions is your single technology partner backed by real SLAs.
+              We do CCTV and IT work across Goa. One team for all your tech needs — CCTV, networks, smart home tools, and AMC plans with clear SLAs.
             </p>
           </div>
 
           <div className="grid gap-8 md:grid-cols-2">
             <div className="space-y-3">
-              <h3 className="text-lg font-semibold text-white">CCTV Installation & Surveillance</h3>
+              <h3 className="text-lg font-semibold text-white">Professional Camera and Surveillance System Setup in Goa</h3>
               <p className="text-sm text-zinc-400 leading-relaxed">
-                TecBunny Solutions is a certified CCTV installer serving hotels, resorts, residential complexes, and commercial premises across North Goa, Panaji, Mapusa, Pernem, Siolim, Anjuna, and South Goa. We supply and install Hikvision, Dahua, CP Plus, Grandstream, and Uniview CCTV systems with full AMC (Annual Maintenance Contracts), 24×7 remote support, and hardware warranty management. Our CCTV surveillance solutions cover IP cameras, PTZ cameras, NVR and DVR systems, night-vision cameras, thermal imaging cameras, and cloud-based CCTV recording platforms — all engineered for round-the-clock property protection.
+                We install CCTV in Goa. We fit cameras at hotels, homes, offices, and shops across North Goa and South Goa — Pernem, Mapusa, Panaji, Anjuna, Siolim, and more. We sell and fit Hikvision, Dahua, CP Plus, and top CCTV brands. All CCTV jobs come with full AMC, 24x7 phone help, and a warranty. We fit IP cameras, PTZ cameras, NVR and DVR units, night cameras, and cloud CCTV systems to keep your site safe day and night.
               </p>
             </div>
 
             <div className="space-y-3">
-              <h3 className="text-lg font-semibold text-white">Networking & Structured Cabling</h3>
+              <h3 className="text-lg font-semibold text-white">Network Setup and Structured Cabling Services in Goa</h3>
               <p className="text-sm text-zinc-400 leading-relaxed">
-                Enterprise-grade networking solutions including Cat6 and Cat6A structured cabling, Wi-Fi 6 access point deployment, VLAN configuration, firewall installation, and managed switching for hotels, villas, offices, and clinics in Goa. We design and deploy network infrastructure for high-density environments using Cisco, Ubiquiti, Fortinet, and Palo Alto systems, with ongoing managed network support under tiered SLA agreements to keep your operations always online.
+                We build and run networks for hotels, offices, and clinics in Goa. Our work covers Cat6 cabling, Wi-Fi 6 access points, VLAN setup, firewall install, and smart switches. We use Cisco, Ubiquiti, and Fortinet gear. You get a fast, safe, and well-run network with an SLA to back it up.
               </p>
             </div>
 
             <div className="space-y-3">
-              <h3 className="text-lg font-semibold text-white">Smart Home & Office Automation</h3>
+              <h3 className="text-lg font-semibold text-white">Smart Home, Office, and Building Automation in Goa</h3>
               <p className="text-sm text-zinc-400 leading-relaxed">
-                Intelligent building automation for homes, resorts, and offices — including RFID access control, biometric door lock systems, automated lighting control, motorized blinds, energy monitoring, and integrated AV management. We deploy KNX, Zigbee, and Z-Wave compatible systems, delivering mobile app control, voice assistant integration, and remote management tools for property managers and facility teams who need real-time visibility across multiple sites.
+                We fit smart systems for homes, resorts, and offices. This covers RFID locks, smart door latches, light control, smart blinds, power tracking, and AV setup. We use KNX, Zigbee, and Z-Wave tools. You can run it all from your phone or by voice. Your team can watch many sites from one screen.
               </p>
             </div>
 
             <div className="space-y-3">
-              <h3 className="text-lg font-semibold text-white">IT AMC & Managed Support</h3>
+              <h3 className="text-lg font-semibold text-white">Annual IT AMC and Managed Support Plans for Your Business</h3>
               <p className="text-sm text-zinc-400 leading-relaxed">
-                Comprehensive Annual Maintenance Contracts covering CCTV systems, networking equipment, servers, workstations, and your complete IT infrastructure. Our managed service plans include scheduled preventive maintenance, remote helpdesk support, hardware repair and replacement, firmware updates, and compliance reporting. We serve hospitality, healthcare, education, and enterprise clients across Goa and Maharashtra with response SLAs starting at same-day on-site visits for critical issues.
+                Our AMC plans cover your CCTV, network gear, servers, and all IT kit. We do planned check-ups, remote help desk, hardware fixes, firmware updates, and audit reports. We serve hotels, hospitals, schools, and firms in Goa and Maharashtra. Our SLA starts with same-day on-site help for key faults.
               </p>
             </div>
           </div>
 
           <div className="mt-12 rounded-xl border border-zinc-800 bg-zinc-950/60 p-6 sm:p-8">
-            <h3 className="text-lg font-semibold text-white mb-3">Service Coverage Areas</h3>
+            <h3 className="text-lg font-semibold text-white mb-3">Our IT Service Coverage Areas Across Goa and India</h3>
             <p className="text-sm text-zinc-400 leading-relaxed">
-              TecBunny Solutions provides CCTV installation, IT services, and home automation services across <strong className="text-zinc-300">North Goa</strong> — Pernem, Mapusa, Calangute, Baga, Anjuna, Siolim, Vagator, Chopdem, Arambol, Morjim, Candolim — and across <strong className="text-zinc-300">South Goa</strong> — Panaji, Margao, Vasco da Gama, Ponda, Cortalim. We also serve enterprise clients in <strong className="text-zinc-300">Mumbai, Pune, and Nashik</strong> for large-format CCTV and IT infrastructure deployments. Contact our team for same-day quotes on CCTV systems, network overhauls, or AMC contract renewals.
+              We do CCTV, IT, and smart home work across <strong className="text-zinc-300">North Goa</strong> — Pernem, Mapusa, Calangute, Baga, Anjuna, Siolim, Vagator, Chopdem, Arambol, Morjim, and Candolim. We cover <strong className="text-zinc-300">South Goa</strong> too — Panaji, Margao, Vasco, Ponda, and Cortalim. We also serve big IT and CCTV jobs in <strong className="text-zinc-300">Mumbai, Pune, and Nashik</strong>. Call us today for a fast CCTV, network, or AMC quote.
             </p>
           </div>
         </div>
@@ -393,7 +393,7 @@ export default function HomePage({
       <section className="tb-section reveal-section is-revealed" data-reveal-id="plans" style={{ contentVisibility: 'auto', containIntrinsicSize: '600px' }}>
         <div className="tb-container grid gap-12 lg:grid-cols-2 lg:items-center">
           <div className={cn('tb-panel reveal-item relative p-5 sm:p-10', revealDelayClass(0))}>
-            <h3 className="text-2xl font-semibold text-white sm:text-3xl">Simple to use. Hard to break.</h3>
+            <h3 className="text-2xl font-semibold text-white sm:text-3xl">Simple to Use and Hard to Break: Smart Systems</h3>
             <p className="tb-lede mt-4 text-sm sm:text-base">
               Enjoy peace of mind with smart systems designed for everyday people, backed by our friendly local support.
             </p>
@@ -415,7 +415,7 @@ export default function HomePage({
           <div className="mb-10 flex flex-wrap items-center justify-between gap-4">
             <div>
               <span className="tb-kicker">Storefront</span>
-              <h2 className="mt-3 text-3xl font-semibold text-white">Featured hardware</h2>
+              <h2 className="mt-3 text-3xl font-semibold text-white">Our Featured Hardware for IT and Smart Home Systems</h2>
             </div>
             <Link
               href="/products"
@@ -499,20 +499,82 @@ export default function HomePage({
       <section className="tb-section reveal-section is-revealed" data-reveal-id="about" style={{ contentVisibility: 'auto', containIntrinsicSize: '400px' }}>
         <div className="tb-container">
           <div className="mx-auto max-w-4xl space-y-6 text-sm leading-relaxed text-zinc-400 sm:text-base">
-            <h2 className="text-3xl font-semibold text-white mb-8">One Partner. Total Technological Command.</h2>
+            <h2 className="text-3xl font-semibold text-white mb-8">One Team, One Partner for All Your IT and Tech Needs</h2>
             <p>
-              At TecBunny Solutions, we believe that robust technology is the engine of business growth. We are a team of certified engineers, CCTV specialists, cybersecurity experts, and operational strategists dedicated to building the infrastructure that powers your success across Goa, Maharashtra, and India.
+              At TecBunny, we use tech to help your business grow. We are a team of CCTV experts, IT engineers, and support staff. We build and run tech systems for your firm in Goa, Maharashtra, and India.
             </p>
             <p>
-              We built our foundation on securing physical perimeters — deploying enterprise-grade CCTV surveillance, IP camera networks, and RFID access control systems for hotels, hospitals, educational institutions, and commercial complexes. Today, we have evolved into a comprehensive end-to-end technology partner. We bring that same rigorous, uncompromising approach to managing complex IT architectures, defending against cyber threats, and streamlining back-office operations.
+              We started by fitting CCTV cameras and access control for hotels, hospitals, schools, and offices. Now we do much more. We run full IT systems, keep your data safe, and help your team work better every day.
             </p>
             <p>
-              By bridging the gap between physical infrastructure — CCTV, networking, smart automation — digital systems, and human processes, we eliminate vendor fatigue and provide a single point of accountability. Whether you need a CCTV system overhaul, a network redesign, compliance auditing, or a fully managed technical support desk with AMC coverage, we deliver solutions engineered for scale and designed for security.
+              We link CCTV, networks, and smart office tools to work as one. One team. One point of call. Need a CCTV fix, a network job, or an IT help desk? We can do all of it — in Goa and across India.
             </p>
             <p>
-              Our team holds authorised dealerships and service certifications with leading technology brands including Hikvision, Dahua, CP Plus, Cisco, Ubiquiti, and Fortinet. Every CCTV installation, IT deployment, and automation project we undertake is backed by a formal SLA, transparent pricing, and a dedicated account manager — so your technology investment is always protected.
+              We hold brand deals and service licences with Hikvision, Dahua, CP Plus, Cisco, Ubiquiti, and Fortinet. Every CCTV or IT job we do comes with a clear SLA, fair pricing, and one account manager.
+            </p>
+            <p>
+              We are based in Pernem, North Goa. We know local tech issues well — the humidity, power cuts, and dust that affect CCTV and IT gear in Goa. This local know-how helps us do better, faster work for our clients across the state and beyond.
             </p>
           </div>
+        </div>
+      </section>
+
+      <section className="tb-section reveal-section is-revealed" data-reveal-id="faq" style={{ contentVisibility: 'auto', containIntrinsicSize: '700px' }}>
+        <div className="tb-container">
+          <div className="mb-10 max-w-2xl">
+            <span className="tb-kicker">FAQ</span>
+            <h2 className="mt-4 text-3xl font-semibold text-white sm:text-4xl">Frequently Asked Questions About Our Services in Goa</h2>
+          </div>
+          <dl className="grid gap-6 md:grid-cols-2">
+            <div className="space-y-2 rounded-lg border border-zinc-800 bg-zinc-950/60 p-4">
+              <dt className="text-sm font-semibold text-white">Do you fit CCTV in homes in Goa?</dt>
+              <dd className="text-sm text-zinc-400 leading-relaxed">Yes. We fit CCTV in homes, villas, and flats in Goa. We help you pick the right camera count and type for your space. All home CCTV jobs come with full AMC, 24x7 phone help, and a one-year warranty. We also check old camera wiring and update it at no extra cost.</dd>
+            </div>
+            <div className="space-y-2 rounded-lg border border-zinc-800 bg-zinc-950/60 p-4">
+              <dt className="text-sm font-semibold text-white">How much does CCTV cost in Goa?</dt>
+              <dd className="text-sm text-zinc-400 leading-relaxed">Our CCTV prices start at Rs 8,000 for a basic 2-camera setup. A full 4-camera NVR kit starts at Rs 15,000. All costs include fitting, cabling, and a one-year warranty. We also offer easy monthly payment plans. Ask us for a free quote today.</dd>
+            </div>
+            <div className="space-y-2 rounded-lg border border-zinc-800 bg-zinc-950/60 p-4">
+              <dt className="text-sm font-semibold text-white">Do you service and repair old CCTV?</dt>
+              <dd className="text-sm text-zinc-400 leading-relaxed">Yes. We can service, fix, or upgrade most CCTV brands. We do on-site checks, camera swaps, NVR updates, and cable fixes. Our AMC plans cover all of this for a flat yearly fee. We also stock spare parts for Hikvision, Dahua, and CP Plus systems.</dd>
+            </div>
+            <div className="space-y-2 rounded-lg border border-zinc-800 bg-zinc-950/60 p-4">
+              <dt className="text-sm font-semibold text-white">Do you set up Wi-Fi networks in Goa?</dt>
+              <dd className="text-sm text-zinc-400 leading-relaxed">Yes. We set up Wi-Fi, LAN networks, and cable runs for homes, offices, and hotels across Goa. We use Ubiquiti, Cisco, and Fortinet gear. Every network job comes with a 90-day free support period and a full handover report.</dd>
+            </div>
+            <div className="space-y-2 rounded-lg border border-zinc-800 bg-zinc-950/60 p-4">
+              <dt className="text-sm font-semibold text-white">What does an AMC plan cover?</dt>
+              <dd className="text-sm text-zinc-400 leading-relaxed">An AMC (Annual Maintenance Contract) covers your CCTV or IT kit for the full year. It includes planned check-ups, fast on-site fixes, 24x7 remote help, and audit reports — all for one flat fee. It saves you money on ad hoc repairs and keeps your gear in top shape.</dd>
+            </div>
+            <div className="space-y-2 rounded-lg border border-zinc-800 bg-zinc-950/60 p-4">
+              <dt className="text-sm font-semibold text-white">Do you do smart home setup in Goa?</dt>
+              <dd className="text-sm text-zinc-400 leading-relaxed">Yes. We fit smart lights, smart locks, RFID access, and AV systems in homes and resorts across Goa. We work with top smart home brands and link your devices to one app on your phone. All smart home jobs come with a warranty and tech support.</dd>
+            </div>
+            <div className="space-y-2 rounded-lg border border-zinc-800 bg-zinc-950/60 p-4">
+              <dt className="text-sm font-semibold text-white">Do you fit CCTV for hotels in Goa?</dt>
+              <dd className="text-sm text-zinc-400 leading-relaxed">Yes. Hotels are our top clients. We fit CCTV in hotel lobbies, car parks, pools, lifts, and guest floors. We plan a full CCTV layout map with the hotel team before we start. All hotel CCTV systems come with full AMC and 24x7 support.</dd>
+            </div>
+            <div className="space-y-2 rounded-lg border border-zinc-800 bg-zinc-950/60 p-4">
+              <dt className="text-sm font-semibold text-white">Do you serve areas outside Goa?</dt>
+              <dd className="text-sm text-zinc-400 leading-relaxed">Yes. We serve clients in Mumbai, Pune, and Nashik for large IT and CCTV jobs. We also run remote IT support for firms across India. For jobs outside Goa, we can send a team or work with a local vendor under our watch. Call us to get a fast quote.</dd>
+            </div>
+            <div className="space-y-2 rounded-lg border border-zinc-800 bg-zinc-950/60 p-4">
+              <dt className="text-sm font-semibold text-white">How fast do you respond to faults?</dt>
+              <dd className="text-sm text-zinc-400 leading-relaxed">Our AMC clients get same-day on-site help for key faults across Goa. For remote help, we aim to respond in under 2 hours on any day of the week. All support plans come with a clear SLA so you know what to expect at all times.</dd>
+            </div>
+            <div className="space-y-2 rounded-lg border border-zinc-800 bg-zinc-950/60 p-4">
+              <dt className="text-sm font-semibold text-white">What is an NVR and DVR for CCTV?</dt>
+              <dd className="text-sm text-zinc-400 leading-relaxed">A DVR (Digital Video Recorder) records from older analog CCTV cameras. An NVR (Network Video Recorder) records from IP cameras over a LAN. We help you pick the right one for your setup and budget. Most new CCTV systems use NVR units with remote view on your phone.</dd>
+            </div>
+            <div className="space-y-2 rounded-lg border border-zinc-800 bg-zinc-950/60 p-4">
+              <dt className="text-sm font-semibold text-white">Do you fit RFID locks and smart access?</dt>
+              <dd className="text-sm text-zinc-400 leading-relaxed">Yes. We fit RFID card readers, smart door locks, and access systems for offices, hotels, and flats in Goa. You can track who enters and exits your space in real time. We can also link the access system to your CCTV for a full audit trail.</dd>
+            </div>
+            <div className="space-y-2 rounded-lg border border-zinc-800 bg-zinc-950/60 p-4">
+              <dt className="text-sm font-semibold text-white">Do you work with builders and architects?</dt>
+              <dd className="text-sm text-zinc-400 leading-relaxed">Yes. We work with builders, fit-out teams, and architects to plan CCTV, network, and smart home cables at the build stage. Planning cables early saves money and time later. Call us for a free design consult on any new build or fit-out project in Goa.</dd>
+            </div>
+          </dl>
         </div>
       </section>
 
@@ -524,7 +586,7 @@ export default function HomePage({
                 <span className="inline-flex items-center gap-2 rounded-lg border border-blue-500/20 bg-blue-500/5 text-blue-400 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em]">
                   <Sparkles size={14} /> Ready when you are
                 </span>
-                <h3 className="mt-5 text-2xl font-semibold text-white sm:text-3xl">Ready to upgrade your infrastructure?</h3>
+                <h3 className="mt-5 text-2xl font-semibold text-white sm:text-3xl">Ready to Upgrade Your IT Systems and Infrastructure?</h3>
                 <p className="tb-lede mt-4 text-sm sm:text-base">
                   Let’s discuss how a unified approach to IT and ITES can secure your business and accelerate your growth.
                 </p>
