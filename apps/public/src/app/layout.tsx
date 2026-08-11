@@ -33,7 +33,7 @@ export const metadata: Metadata = {
   manifest: '/manifest.webmanifest',
   metadataBase: new URL('https://www.tecbunny.com'),
   title: {
-    default: 'TecBunny | CCTV, IT Services & Home Automation in Goa',
+    default: 'CCTV & IT Services in Goa | TecBunny Solutions',
     template: '%s | TecBunny',
   },
   description:
@@ -339,6 +339,9 @@ export default async function RootLayout({
       <head>
         <link rel="preconnect" href="https://fbcsagupcxheyiusjfak.supabase.co" />
         <link rel="dns-prefetch" href="https://fbcsagupcxheyiusjfak.supabase.co" />
+        <link rel="preconnect" href="https://www.googletagmanager.com" />
+        <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+        <link rel="dns-prefetch" href="https://www.google-analytics.com" />
         <link rel="dns-prefetch" href="https://www.facebook.com" />
         <link rel="dns-prefetch" href="https://www.instagram.com" />
         <link rel="dns-prefetch" href="https://maps.googleapis.com" />

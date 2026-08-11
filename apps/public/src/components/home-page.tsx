@@ -9,11 +9,8 @@ import {
   ShieldCheck,
   Sparkles,
   Server,
-  Wifi,
   Zap,
-  CheckCircle2,
   Layers,
-  Lock,
   Sliders,
   FileText,
   TrendingDown,
@@ -23,18 +20,13 @@ import { getProductDisplayImage } from "@tecbunny/core/image-utils";
 import { cn, revealDelayClass } from "@tecbunny/core/utils";
 import { OptimizedImage } from "@tecbunny/ui";
 import type { Product } from '@tecbunny/core';
-import { BehavioralCouponPopup } from './BehavioralCouponPopup';
 import { RegionalTrustBanner } from './RegionalTrustBanner';
-
-import { AmbientEffects } from './home/AmbientEffects';
-import { HeroVisuals } from './home/HeroVisuals';
-import { TrackQuoteForm } from './home/TrackQuoteForm';
-import { MagneticButton } from './home/MagneticButton';
 import { HeroRotator } from './home/HeroRotator';
 
 const DynamicBehavioralCouponPopup = dynamic(() => import('./BehavioralCouponPopup').then(mod => mod.BehavioralCouponPopup), { ssr: false });
 const DynamicAmbientEffects = dynamic(() => import('./home/AmbientEffects').then(mod => mod.AmbientEffects), { ssr: false });
 const DynamicHeroVisuals = dynamic(() => import('./home/HeroVisuals').then(mod => mod.HeroVisuals), { ssr: false });
+const TrackQuoteForm = dynamic(() => import('./home/TrackQuoteForm').then(mod => mod.TrackQuoteForm), { ssr: false });
 
 const AddToCartButton = dynamic(
   () => import('@/components/cart/AddToCartButton').then((module) => module.AddToCartButton),
@@ -76,28 +68,28 @@ const FEATURE_PILLARS = [
     desc: 'Resilient digital foundations, seamless cloud migrations, and managed IT support.',
     icon: Server,
     accent: 'from-zinc-900 to-zinc-950',
-    href: '/services',
+    href: '/services/network-infrastructure',
   },
   {
     title: 'Cybersecurity & Compliance',
     desc: 'Continuous threat detection, data backup, and uncompromised protection.',
     icon: ShieldCheck,
     accent: 'from-zinc-900 to-zinc-950',
-    href: '/services',
+    href: '/services/software-system-admin',
   },
   {
     title: 'Physical Tech Infrastructure',
-    desc: 'Integrated facility intelligence with smart automation and enterprise surveillance.',
+    desc: 'CCTV installation, IP surveillance, RFID access control, smart automation, and enterprise structured cabling.',
     icon: Zap,
     accent: 'from-zinc-900 to-zinc-950',
-    href: '/services',
+    href: '/services/physical-security',
   },
   {
     title: 'Managed ITES',
     desc: 'Optimized business processes, technical support desks, and back-office automation.',
     icon: Layers,
     accent: 'from-zinc-900 to-zinc-950',
-    href: '/services',
+    href: '/services/smart-infrastructure',
   },
 ];
 
@@ -123,8 +115,8 @@ export default function HomePage({
         <div className="tb-container relative z-10">
           <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-[1.05fr_0.95fr] xl:gap-16">
             <div className="reveal-section is-revealed max-w-3xl space-y-6" data-reveal-id="hero-copy">
-              <h1 className="text-3xl font-extrabold leading-[1.05] text-white sm:text-4xl md:text-5xl xl:text-6xl font-tech tracking-tight" aria-label="Powering Your Operations. Securing Your Enterprise.">
-                <span className="glitch-text block pb-3 text-blue-400" data-text="Powering Your Operations.">Powering Your Operations.</span>
+              <h1 className="text-3xl font-extrabold leading-[1.05] text-white sm:text-4xl md:text-5xl xl:text-6xl font-tech tracking-tight" aria-label="CCTV, IT & Smart Automation. Securing Your Enterprise.">
+                <span className="glitch-text block pb-3 text-blue-400" data-text="CCTV, IT & Smart Automation.">CCTV, IT &amp; Smart Automation.</span>
                 <span className="block text-zinc-100">
                   Securing Your Enterprise.
                 </span>
@@ -349,6 +341,55 @@ export default function HomePage({
         </div>
       </section>
 
+      <section className="tb-section reveal-section is-revealed" data-reveal-id="cctv-services" style={{ contentVisibility: 'auto', containIntrinsicSize: '800px' }}>
+        <div className="tb-container">
+          <div className="mb-10 max-w-2xl">
+            <span className="tb-kicker">What we deliver</span>
+            <h2 className="mt-4 text-3xl font-semibold text-white sm:text-4xl">CCTV, Networking & Managed IT Services</h2>
+            <p className="tb-lede mt-4 text-sm sm:text-base">
+              From professional CCTV installation across Goa and Maharashtra to full-stack managed IT services, smart home automation, and AMC contracts — TecBunny Solutions is your single technology partner backed by real SLAs.
+            </p>
+          </div>
+
+          <div className="grid gap-8 md:grid-cols-2">
+            <div className="space-y-3">
+              <h3 className="text-lg font-semibold text-white">CCTV Installation & Surveillance</h3>
+              <p className="text-sm text-zinc-400 leading-relaxed">
+                TecBunny Solutions is a certified CCTV installer serving hotels, resorts, residential complexes, and commercial premises across North Goa, Panaji, Mapusa, Pernem, Siolim, Anjuna, and South Goa. We supply and install Hikvision, Dahua, CP Plus, Grandstream, and Uniview CCTV systems with full AMC (Annual Maintenance Contracts), 24×7 remote support, and hardware warranty management. Our CCTV surveillance solutions cover IP cameras, PTZ cameras, NVR and DVR systems, night-vision cameras, thermal imaging cameras, and cloud-based CCTV recording platforms — all engineered for round-the-clock property protection.
+              </p>
+            </div>
+
+            <div className="space-y-3">
+              <h3 className="text-lg font-semibold text-white">Networking & Structured Cabling</h3>
+              <p className="text-sm text-zinc-400 leading-relaxed">
+                Enterprise-grade networking solutions including Cat6 and Cat6A structured cabling, Wi-Fi 6 access point deployment, VLAN configuration, firewall installation, and managed switching for hotels, villas, offices, and clinics in Goa. We design and deploy network infrastructure for high-density environments using Cisco, Ubiquiti, Fortinet, and Palo Alto systems, with ongoing managed network support under tiered SLA agreements to keep your operations always online.
+              </p>
+            </div>
+
+            <div className="space-y-3">
+              <h3 className="text-lg font-semibold text-white">Smart Home & Office Automation</h3>
+              <p className="text-sm text-zinc-400 leading-relaxed">
+                Intelligent building automation for homes, resorts, and offices — including RFID access control, biometric door lock systems, automated lighting control, motorized blinds, energy monitoring, and integrated AV management. We deploy KNX, Zigbee, and Z-Wave compatible systems, delivering mobile app control, voice assistant integration, and remote management tools for property managers and facility teams who need real-time visibility across multiple sites.
+              </p>
+            </div>
+
+            <div className="space-y-3">
+              <h3 className="text-lg font-semibold text-white">IT AMC & Managed Support</h3>
+              <p className="text-sm text-zinc-400 leading-relaxed">
+                Comprehensive Annual Maintenance Contracts covering CCTV systems, networking equipment, servers, workstations, and your complete IT infrastructure. Our managed service plans include scheduled preventive maintenance, remote helpdesk support, hardware repair and replacement, firmware updates, and compliance reporting. We serve hospitality, healthcare, education, and enterprise clients across Goa and Maharashtra with response SLAs starting at same-day on-site visits for critical issues.
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-12 rounded-xl border border-zinc-800 bg-zinc-950/60 p-6 sm:p-8">
+            <h3 className="text-lg font-semibold text-white mb-3">Service Coverage Areas</h3>
+            <p className="text-sm text-zinc-400 leading-relaxed">
+              TecBunny Solutions provides CCTV installation, IT services, and home automation services across <strong className="text-zinc-300">North Goa</strong> — Pernem, Mapusa, Calangute, Baga, Anjuna, Siolim, Vagator, Chopdem, Arambol, Morjim, Candolim — and across <strong className="text-zinc-300">South Goa</strong> — Panaji, Margao, Vasco da Gama, Ponda, Cortalim. We also serve enterprise clients in <strong className="text-zinc-300">Mumbai, Pune, and Nashik</strong> for large-format CCTV and IT infrastructure deployments. Contact our team for same-day quotes on CCTV systems, network overhauls, or AMC contract renewals.
+            </p>
+          </div>
+        </div>
+      </section>
+
       <section className="tb-section reveal-section is-revealed" data-reveal-id="plans" style={{ contentVisibility: 'auto', containIntrinsicSize: '600px' }}>
         <div className="tb-container grid gap-12 lg:grid-cols-2 lg:items-center">
           <div className={cn('tb-panel reveal-item relative p-5 sm:p-10', revealDelayClass(0))}>
@@ -460,13 +501,16 @@ export default function HomePage({
           <div className="mx-auto max-w-4xl space-y-6 text-sm leading-relaxed text-zinc-400 sm:text-base">
             <h2 className="text-3xl font-semibold text-white mb-8">One Partner. Total Technological Command.</h2>
             <p>
-              At TecBunny Solutions, we believe that robust technology is the engine of business growth. We are a team of engineers, security experts, and operational strategists dedicated to building the infrastructure that powers your success across India.
+              At TecBunny Solutions, we believe that robust technology is the engine of business growth. We are a team of certified engineers, CCTV specialists, cybersecurity experts, and operational strategists dedicated to building the infrastructure that powers your success across Goa, Maharashtra, and India.
             </p>
             <p>
-              We built our foundation on securing physical perimeters, deploying enterprise-grade surveillance and access systems. Today, we have evolved into a comprehensive end-to-end technology partner. We bring that same rigorous, uncompromising approach to managing complex IT architectures, defending against cyber threats, and streamlining back-office operations.
+              We built our foundation on securing physical perimeters — deploying enterprise-grade CCTV surveillance, IP camera networks, and RFID access control systems for hotels, hospitals, educational institutions, and commercial complexes. Today, we have evolved into a comprehensive end-to-end technology partner. We bring that same rigorous, uncompromising approach to managing complex IT architectures, defending against cyber threats, and streamlining back-office operations.
             </p>
             <p>
-              By bridging the gap between physical infrastructure, digital networks, and human processes, we eliminate vendor fatigue and provide a single point of accountability. Whether you need a network overhaul, compliance auditing, or a fully managed technical support desk, we deliver solutions engineered for scale and designed for security.
+              By bridging the gap between physical infrastructure — CCTV, networking, smart automation — digital systems, and human processes, we eliminate vendor fatigue and provide a single point of accountability. Whether you need a CCTV system overhaul, a network redesign, compliance auditing, or a fully managed technical support desk with AMC coverage, we deliver solutions engineered for scale and designed for security.
+            </p>
+            <p>
+              Our team holds authorised dealerships and service certifications with leading technology brands including Hikvision, Dahua, CP Plus, Cisco, Ubiquiti, and Fortinet. Every CCTV installation, IT deployment, and automation project we undertake is backed by a formal SLA, transparent pricing, and a dedicated account manager — so your technology investment is always protected.
             </p>
           </div>
         </div>

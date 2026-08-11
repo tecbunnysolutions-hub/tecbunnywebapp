@@ -13,17 +13,20 @@ export const revalidate = 60;
 // Homepage metadata for SEO
 export async function generateMetadata(): Promise<Metadata> {
   return createPageMetadata({
-  title: 'TecBunny | Enterprise IT Services & Managed ITES Solutions',
+  title: 'CCTV Installation & IT Services in Goa | TecBunny Solutions',
   description:
-    'TecBunny Solutions provides enterprise-grade IT infrastructure, professional cybersecurity services, managed ITES back-office workflows, and custom technology integrations.',
+    'CCTV installation, IT infrastructure, AMC support, and home automation in Goa and Maharashtra. TecBunny Solutions delivers enterprise cybersecurity, managed ITES back-office workflows, and smart automation for businesses.',
   keywords: [
-    'enterprise IT services',
+    'CCTV installation Goa',
+    'CCTV',
+    'IT services Goa',
+    'AMC services Goa',
+    'home automation Goa',
     'managed ITES',
     'network infrastructure',
     'cybersecurity audit',
     'smart access control',
     'IT lifecycle management',
-    'Goa IT partner',
     'TecBunny',
   ],
   path: '/',
