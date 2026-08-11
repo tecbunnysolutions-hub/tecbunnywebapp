@@ -59,7 +59,7 @@ export async function uploadToSupabase(
     fileName = fileName.replace(/[^a-zA-Z0-9.\-_]/g, '');
     const folderName = folder.replace(/[^a-zA-Z0-9\-_]/g, '');
     
-    let fileData: ArrayBuffer | Buffer | Readable;
+    let fileData: ArrayBuffer | Buffer | Uint8Array | Readable;
     let contentType = 'application/octet-stream';
 
     // Handle different input types
