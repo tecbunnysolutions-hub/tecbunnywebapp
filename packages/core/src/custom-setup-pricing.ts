@@ -822,7 +822,7 @@ export function resolveAccessoryPrice(
 export function calculateTotals({
   system,
   cameraCount,
-  cableUnits = 1,
+  cableUnits,
   analogSelections,
   ipSelections,
   hddId,
@@ -842,13 +842,19 @@ export function calculateTotals({
 }: CalculateTotalsInput): Totals {
   const analogPricing = pricingCatalog.analog;
   const ipPricing = pricingCatalog.ip;
+
+  const cable = system === 'analog'
+    ? (analogPricing.cable.find((entry) => entry.id === analogSelections.cableId) ?? analogPricing.cable[0])
+    : (ipPricing.cable.find((entry) => entry.id === ipSelections.cableId) ?? ipPricing.cable[0]);
+  const resolvedCableUnits = calculateCableQuantity(cameraCount, cable, cableUnits, pricingCatalog.constants);
+
   const selectableHddOptions = pricingCatalog.hddOptions.length ? pricingCatalog.hddOptions : [{ id: 'hdd', label: 'HDD', mrp: 0, sale: 0 }];
   const monitorOption = pricingCatalog.monitorOptions?.find((entry) => entry.id === monitorId) ?? pricingCatalog.monitorOptions?.[0] ?? { id: 'mon', label: 'Monitor', mrp: 0, sale: 0 };
   const systemSummary = system === 'analog'
-    ? buildAnalogSystemSummary(cameraCount, analogSelections, analogPricing, cableUnits, pricingCatalog.constants)
-    : buildIpSystemSummary(cameraCount, ipSelections, ipPricing, cableUnits, pricingCatalog.constants);
+    ? buildAnalogSystemSummary(cameraCount, analogSelections, analogPricing, resolvedCableUnits, pricingCatalog.constants)
+    : buildIpSystemSummary(cameraCount, ipSelections, ipPricing, resolvedCableUnits, pricingCatalog.constants);
 
-  const installationLaborCharges = installationIncluded ? calculateInstallationCharges(system, cameraCount, cableUnits, monitorStand, !!rackId, pricingCatalog.constants) : { sale: 0, breakdown: [] };
+  const installationLaborCharges = installationIncluded ? calculateInstallationCharges(system, cameraCount, resolvedCableUnits, monitorStand, !!rackId, pricingCatalog.constants) : { sale: 0, breakdown: [] };
 
   // Resolve HDD
   const hdd = selectableHddOptions.find((entry) => entry.id === hddId) ?? selectableHddOptions[0];
