@@ -441,6 +441,58 @@
       return { title, price, mrp, category, brand, description, imageUrl, modelNo: '' };
     }
 
+    // Blinkit Extractor
+    if (host.includes('blinkit.com')) {
+      const titleEl = document.querySelector('h1');
+      const title = titleEl ? titleEl.textContent.trim() : '';
+
+      // Price: Blinkit renders price inside elements with numeric ₹ values near "MRP"
+      let price = '';
+      let mrp = '';
+      const allText = Array.from(document.querySelectorAll('span, div, p'));
+      for (const el of allText) {
+        if (el.children.length === 0) {
+          const t = el.textContent.trim();
+          if (!price && /^₹\s*\d/.test(t) && t.length < 20) price = t;
+          if (!mrp && /MRP/i.test(t)) {
+            const m = t.match(/₹\s*[\d,]+/);
+            if (m) mrp = m[0];
+          }
+        }
+      }
+
+      // Category from breadcrumb
+      let category = '';
+      const crumbs = Array.from(document.querySelectorAll('nav a, [class*="breadcrumb" i] a'))
+        .map(a => a.textContent.trim())
+        .filter(t => t.length > 0 && !t.toLowerCase().includes('home'));
+      if (crumbs.length > 0) category = crumbs[crumbs.length - 1];
+
+      // Brand: first word of title is usually the brand
+      const brand = title ? title.trim().split(' ')[0] : '';
+
+      // Image: find main product image from Grofers CDN, stripping Cloudflare transformation
+      let imageUrl = '';
+      const imgs = Array.from(document.querySelectorAll('img[src*="grofers.com"], img[src*="cdn.blinkit.com"]'));
+      for (const img of imgs) {
+        const src = img.getAttribute('src') || '';
+        if (src.includes('cms-assets') || src.includes('/product/')) {
+          imageUrl = src;
+          break;
+        }
+      }
+      // Strip Cloudflare Image Resizing transform: /cdn-cgi/image/{options}/{original_path}
+      if (imageUrl.includes('/cdn-cgi/image/')) {
+        try {
+          const u = new URL(imageUrl);
+          const afterPrefix = u.pathname.replace(/^\/cdn-cgi\/image\/[^/]+\//, '/');
+          imageUrl = u.protocol + '//' + u.host + afterPrefix;
+        } catch (e) {}
+      }
+
+      return { title, price, mrp, category, brand, description: '', imageUrl, modelNo: '' };
+    }
+
     return null;
   }
 

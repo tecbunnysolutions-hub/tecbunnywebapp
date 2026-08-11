@@ -79,6 +79,18 @@ export async function processAndUploadExternalImage(
     return url;
   }
 
+  // Strip Cloudflare Image Resizing transform proxy so the origin image is fetched directly.
+  // Pattern: https://host/cdn-cgi/image/{options}/{original_path}
+  if (url.includes('/cdn-cgi/image/')) {
+    try {
+      const u = new URL(url);
+      const stripped = u.pathname.replace(/^\/cdn-cgi\/image\/[^/]+\//, '/');
+      url = u.protocol + '//' + u.host + stripped;
+    } catch {
+      // leave url unchanged if parsing fails
+    }
+  }
+
   try {
     let parsedUrl: URL;
     try {
