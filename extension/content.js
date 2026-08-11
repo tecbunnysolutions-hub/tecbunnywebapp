@@ -471,15 +471,36 @@
       // Brand: first word of title is usually the brand
       const brand = title ? title.trim().split(' ')[0] : '';
 
-      // Image: find main product image from Grofers CDN, stripping Cloudflare transformation
+      // Image: find main product image from Grofers CDN
+      // Blinkit may render via Next.js Image (/_next/image?url=…) or directly
       let imageUrl = '';
-      const imgs = Array.from(document.querySelectorAll('img[src*="grofers.com"], img[src*="cdn.blinkit.com"]'));
-      for (const img of imgs) {
-        const src = img.getAttribute('src') || '';
-        if (src.includes('cms-assets') || src.includes('/product/')) {
-          imageUrl = src;
-          break;
+      function extractGrofersCdnUrl(raw) {
+        if (!raw) return '';
+        if (raw.includes('grofers.com') || raw.includes('cdn.blinkit.com')) return raw;
+        // Next.js image optimizer encodes the original URL in ?url=
+        if (raw.includes('/_next/image')) {
+          try {
+            const u = new URL(raw, window.location.href);
+            const decoded = decodeURIComponent(u.searchParams.get('url') || '');
+            if (decoded.includes('grofers.com') || decoded.includes('cdn.blinkit.com')) return decoded;
+          } catch (e) {}
         }
+        return '';
+      }
+      const imgs = Array.from(document.querySelectorAll('img'));
+      for (const img of imgs) {
+        // Check src first, then each srcset entry
+        const candidates = [img.getAttribute('src') || img.src || ''];
+        const srcset = img.getAttribute('srcset') || '';
+        srcset.split(',').forEach(part => candidates.push(part.trim().split(' ')[0]));
+        for (const raw of candidates) {
+          const cdn = extractGrofersCdnUrl(raw);
+          if (cdn && (cdn.includes('cms-assets') || cdn.includes('/product/'))) {
+            imageUrl = cdn;
+            break;
+          }
+        }
+        if (imageUrl) break;
       }
       // Strip Cloudflare Image Resizing transform: /cdn-cgi/image/{options}/{original_path}
       if (imageUrl.includes('/cdn-cgi/image/')) {

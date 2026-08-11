@@ -13,9 +13,9 @@ function parseEnvFile(): Record<string, string> {
     const lines = fs.readFileSync(ENV_FILE, 'utf8').split('\n');
     return Object.fromEntries(
       lines
-        .map(l => l.trim())
-        .filter(l => l && !l.startsWith('#'))
-        .map(l => {
+        .map((l: string) => l.trim())
+        .filter((l: string) => l && !l.startsWith('#'))
+        .map((l: string) => {
           const eq = l.indexOf('=');
           if (eq < 0) return null;
           return [l.slice(0, eq).trim(), l.slice(eq + 1).trim().replace(/^["']|["']$/g, '')];

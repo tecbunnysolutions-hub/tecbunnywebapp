@@ -1,10 +1,18 @@
 import { logger } from './logger';
-import { SupabaseClient } from '@supabase/supabase-js';
-import crypto from 'crypto';
 import { validatePublicRemoteUrl } from './security/network-validation';
 
+// Minimal storage interface — avoids importing @supabase/supabase-js as a hard dep
+interface SupabaseLike {
+  storage: {
+    from(bucket: string): {
+      upload(path: string, data: Uint8Array, options: Record<string, unknown>): Promise<{ error: { message: string } | null }>;
+      getPublicUrl(path: string): { data: { publicUrl: string } };
+    };
+  };
+}
+
 export interface ProcessedImage {
-  buffer: Buffer;
+  buffer: Uint8Array;
   width: number;
   height: number;
   format: string;
@@ -15,13 +23,13 @@ export interface ProcessedImage {
  * and constraining dimensions for web optimization.
  */
 export async function optimizeImage(
-  inputBuffer: Buffer,
+  inputBuffer: Uint8Array,
   options: { maxWidth?: number; maxHeight?: number } = { maxWidth: 1920, maxHeight: 1920 }
 ): Promise<ProcessedImage> {
   try {
-    const sharp = require('sharp');
+    const sharp = (await import('sharp')).default;
     const image = sharp(inputBuffer);
-    const metadata = await image.metadata();
+    await image.metadata();
 
     const processedImage = await image
       .resize({
@@ -49,10 +57,10 @@ export async function optimizeImage(
  * Returns a Sharp transform stream that can be piped into from a Readable stream
  * and piped out to a Writable stream (e.g., Supabase upload).
  */
-export function createOptimizeImageStream(
+export async function createOptimizeImageStream(
   options: { maxWidth?: number; maxHeight?: number } = { maxWidth: 1920, maxHeight: 1920 }
-): any {
-  const sharp = require('sharp');
+): Promise<any> {
+  const sharp = (await import('sharp')).default;
   return sharp()
     .resize({
       width: options.maxWidth,
@@ -72,7 +80,7 @@ const EXTERNAL_IMAGE_FETCH_TIMEOUT_MS = 8000;
  */
 export async function processAndUploadExternalImage(
   url: string,
-  supabase: SupabaseClient
+  supabase: SupabaseLike
 ): Promise<string> {
   // If it's not a valid URL or already a Supabase storage URL, skip
   if (!url || !url.startsWith('http') || url.includes('.supabase.co/storage/')) {
@@ -113,6 +121,12 @@ export async function processAndUploadExternalImage(
       response = await fetch(parsedUrl.href, {
         redirect: 'manual',
         signal: controller.signal,
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          'Accept': 'image/avif,image/webp,image/apng,image/*,*/*;q=0.8',
+          'Accept-Language': 'en-US,en;q=0.9',
+          'Referer': parsedUrl.origin + '/',
+        },
       });
     } finally {
       clearTimeout(timeout);
@@ -137,19 +151,19 @@ export async function processAndUploadExternalImage(
     }
 
     const arrayBuffer = await response.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
+    const imgData = new Uint8Array(arrayBuffer);
 
-    if (buffer.length > MAX_FILE_SIZE) {
+    if (imgData.byteLength > MAX_FILE_SIZE) {
       throw new Error('Image exceeds maximum file size of 10MB');
     }
 
     // Optimize the image to webp
-    const optimizedImage = await optimizeImage(buffer);
+    const optimizedImage = await optimizeImage(imgData);
     
     // Generate unique filename
-    const filename = `products/${crypto.randomUUID()}-${Date.now()}.webp`;
+    const filename = `products/${globalThis.crypto.randomUUID()}-${Date.now()}.webp`;
 
-    logger.info('uploading_external_image_to_supabase', { filename, size: optimizedImage.buffer.length });
+    logger.info('uploading_external_image_to_supabase', { filename, size: optimizedImage.buffer.byteLength });
 
     const { error } = await supabase.storage
       .from('images')

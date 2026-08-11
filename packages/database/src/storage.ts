@@ -81,12 +81,12 @@ export async function uploadToSupabase(
     if (contentType.startsWith('image/') && !contentType.includes('svg')) {
       if (fileData instanceof Readable) {
         // Stream processing
-        fileData = fileData.pipe(createOptimizeImageStream());
+        fileData = fileData.pipe(await createOptimizeImageStream());
         contentType = 'image/webp';
         fileName = fileName.replace(/\.[^/.]+$/, "") + ".webp";
       } else {
         // Buffer processing
-        const optimized = await optimizeImage(fileData as Buffer);
+        const optimized = await optimizeImage(fileData as Uint8Array);
         fileData = optimized.buffer;
         width = optimized.width;
         height = optimized.height;
