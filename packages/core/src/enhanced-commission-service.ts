@@ -195,45 +195,53 @@ export class EnhancedCommissionService {
         };
       }
 
-  const { data: commission, error } = await supabase
-        .from('sales_agent_commissions')
-        .upsert([{
-          agent_id: calculation.agent_id,
-          order_id: calculation.order_id,
-          commission_amount: calculation.commission_amount,
+      // Call atomic RPC: inserts commission and increments points in a single transaction.
+      // If either operation fails, the entire transaction rolls back.
+      const { data: result, error } = await supabase.rpc('award_commission_atomic', {
+        p_order_id: calculation.order_id,
+        p_agent_id: calculation.agent_id,
+        p_commission_amount: calculation.commission_amount,
+        p_commission_data: {
           commission_rate: calculation.commission_rate,
           order_total: calculation.pre_tax_amount + calculation.gst_amount,
           pre_tax_amount: calculation.pre_tax_amount,
           gst_amount: calculation.gst_amount,
           commission_rule_id: calculation.rule_id,
-          status: 'pending'
-        }], { onConflict: 'order_id', ignoreDuplicates: true })
-        .select()
-        .maybeSingle();
+          breakdown: calculation.breakdown
+        }
+      });
 
       if (error) {
-        logger.error('Error saving commission record', { error });
+        logger.error('Error in atomic commission award', { error, calculation });
         return {
           success: false,
-          error: 'Failed to save commission record'
+          error: 'Failed to award commission atomically'
         };
       }
 
-      // No data returned means the row already existed (duplicate order_id) — idempotent, not an error.
-      if (!commission) {
-        logger.info('commission_already_awarded', { orderId: calculation.order_id });
-        return { success: true, commission_id: 'already_awarded' };
+      if (!result || !result.success) {
+        const errorCode = result?.code || 'UNKNOWN';
+        const errorMsg = result?.error || 'Unknown error';
+        
+        // DUPLICATE_COMMISSION is not an error; just means it was already awarded
+        if (errorCode === 'DUPLICATE_COMMISSION') {
+          logger.info('commission_already_awarded', { orderId: calculation.order_id });
+          return { success: true, commission_id: 'already_awarded' };
+        }
+        
+        logger.error('Atomic commission award failed', { errorCode, errorMsg, calculation });
+        return {
+          success: false,
+          error: errorMsg
+        };
       }
 
-      // Update agent points balance
-      await this.updateAgentPoints(calculation.agent_id, calculation.commission_amount);
-
-      // Trigger WhatsApp Notification
+      // Trigger WhatsApp Notification (best-effort, does not block or affect success)
       this.triggerAgentWhatsApp(calculation);
 
       return {
         success: true,
-        commission_id: commission.id
+        commission_id: result.commission_id
       };
 
     } catch (error) {
@@ -383,30 +391,6 @@ export class EnhancedCommissionService {
   /**
    * Update agent points balance
    */
-  private async updateAgentPoints(agentId: string, commissionAmount: number): Promise<void> {
-    try {
-      const supabase = this.supabase;
-      if (!supabase || !isSupabaseServiceConfigured) {
-        logger.error('enhanced-commission-service.points.missing_supabase_config', { agentId, commissionAmount });
-        return;
-      }
-
-      // Atomic increment via DB function to avoid lost-update races under concurrency.
-      // Requires the increment_agent_points(p_agent_id, p_amount) SQL function
-      // from supabase/migrations/20260812000000_commission_integrity.sql.
-      const { error } = await supabase.rpc('increment_agent_points', {
-        p_agent_id: agentId,
-        p_amount: commissionAmount,
-      });
-
-      if (error) {
-        logger.error('Error updating agent points', { error, agentId, commissionAmount });
-      }
-    } catch (error) {
-      logger.error('Error updating agent points', { error, agentId, commissionAmount });
-    }
-  }
-
   /**
    * Create or update commission rule
    */
