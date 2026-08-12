@@ -1,8 +1,8 @@
 document.addEventListener('DOMContentLoaded', () => {
   const API_AUTH_URL_CANDIDATES = [
-    'https://www.tecbunny.com/api/auth/extension',
+    'https://superadmin.tecbunny.com/api/auth/extension',
     'https://api.tecbunny.com/api/auth/extension',
-    'https://superadmin.tecbunny.com/api/auth/extension'
+    'https://www.tecbunny.com/api/auth/extension'
   ];
   const REQUEST_TIMEOUT_MS = 15000;
 
@@ -410,6 +410,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (results && results[0] && results[0].result) {
         const data = results[0].result;
+
+        // Show which site was detected
+        if (data.detectedSite) {
+          showStatus(`Detected: ${data.detectedSite} — using site-specific selectors`, 'info');
+        }
         
         // Populate inputs
         titleInput.value = data.title || '';
