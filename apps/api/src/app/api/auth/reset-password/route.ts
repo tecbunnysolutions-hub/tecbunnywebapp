@@ -4,31 +4,6 @@ import { createClient } from '@supabase/supabase-js';
 import { logger } from "@tecbunny/core";
 import { rateLimit } from "@tecbunny/core/rate-limit";
 import { AuthService } from "@tecbunny/core/server";
-import { requireSupabaseServiceEnv } from "@tecbunny/database";
-
-const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
-
-function isRateLimited(identifier: string): boolean {
-  const now = Date.now();
-  const limit = rateLimitMap.get(identifier);
-  
-  if (!limit) {
-    rateLimitMap.set(identifier, { count: 1, resetTime: now + 5 * 60 * 1000 });
-    return false;
-  }
-  
-  if (now > limit.resetTime) {
-    rateLimitMap.set(identifier, { count: 1, resetTime: now + 5 * 60 * 1000 });
-    return false;
-  }
-  
-  if (limit.count >= 5) {
-    return true;
-  }
-  
-  limit.count++;
-  return false;
-}
 
 export async function POST(request: NextRequest) {
   try {
@@ -40,11 +15,14 @@ export async function POST(request: NextRequest) {
     const password: string = (body?.password || body?.newPassword || body?.new_password || '').toString();
 
     const identifier = email || mobile;
-    if (identifier && isRateLimited(identifier)) {
-      return NextResponse.json(
-        { error: 'Too many reset attempts. Please wait 5 minutes before trying again.' },
-        { status: 429 }
-      );
+    if (identifier) {
+      const rl = await rateLimit(`reset_password:${identifier}`, 5, 5 * 60 * 1000);
+      if (!rl.allowed) {
+        return NextResponse.json(
+          { error: 'Too many reset attempts. Please wait 5 minutes before trying again.' },
+          { status: 429 }
+        );
+      }
     }
 
     const { url, serviceKey } = requireSupabaseServiceEnv();

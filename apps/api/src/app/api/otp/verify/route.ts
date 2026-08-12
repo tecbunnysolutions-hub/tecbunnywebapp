@@ -43,6 +43,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Second limit keyed solely on the OTP record ID so varying identifiers cannot cycle buckets.
+    if (otpId) {
+      const otpRl = await rateLimit(`otp_record:${otpId}`, VERIFY_RATE_LIMIT.limit, VERIFY_RATE_LIMIT.windowMs);
+      if (!otpRl.allowed) {
+        logger.warn('otp_verify_record_rate_limited', { otpId });
+        return NextResponse.json(
+          { error: 'Too many verification attempts. Please try again later.' },
+          { status: 429 }
+        );
+      }
+    }
+
     // Prefer service client for RLS bypass when looking up OTP/Order data
     const serviceSupabase = isSupabaseServiceConfigured ? createSupabaseServiceClient() : await createClient();
 
@@ -239,6 +251,16 @@ export async function GET(request: NextRequest) {
       }
 
       const { otpRecord, availableFallbacks, canResend } = statusResult;
+
+      // Ownership check: non-admin users may only inspect their own OTP records.
+      const isAdmin = ['admin', 'superadmin', 'manager'].includes(access.role);
+      if (!isAdmin && otpRecord.user_id && otpRecord.user_id !== access.session.user.id) {
+        logger.warn('otp_verify_get.ownership_mismatch', {
+          requestedOtpId: otpId,
+          actorId: access.session.user.id,
+        });
+        return NextResponse.json({ error: 'OTP not found' }, { status: 404 });
+      }
 
       return NextResponse.json({
         success: true,

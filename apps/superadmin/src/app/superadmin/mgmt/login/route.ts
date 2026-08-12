@@ -6,7 +6,9 @@ import { createSuperadminSessionToken, SUPERADMIN_SESSION_TTL_SECONDS, verifySup
 
 const textEncoder = new TextEncoder();
 
-// Trusted only when Cloudflare (or another configured reverse proxy) is guaranteed\n// to overwrite/strip these headers before the request reaches the origin.\nfunction getClientIp(request: Request) {
+// Trusted only when Cloudflare (or another configured reverse proxy) is guaranteed
+// to overwrite/strip these headers before the request reaches the origin.
+function getClientIp(request: Request) {
   const headers = request.headers;
   return headers.get('cf-connecting-ip')?.trim()
     || headers.get('x-forwarded-for')?.split(',')[0]?.trim()
