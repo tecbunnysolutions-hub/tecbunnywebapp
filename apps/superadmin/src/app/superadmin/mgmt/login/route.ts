@@ -75,7 +75,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Superadmin credentials are not properly configured.' }, { status: 500 });
     }
 
-    const userIdMatches = constantTimeStringEquals(submittedUserId, correctUserId.trim());
+    const userIdMatches = constantTimeStringEquals(
+      submittedUserId.toLowerCase(),
+      correctUserId.trim().toLowerCase()
+    );
     const passwordMatches = correctPasswordHash
       ? await verifySuperadminPassword(submittedPassword, correctPasswordHash)
       : constantTimeStringEquals(submittedPassword, correctPasswordPlain ?? '');
