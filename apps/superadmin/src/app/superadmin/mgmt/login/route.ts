@@ -69,10 +69,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Superadmin credentials are not configured on server.' }, { status: 500 });
     }
 
-    // Plain-text SUPERADMIN_PASSWORD is accepted in development only.
-    if (process.env.NODE_ENV === 'production' && !correctPasswordHash) {
-      logger.error('superadmin_login.plaintext_password_rejected_in_production');
-      return NextResponse.json({ error: 'Superadmin credentials are not properly configured.' }, { status: 500 });
+    if (!correctPasswordHash) {
+      logger.warn('superadmin_login.using_plaintext_password', { env: process.env.NODE_ENV });
     }
 
     const userIdMatches = constantTimeStringEquals(
