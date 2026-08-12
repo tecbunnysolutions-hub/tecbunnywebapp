@@ -197,7 +197,7 @@ export async function POST(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('OTP verification error:', error);
+    logger.error('otp_verify.unhandled', { error });
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

@@ -1,3 +1,4 @@
+import { createClient } from '@tecbunny/database';
 import { NextRequest, NextResponse } from 'next/server';
 import { getAdminDb, logger } from '@tecbunny/core/server';
 
@@ -9,6 +10,18 @@ export async function POST(request: NextRequest) {
     // We need at least one identifier and some cart data
     if (!userId && !guestId) {
       return NextResponse.json({ error: 'Missing userId or guestId' }, { status: 400 });
+    }
+
+    // A client-supplied userId is a privileged claim: verify it matches the
+    // session before writing with the admin DB client (which bypasses RLS).
+    // Guest-only syncs (guestId without userId) are intentionally allowed without auth.
+    if (userId) {
+      const supabase = await createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user || session.user.id !== userId) {
+        logger.warn('cart_sync.unauthorized_user_id_claim', { claimed: userId });
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
     }
 
     const db = getAdminDb();

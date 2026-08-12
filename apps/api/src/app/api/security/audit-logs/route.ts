@@ -3,6 +3,22 @@ import { NextRequest, NextResponse } from 'next/server';
 import { logger } from "@tecbunny/core";
 import { AdminAuthError, requireAdminContext } from "@tecbunny/core/auth/admin-guard";
 
+// Only these event types may be written via the admin API.
+// System-generated events (auth failures, webhook errors, etc.) are inserted by server code directly.
+const ALLOWED_ADMIN_EVENT_TYPES = new Set([
+  'admin_note',
+  'manual_review',
+  'policy_exception',
+  'access_revoked',
+  'data_correction',
+]);
+
+function getRequestIp(request: NextRequest): string {
+  return request.headers.get('cf-connecting-ip')?.trim()
+    || request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+    || 'unknown';
+}
+
 export async function GET(request: NextRequest) {
   try {
     const { serviceSupabase } = await requireAdminContext();
@@ -80,14 +96,7 @@ export async function POST(request: NextRequest) {
     const { user, serviceSupabase } = await requireAdminContext();
 
     const body = await request.json();
-    const { 
-      eventType, 
-      userId, 
-      ipAddress, 
-      userAgent, 
-      eventData, 
-      severity = 'medium' 
-    } = body;
+    const { eventType, eventData } = body;
 
     if (!eventType) {
       return NextResponse.json(
@@ -96,16 +105,23 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Insert audit log entry
+    if (!ALLOWED_ADMIN_EVENT_TYPES.has(eventType)) {
+      return NextResponse.json(
+        { error: `eventType must be one of: ${[...ALLOWED_ADMIN_EVENT_TYPES].join(', ')}` },
+        { status: 400 }
+      );
+    }
+
+    // Actor identity, IP, and UA are always server-derived — never client-supplied.
     const { data, error } = await serviceSupabase
       .from('security_audit_log')
       .insert({
         event_type: eventType,
-        user_id: userId || user.id,
-        ip_address: ipAddress,
-        user_agent: userAgent,
-        event_data: eventData,
-        severity
+        user_id: user.id,
+        ip_address: getRequestIp(request),
+        user_agent: request.headers.get('user-agent') ?? null,
+        event_data: eventData ?? null,
+        severity: 'low',
       })
       .select()
       .single();

@@ -105,7 +105,8 @@ export default function Page() {
 async function HomePageDataLoader() {
   let initialProducts = undefined;
   let initialPartnerBrands = undefined;
-  let initialHeroCarousel = undefined;
+  // Default to {} so HeroCarousel skips client-side fetch when no data is configured.
+  let initialHeroCarousel: any = {};
 
   try {
     const supabase = createSupabaseClient(
@@ -138,7 +139,7 @@ async function HomePageDataLoader() {
     }
 
     if (heroResult.status === 'fulfilled' && heroResult.value.data && !heroResult.value.error) {
-      initialHeroCarousel = heroResult.value.data.data ?? null;
+      initialHeroCarousel = heroResult.value.data.data ?? {};
     }
   } catch (error) {
     console.error('Error prefetching data for homepage:', error);

@@ -209,6 +209,20 @@ export async function POST(request: NextRequest) {
       return NextResponse.redirect(failureUrl, 303);
     }
 
+    // Idempotency: a gateway may retry the callback. Do not re-process a finalized transaction.
+    if (existingTxn.status === 'success' || existingTxn.status === 'failed') {
+      logger.warn('payu_callback.duplicate_callback', { correlationId, orderId, txnId, existingStatus: existingTxn.status });
+      if (existingTxn.status === 'success') {
+        const successUrl = new URL(`/payment/success`, siteUrl);
+        successUrl.searchParams.set('orderId', orderId);
+        return NextResponse.redirect(successUrl, 303);
+      }
+      const failureUrl = new URL(`/payment/failed`, siteUrl);
+      failureUrl.searchParams.set('orderId', orderId);
+      failureUrl.searchParams.set('reason', 'Payment already processed.');
+      return NextResponse.redirect(failureUrl, 303);
+    }
+
     const expectedAmount = Number(existingTxn.amount);
     if (
       existingTxn.order_id !== orderId ||
@@ -276,7 +290,9 @@ export async function POST(request: NextRequest) {
 
     const failureUrl = new URL(`/payment/failed`, siteUrl);
     failureUrl.searchParams.set('orderId', orderId);
-    const reason = payload.error_Message || payload.field9 || status || 'Payment failed';
+    // Sanitize the gateway message: only keep printable ASCII, max 120 chars.
+    const rawReason = payload.error_Message || payload.field9 || status || 'Payment failed';
+    const reason = String(rawReason).replace(/[^\x20-\x7E]/g, '').slice(0, 120);
     failureUrl.searchParams.set('reason', reason);
     logger.warn('payu_callback.failure', { correlationId, orderId, txnId, reason, hashValid: true, gatewayStatus: status });
     return NextResponse.redirect(failureUrl, 303);

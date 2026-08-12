@@ -75,6 +75,36 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // For sensitive purposes the destination must belong to the requesting user's own account.
+    if (finalPurpose === 'password_reset' || finalPurpose === 'transaction') {
+      const admin = getSupabaseAdmin();
+      const { data: profile } = await admin
+        .from('profiles')
+        .select('mobile, email')
+        .eq('id', access.session.user.id)
+        .maybeSingle();
+
+      const normalizePhone = (p: string) => p.replace(/\D/g, '').replace(/^0+/, '');
+      const profilePhone = profile?.mobile ? normalizePhone(String(profile.mobile)) : null;
+      const requestedPhone = finalPhone ? normalizePhone(String(finalPhone)) : null;
+      const profileEmail = (profile?.email ?? access.session.user.email ?? '').toLowerCase().trim();
+      const requestedEmail = email ? String(email).toLowerCase().trim() : null;
+
+      const phoneMatches = !requestedPhone || (profilePhone !== null && profilePhone === requestedPhone);
+      const emailMatches = !requestedEmail || profileEmail === requestedEmail;
+
+      if (!phoneMatches || !emailMatches) {
+        logger.warn('otp_generate.destination_mismatch', {
+          purpose: finalPurpose,
+          userId: access.session.user.id,
+        });
+        return NextResponse.json(
+          { error: 'OTP destination must match your registered contact details' },
+          { status: 403 }
+        );
+      }
+    }
+
     if (finalPurpose === 'agent_order') {
       const permittedAgentRoles = new Set(['sales', 'sales-staff', 'sales-external', 'manager', 'admin']);
       if (!permittedAgentRoles.has(access.role)) {

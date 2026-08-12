@@ -47,6 +47,15 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    // Payment success must originate from a verified gateway webhook, not a manual admin call.
+    // Allow admin overrides only for non-confirming states (failed, pending, refunded).
+    if (status === 'success') {
+      return apiError('VALIDATION_ERROR', {
+        correlationId,
+        overrideMessage: 'Payment success cannot be set manually. Use the verified gateway webhook endpoint.',
+      });
+    }
+
     logger.info('payment_update_attempt', {
       order_id,
       payment_id,

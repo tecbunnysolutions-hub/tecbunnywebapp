@@ -1,7 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 import { AdminAuthError, requireAdminContext } from "@tecbunny/core/auth/admin-guard";
+import { verifySuperadminSessionToken } from "@tecbunny/core/server";
 import { logger } from "@tecbunny/core";
+
+async function requireSuperadminOrAdminContext(request: NextRequest) {
+  // MFA state is a security control; modifications require superadmin authority.
+  const superadminCookie = request.cookies.get('superadmin-session')?.value;
+  if (superadminCookie && await verifySuperadminSessionToken(superadminCookie, request)) {
+    return null; // allowed
+  }
+  return NextResponse.json({ error: 'Superadmin session required to modify MFA status' }, { status: 403 });
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -25,7 +35,7 @@ export async function GET(request: NextRequest) {
       .single();
 
     if (error && error.code !== 'PGRST116') { // Not found error
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return NextResponse.json({ error: 'Failed to fetch MFA status' }, { status: 500 });
     }
 
     // If no record exists, create one
@@ -37,7 +47,7 @@ export async function GET(request: NextRequest) {
         .single();
 
       if (createError) {
-        return NextResponse.json({ error: createError.message }, { status: 500 });
+        return NextResponse.json({ error: 'Failed to create MFA status' }, { status: 500 });
       }
 
       const { error: auditError } = await serviceSupabase
@@ -83,6 +93,9 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const deny = await requireSuperadminOrAdminContext(request);
+    if (deny) return deny;
+
     const { user, role, serviceSupabase } = await requireAdminContext();
 
     const body = await request.json();
@@ -126,7 +139,7 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return NextResponse.json({ error: 'Failed to update MFA status' }, { status: 500 });
     }
 
     // Log the MFA status change

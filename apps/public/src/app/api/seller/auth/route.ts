@@ -43,6 +43,6 @@ export async function POST(req: Request) {
     });
   } catch (error: any) {
     logger.error('public_seller_auth.audit.failed', { error: error?.message || 'Internal Server Error' });
-    return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }

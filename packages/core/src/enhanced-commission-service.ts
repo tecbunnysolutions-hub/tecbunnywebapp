@@ -197,7 +197,7 @@ export class EnhancedCommissionService {
 
   const { data: commission, error } = await supabase
         .from('sales_agent_commissions')
-        .insert([{
+        .upsert([{
           agent_id: calculation.agent_id,
           order_id: calculation.order_id,
           commission_amount: calculation.commission_amount,
@@ -207,9 +207,9 @@ export class EnhancedCommissionService {
           gst_amount: calculation.gst_amount,
           commission_rule_id: calculation.rule_id,
           status: 'pending'
-        }])
+        }], { onConflict: 'order_id', ignoreDuplicates: true })
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) {
         logger.error('Error saving commission record', { error });
@@ -217,6 +217,12 @@ export class EnhancedCommissionService {
           success: false,
           error: 'Failed to save commission record'
         };
+      }
+
+      // No data returned means the row already existed (duplicate order_id) — idempotent, not an error.
+      if (!commission) {
+        logger.info('commission_already_awarded', { orderId: calculation.order_id });
+        return { success: true, commission_id: 'already_awarded' };
       }
 
       // Update agent points balance
@@ -385,25 +391,17 @@ export class EnhancedCommissionService {
         return;
       }
 
-      // Convert commission to points (1 INR = 1 point)
-      const pointsToAdd = commissionAmount;
+      // Atomic increment via DB function to avoid lost-update races under concurrency.
+      // Requires the increment_agent_points(p_agent_id, p_amount) SQL function
+      // from supabase/migrations/20260812000000_commission_integrity.sql.
+      const { error } = await supabase.rpc('increment_agent_points', {
+        p_agent_id: agentId,
+        p_amount: commissionAmount,
+      });
 
-      // Get current points balance
-      const { data: agent } = await supabase
-        .from('sales_agents')
-        .select('points_balance')
-        .eq('id', agentId)
-        .single();
-
-      if (agent) {
-        const newBalance = (agent.points_balance || 0) + pointsToAdd;
-        
-        await supabase
-          .from('sales_agents')
-          .update({ points_balance: newBalance })
-          .eq('id', agentId);
+      if (error) {
+        logger.error('Error updating agent points', { error, agentId, commissionAmount });
       }
-
     } catch (error) {
       logger.error('Error updating agent points', { error, agentId, commissionAmount });
     }
