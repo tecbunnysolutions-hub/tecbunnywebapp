@@ -251,7 +251,7 @@ const PAYMENT_CONFIRM_PRECONDITIONS = new Set([
 
 const WALK_IN_ORDER_TYPES = new Set(['Walk-in', 'walk-in', 'Pickup', 'pickup']);
 
-
+export async function POST(request: NextRequest) {
   try {
     const access = await requireApiRole(WALK_IN_ACCESS);
     if ('error' in access) {

@@ -88,36 +88,6 @@ export async function POST(request: NextRequest) {
           }, { status: 400 });
         }
 
-        // Process commission award immediately on success
-        if (agentOtpRecord.agent_id) {
-          try {
-            const { enhancedCommissionService } = await import('@tecbunny/core/server');
-            const commissionResult = await enhancedCommissionService.calculateOrderCommission(
-              orderId,
-              agentOtpRecord.agent_id
-            );
-
-            if (commissionResult.success && commissionResult.calculation) {
-              const saveResult = await enhancedCommissionService.saveCommissionRecord(
-                commissionResult.calculation
-              );
-              if (saveResult.success) {
-                logger.info('order_commission_processed_after_otp', { 
-                  orderId, 
-                  agentId: agentOtpRecord.agent_id,
-                  commissionAmount: commissionResult.calculation.commission_amount
-                });
-              }
-            }
-          } catch (commErr: any) {
-            logger.error('failed_to_process_commission_after_otp', {
-              orderId,
-              agentId: agentOtpRecord.agent_id,
-              error: commErr.message
-            });
-          }
-        }
-
         return NextResponse.json({
           success: true,
           message: 'OTP verified successfully',
