@@ -222,10 +222,12 @@ async function fetchApiWithFallback(path, options) {
 
 chrome.runtime.onStartup.addListener(() => {
   chrome.storage.local.remove(['accessToken']);
+  chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true }).catch(() => {});
 });
 
 chrome.runtime.onInstalled.addListener(() => {
   chrome.storage.local.remove(['accessToken']);
+  chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true }).catch(() => {});
   // Force Groq (free) as the AI engine, migrating any legacy Gemini/website settings.
   chrome.storage.local.get(['aiSource', 'aiProvider', 'aiApiKey', 'aiModel'], (existing) => {
     const updates = {};

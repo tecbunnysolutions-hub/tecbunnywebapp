@@ -14,7 +14,8 @@
     "activeTab",
     "scripting",
     "storage",
-    "webRequest"
+    "webRequest",
+    "sidePanel"
   ],
   "host_permissions": [
     "https://www.tecbunny.com/*",
@@ -32,6 +33,9 @@
   "content_security_policy": {
     "extension_pages": "script-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; connect-src https: wss:; img-src 'self' http: https: data:"
   },
+  "side_panel": {
+    "default_path": "popup.html"
+  },
   "action": {
     "default_title": "TecBunny Product Scraper",
     "default_icon": {
@@ -39,8 +43,7 @@
       "32": "icons/icon32.png",
       "48": "icons/icon48.png",
       "128": "icons/icon128.png"
-    },
-    "default_popup": "popup.html"
+    }
   },
   "background": {
     "service_worker": "background.js"
