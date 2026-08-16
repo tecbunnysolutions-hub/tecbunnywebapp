@@ -11,7 +11,7 @@ import { filterPubliclyVisibleProducts } from "@tecbunny/core/product-visibility
 // ISR: revalidate every 5 minutes (300 seconds)
 export const revalidate = 300;
 
-const PRODUCTS_PAGE_SIZE = 48;
+const PRODUCTS_PAGE_SIZE = 200;
 
 export async function generateMetadata(): Promise<Metadata> {
   return createPageMetadata({
