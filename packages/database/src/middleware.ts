@@ -67,10 +67,9 @@ function timingSafeEqual(a: Uint8Array, b: Uint8Array) {
 }
 
 async function generateFingerprint(request: NextRequest): Promise<string> {
-  const ip = request.headers.get('x-forwarded-for') || 'unknown';
   const ua = request.headers.get('user-agent') || 'unknown';
-  const rawFp = `${ip.split(',')[0].trim()}|${ua}`;
-  const hashBuffer = await crypto.subtle.digest('SHA-256', textEncoder.encode(rawFp));
+  // IP excluded — x-forwarded-for differs between POST and GET on CDN/Vercel.
+  const hashBuffer = await crypto.subtle.digest('SHA-256', textEncoder.encode(ua));
   return base64UrlEncode(new Uint8Array(hashBuffer)).substring(0, 16);
 }
 
