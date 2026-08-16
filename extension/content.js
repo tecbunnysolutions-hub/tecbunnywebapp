@@ -44,8 +44,13 @@
       price: ['.vi-VR-cvipPrice', '.notranslate.vi-VR-cvipPrice', '[itemprop="price"]'],
       description: ['#viTabs_0_panel', '[itemprop="description"]'],
       brand: ['[itemprop="brand"]', '.viTitleBlack'],
-      imageUrl: ['#vi_main img', 'img.vi-content']
-    }
+      imageUrl: ['#vi_main img', 'img.vi-content']    },
+    'blinkit.com': {
+      title: ['h1', '[class*="Product__Name"]', '[class*="product-name"]'],
+      price: ['[class*="Price__StrikedPrice"]', '[class*="product-price"]'],
+      mrp: ['[class*="Price__StrikedPrice"]'],
+      brand: ['[class*="Product__Brand"]', '[class*="brand-name"]'],
+      imageUrl: ['[class*="Product__Image"] img', 'img[alt*="product" i]']    }
   };
 
   function detectSite() {

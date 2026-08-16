@@ -18,17 +18,7 @@
     "sidePanel"
   ],
   "host_permissions": [
-    "https://www.tecbunny.com/*",
-    "https://api.tecbunny.com/*",
-    "https://superadmin.tecbunny.com/*",
-    "https://*.amazon.in/*",
-    "https://*.flipkart.com/*",
-    "https://*.snapdeal.com/*",
-    "https://*.ebay.com/*",
-    "https://*.shopclues.com/*",
-    "https://api.groq.com/*",
-    "https://api.anthropic.com/*",
-    "https://api.openai.com/*"
+    "<all_urls>"
   ],
   "content_security_policy": {
     "extension_pages": "script-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; connect-src https: wss:; img-src 'self' http: https: data:"
@@ -51,25 +41,9 @@
   "options_page": "options.html",
   "content_scripts": [
     {
-      "matches": [
-        "https://www.tecbunny.com/*",
-        "https://*.amazon.in/*",
-        "https://*.flipkart.com/*",
-        "https://*.snapdeal.com/*",
-        "https://*.ebay.com/*",
-        "https://*.shopclues.com/*"
-      ],
+      "matches": ["<all_urls>"],
       "js": ["content.js"],
       "run_at": "document_end"
     }
   ]
-}
-      "128": "icons/icon128.png"
-    },
-    "default_popup": "popup.html"
-  },
-  "options_page": "options.html",
-  "background": {
-    "service_worker": "background.js"
-  }
 }

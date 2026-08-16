@@ -3,8 +3,12 @@ import { EnterpriseAnalyticsAutoTracker } from "@tecbunny/core/components/Enterp
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "WABA Management — TecBunny Solutions",
-  description: "WhatsApp Business Account management portal for TecBunny Solutions.",
+  title: {
+    default: "WABA Management | TecBunny Solutions",
+    template: "%s | WABA — TecBunny",
+  },
+  description: "WhatsApp Business Account management portal — campaigns, contacts, and templates for TecBunny Solutions.",
+  robots: "noindex, nofollow",
 };
 
 export default function RootLayout({
