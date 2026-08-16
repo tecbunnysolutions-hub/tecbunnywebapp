@@ -919,6 +919,7 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
                 <select
                   value={sortOption}
                   onChange={(e) => updateUrlParams({ sort: e.target.value })}
+                  style={{ colorScheme: 'dark' }}
                   className="bg-background text-foreground border border-border rounded-lg px-2 sm:px-3 py-1 sm:py-1.5 focus:outline-none focus:border-primary/50 hover:bg-muted transition-all duration-300 font-mono cursor-pointer text-xs sm:text-sm"
                 >
                   <option value="popularity">Popularity</option>
