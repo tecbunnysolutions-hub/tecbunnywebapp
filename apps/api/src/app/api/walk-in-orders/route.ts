@@ -113,7 +113,7 @@ export async function GET(request: NextRequest) {
 
       if (error) {
         return NextResponse.json(
-          { error: 'Failed to fetch store orders', details: { message: error.message } },
+          { error: 'Failed to fetch store orders' },
           { status: 500 }
         );
       }
@@ -160,7 +160,7 @@ export async function GET(request: NextRequest) {
 
       if (error) {
         return NextResponse.json(
-          { error: 'Failed to fetch daily stats', details: { message: error.message } },
+          { error: 'Failed to fetch daily stats' },
           { status: 500 }
         );
       }
@@ -209,7 +209,7 @@ export async function GET(request: NextRequest) {
 
       if (error) {
         return NextResponse.json(
-          { error: 'Failed to fetch customer orders', details: { message: error.message } },
+          { error: 'Failed to fetch customer orders' },
           { status: 500 }
         );
       }
@@ -225,13 +225,32 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     logger.error('Walk-in orders API error:', { error });
     return NextResponse.json(
-      { error: 'Internal server error', details: { message: error instanceof Error ? error.message : 'Unknown error' } },
+      { error: 'Internal server error' },
       { status: 500 }
     );
   }
 }
 
-// Export a simple POST function for creating orders
+// Statuses walk-in staff are permitted to set via this endpoint.
+const ALLOWED_WALK_IN_STATUSES = new Set([
+  'Processing',
+  'Ready for Pickup',
+  'Awaiting Payment',
+  'Completed',
+  'Delivered',
+  'Cancelled',
+]);
+
+// Payment-confirmation is only valid from the awaiting-payment state (cash/UPI in-store receipt).
+const PAYMENT_CONFIRM_PRECONDITIONS = new Set([
+  'Awaiting Payment',
+  'Payment Pending',
+  'awaiting payment',
+  'payment pending',
+]);
+
+const WALK_IN_ORDER_TYPES = new Set(['Walk-in', 'walk-in', 'Pickup', 'pickup']);
+
 export async function POST(request: NextRequest) {
   try {
     const access = await requireApiRole(WALK_IN_ACCESS);
@@ -255,25 +274,69 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      const updates: Record<string, any> = {
-        updated_at: new Date().toISOString()
-      };
+      // Fetch the order to verify type and current state before mutating.
+      const { data: existingOrder, error: fetchError } = await supabase
+        .from('orders')
+        .select('id, status, type')
+        .eq('id', orderId)
+        .maybeSingle();
 
-      if (status) {
-        updates.status = status;
-      } else if (paymentStatus) {
-        const derivedStatus = mapPaymentStatusToOrderStatus(paymentStatus);
-        if (derivedStatus) {
-          updates.status = derivedStatus;
-        }
+      if (fetchError || !existingOrder) {
+        return NextResponse.json({ error: 'Order not found' }, { status: 404 });
       }
 
-      if (!updates.status) {
+      if (!WALK_IN_ORDER_TYPES.has(existingOrder.type ?? '')) {
+        return NextResponse.json(
+          { error: 'Status updates via this endpoint are restricted to walk-in and pickup orders' },
+          { status: 403 }
+        );
+      }
+
+      const currentStatus: string = existingOrder.status ?? '';
+
+      let targetStatus: string | undefined;
+
+      if (status) {
+        targetStatus = status;
+      } else if (paymentStatus) {
+        const derived = mapPaymentStatusToOrderStatus(paymentStatus);
+        if (derived) targetStatus = derived;
+      }
+
+      if (!targetStatus) {
         return NextResponse.json(
           { error: 'No valid status provided for update' },
           { status: 400 }
         );
       }
+
+      const normalizedTarget = targetStatus.toLowerCase();
+
+      // Block direct injection of payment-success state unless the precondition is met.
+      if (normalizedTarget === 'payment confirmed') {
+        if (!PAYMENT_CONFIRM_PRECONDITIONS.has(currentStatus)) {
+          logger.warn('walk_in_orders.invalid_payment_confirm_transition', {
+            orderId, currentStatus, targetStatus, actorId: access.session.user.id,
+          });
+          return NextResponse.json(
+            { error: 'Payment confirmation requires the order to be in Awaiting Payment state' },
+            { status: 400 }
+          );
+        }
+      } else if (!ALLOWED_WALK_IN_STATUSES.has(targetStatus)) {
+        logger.warn('walk_in_orders.status_not_allowed', {
+          orderId, targetStatus, actorId: access.session.user.id,
+        });
+        return NextResponse.json(
+          { error: `Status '${targetStatus}' cannot be set via this endpoint` },
+          { status: 400 }
+        );
+      }
+
+      const updates: Record<string, unknown> = {
+        status: targetStatus,
+        updated_at: new Date().toISOString(),
+      };
 
       const { error } = await supabase
         .from('orders')
@@ -283,7 +346,7 @@ export async function POST(request: NextRequest) {
       if (error) {
         logger.error('Failed to update order status', { error, context: 'walk-in-orders.update-order-status', orderId, updates });
         return NextResponse.json(
-          { error: 'Failed to update order', details: error.message },
+          { error: 'Failed to update order' },
           { status: 500 }
         );
       }

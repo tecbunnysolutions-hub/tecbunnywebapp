@@ -4,6 +4,11 @@ import { sendWhatsAppNotification } from "@tecbunny/core/whatsapp-service";
 
 export async function POST(request: NextRequest) {
   try {
+    const internalKey = process.env.INTERNAL_API_KEY;
+    if (!internalKey || request.headers.get('x-internal-api-key') !== internalKey) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
     const body = await request.json();
     const { name, phone, cartItems, amount } = body;
 
@@ -54,13 +59,6 @@ _Need configuration help or custom changes? Just reply to this message! 💬_`.t
     return NextResponse.json({
       success: true,
       messageSent,
-      upiDeepLink,
-      whatsappMessage,
-      recoveryPayload: {
-        phone: formattedPhone,
-        name: cleanName,
-        amount
-      }
     });
 
   } catch (error: any) {

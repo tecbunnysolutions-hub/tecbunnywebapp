@@ -17,8 +17,6 @@ import { Textarea } from "@tecbunny/ui";
 import { Switch } from "@tecbunny/ui";
 import { useToast } from "@tecbunny/ui";
 import { usePaymentMethods } from '@tecbunny/core/hooks';
-import { Alert, AlertDescription, AlertTitle } from "@tecbunny/ui";
-import { InfoIcon } from 'lucide-react';
 
 export default function PaymentApiPage() {
   const { toast } = useToast();
@@ -30,7 +28,11 @@ export default function PaymentApiPage() {
       merchantKey: '',
       merchantSalt: '',
       merchantId: '',
-      environment: 'test'
+      environment: 'production'
+    },
+    cashfree: {
+      enabled: true,
+      environment: 'production'
     },
     cod: {
       enabled: true,
@@ -48,6 +50,7 @@ export default function PaymentApiPage() {
 
   const [savingStates, setSavingStates] = React.useState({
     payu: false,
+    cashfree: false,
     cod: false,
     upi: false
   });
@@ -61,16 +64,20 @@ export default function PaymentApiPage() {
           merchantKey: paymentMethods.payu?.config?.merchantKey || '',
           merchantSalt: paymentMethods.payu?.config?.merchantSalt || '',
           merchantId: paymentMethods.payu?.config?.merchantId || '',
-          environment: paymentMethods.payu?.config?.environment || 'test'
+          environment: paymentMethods.payu?.config?.environment || 'production'
+        },
+        cashfree: {
+          enabled: paymentMethods.cashfree?.enabled ?? true,
+          environment: paymentMethods.cashfree?.config?.environment || 'production'
         },
         cod: {
-          enabled: paymentMethods.cod?.enabled || true,
+          enabled: paymentMethods.cod?.enabled ?? true,
           minOrderAmount: paymentMethods.cod?.config?.minOrderAmount || '',
           maxOrderAmount: paymentMethods.cod?.config?.maxOrderAmount || '',
           instructions: paymentMethods.cod?.config?.instructions || ''
         },
         upi: {
-          enabled: paymentMethods.upi?.enabled || true,
+          enabled: paymentMethods.upi?.enabled ?? true,
           upiId: paymentMethods.upi?.config?.upiId || '',
           upiName: paymentMethods.upi?.config?.upiName || '',
           instructions: paymentMethods.upi?.config?.instructions || ''
@@ -92,26 +99,33 @@ export default function PaymentApiPage() {
         }
       });
 
-      if (result && result.success) {
-        toast({
-          title: 'Success',
-          description: 'PayU settings saved successfully'
-        });
-      } else {
-        toast({
-          title: 'Notice',
-          description: 'Settings are managed via code. UI updates are disabled.',
-          variant: 'default'
-        });
-      }
+      toast(result?.success
+        ? { title: 'Saved', description: 'PayU gateway updated.' }
+        : { title: 'Error', description: result?.error || 'Save failed.', variant: 'destructive' }
+      );
     } catch {
-      toast({
-        title: 'Error',
-        description: 'An unexpected error occurred',
-        variant: 'destructive'
-      });
+      toast({ title: 'Error', description: 'An unexpected error occurred', variant: 'destructive' });
     } finally {
       setSavingStates(prev => ({ ...prev, payu: false }));
+    }
+  };
+
+  const handleSaveCashfree = async () => {
+    setSavingStates(prev => ({ ...prev, cashfree: true }));
+    try {
+      const result = await updatePaymentMethod('cashfree', {
+        enabled: formData.cashfree.enabled,
+        config: { environment: formData.cashfree.environment },
+      });
+
+      toast(result?.success
+        ? { title: 'Saved', description: 'Cashfree gateway updated.' }
+        : { title: 'Error', description: result?.error || 'Save failed.', variant: 'destructive' }
+      );
+    } catch {
+      toast({ title: 'Error', description: 'An unexpected error occurred', variant: 'destructive' });
+    } finally {
+      setSavingStates(prev => ({ ...prev, cashfree: false }));
     }
   };
 
@@ -127,24 +141,12 @@ export default function PaymentApiPage() {
         }
       });
 
-      if (result && result.success) {
-        toast({
-          title: 'Success',
-          description: 'Cash on Delivery settings saved successfully'
-        });
-      } else {
-        toast({
-          title: 'Notice',
-          description: 'Settings are managed via code. UI updates are disabled.',
-          variant: 'default'
-        });
-      }
+      toast(result?.success
+        ? { title: 'Saved', description: 'COD settings updated.' }
+        : { title: 'Error', description: result?.error || 'Save failed.', variant: 'destructive' }
+      );
     } catch {
-      toast({
-        title: 'Error',
-        description: 'An unexpected error occurred',
-        variant: 'destructive'
-      });
+      toast({ title: 'Error', description: 'An unexpected error occurred', variant: 'destructive' });
     } finally {
       setSavingStates(prev => ({ ...prev, cod: false }));
     }
@@ -162,24 +164,12 @@ export default function PaymentApiPage() {
         }
       });
 
-      if (result && result.success) {
-        toast({
-          title: 'Success',
-          description: 'UPI settings saved successfully'
-        });
-      } else {
-        toast({
-          title: 'Notice',
-          description: 'Settings are managed via code. UI updates are disabled.',
-          variant: 'default'
-        });
-      }
+      toast(result?.success
+        ? { title: 'Saved', description: 'UPI settings updated.' }
+        : { title: 'Error', description: result?.error || 'Save failed.', variant: 'destructive' }
+      );
     } catch {
-      toast({
-        title: 'Error',
-        description: 'An unexpected error occurred',
-        variant: 'destructive'
-      });
+      toast({ title: 'Error', description: 'An unexpected error occurred', variant: 'destructive' });
     } finally {
       setSavingStates(prev => ({ ...prev, upi: false }));
     }
@@ -198,19 +188,11 @@ export default function PaymentApiPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold">Payment API Settings</h1>
+        <h1 className="text-3xl font-bold">Payment Gateway Settings</h1>
         <p className="text-muted-foreground">
-          Connect and configure your payment gateways.
+          Toggle gateways on/off. Enabled state is saved to the database. Credentials must be set as server environment variables.
         </p>
       </div>
-
-      <Alert>
-        <InfoIcon className="h-4 w-4" />
-        <AlertTitle>Configuration Mode</AlertTitle>
-        <AlertDescription>
-          Payment settings are currently managed via code/environment variables. Changes made here will not persist.
-        </AlertDescription>
-      </Alert>
 
       <Card>
         <CardHeader>
@@ -304,7 +286,60 @@ export default function PaymentApiPage() {
         </CardContent>
       </Card>
 
-      {/* Cash on Delivery (COD) Section */}
+      {/* Cashfree Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Cashfree</CardTitle>
+          <CardDescription>
+            Cashfree Payment Gateway — supports 120+ payment methods including UPI, cards, net banking, and wallets.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center justify-between rounded-lg border p-4">
+            <div className="space-y-0.5">
+              <Label>Enable Cashfree</Label>
+              <p className="text-xs text-muted-foreground">Allow customers to pay via Cashfree checkout.</p>
+            </div>
+            <Switch
+              checked={formData.cashfree.enabled}
+              onCheckedChange={(checked) =>
+                setFormData(prev => ({ ...prev, cashfree: { ...prev.cashfree, enabled: checked } }))
+              }
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="cf-environment">Environment</Label>
+            <select
+              id="cf-environment"
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              value={formData.cashfree.environment}
+              onChange={(e) =>
+                setFormData(prev => ({ ...prev, cashfree: { ...prev.cashfree, environment: e.target.value } }))
+              }
+            >
+              <option value="sandbox">Sandbox (Test)</option>
+              <option value="production">Production (Live)</option>
+            </select>
+          </div>
+          <div className="rounded-lg border border-dashed p-4 space-y-2 text-xs text-muted-foreground">
+            <p className="font-semibold text-foreground">Required environment variables (API app)</p>
+            <p className="text-muted-foreground mb-1">Set both pairs — the active one is chosen by <span className="font-mono text-blue-500">CASHFREE_ENV</span>.</p>
+            <ul className="space-y-1 font-mono">
+              <li className="text-yellow-600 font-semibold">Sandbox credentials</li>
+              <li>CASHFREE_SANDBOX_APP_ID</li>
+              <li>CASHFREE_SANDBOX_SECRET_KEY</li>
+              <li className="mt-2 text-emerald-600 font-semibold">Production credentials</li>
+              <li>CASHFREE_PROD_APP_ID</li>
+              <li>CASHFREE_PROD_SECRET_KEY</li>
+              <li className="mt-2">CASHFREE_ENV — <span className="text-yellow-600">sandbox</span> | <span className="text-emerald-600">production</span></li>
+              <li>NEXT_PUBLIC_CASHFREE_ENV — same value (public app)</li>
+            </ul>
+          </div>
+          <Button onClick={handleSaveCashfree} disabled={savingStates.cashfree}>
+            {savingStates.cashfree ? 'Saving...' : 'Save Cashfree Settings'}
+          </Button>
+        </CardContent>
+      </Card>
       <Card>
         <CardHeader>
           <CardTitle>Cash on Delivery (COD)</CardTitle>

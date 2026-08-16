@@ -80,21 +80,19 @@ function timingSafeEqual(a: Uint8Array, b: Uint8Array) {
   return diff === 0;
 }
 
-// Generate a request fingerprint hash combining IP and User-Agent
+// Fingerprint binds the session to the User-Agent only.
+// IP is intentionally excluded: IP addresses change legitimately on mobile,
+// VPN, and dual-stack networks and cause spurious session invalidation.
 async function generateFingerprint(requestOrIp: Request | string | null, uaStr?: string | null): Promise<string> {
-  let ip = 'unknown';
   let ua = 'unknown';
 
   if (requestOrIp && typeof requestOrIp === 'object' && 'headers' in requestOrIp) {
-    ip = requestOrIp.headers.get('x-forwarded-for') || 'unknown';
     ua = requestOrIp.headers.get('user-agent') || 'unknown';
   } else {
-    if (typeof requestOrIp === 'string') ip = requestOrIp;
     if (typeof uaStr === 'string') ua = uaStr;
   }
 
-  const rawFp = `${ip.split(',')[0].trim()}|${ua}`;
-  const hashBuffer = await crypto.subtle.digest('SHA-256', textEncoder.encode(rawFp));
+  const hashBuffer = await crypto.subtle.digest('SHA-256', textEncoder.encode(ua));
   return base64UrlEncode(new Uint8Array(hashBuffer)).substring(0, 16);
 }
 
@@ -144,8 +142,8 @@ export async function verifySuperadminSessionToken(token: string | undefined | n
   if (!secret) return null;
 
   const [version, encodedPayload, encodedSignature] = token.split('.');
-  // Support v1 tokens during migration, but ideally only accept v2
-  if ((version !== 'v1' && version !== 'v2') || !encodedPayload || !encodedSignature) {
+  // v1 tokens are no longer accepted — all sessions must be v2.
+  if (version !== 'v2' || !encodedPayload || !encodedSignature) {
     return null;
   }
 
@@ -190,7 +188,7 @@ export async function verifySuperadminSessionToken(token: string | undefined | n
       const currentFp = await generateFingerprint(fingerprintContext.requestOrIp, fingerprintContext.uaStr);
       if (payload.fp !== currentFp) {
         await logMessage('warn', 'superadmin_session_fingerprint_mismatch', { 
-          reason: 'Token was generated for a different IP or User-Agent',
+          reason: 'Token was generated for a different User-Agent',
           expectedFp: payload.fp,
           actualFp: currentFp
         });
@@ -257,7 +255,7 @@ async function checkJtiRevoked(jti: string): Promise<boolean> {
 export async function revokeSuperadminSessionToken(token: string): Promise<void> {
   try {
     const [version, encodedPayload] = token.split('.');
-    if ((version !== 'v1' && version !== 'v2') || !encodedPayload) return;
+    if (version !== 'v2' || !encodedPayload) return;
 
     const payloadText = new TextDecoder().decode(base64UrlDecode(encodedPayload));
     const payload = JSON.parse(payloadText) as Partial<SuperadminSessionPayload>;

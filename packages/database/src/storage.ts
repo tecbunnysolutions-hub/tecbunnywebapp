@@ -59,7 +59,7 @@ export async function uploadToSupabase(
     fileName = fileName.replace(/[^a-zA-Z0-9.\-_]/g, '');
     const folderName = folder.replace(/[^a-zA-Z0-9\-_]/g, '');
     
-    let fileData: ArrayBuffer | Buffer | Readable;
+    let fileData: ArrayBuffer | Buffer | Uint8Array | Readable;
     let contentType = 'application/octet-stream';
 
     // Handle different input types
@@ -81,12 +81,12 @@ export async function uploadToSupabase(
     if (contentType.startsWith('image/') && !contentType.includes('svg')) {
       if (fileData instanceof Readable) {
         // Stream processing
-        fileData = fileData.pipe(createOptimizeImageStream());
+        fileData = fileData.pipe(await createOptimizeImageStream());
         contentType = 'image/webp';
         fileName = fileName.replace(/\.[^/.]+$/, "") + ".webp";
       } else {
         // Buffer processing
-        const optimized = await optimizeImage(fileData as Buffer);
+        const optimized = await optimizeImage(fileData as Uint8Array);
         fileData = optimized.buffer;
         width = optimized.width;
         height = optimized.height;

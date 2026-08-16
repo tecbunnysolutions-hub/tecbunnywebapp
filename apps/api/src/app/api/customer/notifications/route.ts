@@ -8,6 +8,11 @@ import { logger } from "@tecbunny/core";
 // Customer signup integration with phone contact and WhatsApp notifications
 export async function POST(request: NextRequest) {
   try {
+    const internalKey = process.env.INTERNAL_API_KEY;
+    if (!internalKey || request.headers.get('x-internal-api-key') !== internalKey) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
     const supabase = createClient();
     const { action, customerData, orderData } = await request.json();
 

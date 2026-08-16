@@ -33,7 +33,7 @@ export const metadata: Metadata = {
   manifest: '/manifest.webmanifest',
   metadataBase: new URL('https://www.tecbunny.com'),
   title: {
-    default: 'TecBunny | CCTV, IT Services & Home Automation in Goa',
+    default: 'CCTV & IT Services in Goa | TecBunny Solutions',
     template: '%s | TecBunny',
   },
   description:
@@ -153,6 +153,34 @@ const structuredData = {
         'TecBunny Solutions provides CCTV installation, IT services, AMC support, networking, home automation, and RFID lock systems in Goa and Maharashtra.',
       publisher: { '@id': 'https://www.tecbunny.com/#organization' },
       author: { '@id': 'https://www.tecbunny.com/#organization' },
+      potentialAction: {
+        '@type': 'SearchAction',
+        target: {
+          '@type': 'EntryPoint',
+          urlTemplate: 'https://www.tecbunny.com/products?search={search_term_string}',
+        },
+        'query-input': 'required name=search_term_string',
+      },
+    },
+    {
+      '@type': 'WebPage',
+      '@id': 'https://www.tecbunny.com/#webpage',
+      url: 'https://www.tecbunny.com',
+      name: 'TecBunny Solutions | CCTV, IT Services & Home Automation in Goa',
+      isPartOf: { '@id': 'https://www.tecbunny.com/#website' },
+      about: { '@id': 'https://www.tecbunny.com/#localbusiness' },
+      primaryImageOfPage: { '@id': 'https://www.tecbunny.com/#logo' },
+      speakable: {
+        '@type': 'SpeakableSpecification',
+        cssSelector: ['h1', 'main p'],
+      },
+    },
+    {
+      '@type': 'ImageObject',
+      '@id': 'https://www.tecbunny.com/#logo',
+      url: BRAND_LOGO_URL,
+      contentUrl: BRAND_LOGO_URL,
+      caption: 'TecBunny Solutions logo',
     },
     {
       '@type': 'Organization',
@@ -311,6 +339,9 @@ export default async function RootLayout({
       <head>
         <link rel="preconnect" href="https://fbcsagupcxheyiusjfak.supabase.co" />
         <link rel="dns-prefetch" href="https://fbcsagupcxheyiusjfak.supabase.co" />
+        <link rel="dns-prefetch" href="https://cdn.grofers.com" />
+        <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+        <link rel="dns-prefetch" href="https://www.google-analytics.com" />
         <link rel="dns-prefetch" href="https://www.facebook.com" />
         <link rel="dns-prefetch" href="https://www.instagram.com" />
         <link rel="dns-prefetch" href="https://maps.googleapis.com" />

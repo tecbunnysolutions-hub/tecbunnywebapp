@@ -2,6 +2,60 @@
   const MAX_RAW_TEXT_LENGTH = 30000;
   const ALLOWED_HTML_TAGS = new Set(['P', 'BR', 'STRONG', 'B', 'EM', 'I', 'UL', 'OL', 'LI', 'H3', 'H4', 'SPAN', 'TABLE', 'TBODY', 'TR', 'TH', 'TD']);
 
+  // Multi-site scraping patterns
+  const SCRAPING_PATTERNS = {
+    'tecbunny.com': {
+      title: ['h1', '[data-testid="product-title"]', '.product-name'],
+      price: ['[data-testid="product-price"]', '.price', '.product-price'],
+      mrp: ['[data-testid="product-mrp"]', '.original-price', '.mrp'],
+      description: ['[data-testid="product-description"]', '.product-description', '[itemprop="description"]'],
+      brand: ['[data-testid="product-brand"]', '[itemprop="brand"]', '.brand'],
+      category: ['[data-testid="product-category"]', '.category', '[itemprop="category"]'],
+      imageUrl: ['img[alt*="product"]', '[data-testid="product-image"]']
+    },
+    'amazon.in': {
+      title: ['h1 span', '[data-a-expander-name="title"]', '.product-title'],
+      price: ['.a-price-whole', '[data-a-color-base]'],
+      mrp: ['.a-price-guessRange', '.a-lineage'],
+      description: ['#feature-bullets', '.a-unordered-list'],
+      brand: ['.a-size-base-plus', '[data-feature-name="Brand"]'],
+      category: ['.a-breadcrumb', '.a-list-item'],
+      imageUrl: ['img[alt="Click to enlarge"]', '#landingImage']
+    },
+    'flipkart.com': {
+      title: ['h1.CHU7EN', '._11ExwSqd3hHE0c9fpjWXSa'],
+      price: ['._30jeq3._16Jk6d', '.BvxrFg'],
+      mrp: ['._3LWZlK', '.HqSR'],
+      description: ['._1mXQCVlxKbGa60nIkdbOSB', '.ieUiLb'],
+      brand: ['._2wPhAGcVCYp1e0l-50QZAq', '.YBLJE'],
+      category: ['._2Aszh9kEbq80j6e89r5Z1d', '.kVBJWb'],
+      imageUrl: ['img.JJVK3e', '.CxhGP._2ispe2']
+    },
+    'snapdeal.com': {
+      title: ['.productTitle', '.product-title', 'h1'],
+      price: ['.discountedPriceText', '.paymentPriceText'],
+      mrp: ['.originalPriceText', '.mrpText'],
+      description: ['.productDescriptionBox', '.prod-desc'],
+      brand: ['.brandName', '.seller-name'],
+      imageUrl: ['img.productImage', '.productThumb']
+    },
+    'ebay.com': {
+      title: ['h1.it-title', '[itemprop="name"]'],
+      price: ['.vi-VR-cvipPrice', '.notranslate.vi-VR-cvipPrice', '[itemprop="price"]'],
+      description: ['#viTabs_0_panel', '[itemprop="description"]'],
+      brand: ['[itemprop="brand"]', '.viTitleBlack'],
+      imageUrl: ['#vi_main img', 'img.vi-content']
+    }
+  };
+
+  function detectSite() {
+    const hostname = window.location.hostname;
+    for (const [site] of Object.entries(SCRAPING_PATTERNS)) {
+      if (hostname.includes(site)) return site;
+    }
+    return null;
+  }
+
   function sanitizeHtml(html) {
     const template = document.createElement('template');
     template.innerHTML = html || '';
@@ -20,7 +74,6 @@
     return template.innerHTML;
   }
 
-  // Helper to resolve absolute URLs
   function makeAbsoluteUrl(url) {
     if (!url) return '';
     try {
@@ -28,6 +81,35 @@
     } catch (e) {
       return url;
     }
+  }
+
+  /**
+   * Extract data using site-specific patterns
+   */
+  function extractBySitePattern() {
+    const site = detectSite();
+    if (!site || !SCRAPING_PATTERNS[site]) return null;
+
+    const patterns = SCRAPING_PATTERNS[site];
+    const result = {};
+
+    for (const [field, selectors] of Object.entries(patterns)) {
+      for (const selector of selectors) {
+        const element = document.querySelector(selector);
+        if (element) {
+          if (field === 'imageUrl') {
+            result[field] = makeAbsoluteUrl(element.src || element.getAttribute('data-src'));
+          } else {
+            result[field] = element.textContent?.trim() || '';
+          }
+          if (result[field]) break;
+        }
+      }
+    }
+
+    result.sourceUrl = window.location.href;
+    result.detectedSite = site;
+    return Object.keys(result).length > 2 ? result : null;
   }
 
   // Priority A: JSON-LD Schema Extraction
@@ -441,6 +523,79 @@
       return { title, price, mrp, category, brand, description, imageUrl, modelNo: '' };
     }
 
+    // Blinkit Extractor
+    if (host.includes('blinkit.com')) {
+      const titleEl = document.querySelector('h1');
+      const title = titleEl ? titleEl.textContent.trim() : '';
+
+      // Price: Blinkit renders price inside elements with numeric ₹ values near "MRP"
+      let price = '';
+      let mrp = '';
+      const allText = Array.from(document.querySelectorAll('span, div, p'));
+      for (const el of allText) {
+        if (el.children.length === 0) {
+          const t = el.textContent.trim();
+          if (!price && /^₹\s*\d/.test(t) && t.length < 20) price = t;
+          if (!mrp && /MRP/i.test(t)) {
+            const m = t.match(/₹\s*[\d,]+/);
+            if (m) mrp = m[0];
+          }
+        }
+      }
+
+      // Category from breadcrumb
+      let category = '';
+      const crumbs = Array.from(document.querySelectorAll('nav a, [class*="breadcrumb" i] a'))
+        .map(a => a.textContent.trim())
+        .filter(t => t.length > 0 && !t.toLowerCase().includes('home'));
+      if (crumbs.length > 0) category = crumbs[crumbs.length - 1];
+
+      // Brand: first word of title is usually the brand
+      const brand = title ? title.trim().split(' ')[0] : '';
+
+      // Image: find main product image from Grofers CDN
+      // Blinkit may render via Next.js Image (/_next/image?url=…) or directly
+      let imageUrl = '';
+      function extractGrofersCdnUrl(raw) {
+        if (!raw) return '';
+        if (raw.includes('grofers.com') || raw.includes('cdn.blinkit.com')) return raw;
+        // Next.js image optimizer encodes the original URL in ?url=
+        if (raw.includes('/_next/image')) {
+          try {
+            const u = new URL(raw, window.location.href);
+            const decoded = decodeURIComponent(u.searchParams.get('url') || '');
+            if (decoded.includes('grofers.com') || decoded.includes('cdn.blinkit.com')) return decoded;
+          } catch (e) {}
+        }
+        return '';
+      }
+      const imgs = Array.from(document.querySelectorAll('img'));
+      for (const img of imgs) {
+        // Check src first, then each srcset entry
+        const candidates = [img.getAttribute('src') || img.src || ''];
+        const srcset = img.getAttribute('srcset') || '';
+        srcset.split(',').forEach(part => candidates.push(part.trim().split(' ')[0]));
+        for (const raw of candidates) {
+          const cdn = extractGrofersCdnUrl(raw);
+          if (cdn && (cdn.includes('cms-assets') || cdn.includes('/product/'))) {
+            imageUrl = cdn;
+            break;
+          }
+        }
+        if (imageUrl) break;
+      }
+      // Strip Cloudflare Image Resizing transform: /cdn-cgi/image/{options}/{original_path}
+      if (imageUrl.includes('/cdn-cgi/image/')) {
+        try {
+          const u = new URL(imageUrl);
+          const afterPrefix = u.pathname.replace(/^\/cdn-cgi\/image\/[^/]+\//, '/');
+          imageUrl = u.protocol + '//' + u.host + afterPrefix;
+        } catch (e) {}
+      }
+
+      return { title, price, mrp, category, brand, description: '', imageUrl, modelNo: '' };
+    }
+
     return null;
   }
 
@@ -482,7 +637,9 @@
 
   // --- Execution & Prioritization Pipeline ---
   const jsonLd = getJsonLdData() || {};
-  const domainData = getDomainSpecificData() || {};
+  // Priority 0: CSS-pattern extraction for known sites (fastest, most accurate)
+  const sitePatternData = extractBySitePattern() || {};
+  const domainData = Object.assign({}, getDomainSpecificData() || {}, sitePatternData);
 
   function getFallbackBrand(jsonLdData, prodTitle) {
     if (jsonLdData && jsonLdData.brand) {
@@ -560,6 +717,7 @@
     imageUrl: imageUrl.trim(),
     sourceUrl: sourceUrl.trim(),
     modelNo: modelNo,
+    detectedSite: sitePatternData.detectedSite || null,
     shortDescription: '',
     warrantyPeriod: '',
     warrantyType: '',

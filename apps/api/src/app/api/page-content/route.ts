@@ -186,8 +186,7 @@ export async function PUT(request: NextRequest) {
     if (upsert.error) {
       logger.error('page_content_update_failed', { error: upsert.error, payload });
       return NextResponse.json({
-        error: (upsert.error as Error).message || 'Failed to update page content',
-        details: upsert.error
+        error: 'Failed to update page content'
       }, { status: 500 });
     }
 
@@ -240,8 +239,7 @@ export async function POST(request: NextRequest) {
     if (upsert.error) {
       logger.error('page_content_create_failed', { error: upsert.error, payload });
       return NextResponse.json({
-        error: (upsert.error as Error).message || 'Failed to save page content',
-        details: upsert.error
+        error: 'Failed to save page content'
       }, { status: 500 });
     }
 

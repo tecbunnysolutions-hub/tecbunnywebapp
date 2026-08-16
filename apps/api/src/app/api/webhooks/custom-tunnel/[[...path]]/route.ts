@@ -84,7 +84,7 @@ export async function POST(
   } catch (error: any) {
     logger.error('custom_tunnel.error', { correlationId, error: error.message });
     return NextResponse.json(
-      { error: 'Custom tunnel processing failed', details: error.message },
+      { error: 'Custom tunnel processing failed' },
       { status: 500 }
     );
   }

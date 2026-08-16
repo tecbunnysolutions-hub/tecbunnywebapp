@@ -32,10 +32,11 @@ const allowedImageHosts = Array.from(new Set([
 
 const nextConfig = {
   ...(isStaticExport ? { output: 'export' } : process.env.DOCKER_BUILD === 'true' ? { output: 'standalone' } : {}),
+  compress: true,
   transpilePackages: ["@tecbunny/core", "@tecbunny/ui", "@tecbunny/database", "@tecbunny/config"],
   experimental: {
     optimizeCss: true,
-    optimizePackageImports: ['lucide-react']
+    optimizePackageImports: ['lucide-react', '@radix-ui/react-icons', 'date-fns']
   },
   serverExternalPackages: ['pdfkit', 'nodemailer', 'bullmq', 'ioredis', 'pino', 'pino-pretty', 'thread-stream', 'sharp', '@img/sharp-win32-x64'],
   poweredByHeader: false,
@@ -48,10 +49,6 @@ const nextConfig = {
         protocol: 'https',
         hostname: '**',
       },
-      {
-        protocol: 'http',
-        hostname: '**',
-      }
     ],
   },
   reactStrictMode: true,
@@ -70,6 +67,20 @@ const nextConfig = {
   },
   async headers() {
     return [
+      {
+        // Long-lived cache for hashed static assets (JS/CSS/fonts/images)
+        source: '/_next/static/:path*',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
+        ],
+      },
+      {
+        // Cache Next.js optimized images for 1 year
+        source: '/_next/image',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
+        ],
+      },
       {
         source: '/:path*',
         headers: [
@@ -97,10 +108,21 @@ const nextConfig = {
       },
     ];
   },
+  async redirects() {
+    if (isStaticExport) return [];
+    // Consolidate non-www → www into a single 308 hop to avoid redirect chains
+    return [
+      {
+        source: '/:path*',
+        has: [{ type: 'host', value: 'tecbunny.com' }],
+        destination: 'https://www.tecbunny.com/:path*',
+        permanent: true,
+      },
+    ];
+  },
   async rewrites() {
     if (isStaticExport) return [];
     
-    // Proxy API requests to the external API app
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.tecbunny.com';
     return [
       {

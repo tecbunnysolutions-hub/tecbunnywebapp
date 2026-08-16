@@ -5,32 +5,8 @@ import type { User } from '@supabase/supabase-js';
 
 import { verifyCaptcha } from "@tecbunny/core/captcha/captcha-service";
 import { logger } from "@tecbunny/core";
+import { rateLimit } from "@tecbunny/core/rate-limit";
 import { OTPManager, type OTPChannel } from "@tecbunny/core/otp-manager";
-
-// Rate limiting storage (in production, use Redis)
-const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
-
-function isRateLimited(email: string): boolean {
-  const now = Date.now();
-  const limit = rateLimitMap.get(email);
-  
-  if (!limit) {
-    rateLimitMap.set(email, { count: 1, resetTime: now + 15 * 60 * 1000 }); // 15 minutes
-    return false;
-  }
-  
-  if (now > limit.resetTime) {
-    rateLimitMap.set(email, { count: 1, resetTime: now + 15 * 60 * 1000 });
-    return false;
-  }
-  
-  if (limit.count >= 3) { // Max 3 attempts per 15 minutes
-    return true;
-  }
-  
-  limit.count++;
-  return false;
-}
 
 const otpService = new OTPManager();
 
@@ -47,10 +23,25 @@ export async function POST(request: NextRequest) {
 
     const identifier = email || mobile;
 
-    // Check rate limiting
-    if (isRateLimited(identifier)) {
+    const ip = request.headers.get('cf-connecting-ip')?.trim()
+      || request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+      || request.headers.get('x-real-ip')?.trim()
+      || 'unknown';
+
+    // Per-identifier limit (Redis-backed so it holds across all serverless instances).
+    const idRl = await rateLimit(`forgot_password:${identifier}`, 3, 15 * 60 * 1000);
+    if (!idRl.allowed) {
       return NextResponse.json(
         { error: 'Too many reset attempts. Please wait 15 minutes before trying again.' },
+        { status: 429 }
+      );
+    }
+
+    // Secondary IP-level limit to catch distributed enumeration.
+    const ipRl = await rateLimit(`forgot_password_ip:${ip}`, 10, 15 * 60 * 1000);
+    if (!ipRl.allowed) {
+      return NextResponse.json(
+        { error: 'Too many requests from this network. Please try again later.' },
         { status: 429 }
       );
     }
@@ -58,14 +49,10 @@ export async function POST(request: NextRequest) {
     // CAPTCHA verification (conditional if configured)
     const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
     if (siteKey) {
-      const ip = request.headers.get('cf-connecting-ip')?.trim()
-        || request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
-        || request.headers.get('x-real-ip')?.trim()
-        || 'unknown';
       const captcha = await verifyCaptcha(captchaToken, ip);
       if (!captcha.success) {
         logger.warn('forgot_password.captcha_failed', { identifier, ip, error: captcha.error || captcha.errorCodes });
-        return NextResponse.json({ error: `Captcha verification failed: ${captcha.error || captcha.errorCodes?.join(', ') || 'Please retry.'}` }, { status: 400 });
+        return NextResponse.json({ error: 'Security verification failed. Please try again.' }, { status: 400 });
       }
     }
 

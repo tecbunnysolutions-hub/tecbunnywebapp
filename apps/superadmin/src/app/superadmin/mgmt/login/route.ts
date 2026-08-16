@@ -2,10 +2,12 @@ import { NextResponse } from 'next/server';
 import { verifyCaptcha } from "@tecbunny/core/server";
 import { logger } from "@tecbunny/core";
 import { rateLimit } from "@tecbunny/core/server";
-import { createSuperadminSessionToken, SUPERADMIN_SESSION_TTL_SECONDS } from "@tecbunny/core/server";
+import { createSuperadminSessionToken, SUPERADMIN_SESSION_TTL_SECONDS, verifySuperadminPassword } from "@tecbunny/core/server";
 
 const textEncoder = new TextEncoder();
 
+// Trusted only when Cloudflare (or another configured reverse proxy) is guaranteed
+// to overwrite/strip these headers before the request reaches the origin.
 function getClientIp(request: Request) {
   const headers = request.headers;
   return headers.get('cf-connecting-ip')?.trim()
@@ -59,17 +61,27 @@ export async function POST(request: Request) {
     }
 
     const correctUserId = process.env.SUPERADMIN_USER_ID || process.env.SUPERADMIN_EMAIL;
-    const correctPassword = process.env.SUPERADMIN_PASSWORD;
+    const correctPasswordHash = process.env.SUPERADMIN_PASSWORD_HASH;
+    const correctPasswordPlain = process.env.SUPERADMIN_PASSWORD;
 
-    if (!correctUserId || !correctPassword) {
+    if (!correctUserId || (!correctPasswordHash && !correctPasswordPlain)) {
       logger.error('superadmin_login.configuration_missing');
       return NextResponse.json({ error: 'Superadmin credentials are not configured on server.' }, { status: 500 });
     }
 
-    if (
-      !constantTimeStringEquals(submittedUserId, correctUserId.trim()) ||
-      !constantTimeStringEquals(submittedPassword, correctPassword)
-    ) {
+    if (!correctPasswordHash) {
+      logger.warn('superadmin_login.using_plaintext_password', { env: process.env.NODE_ENV });
+    }
+
+    const userIdMatches = constantTimeStringEquals(
+      submittedUserId.toLowerCase(),
+      correctUserId.trim().toLowerCase()
+    );
+    const passwordMatches = correctPasswordHash
+      ? await verifySuperadminPassword(submittedPassword, correctPasswordHash)
+      : constantTimeStringEquals(submittedPassword, correctPasswordPlain ?? '');
+
+    if (!userIdMatches || !passwordMatches) {
       logger.warn('superadmin_login.failed_attempt', { userId: submittedUserId, ip });
       return NextResponse.json({ error: 'Invalid superadmin credentials.' }, { status: 401 });
     }

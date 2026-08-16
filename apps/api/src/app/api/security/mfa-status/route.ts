@@ -1,7 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 import { AdminAuthError, requireAdminContext } from "@tecbunny/core/auth/admin-guard";
+import { verifySuperadminSessionToken } from "@tecbunny/core/server";
 import { logger } from "@tecbunny/core";
+
+async function requireSuperadminOrAdminContext(request: NextRequest) {
+  // MFA state is a security control; modifications require superadmin authority.
+  const superadminCookie = request.cookies.get('superadmin-session')?.value;
+  if (superadminCookie && await verifySuperadminSessionToken(superadminCookie, request)) {
+    return null; // allowed
+  }
+  return NextResponse.json({ error: 'Superadmin session required to modify MFA status' }, { status: 403 });
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -85,6 +95,9 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const deny = await requireSuperadminOrAdminContext(request);
+    if (deny) return deny;
+
     const { user, role, serviceSupabase } = await requireAdminContext();
 
     const body = await request.json();

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { logger } from '@tecbunny/core';
-import { createSuperadminSessionToken } from '@tecbunny/core/server';
+import { createSuperadminSessionToken, verifySuperadminPassword } from '@tecbunny/core/server';
 
 export const dynamic = 'force-dynamic';
 
@@ -33,7 +33,6 @@ function getCorsHeaders(request: NextRequest) {
   if (
     /^chrome-extension:\/\/[a-p]{32}$/i.test(origin.trim()) ||
     origin.includes('tecbunny.com') ||
-    origin.trim().toLowerCase() === 'null' ||
     !origin
   ) {
     headers['Access-Control-Allow-Origin'] = origin || '*';
@@ -64,7 +63,8 @@ export async function POST(request: NextRequest) {
 
     const configuredUserId = (process.env.SUPERADMIN_USER_ID || '').trim();
     const configuredEmail = (process.env.SUPERADMIN_EMAIL || '').trim();
-    const configuredPassword = process.env.SUPERADMIN_PASSWORD || '';
+    const configuredPasswordHash = process.env.SUPERADMIN_PASSWORD_HASH || '';
+    const configuredPasswordPlain = process.env.SUPERADMIN_PASSWORD || '';
 
     if (!configuredUserId && !configuredEmail) {
       logger.error('superadmin_extension_auth.configuration_missing');
@@ -73,12 +73,16 @@ export async function POST(request: NextRequest) {
         { status: 503, headers: corsHeaders }
       );
     }
-    if (!configuredPassword) {
+    if (!configuredPasswordHash && !configuredPasswordPlain) {
       logger.error('superadmin_extension_auth.password_not_configured');
       return NextResponse.json(
         { error: 'Superadmin credentials are not configured on the server.' },
         { status: 503, headers: corsHeaders }
       );
+    }
+
+    if (!configuredPasswordHash) {
+      logger.warn('superadmin_extension_auth.using_plaintext_password', { env: process.env.NODE_ENV });
     }
 
     const submittedInput = (email || '').trim();
@@ -93,7 +97,11 @@ export async function POST(request: NextRequest) {
     });
 
     if (superadminIdMatches) {
-      if (!constantTimeStringEquals(submittedPassword, configuredPassword)) {
+      const passwordMatches = configuredPasswordHash
+        ? await verifySuperadminPassword(submittedPassword, configuredPasswordHash)
+        : constantTimeStringEquals(submittedPassword, configuredPasswordPlain);
+
+      if (!passwordMatches) {
         logger.warn('superadmin_extension_auth.password_mismatch');
         return NextResponse.json(
           { error: 'Invalid login credentials' },
@@ -129,7 +137,7 @@ export async function POST(request: NextRequest) {
       error: error?.message || String(error),
     });
     return NextResponse.json(
-      { error: `Internal Server Error: ${error?.message || error}` },
+      { error: 'Internal Server Error' },
       { status: 500, headers: corsHeaders }
     );
   }

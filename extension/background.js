@@ -1,50 +1,107 @@
-const API_BASE_URL_CANDIDATES = ['https://api.tecbunny.com/api', 'https://www.tecbunny.com/api'];
+const API_BASE_URL_CANDIDATES = ['https://api.tecbunny.com', 'https://superadmin.tecbunny.com'];
 const REQUEST_TIMEOUT_MS = 15000;
 const MAX_RAW_TEXT_LENGTH = 30000;
 
-// Groq API key must be provided by the user via the extension options page.
-// Never hardcode secrets here — they would be committed to source control.
+// Supported scraping sites with their data extraction patterns
+const SUPPORTED_SITES = {
+  'tecbunny.com': { name: 'TecBunny', priority: 1 },
+  'amazon.in': { name: 'Amazon India', priority: 2 },
+  'flipkart.com': { name: 'Flipkart', priority: 3 },
+  'snapdeal.com': { name: 'Snapdeal', priority: 4 },
+  'ebay.com': { name: 'eBay', priority: 5 },
+  'shopclues.com': { name: 'ShopClues', priority: 6 }
+};
+
+// Groq API configuration
 const DEFAULT_GROQ_API_KEY = '';
-// groq/compound has the highest token-per-minute throughput (70K TPM) and no
-// daily token cap — best for bulk/high-volume scraping of large product pages.
 const DEFAULT_GROQ_MODEL = 'groq/compound';
-// Superseded keys that should be auto-migrated to the current default.
 const LEGACY_GROQ_API_KEYS = [];
-// Superseded model overrides that should be auto-migrated to the current default.
 const LEGACY_GROQ_MODELS = ['llama-3.3-70b-versatile'];
+
 const PRODUCT_TEXT_FIELDS = [
   'title', 'price', 'mrp', 'category', 'brand', 'description', 'imageUrl', 'sourceUrl',
   'shortDescription', 'seoTitle', 'seoDescription', 'modelNo', 'warrantyPeriod',
   'warrantyType', 'additional1', 'additional2', 'additional3'
 ];
 
+// Logger utility
+const ExtensionLogger = {
+  log: (message, data) => {
+    console.log(`[TecBunny Scraper] ${message}`, data || '');
+    chrome.storage.local.get(['debugLogs'], (result) => {
+      if (result.debugLogs) {
+        const logs = result.debugLogs || [];
+        logs.push({ timestamp: new Date().toISOString(), message, data });
+        chrome.storage.local.set({ debugLogs: logs.slice(-100) }); // Keep last 100 logs
+      }
+    });
+  },
+  error: (message, error) => {
+    console.error(`[TecBunny Scraper ERROR] ${message}`, error);
+    chrome.storage.local.get(['debugLogs'], (result) => {
+      const logs = result.debugLogs || [];
+      logs.push({ 
+        timestamp: new Date().toISOString(), 
+        level: 'ERROR',
+        message, 
+        error: error instanceof Error ? error.message : String(error)
+      });
+      chrome.storage.local.set({ debugLogs: logs.slice(-100) });
+    });
+  }
+};
+
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if ((sender.id && sender.id !== chrome.runtime.id) || !message || typeof message !== 'object') {
+    ExtensionLogger.error('Invalid extension message', { senderId: sender.id, messageType: typeof message });
     sendResponse({ success: false, error: 'Invalid extension message.' });
     return false;
   }
 
+  ExtensionLogger.log(`Received action: ${message.action}`, { 
+    action: message.action,
+    senderUrl: sender.url 
+  });
+
   if (message.action === 'sendProduct') {
-    // Perform asynchronous transmission and keep the channel open
     sendProductData(message.data)
       .then(response => {
+        ExtensionLogger.log('Product sent successfully', { productTitle: message.data?.title });
         sendResponse(response);
       })
       .catch(error => {
+        ExtensionLogger.error('Failed to send product', error);
         sendResponse({ success: false, error: error.message });
       });
-    return true; // Keep message channel open for asynchronous reply
+    return true;
   } else if (message.action === 'enhanceProduct') {
     enhanceProductWithAI(message.rawText)
       .then(response => {
+        ExtensionLogger.log('Product enhanced with AI');
         sendResponse(response);
       })
       .catch(error => {
+        ExtensionLogger.error('Failed to enhance product', error);
+        sendResponse({ success: false, error: error.message });
+      });
+    return true;
+  } else if (message.action === 'checkAuth') {
+    verifySuperadminAuth(message.email, message.password)
+      .then(response => {
+        if (response.success) {
+          chrome.storage.local.set({ superadminToken: response.token });
+          ExtensionLogger.log('Superadmin authenticated');
+        }
+        sendResponse(response);
+      })
+      .catch(error => {
+        ExtensionLogger.error('Auth verification failed', error);
         sendResponse({ success: false, error: error.message });
       });
     return true;
   }
 
+  ExtensionLogger.error('Unknown extension action', { action: message.action });
   sendResponse({ success: false, error: 'Unknown extension action.' });
   return false;
 });
@@ -70,6 +127,52 @@ function validateProductPayload(productData) {
     }
     return payload;
   }, {});
+}
+
+/**
+ * Verify superadmin authentication via extension endpoint
+ * Uses PBKDF2 password verification on server
+ */
+async function verifySuperadminAuth(email, password) {
+  try {
+    if (!email || !password) {
+      throw new Error('Email and password are required');
+    }
+
+    const authUrl = `${API_BASE_URL_CANDIDATES[1]}/api/auth/extension`;
+    
+    const response = await fetchWithTimeout(authUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'User-Agent': 'TecBunny-Scraper/2.0'
+      },
+      body: JSON.stringify({ email, password })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error || `Authentication failed: ${response.status}`);
+    }
+
+    const data = await response.json();
+    
+    if (!data.success || !data.access_token) {
+      throw new Error(data.error || 'Invalid authentication response');
+    }
+
+    return {
+      success: true,
+      token: data.access_token,
+      user: data.user
+    };
+  } catch (error) {
+    ExtensionLogger.error('Auth verification failed', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Authentication failed'
+    };
+  }
 }
 
 function validateRawText(rawText) {
@@ -151,24 +254,28 @@ chrome.runtime.onInstalled.addListener(() => {
 });
 
 async function getAccessToken() {
-  const sessionCredentials = await new Promise(resolve => {
-    chrome.storage.session.get(['accessToken'], resolve);
-  });
-
-  return sessionCredentials.accessToken || '';
+  // Session storage preferred; fall back to local storage (set by background auth handler)
+  const sessionData = await new Promise(resolve => chrome.storage.session.get(['accessToken'], resolve));
+  if (sessionData.accessToken) return sessionData.accessToken;
+  const localData = await new Promise(resolve => chrome.storage.local.get(['superadminToken'], resolve));
+  return localData.superadminToken || '';
 }
 
 async function sendProductData(productData) {
   const validatedProductData = validateProductPayload(productData);
   
   const token = await getAccessToken();
-  
+  if (!token) {
+    return { success: false, error: 'Not authenticated. Please sign in via extension settings.' };
+  }
+
   try {
-    const response = await fetchApiWithFallback('/products/scraper', {
+    const response = await fetchApiWithFallback('/api/products/scraper', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
+        'Authorization': `Bearer ${token}`,
+        'x-extension-version': '2.0'
       },
       body: JSON.stringify(validatedProductData)
     });

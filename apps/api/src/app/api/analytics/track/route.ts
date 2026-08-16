@@ -12,6 +12,18 @@ const GA_ENDPOINT = 'https://www.google-analytics.com/mp/collect';
 
 type AnalyticsMetadata = Record<string, string | number | boolean | null>;
 
+// ---------- event schema constraints ----------
+// Event names must be snake_case, max 64 chars.
+const EVENT_TYPE_RE = /^[a-z][a-z0-9_]{0,63}$/;
+const MAX_URL_LENGTH = 2048;
+const MAX_RESOURCE_ID_LENGTH = 128;
+const MAX_SESSION_ID_LENGTH = 128;
+/** Max metadata key count accepted per event. */
+const MAX_METADATA_KEYS = 20;
+const MAX_METADATA_KEY_LENGTH = 64;
+const MAX_METADATA_VALUE_LENGTH = 512;
+// -----------------------------------------------
+
 function isFetchFailure(err: unknown) {
   if (!err || typeof err !== 'object') return false;
   const message = String((err as { message?: string }).message || '').toLowerCase();
@@ -28,8 +40,10 @@ function parseGaClientId(cookieHeader: string | null): string | null {
   return `${parts[2]}.${parts[3]}`;
 }
 
-function getClientId(request: NextRequest, sessionId?: string | null) {
-  if (sessionId) return sessionId;
+// Client-provided sessionId is only stored as analytics metadata.
+// The GA client_id is always resolved from the server-read _ga cookie or
+// a fresh random value — never from a client-supplied field.
+function getClientId(request: NextRequest) {
   const cookieClientId = parseGaClientId(request.headers.get('cookie'));
   if (cookieClientId) return cookieClientId;
   if (typeof crypto?.randomUUID === 'function') {
@@ -56,14 +70,20 @@ function toAnalyticsMetadata(value: unknown): AnalyticsMetadata {
     return {};
   }
 
+  let count = 0;
   return Object.entries(value).reduce<AnalyticsMetadata>((accumulator, [key, entry]) => {
+    if (count >= MAX_METADATA_KEYS) return accumulator;
+    if (key.length > MAX_METADATA_KEY_LENGTH) return accumulator;
     if (
-      typeof entry === 'string' ||
       typeof entry === 'number' ||
       typeof entry === 'boolean' ||
       entry === null
     ) {
       accumulator[key] = entry;
+      count += 1;
+    } else if (typeof entry === 'string' && entry.length <= MAX_METADATA_VALUE_LENGTH) {
+      accumulator[key] = entry;
+      count += 1;
     }
     return accumulator;
   }, {});
@@ -163,16 +183,27 @@ export async function POST(request: NextRequest) {
     if (typeof eventType !== 'string' || !eventType.trim()) {
       return NextResponse.json({ error: 'eventType is required' }, { status: 400 });
     }
+    if (!EVENT_TYPE_RE.test(eventType)) {
+      return NextResponse.json({ error: 'Invalid eventType format' }, { status: 400 });
+    }
+
+    const normalizedPageUrl = typeof pageUrl === 'string'
+      ? pageUrl.slice(0, MAX_URL_LENGTH)
+      : null;
+    const normalizedResourceId = (() => {
+      const raw = resolveResourceId(resourceId, toAnalyticsMetadata(metadata));
+      return raw ? raw.slice(0, MAX_RESOURCE_ID_LENGTH) : null;
+    })();
+    const normalizedSessionId = typeof sessionId === 'string'
+      ? sessionId.slice(0, MAX_SESSION_ID_LENGTH)
+      : null;
 
     const eventMetadata = {
       ...toAnalyticsMetadata(metadata),
       ...toAnalyticsMetadata(extraFields),
     };
-    const normalizedResourceId = resolveResourceId(resourceId, eventMetadata);
-    const normalizedPageUrl = typeof pageUrl === 'string' ? pageUrl : null;
-    const normalizedSessionId = typeof sessionId === 'string' ? sessionId : null;
 
-    const clientId = getClientId(request, normalizedSessionId);
+    const clientId = getClientId(request);
     let userId: string | null = null;
 
     try {
@@ -209,23 +240,16 @@ export async function POST(request: NextRequest) {
               user_id: user.id,
             });
 
-          // Auto-generate leads for inquiries
+          // NOTE: inquiry events no longer create leads here.
+          // Lead creation must go through the dedicated inquiry API endpoint
+          // so that business records are always created from validated, explicit
+          // user intent rather than from client-sent analytics payloads.
           if (eventType === 'amc_inquiry' || eventType === 'installation_inquiry') {
-            const leadType = eventType === 'amc_inquiry' ? 'amc' : 'installation';
-
-            // Fetch user details if possible, or just store the user_id
-            // For now, we rely on the user_id foreign key to link to the user profile
-            const { error: leadError } = await supabase.from('leads').insert({
-              user_id: user.id,
-              type: leadType,
-              product_id: normalizedResourceId,
-              status: 'new',
-              customer_email: user.email,
+            logger.info('analytics.inquiry_event_received', {
+              eventType,
+              userId: user.id,
+              resourceId: normalizedResourceId,
             });
-
-            if (leadError) {
-              logger.warn('Failed to create lead from inquiry', { error: leadError });
-            }
           }
 
           if (error) {
@@ -250,27 +274,14 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    // In analytics, we prefer to fail gracefully than to throw 500s
-    // which might alarm monitoring systems unnecessarily for minor tracking issues.
-    
-    // Check for common fetch errors or other expectable issues
-    if (isFetchFailure(error) || (error instanceof Error && (
-        error.message.includes('fetch') || 
-        error.message.includes('network') ||
-        error.message.includes('JSON')
-    ))) {
-       logger.warn('Analytics API Minor Error', { error });
-       return NextResponse.json({ success: true, skipped: 'Analytics unavailable' });
+    // Swallow only transient GA network errors; surface all other failures so
+    // monitoring can detect a systemically unavailable analytics pipeline.
+    if (isFetchFailure(error)) {
+      logger.warn('analytics.ga_send_failed', { error });
+      return NextResponse.json({ success: true, skipped: 'GA delivery unavailable' });
     }
 
-    // For other errors, log them but return 200 with skipped reason in headers or body to avoid client alerts
-    // unless we are debugging.
-    logger.error('Analytics API Error', { error });
-    
-    if (process.env.NODE_ENV === 'production') {
-      return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
-    }
-
-    return NextResponse.json({ error: 'Internal Server Error', details: error instanceof Error ? error.message : String(error) }, { status: 500 });
+    logger.error('analytics.track.error', { error });
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }

@@ -217,8 +217,8 @@ export function Header() {
         <div className="flex items-center justify-between gap-6">
           <Link href="/" className="relative z-20 flex min-w-0 flex-shrink items-center gap-3 group sm:w-[280px]">
             <span className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl border border-slate-200/50 bg-white p-1.5 transition-transform group-hover:scale-105 shadow-[0_0_15px_rgba(59,130,246,0.05)]">
-              <Logo width={28} height={28} className="sm:hidden text-white" />
-              <Logo width={36} height={36} className="hidden sm:block text-white" />
+              <Logo width={28} height={28} alt="TecBunny CCTV & IT Services Goa" className="sm:hidden text-white" />
+              <Logo width={36} height={36} alt="TecBunny CCTV & IT Services Goa" className="hidden sm:block text-white" />
             </span>
             <div className="flex min-w-0 flex-col">
               <span className="font-sans text-base font-black leading-none tracking-tight text-white sm:text-xl uppercase">

@@ -43,11 +43,48 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Second limit keyed solely on the OTP record ID so varying identifiers cannot cycle buckets.
+    if (otpId) {
+      const otpRl = await rateLimit(`otp_record:${otpId}`, VERIFY_RATE_LIMIT.limit, VERIFY_RATE_LIMIT.windowMs);
+      if (!otpRl.allowed) {
+        logger.warn('otp_verify_record_rate_limited', { otpId });
+        return NextResponse.json(
+          { error: 'Too many verification attempts. Please try again later.' },
+          { status: 429 }
+        );
+      }
+    }
+
     // Prefer service client for RLS bypass when looking up OTP/Order data
     const serviceSupabase = isSupabaseServiceConfigured ? createSupabaseServiceClient() : await createClient();
 
     // Check if this is an agent order verification (using order_otp_verifications table)
     if (orderId && reqPhone && reqCode) {
+      // Ownership check: verify user owns this order (or is staff with ORDER_OTP_WRITE permission)
+      const isStaff = ['admin', 'superadmin', 'manager'].includes(access.role);
+      
+      if (!isStaff) {
+        // Customer must own the order
+        const { data: orderRecord } = await serviceSupabase
+          .from('orders')
+          .select('customer_id')
+          .eq('id', orderId)
+          .limit(1)
+          .maybeSingle();
+
+        if (!orderRecord || orderRecord.customer_id !== access.session.user.id) {
+          logger.warn('otp_verify_post.order_ownership_denied', {
+            orderId,
+            actorId: access.session.user.id,
+            role: access.role
+          });
+          return NextResponse.json(
+            { success: false, message: 'OTP code verification failed', verified: false },
+            { status: 400 }
+          );
+        }
+      }
+
       const { data: agentOtpRecord } = await serviceSupabase
         .from('order_otp_verifications')
         .select('*')
@@ -74,36 +111,6 @@ export async function POST(request: NextRequest) {
             message: verifyResult.error || 'Invalid OTP code',
             verified: false
           }, { status: 400 });
-        }
-
-        // Process commission award immediately on success
-        if (agentOtpRecord.agent_id) {
-          try {
-            const { enhancedCommissionService } = await import('@tecbunny/core/server');
-            const commissionResult = await enhancedCommissionService.calculateOrderCommission(
-              orderId,
-              agentOtpRecord.agent_id
-            );
-
-            if (commissionResult.success && commissionResult.calculation) {
-              const saveResult = await enhancedCommissionService.saveCommissionRecord(
-                commissionResult.calculation
-              );
-              if (saveResult.success) {
-                logger.info('order_commission_processed_after_otp', { 
-                  orderId, 
-                  agentId: agentOtpRecord.agent_id,
-                  commissionAmount: commissionResult.calculation.commission_amount
-                });
-              }
-            }
-          } catch (commErr: any) {
-            logger.error('failed_to_process_commission_after_otp', {
-              orderId,
-              agentId: agentOtpRecord.agent_id,
-              error: commErr.message
-            });
-          }
         }
 
         return NextResponse.json({
@@ -197,7 +204,7 @@ export async function POST(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('OTP verification error:', error);
+    logger.error('otp_verify.unhandled', { error });
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -240,6 +247,16 @@ export async function GET(request: NextRequest) {
 
       const { otpRecord, availableFallbacks, canResend } = statusResult;
 
+      // Ownership check: non-admin users may only inspect their own OTP records.
+      const isAdmin = ['admin', 'superadmin', 'manager'].includes(access.role);
+      if (!isAdmin && otpRecord.user_id && otpRecord.user_id !== access.session.user.id) {
+        logger.warn('otp_verify_get.ownership_mismatch', {
+          requestedOtpId: otpId,
+          actorId: access.session.user.id,
+        });
+        return NextResponse.json({ error: 'OTP not found' }, { status: 404 });
+      }
+
       return NextResponse.json({
         success: true,
         status: {
@@ -255,16 +272,38 @@ export async function GET(request: NextRequest) {
     }
 
     if (orderId) {
-      // Find OTP by order ID (legacy support)
+      // Find OTP by order ID (legacy support) — must verify ownership first
       if (!isSupabaseServiceConfigured) {
         logger.warn('otp.verify.status.legacy_lookup.skipped_missing_supabase', { orderId });
         return NextResponse.json(
-          { error: 'Supabase configuration missing for legacy OTP lookup' },
-          { status: 503 }
+          { error: 'OTP not found' },
+          { status: 404 }
         );
       }
 
       const supabase = isSupabaseServiceConfigured ? createSupabaseServiceClient() : await createClient();
+
+      // Ownership check: verify user owns this order (or is staff with ORDER_OTP_READ permission)
+      const isStaff = ['admin', 'superadmin', 'manager'].includes(access.role);
+      
+      if (!isStaff) {
+        // Customer must own the order
+        const { data: orderRecord } = await supabase
+          .from('orders')
+          .select('customer_id')
+          .eq('id', orderId)
+          .limit(1)
+          .maybeSingle();
+
+        if (!orderRecord || orderRecord.customer_id !== access.session.user.id) {
+          logger.warn('otp_verify_get.order_ownership_denied', {
+            orderId,
+            actorId: access.session.user.id,
+            role: access.role
+          });
+          return NextResponse.json({ error: 'OTP not found' }, { status: 404 });
+        }
+      }
 
       const { data: otpRecord } = await supabase
         .from('otp_verifications')

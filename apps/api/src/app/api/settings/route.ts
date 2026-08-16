@@ -23,6 +23,7 @@ const PUBLIC_DEFAULTS: Record<string, unknown> = {
   whatsapp_template_string: 'https://wa.me/919604136010',
   facebook_pixel_id: '1234567890',
   default_gst_rate: '18.00',
+  payment_methods_config: { payu: { enabled: true }, cashfree: { enabled: true }, cod: { enabled: true }, upi: { enabled: true } },
 };
 const PUBLIC_SETTINGS_CACHE_CONTROL = 'no-store, max-age=0';
 const PUBLIC_SETTINGS_SELECT = 'key,value,description,updated_at';
@@ -77,6 +78,7 @@ function isAllowedPublicKey(key: string) {
     'facebook_pixel_id',
     'default_gst_rate',
     'custom_setup_accessory_pricing',
+    'payment_methods_config',
   ];
   return allowList.includes(key);
 }

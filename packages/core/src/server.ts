@@ -3,6 +3,7 @@ export * from './permissions';
 export * from './admin-auth';
 export * from './auth/admin-guard';
 export * from './auth/superadmin-session';
+export * from './auth/superadmin-password';
 export { default as improvedEmailService } from './improved-email-service';
 export * from './rate-limit';
 export * from './captcha/captcha-service';

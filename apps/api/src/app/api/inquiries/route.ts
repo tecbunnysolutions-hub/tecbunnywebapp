@@ -1,9 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAdminDb, logger } from '@tecbunny/core/server';
 import { improvedEmailService } from '@tecbunny/core/server';
+import { rateLimit } from '@tecbunny/core/rate-limit';
+
+function escapeHtml(str: string) {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
 
 export async function POST(request: NextRequest) {
   try {
+    const ip = request.headers.get('cf-connecting-ip')?.trim()
+      || request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+      || 'unknown';
+    const rl = await rateLimit(`inquiries:${ip}`, 5, 15 * 60 * 1000);
+    if (!rl.allowed) {
+      return NextResponse.json({ error: 'Too many requests. Please try again later.' }, { status: 429 });
+    }
+
     const body = await request.json();
     const { name, phone, email, type, productId, message } = body;
 
@@ -39,12 +57,12 @@ export async function POST(request: NextRequest) {
         subject: `New ${type === 'b2b' ? 'B2B Quote' : 'Installation'} Inquiry!`,
         html: `
           <h2>New Lead Alert</h2>
-          <p><strong>Name:</strong> ${name}</p>
-          <p><strong>Phone:</strong> ${phone}</p>
-          ${email ? `<p><strong>Email:</strong> ${email}</p>` : ''}
-          <p><strong>Type:</strong> ${type}</p>
-          ${productId ? `<p><strong>Product ID:</strong> ${productId}</p>` : ''}
-          ${message ? `<p><strong>Message:</strong> ${message}</p>` : ''}
+          <p><strong>Name:</strong> ${escapeHtml(String(name))}</p>
+          <p><strong>Phone:</strong> ${escapeHtml(String(phone))}</p>
+          ${email ? `<p><strong>Email:</strong> ${escapeHtml(String(email))}</p>` : ''}
+          <p><strong>Type:</strong> ${escapeHtml(String(type))}</p>
+          ${productId ? `<p><strong>Product ID:</strong> ${escapeHtml(String(productId))}</p>` : ''}
+          ${message ? `<p><strong>Message:</strong> ${escapeHtml(String(message))}</p>` : ''}
         `
       });
     } catch (emailError: any) {

@@ -4,8 +4,9 @@ import { NextResponse } from 'next/server';
 import { logger } from "@tecbunny/core";
 
 function isAuthorizedInternalRequest(request: NextRequest) {
-  const expected = process.env.INTERNAL_API_KEY || process.env.INTERNAL_API_TOKEN || process.env.CRON_SECRET;
-  const provided = request.headers.get('x-internal-api-key') || request.headers.get('x-internal-api-token');
+  // Only INTERNAL_API_KEY is accepted — CRON_SECRET is not a substitute credential for this endpoint.
+  const expected = process.env.INTERNAL_API_KEY;
+  const provided = request.headers.get('x-internal-api-key');
 
   return Boolean(expected && provided && provided === expected);
 }

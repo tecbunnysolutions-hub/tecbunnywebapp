@@ -156,6 +156,16 @@ async function ProductDataLoader({ id }: { id: string }) {
     `Quality ${productCategory || 'technology'} hardware available at TecBunny.`;
   const productImage = product.image || product.image_url || BRAND_LOGO_URL;
   const productPrice = Number(product.price ?? product.offer_price ?? 0);
+  const productSpecifications = product.specifications && typeof product.specifications === 'object'
+    ? Object.entries(product.specifications as Record<string, unknown>)
+      .filter(([key, value]) => !['sourceurl', 'source_url', 'source-url', 'seo_title', 'seo_description'].includes(key.toLowerCase()) && value != null && String(value).trim())
+      .slice(0, 30)
+      .map(([key, value]) => ({
+        '@type': 'PropertyValue',
+        name: key,
+        value: String(value),
+      }))
+    : [];
 
   // Product JSON-LD — full schema with Offer, shippingDetails, seller reference
   const productJsonLd = product ? {
@@ -174,6 +184,7 @@ async function ProductDataLoader({ id }: { id: string }) {
     image: [
       productImage,
     ].filter(Boolean),
+    ...(productSpecifications.length ? { additionalProperty: productSpecifications } : {}),
     offers: {
       '@type': 'Offer',
       url: `${siteUrl}/products/${id}`,
@@ -203,6 +214,7 @@ async function ProductDataLoader({ id }: { id: string }) {
   const breadcrumbJsonLd = product ? {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
+    '@id': `${siteUrl}/products/${id}#breadcrumb`,
     itemListElement: [
       { '@type': 'ListItem', position: 1, name: 'Home', item: siteUrl },
       { '@type': 'ListItem', position: 2, name: 'Products', item: `${siteUrl}/products` },
@@ -220,6 +232,23 @@ async function ProductDataLoader({ id }: { id: string }) {
     ],
   } : null;
 
+  const productWebPageJsonLd = product ? {
+    '@context': 'https://schema.org',
+    '@type': 'WebPage',
+    '@id': `${siteUrl}/products/${id}#webpage`,
+    url: `${siteUrl}/products/${id}`,
+    name: productTitle,
+    description: productDescription,
+    isPartOf: { '@id': `${siteUrl}/#website` },
+    about: { '@id': `${siteUrl}/products/${id}#product` },
+    mainEntity: { '@id': `${siteUrl}/products/${id}#product` },
+    breadcrumb: { '@id': `${siteUrl}/products/${id}#breadcrumb` },
+    speakable: {
+      '@type': 'SpeakableSpecification',
+      cssSelector: ['h1', 'main'],
+    },
+  } : null;
+
   return (
     <>
       {productJsonLd && (
@@ -232,6 +261,12 @@ async function ProductDataLoader({ id }: { id: string }) {
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: serializeJsonLd(breadcrumbJsonLd) }}
+        />
+      )}
+      {productWebPageJsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: serializeJsonLd(productWebPageJsonLd) }}
         />
       )}
       <ProductDetailPage 
