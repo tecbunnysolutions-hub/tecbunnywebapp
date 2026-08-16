@@ -109,7 +109,9 @@ export async function POST(request: NextRequest) {
       channels: JSON.stringify(effectiveChannels),
       status: Object.values(results).some(r => r === 'sent') ? 'sent' : 'failed',
       metadata: data ?? {},
-    }) as unknown as Promise<unknown>).catch(() => {});
+    }) as unknown as Promise<unknown>).catch((err: unknown) => {
+      logger.warn('notification.queue_persist_failed', { user_id, error: err });
+    });
 
     logger.info('notification.sent', { user_id, type, results });
     return NextResponse.json({ success: true, results });

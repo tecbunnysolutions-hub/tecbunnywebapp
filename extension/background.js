@@ -452,10 +452,18 @@ async function enhanceProductWithAI(rawText) {
       }
       return { success: true, data };
     } catch (directErr) {
-      // Do NOT fall back to the Gemini website API — surface the real provider error
-      // so quota/config issues aren't misreported as a Gemini limit.
+      // Do NOT fall back to the website API — surface the real provider error
+      // so quota/config issues aren't misreported as a different error.
       return { success: false, error: directErr.message || String(directErr) };
     }
+  }
+
+  // External source is set but no key provided — don't attempt the website API (requires login).
+  if (aiSettings.aiSource !== 'website') {
+    return {
+      success: false,
+      error: `No AI API key configured. Open extension settings (⚙) and enter a Groq, OpenAI, Claude, or Gemini API key.`
+    };
   }
 
   const token = await getAccessToken();

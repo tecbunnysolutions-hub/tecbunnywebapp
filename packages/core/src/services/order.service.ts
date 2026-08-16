@@ -270,7 +270,9 @@ export class OrderService implements IOrderService {
       } else {
         fullOrder.assigned_service_manager_id = notificationResult.routing.manager?.managerId || null;
       }
-    } catch (notificationError) {}
+    } catch (notificationError) {
+      logger.error('order_routing_notification_failed', { error: notificationError, orderId: createdOrder.id });
+    }
 
     let isAgentThemselves = false;
     if (orderData.agent_id && effectiveUserId) {
@@ -299,7 +301,9 @@ export class OrderService implements IOrderService {
             otp_type: 'agent_order'
           });
         }
-      } catch (agentError) {}
+      } catch (agentError) {
+        logger.error('agent_commission_or_otp_failed', { error: agentError, agentId: orderData.agent_id, orderId: createdOrder.id });
+      }
     }
 
     if (orderItemsData.customer_phone) {

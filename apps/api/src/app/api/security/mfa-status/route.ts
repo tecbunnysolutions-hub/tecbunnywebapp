@@ -25,7 +25,8 @@ export async function GET(request: NextRequest) {
       .single();
 
     if (error && error.code !== 'PGRST116') { // Not found error
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      logger.error('mfa_status_fetch_failed', { error: error.message, userId });
+      return NextResponse.json({ error: 'Failed to fetch MFA status' }, { status: 500 });
     }
 
     // If no record exists, create one
@@ -37,7 +38,8 @@ export async function GET(request: NextRequest) {
         .single();
 
       if (createError) {
-        return NextResponse.json({ error: createError.message }, { status: 500 });
+        logger.error('mfa_status_create_failed', { error: createError.message, userId });
+        return NextResponse.json({ error: 'Failed to initialize MFA status' }, { status: 500 });
       }
 
       const { error: auditError } = await serviceSupabase
@@ -126,7 +128,8 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      logger.error('mfa_status_update_failed', { error: error.message, userId });
+      return NextResponse.json({ error: 'Failed to update MFA status' }, { status: 500 });
     }
 
     // Log the MFA status change

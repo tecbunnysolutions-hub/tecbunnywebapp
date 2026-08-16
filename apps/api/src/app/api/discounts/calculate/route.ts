@@ -22,6 +22,24 @@ export async function GET(request: NextRequest) {
 
     const supabase = await createClient();
 
+    const { data: { user: sessionUser } } = await supabase.auth.getUser();
+    if (!sessionUser) {
+      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Only allow a user to query their own discounts unless they have an elevated role
+    const { data: callerProfile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', sessionUser.id)
+      .maybeSingle();
+    const callerRole = callerProfile?.role ?? 'customer';
+    const isElevated = ['admin', 'superadmin', 'manager', 'staff'].includes(callerRole);
+
+    if (!isElevated && sessionUser.id !== userId) {
+      return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
+    }
+
     // Get user profile with customer category
     const { data: user, error: userError } = await supabase
       .from('profiles')

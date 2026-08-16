@@ -96,7 +96,7 @@ async function verifySuperadminSessionTokenForMiddleware(token: string | undefin
   try {
     const payloadText = new TextDecoder().decode(base64UrlDecode(encodedPayload));
     const payload = JSON.parse(payloadText) as Partial<SuperadminSessionPayload>;
-    const configuredEmail = process.env.SUPERADMIN_USER_ID || process.env.SUPERADMIN_EMAIL;
+    const configuredEmail = (process.env.SUPERADMIN_USER_ID || process.env.SUPERADMIN_EMAIL || '').trim();
     const now = Math.floor(Date.now() / 1000);
 
     if (

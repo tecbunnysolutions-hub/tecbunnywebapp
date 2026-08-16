@@ -4,6 +4,7 @@ import { NextResponse } from 'next/server'
 import { z } from 'zod';
 
 import { rateLimit } from '@tecbunny/core/rate-limit';
+import { logger } from '@tecbunny/core/logger';
 
 
 
@@ -260,7 +261,9 @@ export async function POST(request: Request) {
     // 3. Award Commission for Full Orders
     const atomicOrderId = (result as any)?.order?.id
     if (atomicOrderId && agentId) {
-      await awardCommissionForAgent(svc, agentId, atomicOrderId, totals.total).catch(() => {})
+      await awardCommissionForAgent(svc, agentId, atomicOrderId, totals.total).catch((err: unknown) => {
+        logger.error('commission_award_failed', { err, agentId, orderId: atomicOrderId });
+      })
     }
   }
 

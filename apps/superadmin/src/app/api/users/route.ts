@@ -48,7 +48,9 @@ async function getEffectiveUserRole(user: any) {
 
 async function createAuthenticatedClient(request: NextRequest) {
   const superadminCookie = request.cookies.get('superadmin-session')?.value;
-  const superadminPayload = await verifySuperadminSessionToken(superadminCookie);
+  const ip = request.headers.get('x-forwarded-for') || 'unknown';
+  const ua = request.headers.get('user-agent') || 'unknown';
+  const superadminPayload = await verifySuperadminSessionToken(superadminCookie, ip, ua);
   if (superadminPayload) {
     return {
       session: { user: { id: 'superadmin-root-id', email: superadminPayload.email } },

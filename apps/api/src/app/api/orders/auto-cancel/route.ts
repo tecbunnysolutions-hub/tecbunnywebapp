@@ -3,6 +3,7 @@ import { isAtLeast, normalizeRole } from "@tecbunny/core";
 import { createClient } from '@tecbunny/database';
 import { createSupabaseServiceClient, isSupabaseServiceConfigured } from "@tecbunny/core/server";;
 import { NextRequest, NextResponse } from 'next/server';
+import { timingSafeEqual } from 'crypto';
 
 
 import { logger } from "@tecbunny/core";
@@ -32,7 +33,18 @@ function isMissingRpcError(error: { message?: string; code?: string } | null) {
 export async function POST(_request: NextRequest) {
   try {
     const authHeader = _request.headers.get('authorization');
-    const isCron = process.env.CRON_SECRET && authHeader === `Bearer ${process.env.CRON_SECRET}`;
+    let isCron = false;
+    const cronSecret = process.env.CRON_SECRET;
+    if (cronSecret && authHeader?.startsWith('Bearer ')) {
+      const token = authHeader.slice(7);
+      try {
+        const secretBuf = Buffer.from(cronSecret, 'utf8');
+        const tokenBuf = Buffer.from(token, 'utf8');
+        isCron = secretBuf.length === tokenBuf.length && timingSafeEqual(secretBuf, tokenBuf);
+      } catch {
+        isCron = false;
+      }
+    }
     
     if (!isCron) {
       const supabase = await createServerClient();

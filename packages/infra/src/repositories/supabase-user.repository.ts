@@ -454,7 +454,9 @@ export class SupabaseUserRepository implements IUserRepository {
           );
           const previousRole = this.parseAssignableRole(targetProfile.role);
           if (previousRole) {
-            await this.syncUserRole(params.userId, previousRole).catch(() => {});
+            await this.syncUserRole(params.userId, previousRole).catch((rollbackErr: unknown) => {
+              logger.error('role_sync_rollback_failed', { userId: params.userId, error: String(rollbackErr) });
+            });
           }
           throw new Error(roleError.message || 'Failed to assign role');
         }
