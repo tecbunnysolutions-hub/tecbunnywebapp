@@ -1156,18 +1156,18 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
                 <Label className={cn('flex cursor-pointer items-center justify-between rounded-md border p-3', isTech && 'border-border bg-muted/40 text-foreground', ipSelections.resolution === '2mp' && (isTech ? 'border-primary bg-primary/10' : 'border-primary'))}
                   htmlFor="ip-res-2">
                   <div>
-                    <span className="block font-medium">4 MP</span>
+                    <span className="block font-medium">2 MP</span>
                     <span className={cn('text-xs', isTech ? 'text-muted-foreground' : 'text-muted-foreground')}>Ideal for compact deployments</span>
                   </div>
-                  <RadioGroupItem value="2mp" id="ip-res-2" aria-label="Select 4 MP IP camera resolution" />
+                  <RadioGroupItem value="2mp" id="ip-res-2" aria-label="Select 2 MP IP camera resolution" />
                 </Label>
                 <Label className={cn('flex cursor-pointer items-center justify-between rounded-md border p-3', isTech && 'border-border bg-muted/40 text-foreground', ipSelections.resolution === '5mp' && (isTech ? 'border-primary bg-primary/10' : 'border-primary'))}
                   htmlFor="ip-res-5">
                   <div>
-                    <span className="block font-medium">5 MP</span>
+                    <span className="block font-medium">4 MP</span>
                     <span className={cn('text-xs', isTech ? 'text-slate-400' : 'text-muted-foreground')}>Higher detail for wider coverage</span>
                   </div>
-                  <RadioGroupItem value="5mp" id="ip-res-5" aria-label="Select 5 MP IP camera resolution" />
+                  <RadioGroupItem value="5mp" id="ip-res-5" aria-label="Select 4 MP IP camera resolution" />
                 </Label>
               </RadioGroup>
             </div>
