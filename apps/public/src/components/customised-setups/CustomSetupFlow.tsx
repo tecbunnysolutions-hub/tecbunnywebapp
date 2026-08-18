@@ -1009,7 +1009,7 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
                       <div className="flex w-full flex-col gap-0.5 leading-normal">
                         <span>{option.label}</span>
                         <span className={cn('text-xs', selectMutedClassName)}>
-                          100 m coverage per unit · Est. {quantity} unit{quantity > 1 ? 's' : ''} · {formatCurrency(totalSale)} sale
+                          {option.coverageMeters} m coverage per unit · Est. {quantity} unit{quantity > 1 ? 's' : ''} · {formatCurrency(totalSale)} sale
                         </span>
                       </div>
                     </SelectItem>
@@ -1039,7 +1039,7 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
               className={inputClassName}
             />
             <p className={cn('text-xs', selectMutedClassName)}>
-              Leave blank to auto-calculate based on camera count. Supplied in 100m rolls.
+              Leave blank to auto-calculate (~25m run per camera). Billed quantity always rounds up to the nearest full roll/box shown above.
             </p>
           </div>
         </CardContent>
@@ -1156,10 +1156,10 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
                 <Label className={cn('flex cursor-pointer items-center justify-between rounded-md border p-3', isTech && 'border-border bg-muted/40 text-foreground', ipSelections.resolution === '2mp' && (isTech ? 'border-primary bg-primary/10' : 'border-primary'))}
                   htmlFor="ip-res-2">
                   <div>
-                    <span className="block font-medium">2 MP</span>
+                    <span className="block font-medium">4 MP</span>
                     <span className={cn('text-xs', isTech ? 'text-muted-foreground' : 'text-muted-foreground')}>Ideal for compact deployments</span>
                   </div>
-                  <RadioGroupItem value="2mp" id="ip-res-2" aria-label="Select 2 MP IP camera resolution" />
+                  <RadioGroupItem value="2mp" id="ip-res-2" aria-label="Select 4 MP IP camera resolution" />
                 </Label>
                 <Label className={cn('flex cursor-pointer items-center justify-between rounded-md border p-3', isTech && 'border-border bg-muted/40 text-foreground', ipSelections.resolution === '5mp' && (isTech ? 'border-primary bg-primary/10' : 'border-primary'))}
                   htmlFor="ip-res-5">
@@ -1212,7 +1212,7 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
                       <div className="flex w-full flex-col gap-0.5 leading-normal">
                         <span>{option.label}</span>
                         <span className={cn('text-xs', selectMutedClassName)}>
-                          100 m coverage per unit · Est. {quantity} unit{quantity > 1 ? 's' : ''} · {formatCurrency(totalSale)} sale
+                          {option.coverageMeters} m coverage per unit · Est. {quantity} unit{quantity > 1 ? 's' : ''} · {formatCurrency(totalSale)} sale
                         </span>
                       </div>
                     </SelectItem>
@@ -1242,7 +1242,7 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
               className={inputClassName}
             />
             <p className={cn('text-xs', selectMutedClassName)}>
-              Leave blank to auto-calculate based on camera count. Supplied in 100m rolls.
+              Leave blank to auto-calculate (~25m run per camera). Billed quantity always rounds up to the nearest full roll/box shown above.
             </p>
           </div>
         </CardContent>
@@ -1608,6 +1608,9 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
               <span>
                 {formatCurrency(totals.overall.discountAmount)} ({totals.overall.discountPercent >= 10 ? totals.overall.discountPercent.toFixed(0) : totals.overall.discountPercent.toFixed(1)}%)
               </span>
+            </p>
+            <p className={cn('mt-3 border-t pt-2 text-[11px] leading-relaxed', isTech ? 'border-white/10 text-slate-400' : 'border-slate-200 text-slate-500')}>
+              Calculation terms: cable run is estimated at ~25m per camera and billed in full roll/box units shown per cable option above (partial requirements always round up to the next full unit, e.g. 125m needed rounds up to 200m billed). Camera, cable, and accessory quantities update instantly as you change selections. Prices are indicative; final cost is confirmed after a site survey.
             </p>
             <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <span className={cn('text-xs', isTech ? 'text-slate-300' : 'text-slate-600')}>Download this estimate or proceed to book your setup.</span>

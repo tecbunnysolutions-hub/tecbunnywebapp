@@ -228,8 +228,9 @@ export class InboundTriageAgent extends BaseAgent<WebhookData, TriagedPayload | 
         cameras: {
           analog_2_4mp: pricingCatalog.analog.camera['2.4mp']?.standard?.sale || 1699,
           analog_5mp: pricingCatalog.analog.camera['5mp']?.standard?.sale || 2200,
-          ip_2mp: pricingCatalog.ip.camera['2mp']?.standard?.sale || 2500,
-          ip_4mp: pricingCatalog.ip.camera['5mp']?.standard?.sale || 3500,
+          // catalog key '2mp' holds the real 4MP IP camera SKU; '5mp' holds the true 5MP SKU
+          ip_4mp: pricingCatalog.ip.camera['2mp']?.standard?.sale || 3000,
+          ip_5mp: pricingCatalog.ip.camera['5mp']?.standard?.sale || 4300,
         },
         dvrs: pricingCatalog.analog.dvr.map(d => ({ channels: d.capacity, price: d.sale })),
         nvrs: pricingCatalog.ip.nvr.map(n => ({ channels: n.capacity, price: n.sale })),
