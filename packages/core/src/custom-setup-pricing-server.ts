@@ -46,13 +46,13 @@ async function getFallbackPricing() {
     }
     return items[0] || fallback;
   };
-  const getIpCamera = (candidates: string[], fallback: PriceEntry) => {
+  const getIpCamera = (candidates: string[], fallback: PriceEntry, allowFirstAsDefault = true) => {
     const items = getItems('ip_camera');
     for (const cand of candidates) {
       const match = items.find(i => i.id === cand || i.label.toLowerCase().includes(cand.toLowerCase()));
       if (match) return match;
     }
-    return items[0] || fallback;
+    return (allowFirstAsDefault ? items[0] : undefined) || fallback;
   };
 
   const analogDvr = getItems('analog_dvr').filter((entry) => [4, 8, 16].includes(entry.capacity));
@@ -80,13 +80,14 @@ async function getFallbackPricing() {
       nvr: withFallback(ipNvr, FALLBACK_IP_PRICING.nvr),
       poe: withFallback(ipPoe, FALLBACK_IP_PRICING.poe),
       camera: {
+        // Real catalog only stocks 2MP and 4MP IP cameras - no 5MP tier exists
         '2mp': {
-          standard: getIpCamera(['opt-cam-ip-4mp-dome', '4mp', '2mp', 'dome'], FALLBACK_IP_PRICING.camera['2mp'].standard),
-          dualLight: getIpCamera(['opt-cam-ip-4mp-bullet', '4mp', 'bullet'], FALLBACK_IP_PRICING.camera['2mp'].dualLight),
+          standard: getIpCamera(['opt-cam-ip-2mp-dome', '2mp'], FALLBACK_IP_PRICING.camera['2mp'].standard, false),
+          dualLight: getIpCamera(['opt-cam-ip-2mp-bullet', '2mp'], FALLBACK_IP_PRICING.camera['2mp'].dualLight, false),
         },
-        '5mp': {
-          standard: getIpCamera(['opt-cam-ip-5mp-color', '5mp'], FALLBACK_IP_PRICING.camera['5mp'].standard),
-          dualLight: getIpCamera(['opt-cam-ip-5mp-color', '5mp', 'color'], FALLBACK_IP_PRICING.camera['5mp'].dualLight),
+        '4mp': {
+          standard: getIpCamera(['opt-cam-ip-4mp-dome', '4mp', 'dome'], FALLBACK_IP_PRICING.camera['4mp'].standard),
+          dualLight: getIpCamera(['opt-cam-ip-4mp-bullet', '4mp', 'bullet'], FALLBACK_IP_PRICING.camera['4mp'].dualLight),
         }
       },
       cable: withFallback(getItems('ip_cable'), FALLBACK_IP_PRICING.cable)
@@ -178,10 +179,10 @@ export async function buildPricingCatalog(blueprint: CustomSetupBlueprintSummary
         '2mp',
         fallbacks.ip.camera['2mp']
       ),
-      '5mp': buildCameraMatrix(
+      '4mp': buildCameraMatrix(
         findComponentBySlug(ipSystem, ['ip-camera']),
-        '5mp',
-        fallbacks.ip.camera['5mp']
+        '4mp',
+        fallbacks.ip.camera['4mp']
       ),
     },
     cable: buildCableEntries(

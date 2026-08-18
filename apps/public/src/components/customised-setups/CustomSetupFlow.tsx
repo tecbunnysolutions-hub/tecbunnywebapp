@@ -1150,7 +1150,7 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
               <Label>Camera Resolution</Label>
               <RadioGroup
                 value={ipSelections.resolution}
-                onValueChange={(value: '2mp' | '5mp') => setIpSelections((previous) => ({ ...previous, resolution: value }))}
+                onValueChange={(value: '2mp' | '4mp') => setIpSelections((previous) => ({ ...previous, resolution: value }))}
                 className="grid gap-2"
               >
                 <Label className={cn('flex cursor-pointer items-center justify-between rounded-md border p-3', isTech && 'border-border bg-muted/40 text-foreground', ipSelections.resolution === '2mp' && (isTech ? 'border-primary bg-primary/10' : 'border-primary'))}
@@ -1161,13 +1161,13 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
                   </div>
                   <RadioGroupItem value="2mp" id="ip-res-2" aria-label="Select 2 MP IP camera resolution" />
                 </Label>
-                <Label className={cn('flex cursor-pointer items-center justify-between rounded-md border p-3', isTech && 'border-border bg-muted/40 text-foreground', ipSelections.resolution === '5mp' && (isTech ? 'border-primary bg-primary/10' : 'border-primary'))}
-                  htmlFor="ip-res-5">
+                <Label className={cn('flex cursor-pointer items-center justify-between rounded-md border p-3', isTech && 'border-border bg-muted/40 text-foreground', ipSelections.resolution === '4mp' && (isTech ? 'border-primary bg-primary/10' : 'border-primary'))}
+                  htmlFor="ip-res-4">
                   <div>
                     <span className="block font-medium">4 MP</span>
                     <span className={cn('text-xs', isTech ? 'text-slate-400' : 'text-muted-foreground')}>Higher detail for wider coverage</span>
                   </div>
-                  <RadioGroupItem value="5mp" id="ip-res-5" aria-label="Select 4 MP IP camera resolution" />
+                  <RadioGroupItem value="4mp" id="ip-res-4" aria-label="Select 4 MP IP camera resolution" />
                 </Label>
               </RadioGroup>
             </div>
