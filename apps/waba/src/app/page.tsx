@@ -86,10 +86,10 @@ export default function Dashboard() {
 
   // 2. Realtime subscription: replace conversation polling (was setInterval 5 s)
   useEffect(() => {
-    const supabaseRt = createBrowserClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    );
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    if (!url || !key) return;
+    const supabaseRt = createBrowserClient(url, key);
     const channel = supabaseRt
       .channel('waba-conversations')
       .on(
@@ -105,10 +105,10 @@ export default function Dashboard() {
   // 3. Realtime subscription: replace message polling (was setInterval 3 s)
   useEffect(() => {
     if (!activeConversation) return;
-    const supabaseRt = createBrowserClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    );
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    if (!url || !key) return;
+    const supabaseRt = createBrowserClient(url, key);
     const channel = supabaseRt
       .channel(`waba-messages-${activeConversation}`)
       .on(

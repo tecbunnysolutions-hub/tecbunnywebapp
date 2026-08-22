@@ -34,19 +34,23 @@ export async function GET(req: Request) {
     }
 
     // Check actual Supabase session
-    const supabaseClient = await createSupabaseClient();
-    const { data: { user } } = await supabaseClient.auth.getUser();
+    try {
+      const supabaseClient = await createSupabaseClient();
+      const { data: { user } } = await supabaseClient.auth.getUser();
 
-    if (user) {
-      logger.info('waba_auth_me.audit.supabase_session', { userId: user.id });
-      return NextResponse.json({ 
-        user: { 
-          id: user.id, 
-          name: user.user_metadata?.first_name || user.email?.split('@')[0] || 'Agent', 
-          email: user.email, 
-          role: user.user_metadata?.role || 'AGENT' 
-        } 
-      });
+      if (user) {
+        logger.info('waba_auth_me.audit.supabase_session', { userId: user.id });
+        return NextResponse.json({ 
+          user: { 
+            id: user.id, 
+            name: user.user_metadata?.first_name || user.email?.split('@')[0] || 'Agent', 
+            email: user.email, 
+            role: user.user_metadata?.role || 'AGENT' 
+          } 
+        });
+      }
+    } catch (supabaseErr: unknown) {
+      logger.warn('waba_auth_me.audit.supabase_unavailable', { error: supabaseErr instanceof Error ? supabaseErr.message : String(supabaseErr) });
     }
 
     logger.info('waba_auth_me.audit.no_session');
