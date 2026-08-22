@@ -42,7 +42,7 @@ export interface IpPricing {
   poe: CapacityPriceEntry[];
   camera: {
     '2mp': CameraPriceMatrix;
-    '5mp': CameraPriceMatrix;
+    '4mp': CameraPriceMatrix;
   };
   cable: CablePriceEntry[];
 }
@@ -89,13 +89,14 @@ export const FALLBACK_IP_PRICING: IpPricing = {
     { id: 'poe-24-giga', label: '24-Port POE Switch (GIGA)', capacity: 24, variant: 'giga', mrp: 16800, sale: 12500 },
   ],
   camera: {
+    // Real IP catalog only stocks 2MP and 4MP cameras - there is no 5MP IP tier
     '2mp': {
-      standard: { id: 'ip-2-standard', label: '2MP Normal', mrp: 2500, sale: 1650 },
-      dualLight: { id: 'ip-2-dual', label: '2MP Dual Light', mrp: 3100, sale: 2150 },
+      standard: { id: 'ip-2-standard', label: '2MP IP Camera (Standard)', mrp: 2500, sale: 1650 },
+      dualLight: { id: 'ip-2-dual', label: '2MP IP Camera (Dual Light)', mrp: 3100, sale: 2150 },
     },
-    '5mp': {
-      standard: { id: 'ip-4-standard', label: '4MP Normal', mrp: 3800, sale: 2750 },
-      dualLight: { id: 'ip-4-dual', label: '4MP Dual Light', mrp: 4500, sale: 3250 },
+    '4mp': {
+      standard: { id: 'ip-4-standard', label: '4MP IP Indoor Dome Camera', mrp: 3500, sale: 2999 },
+      dualLight: { id: 'ip-4-dual', label: '4MP IP Outdoor Bullet Camera', mrp: 3800, sale: 3199 },
     },
   },
   cable: [
@@ -408,7 +409,7 @@ export function buildCableEntries(
 
 export function buildCameraMatrix(
   component: CustomSetupBlueprintComponentSummary | undefined,
-  resolutionKey: '2.4mp' | '5mp' | '2mp',
+  resolutionKey: '2.4mp' | '5mp' | '2mp' | '4mp',
   fallback: CameraPriceMatrix
 ): CameraPriceMatrix {
   if (!component) {
@@ -665,7 +666,7 @@ export interface IpSelections {
   nvrId: string;
   poeId: string;
   cableId: string;
-  resolution: '2mp' | '5mp';
+  resolution: '2mp' | '4mp';
   dualLight: boolean;
 }
 
