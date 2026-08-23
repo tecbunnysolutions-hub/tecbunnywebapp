@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { createBrowserClient } from '@supabase/ssr';
+import { isSupabasePublicConfigured, getBrowserClient } from '@tecbunny/database';
 
 import { Sidebar } from '../components/waba/Sidebar';
 import { ChatMain, type ChatNotice } from '../components/waba/ChatMain';
@@ -86,10 +86,8 @@ export default function Dashboard() {
 
   // 2. Realtime subscription: replace conversation polling (was setInterval 5 s)
   useEffect(() => {
-    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-    if (!url || !key) return;
-    const supabaseRt = createBrowserClient(url, key);
+    if (!isSupabasePublicConfigured()) return;
+    const supabaseRt = getBrowserClient();
     const channel = supabaseRt
       .channel('waba-conversations')
       .on(
@@ -105,10 +103,8 @@ export default function Dashboard() {
   // 3. Realtime subscription: replace message polling (was setInterval 3 s)
   useEffect(() => {
     if (!activeConversation) return;
-    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-    if (!url || !key) return;
-    const supabaseRt = createBrowserClient(url, key);
+    if (!isSupabasePublicConfigured()) return;
+    const supabaseRt = getBrowserClient();
     const channel = supabaseRt
       .channel(`waba-messages-${activeConversation}`)
       .on(
