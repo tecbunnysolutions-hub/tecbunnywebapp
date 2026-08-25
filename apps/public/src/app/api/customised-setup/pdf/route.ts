@@ -14,7 +14,18 @@ interface PDFBody {
 }
 
 function inr(n: number) {
-  return `Rs. ${n.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`;
+  // Avoid en-IN locale (not available in all Node builds); format manually
+  return `Rs. ${Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')}`;
+}
+
+/** Strip characters outside WinAnsi range (pdf-lib Helvetica limitation) */
+function safe(s: string): string {
+  return s
+    .replace(/[\u20B9]/g, 'Rs.')   // ₹
+    .replace(/[\u2014]/g, '-')     // em dash
+    .replace(/[\u2013]/g, '-')     // en dash
+    .replace(/[\u00D7]/g, 'x')     // × multiplication sign (safe but convert for clarity)
+    .replace(/[^\x00-\xFF]/g, '?');
 }
 
 export async function POST(req: NextRequest) {
@@ -47,13 +58,13 @@ export async function POST(req: NextRequest) {
   const grey    = rgb(0.580, 0.639, 0.722);
   const light   = rgb(0.882, 0.902, 0.925);
   const slate   = rgb(0.392, 0.455, 0.545);
-  const red     = rgb(0.867, 0.298, 0.298);
 
   const t = (str: string, x: number, y: number, size: number, font = fontReg, color = light) =>
-    page.drawText(String(str), { x, y: height - y, size, font, color });
+    page.drawText(safe(String(str)), { x, y: height - y, size, font, color });
   const tR = (str: string, x: number, y: number, size: number, font = fontReg, color = light) => {
-    const w = font.widthOfTextAtSize(String(str), size);
-    page.drawText(String(str), { x: x - w, y: height - y, size, font, color });
+    const s = safe(String(str));
+    const w = font.widthOfTextAtSize(s, size);
+    page.drawText(s, { x: x - w, y: height - y, size, font, color });
   };
   const rect = (x: number, y: number, w: number, h: number, color: ReturnType<typeof rgb>) =>
     page.drawRectangle({ x, y: height - y - h, width: w, height: h, color });
@@ -62,7 +73,7 @@ export async function POST(req: NextRequest) {
   rect(0, 0, W, 56, dark);
   t('Customised CCTV Setup - Price Estimate', ML, 20, 15, fontBold, white);
   t('Tecbunny Solutions Pvt Ltd  ·  www.tecbunny.com', ML, 38, 8.5, fontReg, grey);
-  const today = new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+  const today = new Date().toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' });
   tR(today, W - MR, 38, 8.5, fontReg, grey);
   t('Prices are indicative. Final cost confirmed after site survey.', ML, 50, 7.5, fontReg, slate);
 
@@ -78,7 +89,7 @@ export async function POST(req: NextRequest) {
   t('System Breakdown', ML, y + 10, 8.5, fontBold, grey);
   y += 14;
   breakdown.forEach(line => {
-    t(`- ${line}`, ML + 4, y + 9, 8, fontReg, slate);
+    t(`- ${safe(line)}`, ML + 4, y + 9, 8, fontReg, slate);
     y += 12;
   });
   y += 6;
@@ -92,7 +103,7 @@ export async function POST(req: NextRequest) {
 
   items.forEach((item, i) => {
     if (i % 2 === 0) rect(ML, y, CW, 14, dark);
-    t(item.description, ML + 4, y + 10, 8.5, fontReg, light);
+    t(safe(item.description), ML + 4, y + 10, 8.5, fontReg, light);
     tR(item.mrp > 0 ? inr(item.mrp) : '-', ML + CW - 80, y + 10, 8, fontReg, slate);
     tR(inr(item.sale), ML + CW - 4, y + 10, 9, fontReg, light);
     y += 14;
