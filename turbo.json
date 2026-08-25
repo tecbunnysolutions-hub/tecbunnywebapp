@@ -1,6 +1,9 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "globalEnv": [
+    "CASHFREE_ENV",
+    "CASHFREE_PROD_APP_ID",
+    "CASHFREE_PROD_SECRET_KEY",
     "DATABASE_URL",
     "DIRECT_URL",
     "GEMINI_API_KEY",
@@ -37,6 +40,7 @@
     "SUPABASE_S3_URL",
     "SUPABASE_SECRET_KEY",
     "SUPERADMIN_PASSWORD",
+    "SUPERADMIN_PASSWORD_HASH",
     "SUPERADMIN_SESSION_SECRET",
     "SUPERADMIN_USER_ID",
     "SYSTEM_NUMBER",

@@ -433,6 +433,48 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
     setIsDownloadModalOpen(true);
   };
 
+  const handleQuickPdfDownload = async () => {
+    setQuoteDownloading(true);
+    try {
+      const systemLabel = system === 'analog' ? 'Analog DVR' : 'IP NVR';
+      const hddLabel = selectableHddOptions.find(e => e.id === hddId)?.label ?? 'Surveillance HDD';
+      const items: { description: string; mrp: number; sale: number }[] = [
+        { description: `${systemLabel} system (${cameraCount} cameras)`, mrp: totals.system.mrp, sale: totals.system.sale },
+        { description: hddLabel, mrp: totals.hdd.mrp, sale: totals.hdd.sale },
+      ];
+      if (totals.monitor.included)    items.push({ description: `Monitor (${totals.monitor.label})`,         mrp: totals.monitor.mrp,     sale: totals.monitor.sale });
+      if (totals.wallMount.included)  items.push({ description: 'Wall Mount Installation Kit',                mrp: totals.wallMount.mrp,   sale: totals.wallMount.sale });
+      if (totals.spikeGuard.included) items.push({ description: 'Spike Guard / Power Surge Protector',       mrp: totals.spikeGuard.mrp,  sale: totals.spikeGuard.sale });
+      if (totals.rack.selected)       items.push({ description: totals.rack.label,                           mrp: totals.rack.mrp,        sale: totals.rack.sale });
+      if (totals.conduit.selected)    items.push({ description: `${totals.conduit.label} x ${totals.conduit.meters}m`, mrp: totals.conduit.mrp, sale: totals.conduit.sale });
+      if (totals.installation.included) items.push({ description: `Installation (${installationOption.label})`, mrp: totals.installation.mrp, sale: totals.installation.sale });
+
+      const res = await fetch('/api/customised-setup/pdf', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          systemLabel,
+          cameraCount,
+          breakdown: totals.system.breakdown,
+          items,
+          saleTotalOverall: totals.overall.sale,
+          mrpTotalOverall: totals.overall.mrp,
+          discountAmount: totals.overall.discountAmount,
+          discountPercent: totals.overall.discountPercent,
+        }),
+      });
+      if (!res.ok) throw new Error('Failed to generate PDF');
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      window.open(url, '_blank');
+      setTimeout(() => window.URL.revokeObjectURL(url), 30_000);
+    } catch {
+      toast({ variant: 'destructive', title: 'PDF failed', description: 'Unable to generate the estimate PDF. Please try again.' });
+    } finally {
+      setQuoteDownloading(false);
+    }
+  };
+
 
   const handleInlineQuoteDownloadAnon = async () => {
     if (!anonForm.name || !anonForm.phone || !anonForm.address) {
@@ -2190,6 +2232,15 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
                           disabled={quoteDownloading}
                         >
                           {quoteDownloading ? 'Preparing…' : 'Download Quote'}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={handleQuickPdfDownload}
+                          disabled={quoteDownloading}
+                          className={isTech ? 'border-sky-500/50 text-sky-400 hover:bg-sky-500/10' : 'text-sky-600 border-sky-200'}
+                        >
+                          {quoteDownloading ? 'Preparing…' : 'Quick PDF'}
                         </Button>
                         <Button
                           size="sm"

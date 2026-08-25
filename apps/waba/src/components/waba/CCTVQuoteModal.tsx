@@ -32,7 +32,7 @@ export function CCTVQuoteModal({ customerName, onClose, onShare }: CCTVQuoteModa
   const toggleAddon = (key: AddonKey) => {
     setAddons(prev => {
       const next = new Set(prev);
-      next.has(key) ? next.delete(key) : next.add(key);
+      if (next.has(key)) { next.delete(key); } else { next.add(key); }
       return next;
     });
   };
@@ -41,7 +41,6 @@ export function CCTVQuoteModal({ customerName, onClose, onShare }: CCTVQuoteModa
     site, cameraCount, cameraType, resolution, recorder,
     channels, storage, cableRun, installType, addons, validity, notes,
   };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   const breakdown = useMemo(() => calcBreakdown(cfg), [
     cameraCount, cameraType, resolution, recorder, channels,
     storage, cableRun, installType, addons,
