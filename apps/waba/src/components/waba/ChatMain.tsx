@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Message, Conversation, Template } from './types';
+import { CCTVQuoteModal } from './CCTVQuoteModal';
 
 export type ChatNotice = { tone: 'error' | 'info'; message: string };
 
@@ -58,6 +59,7 @@ export function ChatMain({
   const [internalNotes, setInternalNotes] = useState<InternalNote[]>([]);
   const [noteDraft, setNoteDraft] = useState('');
   const [isSavingNote, setIsSavingNote] = useState(false);
+  const [showCCTVQuote, setShowCCTVQuote] = useState(false);
 
   const COMMANDS = [
     { cmd: '/summary', desc: 'Summarize the conversation' },
@@ -197,6 +199,16 @@ export function ChatMain({
 
   return (
     <div className="chat-main">
+      {showCCTVQuote && (
+        <CCTVQuoteModal
+          customerName={displayName}
+          onClose={() => setShowCCTVQuote(false)}
+          onShare={(text) => {
+            setInputText(text);
+            setInlineNotice({ tone: 'info', message: 'CCTV quotation ready. Review and send when ready.' });
+          }}
+        />
+      )}
       <div className="chat-header">
         <button
           className="mobile-toggle"
@@ -417,6 +429,7 @@ export function ChatMain({
               <div className="attachment-toolbar">
                 <button type="button" onClick={() => fileInputRef.current?.click()} title="Send image or video" aria-label="Attach image or video">Image</button>
                 <button type="button" onClick={() => docInputRef.current?.click()} title="Send document" aria-label="Attach document">Document</button>
+                <button type="button" onClick={() => setShowCCTVQuote(true)} title="Build and share a CCTV quotation" aria-label="Open CCTV quotation builder">📷 CCTV Quote</button>
                 <input type="file" ref={fileInputRef} onChange={(e) => handleFileUpload(e, 'image')} accept="image/*,video/*" style={{ display: 'none' }} aria-label="Image or video upload" />
                 <input type="file" ref={docInputRef} onChange={(e) => handleFileUpload(e, 'document')} accept=".pdf,.doc,.docx" style={{ display: 'none' }} aria-label="Document upload" />
               </div>

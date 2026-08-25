@@ -1,4 +1,5 @@
 import React from 'react';
+import Link from 'next/link';
 import { Conversation, User } from './types';
 
 interface SidebarProps {
@@ -52,6 +53,13 @@ export function Sidebar({
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <h2>Workspace <span style={{ fontSize: '0.8rem', color: '#94a3b8', fontWeight: 'normal' }}>({currentUser.name})</span></h2>
           <div style={{ display: 'flex', gap: '8px' }}>
+            <Link
+              href="/cctv-quote"
+              style={{ fontSize: '0.72rem', padding: '4px 9px', borderRadius: '6px', background: 'rgba(59,130,246,0.15)', border: '1px solid rgba(96,165,250,0.3)', color: '#93c5fd', textDecoration: 'none', whiteSpace: 'nowrap' }}
+              title="Open CCTV Quotation Builder"
+            >
+              📷 CCTV Quote
+            </Link>
             <button className="mobile-toggle" onClick={() => setShowSidebar(false)} aria-label="Close conversation list">Close</button>
           </div>
         </div>
