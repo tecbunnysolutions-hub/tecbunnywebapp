@@ -194,7 +194,7 @@ export function CCTVQuoteModal({ customerName, onClose, onShare }: CCTVQuoteModa
           <div style={fieldStyle}>
             <label style={labelStyle}>HDD Storage</label>
             <select value={storage} onChange={e => setStorage(e.target.value as StorageSize)} style={inputStyle}>
-              {(['1TB', '2TB', '4TB', '8TB'] as Storage[]).map(s => (
+              {(['1TB', '2TB', '4TB', '8TB'] as StorageSize[]).map(s => (
                 <option key={s} value={s}>{s}</option>
               ))}
             </select>

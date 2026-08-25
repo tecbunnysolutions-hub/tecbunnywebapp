@@ -2,11 +2,12 @@
 
 import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
+import { jsPDF } from 'jspdf';
 import {
   CameraType, Resolution, RecorderType, Channels, StorageSize,
   InstallType, Validity, AddonKey,
   ADDON_LIST, CCTVQuoteConfig,
-  calcBreakdown, formatRM, genRef, buildQuoteText, downloadQuotePDF,
+  calcBreakdown, formatRM, genRef, buildQuoteText,
 } from '../../lib/cctvQuoteUtils';
 
 export default function CCTVQuotePage() {
@@ -26,6 +27,7 @@ export default function CCTVQuotePage() {
   const [quoteRef] = useState(genRef);
   const [copied, setCopied] = useState(false);
   const [isPdfLoading, setIsPdfLoading] = useState(false);
+  const [pdfError, setPdfError] = useState<string | null>(null);
 
   const toggleAddon = (key: AddonKey) => {
     setAddons(prev => {
@@ -53,10 +55,149 @@ export default function CCTVQuotePage() {
     setTimeout(() => setCopied(false), 2500);
   };
 
-  const handleDownloadPDF = async () => {
+  const handleDownloadPDF = () => {
+    setPdfError(null);
     setIsPdfLoading(true);
     try {
-      await downloadQuotePDF(cfg, bd, quoteRef, customerName);
+      const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+      const W = 210;
+      const margin = 18;
+      const cW = W - margin * 2;
+      let y = 0;
+
+      // header band
+      doc.setFillColor(15, 23, 42);
+      doc.rect(0, 0, W, 36, 'F');
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(17);
+      doc.setFont('helvetica', 'bold');
+      doc.text('CCTV Security System Quotation', margin, 16);
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(148, 163, 184);
+      doc.text('Powered by Tecbunny', margin, 24);
+      doc.text(`Ref: ${quoteRef}`, W - margin, 24, { align: 'right' });
+      const dateStr = new Date().toLocaleDateString('en-MY', { day: '2-digit', month: 'short', year: 'numeric' });
+      doc.text(`Date: ${dateStr}   Valid: ${cfg.validity} days`, W - margin, 30, { align: 'right' });
+      y = 46;
+
+      // customer / site block
+      doc.setFillColor(30, 41, 59);
+      doc.rect(margin, y, cW, 22, 'F');
+      doc.setTextColor(96, 165, 250);
+      doc.setFontSize(8);
+      doc.setFont('helvetica', 'bold');
+      doc.text('PREPARED FOR', margin + 5, y + 7);
+      doc.text('INSTALLATION SITE', margin + cW / 2 + 5, y + 7);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(226, 232, 240);
+      doc.setFontSize(10);
+      doc.text(customerName || '-', margin + 5, y + 15);
+      doc.text(cfg.site || '-', margin + cW / 2 + 5, y + 15);
+      doc.setTextColor(148, 163, 184);
+      doc.setFontSize(8.5);
+      doc.text(`Installation Type: ${cfg.installType}`, margin + 5, y + 21);
+      y += 30;
+
+      const section = (title: string) => {
+        doc.setFillColor(59, 130, 246);
+        doc.rect(margin, y, 3, 6, 'F');
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(9.5);
+        doc.setTextColor(96, 165, 250);
+        doc.text(title, margin + 6, y + 5);
+        y += 11;
+      };
+
+      // breakdown table
+      section('SYSTEM BREAKDOWN');
+      const rows: [string, string, string, string][] = [
+        [`${cfg.cameraCount}x ${cfg.resolution} ${cfg.cameraType} Camera`, `${formatRM(bd.cameraUnit)} each`, `${cfg.cameraCount} unit${cfg.cameraCount > 1 ? 's' : ''}`, formatRM(bd.cameraTotal)],
+        [`${cfg.recorder} ${cfg.channels}-Channel Recorder`, '', '1 unit', formatRM(bd.recorderTotal)],
+        [`${cfg.storage} HDD Storage`, '', '1 unit', formatRM(bd.storageTotal)],
+        [`Cabling & Conduit (${cfg.cableRun}m)`, 'RM 2/m', `${cfg.cableRun}m`, formatRM(bd.cableTotal)],
+        [`${cfg.installType} Labour`, '', '1 job', formatRM(bd.installTotal)],
+      ];
+      doc.setFillColor(30, 41, 59);
+      doc.rect(margin, y, cW, 7, 'F');
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(8);
+      doc.setTextColor(148, 163, 184);
+      doc.text('ITEM', margin + 3, y + 5);
+      doc.text('UNIT PRICE', margin + 90, y + 5);
+      doc.text('QTY', margin + 120, y + 5);
+      doc.text('AMOUNT', W - margin - 3, y + 5, { align: 'right' });
+      y += 7;
+      rows.forEach((row, i) => {
+        if (i % 2 === 0) { doc.setFillColor(15, 23, 42); doc.rect(margin, y, cW, 8, 'F'); }
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(9);
+        doc.setTextColor(203, 213, 225);
+        doc.text(row[0], margin + 3, y + 5.5);
+        doc.setTextColor(100, 116, 139);
+        doc.setFontSize(8);
+        doc.text(row[1], margin + 90, y + 5.5);
+        doc.text(row[2], margin + 120, y + 5.5);
+        doc.setTextColor(226, 232, 240);
+        doc.setFontSize(9);
+        doc.text(row[3], W - margin - 3, y + 5.5, { align: 'right' });
+        y += 8;
+      });
+      y += 4;
+
+      // add-ons
+      if (bd.addonBreakdown.length > 0) {
+        section('ADD-ONS & EXTRAS');
+        bd.addonBreakdown.forEach((addon, i) => {
+          if (i % 2 === 0) { doc.setFillColor(15, 23, 42); doc.rect(margin, y, cW, 8, 'F'); }
+          doc.setFont('helvetica', 'normal');
+          doc.setFontSize(9);
+          doc.setTextColor(203, 213, 225);
+          doc.text(addon.label, margin + 3, y + 5.5);
+          doc.setTextColor(226, 232, 240);
+          doc.text(addon.price === 0 ? 'Included' : formatRM(addon.price), W - margin - 3, y + 5.5, { align: 'right' });
+          y += 8;
+        });
+        y += 4;
+      }
+
+      // total
+      doc.setFillColor(30, 41, 59);
+      doc.rect(margin, y, cW, 14, 'F');
+      doc.setDrawColor(59, 130, 246);
+      doc.setLineWidth(0.5);
+      doc.rect(margin, y, cW, 14, 'S');
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(11);
+      doc.setTextColor(226, 232, 240);
+      doc.text('ESTIMATED TOTAL', margin + 5, y + 9);
+      doc.setTextColor(96, 165, 250);
+      doc.setFontSize(13);
+      doc.text(formatRM(bd.total), W - margin - 5, y + 9.5, { align: 'right' });
+      y += 20;
+
+      // notes
+      if (cfg.notes.trim()) {
+        section('NOTES');
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(9);
+        doc.setTextColor(203, 213, 225);
+        const wrapped = doc.splitTextToSize(cfg.notes.trim(), cW - 6);
+        doc.text(wrapped, margin + 3, y);
+      }
+
+      // footer
+      doc.setFillColor(15, 23, 42);
+      doc.rect(0, 282, W, 15, 'F');
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(7.5);
+      doc.setTextColor(100, 116, 139);
+      doc.text(`This is an estimated quotation valid for ${cfg.validity} days. Prices subject to site survey confirmation.`, W / 2, 288, { align: 'center' });
+      doc.text('Tecbunny Sdn Bhd  |  www.tecbunny.com', W / 2, 293, { align: 'center' });
+
+      doc.save(`CCTV-Quote-${quoteRef}.pdf`);
+    } catch (err) {
+      setPdfError(err instanceof Error ? err.message : 'PDF generation failed. Please try again.');
     } finally {
       setIsPdfLoading(false);
     }
@@ -104,6 +245,11 @@ export default function CCTVQuotePage() {
           <h1 style={{ margin: 0, fontSize: '1rem', fontWeight: 700, color: '#f1f5f9' }}>📷 CCTV Custom Setup &amp; Quotation</h1>
           <p style={{ margin: 0, fontSize: '0.72rem', color: '#64748b' }}>Ref: {quoteRef}</p>
         </div>
+        {pdfError && (
+          <span role="alert" style={{ fontSize: '0.78rem', color: '#fca5a5', background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '6px', padding: '0.3rem 0.6rem', maxWidth: '220px' }}>
+            ⚠ {pdfError}
+          </span>
+        )}
         <button
           type="button"
           onClick={handleDownloadPDF}
