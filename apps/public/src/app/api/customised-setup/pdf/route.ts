@@ -14,7 +14,7 @@ interface PDFBody {
 }
 
 function inr(n: number) {
-  return `\u20B9${n.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`;
+  return `Rs. ${n.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`;
 }
 
 export async function POST(req: NextRequest) {
@@ -60,7 +60,7 @@ export async function POST(req: NextRequest) {
 
   // ── Header ──────────────────────────────────────────────────
   rect(0, 0, W, 56, dark);
-  t('Customised CCTV Setup — Price Estimate', ML, 20, 15, fontBold, white);
+  t('Customised CCTV Setup - Price Estimate', ML, 20, 15, fontBold, white);
   t('Tecbunny Solutions Pvt Ltd  ·  www.tecbunny.com', ML, 38, 8.5, fontReg, grey);
   const today = new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
   tR(today, W - MR, 38, 8.5, fontReg, grey);
@@ -78,7 +78,7 @@ export async function POST(req: NextRequest) {
   t('System Breakdown', ML, y + 10, 8.5, fontBold, grey);
   y += 14;
   breakdown.forEach(line => {
-    t(`– ${line}`, ML + 4, y + 9, 8, fontReg, slate);
+    t(`- ${line}`, ML + 4, y + 9, 8, fontReg, slate);
     y += 12;
   });
   y += 6;
@@ -93,7 +93,7 @@ export async function POST(req: NextRequest) {
   items.forEach((item, i) => {
     if (i % 2 === 0) rect(ML, y, CW, 14, dark);
     t(item.description, ML + 4, y + 10, 8.5, fontReg, light);
-    tR(item.mrp > 0 ? inr(item.mrp) : '—', ML + CW - 80, y + 10, 8, fontReg, slate);
+    tR(item.mrp > 0 ? inr(item.mrp) : '-', ML + CW - 80, y + 10, 8, fontReg, slate);
     tR(inr(item.sale), ML + CW - 4, y + 10, 9, fontReg, light);
     y += 14;
   });
@@ -106,7 +106,7 @@ export async function POST(req: NextRequest) {
   tR(inr(mrpTotalOverall), ML + CW - 8, y + 12, 9, fontReg, slate);
   page.drawLine({ start: { x: ML + 8, y: height - y - 17 }, end: { x: ML + CW - 8, y: height - y - 17 }, thickness: 0.4, color: slate });
   t('SAVINGS', ML + 10, y + 26, 8, fontBold, grey);
-  tR(`– ${inr(discountAmount)} (${discountPercent >= 10 ? discountPercent.toFixed(0) : discountPercent.toFixed(1)}%)`, ML + CW - 8, y + 26, 9, fontReg, emerald);
+  tR(`- ${inr(discountAmount)} (${discountPercent >= 10 ? discountPercent.toFixed(0) : discountPercent.toFixed(1)}%)`, ML + CW - 8, y + 26, 9, fontReg, emerald);
   t('SALE TOTAL', ML + 10, y + 39, 11, fontBold, white);
   tR(inr(saleTotalOverall), ML + CW - 8, y + 40, 13, fontBold, accentL);
   y += 52;
