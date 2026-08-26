@@ -161,7 +161,7 @@ export default function HomePage({
               <div className="grid max-w-md grid-cols-2 gap-6 border-t border-zinc-800/80 pt-8">
                 <div className="group">
                   <p className="text-3xl font-black text-white font-tech group-hover:text-blue-400 transition-colors">100+</p>
-                  <p className="text-xs font-bold uppercase tracking-widest text-zinc-500 mt-1">Installations</p>
+                  <p className="text-xs font-bold uppercase tracking-widest text-zinc-500 mt-1">Installations delivered</p>
                 </div>
                 <div className="group">
                   <p className="text-3xl font-black text-white font-tech group-hover:text-blue-400 transition-colors">SLA</p>
@@ -347,7 +347,7 @@ export default function HomePage({
             <div className="space-y-3">
               <h3 className="text-lg font-semibold text-white">Professional Camera and Surveillance System Setup in Goa</h3>
               <p className="text-sm text-zinc-400 leading-relaxed">
-                We install CCTV in Goa. We fit cameras at hotels, homes, offices, and shops across North Goa and South Goa — Pernem, Mapusa, Panaji, Anjuna, Siolim, and more. We sell and fit Hikvision, Dahua, CP Plus, and top CCTV brands. All CCTV jobs come with full AMC, 24x7 phone help, and a warranty. We fit IP cameras, PTZ cameras, NVR and DVR units, night cameras, and cloud CCTV systems to keep your site safe day and night.
+                We install CCTV in Goa. We fit cameras at hotels, homes, offices, and shops across North Goa and South Goa — Pernem, Mapusa, Panaji, Anjuna, Siolim, and more. We sell and fit Hikvision, Dahua, CP Plus, and top CCTV brands. CCTV jobs can include AMC coverage, support access, and warranty options. We fit IP cameras, PTZ cameras, NVR and DVR units, night cameras, and cloud CCTV systems to keep your site safe day and night.
               </p>
             </div>
 
@@ -368,7 +368,7 @@ export default function HomePage({
             <div className="space-y-3">
               <h3 className="text-lg font-semibold text-white">Annual IT AMC and Managed Support Plans for Your Business</h3>
               <p className="text-sm text-zinc-400 leading-relaxed">
-                Our AMC plans cover your CCTV, network gear, servers, and all IT kit. We do planned check-ups, remote help desk, hardware fixes, firmware updates, and audit reports. We serve hotels, hospitals, schools, and firms in Goa and Maharashtra. Our SLA starts with same-day on-site help for key faults.
+                Our AMC plans cover your CCTV, network gear, servers, and all IT kit. We do planned check-ups, remote help desk, hardware fixes, firmware updates, and audit reports. We serve hotels, hospitals, schools, and firms in Goa and Maharashtra. Critical faults receive a remote response within 2 hours, with same-day on-site dispatch where covered.
               </p>
             </div>
           </div>
@@ -520,7 +520,7 @@ export default function HomePage({
           <dl className="grid gap-6 md:grid-cols-2">
             <div className="space-y-2 rounded-lg border border-zinc-800 bg-zinc-950/60 p-4">
               <dt className="text-sm font-semibold text-white">Do you fit CCTV in homes in Goa?</dt>
-              <dd className="text-sm text-zinc-400 leading-relaxed">Yes. We fit CCTV in homes, villas, and flats in Goa. We help you pick the right camera count and type for your space. All home CCTV jobs come with full AMC, 24x7 phone help, and a one-year warranty. We also check old camera wiring and update it at no extra cost.</dd>
+              <dd className="text-sm text-zinc-400 leading-relaxed">Yes. We fit CCTV in homes, villas, and flats in Goa. We help you pick the right camera count and type for your space. AMC, support access, and warranty coverage depend on the selected plan. We also check old camera wiring and update it where included in the quote.</dd>
             </div>
             <div className="space-y-2 rounded-lg border border-zinc-800 bg-zinc-950/60 p-4">
               <dt className="text-sm font-semibold text-white">How much does CCTV cost in Goa?</dt>
@@ -536,7 +536,7 @@ export default function HomePage({
             </div>
             <div className="space-y-2 rounded-lg border border-zinc-800 bg-zinc-950/60 p-4">
               <dt className="text-sm font-semibold text-white">What does an AMC plan cover?</dt>
-              <dd className="text-sm text-zinc-400 leading-relaxed">An AMC (Annual Maintenance Contract) covers your CCTV or IT kit for the full year. It includes planned check-ups, fast on-site fixes, 24x7 remote help, and audit reports — all for one flat fee. It saves you money on ad hoc repairs and keeps your gear in top shape.</dd>
+              <dd className="text-sm text-zinc-400 leading-relaxed">An AMC (Annual Maintenance Contract) covers your CCTV or IT kit for the full year. It can include planned check-ups, remote support, on-site fixes, and audit reports, with response targets defined in your plan. It helps reduce ad hoc repairs and keeps your gear maintained.</dd>
             </div>
             <div className="space-y-2 rounded-lg border border-zinc-800 bg-zinc-950/60 p-4">
               <dt className="text-sm font-semibold text-white">Do you do smart home setup in Goa?</dt>
@@ -544,7 +544,7 @@ export default function HomePage({
             </div>
             <div className="space-y-2 rounded-lg border border-zinc-800 bg-zinc-950/60 p-4">
               <dt className="text-sm font-semibold text-white">Do you fit CCTV for hotels in Goa?</dt>
-              <dd className="text-sm text-zinc-400 leading-relaxed">Yes. Hotels are our top clients. We fit CCTV in hotel lobbies, car parks, pools, lifts, and guest floors. We plan a full CCTV layout map with the hotel team before we start. All hotel CCTV systems come with full AMC and 24x7 support.</dd>
+              <dd className="text-sm text-zinc-400 leading-relaxed">Yes. Hotels are a key service area. We fit CCTV in hotel lobbies, car parks, pools, lifts, and guest floors. We plan a full CCTV layout map with the hotel team before we start. AMC and support coverage are defined in the project proposal.</dd>
             </div>
             <div className="space-y-2 rounded-lg border border-zinc-800 bg-zinc-950/60 p-4">
               <dt className="text-sm font-semibold text-white">Do you serve areas outside Goa?</dt>
@@ -552,7 +552,7 @@ export default function HomePage({
             </div>
             <div className="space-y-2 rounded-lg border border-zinc-800 bg-zinc-950/60 p-4">
               <dt className="text-sm font-semibold text-white">How fast do you respond to faults?</dt>
-              <dd className="text-sm text-zinc-400 leading-relaxed">Our AMC clients get same-day on-site help for key faults across Goa. For remote help, we aim to respond in under 2 hours on any day of the week. All support plans come with a clear SLA so you know what to expect at all times.</dd>
+              <dd className="text-sm text-zinc-400 leading-relaxed">Our AMC clients receive a remote response within 2 hours for critical faults. Same-day on-site dispatch is available for covered locations, while general enquiries receive a response within one business day.</dd>
             </div>
             <div className="space-y-2 rounded-lg border border-zinc-800 bg-zinc-950/60 p-4">
               <dt className="text-sm font-semibold text-white">What is an NVR and DVR for CCTV?</dt>

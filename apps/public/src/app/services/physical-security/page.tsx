@@ -37,7 +37,7 @@ export default function PhysicalSecurityPage() {
   const subServices = [
     {
       title: "Smart IP CCTV Networks",
-      subtitle: "High-definition, low-light cameras mapping entire property boundaries with zero blind spots.",
+      subtitle: "High-definition, low-light cameras designed to reduce blind spots across your property boundaries.",
       icon: Camera,
       gradient: "from-blue-500/20 via-indigo-500/10 to-transparent",
       border: "hover:border-blue-500/35",

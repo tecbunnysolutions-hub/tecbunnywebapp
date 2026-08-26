@@ -27,7 +27,7 @@ const contactFaqJsonLd = {
       name: 'Do you offer site visits?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Yes, TecBunny provides site consultation visits in North Goa. Standard repairs may include a visit charge, and major installations can have that charge waived.',
+        text: 'TecBunny provides service coverage across Goa and selected Maharashtra locations. Site consultation visits are available in North Goa, South Goa, and selected Maharashtra locations, subject to project availability.',
       },
     },
     {

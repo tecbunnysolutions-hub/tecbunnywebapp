@@ -42,11 +42,11 @@ export default function AboutPage() {
               <div className="mt-6 flex gap-4">
                 <div className="rounded-lg border border-border bg-muted/40 px-4 py-3 text-center">
                   <span className="block text-xl font-semibold text-foreground">120+</span>
-                  <span className="text-xs uppercase tracking-widest text-muted-foreground">Projects</span>
+                  <span className="text-xs uppercase tracking-widest text-muted-foreground">Projects delivered</span>
                 </div>
                 <div className="rounded-lg border border-border bg-muted/40 px-4 py-3 text-center">
                   <span className="block text-xl font-semibold text-foreground">99.9%</span>
-                  <span className="text-xs uppercase tracking-widest text-muted-foreground">Uptime SLA</span>
+                  <span className="text-xs uppercase tracking-widest text-muted-foreground">Target uptime for eligible plans</span>
                 </div>
               </div>
             </div>

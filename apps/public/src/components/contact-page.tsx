@@ -165,7 +165,7 @@ export default function ContactPage() {
 
       toast({
         title: 'Message sent!',
-        description: "Thank you for contacting us. We'll get back to you within 24 hours.",
+        description: "Thank you for contacting us. General enquiries receive a response within one business day.",
       });
 
       void trackEvent('contact_form_submit', {
@@ -201,7 +201,7 @@ export default function ContactPage() {
     {
       question: 'Do you offer site visits?',
       answer:
-        'Yes, we provide site consultation visits in North Goa. For standard repairs, a visit charge of ₹999 applies, waived for major installations.',
+        'We provide service coverage across Goa and selected Maharashtra locations. Site consultation visits are available in North Goa, South Goa, and selected Maharashtra locations; availability depends on the project.',
     },
     {
       question: 'How fast is installation?',
@@ -327,7 +327,7 @@ export default function ContactPage() {
               <div className="absolute -inset-1 rounded-2xl bg-primary/5 blur-xl" />
               <div className="relative bento-card p-8">
                 <h3 className="text-2xl font-semibold tech-heading">Initiate Contact</h3>
-                <p className="mt-2 text-sm text-muted-foreground">Drop your details below. We'll analyze your requirements and reach out within 24 hours.</p>
+                <p className="mt-2 text-sm text-muted-foreground">Drop your details below. We will review your requirements and respond within one business day.</p>
                 <Form {...form}>
                   <form onSubmit={form.handleSubmit(onSubmit)} className="mt-6 space-y-6">
                     <div className="grid gap-4 md:grid-cols-2">

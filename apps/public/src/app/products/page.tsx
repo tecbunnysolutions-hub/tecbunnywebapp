@@ -83,8 +83,6 @@ async function ShopPageDataLoader({ searchParams }: { searchParams?: Promise<Rec
       .from('products')
       .select('*', { count: 'estimated' })
       .eq('status', 'active')
-      // include products where is_deleted is NULL (default) or explicitly false
-      .or('is_deleted.is.null,is_deleted.eq.false')
       .order('prioritized', { ascending: false, nullsFirst: false })
       .order('created_at', { ascending: false })
       .range(from, to),

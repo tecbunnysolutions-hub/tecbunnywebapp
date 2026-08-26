@@ -57,7 +57,7 @@ export default function SmartInfrastructurePage() {
         },
         {
           label: "Property-Wide Coverage",
-          desc: "Seamlessly integrated IP-based networks offering zero blind spots across vast resort layouts."
+          desc: "Seamlessly integrated IP-based networks designed for dependable coverage across large resort layouts."
         },
         {
           label: "Centralized Control Rooms",
@@ -116,7 +116,7 @@ export default function SmartInfrastructurePage() {
       points: [
         {
           label: "High-Density Property Wi-Fi",
-          desc: "Seamless roaming across rooms, lobbies, pools, and lawns with zero dropped connections."
+          desc: "Seamless roaming across rooms, lobbies, pools, and lawns designed for high availability."
         },
         {
           label: "Structured Network Cabling",
@@ -141,7 +141,7 @@ export default function SmartInfrastructurePage() {
     },
     {
       title: "Dedicated Enterprise Support",
-      desc: "Round-the-clock SLA support to ensure your guest experiences and critical property operations never skip a beat."
+          desc: "24/7 monitoring and support options for critical property operations, with response targets defined by your SLA tier."
     }
   ];
 

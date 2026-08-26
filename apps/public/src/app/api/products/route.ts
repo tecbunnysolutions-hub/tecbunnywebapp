@@ -68,8 +68,6 @@ export async function GET(request: NextRequest) {
     const { data, error } = await supabase
       .from('products')
       .select('*')
-      // include products where is_deleted is NULL (default) or explicitly false
-      .or('is_deleted.is.null,is_deleted.eq.false')
       .range(offset, offset + limit - 1);
 
     if (error) {
