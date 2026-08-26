@@ -270,7 +270,8 @@ interface ShopPageContentProps {
 
 function normalizeRawProduct(p: any): Product {
   const rawPrice = typeof p.price === 'number' ? p.price : Number(p.price) || 0;
-  const rawMrp = typeof p.mrp === 'number' ? p.mrp : Number(p.mrp) || (rawPrice * 1.2);
+  // fall back to rawPrice (not rawPrice*1.2) — avoid showing a fake discount when MRP isn't stored
+  const rawMrp = typeof p.mrp === 'number' ? p.mrp : Number(p.mrp) || rawPrice;
 
   const resolvedTitle = [p.title, p.name]
     .map((value) => (typeof value === 'string' ? value.trim() : ''))

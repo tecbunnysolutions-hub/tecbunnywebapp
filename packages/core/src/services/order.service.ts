@@ -82,6 +82,20 @@ export class OrderService implements IOrderService {
       throw new Error('Missing required customer information');
     }
 
+    const idempotencyKey = typeof orderData.idempotency_key === 'string'
+      ? orderData.idempotency_key.trim()
+      : '';
+    if (idempotencyKey) {
+      const reservation = await this.orderRepo.reserveOrderIdempotency(idempotencyKey, effectiveUserId);
+      if (!reservation.isNew) {
+        if (reservation.orderId) {
+          const existingOrder = await this.orderRepo.getOrderById(reservation.orderId);
+          if (existingOrder) return existingOrder;
+        }
+        throw new Error('This order request is already being processed. Please wait before retrying.');
+      }
+    }
+
     const normalizeOrderType = (value: unknown): string => {
       if (typeof value !== 'string') return '';
       const key = value.trim().toLowerCase();
@@ -219,6 +233,10 @@ export class OrderService implements IOrderService {
       p_items: orderItemsWithCustomerInfo,
       p_agent_id: orderData.agent_id || null
     });
+
+    if (idempotencyKey) {
+      await this.orderRepo.completeOrderIdempotency(idempotencyKey, String(createdOrder.id));
+    }
 
     logger.info('order_created', { orderId: createdOrder.id, userId: effectiveUserId });
 

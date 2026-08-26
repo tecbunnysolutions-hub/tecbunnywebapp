@@ -170,7 +170,8 @@ export function ProductDetailPage({ productId, initialProduct, sourceContext }: 
 
       const gstRate = resolvedGst ?? 18;
       const rawPrice = typeof p.price === 'number' ? p.price : Number(p.price) || 0;
-      const rawMrp = typeof p.mrp === 'number' ? p.mrp : Number(p.mrp) || (rawPrice * 1.2);
+      // fall back to rawPrice — avoid showing a fake discount when MRP isn't stored
+      const rawMrp = typeof p.mrp === 'number' ? p.mrp : Number(p.mrp) || rawPrice;
       
       const priceNum = rawPrice;
       const mrpNum = rawMrp;
@@ -257,7 +258,8 @@ export function ProductDetailPage({ productId, initialProduct, sourceContext }: 
 
     const salePrice = typeof product.price === 'number' ? product.price : 0;
     const rawMrp = typeof (product as any).mrp === 'number' ? (product as any).mrp : null;
-    const mrp = rawMrp && rawMrp > 0 ? rawMrp : Math.round(salePrice * 1.2 * 100) / 100;
+    // show discount only when a real MRP exists and is above the selling price
+    const mrp = rawMrp && rawMrp > salePrice ? rawMrp : salePrice;
     const hasDiscount = mrp > salePrice;
     const savingsAmount = hasDiscount ? mrp - salePrice : 0;
     const percentageOff = hasDiscount && mrp !== 0
@@ -359,7 +361,8 @@ export function ProductDetailPage({ productId, initialProduct, sourceContext }: 
 
         const gstRate = resolvedGst ?? 18;
         const rawPrice = typeof data.price === 'number' ? data.price : Number(data.price) || 0;
-        const rawMrp = typeof data.mrp === 'number' ? data.mrp : Number(data.mrp) || (rawPrice * 1.2);
+        // fall back to rawPrice — avoid showing a fake discount when MRP isn't stored
+        const rawMrp = typeof data.mrp === 'number' ? data.mrp : Number(data.mrp) || rawPrice;
         
         const priceNum = rawPrice;
         const mrpNum = rawMrp;

@@ -60,7 +60,7 @@ export const createOrderSchema = z.object({
   notes: z.string().nullable().optional(),
   quote_id: z.string().nullable().optional(),
   processed_by: z.string().nullable().optional(),
-  idempotency_key: z.string().nullable().optional(),
+  idempotency_key: z.string().trim().min(8).max(128).nullable().optional(),
 }).passthrough();
 
 export type CreateOrderInput = z.infer<typeof createOrderSchema>;

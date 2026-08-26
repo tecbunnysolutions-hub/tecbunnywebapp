@@ -16,6 +16,55 @@ export class SupabaseOrderRepository implements IOrderRepository {
     return data || [];
   }
 
+  async reserveOrderIdempotency(key: string, customerId: string | null): Promise<{ isNew: boolean; orderId: string | null }> {
+    const { data: inserted, error: insertError } = await this.baseClient.rawClient
+      .from('order_idempotency_keys')
+      .insert({ idempotency_key: key, customer_id: customerId })
+      .select('order_id')
+      .maybeSingle();
+
+    if (!insertError && inserted) {
+      return { isNew: true, orderId: inserted.order_id ?? null };
+    }
+
+    const { data, error } = await this.baseClient.rawClient
+      .from('order_idempotency_keys')
+      .select('order_id')
+      .eq('idempotency_key', key)
+      .maybeSingle();
+
+    if (error) {
+      throw new Error(`Unable to verify order idempotency key: ${error.message}`);
+    }
+
+    return { isNew: false, orderId: data?.order_id ?? null };
+  }
+
+  async completeOrderIdempotency(key: string, orderId: string): Promise<void> {
+    const { error } = await this.baseClient.rawClient
+      .from('order_idempotency_keys')
+      .update({ order_id: orderId })
+      .eq('idempotency_key', key)
+      .is('order_id', null);
+
+    if (error) {
+      throw new Error(`Unable to complete order idempotency key: ${error.message}`);
+    }
+  }
+
+  async getOrderById(orderId: string): Promise<any> {
+    const { data, error } = await this.baseClient.rawClient
+      .from('orders')
+      .select('*')
+      .eq('id', orderId)
+      .maybeSingle();
+
+    if (error) {
+      throw new Error(`Unable to load existing order: ${error.message}`);
+    }
+    return data || null;
+  }
+
   async allocateOrderInventory(params: any): Promise<any> {
     const { data: rpcResult } = await this.baseClient.executeQuery(
       this.baseClient.rawClient.rpc('allocate_order_inventory_atomic', params),

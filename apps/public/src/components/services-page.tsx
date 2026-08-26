@@ -520,7 +520,7 @@ export default function ServicesPage({ services, hasServiceLoadError = false }: 
 
                     <div className="mt-6 pt-4 border-t border-zinc-800 flex flex-col gap-3">
                       <div className="flex items-baseline justify-between">
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-550">Rate Credit</span>
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-550">Starting From</span>
                         <span className="text-base font-bold font-mono tech-heading">
                           {service.price ? `₹${Number(service.price).toLocaleString('en-IN')}` : 'Quotation Basis'}
                         </span>

@@ -143,9 +143,9 @@ export default function CartPage() {
           <div className="flex flex-col gap-6">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
               <div>
-                <h1 className="text-3xl md:text-4xl font-bold font-tech tech-heading">Quote Configuration</h1>
+                <h1 className="text-3xl md:text-4xl font-bold font-tech tech-heading">Your Cart</h1>
                 <p className="text-sm text-muted-foreground">
-                  Review your selected hardware and request a formal quote in one step.
+                  Review your order and proceed to checkout — or request a formal quote for bulk / enterprise orders.
                 </p>
               </div>
               {hasItems && (

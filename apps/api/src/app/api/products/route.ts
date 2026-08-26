@@ -518,11 +518,13 @@ export async function GET(request: NextRequest) {
         if (!productColumns || productColumns.has('status')) {
           query = query.eq('status', 'active');
         }
+        // treat NULL as "active" — products without an explicit flag default to visible
         if (!productColumns || productColumns.has('is_active')) {
-          query = query.eq('is_active', true);
+          query = query.or('is_active.is.null,is_active.eq.true');
         }
+        // treat NULL as "not deleted" — products default to visible
         if (!productColumns || productColumns.has('is_deleted')) {
-          query = query.eq('is_deleted', false);
+          query = query.or('is_deleted.is.null,is_deleted.eq.false');
         }
         if (!productColumns || productColumns.has('price')) {
           query = query.gt('price', 0);
@@ -1234,24 +1236,10 @@ export async function PUT(request: NextRequest) {
 
     if (error) {
       logger.error('product_update_failed', { correlationId, code: (error as any).code, message: error.message, details: error.details });
-      const debug = request.nextUrl.searchParams.get('debug') === '1';
-      let schema: any = undefined;
-      if (debug) {
-        try {
-          const { data: columns } = await supabase
-            .from('information_schema.columns' as any)
-            .select('column_name,data_type,is_nullable')
-            .eq('table_name', 'products');
-          schema = columns?.filter((c: any) => ['images','tags','title','handle','status'].includes(c.column_name));
-        } catch (e) {
-          schema = { error: (e as Error).message };
-        }
-      }
       return NextResponse.json({ 
         error: 'Failed to update product', 
         error_code: (error as any).code || undefined,
-        hint: (!process.env.NODE_ENV || process.env.NODE_ENV === 'development' || debug) ? error.message : undefined,
-        schema,
+        hint: process.env.NODE_ENV === 'development' ? error.message : undefined,
         correlationId
       }, { status: 500, headers: { 'x-correlation-id': correlationId } });
     }

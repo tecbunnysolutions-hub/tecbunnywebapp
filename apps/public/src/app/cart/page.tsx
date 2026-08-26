@@ -4,7 +4,7 @@ import CartPage from "@/components/cart/CartPage";
 
 export const metadata: Metadata = {
   title: "Cart | TecBunny",
-  description: "Review the products in your cart and continue to our secure checkout in a single step.",
+  description: "Review your selected items and proceed to checkout, or request a formal quote for bulk orders.",
 };
 
 export default function Page() {

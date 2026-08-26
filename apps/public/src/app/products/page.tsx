@@ -4,7 +4,6 @@ import { Suspense } from 'react';
 import type { Metadata } from 'next';
 
 import { ShopPageContent } from '@/components/products/ShopPageContent';
-import { logger } from '@tecbunny/core';
 import { createPageMetadata } from "@tecbunny/core/metadata";
 import { filterPubliclyVisibleProducts } from "@tecbunny/core/product-visibility";
 
@@ -60,17 +59,22 @@ function ProductsPageSkeleton() {
   );
 }
 
-export default function Page() {
+export default function Page({
+  searchParams,
+}: {
+  searchParams?: Promise<Record<string, string>>;
+}) {
   return (
     <Suspense fallback={<ProductsPageSkeleton />}>
-      <ShopPageDataLoader />
+      <ShopPageDataLoader searchParams={searchParams} />
     </Suspense>
   );
 }
 
-async function ShopPageDataLoader({ searchParams }: { searchParams?: Record<string, string> }) {
+async function ShopPageDataLoader({ searchParams }: { searchParams?: Promise<Record<string, string>> | Record<string, string> }) {
   const supabase = await createClient();
-  const page = Math.max(1, Number(searchParams?.page ?? '1'));
+  const resolvedParams = searchParams instanceof Promise ? await searchParams : (searchParams ?? {});
+  const page = Math.max(1, Number(resolvedParams?.page ?? '1'));
   const from = (page - 1) * PRODUCTS_PAGE_SIZE;
   const to = from + PRODUCTS_PAGE_SIZE - 1;
 
@@ -79,7 +83,8 @@ async function ShopPageDataLoader({ searchParams }: { searchParams?: Record<stri
       .from('products')
       .select('*', { count: 'estimated' })
       .eq('status', 'active')
-      .eq('is_deleted', false)
+      // include products where is_deleted is NULL (default) or explicitly false
+      .or('is_deleted.is.null,is_deleted.eq.false')
       .order('prioritized', { ascending: false, nullsFirst: false })
       .order('created_at', { ascending: false })
       .range(from, to),

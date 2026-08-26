@@ -191,10 +191,8 @@ export function Header() {
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
             <span className="flex items-center gap-1.5">
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-              <span className="font-mono text-[10px] tracking-wider text-zinc-300">GSTIN: {companyInfo.gstin || '30AAMCT1608G1ZO'}</span>
+              <span className="font-mono text-[10px] tracking-wider text-zinc-300">Registered Company · Goa, India</span>
             </span>
-            <span className="hidden sm:inline text-zinc-800">|</span>
-            <span className="font-mono text-[10px] tracking-wider">CIN: U80200GA2025PTC017488</span>
           </div>
           <div className="flex items-center justify-between sm:justify-end gap-6 w-full sm:w-auto">
             <span className="hidden md:inline font-light text-zinc-400">Headquarters: Nhayginwada, Parse, Pernem, Goa</span>
