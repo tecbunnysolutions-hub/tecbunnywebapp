@@ -269,7 +269,9 @@ interface ShopPageContentProps {
 }
 
 function normalizeRawProduct(p: any): Product {
-  const rawPrice = typeof p.price === 'number' ? p.price : Number(p.price) || 0;
+  const rawPrice = [p.price, p.selling_price, p.sale_price, p.offer_price, p.discount_price, p.unit_price]
+    .map((value) => typeof value === 'number' ? value : Number(value))
+    .find((value) => Number.isFinite(value) && value > 0) || 0;
   // fall back to rawPrice (not rawPrice*1.2) — avoid showing a fake discount when MRP isn't stored
   const rawMrp = typeof p.mrp === 'number' ? p.mrp : Number(p.mrp) || rawPrice;
 
@@ -306,7 +308,6 @@ function normalizeRawProduct(p: any): Product {
     resolvedGst = Number.isFinite(parsed) ? parsed : undefined;
   }
 
-  const gstRate = resolvedGst ?? 18;
   const priceNum = rawPrice;
   const mrpNum = rawMrp;
 
@@ -329,7 +330,7 @@ function normalizeRawProduct(p: any): Product {
     created_at: p.created_at || new Date().toISOString(),
     image: finalImage || undefined,
     hsnCode: resolvedHsn,
-    gstRate: gstRate,
+    gstRate: resolvedGst,
   } as Product;
 }
 
@@ -447,6 +448,7 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
           } else {
             logger.warn('No products found in database');
           }
+          setFetchWarning(warningMessage || 'No products are currently available.');
           setProducts([]);
           setCategories([]);
           setBrands([]);
@@ -1056,7 +1058,9 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
                 </div>
               ) : (
                 <div className="rounded-2xl border border-dashed border-border bg-muted/20 p-16 text-center text-muted-foreground font-light text-base backdrop-blur-sm">
-                  {fetchWarning || 'No products matched your search.'}
+                  {fetchWarning || (searchQuery || categoryFilter || brandFilter
+                    ? 'No products matched your filters.'
+                    : 'No products are currently available.')}
                 </div>
               )}
             </div>

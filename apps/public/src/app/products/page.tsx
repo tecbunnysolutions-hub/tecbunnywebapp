@@ -7,8 +7,8 @@ import { ShopPageContent } from '@/components/products/ShopPageContent';
 import { createPageMetadata } from "@tecbunny/core/metadata";
 import { filterPubliclyVisibleProducts } from "@tecbunny/core/product-visibility";
 
-// ISR: revalidate every 5 minutes (300 seconds)
-export const revalidate = 300;
+// ISR: revalidate every minute so publication changes reach the catalogue promptly
+export const revalidate = 60;
 
 const PRODUCTS_PAGE_SIZE = 200;
 
@@ -83,6 +83,7 @@ async function ShopPageDataLoader({ searchParams }: { searchParams?: Promise<Rec
       .from('products')
       .select('*', { count: 'estimated' })
       .eq('status', 'active')
+      .gt('price', 0)
       .order('prioritized', { ascending: false, nullsFirst: false })
       .order('created_at', { ascending: false })
       .range(from, to),

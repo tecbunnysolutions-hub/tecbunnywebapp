@@ -168,8 +168,9 @@ export function ProductDetailPage({ productId, initialProduct, sourceContext }: 
         ? rawHsn.trim()
         : undefined;
 
-      const gstRate = resolvedGst ?? 18;
-      const rawPrice = typeof p.price === 'number' ? p.price : Number(p.price) || 0;
+      const rawPrice = [p.price, p.selling_price, p.sale_price, p.offer_price, p.discount_price, p.unit_price]
+        .map((value) => typeof value === 'number' ? value : Number(value))
+        .find((value) => Number.isFinite(value) && value > 0) || 0;
       // fall back to rawPrice — avoid showing a fake discount when MRP isn't stored
       const rawMrp = typeof p.mrp === 'number' ? p.mrp : Number(p.mrp) || rawPrice;
       
@@ -183,7 +184,7 @@ export function ProductDetailPage({ productId, initialProduct, sourceContext }: 
         price: priceNum,
         mrp: mrpNum,
         hsnCode: resolvedHsn,
-        gstRate: gstRate,
+        gstRate: resolvedGst,
       } as Product;
     }
     return null;
@@ -359,8 +360,9 @@ export function ProductDetailPage({ productId, initialProduct, sourceContext }: 
           ? rawHsn.trim()
           : undefined;
 
-        const gstRate = resolvedGst ?? 18;
-        const rawPrice = typeof data.price === 'number' ? data.price : Number(data.price) || 0;
+        const rawPrice = [data.price, data.selling_price, data.sale_price, data.offer_price, data.discount_price, data.unit_price]
+          .map((value) => typeof value === 'number' ? value : Number(value))
+          .find((value) => Number.isFinite(value) && value > 0) || 0;
         // fall back to rawPrice — avoid showing a fake discount when MRP isn't stored
         const rawMrp = typeof data.mrp === 'number' ? data.mrp : Number(data.mrp) || rawPrice;
         
@@ -374,7 +376,7 @@ export function ProductDetailPage({ productId, initialProduct, sourceContext }: 
           price: priceNum,
           mrp: mrpNum,
           hsnCode: resolvedHsn,
-          gstRate: gstRate,
+          gstRate: resolvedGst,
         });
       }
       setLoading(false);

@@ -5,7 +5,7 @@ import { logger } from '@tecbunny/core/logger';
 import { getProductDisplayImage } from '@tecbunny/core/image-utils';
 import { filterPubliclyVisibleProducts } from '@tecbunny/core/product-visibility';
 
-const CACHE_CONTROL = 'public, s-maxage=300, stale-while-revalidate=900';
+const CACHE_CONTROL = 'public, s-maxage=60, stale-while-revalidate=300';
 
 function parsePositiveInt(value: string | null, fallback: number, max: number) {
   const parsed = Number.parseInt(value ?? '', 10);
@@ -68,6 +68,7 @@ export async function GET(request: NextRequest) {
     const { data, error } = await supabase
       .from('products')
       .select('*')
+      .gt('price', 0)
       .range(offset, offset + limit - 1);
 
     if (error) {
