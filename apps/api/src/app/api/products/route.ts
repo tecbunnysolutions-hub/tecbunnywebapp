@@ -8,7 +8,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSessionWithRole } from "@tecbunny/core/auth/server-role";
 import { logger } from "@tecbunny/core";
 import { getProductDisplayImage } from "@tecbunny/core/image-utils";
-import { applyPublicProductVisibilityFilters, filterPubliclyVisibleProducts, isPubliclyVisibleProduct } from "@tecbunny/core/product-visibility";
+import { applyPublicProductVisibilityFilters, isPubliclyVisibleProduct } from "@tecbunny/core/product-visibility";
 import { classifyProductTax, TaxClassificationError, type ProductTaxClassification } from "@tecbunny/core/ai/tax-classification";
 import { processAndUploadExternalImage } from "@tecbunny/core/image-processor";
 
@@ -594,16 +594,14 @@ export async function GET(request: NextRequest) {
         }
       }
 
-      const visibleProducts = isPrivilegedRequest ? products : filterPubliclyVisibleProducts(products);
-
       return jsonWithCache({
         success: true,
-        data: visibleProducts.map(normalizeProductRecord),
+        data: products.map(normalizeProductRecord),
         pagination: {
           page,
           limit,
-          total: count ?? visibleProducts.length,
-          pages: Math.ceil((count ?? visibleProducts.length) / limit)
+          total: count ?? products.length,
+          pages: Math.ceil((count ?? products.length) / limit)
         },
         warnings: warnings.length ? warnings : undefined
       }, PUBLIC_PRODUCTS_CACHE_CONTROL);

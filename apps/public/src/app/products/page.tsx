@@ -5,7 +5,7 @@ import type { Metadata } from 'next';
 
 import { ShopPageContent } from '@/components/products/ShopPageContent';
 import { createPageMetadata } from "@tecbunny/core/metadata";
-import { applyPublicProductVisibilityFilters, filterPubliclyVisibleProducts } from "@tecbunny/core/product-visibility";
+import { applyPublicProductVisibilityFilters } from "@tecbunny/core/product-visibility";
 
 // Product publication and pricing changes must be visible immediately.
 export const dynamic = 'force-dynamic';
@@ -92,7 +92,7 @@ async function ShopPageDataLoader({ searchParams }: { searchParams?: Promise<Rec
     supabase.from('auto_offers').select('*').eq('is_active', true)
   ]);
 
-  const rawProducts = filterPubliclyVisibleProducts(productsRes.data || []);
+  const rawProducts = productsRes.data || [];
   const rawOffers = offersRes.data || [];
 
   return (

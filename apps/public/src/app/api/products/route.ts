@@ -3,7 +3,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { logger } from '@tecbunny/core/logger';
 
 import { getProductDisplayImage } from '@tecbunny/core/image-utils';
-import { applyPublicProductVisibilityFilters, filterPubliclyVisibleProducts } from '@tecbunny/core/product-visibility';
+import {
+  PUBLIC_PRODUCT_STATUSES,
+  applyPublicProductVisibilityFilters,
+} from '@tecbunny/core/product-visibility';
 
 const CACHE_CONTROL = 'no-store, max-age=0, must-revalidate';
 
@@ -41,13 +44,6 @@ function normalizeProduct(product: any) {
   };
 }
 
-function productMatchesSearch(product: any, search: string) {
-  if (!search) return true;
-  const normalized = search.toLowerCase();
-  return [product.title, product.name, product.category, product.brand, product.vendor]
-    .some((value) => typeof value === 'string' && value.toLowerCase().includes(normalized));
-}
-
 function cleanPostgrestFilterValue(value: string) {
   return value.trim().replace(/[%_*(),]/g, ' ').replace(/\s+/g, ' ').slice(0, 80);
 }
@@ -59,10 +55,19 @@ export async function GET(request: NextRequest) {
   const vendor = request.nextUrl.searchParams.get('vendor');
   const search = (request.nextUrl.searchParams.get('search') ?? '').trim().slice(0, 80);
   const offset = (page - 1) * limit;
+  const cleanStatus = status ? status.trim().toLowerCase() : '';
   const cleanVendor = vendor ? cleanPostgrestFilterValue(vendor) : '';
   const cleanSearch = cleanPostgrestFilterValue(search);
 
   logger.info('public_products.audit.requested', { page, limit, hasSearch: Boolean(search), status: status ?? null, vendor: vendor ?? null });
+
+  if (cleanStatus && !PUBLIC_PRODUCT_STATUSES.some((publicStatus) => publicStatus === cleanStatus)) {
+    return json({
+      success: true,
+      data: [],
+      pagination: { page, limit, total: 0, pages: 0 },
+    });
+  }
 
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
@@ -81,8 +86,8 @@ export async function GET(request: NextRequest) {
         .select('*', { count: 'exact' })
     );
 
-    if (status) {
-      query = query.eq('status', status);
+    if (cleanStatus) {
+      query = query.eq('status', cleanStatus);
     }
 
     if (cleanVendor) {
@@ -109,11 +114,7 @@ export async function GET(request: NextRequest) {
       return fallback(page, limit, 'Product service is temporarily unavailable.');
     }
 
-    const products = filterPubliclyVisibleProducts(Array.isArray(data) ? data : [])
-      .filter((product: any) => !status || product.status === status)
-      .filter((product: any) => !cleanVendor || product.vendor === cleanVendor || product.brand === cleanVendor)
-      .filter((product: any) => productMatchesSearch(product, search))
-      .map(normalizeProduct);
+    const products = (Array.isArray(data) ? data : []).map(normalizeProduct);
 
     logger.info('public_products.audit.success', { count: products.length, page, limit });
     return json({
