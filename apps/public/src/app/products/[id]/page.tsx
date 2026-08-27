@@ -10,8 +10,9 @@ import { stripHtmlToPlainText } from "@tecbunny/core/strings";
 import { isPubliclyVisibleProduct } from "@tecbunny/core/product-visibility";
 import { notFound } from 'next/navigation';
 
-// ISR: revalidate every 5 minutes — dramatically reduces TTFB on product pages
-export const revalidate = 300;
+// Product publication and pricing changes must be visible immediately.
+export const revalidate = 0;
+export const fetchCache = 'force-no-store';
 // Using dynamic rendering to support cookie-based source-aware pricing without hydration flashes
 export const dynamic = 'force-dynamic';
 

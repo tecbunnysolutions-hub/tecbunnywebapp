@@ -7,8 +7,10 @@ import { ShopPageContent } from '@/components/products/ShopPageContent';
 import { createPageMetadata } from "@tecbunny/core/metadata";
 import { filterPubliclyVisibleProducts } from "@tecbunny/core/product-visibility";
 
-// ISR: revalidate every minute so publication changes reach the catalogue promptly
-export const revalidate = 60;
+// Product publication and pricing changes must be visible immediately.
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+export const fetchCache = 'force-no-store';
 
 const PRODUCTS_PAGE_SIZE = 200;
 

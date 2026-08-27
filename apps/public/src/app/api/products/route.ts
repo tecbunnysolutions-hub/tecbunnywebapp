@@ -5,7 +5,11 @@ import { logger } from '@tecbunny/core/logger';
 import { getProductDisplayImage } from '@tecbunny/core/image-utils';
 import { filterPubliclyVisibleProducts } from '@tecbunny/core/product-visibility';
 
-const CACHE_CONTROL = 'public, s-maxage=60, stale-while-revalidate=300';
+const CACHE_CONTROL = 'no-store, max-age=0, must-revalidate';
+
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+export const fetchCache = 'force-no-store';
 
 function parsePositiveInt(value: string | null, fallback: number, max: number) {
   const parsed = Number.parseInt(value ?? '', 10);
