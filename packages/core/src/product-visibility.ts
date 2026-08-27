@@ -1,6 +1,3 @@
-import { stripHtmlToPlainText } from "./strings";
-import { getProductDisplayImage } from "./image-utils";
-
 export const PUBLIC_PRODUCT_PRICE_COLUMNS = [
   'price',
   'selling_price',
@@ -29,21 +26,16 @@ function firstPositive(product: Record<string, unknown>, keys: string[]) {
   return null;
 }
 
-function hasPublicDescription(product: Record<string, unknown>) {
-  const raw = product.description ?? product.body_html ?? product.details;
-  if (typeof raw !== 'string') return false;
-  return stripHtmlToPlainText(raw, 200).trim().length > 0;
-}
-
 export function isPubliclyVisibleProduct(product: Record<string, unknown> | null | undefined) {
   if (!product) return false;
 
   const status = typeof product.status === 'string' ? product.status.trim().toLowerCase() : '';
   const isActive = !status || status === 'active' || status === 'published';
+  const isEnabled = product.is_active !== false;
   const isNotDeleted = product.is_deleted !== true && product.deleted_at == null;
   const hasSalePrice = firstPositive(product, [...PUBLIC_PRODUCT_PRICE_COLUMNS]) !== null;
 
-  return isActive && isNotDeleted && hasSalePrice;
+  return isActive && isEnabled && isNotDeleted && hasSalePrice;
 }
 
 export function filterPubliclyVisibleProducts<T extends Record<string, unknown>>(products: T[]) {

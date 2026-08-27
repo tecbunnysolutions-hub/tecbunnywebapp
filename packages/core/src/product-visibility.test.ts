@@ -37,6 +37,14 @@ describe('product visibility', () => {
     })).toBe(true);
   });
 
+  it('rejects products explicitly marked inactive', () => {
+    expect(isPubliclyVisibleProduct({
+      status: 'active',
+      is_active: false,
+      price: 5000,
+    })).toBe(false);
+  });
+
   it('applies the same public price rule to Supabase queries', () => {
     const query = createQueryRecorder();
 

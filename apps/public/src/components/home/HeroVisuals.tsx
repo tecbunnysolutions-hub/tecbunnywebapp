@@ -6,7 +6,7 @@ import { usePrefersReducedMotion } from '@/hooks/use-prefers-reduced-motion';
 
 const LOG_LINES = [
   { left: '> Active_AMC_Sites', right: '47 [ONLINE]', tone: 'text-zinc-400' },
-  { left: '> Avg_Response_Time', right: '9.2 Hours [NOMINAL]', tone: 'text-zinc-400' },
+  { left: '> General_Support_Avg', right: '9.2 Hours [NOMINAL]', tone: 'text-zinc-400' },
   { left: '> Hardware_Warranty', right: '1-3 Years [DIRECT]', tone: 'text-zinc-400' },
   { left: '> On_Site_Cover', right: 'Goa & MH [ACTIVE]', tone: 'text-zinc-400' },
 ];
