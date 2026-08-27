@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { logger } from '@tecbunny/core/logger';
 
 import { getProductDisplayImage } from '@tecbunny/core/image-utils';
-import { filterPubliclyVisibleProducts } from '@tecbunny/core/product-visibility';
+import { applyPublicProductVisibilityFilters, filterPubliclyVisibleProducts } from '@tecbunny/core/product-visibility';
 
 const CACHE_CONTROL = 'no-store, max-age=0, must-revalidate';
 
@@ -48,6 +48,10 @@ function productMatchesSearch(product: any, search: string) {
     .some((value) => typeof value === 'string' && value.toLowerCase().includes(normalized));
 }
 
+function cleanPostgrestFilterValue(value: string) {
+  return value.trim().replace(/[%_*(),]/g, ' ').replace(/\s+/g, ' ').slice(0, 80);
+}
+
 export async function GET(request: NextRequest) {
   const page = parsePositiveInt(request.nextUrl.searchParams.get('page'), 1, 10_000);
   const limit = parsePositiveInt(request.nextUrl.searchParams.get('limit'), 20, 200);
@@ -55,6 +59,8 @@ export async function GET(request: NextRequest) {
   const vendor = request.nextUrl.searchParams.get('vendor');
   const search = (request.nextUrl.searchParams.get('search') ?? '').trim().slice(0, 80);
   const offset = (page - 1) * limit;
+  const cleanVendor = vendor ? cleanPostgrestFilterValue(vendor) : '';
+  const cleanSearch = cleanPostgrestFilterValue(search);
 
   logger.info('public_products.audit.requested', { page, limit, hasSearch: Boolean(search), status: status ?? null, vendor: vendor ?? null });
 
@@ -69,10 +75,33 @@ export async function GET(request: NextRequest) {
 
   try {
     const supabase = createClient(url, key);
-    const { data, error } = await supabase
-      .from('products')
-      .select('*')
-      .gt('price', 0)
+    let query = applyPublicProductVisibilityFilters(
+      supabase
+        .from('products')
+        .select('*', { count: 'exact' })
+    );
+
+    if (status) {
+      query = query.eq('status', status);
+    }
+
+    if (cleanVendor) {
+      query = query.or(`vendor.eq.${cleanVendor},brand.eq.${cleanVendor}`);
+    }
+
+    if (cleanSearch) {
+      query = query.or([
+        `title.ilike.%${cleanSearch}%`,
+        `name.ilike.%${cleanSearch}%`,
+        `category.ilike.%${cleanSearch}%`,
+        `brand.ilike.%${cleanSearch}%`,
+        `vendor.ilike.%${cleanSearch}%`,
+      ].join(','));
+    }
+
+    const { data, error, count } = await query
+      .order('prioritized', { ascending: false, nullsFirst: false })
+      .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1);
 
     if (error) {
@@ -82,14 +111,9 @@ export async function GET(request: NextRequest) {
 
     const products = filterPubliclyVisibleProducts(Array.isArray(data) ? data : [])
       .filter((product: any) => !status || product.status === status)
-      .filter((product: any) => !vendor || product.vendor === vendor || product.brand === vendor)
+      .filter((product: any) => !cleanVendor || product.vendor === cleanVendor || product.brand === cleanVendor)
       .filter((product: any) => productMatchesSearch(product, search))
-      .map(normalizeProduct)
-      .sort((left: any, right: any) => {
-        const priorityDelta = Number(Boolean(right.prioritized)) - Number(Boolean(left.prioritized));
-        if (priorityDelta !== 0) return priorityDelta;
-        return new Date(right.created_at ?? 0).getTime() - new Date(left.created_at ?? 0).getTime();
-      });
+      .map(normalizeProduct);
 
     logger.info('public_products.audit.success', { count: products.length, page, limit });
     return json({
@@ -98,8 +122,8 @@ export async function GET(request: NextRequest) {
       pagination: {
         page,
         limit,
-        total: products.length,
-        pages: Math.ceil(products.length / limit),
+        total: count ?? products.length,
+        pages: Math.ceil((count ?? products.length) / limit),
       },
     });
   } catch (error) {

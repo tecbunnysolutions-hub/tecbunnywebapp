@@ -8,7 +8,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSessionWithRole } from "@tecbunny/core/auth/server-role";
 import { logger } from "@tecbunny/core";
 import { getProductDisplayImage } from "@tecbunny/core/image-utils";
-import { filterPubliclyVisibleProducts, isPubliclyVisibleProduct } from "@tecbunny/core/product-visibility";
+import { applyPublicProductVisibilityFilters, filterPubliclyVisibleProducts, isPubliclyVisibleProduct } from "@tecbunny/core/product-visibility";
 import { classifyProductTax, TaxClassificationError, type ProductTaxClassification } from "@tecbunny/core/ai/tax-classification";
 import { processAndUploadExternalImage } from "@tecbunny/core/image-processor";
 
@@ -486,8 +486,7 @@ export async function GET(request: NextRequest) {
 
       let query: any = supabase
         .from('products')
-        .select(publicProductSelect, { count: 'estimated' })
-        .range(offset, offset + limit - 1);
+        .select(publicProductSelect, { count: 'exact' });
 
       // Apply sorting with prioritized products first
       // Always sort by prioritized status first (prioritized products at top)
@@ -515,20 +514,7 @@ export async function GET(request: NextRequest) {
 
       // Apply visibility filters at the database level for non-privileged requests
       if (!isPrivilegedRequest) {
-        if (!productColumns || productColumns.has('status')) {
-          query = query.eq('status', 'active');
-        }
-        // treat NULL as "active" — products without an explicit flag default to visible
-        if (!productColumns || productColumns.has('is_active')) {
-          query = query.or('is_active.is.null,is_active.eq.true');
-        }
-        // treat NULL as "not deleted" — products default to visible
-        if (!productColumns || productColumns.has('is_deleted')) {
-          query = query.or('is_deleted.is.null,is_deleted.eq.false');
-        }
-        if (!productColumns || productColumns.has('price')) {
-          query = query.gt('price', 0);
-        }
+        query = applyPublicProductVisibilityFilters(query, productColumns);
       } else {
         const status = searchParams.get('status');
         if (status) {
@@ -552,6 +538,8 @@ export async function GET(request: NextRequest) {
           query = query.ilike('description', `%${search}%`);
         }
       }
+
+      query = query.range(offset, offset + limit - 1);
 
       const { data: rawProducts, error, count } = await query;
       const products = Array.isArray(rawProducts) ? (rawProducts as any[]) : [];
@@ -614,8 +602,8 @@ export async function GET(request: NextRequest) {
         pagination: {
           page,
           limit,
-          total: isPrivilegedRequest ? count || 0 : visibleProducts.length,
-          pages: Math.ceil((isPrivilegedRequest ? count || 0 : visibleProducts.length) / limit)
+          total: count ?? visibleProducts.length,
+          pages: Math.ceil((count ?? visibleProducts.length) / limit)
         },
         warnings: warnings.length ? warnings : undefined
       }, PUBLIC_PRODUCTS_CACHE_CONTROL);
