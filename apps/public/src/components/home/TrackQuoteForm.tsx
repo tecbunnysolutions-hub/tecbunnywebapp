@@ -81,7 +81,7 @@ export function TrackQuoteForm() {
       )}
 
       <div className="mt-6 border-t border-zinc-800 pt-6 flex items-center justify-between text-xs text-zinc-500">
-        <span>Average engineering response time:</span>
+        <span>Quote lookup support response:</span>
         <span className="text-blue-500 font-semibold">&lt; 15 mins</span>
       </div>
     </div>

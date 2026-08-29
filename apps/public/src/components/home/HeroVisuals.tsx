@@ -1,14 +1,13 @@
 'use client';
 
 import React from 'react';
-import { ShieldCheck } from 'lucide-react';
+import { Clock3, ShieldCheck } from 'lucide-react';
 import { usePrefersReducedMotion } from '@/hooks/use-prefers-reduced-motion';
 
-const LOG_LINES = [
-  { left: '> Active_AMC_Sites', right: '47 [ONLINE]', tone: 'text-zinc-400' },
-  { left: '> General_Support_Avg', right: '9.2 Hours [NOMINAL]', tone: 'text-zinc-400' },
-  { left: '> Hardware_Warranty', right: '1-3 Years [DIRECT]', tone: 'text-zinc-400' },
-  { left: '> On_Site_Cover', right: 'Goa & MH [ACTIVE]', tone: 'text-zinc-400' },
+const RESPONSE_TIMES = [
+  { label: 'General enquiry response', value: 'Average: 9.2 hours' },
+  { label: 'Critical AMC incident', value: 'Response target: <2 hours' },
+  { label: 'On-site critical fault', value: 'Target: same business day' },
 ];
 
 function useFinePointer() {
@@ -66,29 +65,26 @@ export function HeroVisuals() {
   };
 
   return (
-    <div className="reveal-section is-revealed relative hidden lg:block" data-reveal-id="hero-visual" id="hero-visual" onMouseMove={handleTiltMove} onMouseLeave={handleTiltLeave}>
-      <div ref={tiltRef} className="hero-status-panel tilt-card tb-panel group relative z-10 overflow-hidden p-8">
+    <div className="reveal-section is-revealed relative block mt-8 lg:mt-0" data-reveal-id="hero-visual" id="hero-visual" onMouseMove={handleTiltMove} onMouseLeave={handleTiltLeave}>
+      <div ref={tiltRef} className="hero-status-panel tilt-card tb-panel group relative z-10 overflow-hidden p-6 sm:p-8">
         <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
-        <div className="mb-6 flex items-center gap-2 border-b border-zinc-800/80 pb-5 relative z-10">
-          <div className="h-3 w-3 rounded-full bg-rose-500/80"></div>
-          <div className="h-3 w-3 rounded-full bg-amber-500/80"></div>
-          <div className="h-3 w-3 rounded-full bg-emerald-500/80"></div>
-          <div className="ml-auto text-xs font-mono font-bold tracking-widest text-blue-400 flex items-center gap-2">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
-            </span>
-            system_status.log
+        <div className="mb-6 flex items-center gap-3 border-b border-zinc-800/80 pb-5 relative z-10">
+          <div className="tb-icon-tile h-9 w-9 border-blue-500/30 bg-blue-500/20 text-blue-400">
+            <Clock3 size={18} aria-hidden="true" />
+          </div>
+          <div>
+            <p className="text-base font-bold text-white">Service response times</p>
+            <p className="mt-0.5 text-xs text-zinc-400">Clear targets for each type of request</p>
           </div>
         </div>
-        <div className="space-y-4 font-mono text-sm relative z-10">
-          {LOG_LINES.map((log, i) => (
-            <div key={log.left} className={`flex justify-between items-center ${log.tone} animate-fade-in`} style={{ animationDelay: `${0.5 + i * 0.1}s`, animationFillMode: 'backwards' }}>
-              <span className="font-semibold text-zinc-300">{log.left}</span>
-              <span className="bg-zinc-950 px-2 py-0.5 rounded border border-zinc-800 text-xs text-zinc-100">{log.right}</span>
+        <dl className="space-y-3 relative z-10">
+          {RESPONSE_TIMES.map((response, i) => (
+            <div key={response.label} className="animate-fade-in rounded-lg border border-zinc-800 bg-zinc-900/50 px-4 py-3" style={{ animationDelay: `${0.5 + i * 0.1}s`, animationFillMode: 'backwards' }}>
+              <dt className="text-sm font-semibold text-zinc-200">{response.label}</dt>
+              <dd className="mt-1 text-sm text-blue-300">{response.value}</dd>
             </div>
           ))}
-        </div>
+        </dl>
         <div className="my-6 h-px bg-gradient-to-r from-transparent via-zinc-700 to-transparent relative z-10"></div>
         <div className="relative z-10 flex items-center gap-4 rounded-lg border border-zinc-800/50 bg-zinc-900/50 p-4 transition-transform duration-300 group-hover:scale-[1.02]">
           <div className="tb-icon-tile border-blue-500/30 bg-blue-500/20 text-blue-400">

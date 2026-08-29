@@ -16,18 +16,20 @@ interface AddToCartButtonProps {
 export function AddToCartButton({ product, className, size = "sm" }: AddToCartButtonProps) {
   const { addToCart, removeFromCart } = useCart();
   const [busy, setBusy] = React.useState(false);
-
+  const stockStatus = (product as any).stock_status;
+  const isOutOfStock = stockStatus === 'out_of_stock';
+  const buttonLabel = isOutOfStock ? 'Out of Stock' : stockStatus === 'backorder' ? 'Pre-order' : 'Add to Cart';
 
 
   return (
     <Button 
       size={size}
       className={`flex items-center justify-center ${className}`}
-      disabled={busy}
+      disabled={busy || isOutOfStock}
       onClick={async (e) => {
         e.preventDefault();
         e.stopPropagation();
-        if (busy) return;
+        if (busy || isOutOfStock) return;
         
         setBusy(true);
         // Optimistic UI update - instantly reflects in cart
@@ -46,10 +48,10 @@ export function AddToCartButton({ product, className, size = "sm" }: AddToCartBu
           setTimeout(() => setBusy(false), 300);
         }
       }}
-      aria-label={`Add ${product.name} to cart`}
+      aria-label={isOutOfStock ? `${product.name} is out of stock` : `${buttonLabel} ${product.name}`}
     >
       <ShoppingCart className="mr-2 h-4 w-4" />
-      Add to Cart
+      {buttonLabel}
     </Button>
   );
 }

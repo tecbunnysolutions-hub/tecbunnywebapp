@@ -241,58 +241,107 @@ export default function ContactPage() {
                   {
                     icon: 'MapPin',
                     title: 'HQ Location',
+                    badge: 'Goa Experience Hub',
                     details: [
                       companyInfo.registeredAddress || 'Parcem, Pernem, Goa - 403512',
-                      { text: 'Directions', href: 'https://maps.app.goo.gl/HZDjt3zoB1Rcrjqp8' },
+                      { text: 'Get Directions (Google Maps) →', href: 'https://maps.app.goo.gl/HZDjt3zoB1Rcrjqp8' },
                     ],
                   },
                   {
                     icon: 'Phone',
-                    title: 'WhatsApp Support',
+                    title: 'Sales & Enterprise',
+                    badge: 'Mon–Sat · 9am–7pm IST',
                     details: [
                       { text: '+91 96041 36010', href: 'https://wa.me/919604136010' },
+                      { text: 'sales@tecbunny.com', href: 'mailto:sales@tecbunny.com' },
+                    ],
+                  },
+                  {
+                    icon: 'Mail',
+                    title: 'Support & Repairs',
+                    badge: 'Avg Response <9h',
+                    details: [
                       { text: companyInfo.supportEmail || 'support@tecbunny.com', href: `mailto:${companyInfo.supportEmail || 'support@tecbunny.com'}` },
+                      '₹499 Site Visit Fee (adjusted on final bill)',
+                    ],
+                  },
+                  {
+                    icon: 'Shield',
+                    title: '24×7 AMC Emergency',
+                    badge: 'Active SLA Clients',
+                    details: [
+                      'Round-the-clock priority dispatch',
+                      'Target Response: <2 Hours',
                     ],
                   },
                 ]).map((info: any, index: number) => {
                   const IconComponent = iconMap[info.icon] || Mail;
                   return (
-                    <div key={index} className="bento-card p-6">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                        <IconComponent className="h-5 w-5" />
+                    <div key={index} className="bento-card p-6 flex flex-col justify-between">
+                      <div>
+                        <div className="flex items-center justify-between">
+                          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                            <IconComponent className="h-5 w-5" />
+                          </div>
+                          {info.badge && (
+                            <span className="text-[10px] font-bold font-mono uppercase bg-primary/10 border border-primary/20 text-primary px-2.5 py-0.5 rounded-full">
+                              {info.badge}
+                            </span>
+                          )}
+                        </div>
+                        <h3 className="mt-4 text-base font-semibold tech-heading">{info.title}</h3>
+                        {info.details.map((detail: any, idx: number) => {
+                          const text = typeof detail === 'string' ? detail : detail?.text;
+                          const href = typeof detail === 'object' ? detail?.href : undefined;
+
+                          if (!text) return null;
+
+                          return href ? (
+                            <a
+                              key={idx}
+                              href={href}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={() => {
+                                void trackEvent('contact_channel_click', {
+                                  title: info.title,
+                                  destination: href,
+                                });
+                              }}
+                              className="mt-1.5 block text-xs text-primary hover:underline font-semibold"
+                            >
+                              {text}
+                            </a>
+                          ) : (
+                            <p key={idx} className="mt-1 text-xs text-muted-foreground font-light">
+                              {text}
+                            </p>
+                          );
+                        })}
                       </div>
-                      <h3 className="mt-4 text-lg font-semibold tech-heading">{info.title}</h3>
-                      {info.details.map((detail: any, idx: number) => {
-                        const text = typeof detail === 'string' ? detail : detail?.text;
-                        const href = typeof detail === 'object' ? detail?.href : undefined;
-
-                        if (!text) return null;
-
-                        return href ? (
-                          <a
-                            key={idx}
-                            href={href}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            onClick={() => {
-                              void trackEvent('contact_channel_click', {
-                                title: info.title,
-                                destination: href,
-                              });
-                            }}
-                            className="mt-1 block text-sm text-primary hover:text-primary/80 font-medium"
-                          >
-                            {text}
-                          </a>
-                        ) : (
-                          <p key={idx} className="mt-1 text-sm text-muted-foreground">
-                            {text}
-                          </p>
-                        );
-                      })}
                     </div>
                   );
                 })}
+              </div>
+
+              {/* Service Hours & Response Targets Block */}
+              <div className="bento-card p-6 border border-border/80 bg-muted/10 space-y-3">
+                <div className="flex items-center gap-2">
+                  <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                  <h4 className="text-sm font-semibold tech-heading text-foreground">Operational Hours &amp; Response Targets</h4>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs pt-1">
+                  <div className="rounded-xl border border-border/50 bg-background/50 p-3">
+                    <p className="font-semibold text-foreground">General Enquiries &amp; Sales</p>
+                    <p className="text-muted-foreground mt-0.5">Mon–Sat: 9:00 AM – 7:00 PM IST</p>
+                    <p className="text-primary font-mono text-[10px] mt-1">Avg Response: ~9.2 Hours</p>
+                  </div>
+                  <div className="rounded-xl border border-border/50 bg-background/50 p-3">
+                    <p className="font-semibold text-foreground">Critical AMC Incident Desk</p>
+                    <p className="text-muted-foreground mt-0.5">24×7 Coverage (Active SLA)</p>
+                    <p className="text-emerald-400 font-mono text-[10px] mt-1">SLA Target: &lt;2 Hours</p>
+                  </div>
+                </div>
               </div>
 
               <div>

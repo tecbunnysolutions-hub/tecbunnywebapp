@@ -573,6 +573,14 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
   };
 
   const hasActiveCategory = Boolean(categoryFilter);
+  const catalogueMinPrice = products.length > 0 ? Math.min(...products.map((product) => product.price)) : 0;
+  const hasActivePriceFilter = priceRange[0] > catalogueMinPrice || priceRange[1] < maxPrice;
+  const activeFilters = [
+    searchQuery ? { label: `Search: ${searchQuery}`, clear: () => { setLocalSearchQuery(''); updateUrlParams({ q: '' }); } } : null,
+    brandFilter ? { label: brandFilter, clear: () => updateUrlParams({ brand: '' }) } : null,
+    categoryFilter ? { label: categoryFilter, clear: () => updateUrlParams({ category: '' }) } : null,
+    hasActivePriceFilter ? { label: `₹${priceRange[0].toLocaleString('en-IN')}–₹${priceRange[1].toLocaleString('en-IN')}`, clear: () => setPriceRange([catalogueMinPrice, maxPrice]) } : null,
+  ].filter((filter): filter is { label: string; clear: () => void } => Boolean(filter));
   const resolvedResultsLabel = loading ? 'Loading...' : `${filteredProducts.length} items`;
 
   // Helper to parse hierarchical category paths and build a tree
@@ -935,6 +943,26 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
               </div>
             </div>
 
+            {activeFilters.length > 0 && (
+              <div className="mb-6 rounded-xl border border-border/70 bg-card/50 p-3" aria-label="Active filters">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="mr-1 text-xs font-semibold text-foreground">Active filters</span>
+                  {activeFilters.map((filter) => (
+                    <button
+                      key={filter.label}
+                      type="button"
+                      onClick={filter.clear}
+                      className="inline-flex items-center gap-1 rounded-full border border-primary/30 bg-primary/10 px-2.5 py-1 text-xs text-primary transition-colors hover:bg-primary/20"
+                      aria-label={`Remove ${filter.label} filter`}
+                    >
+                      {filter.label} <span aria-hidden="true">×</span>
+                    </button>
+                  ))}
+                  <button type="button" onClick={clearFilters} className="ml-auto text-xs font-medium text-primary hover:underline">Clear all</button>
+                </div>
+              </div>
+            )}
+
             {/* Product Grid */}
             <div className="reveal-section is-revealed" data-reveal-id="products-grid">
               {loading ? (
@@ -978,6 +1006,18 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
                     }
 
                     const simpleDesc = getSimplifiedDescription(product.description);
+                    const stockStatus = product.stock_status || 'in_stock';
+                    const availability = stockStatus === 'out_of_stock'
+                      ? { label: 'Out of stock', className: 'text-zinc-500' }
+                      : stockStatus === 'low_stock'
+                        ? { label: 'Low stock', className: 'text-amber-500' }
+                        : stockStatus === 'backorder'
+                          ? { label: 'Pre-order', className: 'text-blue-400' }
+                          : { label: 'In stock', className: 'text-emerald-500' };
+                    const isOutOfStock = stockStatus === 'out_of_stock';
+                    const discountPercent = offerPrice && basePrice > offerPrice
+                      ? Math.round(((basePrice - offerPrice) / basePrice) * 100)
+                      : 0;
 
                     return (
                       <ProductTileErrorBoundary key={product.id || index} productId={product.id}>
@@ -994,9 +1034,9 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
                                 priority={index < 8}
                               />
                               {/* Discount Badge */}
-                              {product.discount_percentage && product.discount_percentage > 0 ? (
+                              {(product.discount_percentage || discountPercent) > 0 ? (
                                 <div className="absolute left-2 top-2 sm:left-3 sm:top-3 rounded-full bg-primary/15 border border-primary/30 px-2 py-0.5 sm:px-3 sm:py-1 text-[9px] sm:text-xs font-mono font-bold text-primary tracking-wider uppercase shadow-sm">
-                                  -{product.discount_percentage}%
+                                  -{product.discount_percentage || discountPercent}%
                                 </div>
                               ) : null}
                             </div>
@@ -1034,21 +1074,24 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
                               </span>
                               {offerPrice && (
                                 <span className="text-xs sm:text-sm text-muted-foreground line-through font-light mt-0.5">
-                                  ₹{basePrice.toLocaleString('en-IN')}
+                                  MRP ₹{basePrice.toLocaleString('en-IN')}
                                 </span>
                               )}
+                              <span className={`mt-1 text-[10px] font-semibold uppercase tracking-wide ${availability.className}`}>{availability.label}</span>
                             </div>
                             <button
                               type="button"
                               onClick={(event) => {
                                 event.preventDefault();
                                 event.stopPropagation();
+                                if (isOutOfStock) return;
                                 addToCart(product);
                               }}
-                              className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-lg sm:rounded-xl border border-border bg-muted/30 text-foreground transition-all duration-300 hover:border-primary/50 hover:bg-primary hover:text-primary-foreground hover:scale-110 shadow-sm cursor-pointer"
-                              aria-label={`Add ${displayName} to cart`}
+                              disabled={isOutOfStock}
+                              className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-lg sm:rounded-xl border border-border bg-muted/30 text-foreground transition-all duration-300 hover:border-primary/50 hover:bg-primary hover:text-primary-foreground hover:scale-110 shadow-sm cursor-pointer disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-muted/30 disabled:hover:border-border disabled:hover:scale-100"
+                              aria-label={isOutOfStock ? `${displayName} is out of stock` : stockStatus === 'backorder' ? `Pre-order ${displayName}` : `Add ${displayName} to cart`}
                             >
-                              <span className="text-sm sm:text-lg font-bold">+</span>
+                              <span className="text-sm sm:text-lg font-bold">{isOutOfStock ? '—' : '+'}</span>
                             </button>
                           </div>
                         </div>
@@ -1057,10 +1100,14 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
                   })}
                 </div>
               ) : (
-                <div className="rounded-2xl border border-dashed border-border bg-muted/20 p-16 text-center text-muted-foreground font-light text-base backdrop-blur-sm">
-                  {fetchWarning || (searchQuery || categoryFilter || brandFilter
-                    ? 'No products matched your filters.'
-                    : 'No products are currently available.')}
+                <div className="rounded-2xl border border-dashed border-border bg-muted/20 p-10 text-center text-muted-foreground backdrop-blur-sm">
+                  <p className="text-base font-medium text-foreground">{fetchWarning || (activeFilters.length > 0 ? 'No products match these filters.' : 'No products are currently available.')}</p>
+                  {activeFilters.length > 0 && (
+                    <>
+                      <p className="mt-3 text-sm">Try removing a filter, changing your search, or viewing all products.</p>
+                      <button type="button" onClick={clearFilters} className="mt-5 rounded-lg border border-primary/30 bg-primary/10 px-4 py-2 text-sm font-medium text-primary hover:bg-primary/20">View all products</button>
+                    </>
+                  )}
                 </div>
               )}
             </div>

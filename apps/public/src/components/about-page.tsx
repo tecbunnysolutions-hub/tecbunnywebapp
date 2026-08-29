@@ -127,6 +127,86 @@ export default function AboutPage() {
         </div>
       </section>
 
+      {/* Brand & Partner Ecosystem */}
+      <section className="py-16 border-t border-border bg-muted/5">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-3xl mx-auto">
+            <span className="text-xs font-semibold uppercase tracking-[0.3em] text-primary">Ecosystem</span>
+            <h2 className="mt-3 text-3xl font-semibold tech-heading">Partner &amp; Brand Relationships</h2>
+            <p className="mt-3 text-sm text-muted-foreground">
+              We deploy certified hardware and configure standards-compliant enterprise ecosystems.
+            </p>
+          </div>
+
+          <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="bento-card p-6 text-center space-y-2">
+              <span className="inline-block rounded-full bg-blue-500/10 px-3 py-1 text-xs font-bold uppercase text-blue-400">Certified Installer</span>
+              <h3 className="text-base font-bold font-tech text-foreground">CP PLUS &amp; Hikvision</h3>
+              <p className="text-xs text-muted-foreground font-light">Direct sourcing, firmware security patching, and OEM-backed warranty servicing for surveillance systems.</p>
+            </div>
+            <div className="bento-card p-6 text-center space-y-2">
+              <span className="inline-block rounded-full bg-purple-500/10 px-3 py-1 text-xs font-bold uppercase text-purple-400">Systems Integrator</span>
+              <h3 className="text-base font-bold font-tech text-foreground">TP-Link &amp; Ubiquiti</h3>
+              <p className="text-xs text-muted-foreground font-light">Enterprise Wi-Fi 6/7, managed switches, multi-gigabit gateways, and fiber distribution network deployment.</p>
+            </div>
+            <div className="bento-card p-6 text-center space-y-2">
+              <span className="inline-block rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-bold uppercase text-emerald-400">Authorized Reseller</span>
+              <h3 className="text-base font-bold font-tech text-foreground">Dahua &amp; Matrix Comsec</h3>
+              <p className="text-xs text-muted-foreground font-light">RFID hotel lock management, biometric access controllers, and IP intercom solutions for modern properties.</p>
+            </div>
+            <div className="bento-card p-6 text-center space-y-2">
+              <span className="inline-block rounded-full bg-amber-500/10 px-3 py-1 text-xs font-bold uppercase text-amber-400">Managed Partner</span>
+              <h3 className="text-base font-bold font-tech text-foreground">Tier-1 OEM Hardware</h3>
+              <p className="text-xs text-muted-foreground font-light">Seagate SkyHawk / WD Purple surveillance storage, Dell/Lenovo workstation rollouts, and custom server racks.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Company Timeline */}
+      <section className="py-16 border-t border-border">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-3xl mx-auto">
+            <span className="text-xs font-semibold uppercase tracking-[0.3em] text-primary">Milestones</span>
+            <h2 className="mt-3 text-3xl font-semibold tech-heading">Our Evolution &amp; Journey</h2>
+            <p className="mt-3 text-sm text-muted-foreground">
+              From local computer &amp; CCTV repairs to comprehensive enterprise infrastructure integration in Goa.
+            </p>
+          </div>
+
+          <div className="mt-12 grid gap-6 md:grid-cols-4">
+            <div className="bento-card p-6 relative">
+              <span className="text-xs font-mono font-bold text-primary">2025 · INCEPTION</span>
+              <h3 className="text-base font-bold font-tech text-foreground mt-2">Founded in Goa</h3>
+              <p className="text-xs text-muted-foreground font-light mt-2 leading-relaxed">
+                Incorporated as Tecbunny Solutions Private Limited in Parse, Pernem to bring transparent tech pricing and reliable local IT support to Goa.
+              </p>
+            </div>
+            <div className="bento-card p-6 relative">
+              <span className="text-xs font-mono font-bold text-primary">2025 · SECURITY EXPANSION</span>
+              <h3 className="text-base font-bold font-tech text-foreground mt-2">CCTV &amp; Access Control</h3>
+              <p className="text-xs text-muted-foreground font-light mt-2 leading-relaxed">
+                Delivered 100+ commercial and residential surveillance installations across North and South Goa with instant quotation calculators.
+              </p>
+            </div>
+            <div className="bento-card p-6 relative">
+              <span className="text-xs font-mono font-bold text-primary">2026 · NETWORK &amp; ITES</span>
+              <h3 className="text-base font-bold font-tech text-foreground mt-2">Enterprise Infrastructure</h3>
+              <p className="text-xs text-muted-foreground font-light mt-2 leading-relaxed">
+                Launched structured fiber networking, managed IT AMC programs, Active Directory administration, and remote engineering helpdesk.
+              </p>
+            </div>
+            <div className="bento-card p-6 relative">
+              <span className="text-xs font-mono font-bold text-primary">2026 · SMART HOSPITALITY</span>
+              <h3 className="text-base font-bold font-tech text-foreground mt-2">Smart Infrastructure</h3>
+              <p className="text-xs text-muted-foreground font-light mt-2 leading-relaxed">
+                Expanded into complete hospitality automation (GRMS), hotel RFID locks, and full-property high availability systems for builders and luxury resorts.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section className="border-t border-border bg-muted/10 py-16">
         <div className="mx-auto grid max-w-7xl grid-cols-1 gap-6 px-4 text-center sm:px-6 md:grid-cols-3 lg:px-8">
           <div className="bento-card p-6">

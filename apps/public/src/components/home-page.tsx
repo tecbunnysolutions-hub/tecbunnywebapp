@@ -120,43 +120,70 @@ export default function HomePage({
                 We build IT systems, handle CCTV, and run back-office work — so your business can grow and stay safe.
               </p>
 
-              <div className="flex flex-col sm:flex-row gap-5 pt-4">
-                {/* B2B Action Card */}
-                <div className="flex-1 p-5 rounded-2xl border border-blue-500/20 bg-blue-500/5 hover:border-blue-500/40 hover:bg-blue-500/10 transition-all duration-300 flex flex-col justify-between backdrop-blur-sm">
+              <div className="grid gap-4 pt-4 sm:grid-cols-3">
+                <div className="rounded-2xl border border-blue-500/20 bg-blue-500/5 p-5 transition-all duration-300 hover:border-blue-500/40 hover:bg-blue-500/10">
                   <div>
-                    <span className="text-[10px] font-bold tracking-widest uppercase text-blue-400">B2B Solutions</span>
-                    <h3 className="text-lg font-bold text-white mt-1 font-tech">Enterprise IT Infrastructure and Managed Services in Goa</h3>
+                    <span className="text-[10px] font-bold tracking-widest uppercase text-blue-400">Business?</span>
+                    <h3 className="mt-1 text-lg font-bold text-white font-tech">Enterprise solutions</h3>
                     <p className="text-xs text-zinc-400 mt-2 mb-4 leading-relaxed font-light">
                       CCTV, networks, smart locks, and IT support for Goa hotels, resorts, and offices.
                     </p>
                   </div>
                   <Link
-                    href="/solutions"
+                    href="/contact?subject=sales&service=enterprise_solutions&intent=enterprise_consultation&source=homepage_hero"
                     className="tb-button-primary w-full text-center flex items-center justify-center gap-1.5 h-11 text-xs uppercase tracking-wider font-semibold rounded-xl"
                   >
-                    Enterprise Portal
+                    Talk to Enterprise Team
                     <ArrowRight size={14} />
                   </Link>
                 </div>
 
-                {/* B2C Action Card */}
-                <div className="flex-1 p-5 rounded-2xl border border-zinc-800 bg-zinc-900/10 hover:border-zinc-700 hover:bg-zinc-900/20 transition-all duration-300 flex flex-col justify-between backdrop-blur-sm">
+                <div className="rounded-2xl border border-zinc-800 bg-zinc-900/10 p-5 transition-all duration-300 hover:border-zinc-700 hover:bg-zinc-900/20">
                   <div>
-                    <span className="text-[10px] font-bold tracking-widest uppercase text-zinc-500">B2C Retail Store</span>
-                    <h3 className="text-lg font-bold text-white mt-1 font-tech">Our Bespoke Tech Storefront for IT Hardware in Goa</h3>
+                    <span className="text-[10px] font-bold tracking-widest uppercase text-zinc-500">Need hardware?</span>
+                    <h3 className="mt-1 text-lg font-bold text-white font-tech">Shop products</h3>
                     <p className="text-xs text-zinc-450 mt-2 mb-4 leading-relaxed font-light">
-                      High-performance custom gaming PCs, NVR hardware, core components, and fast next-day delivery in Goa.
+                      PCs, NVR hardware, and core components, with delivery eligibility confirmed at checkout.
                     </p>
                   </div>
                   <Link
                     href="/products"
                     className="tb-button-secondary w-full text-center flex items-center justify-center gap-1.5 h-11 text-xs uppercase tracking-wider font-semibold rounded-xl"
                   >
-                    Shop Tech Catalog
+                    Shop Products
+                    <ArrowRight size={14} />
+                  </Link>
+                </div>
+
+                <div className="rounded-2xl border border-zinc-800 bg-zinc-900/10 p-5 transition-all duration-300 hover:border-zinc-700 hover:bg-zinc-900/20">
+                  <div>
+                    <span className="text-[10px] font-bold tracking-widest uppercase text-zinc-500">Need repair or service?</span>
+                    <h3 className="mt-1 text-lg font-bold text-white font-tech">Book service</h3>
+                    <p className="text-xs text-zinc-450 mt-2 mb-4 leading-relaxed font-light">
+                      Request CCTV, network, IT, or AMC help from our local service team.
+                    </p>
+                  </div>
+                  <Link
+                    href="/contact?subject=support&service=repair_service&intent=service_request&source=homepage_hero"
+                    className="tb-button-secondary w-full text-center flex items-center justify-center gap-1.5 h-11 text-xs uppercase tracking-wider font-semibold rounded-xl"
+                  >
+                    Book Service
                     <ArrowRight size={14} />
                   </Link>
                 </div>
               </div>
+
+              <aside className="rounded-xl border border-zinc-800 bg-zinc-950/60 p-4" aria-labelledby="goa-delivery-eligibility">
+                <h2 id="goa-delivery-eligibility" className="text-sm font-semibold text-white">Next-day delivery in Goa: eligibility</h2>
+                <dl className="mt-3 grid gap-x-5 gap-y-2 text-xs sm:grid-cols-2">
+                  <div><dt className="font-medium text-zinc-300">Eligible PIN codes</dt><dd className="text-zinc-500">Goa 403xxx PIN codes, confirmed at checkout.</dd></div>
+                  <div><dt className="font-medium text-zinc-300">Products</dt><dd className="text-zinc-500">In-stock products at the Parse Hub only.</dd></div>
+                  <div><dt className="font-medium text-zinc-300">Order cut-off</dt><dd className="text-zinc-500">Shown at checkout; later orders move to the next working day.</dd></div>
+                  <div><dt className="font-medium text-zinc-300">Working days</dt><dd className="text-zinc-500">Business days only.</dd></div>
+                  <div><dt className="font-medium text-zinc-300">Holiday exceptions</dt><dd className="text-zinc-500">Public holidays and carrier closures are excluded.</dd></div>
+                  <div><dt className="font-medium text-zinc-300">Shipping partner</dt><dd className="text-zinc-500">Assigned at dispatch and shown with tracking.</dd></div>
+                </dl>
+              </aside>
 
               <div className="grid max-w-md grid-cols-2 gap-6 border-t border-zinc-800/80 pt-8">
                 <div className="group">
@@ -211,7 +238,7 @@ export default function HomePage({
                   </div>
                   <div>
                     <h3 className="text-sm font-semibold text-white">Live Bidding Engine</h3>
-                    <p className="text-xs text-zinc-500 mt-1">Tell us what you want to pay. Our system reviews and counter-offers in minutes.</p>
+                    <p className="text-xs text-zinc-500 mt-1">Submit an eligible offer for review; a counter-offer is never guaranteed.</p>
                   </div>
                 </div>
 
@@ -235,6 +262,18 @@ export default function HomePage({
                   </div>
                 </div>
               </div>
+
+              <aside className="rounded-xl border border-zinc-800 bg-zinc-950/60 p-4" aria-labelledby="negotiation-rules">
+                <h3 id="negotiation-rules" className="text-sm font-semibold text-white">Name Your Price: rules</h3>
+                <dl className="mt-3 grid gap-x-5 gap-y-2 text-xs sm:grid-cols-2">
+                  <div><dt className="font-medium text-zinc-300">Eligible products</dt><dd className="text-zinc-500">Custom CCTV and IT system configurations only; standard store products use their listed price.</dd></div>
+                  <div><dt className="font-medium text-zinc-300">Minimum offer</dt><dd className="text-zinc-500">At least 70% of the displayed custom-quote total.</dd></div>
+                  <div><dt className="font-medium text-zinc-300">Quote validity</dt><dd className="text-zinc-500">7 calendar days from issue.</dd></div>
+                  <div><dt className="font-medium text-zinc-300">Stock</dt><dd className="text-zinc-500">Not reserved until the quote is accepted and the order is confirmed.</dd></div>
+                  <div><dt className="font-medium text-zinc-300">Counter-offers</dt><dd className="text-zinc-500">A counter-offer is discretionary; final terms are shown on the reviewed quote.</dd></div>
+                  <div><dt className="font-medium text-zinc-300">GST and shipping</dt><dd className="text-zinc-500">GST is included in the quote total. Shipping is separate unless the final quote says otherwise.</dd></div>
+                </dl>
+              </aside>
 
               <div className="flex flex-col sm:flex-row gap-4 pt-4">
                 <Link
@@ -368,7 +407,7 @@ export default function HomePage({
             <div className="space-y-3">
               <h3 className="text-lg font-semibold text-white">Annual IT AMC and Managed Support Plans for Your Business</h3>
               <p className="text-sm text-zinc-400 leading-relaxed">
-                Our AMC plans cover your CCTV, network gear, servers, and all IT kit. We do planned check-ups, remote help desk, hardware fixes, firmware updates, and audit reports. We serve hotels, hospitals, schools, and firms in Goa and Maharashtra. Critical faults receive a remote response within 2 hours, with same-day on-site dispatch where covered.
+                Our AMC plans cover your CCTV, network gear, servers, and all IT kit. We do planned check-ups, remote help desk, hardware fixes, firmware updates, and audit reports. We serve hotels, hospitals, schools, and firms in Goa and Maharashtra. Response targets vary by request type and plan coverage.
               </p>
             </div>
           </div>
@@ -552,7 +591,7 @@ export default function HomePage({
             </div>
             <div className="space-y-2 rounded-lg border border-zinc-800 bg-zinc-950/60 p-4">
               <dt className="text-sm font-semibold text-white">How fast do you respond to faults?</dt>
-              <dd className="text-sm text-zinc-400 leading-relaxed">Our AMC clients receive a remote response within 2 hours for critical faults. Same-day on-site dispatch is available for covered locations, while general enquiries receive a response within one business day.</dd>
+              <dd className="text-sm text-zinc-400 leading-relaxed">Our service response times are shown in the clearly labelled panel at the top of this page. The applicable target depends on whether the request is a general enquiry, a critical AMC incident, or an on-site critical fault, and on plan coverage.</dd>
             </div>
             <div className="space-y-2 rounded-lg border border-zinc-800 bg-zinc-950/60 p-4">
               <dt className="text-sm font-semibold text-white">What is an NVR and DVR for CCTV?</dt>

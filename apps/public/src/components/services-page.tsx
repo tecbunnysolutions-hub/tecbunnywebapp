@@ -335,13 +335,36 @@ export default function ServicesPage({ services, hasServiceLoadError = false }: 
           )}
         </section>
 
+        {/* Site Visit Booking Fee Banner */}
+        <section className="reveal-section" data-reveal-id="site-visit-banner">
+          <div className="rounded-2xl border border-blue-500/30 bg-blue-500/10 p-6 sm:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+            <div className="space-y-2">
+              <div className="inline-flex items-center gap-2 rounded-full border border-blue-400/30 bg-blue-400/10 px-3 py-1 text-xs font-bold uppercase tracking-wider text-blue-300">
+                Site Survey & Diagnostics
+              </div>
+              <h2 className="text-xl font-bold font-tech text-white">
+                Site Visit Booking Fee — ₹499
+              </h2>
+              <p className="text-sm text-zinc-300 font-light max-w-2xl leading-relaxed">
+                Covers on-site engineering assessment across Goa. The ₹499 booking fee is <strong className="text-white font-medium">fully adjusted against the final service or installation invoice</strong> upon project execution.
+              </p>
+            </div>
+            <Link
+              href="/contact?subject=support&service=site_visit&intent=service_request&source=services_site_visit_banner"
+              className="whitespace-nowrap px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-lg shadow-blue-500/20"
+            >
+              Book Site Visit
+            </Link>
+          </div>
+        </section>
+
         {/* Core Service Categories */}
         <section className="reveal-section space-y-8" data-reveal-id="core-service-categories">
           <div className="flex items-center gap-3">
             <div className="h-6 w-1 rounded-full bg-blue-500" />
             <div>
-              <h2 className="text-xl font-bold font-tech tech-heading">Our Service Offerings</h2>
-              <p className="text-xs text-zinc-500">Select a category below to explore our deep-dive technical capabilities.</p>
+              <h2 className="text-xl font-bold font-tech tech-heading">Enterprise Infrastructure & Solutions</h2>
+              <p className="text-xs text-zinc-400">High-availability IT infrastructure, physical security, smart automation, and enterprise AMCs.</p>
             </div>
           </div>
 
@@ -349,8 +372,13 @@ export default function ServicesPage({ services, hasServiceLoadError = false }: 
             {/* Card 1: Network & Infrastructure */}
             <div className="bento-card p-6 flex flex-col justify-between group transition-all duration-300 hover:border-blue-500/30">
               <div className="space-y-4">
-                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-500/10 text-blue-400 border border-blue-500/20 group-hover:scale-105 transition-transform">
-                  <Network size={20} />
+                <div className="flex items-center justify-between">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-500/10 text-blue-400 border border-blue-500/20 group-hover:scale-105 transition-transform">
+                    <Network size={20} />
+                  </div>
+                  <span className="text-[10px] font-mono font-semibold text-blue-400 bg-blue-500/10 border border-blue-500/20 px-2 py-0.5 rounded">
+                    SLA: Remote &lt;2h · On-site Same Day
+                  </span>
                 </div>
                 <h3 className="text-lg font-bold font-tech tech-heading text-white">Network & Infrastructure Solutions</h3>
                 <p className="text-xs leading-relaxed text-zinc-400 font-light tech-body">
@@ -370,8 +398,13 @@ export default function ServicesPage({ services, hasServiceLoadError = false }: 
             {/* Card 2: Physical Security */}
             <div className="bento-card p-6 flex flex-col justify-between group transition-all duration-300 hover:border-blue-500/30">
               <div className="space-y-4">
-                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 group-hover:scale-105 transition-transform">
-                  <Camera size={20} />
+                <div className="flex items-center justify-between">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 group-hover:scale-105 transition-transform">
+                    <Camera size={20} />
+                  </div>
+                  <span className="text-[10px] font-mono font-semibold text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 px-2 py-0.5 rounded">
+                    SLA: Remote &lt;2h · On-site Same Day
+                  </span>
                 </div>
                 <h3 className="text-lg font-bold font-tech tech-heading text-white">Physical Security & Surveillance</h3>
                 <p className="text-xs leading-relaxed text-zinc-400 font-light tech-body">
@@ -391,8 +424,13 @@ export default function ServicesPage({ services, hasServiceLoadError = false }: 
             {/* Card 3: Access Control */}
             <div className="bento-card p-6 flex flex-col justify-between group transition-all duration-300 hover:border-blue-500/30">
               <div className="space-y-4">
-                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/20 group-hover:scale-105 transition-transform">
-                  <Lock size={20} />
+                <div className="flex items-center justify-between">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/20 group-hover:scale-105 transition-transform">
+                    <Lock size={20} />
+                  </div>
+                  <span className="text-[10px] font-mono font-semibold text-purple-400 bg-purple-500/10 border border-purple-500/20 px-2 py-0.5 rounded">
+                    SLA: Emergency &lt;2h
+                  </span>
                 </div>
                 <h3 className="text-lg font-bold font-tech tech-heading text-white">Smart Access Control Systems</h3>
                 <p className="text-xs leading-relaxed text-zinc-400 font-light tech-body">
@@ -412,8 +450,13 @@ export default function ServicesPage({ services, hasServiceLoadError = false }: 
             {/* Card 4: Lifecycle Hardware */}
             <div className="bento-card p-6 flex flex-col justify-between group transition-all duration-300 hover:border-blue-500/30">
               <div className="space-y-4">
-                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 group-hover:scale-105 transition-transform">
-                  <Cpu size={20} />
+                <div className="flex items-center justify-between">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 group-hover:scale-105 transition-transform">
+                    <Cpu size={20} />
+                  </div>
+                  <span className="text-[10px] font-mono font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded">
+                    SLA: Priority Hardware Swap
+                  </span>
                 </div>
                 <h3 className="text-lg font-bold font-tech tech-heading text-white">Lifecycle Hardware Management</h3>
                 <p className="text-xs leading-relaxed text-zinc-400 font-light tech-body">
@@ -433,8 +476,13 @@ export default function ServicesPage({ services, hasServiceLoadError = false }: 
             {/* Card 5: Software & System Admin */}
             <div className="bento-card p-6 flex flex-col justify-between group transition-all duration-300 hover:border-blue-500/30">
               <div className="space-y-4">
-                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20 group-hover:scale-105 transition-transform">
-                  <Terminal size={20} />
+                <div className="flex items-center justify-between">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20 group-hover:scale-105 transition-transform">
+                    <Terminal size={20} />
+                  </div>
+                  <span className="text-[10px] font-mono font-semibold text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded">
+                    SLA: Continuous Monitoring
+                  </span>
                 </div>
                 <h3 className="text-lg font-bold font-tech tech-heading text-white">Software & System Administration</h3>
                 <p className="text-xs leading-relaxed text-zinc-400 font-light tech-body">
@@ -447,6 +495,114 @@ export default function ServicesPage({ services, hasServiceLoadError = false }: 
                   className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-400 hover:text-blue-300 transition-colors"
                 >
                   Explore Details <ArrowRight size={14} />
+                </Link>
+              </div>
+            </div>
+
+            {/* Card 6: Smart Infrastructure & Automation */}
+            <div className="bento-card p-6 flex flex-col justify-between group transition-all duration-300 hover:border-blue-500/30">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-rose-500/10 text-rose-400 border border-rose-500/20 group-hover:scale-105 transition-transform">
+                    <Database size={20} />
+                  </div>
+                  <span className="text-[10px] font-mono font-semibold text-rose-400 bg-rose-500/10 border border-rose-500/20 px-2 py-0.5 rounded">
+                    SLA: Project Scheduled
+                  </span>
+                </div>
+                <h3 className="text-lg font-bold font-tech tech-heading text-white">Hotel & Smart Infrastructure</h3>
+                <p className="text-xs leading-relaxed text-zinc-400 font-light tech-body">
+                  Guestroom automation (GRMS), smart hotel RFID locks, energy conservation systems, and property-wide high availability Wi-Fi.
+                </p>
+              </div>
+              <div className="mt-6 pt-4 border-t border-zinc-900/60">
+                <Link
+                  href="/services/smart-infrastructure"
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-400 hover:text-blue-300 transition-colors"
+                >
+                  Explore Details <ArrowRight size={14} />
+                </Link>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Consumer & Business Retail Support */}
+        <section className="reveal-section space-y-8" data-reveal-id="consumer-service-categories">
+          <div className="flex items-center gap-3">
+            <div className="h-6 w-1 rounded-full bg-indigo-500" />
+            <div>
+              <h2 className="text-xl font-bold font-tech tech-heading">Consumer & Business Retail Services</h2>
+              <p className="text-xs text-zinc-400">Diagnostics, hardware repairs, workstation upgrades, and home CCTV kits.</p>
+            </div>
+          </div>
+
+          <div className="grid gap-6 md:grid-cols-3">
+            <div className="bento-card p-6 flex flex-col justify-between">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                    <Wrench size={20} />
+                  </div>
+                  <span className="text-[10px] font-mono text-zinc-400 bg-zinc-900 px-2 py-0.5 rounded border border-zinc-800">
+                    Diagnostics: 24–48h
+                  </span>
+                </div>
+                <h3 className="text-base font-bold font-tech text-white">Computer & Laptop Repair</h3>
+                <p className="text-xs leading-relaxed text-zinc-400 font-light">
+                  Hardware fault isolation, display replacements, motherboard rework, thermal paste servicing, and genuine spares.
+                </p>
+              </div>
+              <div className="mt-6 pt-4 border-t border-zinc-900 flex items-center justify-between">
+                <span className="text-xs text-zinc-400">From ₹999</span>
+                <Link href="/contact?subject=support&service=repair_service" className="text-xs font-semibold text-blue-400 hover:underline">
+                  Book Repair →
+                </Link>
+              </div>
+            </div>
+
+            <div className="bento-card p-6 flex flex-col justify-between">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/20">
+                    <Cpu size={20} />
+                  </div>
+                  <span className="text-[10px] font-mono text-zinc-400 bg-zinc-900 px-2 py-0.5 rounded border border-zinc-800">
+                    Turnaround: Same Day
+                  </span>
+                </div>
+                <h3 className="text-base font-bold font-tech text-white">Hardware & Storage Upgrades</h3>
+                <p className="text-xs leading-relaxed text-zinc-400 font-light">
+                  NVMe SSD installations, RAM expansion, custom graphics cards, and high-speed data migration.
+                </p>
+              </div>
+              <div className="mt-6 pt-4 border-t border-zinc-900 flex items-center justify-between">
+                <span className="text-xs text-zinc-400">From ₹999</span>
+                <Link href="/contact?subject=sales&service=hardware_upgrade" className="text-xs font-semibold text-blue-400 hover:underline">
+                  Request Upgrade →
+                </Link>
+              </div>
+            </div>
+
+            <div className="bento-card p-6 flex flex-col justify-between">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                    <Camera size={20} />
+                  </div>
+                  <span className="text-[10px] font-mono text-zinc-400 bg-zinc-900 px-2 py-0.5 rounded border border-zinc-800">
+                    Install: 24–48h
+                  </span>
+                </div>
+                <h3 className="text-base font-bold font-tech text-white">Home & Retail CCTV Kits</h3>
+                <p className="text-xs leading-relaxed text-zinc-400 font-light">
+                  Complete 4 or 8 camera kits with NVR, hard drive, cabling, power supply, and mobile viewing setup.
+                </p>
+              </div>
+              <div className="mt-6 pt-4 border-t border-zinc-900 flex items-center justify-between">
+                <span className="text-xs text-zinc-400">From ₹14,999</span>
+                <Link href="/contact?subject=sales&service=cctv_kit" className="text-xs font-semibold text-blue-400 hover:underline">
+                  Get Quote →
                 </Link>
               </div>
             </div>

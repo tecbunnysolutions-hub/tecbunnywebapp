@@ -1692,6 +1692,15 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
           <div className="bg-[#030712] border border-amber-500/30 rounded-xl max-w-md w-full p-6 shadow-2xl relative">
             <h3 className="text-xl font-bold text-white mb-2">Request Revised Price</h3>
             <p className="text-sm text-slate-400 mb-6">Enter your details and bid a price for this custom setup. Our team will review and respond shortly.</p>
+
+            <dl className="mb-6 grid gap-x-4 gap-y-2 rounded-lg border border-white/10 bg-white/[0.03] p-3 text-xs sm:grid-cols-2">
+              <div><dt className="font-medium text-slate-200">Eligibility</dt><dd className="mt-0.5 text-slate-400">Custom configurations only.</dd></div>
+              <div><dt className="font-medium text-slate-200">Minimum offer</dt><dd className="mt-0.5 text-slate-400">70% of the displayed quote total.</dd></div>
+              <div><dt className="font-medium text-slate-200">Quote validity</dt><dd className="mt-0.5 text-slate-400">7 calendar days.</dd></div>
+              <div><dt className="font-medium text-slate-200">Stock</dt><dd className="mt-0.5 text-slate-400">Reserved only after acceptance and order confirmation.</dd></div>
+              <div><dt className="font-medium text-slate-200">Counter-offers</dt><dd className="mt-0.5 text-slate-400">Discretionary; final terms appear on the reviewed quote.</dd></div>
+              <div><dt className="font-medium text-slate-200">GST and shipping</dt><dd className="mt-0.5 text-slate-400">GST included; shipping is separate unless stated.</dd></div>
+            </dl>
             
             <div className="space-y-4">
               <div>

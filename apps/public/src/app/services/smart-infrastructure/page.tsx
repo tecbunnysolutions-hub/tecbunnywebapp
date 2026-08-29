@@ -291,7 +291,7 @@ export default function SmartInfrastructurePage() {
             <span className="text-sm uppercase tracking-[0.45em] text-blue-500 font-bold">Proposal Intake</span>
             <h2 className="mt-3 text-3xl sm:text-4xl font-bold text-white font-tech tracking-tight">Request Infrastructure Proposal</h2>
             <p className="mt-4 text-zinc-300 text-base font-light">
-              Submit details using the input columns below. Leads are routed directly to the Root Console.
+              Submit your project requirements below. Your enquiry is securely routed to our enterprise solutions team.
             </p>
           </div>
           <InfrastructureLeadForm />
@@ -315,7 +315,7 @@ export default function SmartInfrastructurePage() {
               <div className="flex flex-wrap gap-4 justify-center pt-4">
                 <Button asChild size="lg" variant="secondary" className="bg-white hover:bg-zinc-100 text-zinc-950 font-bold rounded-xl px-8 shadow-md">
                   <a href="#lead-form-section" className="flex items-center gap-2">
-                    Submit Project Columns <ArrowRight className="h-4 w-4" />
+                    Request Enterprise Proposal <ArrowRight className="h-4 w-4" />
                   </a>
                 </Button>
                 <Button asChild size="lg" variant="outline" className="border-white/25 bg-transparent text-white hover:bg-white/10 hover:border-white/40 rounded-xl px-8">

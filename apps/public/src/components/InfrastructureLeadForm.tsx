@@ -228,6 +228,13 @@ ${form.message}
         />
       </div>
 
+      <p className="text-xs text-zinc-400 leading-relaxed">
+        By submitting this form, you agree that TecBunny may contact you via WhatsApp / Phone or Email regarding your enterprise project enquiry. See our{' '}
+        <a href="/info/policies/privacy" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">
+          Privacy Policy
+        </a>.
+      </p>
+
       {/* Submit */}
       <Button
         type="submit"
