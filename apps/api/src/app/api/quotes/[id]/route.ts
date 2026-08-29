@@ -10,35 +10,6 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
     const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
 
-    if (!isUuid) {
-      const userDb = await getUserDb();
-      const { data: { user } } = await userDb.auth.getUser();
-
-      if (!user) {
-        return NextResponse.json(
-          { error: 'Authentication required to view quotes by sequential identifier' },
-          { status: 401 }
-        );
-      }
-
-      // Check if user is admin/staff
-      const { isAdmin } = await requireAdmin(user, userDb.supabase);
-
-      if (!isAdmin) {
-        // Enforce owner check
-        const quoteCheck = await db.executeMaybe(
-          db.from('quotes')
-            .select('user_id')
-            .eq('quote_number', id)
-            .maybeSingle()
-        );
-
-        if (!quoteCheck || quoteCheck.user_id !== user.id) {
-          return NextResponse.json({ error: 'Access denied' }, { status: 403 });
-        }
-      }
-    }
-
     let query = db.from('quotes').select('*');
     if (isUuid) {
       query = query.eq('id', id);
@@ -46,9 +17,27 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       query = query.eq('quote_number', id);
     }
 
-    const data = await db.execute(query.single());
+    const data = await db.executeMaybe(query.maybeSingle());
 
-    if (!data) throw new Error('Quote not found');
+    if (!data) {
+      return NextResponse.json({ error: 'Quote not found' }, { status: 404 });
+    }
+
+    // Server-side authorization & IDOR protection: enforce admin or resource ownership
+    const userDb = await getUserDb();
+    const { data: { user } } = await userDb.auth.getUser();
+
+    if (!user) {
+      return NextResponse.json(
+        { error: 'Authentication required to view quotes' },
+        { status: 401 }
+      );
+    }
+
+    const { isAdmin } = await requireAdmin(user, userDb.supabase);
+    if (!isAdmin && data.user_id && data.user_id !== user.id) {
+      return NextResponse.json({ error: 'Access denied' }, { status: 403 });
+    }
 
     const formatParam = req.nextUrl.searchParams.get('format');
     if (formatParam === 'pdf') {

@@ -30,7 +30,14 @@ function fallback(page: number, limit: number, warning: string) {
   return json({
     success: true,
     data: [],
-    pagination: { page, limit, total: 0, pages: 0 },
+    pagination: {
+      page,
+      limit,
+      total: 0,
+      pages: 0,
+      hasNext: false,
+      hasPrevious: false,
+    },
     warnings: [warning],
   });
 }
@@ -50,22 +57,31 @@ function cleanPostgrestFilterValue(value: string) {
 
 export async function GET(request: NextRequest) {
   const page = parsePositiveInt(request.nextUrl.searchParams.get('page'), 1, 10_000);
-  const limit = parsePositiveInt(request.nextUrl.searchParams.get('limit'), 20, 200);
+  const limit = parsePositiveInt(request.nextUrl.searchParams.get('limit'), 20, 100);
   const status = request.nextUrl.searchParams.get('status');
   const vendor = request.nextUrl.searchParams.get('vendor');
+  const category = request.nextUrl.searchParams.get('category');
   const search = (request.nextUrl.searchParams.get('search') ?? '').trim().slice(0, 80);
   const offset = (page - 1) * limit;
   const cleanStatus = status ? status.trim().toLowerCase() : '';
   const cleanVendor = vendor ? cleanPostgrestFilterValue(vendor) : '';
+  const cleanCategory = category ? cleanPostgrestFilterValue(category) : '';
   const cleanSearch = cleanPostgrestFilterValue(search);
 
-  logger.info('public_products.audit.requested', { page, limit, hasSearch: Boolean(search), status: status ?? null, vendor: vendor ?? null });
+  logger.info('public_products.audit.requested', { page, limit, hasSearch: Boolean(search), status: status ?? null, vendor: vendor ?? null, category: category ?? null });
 
   if (cleanStatus && !PUBLIC_PRODUCT_STATUSES.some((publicStatus) => publicStatus === cleanStatus)) {
     return json({
       success: true,
       data: [],
-      pagination: { page, limit, total: 0, pages: 0 },
+      pagination: {
+        page,
+        limit,
+        total: 0,
+        pages: 0,
+        hasNext: false,
+        hasPrevious: false,
+      },
     });
   }
 
@@ -94,6 +110,10 @@ export async function GET(request: NextRequest) {
       query = query.or(`vendor.eq.${cleanVendor},brand.eq.${cleanVendor}`);
     }
 
+    if (cleanCategory) {
+      query = query.ilike('category', `%${cleanCategory}%`);
+    }
+
     if (cleanSearch) {
       query = query.or([
         `title.ilike.%${cleanSearch}%`,
@@ -115,6 +135,8 @@ export async function GET(request: NextRequest) {
     }
 
     const products = (Array.isArray(data) ? data : []).map(normalizeProduct);
+    const total = count ?? products.length;
+    const totalPages = Math.ceil(total / limit);
 
     logger.info('public_products.audit.success', { count: products.length, page, limit });
     return json({
@@ -123,8 +145,10 @@ export async function GET(request: NextRequest) {
       pagination: {
         page,
         limit,
-        total: count ?? products.length,
-        pages: Math.ceil((count ?? products.length) / limit),
+        total,
+        pages: totalPages,
+        hasNext: page < totalPages,
+        hasPrevious: page > 1 && (totalPages === 0 || page <= totalPages + 1),
       },
     });
   } catch (error) {

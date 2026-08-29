@@ -141,7 +141,7 @@ export default function SmartInfrastructurePage() {
     },
     {
       title: "Dedicated Enterprise Support",
-          desc: "24/7 monitoring and support options for critical property operations, with response targets defined by your SLA tier."
+      desc: "24/7 support options available under eligible enterprise SLA plans with defined response targets."
     }
   ];
 

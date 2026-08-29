@@ -177,7 +177,7 @@ export default function HomePage({
                 <h2 id="goa-delivery-eligibility" className="text-sm font-semibold text-white">Next-day delivery in Goa: eligibility</h2>
                 <dl className="mt-3 grid gap-x-5 gap-y-2 text-xs sm:grid-cols-2">
                   <div><dt className="font-medium text-zinc-300">Eligible PIN codes</dt><dd className="text-zinc-500">Goa 403xxx PIN codes, confirmed at checkout.</dd></div>
-                  <div><dt className="font-medium text-zinc-300">Products</dt><dd className="text-zinc-500">In-stock products at the Parse Hub only.</dd></div>
+                  <div><dt className="font-medium text-zinc-300">Products</dt><dd className="text-zinc-500">In-stock products at our Goa fulfillment hub only.</dd></div>
                   <div><dt className="font-medium text-zinc-300">Order cut-off</dt><dd className="text-zinc-500">Shown at checkout; later orders move to the next working day.</dd></div>
                   <div><dt className="font-medium text-zinc-300">Working days</dt><dd className="text-zinc-500">Business days only.</dd></div>
                   <div><dt className="font-medium text-zinc-300">Holiday exceptions</dt><dd className="text-zinc-500">Public holidays and carrier closures are excluded.</dd></div>

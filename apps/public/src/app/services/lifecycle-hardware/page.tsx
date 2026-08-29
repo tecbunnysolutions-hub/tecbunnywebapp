@@ -272,7 +272,7 @@ export default function LifecycleHardwarePage() {
             <span className="text-sm uppercase tracking-[0.45em] text-blue-500 font-bold">Proposal Intake</span>
             <h2 className="mt-3 text-3xl sm:text-4xl font-bold text-white font-tech tracking-tight">Request Hardware Proposal</h2>
             <p className="mt-4 text-zinc-300 text-base font-light">
-              Submit details using the input columns below. Leads are routed directly to the Root Console.
+              Submit your requirements below. Your enquiry is securely routed to our enterprise solutions team.
             </p>
           </div>
           <InfrastructureLeadForm />

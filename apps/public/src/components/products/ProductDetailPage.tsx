@@ -702,7 +702,7 @@ export function ProductDetailPage({ productId, initialProduct, sourceContext }: 
                           <p className="font-semibold text-zinc-400">Currently unavailable — delivery estimate will appear when this product is back in stock</p>
                         ) : deliveryInfo.isGoa ? (
                           <p className="font-semibold text-emerald-400">
-                            {deliveryInfo.hasEstimated ? 'Expected delivery: next working day, subject to checkout confirmation' : 'Parse Hub stock — enter a PIN for a delivery estimate'}
+                            {deliveryInfo.hasEstimated ? 'Expected delivery: next working day, subject to checkout confirmation' : 'Goa fulfillment hub stock — enter a PIN for a delivery estimate'}
                           </p>
                         ) : (
                           <p className="font-semibold text-zinc-400">

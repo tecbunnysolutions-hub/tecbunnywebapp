@@ -26,6 +26,11 @@ function firstPositive(product: Record<string, unknown>, keys: string[]) {
   return null;
 }
 
+export function resolvePublicProductPrice(product: Record<string, unknown> | null | undefined): number {
+  if (!product) return 0;
+  return firstPositive(product, [...PUBLIC_PRODUCT_PRICE_COLUMNS]) ?? 0;
+}
+
 export function isPubliclyVisibleProduct(product: Record<string, unknown> | null | undefined) {
   if (!product) return false;
 
@@ -33,7 +38,7 @@ export function isPubliclyVisibleProduct(product: Record<string, unknown> | null
   const isActive = !status || status === 'active' || status === 'published';
   const isEnabled = product.is_active !== false;
   const isNotDeleted = product.is_deleted !== true && product.deleted_at == null;
-  const hasSalePrice = firstPositive(product, [...PUBLIC_PRODUCT_PRICE_COLUMNS]) !== null;
+  const hasSalePrice = resolvePublicProductPrice(product) > 0;
 
   return isActive && isEnabled && isNotDeleted && hasSalePrice;
 }
@@ -56,7 +61,7 @@ export function applyPublicProductVisibilityFilters(
     next = next.or('status.is.null,status.eq.active,status.eq.published');
   }
 
-  if (columns?.has('is_active')) {
+  if (!columns || columns.has('is_active')) {
     next = next.or('is_active.is.null,is_active.eq.true');
   }
 
@@ -64,7 +69,7 @@ export function applyPublicProductVisibilityFilters(
     next = next.or('is_deleted.is.null,is_deleted.eq.false');
   }
 
-  if (columns?.has('deleted_at')) {
+  if (!columns || columns.has('deleted_at')) {
     next = next.is('deleted_at', null);
   }
 

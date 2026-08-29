@@ -7,7 +7,7 @@ import { Suspense } from 'react';
 import {  createSupabaseClient as createPublicSupabaseClient  } from '@tecbunny/database/server';
 import { BRAND_LOGO_URL } from "@tecbunny/ui";
 import { stripHtmlToPlainText } from "@tecbunny/core/strings";
-import { isPubliclyVisibleProduct } from "@tecbunny/core/product-visibility";
+import { isPubliclyVisibleProduct, resolvePublicProductPrice } from "@tecbunny/core/product-visibility";
 import { notFound } from 'next/navigation';
 
 // Product publication and pricing changes must be visible immediately.
@@ -56,7 +56,7 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
     `${product.seo_description || specSeoDesc || product.description || product.details} Technical Specs: ${specs}`
   );
 
-  const productPrice = Number(product.price ?? product.offer_price ?? 0);
+  const productPrice = resolvePublicProductPrice(product);
   const formattedPrice = productPrice > 0 ? `₹${productPrice.toLocaleString('en-IN')}` : 'Request Quote';
   const availabilityText = product.stock_status === 'out_of_stock' ? 'Out of Stock' : 'In Stock';
   
@@ -156,7 +156,7 @@ async function ProductDataLoader({ id }: { id: string }) {
   const productDescription = stripHtmlToPlainText(product.description || product.details, 500) ||
     `Quality ${productCategory || 'technology'} hardware available at TecBunny.`;
   const productImage = product.image || product.image_url || BRAND_LOGO_URL;
-  const productPrice = Number(product.price ?? product.offer_price ?? 0);
+  const productPrice = resolvePublicProductPrice(product);
   const productSpecifications = product.specifications && typeof product.specifications === 'object'
     ? Object.entries(product.specifications as Record<string, unknown>)
       .filter(([key, value]) => !['sourceurl', 'source_url', 'source-url', 'seo_title', 'seo_description'].includes(key.toLowerCase()) && value != null && String(value).trim())

@@ -92,7 +92,7 @@ export function HeroVisuals() {
           </div>
           <div>
             <p className="font-black text-white text-base tracking-wide">SLA Active</p>
-            <p className="text-xs font-medium text-zinc-400 mt-0.5">Response Guarantee Backed</p>
+            <p className="text-xs font-medium text-zinc-400 mt-0.5">Defined SLA Commitments</p>
           </div>
         </div>
       </div>

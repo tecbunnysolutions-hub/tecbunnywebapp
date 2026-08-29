@@ -23,7 +23,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       
       const { data: products } = await supabase
         .from('products')
-        .select('id, updated_at, status, is_deleted, visibility, sales_channel, available_online, is_service_only')
+        .select('id, updated_at, status, is_deleted, is_active, deleted_at, price, selling_price, sale_price, offer_price, discount_price, unit_price, visibility, sales_channel, available_online, is_service_only')
         .eq('status', 'active')
         .eq('is_deleted', false);
 
@@ -125,6 +125,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: now,
       changeFrequency: 'monthly' as const,
       priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/services/smart-infrastructure`,
+      lastModified: now,
+      changeFrequency: 'monthly' as const,
+      priority: 0.9,
     },
     {
       url: `${baseUrl}/products`,
