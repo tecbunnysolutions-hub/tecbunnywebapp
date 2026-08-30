@@ -2,6 +2,8 @@ import { createSupabaseServiceClient } from "@tecbunny/core/server";
 import { NextRequest, NextResponse } from 'next/server';
 import { uploadToSupabase } from '@tecbunny/database/storage';
 import { logger } from "@tecbunny/core";
+import { scoreLeadPriority, type AssessmentData } from "@tecbunny/core/lead-scoring";
+import { notifySalesAboutLead, type LeadNotificationPayload } from "@tecbunny/core/leads/notify-sales";
 
 export const runtime = 'nodejs';
 
@@ -46,23 +48,71 @@ async function hasValidFileSignature(file: File) {
   return isPdf || isJpeg || isPng || isWebp;
 }
 
+/**
+ * Extract assessment data from message body for lead scoring
+ * Parse the formatted message to extract structured data
+ */
+function extractAssessmentDataFromMessage(message: string): Partial<AssessmentData> {
+  const data: Partial<AssessmentData> = {};
+
+  // Parse structured fields from formatted message
+  const serviceMatch = message.match(/Service Requested:\s*(.+?)(?:\n|$)/);
+  if (serviceMatch) data.service = serviceMatch[1].trim();
+
+  const industryMatch = message.match(/Industry:\s*(.+?)(?:\n|$)/);
+  if (industryMatch) data.industry = industryMatch[1].trim();
+
+  const scaleMatch = message.match(/Property Scale:\s*(.+?)(?:\n|$)/);
+  if (scaleMatch) data.scale = scaleMatch[1].trim();
+
+  const timelineMatch = message.match(/Implementation Timeline:\s*(.+?)(?:\n|$)/);
+  if (timelineMatch) data.timeline = timelineMatch[1].trim();
+
+  const cityMatch = message.match(/Location \/ City:\s*(.+?)(?:\n|$)/);
+  if (cityMatch) data.city = cityMatch[1].trim();
+
+  const budgetMatch = message.match(/Estimated Budget:\s*(.+?)(?:\n|$)/);
+  if (budgetMatch) data.budget = budgetMatch[1].trim();
+
+  // Extract problem and notes sections
+  const problemMatch = message.match(/Current Problem \/ Challenges:\n([\s\S]+?)(?:\n\nAdditional Notes|$)/);
+  if (problemMatch) {
+    const problemText = problemMatch[1].trim();
+    if (problemText !== 'Not specified') {
+      data.current_problem = problemText;
+    }
+  }
+
+  const notesMatch = message.match(/Additional Notes \/ Scope:\n([\s\S]+?)$/);
+  if (notesMatch) {
+    const notesText = notesMatch[1].trim();
+    if (notesText !== 'None') {
+      data.additional_notes = notesText;
+    }
+  }
+
+  return data;
+}
+
 interface ContactMessagePayload {
   name: string;
   email: string;
-  phone?: string;
-  company_name?: string;
-  subject?: string;
+  phone?: string | null;
+  company_name?: string | null;
+  subject?: string | null;
   message: string;
-  service_interest?: string;
-  origin_path?: string;
-  form_identifier?: string;
-  utm_source?: string;
-  utm_medium?: string;
-  utm_campaign?: string;
-  document_url?: string;
-  document_filename?: string;
-  document_mime_type?: string;
-  document_size_bytes?: number;
+  service_interest?: string | null;
+  origin_path?: string | null;
+  form_identifier?: string | null;
+  utm_source?: string | null;
+  utm_medium?: string | null;
+  utm_campaign?: string | null;
+  document_url?: string | null;
+  document_filename?: string | null;
+  document_mime_type?: string | null;
+  document_size_bytes?: number | null;
+  lead_score?: number;
+  lead_priority?: string;
 }
 
 function classifyInquiry(input: {
@@ -224,10 +274,18 @@ export async function POST(request: NextRequest) {
     try {
       const supabase = createSupabaseServiceClient();
       const classification = classifyInquiry({
-        originPath: origin_path,
-        formIdentifier: form_identifier,
-        subject: subject,
+        originPath: origin_path || undefined,
+        formIdentifier: form_identifier || undefined,
+        subject: subject || undefined,
       });
+
+      // Extract assessment data for lead scoring
+      const assessmentData = extractAssessmentDataFromMessage(message) as AssessmentData;
+      assessmentData.document_url = documentUrl;
+      assessmentData.phone = phone || undefined;
+
+      // Score the lead
+      const leadScore = scoreLeadPriority(assessmentData);
 
       const payload: ContactMessagePayload = {
         name: name.trim(),
@@ -246,6 +304,8 @@ export async function POST(request: NextRequest) {
         document_filename: documentFilename || null,
         document_mime_type: documentMimeType || null,
         document_size_bytes: documentSizeBytes || null,
+        lead_score: leadScore.totalScore,
+        lead_priority: leadScore.priority,
       };
 
       const { data: result, error: dbError } = await supabase
@@ -276,7 +336,39 @@ export async function POST(request: NextRequest) {
         messageId: result?.id,
         hasDocument: !!documentUrl,
         fileName: documentFilename,
+        leadScore: leadScore.totalScore,
+        leadPriority: leadScore.priority,
       });
+
+      // Notify sales asynchronously (don't block response)
+      if (form_identifier === 'technology_assessment_funnel') {
+        const notificationPayload: LeadNotificationPayload = {
+          leadId: result?.id || 'unknown',
+          name: name.trim(),
+          email: email.trim(),
+          phone: phone?.trim(),
+          company_name: company_name?.trim(),
+          service: service_interest?.trim() || 'Not specified',
+          industry: assessmentData.industry || 'Not specified',
+          scale: assessmentData.scale || 'Not specified',
+          city: assessmentData.city || 'Not specified',
+          timeline: assessmentData.timeline || 'Not specified',
+          budget: assessmentData.budget || undefined,
+          currentProblem: assessmentData.current_problem || undefined,
+          documentUrl,
+          documentFilename,
+          sourceContext: form_identifier,
+        };
+
+        // Fire and forget—don't wait for notification
+        notifySalesAboutLead(notificationPayload, leadScore).catch((err: unknown) => {
+          logger.error('contact_upload.notification_failed', {
+            correlationId,
+            messageId: result?.id,
+            error: err instanceof Error ? err.message : String(err),
+          });
+        });
+      }
 
       return NextResponse.json(
         {
@@ -284,6 +376,8 @@ export async function POST(request: NextRequest) {
           id: result?.id,
           message: 'Your assessment request has been received',
           documentUrl: documentUrl || null,
+          leadScore: leadScore.totalScore,
+          leadPriority: leadScore.priority,
         },
         { status: 200 }
       );
