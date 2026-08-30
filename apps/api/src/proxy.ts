@@ -69,6 +69,7 @@ export async function proxy(request: NextRequest, event: NextFetchEvent) {
         'GET /api/captcha/config',
         'POST /api/captcha/verify',
         'POST /api/contact-messages',
+        'POST /api/contact-messages-with-file',
         'GET /api/free-installation-slots',
         'GET /api/custom-setup-offers',
         'GET /api/docs',

@@ -111,13 +111,13 @@ export function TechnologyAssessmentFunnel({
   const [formData, setFormData] = React.useState({
     // Step 1: Requirements
     service: initialService,
-    timeline: 'immediate',
+    timeline: '',
     currentProblem: '',
 
     // Step 2: Scale & Industry
     industry: initialIndustry,
-    scale: 'Medium (20-100 Users / 10-40 Cameras / Multi-Floor)',
-    city: 'Goa (North/South)',
+    scale: '',
+    city: '',
     budget: 'Flexible / Proposal Based',
 
     // Step 3: Contact Details
@@ -159,14 +159,38 @@ export function TechnologyAssessmentFunnel({
         });
         return;
       }
+      if (!formData.timeline) {
+        toast({
+          variant: 'destructive',
+          title: 'Select Timeline',
+          description: 'Please select your target implementation timeline.',
+        });
+        return;
+      }
       setCurrentStep(2);
       window.scrollTo({ top: 300, behavior: 'smooth' });
     } else if (currentStep === 2) {
-      if (!formData.industry || !formData.city) {
+      if (!formData.industry) {
         toast({
           variant: 'destructive',
-          title: 'Missing Details',
-          description: 'Please select your industry and property location.',
+          title: 'Select Industry',
+          description: 'Please select your industry or property type.',
+        });
+        return;
+      }
+      if (!formData.scale) {
+        toast({
+          variant: 'destructive',
+          title: 'Select Project Scale',
+          description: 'Please select your estimated requirement scale.',
+        });
+        return;
+      }
+      if (!formData.city.trim()) {
+        toast({
+          variant: 'destructive',
+          title: 'Enter Location',
+          description: 'Please specify your project location or city.',
         });
         return;
       }
@@ -224,24 +248,31 @@ Additional Notes / Scope:
 ${formData.additionalNotes.trim() || 'None'}
       `.trim();
 
-      const response = await fetch('/api/contact-messages', {
+      // Use FormData for multipart submission (supports file upload)
+      const submitFormData = new FormData();
+      submitFormData.append('name', formData.name.trim());
+      submitFormData.append('email', formData.email.trim().toLowerCase());
+      submitFormData.append('phone', formData.phone.trim());
+      submitFormData.append('company_name', formData.company.trim());
+      submitFormData.append('subject', `Technology Assessment: ${serviceTitle} - ${formData.company.trim()}`);
+      submitFormData.append('message', formattedMessage);
+      submitFormData.append('service_interest', serviceTitle);
+      submitFormData.append('origin_path', typeof window !== 'undefined' ? window.location.pathname : '/assessment');
+      submitFormData.append('form_identifier', 'technology_assessment_funnel');
+      
+      // Append file if present
+      if (attachedFile) {
+        submitFormData.append('file', attachedFile);
+      }
+
+      const response = await fetch('/api/contact-messages-with-file', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: formData.name.trim(),
-          email: formData.email.trim().toLowerCase(),
-          phone: formData.phone.trim(),
-          company_name: formData.company.trim(),
-          subject: `Technology Assessment: ${serviceTitle} - ${formData.company.trim()}`,
-          message: formattedMessage,
-          service_interest: serviceTitle,
-          origin_path: typeof window !== 'undefined' ? window.location.pathname : '/assessment',
-          form_identifier: 'technology_assessment_funnel',
-        }),
+        body: submitFormData,
       });
 
       if (!response.ok) {
-        throw new Error('Failed to submit assessment request.');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to submit assessment request.');
       }
 
       setIsSuccess(true);
@@ -296,16 +327,10 @@ ${formData.additionalNotes.trim() || 'None'}
     }
 
     setAttachedFile(file);
-    setFormData(prev => ({
-      ...prev,
-      additionalNotes: prev.additionalNotes 
-        ? `${prev.additionalNotes}\n[Attached Document: ${file.name} (${Math.round(file.size / 1024)} KB)]`
-        : `[Attached Document: ${file.name} (${Math.round(file.size / 1024)} KB)]`
-    }));
 
     toast({
-      title: 'Document Attached',
-      description: `${file.name} will be reviewed by our systems engineering team.`,
+      title: 'Document Ready for Upload',
+      description: `${file.name} will be securely uploaded with your assessment request.`,
     });
   };
 
@@ -354,7 +379,7 @@ ${formData.additionalNotes.trim() || 'None'}
               href="https://wa.me/919604136010?text=Hi%20TecBunny,%20I%20just%20submitted%20a%20technology%20assessment%20request%20and%20would%20like%20to%20discuss%20it."
               target="_blank"
               rel="noopener noreferrer"
-              onClick={() => trackEvent('assessment_success_whatsapp_clicked', { company: formData.company })}
+              onClick={() => trackEvent('assessment_success_whatsapp_clicked', { service: formData.service, industry: formData.industry, source: sourceContext })}
               className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-6 py-3 text-xs uppercase tracking-wider transition-colors shadow-lg shadow-emerald-500/20"
             >
               <MessageSquare size={16} />
@@ -362,7 +387,7 @@ ${formData.additionalNotes.trim() || 'None'}
             </a>
             <a
               href="tel:+919604136010"
-              onClick={() => trackEvent('assessment_success_phone_clicked', { company: formData.company })}
+              onClick={() => trackEvent('assessment_success_phone_clicked', { service: formData.service, industry: formData.industry, source: sourceContext })}
               className="inline-flex items-center justify-center gap-2 rounded-xl border border-zinc-700 bg-zinc-900 hover:bg-zinc-850 text-white font-semibold px-6 py-3 text-xs uppercase tracking-wider transition-colors"
             >
               <PhoneCall size={16} />
@@ -476,7 +501,7 @@ ${formData.additionalNotes.trim() || 'None'}
             {/* Timeline */}
             <div className="space-y-3 pt-2">
               <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider block">
-                Target Implementation Timeline
+                Target Implementation Timeline *
               </label>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 {TIMELINE_OPTIONS.map((time) => {
@@ -552,6 +577,7 @@ ${formData.additionalNotes.trim() || 'None'}
                   onChange={handleChange}
                   className="w-full bg-[#09090B] border border-zinc-850 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition-colors"
                 >
+                  <option value="">-- Select Industry --</option>
                   {INDUSTRY_OPTIONS.map(ind => (
                     <option key={ind} value={ind}>{ind}</option>
                   ))}
@@ -570,6 +596,7 @@ ${formData.additionalNotes.trim() || 'None'}
                   onChange={handleChange}
                   className="w-full bg-[#09090B] border border-zinc-850 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition-colors"
                 >
+                  <option value="">-- Select Project Scale --</option>
                   {SCALE_OPTIONS.map(sc => (
                     <option key={sc} value={sc}>{sc}</option>
                   ))}

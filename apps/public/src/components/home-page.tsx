@@ -225,8 +225,8 @@ export default function HomePage({
 
               <div className="grid max-w-md grid-cols-2 gap-6 border-t border-zinc-800/80 pt-8">
                 <div className="group">
-                  <p className="text-3xl font-black text-white font-tech group-hover:text-blue-400 transition-colors">100+</p>
-                  <p className="text-xs font-bold uppercase tracking-widest text-zinc-500 mt-1">Installations delivered</p>
+                  <p className="text-3xl font-black text-white font-tech group-hover:text-blue-400 transition-colors">Proven</p>
+                  <p className="text-xs font-bold uppercase tracking-widest text-zinc-500 mt-1">Enterprise Solutions</p>
                 </div>
                 <div className="group">
                   <p className="text-3xl font-black text-white font-tech group-hover:text-blue-400 transition-colors">SLA</p>

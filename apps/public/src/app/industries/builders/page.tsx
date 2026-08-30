@@ -78,7 +78,7 @@ export default function BuildersIndustryPage() {
           desc: "Trench-ready fiber and PoE+ cabling for motorized boom barriers, long-range RFID vehicle tags, ANPR cameras, and security guard kiosk consoles.",
           points: [
             "Surge-protected Ethernet SPDs on all outdoor gate camera runs",
-            "Fast 1.5s boom barriers with anti-tailgating vehicle loop detectors",
+            "Motorized boom barriers with anti-tailgating vehicle loop detectors",
             "Central security control room console setup with multi-monitor matrix"
           ],
           icon: Shield
@@ -87,7 +87,7 @@ export default function BuildersIndustryPage() {
           title: "Turn-Key Commissioning & As-Built Documentation",
           desc: "Complete operational testing, labeled patch panels, user acceptance testing (UAT), and full CAD as-built drawings handed to facility management.",
           points: [
-            "Zero-defect commissioning handover signed off before occupancy",
+            "Structured commissioning process with comprehensive testing protocols",
             "Comprehensive O&M manuals and equipment serial registries",
             "Seamless transition into AMC preventive maintenance coverage"
           ],
