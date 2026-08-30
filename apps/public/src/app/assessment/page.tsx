@@ -35,7 +35,12 @@ export async function generateMetadata(): Promise<Metadata> {
   });
 }
 
-export default function AssessmentPage() {
+export default async function AssessmentPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ service?: string; industry?: string; context?: string }>;
+}) {
+  const resolvedParams = searchParams ? await searchParams : {};
   return (
     <div className="relative min-h-screen bg-[#09090B] text-zinc-200 selection:bg-blue-500/20 selection:text-white overflow-hidden pb-20">
       {/* Ambient background glows */}
@@ -88,7 +93,11 @@ export default function AssessmentPage() {
       {/* Main Funnel Section */}
       <section className="py-12 sm:py-16">
         <div className="container mx-auto px-6 max-w-4xl">
-          <TechnologyAssessmentFunnel sourceContext="assessment_landing_page" />
+          <TechnologyAssessmentFunnel 
+            defaultService={resolvedParams.service}
+            defaultIndustry={resolvedParams.industry}
+            sourceContext={resolvedParams.context || 'assessment_landing_page'} 
+          />
         </div>
       </section>
 

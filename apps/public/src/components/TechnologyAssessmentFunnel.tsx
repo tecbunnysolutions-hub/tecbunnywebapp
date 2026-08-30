@@ -11,6 +11,7 @@ import {
   ShieldCheck, 
   Clock, 
   Phone, 
+  PhoneCall,
   Mail, 
   Sparkles,
   Server,
@@ -19,7 +20,9 @@ import {
   Zap,
   Cpu,
   Layers,
-  HelpCircle
+  HelpCircle,
+  MessageSquare,
+  FileText
 } from 'lucide-react';
 import { Button, Input, Textarea, useToast } from '@tecbunny/ui';
 import { useAnalytics } from '@tecbunny/core';
@@ -58,6 +61,30 @@ export const SCALE_OPTIONS = [
   'Custom Enterprise Scale'
 ] as const;
 
+function resolveDefaultIndustry(str?: string): string {
+  if (!str) return 'Hospitality (Hotels & Resorts)';
+  const s = str.toLowerCase();
+  if (s.includes('hosp') || s.includes('hotel') || s.includes('resort')) return 'Hospitality (Hotels & Resorts)';
+  if (s.includes('corp') || s.includes('office') || s.includes('co-work')) return 'Corporate Offices & Co-working';
+  if (s.includes('educ') || s.includes('school') || s.includes('college')) return 'Education (Schools & Colleges)';
+  if (s.includes('health') || s.includes('clinic') || s.includes('hospital')) return 'Healthcare & Clinics';
+  if (s.includes('retail') || s.includes('shop') || s.includes('commercial')) return 'Retail & Commercial Outlets';
+  if (s.includes('build') || s.includes('real estate') || s.includes('construct') || s.includes('developer')) return 'Real Estate & New Construction';
+  if (s.includes('manufactur') || s.includes('warehous')) return 'Manufacturing & Warehousing';
+  return str;
+}
+
+function resolveDefaultService(str?: string): string {
+  if (!str) return 'network-infrastructure';
+  const s = str.toLowerCase();
+  if (s.includes('cctv') || s.includes('surveillance') || s.includes('security') || s.includes('physical-security')) return 'physical-security';
+  if (s.includes('lock') || s.includes('access') || s.includes('smart-access-control')) return 'smart-access-control';
+  if (s.includes('smart-infra') || s.includes('smart_infrastructure') || s.includes('automation')) return 'smart-infrastructure';
+  if (s.includes('hardware') || s.includes('amc') || s.includes('workstation') || s.includes('lifecycle')) return 'lifecycle-hardware';
+  if (s.includes('sysadmin') || s.includes('system') || s.includes('cloud') || s.includes('software')) return 'software-system-admin';
+  return 'network-infrastructure';
+}
+
 interface TechnologyAssessmentFunnelProps {
   defaultService?: string;
   defaultIndustry?: string;
@@ -76,15 +103,19 @@ export function TechnologyAssessmentFunnel({
   const [currentStep, setCurrentStep] = React.useState<1 | 2 | 3>(1);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [isSuccess, setIsSuccess] = React.useState(false);
+  const [attachedFile, setAttachedFile] = React.useState<File | null>(null);
+
+  const initialService = React.useMemo(() => resolveDefaultService(defaultService), [defaultService]);
+  const initialIndustry = React.useMemo(() => resolveDefaultIndustry(defaultIndustry), [defaultIndustry]);
 
   const [formData, setFormData] = React.useState({
     // Step 1: Requirements
-    service: defaultService || 'network-infrastructure',
+    service: initialService,
     timeline: 'immediate',
     currentProblem: '',
 
     // Step 2: Scale & Industry
-    industry: defaultIndustry || 'Hospitality (Hotels & Resorts)',
+    industry: initialIndustry,
     scale: 'Medium (20-100 Users / 10-40 Cameras / Multi-Floor)',
     city: 'Goa (North/South)',
     budget: 'Flexible / Proposal Based',
@@ -103,12 +134,13 @@ export function TechnologyAssessmentFunnel({
     try {
       trackEvent('assessment_started', {
         source: sourceContext,
-        defaultService: defaultService || 'none'
+        service: initialService,
+        industry: initialIndustry,
       });
     } catch {
       // safe fallback
     }
-  }, [sourceContext, defaultService, trackEvent]);
+  }, [sourceContext, initialService, initialIndustry, trackEvent]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
@@ -217,6 +249,7 @@ ${formData.additionalNotes.trim() || 'None'}
         service: formData.service,
         industry: formData.industry,
         timeline: formData.timeline,
+        hasDocument: Boolean(attachedFile),
       });
 
       toast({
@@ -234,50 +267,124 @@ ${formData.additionalNotes.trim() || 'None'}
     }
   };
 
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate size (max 10MB)
+    const MAX_SIZE = 10 * 1024 * 1024;
+    if (file.size > MAX_SIZE) {
+      toast({
+        variant: 'destructive',
+        title: 'File Too Large',
+        description: 'Please upload a project document or blueprint smaller than 10MB.',
+      });
+      e.target.value = '';
+      return;
+    }
+
+    // Validate type
+    const ALLOWED_TYPES = ['application/pdf', 'image/png', 'image/jpeg', 'image/webp'];
+    if (!ALLOWED_TYPES.includes(file.type) && !file.name.endsWith('.pdf')) {
+      toast({
+        variant: 'destructive',
+        title: 'Unsupported File Format',
+        description: 'Allowed formats: PDF, PNG, JPG, WEBP blueprints.',
+      });
+      e.target.value = '';
+      return;
+    }
+
+    setAttachedFile(file);
+    setFormData(prev => ({
+      ...prev,
+      additionalNotes: prev.additionalNotes 
+        ? `${prev.additionalNotes}\n[Attached Document: ${file.name} (${Math.round(file.size / 1024)} KB)]`
+        : `[Attached Document: ${file.name} (${Math.round(file.size / 1024)} KB)]`
+    }));
+
+    toast({
+      title: 'Document Attached',
+      description: `${file.name} will be reviewed by our systems engineering team.`,
+    });
+  };
+
   if (isSuccess) {
     return (
-      <div className={`rounded-3xl border border-emerald-500/20 bg-emerald-500/5 p-8 sm:p-12 text-center space-y-6 max-w-2xl mx-auto backdrop-blur-md animate-fade-in ${className}`}>
-        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-lg shadow-emerald-500/5">
-          <CheckCircle2 size={36} />
+      <div className={`rounded-3xl border border-emerald-500/30 bg-gradient-to-b from-emerald-950/20 via-zinc-950 to-zinc-950 p-8 sm:p-12 text-center space-y-8 max-w-3xl mx-auto backdrop-blur-md animate-fade-in shadow-2xl ${className}`}>
+        <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-3xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 shadow-xl shadow-emerald-500/10">
+          <CheckCircle2 size={44} />
         </div>
-        <div className="space-y-2">
-          <span className="text-[11px] font-bold uppercase tracking-[0.25em] text-emerald-400 font-mono">Assessment Intake Registered</span>
-          <h3 className="text-2xl sm:text-3xl font-extrabold text-white font-tech">You&apos;re All Set for Review</h3>
-          <p className="text-zinc-300 text-sm sm:text-base leading-relaxed font-light max-w-lg mx-auto">
-            Our systems engineer is reviewing your infrastructure requirements for <strong className="text-white font-medium">{formData.company}</strong>. We will contact you via WhatsApp / Phone to schedule the assessment.
+
+        <div className="space-y-3">
+          <span className="text-xs font-bold uppercase tracking-[0.3em] text-emerald-400 font-mono">Assessment Request Confirmed</span>
+          <h3 className="text-3xl sm:text-4xl font-extrabold text-white font-tech">Your Requirements Are in Engineering Review</h3>
+          <p className="text-zinc-300 text-sm sm:text-base leading-relaxed font-light max-w-xl mx-auto">
+            Our certified systems engineering team has received your project specifications for <strong className="text-white font-medium">{formData.company || 'your facility'}</strong>.
           </p>
         </div>
 
-        <div className="rounded-2xl border border-zinc-800 bg-zinc-950/70 p-5 text-left text-xs space-y-2.5 max-w-md mx-auto">
-          <div className="flex justify-between items-center text-zinc-400">
-            <span>Estimated Response SLA:</span>
-            <span className="font-semibold text-white">Same Business Day</span>
+        {/* 3-Step What Happens Next Roadmap */}
+        <div className="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-6 text-left space-y-4">
+          <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-400 font-mono">What Happens Next:</h4>
+          <div className="grid gap-4 sm:grid-cols-3 text-xs">
+            <div className="space-y-1.5 border-l-2 border-blue-500 pl-3">
+              <span className="font-bold text-white block">1. Technical Scoping</span>
+              <p className="text-zinc-400 font-light leading-relaxed">Our engineer analyzes your location, device count, and cabling requirements.</p>
+            </div>
+            <div className="space-y-1.5 border-l-2 border-indigo-500 pl-3">
+              <span className="font-bold text-white block">2. Preliminary BOQ</span>
+              <p className="text-zinc-400 font-light leading-relaxed">We generate an itemized Bill of Materials with Tier-1 OEM hardware options.</p>
+            </div>
+            <div className="space-y-1.5 border-l-2 border-emerald-500 pl-3">
+              <span className="font-bold text-white block">3. Site Survey Booking</span>
+              <p className="text-zinc-400 font-light leading-relaxed">We coordinate an on-site physical inspection across Goa to finalize cable paths.</p>
+            </div>
           </div>
-          <div className="flex justify-between items-center text-zinc-400">
-            <span>Direct Engineering Line:</span>
-            <a href="tel:+919604136010" className="font-semibold text-blue-400 hover:underline">+91 96041 36010</a>
+        </div>
+
+        {/* Immediate Connect Box */}
+        <div className="rounded-2xl border border-blue-500/20 bg-blue-500/5 p-6 space-y-4">
+          <div>
+            <h4 className="text-sm font-bold text-white font-tech">Want to discuss your requirement immediately?</h4>
+            <p className="text-xs text-zinc-400 mt-1">Speak directly with our enterprise solutions desk during business hours.</p>
           </div>
-          <div className="flex justify-between items-center text-zinc-400">
-            <span>WhatsApp Quick Connect:</span>
-            <a href="https://wa.me/919604136010?text=Hi%20TecBunny,%20I%20just%20submitted%20a%20technology%20assessment%20request." target="_blank" rel="noopener noreferrer" className="font-semibold text-emerald-400 hover:underline">
-              Message Team Now &rarr;
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <a
+              href="https://wa.me/919604136010?text=Hi%20TecBunny,%20I%20just%20submitted%20a%20technology%20assessment%20request%20and%20would%20like%20to%20discuss%20it."
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => trackEvent('assessment_success_whatsapp_clicked', { company: formData.company })}
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-6 py-3 text-xs uppercase tracking-wider transition-colors shadow-lg shadow-emerald-500/20"
+            >
+              <MessageSquare size={16} />
+              <span>Connect on WhatsApp</span>
+            </a>
+            <a
+              href="tel:+919604136010"
+              onClick={() => trackEvent('assessment_success_phone_clicked', { company: formData.company })}
+              className="inline-flex items-center justify-center gap-2 rounded-xl border border-zinc-700 bg-zinc-900 hover:bg-zinc-850 text-white font-semibold px-6 py-3 text-xs uppercase tracking-wider transition-colors"
+            >
+              <PhoneCall size={16} />
+              <span>Call +91 96041 36010</span>
             </a>
           </div>
         </div>
 
-        <div className="pt-2 flex flex-col sm:flex-row gap-3 justify-center">
+        <div className="pt-2 flex flex-col sm:flex-row gap-4 justify-center">
           <Button
             variant="outline"
             onClick={() => {
               setIsSuccess(false);
               setCurrentStep(1);
+              setAttachedFile(null);
             }}
-            className="border-zinc-800 bg-zinc-900/50 text-zinc-300 hover:bg-zinc-800 hover:text-white"
+            className="border-zinc-800 bg-zinc-900/50 text-zinc-300 hover:bg-zinc-800 hover:text-white rounded-xl h-11 text-xs"
           >
             Submit Another Requirement
           </Button>
-          <Button asChild className="bg-blue-600 hover:bg-blue-500 text-white font-bold">
-            <Link href="/services">Explore TecBunny Services</Link>
+          <Button asChild className="bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl h-11 text-xs">
+            <Link href="/">Return to Homepage</Link>
           </Button>
         </div>
       </div>
@@ -607,6 +714,31 @@ ${formData.additionalNotes.trim() || 'None'}
               </div>
             </div>
 
+            {/* Optional Project Document / Blueprint Upload */}
+            <div className="space-y-2 rounded-2xl border border-dashed border-zinc-800 bg-zinc-950/40 p-4">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-semibold text-zinc-300 flex items-center gap-1.5" htmlFor="project-document">
+                  <FileText size={14} className="text-blue-400" />
+                  <span>Attach Floorplan / BOQ / Blueprint (Optional)</span>
+                </label>
+                <span className="text-[10px] font-mono text-zinc-500">PDF, PNG, JPG (Max 10MB)</span>
+              </div>
+              <input
+                id="project-document"
+                type="file"
+                accept=".pdf,.png,.jpg,.jpeg,.webp"
+                onChange={handleFileUpload}
+                disabled={isSubmitting}
+                className="w-full text-xs text-zinc-400 file:mr-3 file:py-1.5 file:px-3.5 file:rounded-lg file:border file:border-zinc-700 file:bg-zinc-850 file:text-xs file:font-semibold file:text-white hover:file:bg-zinc-800 cursor-pointer"
+              />
+              {attachedFile && (
+                <p className="text-[11px] text-emerald-400 flex items-center gap-1 font-mono">
+                  <CheckCircle2 size={12} />
+                  <span>Selected: {attachedFile.name} ({Math.round(attachedFile.size / 1024)} KB)</span>
+                </p>
+              )}
+            </div>
+
             <div className="space-y-2">
               <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider" htmlFor="additional-notes">
                 Additional Requirements or Floorplan Notes (Optional)
@@ -667,6 +799,13 @@ ${formData.additionalNotes.trim() || 'None'}
                   </>
                 )}
               </Button>
+            </div>
+
+            <div className="pt-2 text-center">
+              <p className="text-[11px] text-zinc-500 flex items-center justify-center gap-1.5">
+                <ShieldCheck size={13} className="text-emerald-400 shrink-0" />
+                <span>No obligation. Your information is used solely to evaluate your technical requirements and deliver your itemized proposal.</span>
+              </p>
             </div>
           </div>
         )}

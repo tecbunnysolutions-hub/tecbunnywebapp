@@ -174,6 +174,14 @@ export default function ContactPage() {
         intent: intentParam ?? undefined,
       });
 
+      if (normalizedSubject === 'quote' || intentParam?.includes('quote') || intentParam?.includes('consultation')) {
+        void trackEvent('quote_requested', {
+          service: serviceParam ?? 'general',
+          intent: intentParam ?? 'quote',
+          page: 'contact_page'
+        });
+      }
+
       form.reset({
         name: '',
         email: '',
@@ -307,6 +315,14 @@ export default function ContactPage() {
                                   title: info.title,
                                   destination: href,
                                 });
+
+                                if (href?.startsWith('tel:')) {
+                                  void trackEvent('phone_clicked', { destination: href, ctaLocation: 'contact_sidebar' });
+                                } else if (href?.startsWith('mailto:')) {
+                                  void trackEvent('email_clicked', { destination: href, ctaLocation: 'contact_sidebar' });
+                                } else if (href?.includes('wa.me')) {
+                                  void trackEvent('whatsapp_clicked', { destination: href, ctaLocation: 'contact_sidebar' });
+                                }
                               }}
                               className="mt-1.5 block text-xs text-primary hover:underline font-semibold"
                             >

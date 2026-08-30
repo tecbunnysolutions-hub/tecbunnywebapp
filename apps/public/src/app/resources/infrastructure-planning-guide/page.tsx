@@ -16,6 +16,7 @@ import { createPageMetadata } from '@tecbunny/core/metadata';
 import { BRAND_LOGO_URL } from '@tecbunny/ui';
 import { TechnologyAssessmentFunnel } from '@/components/TechnologyAssessmentFunnel';
 import { WhatsAppFloatingButton } from '@/components/WhatsAppFloatingButton';
+import { CommercialInfrastructureCalculator } from '@/components/CommercialInfrastructureCalculator';
 
 export async function generateMetadata(): Promise<Metadata> {
   return createPageMetadata({
@@ -106,6 +107,9 @@ export default function InfrastructurePlanningGuidePage() {
               </li>
             </ul>
           </div>
+
+          {/* Interactive Sizing Calculator */}
+          <CommercialInfrastructureCalculator defaultTab="network" className="my-6" />
 
           {/* Section 3 */}
           <div className="space-y-4 rounded-3xl border border-zinc-850 bg-zinc-950/60 p-8 sm:p-10">

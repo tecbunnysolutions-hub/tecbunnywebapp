@@ -83,6 +83,15 @@ const INDUSTRIES = [
     icon: ShoppingBag,
     highlights: ['POS Line Redundancy', 'Loss Prevention Cameras', 'Captive Guest Portals', 'Centralized Store Analytics'],
     badge: 'Commercial'
+  },
+  {
+    key: 'builders',
+    title: 'Builders & Real Estate Developers',
+    desc: 'Pre-construction structured cabling, fiber risers, automated vehicle gates, and turn-key builder technology commissioning.',
+    href: '/industries/builders',
+    icon: Building2,
+    highlights: ['Low-Voltage CAD Schematics', 'Vertical Fiber Risers', 'Perimeter ANPR & Barriers', 'As-Built Fluke Certification'],
+    badge: 'Pre-Construction'
   }
 ];
 

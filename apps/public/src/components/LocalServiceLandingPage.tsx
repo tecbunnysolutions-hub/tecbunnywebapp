@@ -124,7 +124,10 @@ export default function LocalServiceLandingPage({
               <Button asChild size="lg" className="bg-primary text-white hover:bg-primary/90">
                 <Link
                   href={primaryCtaHref}
-                  onClick={() => trackEvent(`${eventPrefix}_primary_cta_click`, { cta: primaryCtaLabel })}
+                  onClick={() => {
+                    trackEvent('service_cta_clicked', { service: eventPrefix, cta: primaryCtaLabel, ctaLocation: 'hero_primary' });
+                    trackEvent(`${eventPrefix}_primary_cta_click`, { cta: primaryCtaLabel });
+                  }}
                 >
                   {primaryCtaLabel}
                 </Link>
@@ -132,7 +135,10 @@ export default function LocalServiceLandingPage({
               <Button asChild size="lg" variant="outline" className="border-border text-foreground hover:bg-muted/20">
                 <Link
                   href={secondaryCtaHref}
-                  onClick={() => trackEvent(`${eventPrefix}_secondary_cta_click`, { cta: secondaryCtaLabel })}
+                  onClick={() => {
+                    trackEvent('service_cta_clicked', { service: eventPrefix, cta: secondaryCtaLabel, ctaLocation: 'hero_secondary' });
+                    trackEvent(`${eventPrefix}_secondary_cta_click`, { cta: secondaryCtaLabel });
+                  }}
                 >
                   {secondaryCtaLabel}
                 </Link>
@@ -257,7 +263,10 @@ export default function LocalServiceLandingPage({
             <Button asChild size="lg" className="bg-primary text-white hover:bg-primary/90">
               <Link
                 href={primaryCtaHref}
-                onClick={() => trackEvent(`${eventPrefix}_footer_primary_cta_click`, { cta: primaryCtaLabel })}
+                onClick={() => {
+                  trackEvent('service_cta_clicked', { service: eventPrefix, cta: primaryCtaLabel, ctaLocation: 'footer_primary' });
+                  trackEvent(`${eventPrefix}_footer_primary_cta_click`, { cta: primaryCtaLabel });
+                }}
               >
                 {primaryCtaLabel}
               </Link>
@@ -267,7 +276,10 @@ export default function LocalServiceLandingPage({
                 href="https://wa.me/919604136010"
                 target="_blank"
                 rel="noopener noreferrer"
-                onClick={() => trackEvent(`${eventPrefix}_whatsapp_click`, { destination: 'whatsapp' })}
+                onClick={() => {
+                  trackEvent('whatsapp_clicked', { service: eventPrefix, destination: 'whatsapp', ctaLocation: 'footer_whatsapp' });
+                  trackEvent(`${eventPrefix}_whatsapp_click`, { destination: 'whatsapp' });
+                }}
               >
                 <MessageSquare className="mr-2 h-4 w-4" />
                 Chat on WhatsApp

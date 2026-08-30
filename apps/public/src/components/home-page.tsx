@@ -33,6 +33,7 @@ import { RegionalTrustBanner } from './RegionalTrustBanner';
 import { HeroRotator } from './home/HeroRotator';
 import { TrustSection } from './TrustSection';
 import { HowItWorksSection } from './HowItWorksSection';
+import { CaseStudySection } from './CaseStudySection';
 import { WhatsAppFloatingButton } from './WhatsAppFloatingButton';
 
 const DynamicBehavioralCouponPopup = dynamic(() => import('./BehavioralCouponPopup').then(mod => mod.BehavioralCouponPopup), { ssr: false });
@@ -130,7 +131,34 @@ export default function HomePage({
                 We build IT systems, handle CCTV, and run back-office work — so your business can grow and stay safe.
               </p>
 
-              <div className="grid gap-4 pt-4 sm:grid-cols-3">
+              {/* Primary High-Converting Hero CTA Bar */}
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5 pt-2">
+                <Button asChild size="lg" className="bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl h-12 px-6 text-sm shadow-xl shadow-blue-500/25">
+                  <Link href="/assessment">
+                    GET YOUR FREE TECHNOLOGY ASSESSMENT &rarr;
+                  </Link>
+                </Button>
+                <Button asChild variant="outline" size="lg" className="border-zinc-800 bg-zinc-900/60 hover:bg-zinc-800 text-zinc-200 hover:text-white font-semibold rounded-xl h-12 px-5 text-xs">
+                  <Link href="/contact?subject=sales&service=enterprise_solutions&intent=enterprise_consultation&source=homepage_hero">
+                    TALK TO AN ENTERPRISE SPECIALIST
+                  </Link>
+                </Button>
+              </div>
+
+              {/* Assessment Microcopy Deliverables */}
+              <div className="rounded-xl border border-zinc-850 bg-zinc-950/70 p-3.5">
+                <span className="text-[10px] uppercase font-mono font-bold tracking-widest text-blue-400 block mb-1.5">Free Assessment Includes:</span>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-3 gap-y-1 text-[11px] text-zinc-400">
+                  <span className="flex items-center gap-1.5"><span className="h-1.5 w-1.5 rounded-full bg-blue-500" /> Site &amp; cabling review</span>
+                  <span className="flex items-center gap-1.5"><span className="h-1.5 w-1.5 rounded-full bg-blue-500" /> Security coverage check</span>
+                  <span className="flex items-center gap-1.5"><span className="h-1.5 w-1.5 rounded-full bg-blue-500" /> Network bottleneck audit</span>
+                  <span className="flex items-center gap-1.5"><span className="h-1.5 w-1.5 rounded-full bg-blue-500" /> Hardware recommendations</span>
+                  <span className="flex items-center gap-1.5"><span className="h-1.5 w-1.5 rounded-full bg-blue-500" /> Technology upgrade roadmap</span>
+                  <span className="flex items-center gap-1.5"><span className="h-1.5 w-1.5 rounded-full bg-blue-500" /> Itemized budget estimate</span>
+                </div>
+              </div>
+
+              <div className="grid gap-4 pt-2 sm:grid-cols-3">
                 <div className="rounded-2xl border border-blue-500/20 bg-blue-500/5 p-5 transition-all duration-300 hover:border-blue-500/40 hover:bg-blue-500/10">
                   <div>
                     <span className="text-[10px] font-bold tracking-widest uppercase text-blue-400">Business?</span>
@@ -632,7 +660,7 @@ export default function HomePage({
             </div>
 
             {/* Retail */}
-            <div className="rounded-3xl border border-zinc-850 bg-zinc-900/30 p-7 flex flex-col justify-between group hover:border-blue-500/30 transition-all duration-300 sm:col-span-2 lg:col-span-2">
+            <div className="rounded-3xl border border-zinc-850 bg-zinc-900/30 p-7 flex flex-col justify-between group hover:border-blue-500/30 transition-all duration-300">
               <div className="space-y-4">
                 <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 group-hover:scale-105 transition-transform">
                   <ShoppingBag size={22} />
@@ -648,6 +676,24 @@ export default function HomePage({
                 </Link>
               </div>
             </div>
+
+            {/* Builders & Commercial Developments */}
+            <div className="rounded-3xl border border-zinc-850 bg-zinc-900/30 p-7 flex flex-col justify-between group hover:border-blue-500/30 transition-all duration-300">
+              <div className="space-y-4">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 group-hover:scale-105 transition-transform">
+                  <Zap size={22} />
+                </div>
+                <h3 className="text-xl font-bold text-white font-tech">Builders &amp; Real Estate Developers</h3>
+                <p className="text-xs text-zinc-400 font-light leading-relaxed">
+                  Pre-construction structured cabling blueprints, perimeter smart gate automation, and complete builder technology handovers.
+                </p>
+              </div>
+              <div className="mt-6 pt-4 border-t border-zinc-850/60">
+                <Link href="/services/smart-infrastructure" className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-400 hover:text-blue-300">
+                  View Builder Solutions <ArrowRight size={14} />
+                </Link>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -657,6 +703,9 @@ export default function HomePage({
 
       {/* Factual Trust Section */}
       <TrustSection />
+
+      {/* Reusable B2B Case Study Architecture Framework */}
+      <CaseStudySection />
 
       <section className="tb-section reveal-section is-revealed" data-reveal-id="about" style={{ contentVisibility: 'auto', containIntrinsicSize: '400px' }}>
         <div className="tb-container">

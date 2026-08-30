@@ -14,6 +14,7 @@ import {
   type LucideIcon
 } from 'lucide-react';
 import { Button } from '@tecbunny/ui';
+import { useAnalytics } from '@tecbunny/core';
 import { TechnologyAssessmentFunnel } from '@/components/TechnologyAssessmentFunnel';
 import { HowItWorksSection } from '@/components/HowItWorksSection';
 import { TrustSection } from '@/components/TrustSection';
@@ -87,6 +88,8 @@ export function IndustryLandingPage({
   caseStudy,
   faqs,
 }: IndustryLandingPageProps) {
+  const { trackEvent } = useAnalytics();
+
   return (
     <div className="relative min-h-screen bg-[#09090B] text-zinc-200 selection:bg-blue-500/20 selection:text-white overflow-hidden pb-20">
       {/* Background Gradients */}
@@ -120,10 +123,20 @@ export function IndustryLandingPage({
 
             <div className="flex flex-wrap gap-4 pt-4 justify-center">
               <Button asChild size="lg" className="bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl px-8 shadow-lg shadow-blue-500/20 text-sm h-12">
-                <Link href="#assessment-funnel">{primaryCtaText}</Link>
+                <Link 
+                  href="#assessment-funnel"
+                  onClick={() => trackEvent('industry_cta_clicked', { industry: industryKey, ctaLocation: 'hero_primary', ctaText: primaryCtaText })}
+                >
+                  {primaryCtaText}
+                </Link>
               </Button>
               <Button asChild variant="outline" size="lg" className="border-zinc-800 bg-zinc-900/40 text-zinc-300 hover:bg-zinc-800 hover:text-white rounded-xl px-8 text-sm h-12">
-                <Link href="#solutions-section">Explore Industry Solutions &darr;</Link>
+                <Link 
+                  href="#solutions-section"
+                  onClick={() => trackEvent('industry_cta_clicked', { industry: industryKey, ctaLocation: 'hero_secondary', ctaText: 'Explore Solutions' })}
+                >
+                  Explore Industry Solutions &darr;
+                </Link>
               </Button>
             </div>
           </div>
