@@ -15,16 +15,26 @@ import {
   Sliders,
   FileText,
   TrendingDown,
+  Building2,
+  Award,
+  Activity,
+  ShoppingBag,
+  Lock,
+  Wifi,
+  Shield,
+  Clock
 } from 'lucide-react';
 
 import { getProductDisplayImage } from "@tecbunny/core/image-utils";
 import { cn, revealDelayClass } from "@tecbunny/core/utils";
-import { OptimizedImage } from "@tecbunny/ui";
+import { OptimizedImage, Button } from "@tecbunny/ui";
 import type { Product } from '@tecbunny/core';
 import { RegionalTrustBanner } from './RegionalTrustBanner';
 import { HeroRotator } from './home/HeroRotator';
+import { TrustSection } from './TrustSection';
+import { HowItWorksSection } from './HowItWorksSection';
+import { WhatsAppFloatingButton } from './WhatsAppFloatingButton';
 
-// HeroCarousel is statically imported so next/image emits a <link rel="preload"> for the LCP slide image in the initial HTML.
 const DynamicBehavioralCouponPopup = dynamic(() => import('./BehavioralCouponPopup').then(mod => mod.BehavioralCouponPopup), { ssr: false });
 const DynamicAmbientEffects = dynamic(() => import('./home/AmbientEffects').then(mod => mod.AmbientEffects), { ssr: false });
 const DynamicHeroVisuals = dynamic(() => import('./home/HeroVisuals').then(mod => mod.HeroVisuals), { ssr: false });
@@ -527,10 +537,131 @@ export default function HomePage({
         </div>
       </section>
 
+      {/* Industries Showcase Section */}
+      <section className="tb-section reveal-section is-revealed border-t border-zinc-900 bg-zinc-950/40 py-16 sm:py-24" data-reveal-id="industries-showcase" style={{ contentVisibility: 'auto', containIntrinsicSize: '600px' }}>
+        <div className="tb-container">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+            <div className="max-w-2xl">
+              <span className="tb-kicker">Industry Verticals</span>
+              <h2 className="mt-3 text-3xl sm:text-4xl font-bold text-white font-tech tracking-tight">
+                Specialized IT &amp; Security Infrastructure for Goa Businesses
+              </h2>
+              <p className="tb-lede mt-3 text-sm sm:text-base text-zinc-400">
+                Tailored engineering architectures designed for the specific physical and operational needs of your industry.
+              </p>
+            </div>
+            <Link
+              href="/industries"
+              className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-blue-400 hover:text-blue-300 transition-colors"
+            >
+              Explore All Industries <ArrowRight size={14} />
+            </Link>
+          </div>
+
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {/* Hospitality */}
+            <div className="rounded-3xl border border-zinc-850 bg-zinc-900/30 p-7 flex flex-col justify-between group hover:border-blue-500/30 transition-all duration-300">
+              <div className="space-y-4">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-400 group-hover:scale-105 transition-transform">
+                  <Building2 size={22} />
+                </div>
+                <h3 className="text-xl font-bold text-white font-tech">Hospitality &amp; Resorts</h3>
+                <p className="text-xs text-zinc-400 font-light leading-relaxed">
+                  High-density guest Wi-Fi through laterite walls, RFID European mortise door locks, and property-wide low-light CCTV.
+                </p>
+              </div>
+              <div className="mt-6 pt-4 border-t border-zinc-850/60">
+                <Link href="/industries/hospitality" className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-400 hover:text-blue-300">
+                  View Hospitality Solutions <ArrowRight size={14} />
+                </Link>
+              </div>
+            </div>
+
+            {/* Corporate Offices */}
+            <div className="rounded-3xl border border-zinc-850 bg-zinc-900/30 p-7 flex flex-col justify-between group hover:border-blue-500/30 transition-all duration-300">
+              <div className="space-y-4">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 group-hover:scale-105 transition-transform">
+                  <Building2 size={22} />
+                </div>
+                <h3 className="text-xl font-bold text-white font-tech">Corporate Offices &amp; Co-Working</h3>
+                <p className="text-xs text-zinc-400 font-light leading-relaxed">
+                  Dual-ISP auto-failover, structured Cat6/fiber rack cabling, and 0.2s facial recognition attendance terminals.
+                </p>
+              </div>
+              <div className="mt-6 pt-4 border-t border-zinc-850/60">
+                <Link href="/industries/offices" className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-400 hover:text-blue-300">
+                  View Office Solutions <ArrowRight size={14} />
+                </Link>
+              </div>
+            </div>
+
+            {/* Education */}
+            <div className="rounded-3xl border border-zinc-850 bg-zinc-900/30 p-7 flex flex-col justify-between group hover:border-blue-500/30 transition-all duration-300">
+              <div className="space-y-4">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-400 group-hover:scale-105 transition-transform">
+                  <Award size={22} />
+                </div>
+                <h3 className="text-xl font-bold text-white font-tech">Schools &amp; Campuses</h3>
+                <p className="text-xs text-zinc-400 font-light leading-relaxed">
+                  Content-filtering firewalls, computer lab high-density cabling, and perimeter AI security cameras with gate transit tracking.
+                </p>
+              </div>
+              <div className="mt-6 pt-4 border-t border-zinc-850/60">
+                <Link href="/industries/education" className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-400 hover:text-blue-300">
+                  View Campus Solutions <ArrowRight size={14} />
+                </Link>
+              </div>
+            </div>
+
+            {/* Healthcare */}
+            <div className="rounded-3xl border border-zinc-850 bg-zinc-900/30 p-7 flex flex-col justify-between group hover:border-blue-500/30 transition-all duration-300">
+              <div className="space-y-4">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 group-hover:scale-105 transition-transform">
+                  <Activity size={22} />
+                </div>
+                <h3 className="text-xl font-bold text-white font-tech">Healthcare &amp; Hospitals</h3>
+                <p className="text-xs text-zinc-400 font-light leading-relaxed">
+                  Isolated medical VLANs for PACS/EMR security, pharmacy biometric locks, and uninterrupted UPS power conditioning.
+                </p>
+              </div>
+              <div className="mt-6 pt-4 border-t border-zinc-850/60">
+                <Link href="/industries/healthcare" className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-400 hover:text-blue-300">
+                  View Hospital Solutions <ArrowRight size={14} />
+                </Link>
+              </div>
+            </div>
+
+            {/* Retail */}
+            <div className="rounded-3xl border border-zinc-850 bg-zinc-900/30 p-7 flex flex-col justify-between group hover:border-blue-500/30 transition-all duration-300 sm:col-span-2 lg:col-span-2">
+              <div className="space-y-4">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 group-hover:scale-105 transition-transform">
+                  <ShoppingBag size={22} />
+                </div>
+                <h3 className="text-xl font-bold text-white font-tech">Retail &amp; Commercial Stores</h3>
+                <p className="text-xs text-zinc-400 font-light leading-relaxed">
+                  Redundant POS billing failover, 4K cash-drawer security cameras, customer guest Wi-Fi portals, and multi-store cloud management.
+                </p>
+              </div>
+              <div className="mt-6 pt-4 border-t border-zinc-850/60">
+                <Link href="/industries/retail" className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-400 hover:text-blue-300">
+                  View Retail Solutions <ArrowRight size={14} />
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Structured 8-Step Lifecycle */}
+      <HowItWorksSection />
+
+      {/* Factual Trust Section */}
+      <TrustSection />
+
       <section className="tb-section reveal-section is-revealed" data-reveal-id="about" style={{ contentVisibility: 'auto', containIntrinsicSize: '400px' }}>
         <div className="tb-container">
           <div className="mx-auto max-w-4xl space-y-6 text-sm leading-relaxed text-zinc-400 sm:text-base">
-            <h2 className="text-3xl font-semibold text-white mb-8">One Team, One Partner for All Your IT and Tech Needs</h2>
+            <h2 className="text-3xl font-semibold text-white mb-8 font-tech">One Team, One Partner for All Your IT and Tech Needs</h2>
             <p>
               At TecBunny, we use tech to help your business grow. We are a team of CCTV experts, IT engineers, and support staff. We build and run tech systems for your firm in Goa, Maharashtra, and India.
             </p>
@@ -554,7 +685,7 @@ export default function HomePage({
         <div className="tb-container">
           <div className="mb-10 max-w-2xl">
             <span className="tb-kicker">FAQ</span>
-            <h2 className="mt-4 text-3xl font-semibold text-white sm:text-4xl">Frequently Asked Questions About Our Services in Goa</h2>
+            <h2 className="mt-4 text-3xl font-semibold text-white sm:text-4xl font-tech">Frequently Asked Questions About Our Services in Goa</h2>
           </div>
           <dl className="grid gap-6 md:grid-cols-2">
             <div className="space-y-2 rounded-lg border border-zinc-800 bg-zinc-950/60 p-4">
@@ -609,28 +740,35 @@ export default function HomePage({
         </div>
       </section>
 
+      {/* Primary High-Converting CTA Banner */}
       <section className="tb-section reveal-section is-revealed" data-reveal-id="cta" style={{ contentVisibility: 'auto', containIntrinsicSize: '300px' }}>
         <div className="tb-container">
-          <div className="tb-panel relative overflow-hidden p-6 sm:p-8 md:p-10">
-            <div className="relative z-10 grid gap-8 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
-              <div className={cn('reveal-item', revealDelayClass(0))}>
-                <span className="inline-flex items-center gap-2 rounded-lg border border-blue-500/20 bg-blue-500/5 text-blue-400 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em]">
-                  <Sparkles size={14} /> Ready when you are
+          <div className="tb-panel relative overflow-hidden p-8 sm:p-12 md:p-14 border border-blue-500/30 bg-gradient-to-br from-blue-950/40 via-zinc-950 to-zinc-950">
+            <div className="relative z-10 grid gap-8 lg:grid-cols-[1.3fr_0.7fr] lg:items-center">
+              <div className={cn('reveal-item space-y-4', revealDelayClass(0))}>
+                <span className="inline-flex items-center gap-2 rounded-lg border border-blue-500/20 bg-blue-500/10 text-blue-400 px-3.5 py-1.5 text-xs font-semibold uppercase tracking-[0.2em]">
+                  <Sparkles size={14} className="animate-pulse" /> Engineering Assessment
                 </span>
-                <h3 className="mt-5 text-2xl font-semibold text-white sm:text-3xl">Ready to Upgrade Your IT Systems and Infrastructure?</h3>
-                <p className="tb-lede mt-4 text-sm sm:text-base">
-                  Let’s discuss how a unified approach to IT and ITES can secure your business and accelerate your growth.
+                <h2 className="text-3xl font-extrabold text-white sm:text-4xl md:text-5xl font-tech leading-tight">
+                  Ready to Upgrade Your Commercial IT &amp; Security Infrastructure?
+                </h2>
+                <p className="tb-lede text-base sm:text-lg text-zinc-300 font-light max-w-2xl leading-relaxed">
+                  Request a free, no-obligation technology assessment. Our certified engineers will review your property blueprint, calculate network density, and provide an itemized proposal within 24 hours.
                 </p>
               </div>
-              <div className={cn('reveal-item rounded-lg border border-zinc-800 bg-zinc-950/80 p-6 text-center', revealDelayClass(120))}>
-                <p className="text-sm text-zinc-500">Talk to an advisor</p>
+              <div className={cn('reveal-item rounded-2xl border border-zinc-800 bg-zinc-900/80 p-8 text-center space-y-4 shadow-xl', revealDelayClass(120))}>
+                <span className="text-xs font-bold uppercase tracking-widest text-zinc-400 font-mono">Free Technical Proposal</span>
+                <Button asChild size="lg" className="bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl w-full h-12 text-sm shadow-lg shadow-blue-500/25">
+                  <Link href="/assessment">
+                    Get Free Assessment &rarr;
+                  </Link>
+                </Button>
                 <Link
-                  href="/contact"
-                  className="tb-button-primary mt-4 w-full"
+                  href="/contact?subject=sales&service=enterprise_solutions&intent=enterprise_consultation"
+                  className="block text-xs text-zinc-400 hover:text-white transition-colors"
                 >
-                  Schedule a Strategy Call
+                  Or schedule a direct site consultation
                 </Link>
-                <p className="mt-3 text-xs text-zinc-500">Response window: same business day</p>
               </div>
             </div>
           </div>

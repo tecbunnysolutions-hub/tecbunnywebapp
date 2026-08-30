@@ -56,28 +56,6 @@ export default function LocalServiceLandingPage({
 }: LocalServiceLandingPageProps) {
   const { trackEvent } = useAnalytics();
   const HeroIcon = heroIconMap[iconName];
-  const [maintenanceNodes, setMaintenanceNodes] = useState<number>(0);
-  const [isLoadingNodes, setIsLoadingNodes] = useState(true);
-
-  // 2. LOCALIZED GEOGRAPHIC TRUST COMPONENT GENERATOR
-  // Fetch dynamic count records of active maintenance nodes from our system data model
-  useEffect(() => {
-    const fetchMaintenanceStats = async () => {
-      try {
-        // Extract location from context/props
-        const zone = locationLabel.split(',')[0].trim();
-        const response = await fetch(`/api/analytics/coverage?zone=${encodeURIComponent(zone)}`);
-        const data = await response.json();
-        setMaintenanceNodes(data.activeNodes || Math.floor(Math.random() * (150 - 45 + 1) + 45));
-      } catch (err) {
-        // Fallback to high-trust randomized seed if API is unavailable
-        setMaintenanceNodes(Math.floor(Math.random() * (80 - 30 + 1) + 30));
-      } finally {
-        setIsLoadingNodes(false);
-      }
-    };
-    void fetchMaintenanceStats();
-  }, [locationLabel]);
 
   const stats = useMemo(
     () => [
@@ -103,7 +81,7 @@ export default function LocalServiceLandingPage({
             <h1 className="mt-6 max-w-4xl text-4xl font-semibold sm:text-5xl lg:text-6xl tech-heading">{title}</h1>
             <p className="mt-5 max-w-3xl text-base text-muted-foreground sm:text-lg">{description}</p>
 
-            {/* REAL-TIME TECHNICAL COVERAGE GRID */}
+            {/* TECHNICAL COVERAGE GRID */}
             <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="group relative overflow-hidden bento-card p-6">
                 <div className="absolute -right-4 -top-4 h-24 w-24 rounded-full bg-primary/5 blur-2xl transition-all group-hover:bg-primary/10" />
@@ -113,8 +91,8 @@ export default function LocalServiceLandingPage({
                   </div>
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">Zone Technical Coverage</p>
-                    <p className="text-2xl font-bold text-foreground tech-heading">
-                      {isLoadingNodes ? '...' : maintenanceNodes} Active Nodes
+                    <p className="text-xl font-bold text-foreground tech-heading">
+                      Active Goa Field Hub
                     </p>
                   </div>
                 </div>

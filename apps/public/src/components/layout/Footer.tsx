@@ -237,96 +237,97 @@ export function Footer() {
     <footer className="relative bg-[#0F172A] text-slate-400 border-t border-slate-800 py-16 sm:py-24 font-sans">
       <div className="absolute top-0 left-0 h-px w-full bg-gradient-to-r from-transparent via-blue-500/20 to-transparent"></div>
       <div className="relative z-10 max-w-screen-2xl mx-auto px-6 sm:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-10 mb-16">
           {/* Column 1: Services */}
           <div>
-            <h4 className="text-white text-base font-tech font-black uppercase tracking-[0.2em] mb-6">Services</h4>
-            <ul className="space-y-3.5 text-base font-medium">
+            <h4 className="text-white text-sm font-tech font-bold uppercase tracking-[0.2em] mb-4 text-blue-400">Solutions</h4>
+            <ul className="space-y-2.5 text-xs font-medium">
               <li>
-                <Link href="/services/network-infrastructure" className="hover:text-primary transition-all hover:translate-x-1 inline-block text-slate-300">
-                  Network & Infrastructure
+                <Link href="/services/network-infrastructure" className="hover:text-blue-400 transition-all hover:translate-x-0.5 inline-block text-slate-300">
+                  Network & IT Infrastructure
                 </Link>
               </li>
               <li>
-                <Link href="/services/physical-security" className="hover:text-primary transition-all hover:translate-x-1 inline-block text-slate-300">
-                  Security & Surveillance
+                <Link href="/services/physical-security" className="hover:text-blue-400 transition-all hover:translate-x-0.5 inline-block text-slate-300">
+                  Security & IP Surveillance
                 </Link>
               </li>
               <li>
-                <Link href="/services/smart-access-control" className="hover:text-primary transition-all hover:translate-x-1 inline-block text-slate-300">
-                  Smart Access Control
+                <Link href="/services/smart-access-control" className="hover:text-blue-400 transition-all hover:translate-x-0.5 inline-block text-slate-300">
+                  Smart Access Control & Locks
                 </Link>
               </li>
               <li>
-                <Link href="/services/lifecycle-hardware" className="hover:text-primary transition-all hover:translate-x-1 inline-block text-slate-300">
-                  Lifecycle Hardware
+                <Link href="/services/smart-infrastructure" className="hover:text-blue-400 transition-all hover:translate-x-0.5 inline-block text-slate-300">
+                  Hotel Smart Infrastructure
                 </Link>
               </li>
               <li>
-                <Link href="/services/software-system-admin" className="hover:text-primary transition-all hover:translate-x-1 inline-block text-slate-300">
-                  System Administration
+                <Link href="/services/lifecycle-hardware" className="hover:text-blue-400 transition-all hover:translate-x-0.5 inline-block text-slate-300">
+                  Lifecycle Hardware & AMC
+                </Link>
+              </li>
+              <li>
+                <Link href="/services/software-system-admin" className="hover:text-blue-400 transition-all hover:translate-x-0.5 inline-block text-slate-300">
+                  System Administration & Cloud
                 </Link>
               </li>
             </ul>
           </div>
 
-          {/* Column 2: Company */}
+          {/* Column 2: Industries */}
           <div>
-            <h4 className="text-white text-base font-tech font-black uppercase tracking-[0.2em] mb-6">Company</h4>
-            <ul className="space-y-3.5 text-base font-medium">
-              <li><Link href="/about" className="hover:text-primary transition-all hover:translate-x-1 inline-block text-slate-300">About Us</Link></li>
-              <li><Link href="/products" className="hover:text-primary transition-all hover:translate-x-1 inline-block text-slate-300">Products</Link></li>
-              <li><Link href="/solutions" className="hover:text-primary transition-all hover:translate-x-1 inline-block text-slate-300">Enterprise Solutions</Link></li>
-              <li><Link href="/info/policies/privacy" className="hover:text-primary transition-all hover:translate-x-1 inline-block text-slate-300">Privacy Policy</Link></li>
-              <li><Link href="/info/policies/terms" className="hover:text-primary transition-all hover:translate-x-1 inline-block text-slate-300">Terms of Service</Link></li>
+            <h4 className="text-white text-sm font-tech font-bold uppercase tracking-[0.2em] mb-4 text-blue-400">Industries</h4>
+            <ul className="space-y-2.5 text-xs font-medium">
+              <li><Link href="/industries/hospitality" className="hover:text-blue-400 transition-all hover:translate-x-0.5 inline-block text-slate-300">Hospitality & Resorts</Link></li>
+              <li><Link href="/industries/offices" className="hover:text-blue-400 transition-all hover:translate-x-0.5 inline-block text-slate-300">Corporate Offices</Link></li>
+              <li><Link href="/industries/education" className="hover:text-blue-400 transition-all hover:translate-x-0.5 inline-block text-slate-300">Schools & Campuses</Link></li>
+              <li><Link href="/industries/healthcare" className="hover:text-blue-400 transition-all hover:translate-x-0.5 inline-block text-slate-300">Hospitals & Clinics</Link></li>
+              <li><Link href="/industries/retail" className="hover:text-blue-400 transition-all hover:translate-x-0.5 inline-block text-slate-300">Retail & Commercial</Link></li>
+              <li><Link href="/industries" className="hover:text-blue-400 transition-all hover:translate-x-0.5 inline-block text-blue-400 font-bold">All Industries &rarr;</Link></li>
             </ul>
           </div>
 
-          {/* Column 3: Contact Details */}
-          <div className="text-base font-medium">
-            <h4 className="text-white text-base font-tech font-black uppercase tracking-[0.2em] mb-6">Contact</h4>
-            <address className="leading-relaxed text-slate-300 not-italic">{address}</address>
-            <div className="mt-4 space-y-2">
-              <p className="text-blue-500 hover:text-blue-400 transition-colors font-tech font-bold text-base">
+          {/* Column 3: Resources & Assessment */}
+          <div>
+            <h4 className="text-white text-sm font-tech font-bold uppercase tracking-[0.2em] mb-4 text-blue-400">Resources</h4>
+            <ul className="space-y-2.5 text-xs font-medium">
+              <li><Link href="/assessment" className="text-emerald-400 font-bold hover:underline inline-block">Free Technology Assessment</Link></li>
+              <li><Link href="/resources/infrastructure-planning-guide" className="hover:text-blue-400 transition-all hover:translate-x-0.5 inline-block text-slate-300">IT Infrastructure Guide</Link></li>
+              <li><Link href="/resources/cctv-planning-guide" className="hover:text-blue-400 transition-all hover:translate-x-0.5 inline-block text-slate-300">CCTV Planning Guide</Link></li>
+              <li><Link href="/customised-setups" className="hover:text-blue-400 transition-all hover:translate-x-0.5 inline-block text-slate-300">Custom Setup Configurator</Link></li>
+              <li><Link href="/solutions" className="hover:text-blue-400 transition-all hover:translate-x-0.5 inline-block text-slate-300">Downtime Cost Calculator</Link></li>
+              <li><Link href="/products" className="hover:text-blue-400 transition-all hover:translate-x-0.5 inline-block text-slate-300">Products Catalog</Link></li>
+            </ul>
+          </div>
+
+          {/* Column 4: Company & Policies */}
+          <div>
+            <h4 className="text-white text-sm font-tech font-bold uppercase tracking-[0.2em] mb-4 text-blue-400">Company</h4>
+            <ul className="space-y-2.5 text-xs font-medium">
+              <li><Link href="/about" className="hover:text-blue-400 transition-all hover:translate-x-0.5 inline-block text-slate-300">About TecBunny</Link></li>
+              <li><Link href="/contact" className="hover:text-blue-400 transition-all hover:translate-x-0.5 inline-block text-slate-300">Contact & Support</Link></li>
+              <li><Link href="/info/policies/privacy" className="hover:text-blue-400 transition-all hover:translate-x-0.5 inline-block text-slate-300">Privacy Policy</Link></li>
+              <li><Link href="/info/policies/terms" className="hover:text-blue-400 transition-all hover:translate-x-0.5 inline-block text-slate-300">Terms of Service</Link></li>
+              <li><Link href="/info/policies/shipping" className="hover:text-blue-400 transition-all hover:translate-x-0.5 inline-block text-slate-300">Shipping & Delivery</Link></li>
+            </ul>
+          </div>
+
+          {/* Column 5: Contact & Location */}
+          <div className="text-xs font-medium space-y-3">
+            <h4 className="text-white text-sm font-tech font-bold uppercase tracking-[0.2em] mb-4 text-blue-400">Headquarters</h4>
+            <address className="leading-relaxed text-slate-300 not-italic text-xs">{address}</address>
+            <div className="space-y-1.5 pt-1 font-mono">
+              <p className="text-blue-400 hover:text-blue-300 transition-colors font-bold text-xs">
                 <a href={`tel:${supportPhone.replace(/\s+/g,'')}`}>{supportPhone}</a>
               </p>
-              <p className="text-blue-500 hover:text-blue-400 transition-colors font-tech font-bold text-base">
+              <p className="text-blue-400 hover:text-blue-300 transition-colors font-bold text-xs">
                 <a href={`mailto:${supportEmail}`}>{supportEmail}</a>
               </p>
-            </div>
-          </div>
-
-          {/* Column 4: Updates Form */}
-          <div>
-            <h4 className="text-white text-base font-tech font-black uppercase tracking-[0.2em] mb-6">Updates</h4>
-            <p className="text-base text-slate-300 mb-4 leading-relaxed font-medium">Subscribe to security advisories and tech updates.</p>
-            <form className="flex gap-2 max-w-sm" onSubmit={handleSubscribe}>
-              <input
-                type="email"
-                placeholder="Secure email..."
-                value={subscribeEmail}
-                onChange={(event) => {
-                  setSubscribeEmail(event.target.value);
-                  if (subscribeStatus !== 'idle') {
-                    setSubscribeStatus('idle');
-                    setSubscribeMessage(null);
-                  }
-                }}
-                className="bg-[#1E293B] border border-slate-700 rounded-xl px-4 py-2.5 min-h-[48px] text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 w-full placeholder-slate-500 transition-all shadow-inner"
-              />
-              <button
-                type="submit"
-                disabled={subscribeStatus === 'loading'}
-                className="px-5 py-2.5 min-h-[48px] bg-blue-600 hover:bg-blue-500 text-white text-sm font-bold rounded-xl transition-all hover:scale-105 hover:shadow-[0_0_15px_rgba(37,99,235,0.4)] disabled:opacity-40"
-              >
-                {subscribeStatus === 'loading' ? '...' : 'Subscribe'}
-              </button>
-            </form>
-            {subscribeMessage && (
-              <p className={`mt-3 text-xs font-bold tracking-wide ${subscribeStatus === 'success' ? 'text-emerald-500' : 'text-rose-500'}`} role="status">
-                {subscribeMessage}
+              <p className="text-emerald-400 hover:text-emerald-300 transition-colors font-bold text-xs">
+                <a href="https://wa.me/919604136010" target="_blank" rel="noopener noreferrer">WhatsApp Support &rarr;</a>
               </p>
-            )}
+            </div>
           </div>
         </div>
 

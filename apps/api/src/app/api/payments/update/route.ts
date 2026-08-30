@@ -120,27 +120,52 @@ export async function GET(request: NextRequest) {
     }
 
     const supabase = await createClient();
-    const paymentService = new PaymentService(supabase);
     
-    try {
-      const order = await paymentService.getPaymentStatus(order_id);
-      return apiSuccess({
-        order_id: order.id,
-        status: order.status,
-        total: order.total,
-        created_at: order.created_at,
-        updated_at: order.updated_at
-      }, correlationId);
-    } catch (e: any) {
-      if (e.message === 'Order not found') {
-        return NextResponse.json({
-          success: false,
-          error: 'Order not found',
-          order: null
-        }, { status: 404 });
-      }
+    // Server-side authorization / IDOR Protection
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return apiError('UNAUTHORIZED', {
+        correlationId,
+        overrideMessage: 'Authentication required to view payment status',
+      });
+    }
+
+    const { data: order, error } = await supabase
+      .from('orders')
+      .select('id, user_id, customer_id, customer_email, status, total, created_at, updated_at')
+      .eq('id', order_id)
+      .maybeSingle();
+
+    if (error) {
       return apiError('DATABASE_ERROR', { correlationId });
     }
+
+    if (!order) {
+      return NextResponse.json({
+        success: false,
+        error: 'Order not found',
+        order: null
+      }, { status: 404 });
+    }
+
+    const userRole = user.app_metadata?.role || 'customer';
+    const isAdmin = userRole === 'admin' || userRole === 'superadmin' || userRole === 'staff';
+    const isOwner = order.user_id === user.id || order.customer_id === user.id || (order.customer_email && order.customer_email.toLowerCase() === user.email?.toLowerCase());
+
+    if (!isAdmin && !isOwner) {
+      return apiError('FORBIDDEN', {
+        correlationId,
+        overrideMessage: 'Access denied: You do not have permission to view this order payment status',
+      });
+    }
+
+    return apiSuccess({
+      order_id: order.id,
+      status: order.status,
+      total: order.total,
+      created_at: order.created_at,
+      updated_at: order.updated_at
+    }, correlationId);
 
   } catch (error) {
     const correlationId = request.headers.get('x-correlation-id') || null;

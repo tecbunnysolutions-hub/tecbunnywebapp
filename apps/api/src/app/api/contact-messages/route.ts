@@ -66,6 +66,26 @@ function classifyInquiry(input: {
   const formIdentifier = input.formIdentifier?.trim().toLowerCase() || '';
   const subject = input.subject?.trim().toLowerCase() || '';
 
+  if (
+    formIdentifier === 'technology_assessment_funnel' ||
+    originPath === '/assessment' ||
+    subject.includes('technology assessment')
+  ) {
+    return {
+      category: 'Services' as const,
+      originKey: 'technology_assessment_funnel',
+      originPath: originPath || '/assessment',
+    };
+  }
+
+  if (originPath.startsWith('/industries') || formIdentifier.includes('industry')) {
+    return {
+      category: 'Services' as const,
+      originKey: 'industry_solutions',
+      originPath: originPath || '/industries',
+    };
+  }
+
   if (originPath === '/webdev' || formIdentifier === 'web_development_contact' || subject.includes('web development')) {
     return {
       category: 'Sales' as const,
@@ -85,7 +105,7 @@ function classifyInquiry(input: {
     };
   }
 
-  if (formIdentifier === 'services_core_desk') {
+  if (formIdentifier === 'services_core_desk' || originPath.startsWith('/services')) {
     return {
       category: 'Services' as const,
       originKey: 'services_core_desk',

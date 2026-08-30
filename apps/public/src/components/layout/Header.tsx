@@ -46,32 +46,45 @@ function WhatsAppIcon(props: React.SVGProps<SVGSVGElement>) {
 }
 
 const navLinks = [
-  { name: 'Home', href: '/' },
-  { name: 'Solutions', href: '/solutions' },
-  { name: 'Products', href: '/products' },
   { 
-    name: 'Services', 
+    name: 'Solutions', 
     href: '/services',
     children: [
-      { name: 'All Services', href: '/services' },
-      { name: 'Network & Infrastructure Solutions', href: '/services/network-infrastructure' },
-      { name: 'Physical Security & Surveillance', href: '/services/physical-security' },
-      { name: 'Smart Access Control Systems', href: '/services/smart-access-control' },
+      { name: 'All Solutions & Services', href: '/services' },
+      { name: 'Network & IT Infrastructure', href: '/services/network-infrastructure' },
+      { name: 'Physical Security & CCTV', href: '/services/physical-security' },
+      { name: 'Smart Access Control', href: '/services/smart-access-control' },
       { name: 'Lifecycle Hardware Management', href: '/services/lifecycle-hardware' },
-      { name: 'Software & System Administration', href: '/services/software-system-admin' },
+      { name: 'Software & System Admin', href: '/services/software-system-admin' },
+      { name: 'Smart Infrastructure for Hotels', href: '/services/smart-infrastructure' },
+      { name: 'Enterprise Redundancy Solutions', href: '/solutions' },
+    ]
+  },
+  {
+    name: 'Industries',
+    href: '/industries',
+    children: [
+      { name: 'All Industries Overview', href: '/industries' },
+      { name: 'Hospitality & Resorts', href: '/industries/hospitality' },
+      { name: 'Offices & Co-working', href: '/industries/offices' },
+      { name: 'Education & Campuses', href: '/industries/education' },
+      { name: 'Healthcare & Hospitals', href: '/industries/healthcare' },
+      { name: 'Retail & Commercial', href: '/industries/retail' },
+    ]
+  },
+  { name: 'Products', href: '/products' },
+  {
+    name: 'Resources',
+    href: '/resources',
+    children: [
+      { name: 'Resources & Guides Hub', href: '/resources' },
+      { name: 'IT Infrastructure Guide', href: '/resources/infrastructure-planning-guide' },
+      { name: 'CCTV Surveillance Guide', href: '/resources/cctv-planning-guide' },
+      { name: 'Custom Setup Configurator', href: '/customised-setups' },
     ]
   },
   { name: 'About', href: '/about' },
   { name: 'Contact', href: '/contact' },
-  {
-    name: 'Policies',
-    href: '/info/policies',
-    children: [
-      { name: 'Privacy Policy', href: '/info/policies/privacy' },
-      { name: 'Shipping Policies', href: '/info/policies/shipping' },
-      { name: 'Terms & Conditions', href: '/info/policies/terms' },
-    ],
-  },
 ];
 
 export function Header() {
@@ -368,12 +381,12 @@ export function Header() {
                 </CartSheet>
 
                 <Link
-                  href="/customised-setups"
+                  href="/assessment"
                   onMouseMove={applyMagneticEffect}
                   onMouseLeave={resetMagneticEffect}
-                  className="group relative rounded-xl border border-blue-600/30 bg-zinc-900 px-6 py-3 text-sm font-bold text-blue-400 transition-all duration-200 hover:bg-blue-600 hover:text-white hover:border-blue-600 shadow-sm"
+                  className="group relative rounded-xl border border-blue-500 bg-blue-600 px-5 py-2.5 text-sm font-bold text-white transition-all duration-200 hover:bg-blue-500 shadow-lg shadow-blue-500/20"
                 >
-                  Get Quote
+                  Get Free Assessment
                 </Link>
               </>
             )}
@@ -573,13 +586,20 @@ export function Header() {
               </button>
             </div>
           )}
-          <div className="pt-3 border-t border-zinc-800">
+          <div className="pt-3 border-t border-zinc-800 space-y-2">
+            <Link
+              href="/assessment"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block w-full rounded-xl bg-blue-600 py-3 text-center text-xs font-bold uppercase tracking-wider text-white shadow-lg shadow-blue-500/20 hover:bg-blue-500 transition-colors"
+            >
+              Get Free Technology Assessment
+            </Link>
             <Link
               href="/customised-setups"
               onClick={() => setMobileMenuOpen(false)}
-              className="block w-full rounded-lg bg-blue-600 py-2.5 text-center text-xs font-bold text-white shadow-sm hover:bg-blue-500 transition-colors"
+              className="block w-full rounded-xl border border-zinc-800 bg-zinc-900 py-2.5 text-center text-xs font-semibold text-zinc-300 hover:text-white transition-colors"
             >
-              Get Instant Quote
+              Custom Setup Configurator
             </Link>
           </div>
         </div>
