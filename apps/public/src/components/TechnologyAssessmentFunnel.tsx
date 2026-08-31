@@ -158,6 +158,22 @@ export function TechnologyAssessmentFunnel({
     privacyConsent: true,
   });
 
+  // Load form progress from localStorage
+  React.useEffect(() => {
+    try {
+      const saved = localStorage.getItem('assessment_form_progress');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        setFormData(prev => ({ ...prev, ...parsed }));
+        if (parsed.completedStep && parsed.completedStep > 1) {
+          setCurrentStep(Math.min(parsed.completedStep, 3) as 1 | 2 | 3);
+        }
+      }
+    } catch {
+      // safe fallback
+    }
+  }, []);
+
   // Track funnel start
   React.useEffect(() => {
     try {
@@ -170,6 +186,63 @@ export function TechnologyAssessmentFunnel({
       // safe fallback
     }
   }, [sourceContext, initialService, initialIndustry, trackEvent]);
+
+  // Save form progress to localStorage on every change
+  React.useEffect(() => {
+    try {
+      localStorage.setItem('assessment_form_progress', JSON.stringify({
+        ...formData,
+        completedStep: currentStep,
+      }));
+    } catch {
+      // safe fallback
+    }
+  }, [formData, currentStep]);
+
+  // Track abandoned assessment on page leave (only if progress made but not submitted)
+  React.useEffect(() => {
+    const handleBeforeUnload = async () => {
+      if (isSuccess || currentStep === 1 && !formData.email.trim()) {
+        return; // Don't track if submitted or haven't made progress
+      }
+
+      // Only send if user has provided email (indicates abandonment, not just browsing)
+      if (formData.email.trim() && currentStep < 3) {
+        try {
+          await fetch('/api/abandoned-assessments', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              email: formData.email.trim(),
+              name: formData.name.trim(),
+              company: formData.company.trim(),
+              phone: formData.phone.trim(),
+              completedStep: currentStep,
+              service: formData.service,
+              timeline: formData.timeline,
+              businessType: formData.businessType,
+              industry: formData.industry,
+              projectStage: formData.projectStage,
+              projectSize: formData.projectSize,
+              city: formData.city,
+              budget: formData.budget,
+              currentProblem: formData.currentProblem,
+              sourceContext: sourceContext,
+              userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : '',
+              referrer: typeof document !== 'undefined' ? document.referrer : '',
+            }),
+            // Use keepalive to ensure request completes even if page unloads
+            keepalive: true,
+          });
+        } catch {
+          // Silent fallback - don't block page unload
+        }
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [formData, currentStep, isSuccess, sourceContext]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
@@ -209,6 +282,14 @@ export function TechnologyAssessmentFunnel({
           variant: 'destructive',
           title: 'Select Project Stage',
           description: 'Please tell us where your project stands today.',
+        });
+        return;
+      }
+      if (!formData.email.trim()) {
+        toast({
+          variant: 'destructive',
+          title: 'Email Required',
+          description: 'Please provide your work email so we can send the assessment proposal.',
         });
         return;
       }
@@ -341,6 +422,13 @@ ${formData.additionalNotes.trim() || 'None'}
         timeline: formData.timeline,
         hasDocument: Boolean(attachedFile),
       });
+
+      // Clear localStorage after successful submission
+      try {
+        localStorage.removeItem('assessment_form_progress');
+      } catch {
+        // safe fallback
+      }
 
       toast({
         title: 'Assessment Request Confirmed!',
@@ -635,6 +723,25 @@ ${formData.additionalNotes.trim() || 'None'}
                 rows={3}
                 className="bg-[#09090B] border-zinc-850 focus-visible:ring-blue-500/40 text-white placeholder:text-zinc-600 text-sm rounded-xl"
               />
+            </div>
+
+            {/* Work Email Address */}
+            <div className="space-y-2">
+              <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider" htmlFor="step1-email">
+                Work Email Address *
+              </label>
+              <Input
+                id="step1-email"
+                name="email"
+                type="email"
+                value={formData.email}
+                onChange={handleChange}
+                placeholder="e.g. contact@yourcompany.com"
+                required
+                disabled={isSubmitting}
+                className="bg-[#09090B] border-zinc-850 focus-visible:ring-blue-500/40 text-white rounded-xl h-11"
+              />
+              <p className="text-[10px] text-zinc-500 mt-1 font-light">We'll send the preliminary technical assessment and site survey schedule to this email.</p>
             </div>
 
             <div className="flex justify-end pt-4">
