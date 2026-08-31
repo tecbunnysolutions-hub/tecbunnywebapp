@@ -433,48 +433,6 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
     setIsDownloadModalOpen(true);
   };
 
-  const handleQuickPdfDownload = async () => {
-    setQuoteDownloading(true);
-    try {
-      const systemLabel = system === 'analog' ? 'Analog DVR' : 'IP NVR';
-      const hddLabel = selectableHddOptions.find(e => e.id === hddId)?.label ?? 'Surveillance HDD';
-      const items: { description: string; mrp: number; sale: number }[] = [
-        { description: `${systemLabel} system (${cameraCount} cameras)`, mrp: totals.system.mrp, sale: totals.system.sale },
-        { description: hddLabel, mrp: totals.hdd.mrp, sale: totals.hdd.sale },
-      ];
-      if (totals.monitor.included)    items.push({ description: `Monitor (${totals.monitor.label})`,         mrp: totals.monitor.mrp,     sale: totals.monitor.sale });
-      if (totals.wallMount.included)  items.push({ description: 'Wall Mount Installation Kit',                mrp: totals.wallMount.mrp,   sale: totals.wallMount.sale });
-      if (totals.spikeGuard.included) items.push({ description: 'Spike Guard / Power Surge Protector',       mrp: totals.spikeGuard.mrp,  sale: totals.spikeGuard.sale });
-      if (totals.rack.selected)       items.push({ description: totals.rack.label,                           mrp: totals.rack.mrp,        sale: totals.rack.sale });
-      if (totals.conduit.selected)    items.push({ description: `${totals.conduit.label} x ${totals.conduit.meters}m`, mrp: totals.conduit.mrp, sale: totals.conduit.sale });
-      if (totals.installation.included) items.push({ description: `Installation (${installationOption.label})`, mrp: totals.installation.mrp, sale: totals.installation.sale });
-
-      const res = await fetch('/api/customised-setup/pdf', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          systemLabel,
-          cameraCount,
-          breakdown: totals.system.breakdown,
-          items,
-          saleTotalOverall: totals.overall.sale,
-          mrpTotalOverall: totals.overall.mrp,
-          discountAmount: totals.overall.discountAmount,
-          discountPercent: totals.overall.discountPercent,
-        }),
-      });
-      if (!res.ok) throw new Error('Failed to generate PDF');
-      const blob = await res.blob();
-      const url = window.URL.createObjectURL(blob);
-      window.open(url, '_blank');
-      setTimeout(() => window.URL.revokeObjectURL(url), 30_000);
-    } catch {
-      toast({ variant: 'destructive', title: 'PDF failed', description: 'Unable to generate the estimate PDF. Please try again.' });
-    } finally {
-      setQuoteDownloading(false);
-    }
-  };
-
 
   const handleInlineQuoteDownloadAnon = async () => {
     if (!anonForm.name || !anonForm.phone || !anonForm.address) {
@@ -1295,6 +1253,48 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
 
   const defaultLayout = (
     <section className="space-y-8">
+      {/* Intro Header with Process Steps */}
+      <div className="rounded-2xl border border-zinc-800/60 bg-gradient-to-br from-blue-950/20 via-zinc-950/40 to-zinc-950 p-6 sm:p-8">
+        <div className="space-y-6">
+          <div>
+            <div className="inline-flex items-center gap-2 rounded-full border border-blue-500/20 bg-blue-500/10 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.22em] text-blue-300 mb-4">
+              <Sparkles size={13} />
+              Custom CCTV Configurator
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-bold text-white mb-2">Design Your Exact System</h2>
+            <p className="text-sm sm:text-base text-zinc-300">Choose analog or IP architecture, camera count, storage capacity, and optional accessories. See pricing instantly. No surprises.</p>
+          </div>
+
+          {/* 3-Step Process */}
+          <div className="grid grid-cols-3 gap-3">
+            {[
+              { step: 1, title: 'Scope', desc: 'System type & cameras' },
+              { step: 2, title: 'Configure', desc: 'Components & add-ons' },
+              { step: 3, title: 'Review', desc: 'Quote & pricing' }
+            ].map((item) => (
+              <div key={item.step} className={cn('rounded-lg border p-3 text-center transition-all', currentStep >= item.step ? 'border-blue-500/50 bg-blue-500/10 text-blue-100' : 'border-zinc-800 bg-zinc-900/40 text-zinc-400')}>
+                <div className={cn('text-base font-bold mb-1', currentStep >= item.step ? 'text-blue-300' : 'text-zinc-500')}>Step {item.step}</div>
+                <div className="text-xs font-semibold uppercase tracking-wider">{item.title}</div>
+                <div className="text-[10px] text-zinc-400/60 mt-1">{item.desc}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* Quick Trust Signals */}
+          <div className="flex flex-wrap gap-2">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-zinc-700 bg-zinc-900/50 px-2.5 py-1 text-[10px] font-medium text-zinc-300">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> Instant quote gen
+            </span>
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-zinc-700 bg-zinc-900/50 px-2.5 py-1 text-[10px] font-medium text-zinc-300">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> 70% min bid accepted
+            </span>
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-zinc-700 bg-zinc-900/50 px-2.5 py-1 text-[10px] font-medium text-zinc-300">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> PDF valid 7 days
+            </span>
+          </div>
+        </div>
+      </div>
+
       <Card className={cardClassName}>
         <CardHeader className={cardHeaderClassName}>
           <CardTitle className={isTech ? 'text-white' : undefined}>Configure your surveillance stack</CardTitle>
@@ -1654,34 +1654,36 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
             <p className={cn('mt-3 border-t pt-2 text-[11px] leading-relaxed', isTech ? 'border-white/10 text-slate-400' : 'border-slate-200 text-slate-500')}>
               Calculation terms: cable run is estimated at ~25m per camera and billed in full roll/box units shown per cable option above (partial requirements always round up to the next full unit, e.g. 125m needed rounds up to 200m billed). Camera, cable, and accessory quantities update instantly as you change selections. Prices are indicative; final cost is confirmed after a site survey.
             </p>
-            <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-              <span className={cn('text-xs', isTech ? 'text-slate-300' : 'text-slate-600')}>Download this estimate or proceed to book your setup.</span>
-              <div className="flex gap-2 flex-wrap justify-end">
+            
+            {/* Enhanced CTA Section */}
+            <div className="mt-6 space-y-4 border-t border-white/10 pt-6">
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
                 <Button
-                  size="sm"
-                  variant="outline"
-                  className={isTech ? "border-amber-500/50 text-amber-400 hover:bg-amber-500/10" : "text-amber-600 border-amber-200"}
-                  onClick={() => setIsBidding(true)}
+                  onClick={handleBookNow}
+                  disabled={quoteDownloading}
+                  className="bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl h-12 px-6 text-sm shadow-lg shadow-blue-500/20 flex-1 sm:flex-initial"
                 >
-                  Negotiate Price
+                  📋 Book Installation Now
                 </Button>
                 <Button
-                  size="sm"
-                  variant={isTech ? 'secondary' : 'outline'}
                   onClick={handleInlineQuoteDownload}
                   disabled={quoteDownloading}
+                  variant="outline"
+                  className="border-zinc-700 bg-zinc-900/50 hover:bg-zinc-800 text-zinc-200 font-semibold rounded-xl h-12 px-6 text-sm flex-1 sm:flex-initial"
                 >
-                  {quoteDownloading ? 'Preparing…' : 'Download Quote'}
-                </Button>
-                <Button
-                  size="sm"
-                  variant="default"
-                  onClick={handleBookNow}
-                  className={isTech ? 'bg-primary text-primary-foreground hover:bg-primary/90 font-bold' : ''}
-                >
-                  Book Installation
+                  {quoteDownloading ? 'Generating…' : '📥 Download Quote (PDF)'}
                 </Button>
               </div>
+              <Button
+                onClick={() => setIsBidding(true)}
+                variant="ghost"
+                className="w-full border border-amber-500/30 text-amber-400 hover:bg-amber-500/10 h-11 font-semibold text-sm"
+              >
+                💰 Negotiate Price (Name Your Bid)
+              </Button>
+              <p className={cn('text-xs text-center pt-2', isTech ? 'text-slate-400' : 'text-slate-500')}>
+                Quote valid for 7 days. Site survey needed to confirm final pricing.
+              </p>
             </div>
           </div>
         </CardContent>
@@ -1692,15 +1694,6 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
           <div className="bg-[#030712] border border-amber-500/30 rounded-xl max-w-md w-full p-6 shadow-2xl relative">
             <h3 className="text-xl font-bold text-white mb-2">Request Revised Price</h3>
             <p className="text-sm text-slate-400 mb-6">Enter your details and bid a price for this custom setup. Our team will review and respond shortly.</p>
-
-            <dl className="mb-6 grid gap-x-4 gap-y-2 rounded-lg border border-white/10 bg-white/[0.03] p-3 text-xs sm:grid-cols-2">
-              <div><dt className="font-medium text-slate-200">Eligibility</dt><dd className="mt-0.5 text-slate-400">Custom configurations only.</dd></div>
-              <div><dt className="font-medium text-slate-200">Minimum offer</dt><dd className="mt-0.5 text-slate-400">70% of the displayed quote total.</dd></div>
-              <div><dt className="font-medium text-slate-200">Quote validity</dt><dd className="mt-0.5 text-slate-400">7 calendar days.</dd></div>
-              <div><dt className="font-medium text-slate-200">Stock</dt><dd className="mt-0.5 text-slate-400">Reserved only after acceptance and order confirmation.</dd></div>
-              <div><dt className="font-medium text-slate-200">Counter-offers</dt><dd className="mt-0.5 text-slate-400">Discretionary; final terms appear on the reviewed quote.</dd></div>
-              <div><dt className="font-medium text-slate-200">GST and shipping</dt><dd className="mt-0.5 text-slate-400">GST included; shipping is separate unless stated.</dd></div>
-            </dl>
             
             <div className="space-y-4">
               <div>
@@ -2241,15 +2234,6 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
                           disabled={quoteDownloading}
                         >
                           {quoteDownloading ? 'Preparing…' : 'Download Quote'}
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={handleQuickPdfDownload}
-                          disabled={quoteDownloading}
-                          className={isTech ? 'border-sky-500/50 text-sky-400 hover:bg-sky-500/10' : 'text-sky-600 border-sky-200'}
-                        >
-                          {quoteDownloading ? 'Preparing…' : 'Quick PDF'}
                         </Button>
                         <Button
                           size="sm"

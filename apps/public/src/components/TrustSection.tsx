@@ -59,19 +59,27 @@ export function TrustSection({
   className?: string;
 }) {
   return (
-    <section className={`py-16 sm:py-20 bg-zinc-950/40 border-y border-zinc-900 ${className}`}>
+    <section className={`py-16 sm:py-24 bg-zinc-950 border-y border-zinc-900 ${className}`}>
       <div className="container mx-auto px-6 max-w-screen-2xl">
-        <div className="max-w-3xl mb-12">
-          <span className="text-xs font-bold uppercase tracking-[0.35em] text-blue-400 font-mono">
-            Proven Standards
-          </span>
-          <h2 className="mt-3 text-3xl sm:text-4xl font-bold text-white font-tech tracking-tight">
-            {title}
-          </h2>
-          <p className="mt-3 text-sm sm:text-base text-zinc-400 font-light leading-relaxed">
-            {subtitle}
-          </p>
+        {/* Premium Intro Container */}
+        <div className="rounded-2xl border border-blue-500/20 bg-gradient-to-br from-blue-950/15 via-zinc-950/30 to-zinc-950 p-8 sm:p-10 mb-14">
+          <div className="space-y-4">
+            <div className="inline-flex items-center gap-2 rounded-full border border-blue-500/30 bg-blue-500/10 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.22em] text-blue-300">
+              <ShieldCheck size={13} />
+              Enterprise Trust Signals
+            </div>
+            <div>
+              <h2 className="text-3xl sm:text-4xl font-bold text-white font-tech tracking-tight">
+                {title}
+              </h2>
+              <p className="mt-3 text-base sm:text-lg text-zinc-300 font-light leading-relaxed max-w-3xl">
+                {subtitle}
+              </p>
+            </div>
+          </div>
         </div>
+
+        <div className="max-w-3xl mb-12" />
 
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {TRUST_POINTS.map((point) => {

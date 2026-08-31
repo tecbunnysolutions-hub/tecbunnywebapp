@@ -94,19 +94,19 @@ export function HowItWorksSection({
         </div>
 
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {DEPLOYMENT_STEPS.map((item) => {
+          {DEPLOYMENT_STEPS.map((item, idx) => {
             const Icon = item.icon;
             return (
               <div 
                 key={item.step}
-                className="relative rounded-2xl border border-zinc-850 bg-zinc-950/60 p-6 flex flex-col justify-between transition-all duration-300 hover:border-zinc-700 hover:bg-zinc-900/30 group"
+                className="relative rounded-2xl border border-zinc-850 bg-zinc-950/60 p-6 flex flex-col justify-between transition-all duration-300 hover:border-blue-500/40 hover:bg-zinc-900/40 hover:shadow-lg hover:shadow-blue-500/10 group"
               >
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-400 group-hover:bg-blue-600 group-hover:text-white transition-colors">
-                      <Icon size={18} />
+                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-500/20 border border-blue-500/40 text-blue-300 group-hover:bg-blue-500 group-hover:text-white group-hover:scale-110 transition-all shadow-lg shadow-blue-500/20">
+                      <Icon size={20} />
                     </div>
-                    <span className="text-2xl font-black text-zinc-800 font-mono group-hover:text-zinc-700 transition-colors">
+                    <span className="text-3xl font-black text-blue-500/40 font-mono group-hover:text-blue-400 transition-colors">
                       {item.step}
                     </span>
                   </div>

@@ -167,7 +167,7 @@ function classifyInquiry(input: {
 }
 
 export async function POST(request: NextRequest) {
-  let correlationId = `contact-upload-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  const correlationId = `contact-upload-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
   try {
     const formData = await request.formData();

@@ -73,33 +73,33 @@ export function CaseStudySection({
   return (
     <section className={`py-16 sm:py-24 bg-zinc-950 border-t border-zinc-900 ${className}`}>
       <div className="container mx-auto px-6 max-w-screen-2xl">
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
-          <div className="max-w-3xl">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-14 rounded-2xl border border-blue-500/20 bg-gradient-to-br from-blue-950/15 via-zinc-950/30 to-zinc-950 p-8 sm:p-10">
+          <div className="max-w-3xl flex-1">
             <span className="inline-flex items-center gap-2 rounded-lg border border-blue-500/20 bg-blue-500/10 px-3.5 py-1.5 text-xs font-semibold uppercase tracking-[0.25em] text-blue-400 font-mono">
-              <Sparkles size={14} /> Project Architecture
+              <Sparkles size={14} /> Proven Case Studies
             </span>
-            <h2 className="mt-3 text-3xl sm:text-4xl font-bold text-white font-tech tracking-tight">
+            <h2 className="mt-4 text-3xl sm:text-4xl font-bold text-white font-tech tracking-tight">
               {title}
             </h2>
-            <p className="mt-3 text-sm sm:text-base text-zinc-400 leading-relaxed">
+            <p className="mt-3 text-base sm:text-lg text-zinc-300 font-light leading-relaxed">
               {subtitle}
             </p>
           </div>
-          <Button asChild size="sm" className="bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl text-xs h-10 px-5 shadow-lg shadow-blue-500/20 self-start md:self-auto">
+          <Button asChild size="sm" className="bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl text-xs h-11 px-6 shadow-lg shadow-blue-500/20 self-start md:self-auto whitespace-nowrap">
             <Link 
               href="/assessment" 
               onClick={() => trackEvent('resource_cta_clicked', { cta: 'request_similar_project', page: 'case_studies' })}
             >
-              Request a Similar Project &rarr;
+              🎯 Request a Similar Project →
             </Link>
           </Button>
         </div>
 
         <div className="grid gap-8 lg:grid-cols-2">
-          {ARCHITECTURE_CASE_STUDIES.map((study) => (
+          {ARCHITECTURE_CASE_STUDIES.map((study, idx) => (
             <div 
               key={study.id} 
-              className="rounded-3xl border border-zinc-800/90 bg-zinc-900/40 p-7 sm:p-9 flex flex-col justify-between hover:border-blue-500/30 transition-all duration-300 shadow-xl"
+              className="rounded-3xl border border-zinc-800/80 bg-gradient-to-br from-zinc-900/60 to-zinc-950/80 p-7 sm:p-9 flex flex-col justify-between hover:border-blue-500/50 hover:shadow-2xl hover:shadow-blue-500/20 transition-all duration-300"
             >
               <div className="space-y-6">
                 <div className="flex flex-wrap items-center justify-between gap-3 border-b border-zinc-800/60 pb-5">
@@ -146,17 +146,20 @@ export function CaseStudySection({
                 </div>
               </div>
 
-              <div className="mt-8 pt-5 border-t border-zinc-800/60 flex items-center justify-between">
-                <span className="text-xs text-zinc-400">Facing a similar infrastructure challenge?</span>
+              <div className="mt-8 pt-5 border-t border-zinc-800/60 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="space-y-1">
+                  <span className="text-xs text-zinc-400 font-medium">✓ Verified Deployment</span>
+                  <span className="text-xs text-zinc-500">Facing a similar challenge?</span>
+                </div>
                 <Link
                   href={`/assessment?industry=${encodeURIComponent(study.industry)}&context=${encodeURIComponent(study.id)}`}
-                  className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-400 hover:text-blue-300 transition-colors"
+                  className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-400 hover:text-blue-300 hover:gap-2 transition-all whitespace-nowrap"
                   onClick={() => {
                     trackEvent('case_study_cta_clicked', { caseStudy: study.id, industry: study.industry, ctaLocation: 'case_study_card' });
                     trackEvent('resource_cta_clicked', { cta: 'case_study_assessment', caseStudy: study.id });
                   }}
                 >
-                  Request a Similar Project &rarr;
+                  🚀 Get Started →
                 </Link>
               </div>
             </div>

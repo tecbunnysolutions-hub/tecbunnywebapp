@@ -118,20 +118,34 @@ export default function HomePage({
         <div className="tb-container relative z-10">
           <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-[1.05fr_0.95fr] xl:gap-16">
             <div className="reveal-section is-revealed max-w-3xl space-y-6" data-reveal-id="hero-copy">
-              <h1 className="text-3xl font-extrabold leading-[1.05] text-white sm:text-4xl md:text-5xl xl:text-6xl font-tech tracking-tight" aria-label="CCTV, IT & Smart Automation. Securing Your Enterprise.">
-                <span className="glitch-text block pb-3 text-blue-400" data-text="CCTV, IT & Smart Automation.">CCTV, IT &amp; Smart Automation.</span>
-                <span className="block text-zinc-100">
-                  Securing Your Enterprise.
-                </span>
+              <div className="inline-flex items-center gap-2 rounded-full border border-blue-500/20 bg-blue-500/10 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.22em] text-blue-300">
+                <ShieldCheck size={13} />
+                Goa-based IT &amp; security partner
+              </div>
+
+              <h1 className="text-3xl font-extrabold leading-[0.98] text-white sm:text-4xl md:text-5xl xl:text-6xl font-tech tracking-tight" aria-label="Secure operations. Smarter systems. Built for business continuity.">
+                <span className="glitch-text block pb-3 text-blue-400" data-text="Secure operations.">Secure operations.</span>
+                <span className="block text-zinc-100">Smarter systems.</span>
               </h1>
 
               <HeroRotator />
 
-              <p className="tb-lede max-w-2xl text-lg sm:text-xl">
-                We build IT systems, handle CCTV, and run back-office work — so your business can grow and stay safe.
+              <p className="tb-lede max-w-2xl text-base sm:text-xl text-zinc-300">
+                We design and maintain CCTV, Wi‑Fi, smart access, IT infrastructure, and managed support for hotels, offices, clinics, and growing businesses across Goa and Maharashtra.
               </p>
 
-              {/* Primary High-Converting Hero CTA Bar */}
+              <div className="flex flex-wrap items-center gap-3 text-[11px] font-medium text-zinc-300">
+                <span className="inline-flex items-center gap-2 rounded-full border border-zinc-800 bg-zinc-900/70 px-2.5 py-1.5">
+                  <ShieldCheck size={12} className="text-blue-400" /> Certified installations
+                </span>
+                <span className="inline-flex items-center gap-2 rounded-full border border-zinc-800 bg-zinc-900/70 px-2.5 py-1.5">
+                  <Clock size={12} className="text-blue-400" /> Fast site response
+                </span>
+                <span className="inline-flex items-center gap-2 rounded-full border border-zinc-800 bg-zinc-900/70 px-2.5 py-1.5">
+                  <Wifi size={12} className="text-blue-400" /> Network-first support
+                </span>
+              </div>
+
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5 pt-2">
                 <Button asChild size="lg" className="bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl h-12 px-6 text-sm shadow-xl shadow-blue-500/25">
                   <Link href="/assessment">
@@ -145,7 +159,6 @@ export default function HomePage({
                 </Button>
               </div>
 
-              {/* Assessment Microcopy Deliverables */}
               <div className="rounded-xl border border-zinc-850 bg-zinc-950/70 p-3.5">
                 <span className="text-[10px] uppercase font-mono font-bold tracking-widest text-blue-400 block mb-1.5">Free Assessment Includes:</span>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-3 gap-y-1 text-[11px] text-zinc-400">
@@ -211,26 +224,18 @@ export default function HomePage({
                 </div>
               </div>
 
-              <aside className="rounded-xl border border-zinc-800 bg-zinc-950/60 p-4" aria-labelledby="goa-delivery-eligibility">
-                <h2 id="goa-delivery-eligibility" className="text-sm font-semibold text-white">Next-day delivery in Goa: eligibility</h2>
-                <dl className="mt-3 grid gap-x-5 gap-y-2 text-xs sm:grid-cols-2">
-                  <div><dt className="font-medium text-zinc-300">Eligible PIN codes</dt><dd className="text-zinc-500">Goa 403xxx PIN codes, confirmed at checkout.</dd></div>
-                  <div><dt className="font-medium text-zinc-300">Products</dt><dd className="text-zinc-500">In-stock products at our Goa fulfillment hub only.</dd></div>
-                  <div><dt className="font-medium text-zinc-300">Order cut-off</dt><dd className="text-zinc-500">Shown at checkout; later orders move to the next working day.</dd></div>
-                  <div><dt className="font-medium text-zinc-300">Working days</dt><dd className="text-zinc-500">Business days only.</dd></div>
-                  <div><dt className="font-medium text-zinc-300">Holiday exceptions</dt><dd className="text-zinc-500">Public holidays and carrier closures are excluded.</dd></div>
-                  <div><dt className="font-medium text-zinc-300">Shipping partner</dt><dd className="text-zinc-500">Assigned at dispatch and shown with tracking.</dd></div>
-                </dl>
-              </aside>
-
-              <div className="grid max-w-md grid-cols-2 gap-6 border-t border-zinc-800/80 pt-8">
-                <div className="group">
-                  <p className="text-3xl font-black text-white font-tech group-hover:text-blue-400 transition-colors">Proven</p>
-                  <p className="text-xs font-bold uppercase tracking-widest text-zinc-500 mt-1">Enterprise Solutions</p>
+              <div className="grid max-w-lg grid-cols-3 gap-4 rounded-2xl border border-zinc-800 bg-zinc-950/60 p-4">
+                <div className="group border-r border-zinc-800 pr-3 last:border-r-0 last:pr-0">
+                  <p className="text-2xl font-black text-white font-tech group-hover:text-blue-400 transition-colors">280+</p>
+                  <p className="mt-1 text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-500">Sites secured</p>
+                </div>
+                <div className="group border-r border-zinc-800 pr-3 last:border-r-0 last:pr-0">
+                  <p className="text-2xl font-black text-white font-tech group-hover:text-blue-400 transition-colors">24/7</p>
+                  <p className="mt-1 text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-500">Remote support</p>
                 </div>
                 <div className="group">
-                  <p className="text-3xl font-black text-white font-tech group-hover:text-blue-400 transition-colors">SLA</p>
-                  <p className="text-xs font-bold uppercase tracking-widest text-zinc-500 mt-1">Direct Support</p>
+                  <p className="text-2xl font-black text-white font-tech group-hover:text-blue-400 transition-colors">Goa</p>
+                  <p className="mt-1 text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-500">Coverage</p>
                 </div>
               </div>
             </div>
