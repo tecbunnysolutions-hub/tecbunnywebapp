@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 import { Button, Input, Textarea, useToast } from '@tecbunny/ui';
 import { useAnalytics } from '@tecbunny/core';
+import { useFunnelEventTracking } from '@tecbunny/core/hooks/use-funnel-event-tracking';
 
 export const SERVICE_CATEGORIES = [
   { id: 'network-infrastructure', label: 'Network & IT Infrastructure', icon: Server, desc: 'Structured cabling, managed switches, Wi-Fi 6, firewalls' },
@@ -126,6 +127,7 @@ export function TechnologyAssessmentFunnel({
 }: TechnologyAssessmentFunnelProps) {
   const { toast } = useToast();
   const { trackEvent } = useAnalytics();
+  const { trackEvent: trackFunnelEvent, getSessionId } = useFunnelEventTracking();
   const [currentStep, setCurrentStep] = React.useState<1 | 2 | 3>(1);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [isSuccess, setIsSuccess] = React.useState(false);
@@ -182,10 +184,18 @@ export function TechnologyAssessmentFunnel({
         service: initialService,
         industry: initialIndustry,
       });
+      trackFunnelEvent({
+        eventType: 'assessment_started',
+        eventData: {
+          source: sourceContext,
+          service: initialService,
+          industry: initialIndustry,
+        },
+      });
     } catch {
       // safe fallback
     }
-  }, [sourceContext, initialService, initialIndustry, trackEvent]);
+  }, [sourceContext, initialService, initialIndustry, trackEvent, trackFunnelEvent]);
 
   // Save form progress to localStorage on every change
   React.useEffect(() => {
@@ -208,6 +218,23 @@ export function TechnologyAssessmentFunnel({
 
       // Only send if user has provided email (indicates abandonment, not just browsing)
       if (formData.email.trim() && currentStep < 3) {
+        // Track funnel abandonment event
+        try {
+          await trackFunnelEvent({
+            eventType: 'assessment_abandoned',
+            eventData: {
+              abandonedStep: currentStep,
+              service: formData.service,
+              industry: formData.industry,
+              businessType: formData.businessType,
+            },
+            email: formData.email.trim(),
+          });
+        } catch {
+          // silent fallback
+        }
+
+        // Record to abandoned assessments table
         try {
           await fetch('/api/abandoned-assessments', {
             method: 'POST',
@@ -242,7 +269,7 @@ export function TechnologyAssessmentFunnel({
 
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-  }, [formData, currentStep, isSuccess, sourceContext]);
+  }, [formData, currentStep, isSuccess, sourceContext, trackFunnelEvent]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
@@ -293,6 +320,11 @@ export function TechnologyAssessmentFunnel({
         });
         return;
       }
+      trackFunnelEvent({
+        eventType: 'assessment_step_completed',
+        eventData: { completedStep: 1, email: formData.email },
+        email: formData.email,
+      });
       setCurrentStep(2);
       window.scrollTo({ top: 300, behavior: 'smooth' });
     } else if (currentStep === 2) {
@@ -328,6 +360,11 @@ export function TechnologyAssessmentFunnel({
         });
         return;
       }
+      trackFunnelEvent({
+        eventType: 'assessment_step_completed',
+        eventData: { completedStep: 2, email: formData.email },
+        email: formData.email,
+      });
       setCurrentStep(3);
       window.scrollTo({ top: 300, behavior: 'smooth' });
     }
@@ -415,12 +452,34 @@ ${formData.additionalNotes.trim() || 'None'}
         throw new Error(errorData.error || 'Failed to submit assessment request.');
       }
 
+      const responseData = await response.json();
+
       setIsSuccess(true);
       trackEvent('assessment_submitted', {
         service: formData.service,
         industry: formData.industry,
         timeline: formData.timeline,
         hasDocument: Boolean(attachedFile),
+        leadScore: responseData.leadScore,
+        leadPriority: responseData.leadPriority,
+      });
+
+      // Track funnel submission event with lead score
+      trackFunnelEvent({
+        eventType: 'assessment_submitted',
+        eventData: {
+          service: formData.service,
+          industry: formData.industry,
+          timeline: formData.timeline,
+          businessType: formData.businessType,
+          projectStage: formData.projectStage,
+          projectSize: formData.projectSize,
+          budget: formData.budget,
+          hasDocument: Boolean(attachedFile),
+          leadScore: responseData.leadScore,
+          leadPriority: responseData.leadPriority,
+        },
+        email: formData.email.trim(),
       });
 
       // Clear localStorage after successful submission
@@ -526,7 +585,14 @@ ${formData.additionalNotes.trim() || 'None'}
               href="https://wa.me/919604136010?text=Hi%20TecBunny,%20I%20just%20submitted%20a%20technology%20assessment%20request%20and%20would%20like%20to%20discuss%20it."
               target="_blank"
               rel="noopener noreferrer"
-              onClick={() => trackEvent('assessment_success_whatsapp_clicked', { service: formData.service, industry: formData.industry, source: sourceContext })}
+              onClick={() => {
+                trackEvent('assessment_success_whatsapp_clicked', { service: formData.service, industry: formData.industry, source: sourceContext });
+                trackFunnelEvent({
+                  eventType: 'whatsapp_clicked',
+                  eventData: { source: 'assessment_success', service: formData.service },
+                  email: formData.email,
+                });
+              }}
               className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-6 py-3 text-xs uppercase tracking-wider transition-colors shadow-lg shadow-emerald-500/20"
             >
               <MessageSquare size={16} />
@@ -534,7 +600,14 @@ ${formData.additionalNotes.trim() || 'None'}
             </a>
             <a
               href="tel:+919604136010"
-              onClick={() => trackEvent('assessment_success_phone_clicked', { service: formData.service, industry: formData.industry, source: sourceContext })}
+              onClick={() => {
+                trackEvent('assessment_success_phone_clicked', { service: formData.service, industry: formData.industry, source: sourceContext });
+                trackFunnelEvent({
+                  eventType: 'phone_clicked',
+                  eventData: { source: 'assessment_success', service: formData.service },
+                  email: formData.email,
+                });
+              }}
               className="inline-flex items-center justify-center gap-2 rounded-xl border border-zinc-700 bg-zinc-900 hover:bg-zinc-850 text-white font-semibold px-6 py-3 text-xs uppercase tracking-wider transition-colors"
             >
               <PhoneCall size={16} />
