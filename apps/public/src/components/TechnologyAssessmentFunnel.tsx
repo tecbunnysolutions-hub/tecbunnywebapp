@@ -61,6 +61,32 @@ export const SCALE_OPTIONS = [
   'Custom Enterprise Scale'
 ] as const;
 
+export const BUSINESS_TYPE_OPTIONS = [
+  'Hospitality / Hotels & Resorts',
+  'Corporate Office / Co-working',
+  'Education / School / College',
+  'Healthcare / Clinic / Hospital',
+  'Retail / Commercial Outlet',
+  'Real Estate / Builder / Developer',
+  'Manufacturing / Warehouse',
+  'Other Business Enterprise'
+] as const;
+
+export const PROJECT_STAGE_OPTIONS = [
+  'Just researching / evaluating options',
+  'Planning this quarter',
+  'Ready to request a proposal',
+  'Urgent implementation needed'
+] as const;
+
+export const PROJECT_SIZE_OPTIONS = [
+  'Single-site / small rollout',
+  '10-25 devices / moderate footprint',
+  '25-100 devices / multi-floor deployment',
+  '100+ devices / multi-site enterprise',
+  'Custom enterprise specification'
+] as const;
+
 function resolveDefaultIndustry(str?: string): string {
   if (!str) return 'Hospitality (Hotels & Resorts)';
   const s = str.toLowerCase();
@@ -112,11 +138,14 @@ export function TechnologyAssessmentFunnel({
     // Step 1: Requirements
     service: initialService,
     timeline: '',
+    businessType: '',
+    projectStage: '',
     currentProblem: '',
 
     // Step 2: Scale & Industry
     industry: initialIndustry,
     scale: '',
+    projectSize: '',
     city: '',
     budget: 'Flexible / Proposal Based',
 
@@ -167,6 +196,22 @@ export function TechnologyAssessmentFunnel({
         });
         return;
       }
+      if (!formData.businessType) {
+        toast({
+          variant: 'destructive',
+          title: 'Select Business Type',
+          description: 'Please tell us what kind of business or property this project is for.',
+        });
+        return;
+      }
+      if (!formData.projectStage) {
+        toast({
+          variant: 'destructive',
+          title: 'Select Project Stage',
+          description: 'Please tell us where your project stands today.',
+        });
+        return;
+      }
       setCurrentStep(2);
       window.scrollTo({ top: 300, behavior: 'smooth' });
     } else if (currentStep === 2) {
@@ -183,6 +228,14 @@ export function TechnologyAssessmentFunnel({
           variant: 'destructive',
           title: 'Select Project Scale',
           description: 'Please select your estimated requirement scale.',
+        });
+        return;
+      }
+      if (!formData.projectSize) {
+        toast({
+          variant: 'destructive',
+          title: 'Select Approximate Project Size',
+          description: 'Please estimate the project footprint or device count.',
         });
         return;
       }
@@ -236,7 +289,10 @@ export function TechnologyAssessmentFunnel({
 --- FREE TECHNOLOGY ASSESSMENT REQUEST ---
 Service Requested: ${serviceTitle}
 Industry: ${formData.industry}
+Business Type: ${formData.businessType}
+Project Stage: ${formData.projectStage}
 Property Scale: ${formData.scale}
+Approximate Project Size: ${formData.projectSize}
 Location / City: ${formData.city}
 Implementation Timeline: ${formData.timeline}
 Estimated Budget: ${formData.budget}
@@ -257,6 +313,9 @@ ${formData.additionalNotes.trim() || 'None'}
       submitFormData.append('subject', `Technology Assessment: ${serviceTitle} - ${formData.company.trim()}`);
       submitFormData.append('message', formattedMessage);
       submitFormData.append('service_interest', serviceTitle);
+      submitFormData.append('business_type', formData.businessType);
+      submitFormData.append('project_stage', formData.projectStage);
+      submitFormData.append('project_size', formData.projectSize);
       submitFormData.append('origin_path', typeof window !== 'undefined' ? window.location.pathname : '/assessment');
       submitFormData.append('form_identifier', 'technology_assessment_funnel');
       
@@ -524,6 +583,44 @@ ${formData.additionalNotes.trim() || 'None'}
               </div>
             </div>
 
+            <div className="grid gap-6 sm:grid-cols-2">
+              <div className="space-y-2">
+                <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider" htmlFor="business-type-select">
+                  Business Type *
+                </label>
+                <select
+                  id="business-type-select"
+                  name="businessType"
+                  value={formData.businessType}
+                  onChange={handleChange}
+                  className="w-full bg-[#09090B] border border-zinc-850 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition-colors"
+                >
+                  <option value="">-- Select business type --</option>
+                  {BUSINESS_TYPE_OPTIONS.map(option => (
+                    <option key={option} value={option}>{option}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider" htmlFor="project-stage-select">
+                  Project Stage *
+                </label>
+                <select
+                  id="project-stage-select"
+                  name="projectStage"
+                  value={formData.projectStage}
+                  onChange={handleChange}
+                  className="w-full bg-[#09090B] border border-zinc-850 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition-colors"
+                >
+                  <option value="">-- Select project stage --</option>
+                  {PROJECT_STAGE_OPTIONS.map(option => (
+                    <option key={option} value={option}>{option}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
             {/* Current Problem Textarea */}
             <div className="space-y-2">
               <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider block" htmlFor="current-problem">
@@ -599,6 +696,25 @@ ${formData.additionalNotes.trim() || 'None'}
                   <option value="">-- Select Project Scale --</option>
                   {SCALE_OPTIONS.map(sc => (
                     <option key={sc} value={sc}>{sc}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Approximate Project Size */}
+              <div className="space-y-2">
+                <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider" htmlFor="project-size-select">
+                  Approximate Project Size *
+                </label>
+                <select
+                  id="project-size-select"
+                  name="projectSize"
+                  value={formData.projectSize}
+                  onChange={handleChange}
+                  className="w-full bg-[#09090B] border border-zinc-850 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition-colors"
+                >
+                  <option value="">-- Select approximate size --</option>
+                  {PROJECT_SIZE_OPTIONS.map(option => (
+                    <option key={option} value={option}>{option}</option>
                   ))}
                 </select>
               </div>

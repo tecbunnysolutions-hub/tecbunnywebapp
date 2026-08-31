@@ -15,6 +15,9 @@ export interface LeadNotificationPayload {
   service: string;
   industry: string;
   scale: string;
+  businessType?: string;
+  projectStage?: string;
+  projectSize?: string;
   city: string;
   timeline: string;
   budget?: string;
@@ -131,8 +134,20 @@ export function buildLeadNotificationEmail(
         <span class="field-value">${payload.industry}</span>
       </div>
       <div class="field">
+        <span class="field-label">Business Type</span>
+        <span class="field-value">${payload.businessType || 'Not specified'}</span>
+      </div>
+      <div class="field">
+        <span class="field-label">Project Stage</span>
+        <span class="field-value">${payload.projectStage || 'Not specified'}</span>
+      </div>
+      <div class="field">
         <span class="field-label">Project Scale</span>
         <span class="field-value">${payload.scale}</span>
+      </div>
+      <div class="field">
+        <span class="field-label">Approx. Size</span>
+        <span class="field-value">${payload.projectSize || 'Not specified'}</span>
       </div>
       <div class="field">
         <span class="field-label">Location</span>
@@ -210,7 +225,10 @@ Phone: ${payload.phone || 'Not provided'}
 PROJECT
 Service: ${payload.service}
 Industry: ${payload.industry}
+Business Type: ${payload.businessType || 'Not specified'}
+Project Stage: ${payload.projectStage || 'Not specified'}
 Scale: ${payload.scale}
+Approx. Project Size: ${payload.projectSize || 'Not specified'}
 Location: ${payload.city}
 Timeline: ${payload.timeline}
 Budget: ${payload.budget || 'Not specified'}

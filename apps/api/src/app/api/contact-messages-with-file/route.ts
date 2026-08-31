@@ -62,8 +62,17 @@ function extractAssessmentDataFromMessage(message: string): Partial<AssessmentDa
   const industryMatch = message.match(/Industry:\s*(.+?)(?:\n|$)/);
   if (industryMatch) data.industry = industryMatch[1].trim();
 
+  const businessTypeMatch = message.match(/Business Type:\s*(.+?)(?:\n|$)/);
+  if (businessTypeMatch) data.business_type = businessTypeMatch[1].trim();
+
+  const projectStageMatch = message.match(/Project Stage:\s*(.+?)(?:\n|$)/);
+  if (projectStageMatch) data.project_stage = projectStageMatch[1].trim();
+
   const scaleMatch = message.match(/Property Scale:\s*(.+?)(?:\n|$)/);
   if (scaleMatch) data.scale = scaleMatch[1].trim();
+
+  const projectSizeMatch = message.match(/Approximate Project Size:\s*(.+?)(?:\n|$)/);
+  if (projectSizeMatch) data.project_size = projectSizeMatch[1].trim();
 
   const timelineMatch = message.match(/Implementation Timeline:\s*(.+?)(?:\n|$)/);
   if (timelineMatch) data.timeline = timelineMatch[1].trim();
@@ -181,6 +190,9 @@ export async function POST(request: NextRequest) {
     const subject = formData.get('subject') as string | null;
     const message = formData.get('message') as string;
     const service_interest = formData.get('service_interest') as string | null;
+    const business_type = formData.get('business_type') as string | null;
+    const project_stage = formData.get('project_stage') as string | null;
+    const project_size = formData.get('project_size') as string | null;
     const origin_path = formData.get('origin_path') as string | null;
     const form_identifier = formData.get('form_identifier') as string | null;
     const utm_source = formData.get('utm_source') as string | null;
@@ -283,6 +295,9 @@ export async function POST(request: NextRequest) {
       const assessmentData = extractAssessmentDataFromMessage(message) as AssessmentData;
       assessmentData.document_url = documentUrl;
       assessmentData.phone = phone || undefined;
+      assessmentData.business_type = assessmentData.business_type || business_type || undefined;
+      assessmentData.project_stage = assessmentData.project_stage || project_stage || undefined;
+      assessmentData.project_size = assessmentData.project_size || project_size || undefined;
 
       // Score the lead
       const leadScore = scoreLeadPriority(assessmentData);
@@ -351,6 +366,9 @@ export async function POST(request: NextRequest) {
           service: service_interest?.trim() || 'Not specified',
           industry: assessmentData.industry || 'Not specified',
           scale: assessmentData.scale || 'Not specified',
+          businessType: assessmentData.business_type || undefined,
+          projectStage: assessmentData.project_stage || undefined,
+          projectSize: assessmentData.project_size || undefined,
           city: assessmentData.city || 'Not specified',
           timeline: assessmentData.timeline || 'Not specified',
           budget: assessmentData.budget || undefined,

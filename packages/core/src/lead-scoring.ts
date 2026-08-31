@@ -20,8 +20,11 @@ export interface AssessmentData {
   service: string;
   industry: string;
   scale: string;
+  project_size?: string | null;
   timeline: string;
   city: string;
+  business_type?: string | null;
+  project_stage?: string | null;
   phone?: string | null;
   company_name?: string | null;
   email?: string | null;
@@ -58,6 +61,71 @@ function scoreProjectSize(scale: string): { score: number; signal: string } {
     return { score: 8, signal: 'Small-scale project' };
   }
   return { score: 0, signal: 'Scale not specified' };
+}
+
+function scoreBusinessType(businessType: string): { score: number; signal: string } {
+  if (!businessType) {
+    return { score: 0, signal: 'Business type not specified' };
+  }
+
+  const normalized = businessType.toLowerCase();
+  if (
+    normalized.includes('hospitality') ||
+    normalized.includes('resort') ||
+    normalized.includes('real estate') ||
+    normalized.includes('developer') ||
+    normalized.includes('enterprise')
+  ) {
+    return { score: 10, signal: 'High-value property/business profile' };
+  }
+
+  if (
+    normalized.includes('healthcare') ||
+    normalized.includes('manufacturing') ||
+    normalized.includes('retail') ||
+    normalized.includes('corporate') ||
+    normalized.includes('education')
+  ) {
+    return { score: 7, signal: 'Business profile supports a structured rollout' };
+  }
+
+  return { score: 4, signal: 'Business profile qualifies for standard assessment' };
+}
+
+function scoreProjectStage(projectStage: string): { score: number; signal: string } {
+  if (!projectStage) {
+    return { score: 0, signal: 'Project stage not specified' };
+  }
+
+  const normalized = projectStage.toLowerCase();
+  if (normalized.includes('urgent') || normalized.includes('immediate')) {
+    return { score: 18, signal: 'Urgent implementation requirement' };
+  }
+  if (normalized.includes('ready to request') || normalized.includes('proposal')) {
+    return { score: 12, signal: 'Decision-ready project stage' };
+  }
+  if (normalized.includes('planning') || normalized.includes('quarter')) {
+    return { score: 8, signal: 'Planned project with clear next steps' };
+  }
+  return { score: 4, signal: 'Exploration stage' };
+}
+
+function scoreApproximateProjectSize(projectSize: string): { score: number; signal: string } {
+  if (!projectSize) {
+    return { score: 0, signal: 'Approximate project size not specified' };
+  }
+
+  const normalized = projectSize.toLowerCase();
+  if (normalized.includes('100+') || normalized.includes('enterprise') || normalized.includes('multi-site')) {
+    return { score: 18, signal: 'Large multi-site or enterprise footprint' };
+  }
+  if (normalized.includes('25-100') || normalized.includes('moderate') || normalized.includes('multi-floor')) {
+    return { score: 12, signal: 'Medium footprint project' };
+  }
+  if (normalized.includes('10-25') || normalized.includes('small rollout') || normalized.includes('single-site')) {
+    return { score: 8, signal: 'Smaller rollout project' };
+  }
+  return { score: 5, signal: 'Project size is being scoped' };
 }
 
 /**
@@ -133,15 +201,21 @@ export function scoreLeadPriority(data: AssessmentData): LeadScoreBreakdown {
   // Score each dimension
   const urgency = scoreUrgency(data.timeline);
   const projectSize = scoreProjectSize(data.scale);
+  const approximateProjectSize = scoreApproximateProjectSize(data.project_size || '');
+  const businessType = scoreBusinessType(data.business_type || '');
+  const projectStage = scoreProjectStage(data.project_stage || '');
   const { score: completeness, signals: completenessSignals } = scoreCompleteness(data);
   const industryValue = scoreIndustryValue(data.industry, data.service);
 
   signals.push(urgency.signal);
   signals.push(projectSize.signal);
+  signals.push(approximateProjectSize.signal);
+  signals.push(businessType.signal);
+  signals.push(projectStage.signal);
   signals.push(...completenessSignals);
   signals.push(industryValue.signal);
 
-  const totalScore = urgency.score + projectSize.score + completeness + industryValue.score;
+  const totalScore = Math.min(100, urgency.score + projectSize.score + approximateProjectSize.score + businessType.score + projectStage.score + completeness + industryValue.score);
 
   // Classify priority
   let priority: LeadPriority;
