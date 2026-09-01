@@ -19,14 +19,7 @@ CREATE TABLE IF NOT EXISTS funnel_events (
   
   -- Timestamps
   occurred_at TIMESTAMP WITH TIME ZONE NOT NULL,
-  created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  
-  -- Indexing for common queries
-  INDEX idx_funnel_events_session_id (session_id),
-  INDEX idx_funnel_events_email (email),
-  INDEX idx_funnel_events_event_type (event_type),
-  INDEX idx_funnel_events_source (source),
-  INDEX idx_funnel_events_occurred_at (occurred_at DESC)
+  created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Create indexes

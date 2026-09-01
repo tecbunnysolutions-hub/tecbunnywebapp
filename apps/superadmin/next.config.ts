@@ -3,7 +3,7 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   output: process.env.DOCKER_BUILD === 'true' ? 'standalone' : undefined,
   transpilePackages: ["@tecbunny/core", "@tecbunny/ui", "@tecbunny/admin-ui", "@tecbunny/database", "@tecbunny/config"],
-  serverExternalPackages: ['sharp', '@img/sharp-win32-x64'],
+  serverExternalPackages: ['pdfkit', 'pdf-lib', 'fontkit', 'sharp', '@img/sharp-win32-x64', 'bullmq', 'ioredis', 'pino', 'pino-pretty', 'thread-stream', 'nodemailer'],
   generateBuildId: async () => `superadmin-${Date.now()}`,
   async rewrites() {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.tecbunny.com';
@@ -24,6 +24,9 @@ const nextConfig: NextConfig = {
       config.externals.push({
         sharp: 'commonjs sharp',
         '@img/sharp-win32-x64': 'commonjs @img/sharp-win32-x64',
+        pdfkit: 'commonjs pdfkit',
+        'pdf-lib': 'commonjs pdf-lib',
+        fontkit: 'commonjs fontkit',
       });
     }
     return config;

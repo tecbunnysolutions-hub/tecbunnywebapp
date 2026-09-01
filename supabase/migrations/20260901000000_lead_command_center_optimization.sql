@@ -163,7 +163,7 @@ BEGIN
   RETURN QUERY
   WITH lead_assignments AS (
     SELECT
-      a.assigned_to,
+      a.sales_executive_id as assigned_to,
       COALESCE(u.full_name, u.name, 'Unassigned') as assigned_to_name,
       COUNT(DISTINCT l.id) as total,
       COUNT(DISTINCT l.id) FILTER (WHERE l.lead_score >= 75) as hot_count,
@@ -173,10 +173,10 @@ BEGIN
       COUNT(DISTINCT l.id) FILTER (WHERE l.status IN ('pending', 'warm', 'hot') AND l.next_followup_at <= NOW()) as pending
     FROM sls_lead_assignments a
     LEFT JOIN sls_leads l ON a.lead_id = l.id AND l.deleted_at IS NULL
-    LEFT JOIN profiles u ON a.assigned_to = u.id
-    WHERE a.deleted_at IS NULL
+    LEFT JOIN profiles u ON a.sales_executive_id = u.id
+    WHERE a.is_active = true
       AND (org_id_filter IS NULL OR l.org_id = org_id_filter)
-    GROUP BY a.assigned_to, assigned_to_name
+    GROUP BY a.sales_executive_id, assigned_to_name
   )
   SELECT * FROM lead_assignments
   ORDER BY total_assigned DESC;
@@ -275,8 +275,8 @@ $$ LANGUAGE plpgsql;
 
 -- 8. Index for performance: frequently filtered columns
 CREATE INDEX IF NOT EXISTS idx_sls_leads_score_status ON sls_leads(lead_score, status) WHERE deleted_at IS NULL;
-CREATE INDEX IF NOT EXISTS idx_sls_leads_source_org ON sls_leads(source, org_id) WHERE deleted_at IS NULL;
-CREATE INDEX IF NOT EXISTS idx_sls_lead_assignments_assigned_to ON sls_lead_assignments(assigned_to) WHERE deleted_at IS NULL;
+CREATE INDEX IF NOT EXISTS idx_sls_leads_source_org ON sls_leads(source_id, org_id) WHERE deleted_at IS NULL;
+CREATE INDEX IF NOT EXISTS idx_sls_lead_assignments_sales_executive ON sls_lead_assignments(sales_executive_id, is_active);
 CREATE INDEX IF NOT EXISTS idx_orders_payment_status_date ON orders(payment_status, created_at DESC) WHERE deleted_at IS NULL;
 
 -- Grant access to anon/authenticated for readonly queries

@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS lead_followup_tasks (
   title TEXT NOT NULL,
   description TEXT,
   status TEXT DEFAULT 'pending', -- 'pending', 'in_progress', 'completed', 'failed', 'cancelled', 'snoozed'
-  priority INT DEFAULT 3, -- 1=critical, 2=hiagh, 3=normal, 4=low
+  priority INT DEFAULT 3, -- 1=critical, 2=high, 3=normal, 4=low
   due_at TIMESTAMPTZ NOT NULL,
   scheduled_for TIMESTAMPTZ,
   completed_at TIMESTAMPTZ,

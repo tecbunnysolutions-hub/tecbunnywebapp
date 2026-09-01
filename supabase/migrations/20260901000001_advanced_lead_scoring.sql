@@ -64,6 +64,7 @@ DECLARE
   -- Firmographic data
   v_industry TEXT;
   v_budget_estimate NUMERIC;
+  v_source_name TEXT;
   
   -- Conversion patterns
   v_pattern RECORD;
@@ -103,7 +104,11 @@ BEGIN
   -- 2. FIRMOGRAPHIC SCORE (0-20 pts)
   -- Signals: company size, budget, industry vertical
   -- ============================================
-  v_industry := COALESCE(v_lead.industry, v_lead.source);
+  v_source_name := COALESCE(
+    (SELECT name FROM sls_lead_sources WHERE id = v_lead.source_id),
+    'Direct'
+  );
+  v_industry := COALESCE(v_lead.industry, v_source_name);
   v_budget_estimate := COALESCE(v_lead.estimated_value, 0);
   
   -- Budget tier score
