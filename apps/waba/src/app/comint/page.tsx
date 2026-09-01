@@ -1,11 +1,8 @@
+'use client';
+
 import React from 'react';
 import Link from 'next/link';
 import { MessageSquare, Bot, Sparkles, ArrowRight, Zap } from 'lucide-react';
-
-export const metadata = {
-  title: 'COMINT | WhatsApp Business Intelligence Console',
-  description: 'TecBunny WABA COMINT - AI Copilot & Messaging Telemetry Control Desk',
-};
 
 export default function WabaComintPage() {
   return (

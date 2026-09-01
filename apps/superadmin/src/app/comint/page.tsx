@@ -1,11 +1,8 @@
+'use client';
+
 import React from 'react';
 import Link from 'next/link';
 import { Shield, Radar, Server, ArrowRight, Lock } from 'lucide-react';
-
-export const metadata = {
-  title: 'COMINT | Superadmin Security & Infrastructure Console',
-  description: 'TecBunny Superadmin COMINT - Universal Communications Intelligence & System Overwatch',
-};
 
 export default function SuperadminComintPage() {
   return (

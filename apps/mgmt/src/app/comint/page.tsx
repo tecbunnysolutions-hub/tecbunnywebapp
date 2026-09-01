@@ -1,11 +1,8 @@
+'use client';
+
 import React from 'react';
 import Link from 'next/link';
 import { Signal, Radio, BarChart3, ArrowRight, Activity } from 'lucide-react';
-
-export const metadata = {
-  title: 'COMINT | Management Intelligence Workspace',
-  description: 'TecBunny Management COMINT Hub - Operations Signals & Communication Analytics',
-};
 
 export default function MgmtComintPage() {
   return (
