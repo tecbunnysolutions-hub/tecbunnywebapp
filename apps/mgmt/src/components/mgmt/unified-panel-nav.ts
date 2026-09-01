@@ -129,6 +129,7 @@ export const unifiedPanelNavSections: UnifiedPanelNavSection[] = [
     title: 'Reports',
     items: [
       { href: '/mgmt/sales/funnel-analytics', label: 'Assessment Funnel', icon: TrendingUp, roles: SALES_MANAGER_ROLES },
+      { href: '/mgmt/marketing/source-analytics', label: 'Lead Sources', icon: TrendingUp, roles: ['admin', 'marketing_manager', 'marketing_executive'] },
       { href: '/mgmt/manager/reports', label: 'Regional Reports', icon: BarChart2, roles: SALES_MANAGER_ROLES },
       { href: '/mgmt/sales-staff/reports', label: 'Store Reports', icon: BarChart2, roles: STORE_ROLES },
       { href: '/mgmt/sales/history', label: 'Order History', icon: FileSearch, roles: SALES_EXECUTION_ROLES },
