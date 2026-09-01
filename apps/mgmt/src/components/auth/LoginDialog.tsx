@@ -12,11 +12,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import NextDynamic from 'next/dynamic';
-const Turnstile = NextDynamic(() => import('react-turnstile').then(m => m.default), { ssr: false }) as unknown as React.ComponentType<any>;
-
-
-import { Button } from "@tecbunny/ui";
+import { Button, Turnstile } from "@tecbunny/ui";
 import {
   Dialog,
   DialogContent,
@@ -58,7 +54,7 @@ export function LoginDialog({ children }: { children: React.ReactNode }) {
   const [failedAttempts, setFailedAttempts] = React.useState(0);
   const [lockoutUntil, setLockoutUntil] = React.useState<number | null>(null);
   const [captchaToken, setCaptchaToken] = React.useState<string | null>(null);
-  const turnstileSiteKey = process.env.NODE_ENV === 'production' ? process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY?.trim() : undefined;
+  const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY?.trim() || undefined;
 
 
 

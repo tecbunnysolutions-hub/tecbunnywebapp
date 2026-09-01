@@ -5,15 +5,12 @@ import { createClient } from '@tecbunny/database';
 
 
 import { useState, useEffect, Suspense, useMemo } from 'react';
-import NextDynamic from 'next/dynamic';
 import { useSearchParams } from 'next/navigation';
 
 import { Mail, Lock, Eye, EyeOff, AlertCircle, ShieldCheck, Users } from 'lucide-react';
 
 
-import { Input } from "@tecbunny/ui";
-import { Label } from "@tecbunny/ui";
-import { useToast } from "@tecbunny/ui";
+import { Input, Label, useToast, Turnstile } from "@tecbunny/ui";
 import { TwoFactorVerification } from '@/components/auth/TwoFactorVerification';
 
 // Staff roles permitted to access the CRM/Management Panel
@@ -33,10 +30,6 @@ const ROLE_LABELS: Record<string, string> = {
   service_engineer: 'Service Engineer',
   accounts: 'Accounts',
 };
-
-const Turnstile = NextDynamic(() => import('react-turnstile').then(m => m.default), {
-  ssr: false,
-}) as unknown as React.ComponentType<any>;
 
 async function resolveStaffRole(supabase: ReturnType<typeof createClient>, user: any) {
   const metadataRole = normalizeRole(user?.app_metadata?.role);
@@ -66,7 +59,7 @@ function StaffSignInForm() {
   const [showTwoFactor, setShowTwoFactor] = useState(false);
   const [twoFactorUser, setTwoFactorUser] = useState<any>(null);
 
-  const turnstileSiteKey = process.env.NODE_ENV === 'production' ? process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY : undefined;
+  const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY?.trim() || undefined;
 
   const searchParams = useSearchParams();
   const { toast } = useToast();

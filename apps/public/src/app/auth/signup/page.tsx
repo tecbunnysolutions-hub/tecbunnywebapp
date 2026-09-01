@@ -1,21 +1,10 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import NextDynamic from 'next/dynamic';
-const Turnstile = NextDynamic(() => import('react-turnstile').then(m => m.default), { ssr: false }) as unknown as React.ComponentType<any>;
-
 import { useRouter } from 'next/navigation';
-
-// Force dynamic rendering for auth page
-// export const dynamic = 'force-dynamic';
 import { Mail, User, Phone, Eye, EyeOff, CheckCircle, AlertCircle, MessageCircle } from 'lucide-react';
-
 import Link from 'next/link';
-
-import { Input } from "@tecbunny/ui";
-import { Label } from "@tecbunny/ui";
-
-import { useToast } from "@tecbunny/ui";
+import { Input, Label, useToast, Turnstile } from "@tecbunny/ui";
 import { logger } from '@tecbunny/core';
 import { cn } from "@tecbunny/core/utils";
 
@@ -37,8 +26,8 @@ export default function SignUpPage() {
   const [privacyAccepted, setPrivacyAccepted] = useState(false);
   const [dispatchedChannel, setDispatchedChannel] = useState<'email' | 'whatsapp' | null>(null);
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
-  const turnstileSiteKey = process.env.NODE_ENV === 'production' ? process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY : undefined;
-  
+  const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY?.trim() || undefined;
+
   const getVerificationPrompt = (channel?: string) => {
     switch (channel) {
       case 'whatsapp':

@@ -5,23 +5,9 @@ import { createClient } from '@tecbunny/database';
 
 
 import { useState, useEffect, Suspense, useMemo } from 'react';
-import NextDynamic from 'next/dynamic';
-const Turnstile = NextDynamic(() => import('react-turnstile').then(m => m.default), { ssr: false }) as unknown as React.ComponentType<any>;
-
 import { useSearchParams, useRouter } from 'next/navigation';
-
 import { Lock, Eye, EyeOff, CheckCircle, AlertCircle, Mail } from 'lucide-react';
-
-
-
-
-// Force dynamic rendering for auth page
-// export const dynamic = 'force-dynamic';
-
-import { Input } from "@tecbunny/ui";
-import { Label } from "@tecbunny/ui";
-
-import { useToast } from "@tecbunny/ui";
+import { Input, Label, useToast, Turnstile } from "@tecbunny/ui";
 import { TwoFactorVerification } from '@/components/auth/TwoFactorVerification';
 
 function SignInForm() {
@@ -37,7 +23,7 @@ function SignInForm() {
   const [showTwoFactor, setShowTwoFactor] = useState(false);
   const [twoFactorUser, setTwoFactorUser] = useState<any>(null);
 
-  const turnstileSiteKey = process.env.NODE_ENV === 'production' ? process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY : undefined;
+  const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY?.trim() || undefined;
   
 
   const searchParams = useSearchParams();
