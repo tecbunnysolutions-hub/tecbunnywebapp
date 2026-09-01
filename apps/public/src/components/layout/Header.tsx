@@ -380,14 +380,24 @@ export function Header() {
                   </button>
                 </CartSheet>
 
-                <Link
-                  href="/assessment"
-                  onMouseMove={applyMagneticEffect}
-                  onMouseLeave={resetMagneticEffect}
-                  className="group relative rounded-xl border border-blue-500 bg-blue-600 px-5 py-2.5 text-sm font-bold text-white transition-all duration-200 hover:bg-blue-500 shadow-lg shadow-blue-500/20"
-                >
-                  Get Free Assessment
-                </Link>
+                <div className="flex items-center gap-2">
+                  <Link
+                    href="/assessment"
+                    onMouseMove={applyMagneticEffect}
+                    onMouseLeave={resetMagneticEffect}
+                    className="group relative rounded-xl border border-blue-500 bg-blue-600 px-5 py-2.5 text-sm font-bold text-white transition-all duration-200 hover:bg-blue-500 shadow-lg shadow-blue-500/20"
+                  >
+                    Get Free Assessment
+                  </Link>
+                  <Link
+                    href="/customised-setups"
+                    onMouseMove={applyMagneticEffect}
+                    onMouseLeave={resetMagneticEffect}
+                    className="group relative rounded-xl border border-zinc-700 bg-zinc-900 px-5 py-2.5 text-sm font-bold text-zinc-200 transition-all duration-200 hover:border-blue-500 hover:text-white shadow-sm"
+                  >
+                    Get Free Quote
+                  </Link>
+                </div>
               </>
             )}
           </div>
@@ -592,14 +602,14 @@ export function Header() {
               onClick={() => setMobileMenuOpen(false)}
               className="block w-full rounded-xl bg-blue-600 py-3 text-center text-xs font-bold uppercase tracking-wider text-white shadow-lg shadow-blue-500/20 hover:bg-blue-500 transition-colors"
             >
-              Get Free Technology Assessment
+              Get Free Assessment
             </Link>
             <Link
               href="/customised-setups"
               onClick={() => setMobileMenuOpen(false)}
-              className="block w-full rounded-xl border border-zinc-800 bg-zinc-900 py-2.5 text-center text-xs font-semibold text-zinc-300 hover:text-white transition-colors"
+              className="block w-full rounded-xl border border-blue-500/20 bg-blue-500/10 py-2.5 text-center text-xs font-semibold text-blue-200 hover:text-white transition-colors"
             >
-              Custom Setup Configurator
+              Get Free Quote
             </Link>
           </div>
         </div>

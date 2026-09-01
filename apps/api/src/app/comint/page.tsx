@@ -1,11 +1,8 @@
+'use client';
+
 import React from 'react';
 import Link from 'next/link';
 import { Cpu, Terminal, ArrowRight, ShieldCheck, Zap } from 'lucide-react';
-
-export const metadata = {
-  title: 'COMINT | API Intelligence & Signals Console',
-  description: 'TecBunny COMINT - Automated API Telemetry and Communications Intelligence Console',
-};
 
 export default function ComintPage() {
   return (
