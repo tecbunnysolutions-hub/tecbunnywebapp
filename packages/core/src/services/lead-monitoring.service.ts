@@ -50,6 +50,7 @@ export interface ContactMessageMetrics {
 export interface LeadSystemHealth {
   timestamp: string;
   overallHealth: 'HEALTHY' | 'DEGRADED' | 'CRITICAL';
+  status?: 'HEALTHY' | 'DEGRADED' | 'CRITICAL';
   issues: string[];
   warnings: string[];
   metrics: {
@@ -112,7 +113,7 @@ export class LeadMonitoringService {
         if (overallHealth === 'HEALTHY') overallHealth = 'DEGRADED';
       }
 
-      const coldLeadPct = (leadMetrics.heatLevelDistribution.COLD / leadMetrics.totalLeads) * 100;
+      const coldLeadPct = leadMetrics.totalLeads > 0 ? (leadMetrics.heatLevelDistribution.COLD / leadMetrics.totalLeads) * 100 : 0;
       if (coldLeadPct > 70) {
         warnings.push(
           `${Math.round(coldLeadPct)}% of leads are COLD (>70% threshold) - possible scoring issue`
@@ -123,6 +124,7 @@ export class LeadMonitoringService {
       return {
         timestamp,
         overallHealth,
+        status: overallHealth,
         issues,
         warnings,
         metrics: {
@@ -158,7 +160,7 @@ export class LeadMonitoringService {
     // Get total leads
     const { data: allLeads, error: allError } = await supabase
       .from('sls_leads')
-      .select('id, lead_score, heat_level, status, lead_owner_id, created_at', { count: 'exact' })
+      .select('id, source_id, lead_score, heat_level, status, lead_owner_id, created_at', { count: 'exact' })
       .is('deleted_at', null);
 
     if (allError) throw allError;
@@ -236,10 +238,12 @@ export class LeadMonitoringService {
     const { data: sources } = await supabase.from('sls_lead_sources').select('id, name');
     const totalUniqueSources = sources?.length ?? 0;
 
-    const sourceDistribution: Record<string, number> = {};
+    const sourceDistribution: Record<string, number> = Object.create(null);
+    const sourceLookup = new Map((sources ?? []).map((source: any) => [source.id, source.name]));
+
     allLeads?.forEach((lead: any) => {
       const sourceId = lead.source_id;
-      const sourceName = sources?.find((s: any) => s.id === sourceId)?.name ?? 'unknown';
+      const sourceName = String(sourceLookup.get(sourceId) ?? 'unknown');
       sourceDistribution[sourceName] = (sourceDistribution[sourceName] ?? 0) + 1;
     });
 

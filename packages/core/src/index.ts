@@ -22,6 +22,7 @@ export * from './validation';
 export * from './lead-scoring';
 export * from './services/lead-engine.service';
 export * from './services/lead-monitoring.service';
+export * from './services/outbound-event.service';
 export * from './leads/notify-sales';
 export * from './analytics-tracking';
 export * from './hooks/use-customer-workspace';

@@ -49,7 +49,7 @@ export interface CanonicalLead {
   tracking_session_id: string | null;
   source_id: string | null;
   requirement: string | null;
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
   created_at: string;
   updated_at: string;
   deleted_at?: string | null;

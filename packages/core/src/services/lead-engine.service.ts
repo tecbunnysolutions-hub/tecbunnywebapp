@@ -14,7 +14,7 @@ export interface LeadCapturePayload {
   company_name?: string;
   source_name?: string;
   tracking_session_id?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   requirement?: string;
   message?: string;
   subject?: string;
@@ -116,6 +116,7 @@ export class LeadEngineService {
     }
 
     const sourceId = await this.ensureLeadSource(supabase, leadSource || payload.source_name || 'website');
+    const preservedLeadOwnerId = existingLead?.lead_owner_id ?? null;
     const scoreData = scoreLeadPriority({
       service: payload.service_interest || payload.requirement || 'General inquiry',
       industry: payload.industry || 'Not specified',
@@ -153,6 +154,7 @@ export class LeadEngineService {
       },
       tracking_session_id: payload.tracking_session_id || null,
       requirement: payload.requirement || payload.message || null,
+      lead_owner_id: preservedLeadOwnerId,
       lead_score: Math.max(10, scoreData.totalScore),
       heat_level: scoreData.priority,
       updated_at: new Date().toISOString(),
@@ -193,8 +195,9 @@ export class LeadEngineService {
       throw new Error('Could not create or update canonical lead');
     }
 
-    const assigned = await this.autoAssignLead(supabase, lead.id);
-    if (assigned) {
+    const existingOwner = existingLead?.lead_owner_id ?? null;
+    const assigned = existingOwner ? existingOwner : await this.autoAssignLead(supabase, lead.id);
+    if (assigned && (!existingOwner || !existingLead?.lead_owner_id)) {
       await supabase.from('sls_leads').update({ lead_owner_id: assigned, updated_at: new Date().toISOString() }).eq('id', lead.id);
     }
 
@@ -240,6 +243,18 @@ export class LeadEngineService {
   }
 
   static async ensureFollowupTask(supabase: SupabaseClient, leadId: string, assignedTo?: string | null) {
+    const { data: existingTask } = await supabase
+      .from('lead_followup_tasks')
+      .select('id, due_at, status')
+      .eq('lead_id', leadId)
+      .in('status', ['pending', 'scheduled'])
+      .limit(1)
+      .maybeSingle();
+
+    if (existingTask?.id) {
+      return existingTask;
+    }
+
     const { data: profileData } = await supabase
       .from('profiles')
       .select('id')
@@ -267,7 +282,7 @@ export class LeadEngineService {
         created_by: assignedUser,
         created_at: new Date().toISOString(),
       })
-      .select('id, due_at')
+      .select('id, due_at, status')
       .single();
 
     return data;
