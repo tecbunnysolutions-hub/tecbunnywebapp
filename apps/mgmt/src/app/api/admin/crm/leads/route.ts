@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 
 import { getSessionWithRole } from '@tecbunny/core/auth/server-role';
-import { logger } from '@tecbunny/core/logger';
+import { logger, LeadEngineService } from '@tecbunny/core';
 import { isAtLeast, type UserRole } from '@tecbunny/core/roles';
 import { createClient } from '@tecbunny/database';
 import { createServiceClient, isSupabaseServiceConfigured } from '@tecbunny/database/admin';
@@ -44,34 +44,6 @@ function cleanOptional(value: string | undefined) {
   return trimmed ? trimmed : null;
 }
 
-async function findExistingLead(supabase: any, email: string | null, phone: string | null) {
-  if (email) {
-    const { data, error } = await supabase
-      .from('sls_leads')
-      .select('id, metadata')
-      .eq('email', email)
-      .is('deleted_at', null)
-      .limit(1)
-      .maybeSingle();
-    if (error) throw error;
-    if (data) return data;
-  }
-
-  if (phone) {
-    const { data, error } = await supabase
-      .from('sls_leads')
-      .select('id, metadata')
-      .eq('phone', phone)
-      .is('deleted_at', null)
-      .limit(1)
-      .maybeSingle();
-    if (error) throw error;
-    if (data) return data;
-  }
-
-  return null;
-}
-
 export async function POST(request: NextRequest) {
   const correlationId = request.headers.get('x-correlation-id') || crypto.randomUUID();
 
@@ -99,55 +71,50 @@ export async function POST(request: NextRequest) {
 
     const supabase = isSupabaseServiceConfigured ? createServiceClient() : authClient ?? await createClient();
     const userId = getUuidUserId(session.user.id);
-    const existingLead = await findExistingLead(supabase, email, phone);
-    const now = new Date().toISOString();
-    const status = input.mode === 'customer' ? 'CONVERTED' : 'NEW';
-    const metadata = {
-      ...(existingLead?.metadata && typeof existingLead.metadata === 'object' ? existingLead.metadata : {}),
-      source_name: cleanOptional(input.sourceName) ?? 'Management CRM',
-      contact_type: input.mode,
-    };
 
-    const payload = {
-      first_name: input.firstName.trim(),
-      last_name: cleanOptional(input.lastName),
-      email,
-      phone,
-      company_name: cleanOptional(input.companyName),
-      requirement: cleanOptional(input.requirement),
-      status,
-      lead_score: input.mode === 'customer' ? 80 : 20,
-      heat_level: input.mode === 'customer' ? 'WARM' : 'COLD',
-      metadata,
-      updated_by: userId,
-      updated_at: now,
-    };
+    // Route through canonical LeadEngineService with admin options
+    try {
+      const result = await LeadEngineService.createAdminLeadFromCRM(
+        supabase,
+        {
+          first_name: input.firstName.trim(),
+          last_name: input.lastName,
+          email: email || undefined,
+          phone: phone || undefined,
+          company_name: input.companyName,
+          requirement: input.requirement,
+          source_name: input.sourceName || 'Management CRM',
+        },
+        {
+          mode: input.mode,
+          created_by: userId,
+          contact_type: input.mode,
+        },
+      );
 
-    if (existingLead) {
-      const { data, error } = await supabase
-        .from('sls_leads')
-        .update(payload)
-        .eq('id', existingLead.id)
-        .select('id, first_name, last_name, phone, email, status, heat_level, lead_score, created_at, address')
-        .single();
-
-      if (error) throw error;
-      logger.info('admin_crm_leads.audit.success', { correlationId, isNew: false, leadId: data?.id ?? null });
-      return NextResponse.json({ success: true, isNew: false, lead: data, correlationId });
+      logger.info('admin_crm_leads.audit.success', { correlationId, isNew: result.isNew, leadId: result.lead.id });
+      return NextResponse.json({
+        success: true,
+        isNew: result.isNew,
+        lead: {
+          id: result.lead.id,
+          first_name: result.lead.first_name,
+          last_name: result.lead.last_name,
+          phone: result.lead.phone,
+          email: result.lead.email,
+          status: result.lead.status,
+          heat_level: result.lead.heat_level,
+          lead_score: result.lead.lead_score,
+          created_at: result.lead.created_at,
+          address: result.lead.metadata?.address || null,
+        },
+        correlationId,
+      });
+    } catch (serviceError) {
+      const message = serviceError instanceof Error ? serviceError.message : 'Failed to create CRM contact via canonical service';
+      logger.error('admin_crm_leads.audit.service_failed', { correlationId, error: message });
+      throw serviceError;
     }
-
-    const { data, error } = await supabase
-      .from('sls_leads')
-      .insert({
-        ...payload,
-        created_by: userId,
-      })
-      .select('id, first_name, last_name, phone, email, status, heat_level, lead_score, created_at, address')
-      .single();
-
-    if (error) throw error;
-    logger.info('admin_crm_leads.audit.success', { correlationId, isNew: true, leadId: data?.id ?? null });
-    return NextResponse.json({ success: true, isNew: true, lead: data, correlationId });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to create CRM contact';
     logger.error('admin_crm_leads.audit.failed', { correlationId, error: message });

@@ -34,6 +34,12 @@ export interface LeadCapturePayload {
   document_url?: string | null;
 }
 
+export interface AdminLeadOptions {
+  mode: 'lead' | 'customer';
+  created_by?: string | null;
+  contact_type?: string;
+}
+
 export class LeadEngineService {
   static normalizeEmail(value?: string | null) {
     if (!value) return null;
@@ -270,6 +276,164 @@ export class LeadEngineService {
   static async captureLead(supabase: SupabaseClient, payload: LeadCapturePayload): Promise<LeadIntakeResult> {
     return this.createLeadFromIntake(supabase, payload);
   }
+
+  /**
+   * Create an admin-created lead with custom scoring and status logic.
+   *
+   * **Key Differences from Public Intake**:
+   * - mode='customer' → status=CONVERTED, lead_score=80, heat_level=WARM
+   * - mode='lead' → status=NEW, lead_score=20, heat_level=COLD
+   * - Preserves existing metadata from duplicates
+   * - Adds audit trail (created_by)
+   * - Still performs canonical deduplication, assignment, and follow-up
+   *
+   * This ensures admin-created leads use the canonical system infrastructure
+   * while preserving their custom scoring and status behavior.
+   */
+  static async createAdminLeadFromCRM(
+    supabase: SupabaseClient,
+    payload: LeadCapturePayload,
+    options: AdminLeadOptions,
+  ): Promise<LeadIntakeResult> {
+    const email = this.normalizeEmail(payload.email);
+    const phone = this.normalizePhone(payload.phone);
+    const companyName = this.normalizeCompany(payload.company_name);
+    const safeFirstName = payload.first_name?.trim() || 'Contact';
+    const safeLastName = payload.last_name?.trim() || '';
+
+    // Deduplication logic: check by email or phone
+    const orConditions: string[] = [];
+    if (email) orConditions.push(`email.ilike.${email}`);
+    if (phone) orConditions.push(`phone.ilike.${phone}`);
+    if (email && companyName) orConditions.push(`and(email.ilike.${email},company_name.ilike.${companyName})`);
+    if (phone && companyName) orConditions.push(`and(phone.ilike.${phone},company_name.ilike.${companyName})`);
+
+    let existingLead: Partial<CanonicalLead> | null = null;
+    if (orConditions.length > 0) {
+      const { data } = await supabase
+        .from('sls_leads')
+        .select('id, first_name, last_name, email, phone, company_name, status, lead_score, heat_level, lead_owner_id, metadata')
+        .or(orConditions.join(','))
+        .limit(1);
+
+      existingLead = data?.[0] ?? null;
+    }
+
+    // Admin-specific scoring: fixed scores based on mode
+    const isCustomer = options.mode === 'customer';
+    const adminScore = isCustomer ? 80 : 20;
+    const adminHeatLevel = isCustomer ? 'WARM' : 'COLD';
+    const adminStatus = isCustomer ? 'CONVERTED' : 'NEW';
+
+    const sourceId = await this.ensureLeadSource(supabase, 'management_crm');
+
+    // Merge metadata: preserve existing + add admin-specific fields
+    const mergedMetadata = {
+      ...(existingLead?.metadata && typeof existingLead.metadata === 'object' ? existingLead.metadata : {}),
+      ...(payload.metadata || {}),
+      source_name: 'Management CRM',
+      contact_type: options.contact_type || options.mode,
+      created_by_admin: options.created_by || null,
+    };
+
+    const leadPayload = {
+      first_name: safeFirstName,
+      last_name: safeLastName || null,
+      email,
+      phone,
+      company_name: companyName,
+      source_id: sourceId,
+      status: adminStatus,
+      metadata: mergedMetadata,
+      tracking_session_id: payload.tracking_session_id || null,
+      requirement: payload.requirement || payload.message || null,
+      lead_score: adminScore,
+      heat_level: adminHeatLevel,
+      updated_at: new Date().toISOString(),
+    };
+
+    let lead: CanonicalLead;
+    let isNew = false;
+
+    if (existingLead?.id) {
+      // Update existing lead with admin values
+      const { data, error } = await supabase
+        .from('sls_leads')
+        .update({
+          ...leadPayload,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', existingLead.id)
+        .select('id, first_name, last_name, email, phone, company_name, status, lead_score, heat_level, lead_owner_id, metadata')
+        .single();
+
+      if (error) throw error;
+      lead = data;
+    } else {
+      // Create new admin-created lead
+      const { data, error } = await supabase
+        .from('sls_leads')
+        .insert({
+          ...leadPayload,
+          created_at: new Date().toISOString(),
+        })
+        .select('id, first_name, last_name, email, phone, company_name, status, lead_score, heat_level, lead_owner_id, metadata')
+        .single();
+
+      if (error) throw error;
+      lead = data;
+      isNew = true;
+    }
+
+    if (!lead?.id) {
+      throw new Error('Could not create or update canonical lead');
+    }
+
+    // Auto-assign even for admin-created leads (load-balanced)
+    const assigned = await this.autoAssignLead(supabase, lead.id);
+    if (assigned) {
+      await supabase.from('sls_leads').update({ lead_owner_id: assigned, updated_at: new Date().toISOString() }).eq('id', lead.id);
+    }
+
+    // Create follow-up task for admin-created leads
+    const followupTask = await this.ensureFollowupTask(supabase, lead.id, assigned);
+    if (followupTask) {
+      await supabase.from('sls_leads').update({ next_followup_at: followupTask.due_at, updated_at: new Date().toISOString() }).eq('id', lead.id);
+    }
+
+    // Create contact message record for audit trail
+    const contactMessage = {
+      lead_id: lead.id,
+      name: safeFirstName + (safeLastName ? ` ${safeLastName}` : ''),
+      email,
+      phone,
+      subject: payload.subject || `Admin CRM - ${options.mode}`,
+      message: payload.message || payload.requirement || `Lead created by admin (${options.created_by || 'system'})`,
+      company_name: companyName,
+      inquiry_category: 'Admin CRM',
+      origin_key: 'management_crm',
+      origin_path: '/admin/crm',
+      form_identifier: 'admin_crm_contact',
+      status: 'New',
+      last_activity_at: new Date().toISOString(),
+      lead_score: adminScore,
+      lead_priority: adminHeatLevel,
+      lead_source: 'management_crm',
+    };
+
+    const { data: messageRow, error: messageError } = await supabase
+      .from('contact_messages')
+      .insert(contactMessage)
+      .select('id')
+      .single();
+
+    if (messageError) {
+      throw messageError;
+    }
+
+    return { lead, isNew, messageId: messageRow?.id ?? null };
+  }
+
 
   static async autoAssignLead(supabase: SupabaseClient, leadId: string) {
     const { data: execs, error: execError } = await supabase
