@@ -1,6 +1,8 @@
 import { createClient } from '@tecbunny/database';
 
 import { scoreLeadPriority } from '../lead-scoring';
+import type { CanonicalLead, LeadIntakeResult } from '../types/lead';
+import { LeadSource, validateLeadSource } from '../types/lead';
 
 type SupabaseClient = ReturnType<typeof createClient>;
 
@@ -50,32 +52,10 @@ export class LeadEngineService {
     return value.trim().replace(/\s+/g, ' ');
   }
 
-  static normalizeLeadSource(value?: string | null) {
-    const canonical = value?.trim().toLowerCase() || 'website';
-    const map: Record<string, string> = {
-      website: 'website',
-      'website form': 'website',
-      'contact form': 'contact_form',
-      'contact-form': 'contact_form',
-      'contact_form': 'contact_form',
-      'technology assessment': 'technology_assessment',
-      'technology_assessment': 'technology_assessment',
-      'assessment': 'technology_assessment',
-      'service booking': 'service_booking',
-      'book service': 'service_booking',
-      'configurator': 'configurator',
-      'enterprise cta': 'enterprise_cta',
-      'enterprise_cta': 'enterprise_cta',
-      'product inquiry': 'product_inquiry',
-      'whatsapp': 'whatsapp',
-      'callback': 'phone',
-      'phone': 'phone',
-      'manual': 'manual',
-      'campaign': 'campaign',
-      'referral': 'referral',
-      'lead_capture_webhook': 'contact_form',
-    };
-    return map[canonical] || canonical.replace(/[^a-z0-9_]+/g, '_').replace(/^_+|_+$/g, '') || 'website';
+  static normalizeLeadSource(value?: string | null): string {
+    // Use the centralized validation that returns enum or null
+    const validated = validateLeadSource(value);
+    return validated || LeadSource.WEBSITE;
   }
 
   static async ensureLeadSource(supabase: SupabaseClient, sourceName?: string | null) {
@@ -104,7 +84,7 @@ export class LeadEngineService {
     return insertedSource.id;
   }
 
-  static async createLeadFromIntake(supabase: SupabaseClient, payload: LeadCapturePayload) {
+  static async createLeadFromIntake(supabase: SupabaseClient, payload: LeadCapturePayload): Promise<LeadIntakeResult> {
     const email = this.normalizeEmail(payload.email);
     const phone = this.normalizePhone(payload.phone);
     const companyName = this.normalizeCompany(payload.company_name);
@@ -118,7 +98,7 @@ export class LeadEngineService {
     if (email && companyName) orConditions.push(`and(email.ilike.${email},company_name.ilike.${companyName})`);
     if (phone && companyName) orConditions.push(`and(phone.ilike.${phone},company_name.ilike.${companyName})`);
 
-    let existingLead: any | null = null;
+    let existingLead: Partial<CanonicalLead> | null = null;
     if (orConditions.length > 0) {
       const { data } = await supabase
         .from('sls_leads')
@@ -172,7 +152,7 @@ export class LeadEngineService {
       updated_at: new Date().toISOString(),
     };
 
-    let lead: any;
+    let lead: CanonicalLead;
     let isNew = false;
 
     if (existingLead?.id) {
@@ -203,18 +183,21 @@ export class LeadEngineService {
       isNew = true;
     }
 
-    if (lead?.id) {
-      const assigned = await this.autoAssignLead(supabase, lead.id);
-      if (assigned) {
-        await supabase.from('sls_leads').update({ lead_owner_id: assigned, updated_at: new Date().toISOString() }).eq('id', lead.id);
-      }
+    if (!lead?.id) {
+      throw new Error('Could not create or update canonical lead');
+    }
 
-      const followupTask = await this.ensureFollowupTask(supabase, lead.id, assigned);
-      if (followupTask) {
-        await supabase.from('sls_leads').update({ next_followup_at: followupTask.due_at, updated_at: new Date().toISOString() }).eq('id', lead.id);
-      }
+    const assigned = await this.autoAssignLead(supabase, lead.id);
+    if (assigned) {
+      await supabase.from('sls_leads').update({ lead_owner_id: assigned, updated_at: new Date().toISOString() }).eq('id', lead.id);
+    }
 
-      const contactMessage = {
+    const followupTask = await this.ensureFollowupTask(supabase, lead.id, assigned);
+    if (followupTask) {
+      await supabase.from('sls_leads').update({ next_followup_at: followupTask.due_at, updated_at: new Date().toISOString() }).eq('id', lead.id);
+    }
+
+    const contactMessage = {
         lead_id: lead.id,
         name: safeFirstName + (safeLastName ? ` ${safeLastName}` : ''),
         email,
@@ -236,21 +219,18 @@ export class LeadEngineService {
         lead_source: leadSource,
       };
 
-      const { data: messageRow, error: messageError } = await supabase
-        .from('contact_messages')
-        .insert(contactMessage)
-        .select('id')
-        .single();
+    const { data: messageRow, error: messageError } = await supabase
+      .from('contact_messages')
+      .insert(contactMessage)
+      .select('id')
+      .single();
 
-      if (messageError) {
-        // We keep the lead canonical even if contact message creation fails; the failure is surfaced through the calling route.
-        throw messageError;
-      }
-
-      return { lead, isNew, messageId: messageRow?.id ?? null };
+    if (messageError) {
+      // We keep the lead canonical even if contact message creation fails; the failure is surfaced through the calling route.
+      throw messageError;
     }
 
-    throw new Error('Could not create or update canonical lead');
+    return { lead, isNew, messageId: messageRow?.id ?? null };
   }
 
   static async ensureFollowupTask(supabase: SupabaseClient, leadId: string, assignedTo?: string | null) {
@@ -287,7 +267,7 @@ export class LeadEngineService {
     return data;
   }
 
-  static async captureLead(supabase: SupabaseClient, payload: LeadCapturePayload) {
+  static async captureLead(supabase: SupabaseClient, payload: LeadCapturePayload): Promise<LeadIntakeResult> {
     return this.createLeadFromIntake(supabase, payload);
   }
 

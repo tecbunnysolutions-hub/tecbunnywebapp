@@ -1,4 +1,10 @@
 
+/**
+ * Re-export lead types for backward compatibility
+ */
+export type { CanonicalLead, LeadIntakeResult } from './types/lead';
+export { LeadSource, LeadHeatLevel, LeadStatus, validateLeadSource } from './types/lead';
+
 export interface Review {
   id: string;
   author: string;
