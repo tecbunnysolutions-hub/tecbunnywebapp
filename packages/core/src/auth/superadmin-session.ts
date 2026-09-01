@@ -13,7 +13,9 @@ async function logMessage(level: 'info' | 'warn' | 'error', message: string, met
   }
 }
 
-const SUPERADMIN_SESSION_TTL_SECONDS = 60 * 60 * 24;
+// Short-lived sessions for privileged access. Re-authentication required after expiry.
+// For destructive operations (deletion, org changes, settings), step-up auth is required.
+const SUPERADMIN_SESSION_TTL_SECONDS = 60 * 60 * 4; // 4 hours (reduced from 24h)
 
 type SuperadminSessionPayload = {
   sub: 'superadmin-root-id';
@@ -225,15 +227,19 @@ async function addRevokedJti(jti: string): Promise<void> {
       }
     } catch (err) {
       await logMessage('error', 'superadmin_jti_revoke_redis_failed', { jti, error: (err as Error).message });
-      // fall through to memory
+      // In production, Redis is mandatory — do not fall back to memory
+      if (process.env.NODE_ENV === 'production') {
+        throw new Error('Redis unavailable in production: cannot revoke superadmin session token');
+      }
     }
   }
-  if (process.env.NODE_ENV === 'production') {
+  // Development-only fallback to in-memory
+  if (process.env.NODE_ENV !== 'production') {
     await logMessage('warn', 'superadmin_jti_revoke_memory_fallback', {
-      reason: 'Redis unavailable; JTI revocation is NOT durable across cold starts',
+      reason: 'Redis unavailable in development; using memory fallback',
     });
+    revokedJtisMemory.add(jti);
   }
-  revokedJtisMemory.add(jti);
 }
 
 async function checkJtiRevoked(jti: string): Promise<boolean> {
@@ -275,6 +281,92 @@ export async function revokeSuperadminSessionToken(token: string): Promise<void>
  */
 async function isJtiRevoked(jti: string): Promise<boolean> {
   return checkJtiRevoked(jti);
+}
+
+// Step-up authentication: for destructive superadmin operations, force re-verification.
+// This creates a temporary elevated session that must be consumed within 5 minutes.
+const SUPERADMIN_STEPUP_TTL_SECONDS = 5 * 60; // 5 minutes
+
+export type StepUpAuthContext = {
+  operation: 'delete_user' | 'delete_organization' | 'change_system_settings' | 'modify_billing' | 'reset_platform';
+  resourceId?: string; // e.g., user ID, org ID
+  requestedAt: number;
+  expiresAt: number;
+};
+
+/**
+ * Create a step-up authentication token.
+ * Required for: user deletion, org deletion, system settings changes, billing changes, platform resets.
+ * Must be verified with password before granting elevated access.
+ */
+export async function createSuperadminStepUpToken(
+  email: string,
+  operation: StepUpAuthContext['operation'],
+  resourceId?: string
+): Promise<string> {
+  const secret = getSessionSecret();
+  if (!secret) {
+    throw new Error('SUPERADMIN_SESSION_SECRET or SESSION_SECRET is required');
+  }
+
+  const now = Math.floor(Date.now() / 1000);
+  const stepUpData = {
+    sub: 'superadmin-stepup',
+    email,
+    operation,
+    resourceId: resourceId || null,
+    iat: now,
+    exp: now + SUPERADMIN_STEPUP_TTL_SECONDS,
+    jti: crypto.randomUUID(),
+  };
+
+  const encodedPayload = base64UrlEncode(textEncoder.encode(JSON.stringify(stepUpData)));
+  const signature = base64UrlEncode(await hmacSha256(encodedPayload, secret));
+  return `stepup.${encodedPayload}.${signature}`;
+}
+
+/**
+ * Verify a step-up authentication token.
+ * Returns the operation context if valid, null otherwise.
+ */
+export async function verifySuperadminStepUpToken(token: string | undefined | null) {
+  if (!token) return null;
+  const secret = getSessionSecret();
+  if (!secret) return null;
+
+  const [prefix, encodedPayload, encodedSignature] = token.split('.');
+  if (prefix !== 'stepup' || !encodedPayload || !encodedSignature) {
+    return null;
+  }
+
+  const expectedSignature = await hmacSha256(encodedPayload, secret);
+  let actualSignature: Uint8Array;
+  try {
+    actualSignature = base64UrlDecode(encodedSignature);
+  } catch {
+    return null;
+  }
+
+  if (!timingSafeEqual(expectedSignature, actualSignature)) return null;
+
+  try {
+    const payloadText = new TextDecoder().decode(base64UrlDecode(encodedPayload));
+    const payload = JSON.parse(payloadText) as Partial<StepUpAuthContext & { sub: string; email: string; exp: number; jti: string; iat: number }>;
+    const now = Math.floor(Date.now() / 1000);
+
+    if (
+      payload.sub !== 'superadmin-stepup' ||
+      !payload.email ||
+      typeof payload.exp !== 'number' ||
+      payload.exp <= now
+    ) {
+      return null;
+    }
+
+    return payload as StepUpAuthContext & { email: string };
+  } catch {
+    return null;
+  }
 }
 
 export { SUPERADMIN_SESSION_TTL_SECONDS };

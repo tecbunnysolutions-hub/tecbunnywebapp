@@ -37,6 +37,7 @@ export * from "./hooks/use-toast";
 export * from "./hooks/use-dirty-state-guard";
 export * from "./components/ui/toast";
 export * from "./components/ui/toaster";
+export * from "./components/ui/turnstile";
 export * from "./components/ui/ViralWarrantyModal";
 export * from "./components/ui/WarrantyTelemetryBadge";
 export * from "./hooks/use-feature-flags";

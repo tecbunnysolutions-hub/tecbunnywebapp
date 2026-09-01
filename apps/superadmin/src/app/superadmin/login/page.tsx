@@ -1,16 +1,9 @@
 'use client';
 
 import { useState, useEffect, Suspense, useMemo } from 'react';
-import NextDynamic from 'next/dynamic';
 import { useSearchParams } from 'next/navigation';
 import { User, Lock, Eye, EyeOff, AlertCircle, ShieldAlert, Terminal } from 'lucide-react';
-import { Input } from "@tecbunny/ui";
-import { Label } from "@tecbunny/ui";
-import { useToast } from "@tecbunny/ui";
-
-const Turnstile = NextDynamic(() => import('react-turnstile').then(m => m.default), {
-  ssr: false,
-}) as unknown as React.ComponentType<any>;
+import { Input, Label, useToast, Turnstile } from "@tecbunny/ui";
 
 function SuperadminSignInForm() {
   const [userId, setUserId] = useState('');
@@ -20,7 +13,7 @@ function SuperadminSignInForm() {
   const [error, setError] = useState('');
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
 
-  const turnstileSiteKey = process.env.NODE_ENV === 'production' ? process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY : undefined;
+  const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY?.trim() || undefined;
 
   const searchParams = useSearchParams();
   const { toast } = useToast();

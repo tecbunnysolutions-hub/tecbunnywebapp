@@ -62,24 +62,22 @@ export async function POST(request: Request) {
 
     const correctUserId = process.env.SUPERADMIN_USER_ID || process.env.SUPERADMIN_EMAIL;
     const correctPasswordHash = process.env.SUPERADMIN_PASSWORD_HASH;
-    const correctPasswordPlain = process.env.SUPERADMIN_PASSWORD;
 
-    if (!correctUserId || (!correctPasswordHash && !correctPasswordPlain)) {
-      logger.error('superadmin_login.configuration_missing');
-      return NextResponse.json({ error: 'Superadmin credentials are not configured on server.' }, { status: 500 });
-    }
-
-    if (!correctPasswordHash) {
-      logger.warn('superadmin_login.using_plaintext_password', { env: process.env.NODE_ENV });
+    // SECURITY: Password hash is mandatory. Plaintext passwords are NOT supported in production.
+    if (!correctUserId || !correctPasswordHash) {
+      logger.error('superadmin_login.configuration_missing', {
+        hasSuperadminUserId: !!process.env.SUPERADMIN_USER_ID,
+        hasSuperadminEmail: !!process.env.SUPERADMIN_EMAIL,
+        hasSuperadminPasswordHash: !!correctPasswordHash,
+      });
+      return NextResponse.json({ error: 'Superadmin credentials are not properly configured on server.' }, { status: 500 });
     }
 
     const userIdMatches = constantTimeStringEquals(
       submittedUserId.toLowerCase(),
       correctUserId.trim().toLowerCase()
     );
-    const passwordMatches = correctPasswordHash
-      ? await verifySuperadminPassword(submittedPassword, correctPasswordHash)
-      : constantTimeStringEquals(submittedPassword, correctPasswordPlain ?? '');
+    const passwordMatches = await verifySuperadminPassword(submittedPassword, correctPasswordHash);
 
     if (!userIdMatches || !passwordMatches) {
       logger.warn('superadmin_login.failed_attempt', { userId: submittedUserId, ip });
