@@ -49,101 +49,100 @@ export interface IpPricing {
 
 export const FALLBACK_ANALOG_PRICING: AnalogPricing = {
   dvr: [
-    { id: 'opt-dvr-4ch', label: '4-Ch Analog DVR', capacity: 4, mrp: 3500, sale: 2999 },
-    { id: 'opt-dvr-8ch', label: '8-Ch Analog DVR', capacity: 8, mrp: 5500, sale: 4799 },
-    { id: 'opt-dvr-16ch', label: '16-Ch Analog DVR', capacity: 16, mrp: 9500, sale: 8299 },
+    { id: 'opt-dvr-4ch', label: '4-Ch Analog DVR', capacity: 4, mrp: 5850, sale: 4500 },
+    { id: 'opt-dvr-8ch', label: '8-Ch Analog DVR', capacity: 8, mrp: 8970, sale: 6900 },
+    { id: 'opt-dvr-16ch', label: '16-Ch Analog DVR', capacity: 16, mrp: 16250, sale: 12500 },
   ],
   smps: [
-    { id: 'opt-smps-4ch', label: '4 Channel 12V SMPS', capacity: 4, mrp: 999, sale: 749 },
-    { id: 'opt-smps-8ch', label: '8 Channel 12V SMPS', capacity: 8, mrp: 1699, sale: 1299 },
+    { id: 'opt-smps-4ch', label: '10 Amps 12V SMPS Power Supply', capacity: 4, mrp: 1299, sale: 999 },
+    { id: 'opt-smps-8ch', label: '20 Amps 12V SMPS Power Supply', capacity: 8, mrp: 1949, sale: 1499 },
   ],
   camera: {
     '2.4mp': {
-      standard: { id: 'opt-cam-2mp-dome', label: '2.4MP Indoor Dome Camera', mrp: 2200, sale: 1857 },
-      dualLight: { id: 'opt-cam-2mp-bullet', label: '2.4MP Outdoor Bullet Camera', mrp: 2300, sale: 2043 },
+      standard: { id: 'opt-cam-2mp-dome', label: '2.4MP Indoor Dome Camera', mrp: 2079, sale: 1599 },
+      dualLight: { id: 'opt-cam-2mp-bullet', label: '2.4MP Outdoor Bullet Camera (Dual Light)', mrp: 2469, sale: 1899 },
     },
     '5mp': {
-      standard: { id: 'opt-cam-5mp-bullet', label: '5MP Night Vision Bullet Camera', mrp: 3800, sale: 3299 },
-      dualLight: { id: 'opt-cam-5mp-bullet', label: '5MP Night Vision Bullet Camera', mrp: 3800, sale: 3299 },
+      standard: { id: 'opt-cam-5mp-bullet', label: '5MP Night Vision Bullet Camera', mrp: 2859, sale: 2199 },
+      dualLight: { id: 'opt-cam-5mp-bullet', label: '5MP Dual Light Bullet Camera', mrp: 3249, sale: 2499 },
     },
   },
   cable: [
-    { id: 'cable-coaxial-100m', label: 'CCTV 3+1 Cable (DVR Only)', coverageMeters: 100, mrpPerUnit: 22, salePerUnit: 15.5 },
+    { id: 'cable-coaxial-100m', label: 'CCTV 3+1 Cable (90m Roll)', coverageMeters: 90, mrpPerUnit: 18.77, salePerUnit: 14.43 },
   ],
 };
 
 export const FALLBACK_IP_PRICING: IpPricing = {
   nvr: [
-    { id: 'nvr-8', label: '8-Channel NVR (IP)', capacity: 8, mrp: 5500, sale: 3950 },
-    { id: 'nvr-16', label: '16-Channel NVR (IP)', capacity: 16, mrp: 9500, sale: 6800 },
-    { id: 'nvr-32', label: '32-Channel NVR (IP)', capacity: 32, mrp: 16500, sale: 12200 },
+    { id: 'nvr-8', label: '8-Channel NVR (IP)', capacity: 8, mrp: 6370, sale: 4900 },
+    { id: 'nvr-16', label: '16-Channel NVR (IP)', capacity: 16, mrp: 11570, sale: 8900 },
+    { id: 'nvr-32', label: '32-Channel NVR (IP)', capacity: 32, mrp: 16899, sale: 12999 },
   ],
   poe: [
-    { id: 'poe-4-normal', label: '4-Port POE Switch (Normal)', capacity: 4, variant: 'normal', mrp: 2800, sale: 1850 },
-    { id: 'poe-8-normal', label: '8-Port POE Switch (Normal)', capacity: 8, variant: 'normal', mrp: 4500, sale: 3200 },
-    { id: 'poe-16-normal', label: '16-Port POE Switch (Normal)', capacity: 16, variant: 'normal', mrp: 8900, sale: 6400 },
-    { id: 'poe-24-normal', label: '24-Port POE Switch (Normal)', capacity: 24, variant: 'normal', mrp: 13500, sale: 9800 },
-    { id: 'poe-4-giga', label: '4-Port POE Switch (GIGA)', capacity: 4, variant: 'giga', mrp: 3600, sale: 2600 },
-    { id: 'poe-8-giga', label: '8-Port POE Switch (GIGA)', capacity: 8, variant: 'giga', mrp: 5800, sale: 4200 },
-    { id: 'poe-16-giga', label: '16-Port POE Switch (GIGA)', capacity: 16, variant: 'giga', mrp: 11200, sale: 8200 },
-    { id: 'poe-24-giga', label: '24-Port POE Switch (GIGA)', capacity: 24, variant: 'giga', mrp: 16800, sale: 12500 },
+    { id: 'poe-4-normal', label: '4-Port POE Switch (Normal)', capacity: 4, variant: 'normal', mrp: 3899, sale: 2999 },
+    { id: 'poe-8-normal', label: '8-Port POE Switch (Normal)', capacity: 8, variant: 'normal', mrp: 6499, sale: 4999 },
+    { id: 'poe-16-normal', label: '16-Port POE Switch (Normal)', capacity: 16, variant: 'normal', mrp: 7799, sale: 5999 },
+    { id: 'poe-24-normal', label: '24-Port POE Switch (Normal)', capacity: 24, variant: 'normal', mrp: 11699, sale: 8999 },
+    { id: 'poe-4-giga', label: '4-Port POE Switch (GIGA)', capacity: 4, variant: 'giga', mrp: 4549, sale: 3499 },
+    { id: 'poe-8-giga', label: '8-Port POE Switch (GIGA)', capacity: 8, variant: 'giga', mrp: 7799, sale: 5999 },
+    { id: 'poe-16-giga', label: '16-Port POE Switch (GIGA)', capacity: 16, variant: 'giga', mrp: 10399, sale: 7999 },
+    { id: 'poe-24-giga', label: '24-Port POE Switch (GIGA)', capacity: 24, variant: 'giga', mrp: 15599, sale: 11999 },
   ],
   camera: {
-    // Real IP catalog only stocks 2MP and 4MP cameras - there is no 5MP IP tier
     '2mp': {
-      standard: { id: 'ip-2-standard', label: '2MP IP Camera (Standard)', mrp: 2500, sale: 1650 },
-      dualLight: { id: 'ip-2-dual', label: '2MP IP Camera (Dual Light)', mrp: 3100, sale: 2150 },
+      standard: { id: 'ip-2-standard', label: '2MP IP Camera (Standard)', mrp: 3899, sale: 2999 },
+      dualLight: { id: 'ip-2-dual', label: '2MP IP Camera (Dual Light)', mrp: 4549, sale: 3499 },
     },
     '4mp': {
-      standard: { id: 'ip-4-standard', label: '4MP IP Indoor Dome Camera', mrp: 3500, sale: 2999 },
-      dualLight: { id: 'ip-4-dual', label: '4MP IP Outdoor Bullet Camera', mrp: 3800, sale: 3199 },
+      standard: { id: 'ip-4-standard', label: '4MP IP Camera (Standard)', mrp: 5199, sale: 3999 },
+      dualLight: { id: 'ip-4-dual', label: '4MP IP Camera (Dual Light)', mrp: 5849, sale: 4499 },
     },
   },
   cable: [
-    { id: 'cable-lan-cat5', label: 'LAN Cat5 Cable (100m)', coverageMeters: 100, mrpPerUnit: 28, salePerUnit: 19.5 },
-    { id: 'cable-lan-cat6', label: 'LAN Cat6 Cable (100m)', coverageMeters: 100, mrpPerUnit: 38, salePerUnit: 26.5 },
+    { id: 'cable-lan-cat5', label: 'LAN Cat 5E Cable (100m Roll)', coverageMeters: 100, mrpPerUnit: 20.79, salePerUnit: 15.99 },
+    { id: 'cable-lan-cat6', label: 'LAN Cat 6 Cable (100m Roll)', coverageMeters: 100, mrpPerUnit: 42.89, salePerUnit: 32.99 },
   ],
 };
 
 export const FALLBACK_HDD_OPTIONS: PriceEntry[] = [
-  { id: 'hdd-surveillance-500gb', label: '500 GB Surveillance HDD', mrp: 2200, sale: 1450 },
-  { id: 'hdd-surveillance-1tb', label: '1 TB Surveillance HDD', mrp: 4200, sale: 3150 },
-  { id: 'hdd-surveillance-2tb', label: '2 TB Surveillance HDD', mrp: 6800, sale: 4950 },
+  { id: 'hdd-surveillance-500gb', label: '500 GB Surveillance HDD', mrp: 7799, sale: 5999 },
+  { id: 'hdd-surveillance-1tb', label: '1 TB Surveillance HDD', mrp: 12999, sale: 9999 },
+  { id: 'hdd-surveillance-2tb', label: '2 TB Surveillance HDD', mrp: 18199, sale: 13999 },
 ];
 
 export const FALLBACK_MONITOR_OPTION: PriceEntry = {
   id: 'monitor-19',
   label: '19-inch LED Monitor',
-  mrp: 5500,
-  sale: 3800,
+  mrp: 3899,
+  sale: 2999,
 };
 
 export const FALLBACK_MONITOR_OPTIONS: PriceEntry[] = [
   {
     id: 'monitor-19',
     label: '19-inch LED Monitor',
-    mrp: 5500,
-    sale: 3800,
+    mrp: 3899,
+    sale: 2999,
   },
   {
     id: 'monitor-22',
     label: '22-inch LED Monitor',
-    mrp: 7800,
-    sale: 5400,
+    mrp: 5199,
+    sale: 3999,
   },
 ];
 
 export const FALLBACK_WALL_MOUNT_ADDON: PriceEntry = {
   id: 'wall-mount-addon',
   label: 'Wall Mount Installation Kit',
-  mrp: 600,
+  mrp: 455,
   sale: 350,
 };
 
 export const FALLBACK_SPIKE_GUARD_OPTION: PriceEntry = {
   id: 'spike-guard',
   label: 'Spike Guard / Power Surge Protector',
-  mrp: 750,
+  mrp: 585,
   sale: 450,
 };
 
@@ -151,30 +150,30 @@ export const FALLBACK_RACK_OPTIONS: PriceEntry[] = [
   {
     id: 'rack-2u',
     label: '2U Wall Mount Rack',
-    mrp: 1800,
-    sale: 1200,
+    mrp: 1299,
+    sale: 999,
   },
   {
     id: 'rack-3u',
     label: '3U Wall Mount Rack',
-    mrp: 2400,
-    sale: 1650,
+    mrp: 1949,
+    sale: 1499,
   },
 ];
 
 export const FALLBACK_CONDUIT_PIPE_OPTIONS: PriceEntry[] = [
   {
     id: 'conduit-pipe',
-    label: 'Conduit Pipe',
-    mrp: 800,
-    sale: 500,
+    label: 'Conduit Pipe (per meter)',
+    mrp: 20,
+    sale: 15,
   },
 ];
 
 export const FALLBACK_INSTALLATION_OPTION: PriceEntry = {
   id: 'installation',
   label: 'On-site Installation & Configuration',
-  mrp: 2500,
+  mrp: 1950,
   sale: 1500,
 };
 

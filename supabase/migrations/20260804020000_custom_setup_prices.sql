@@ -62,59 +62,60 @@ INSERT INTO public.custom_setup_inventory
 SELECT gen_random_uuid(), v.code, v.label, v.category, v.capacity, v.mrp, v.sale, true, 0, '{}'::jsonb
 FROM (VALUES
   -- Analog DVRs
-  ('opt-dvr-4ch',           '4-Ch Analog DVR',                   'analog_dvr',     4,   3500, 2999),
-  ('opt-dvr-8ch',           '8-Ch Analog DVR',                   'analog_dvr',     8,   5500, 4799),
-  ('opt-dvr-16ch',          '16-Ch Analog DVR',                  'analog_dvr',     16,  9500, 8299),
+  ('opt-dvr-4ch',           '4-Ch Analog DVR',                   'analog_dvr',     4,   5850, 4500),
+  ('opt-dvr-8ch',           '8-Ch Analog DVR',                   'analog_dvr',     8,   8970, 6900),
+  ('opt-dvr-16ch',          '16-Ch Analog DVR',                  'analog_dvr',     16,  16250,12500),
   -- Analog SMPS
-  ('opt-smps-4ch',          '4 Channel 12V SMPS',                'analog_smps',    4,   999,  749),
-  ('opt-smps-8ch',          '8 Channel 12V SMPS',                'analog_smps',    8,   1699, 1299),
+  ('opt-smps-4ch',          '10 Amps 12V SMPS Power Supply',     'analog_smps',    4,   1299, 999),
+  ('opt-smps-8ch',          '20 Amps 12V SMPS Power Supply',     'analog_smps',    8,   1949, 1499),
   -- Analog cameras
-  ('opt-cam-2mp-dome',      '2.4MP Indoor Dome Camera',          'analog_camera',  NULL, 2200, 1857),
-  ('opt-cam-2mp-bullet',    '2.4MP Outdoor Bullet Camera',       'analog_camera',  NULL, 2300, 2043),
-  ('opt-cam-5mp-bullet',    '5MP Night Vision Bullet Camera',    'analog_camera',  NULL, 3800, 3299),
-  -- Analog cable (per-100m unit)
-  ('cable-coaxial-100m',    'CCTV 3+1 Cable (DVR Only)',         'analog_cable',   100, 22,   15.5),
+  ('opt-cam-2mp-dome',      '2.4MP Indoor Dome Camera',          'analog_camera',  NULL, 2079, 1599),
+  ('opt-cam-2mp-bullet',    '2.4MP Outdoor Bullet Camera (Dual Light)', 'analog_camera', NULL, 2469, 1899),
+  ('opt-cam-5mp-bullet',    '5MP Night Vision Bullet Camera',    'analog_camera',  NULL, 2859, 2199),
+  ('opt-cam-5mp-dual',      '5MP Dual Light Bullet Camera',      'analog_camera',  NULL, 3249, 2499),
+  -- Analog cable (90m roll, per-metre rate)
+  ('cable-coaxial-100m',    'CCTV 3+1 Cable (90m Roll)',         'analog_cable',   90,  18.77, 14.43),
 
   -- IP NVRs
-  ('nvr-8',                 '8-Channel NVR (IP)',                'ip_nvr',         8,   5500, 3950),
-  ('nvr-16',                '16-Channel NVR (IP)',               'ip_nvr',         16,  9500, 6800),
-  ('nvr-32',                '32-Channel NVR (IP)',               'ip_nvr',         32,  16500,12200),
+  ('nvr-8',                 '8-Channel NVR (IP)',                'ip_nvr',         8,   6370, 4900),
+  ('nvr-16',                '16-Channel NVR (IP)',               'ip_nvr',         16,  11570,8900),
+  ('nvr-32',                '32-Channel NVR (IP)',               'ip_nvr',         32,  16899,12999),
   -- IP POE switches (Normal)
-  ('poe-4-normal',          '4-Port POE Switch (Normal)',        'ip_poe',         4,   2800, 1850),
-  ('poe-8-normal',          '8-Port POE Switch (Normal)',        'ip_poe',         8,   4500, 3200),
-  ('poe-16-normal',         '16-Port POE Switch (Normal)',       'ip_poe',         16,  8900, 6400),
-  ('poe-24-normal',         '24-Port POE Switch (Normal)',       'ip_poe',         24,  13500,9800),
+  ('poe-4-normal',          '4-Port POE Switch (Normal)',        'ip_poe',         4,   3899, 2999),
+  ('poe-8-normal',          '8-Port POE Switch (Normal)',        'ip_poe',         8,   6499, 4999),
+  ('poe-16-normal',         '16-Port POE Switch (Normal)',       'ip_poe',         16,  7799, 5999),
+  ('poe-24-normal',         '24-Port POE Switch (Normal)',       'ip_poe',         24,  11699,8999),
   -- IP POE switches (GIGA)
-  ('poe-4-giga',            '4-Port POE Switch (GIGA)',          'ip_poe',         4,   3600, 2600),
-  ('poe-8-giga',            '8-Port POE Switch (GIGA)',          'ip_poe',         8,   5800, 4200),
-  ('poe-16-giga',           '16-Port POE Switch (GIGA)',         'ip_poe',         16,  11200,8200),
-  ('poe-24-giga',           '24-Port POE Switch (GIGA)',         'ip_poe',         24,  16800,12500),
+  ('poe-4-giga',            '4-Port POE Switch (GIGA)',          'ip_poe',         4,   4549, 3499),
+  ('poe-8-giga',            '8-Port POE Switch (GIGA)',          'ip_poe',         8,   7799, 5999),
+  ('poe-16-giga',           '16-Port POE Switch (GIGA)',         'ip_poe',         16,  10399,7999),
+  ('poe-24-giga',           '24-Port POE Switch (GIGA)',         'ip_poe',         24,  15599,11999),
   -- IP cameras
-  ('ip-2-standard',         '2MP Normal',                        'ip_camera',      NULL, 2500, 1650),
-  ('ip-2-dual',             '2MP Dual Light',                    'ip_camera',      NULL, 3100, 2150),
-  ('ip-4-standard',         '4MP Normal',                        'ip_camera',      NULL, 3800, 2750),
-  ('ip-4-dual',             '4MP Dual Light',                    'ip_camera',      NULL, 4500, 3250),
+  ('ip-2-standard',         '2MP IP Camera (Standard)',          'ip_camera',      NULL, 3899, 2999),
+  ('ip-2-dual',             '2MP IP Camera (Dual Light)',        'ip_camera',      NULL, 4549, 3499),
+  ('ip-4-standard',         '4MP IP Camera (Standard)',          'ip_camera',      NULL, 5199, 3999),
+  ('ip-4-dual',             '4MP IP Camera (Dual Light)',        'ip_camera',      NULL, 5849, 4499),
   -- IP cables (per-100m unit)
-  ('cable-lan-cat5',        'LAN Cat5 Cable (100m)',             'ip_cable',       100, 28,   19.5),
-  ('cable-lan-cat6',        'LAN Cat6 Cable (100m)',             'ip_cable',       100, 38,   26.5),
+  ('cable-lan-cat5',        'LAN Cat 5E Cable (100m Roll)',      'ip_cable',       100, 20.79, 15.99),
+  ('cable-lan-cat6',        'LAN Cat 6 Cable (100m Roll)',       'ip_cable',       100, 42.89, 32.99),
 
   -- Storage
-  ('hdd-surveillance-500gb','500 GB Surveillance HDD',           'hdd',            NULL, 2200, 1450),
-  ('hdd-surveillance-1tb',  '1 TB Surveillance HDD',             'hdd',            NULL, 4200, 3150),
-  ('hdd-surveillance-2tb',  '2 TB Surveillance HDD',             'hdd',            NULL, 6800, 4950),
+  ('hdd-surveillance-500gb','500 GB Surveillance HDD',           'hdd',            NULL, 7799, 5999),
+  ('hdd-surveillance-1tb',  '1 TB Surveillance HDD',             'hdd',            NULL, 12999,9999),
+  ('hdd-surveillance-2tb',  '2 TB Surveillance HDD',             'hdd',            NULL, 18199,13999),
   -- Monitors
-  ('monitor-19',            '19-inch LED Monitor',               'monitor',        NULL, 5500, 3800),
-  ('monitor-22',            '22-inch LED Monitor',               'monitor',        NULL, 7800, 5400),
+  ('monitor-19',            '19-inch LED Monitor',               'monitor',        NULL, 3899, 2999),
+  ('monitor-22',            '22-inch LED Monitor',               'monitor',        NULL, 5199, 3999),
   -- Racks
-  ('rack-2u',               '2U Wall Mount Rack',                'rack',           NULL, 1800, 1200),
-  ('rack-3u',               '3U Wall Mount Rack',                'rack',           NULL, 2400, 1650),
+  ('rack-2u',               '2U Wall Mount Rack',                'rack',           NULL, 1299, 999),
+  ('rack-3u',               '3U Wall Mount Rack',                'rack',           NULL, 1949, 1499),
   -- Conduit
-  ('conduit-pipe',          'Conduit Pipe',                      'conduit',        NULL, 800,  500),
+  ('conduit-pipe',          'Conduit Pipe (per meter)',          'conduit',        NULL, 20,   15),
   -- Installation
-  ('installation',          'On-site Installation & Configuration','installation', NULL, 2500, 1500),
+  ('installation',          'On-site Installation & Configuration','installation', NULL, 1950, 1500),
   -- Accessories
-  ('wall-mount-addon',      'Wall Mount Installation Kit',       'accessory',      NULL, 600,  350),
-  ('spike-guard',           'Spike Guard / Power Surge Protector','accessory',     NULL, 750,  450)
+  ('wall-mount-addon',      'Wall Mount Installation Kit',       'accessory',      NULL, 455,  350),
+  ('spike-guard',           'Spike Guard / Power Surge Protector','accessory',     NULL, 585,  450)
 ) AS v(code, label, category, capacity, mrp, sale)
 ON CONFLICT (code) WHERE code IS NOT NULL DO UPDATE SET
   label      = EXCLUDED.label,

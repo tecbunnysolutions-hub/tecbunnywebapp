@@ -89,7 +89,7 @@ export async function GET(request: NextRequest) {
     const hasBudget = budget && !budget.toLowerCase().includes('flexible');
 
     // Calculate individual scoring signals
-    const signals = [];
+    const signals: ScoringBreakdown['signals'] = [];
 
     // 1. URGENCY SIGNAL (0-40)
     let urgencyScore = 0;
@@ -240,11 +240,11 @@ export async function GET(request: NextRequest) {
     else if (totalScore >= 50) priority = 'WARM';
 
     // Generate recommendations
-    const recommendations = [];
+    const recommendations: ScoringBreakdown['recommendations'] = [];
 
     if (urgencyScore < 20) {
       recommendations.push({
-        priority: 'high' as const,
+        priority: 'high',
         action: 'Nurture with follow-up in 2-3 weeks',
         reason: 'Lead is evaluating, not actively buying yet',
       });
@@ -252,7 +252,7 @@ export async function GET(request: NextRequest) {
 
     if (scaleScore < 15) {
       recommendations.push({
-        priority: 'medium' as const,
+        priority: 'medium',
         action: 'Ask about expansion plans in conversation',
         reason: 'Small scope may indicate incomplete requirements capture',
       });
@@ -260,7 +260,7 @@ export async function GET(request: NextRequest) {
 
     if (completenessScore < 35) {
       recommendations.push({
-        priority: 'high' as const,
+        priority: 'high',
         action: 'Request detailed site survey meeting',
         reason: 'Missing critical project details to qualify properly',
       });
@@ -268,7 +268,7 @@ export async function GET(request: NextRequest) {
 
     if (hasBudget) {
       recommendations.push({
-        priority: 'medium' as const,
+        priority: 'medium',
         action: 'Have BOQ ready before call',
         reason: 'Lead has budget expectations - prepare detailed proposal',
       });
@@ -276,14 +276,14 @@ export async function GET(request: NextRequest) {
 
     if (priority === 'HOT') {
       recommendations.push({
-        priority: 'high' as const,
+        priority: 'high',
         action: 'Call or WhatsApp within 2 hours',
         reason: 'High-intent lead - speed of response directly impacts conversion',
       });
     }
 
     // Next steps
-    const nextSteps = [];
+    const nextSteps: ScoringBreakdown['nextSteps'] = [];
 
     if (priority === 'HOT') {
       nextSteps.push(
