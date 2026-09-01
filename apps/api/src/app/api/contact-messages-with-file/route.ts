@@ -4,6 +4,7 @@ import { uploadToSupabase } from '@tecbunny/database/storage';
 import { logger } from "@tecbunny/core";
 import { scoreLeadPriority, type AssessmentData } from "@tecbunny/core/lead-scoring";
 import { notifySalesAboutLead, type LeadNotificationPayload } from "@tecbunny/core/leads/notify-sales";
+import { sendAssessmentConfirmationEmail } from "@tecbunny/core/email/send-assessment-confirmation";
 
 export const runtime = 'nodejs';
 
@@ -383,6 +384,22 @@ export async function POST(request: NextRequest) {
           logger.error('contact_upload.notification_failed', {
             correlationId,
             messageId: result?.id,
+            error: err instanceof Error ? err.message : String(err),
+          });
+        });
+
+        // Send confirmation email to lead (async, don't block response)
+        sendAssessmentConfirmationEmail({
+          name: name.trim(),
+          email: email.trim(),
+          company: company_name?.trim(),
+          service: service_interest?.trim() || 'Technology Assessment',
+          timeline: assessmentData.timeline || 'Flexible',
+          leadPriority: leadScore.priority,
+        }).catch((err: unknown) => {
+          logger.warn('contact_upload.confirmation_email_failed', {
+            correlationId,
+            email: email.trim(),
             error: err instanceof Error ? err.message : String(err),
           });
         });
