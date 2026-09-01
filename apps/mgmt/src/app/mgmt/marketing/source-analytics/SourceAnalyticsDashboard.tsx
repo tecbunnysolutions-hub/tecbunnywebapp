@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { TrendingUp, AlertCircle, Activity, BarChart2, Zap } from 'lucide-react';
+import { TrendingUp, AlertCircle, Activity, Zap } from 'lucide-react';
 import { Card, Badge, Skeleton, useToast } from '@tecbunny/ui';
 
 interface SourceAnalytics {
@@ -131,7 +131,7 @@ export function SourceAnalyticsDashboard() {
               <p className="text-3xl font-bold text-purple-400 mt-2">{summary.totalSources}</p>
               <p className="text-xs text-zinc-500 mt-1">channels tracked</p>
             </div>
-            <BarChart2 className="text-purple-400" size={20} />
+            <Activity className="text-purple-400" size={20} />
           </div>
         </Card>
 
@@ -152,7 +152,7 @@ export function SourceAnalyticsDashboard() {
       {/* Source Performance Table */}
       <Card className="p-6">
         <h3 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
-          <BarChart2 size={16} />
+          <Activity size={16} />
           Performance by Source
         </h3>
 

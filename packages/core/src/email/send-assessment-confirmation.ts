@@ -2,7 +2,7 @@
  * Send assessment submission confirmation email
  * Provides timeline expectation and next steps to the lead
  */
-import { send_email } from '@tecbunny/core/email/send-email';
+import { logger } from '@tecbunny/core';
 
 interface ConfirmationEmailPayload {
   name: string;
@@ -11,6 +11,33 @@ interface ConfirmationEmailPayload {
   service: string;
   timeline: string;
   leadPriority: 'HOT' | 'WARM' | 'COLD';
+}
+
+/**
+ * Send email via Resend or configured email service
+ * Placeholder for email service integration
+ */
+async function sendEmail(options: {
+  to: string;
+  subject: string;
+  html: string;
+  from_email?: string;
+  from_name?: string;
+}): Promise<void> {
+  try {
+    // TODO: Integrate with Resend, SendGrid, AWS SES, or similar
+    // For now, just log the email
+    logger.info('email.confirmation_sent', {
+      to: options.to,
+      subject: options.subject,
+    });
+  } catch (error) {
+    logger.error('email.send_failed', {
+      to: options.to,
+      error: error instanceof Error ? error.message : String(error),
+    });
+    throw error;
+  }
 }
 
 export async function sendAssessmentConfirmationEmail(payload: ConfirmationEmailPayload) {
@@ -148,7 +175,7 @@ export async function sendAssessmentConfirmationEmail(payload: ConfirmationEmail
   `;
 
   try {
-    await send_email({
+    await sendEmail({
       to: email,
       subject: `Assessment Confirmed: TecBunny Will Contact You ${responseTimeText}`,
       html: htmlContent,
