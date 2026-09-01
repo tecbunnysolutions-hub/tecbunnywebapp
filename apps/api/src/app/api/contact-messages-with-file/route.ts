@@ -1,7 +1,7 @@
 import { createSupabaseServiceClient } from "@tecbunny/core/server";
 import { NextRequest, NextResponse } from 'next/server';
 import { uploadToSupabase } from '@tecbunny/database/storage';
-import { logger } from "@tecbunny/core";
+import { logger, LeadEngineService } from "@tecbunny/core";
 import { scoreLeadPriority, type AssessmentData } from "@tecbunny/core/lead-scoring";
 import { notifySalesAboutLead, type LeadNotificationPayload } from "@tecbunny/core/leads/notify-sales";
 import { sendAssessmentConfirmationEmail } from "@tecbunny/core/email/send-assessment-confirmation";
@@ -324,19 +324,43 @@ export async function POST(request: NextRequest) {
         lead_priority: leadScore.priority,
       };
 
-      const { data: result, error: dbError } = await supabase
-        .from('contact_messages')
-        .insert({
-          ...payload,
-          status: 'New',
-          inquiry_category: classification.category,
-          origin_key: classification.originKey,
-          last_activity_at: new Date().toISOString(),
-        })
-        .select('id')
-        .single();
+      let result: { id: string } | null = null;
+      let leadResult: { lead: any; isNew: boolean; messageId: string | null } | null = null;
 
-      if (dbError) {
+      try {
+        leadResult = await LeadEngineService.createLeadFromIntake(supabase, {
+          first_name: name.trim().split(/\s+/)[0] || name.trim(),
+          last_name: name.trim().split(/\s+/).slice(1).join(' ') || undefined,
+          email: email.trim().toLowerCase(),
+          phone: phone?.trim() || undefined,
+          company_name: company_name?.trim() || undefined,
+          requirement: message.trim(),
+          message: message.trim(),
+          subject: subject?.trim() || undefined,
+          source_name: 'technology_assessment',
+          form_identifier: form_identifier?.trim().toLowerCase() || 'technology_assessment_funnel',
+          origin_path: classification.originPath,
+          service_interest: service_interest?.trim() || undefined,
+          utm_source: utm_source?.trim() || undefined,
+          utm_medium: utm_medium?.trim() || undefined,
+          utm_campaign: utm_campaign?.trim() || undefined,
+          industry: assessmentData.industry || undefined,
+          scale: assessmentData.scale || undefined,
+          project_size: assessmentData.project_size || undefined,
+          timeline: assessmentData.timeline || undefined,
+          city: assessmentData.city || undefined,
+          business_type: assessmentData.business_type || undefined,
+          project_stage: assessmentData.project_stage || undefined,
+          document_url: documentUrl || null,
+          metadata: {
+            source_context: form_identifier,
+            document_filename: documentFilename || null,
+            request_host: process.env.NEXT_PUBLIC_SITE_URL || null,
+          },
+        });
+
+        result = { id: leadResult.messageId || 'unknown' };
+      } catch (dbError: any) {
         logger.error('contact_upload.db_insert_failed', {
           correlationId,
           error: dbError.message,
@@ -350,6 +374,7 @@ export async function POST(request: NextRequest) {
       logger.info('contact_upload.success', {
         correlationId,
         messageId: result?.id,
+        leadId: leadResult?.lead?.id,
         hasDocument: !!documentUrl,
         fileName: documentFilename,
         leadScore: leadScore.totalScore,
@@ -359,7 +384,7 @@ export async function POST(request: NextRequest) {
       // Notify sales asynchronously (don't block response)
       if (form_identifier === 'technology_assessment_funnel') {
         const notificationPayload: LeadNotificationPayload = {
-          leadId: result?.id || 'unknown',
+          leadId: leadResult?.lead?.id || result?.id || 'unknown',
           name: name.trim(),
           email: email.trim(),
           phone: phone?.trim(),

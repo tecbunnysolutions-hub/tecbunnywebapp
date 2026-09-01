@@ -6,7 +6,7 @@ import crypto from 'crypto';
 import { z } from 'zod';
 
 import { rateLimit } from "@tecbunny/core/rate-limit";
-import { logger } from "@tecbunny/core";
+import { logger, LeadEngineService } from "@tecbunny/core";
 import { verifySuperadminSessionToken } from "@tecbunny/core/server";
 import { AdminAuthError, requireAdminContext } from "@tecbunny/core/auth/admin-guard";
 import type { ContactMessage, ContactMessageStatus } from "@tecbunny/core/types";
@@ -180,18 +180,39 @@ export async function POST(request: NextRequest) {
       last_activity_at: new Date().toISOString(),
     };
 
-    const { data, error } = await serviceSupabase
-      .from('contact_messages')
-      .insert(payload)
-      .select('id')
-      .single();
+    let leadResult: { lead: any; isNew: boolean; messageId: string | null };
 
-    if (error) {
-      logger.error('contact_message_insert_failed', { error: error.message });
+    try {
+      leadResult = await LeadEngineService.createLeadFromIntake(serviceSupabase, {
+        first_name: parsed.data.name.trim().split(/\s+/)[0] || parsed.data.name.trim(),
+        last_name: parsed.data.name.trim().split(/\s+/).slice(1).join(' ') || undefined,
+        email: parsed.data.email.trim().toLowerCase(),
+        phone: parsed.data.phone?.trim() || undefined,
+        company_name: parsed.data.company_name?.trim() || undefined,
+        requirement: parsed.data.message.trim(),
+        message: parsed.data.message.trim(),
+        subject: parsed.data.subject?.trim() || undefined,
+        source_name: 'contact_form',
+        form_identifier: parsed.data.form_identifier?.trim().toLowerCase() || 'contact_form',
+        origin_path: classification.originPath,
+        service_interest: parsed.data.service_interest?.trim() || undefined,
+        utm_source: parsed.data.utm_source?.trim() || undefined,
+        utm_medium: parsed.data.utm_medium?.trim() || undefined,
+        utm_campaign: parsed.data.utm_campaign?.trim() || undefined,
+        metadata: {
+          ip_address: submissionIp,
+          referrer_url: referrerUrl,
+          source_key: classification.originKey,
+          request_host: request.headers.get('host'),
+          user_agent: request.headers.get('user-agent'),
+        },
+      });
+    } catch (error) {
+      logger.error('contact_message_insert_failed', { error: error instanceof Error ? error.message : String(error), ip: submissionIp });
       return NextResponse.json({ error: 'Failed to submit message' }, { status: 500 });
     }
 
-    logger.info('contact_message_created', { messageId: data?.id, ip: submissionIp });
+    logger.info('contact_message_created', { messageId: leadResult.messageId, leadId: leadResult.lead?.id, ip: submissionIp, isNew: leadResult.isNew });
 
     if (parsed.data.form_identifier?.trim().toLowerCase() === 'lead_capture_webhook') {
       const n8nWebhookUrl = process.env.N8N_LEAD_WEBHOOK_URL;
@@ -199,7 +220,8 @@ export async function POST(request: NextRequest) {
         after(async () => {
           try {
             const webhookBody = JSON.stringify({
-              id: data?.id,
+              id: leadResult.messageId,
+              lead_id: leadResult.lead?.id,
               name: payload.name,
               company_name: payload.company_name,
               email: payload.email,
@@ -224,14 +246,14 @@ export async function POST(request: NextRequest) {
           } catch (err) {
             logger.error('lead_capture_n8n_forward_failed', {
               error: err instanceof Error ? err.message : String(err),
-              messageId: data?.id,
+              messageId: leadResult.messageId,
             });
           }
         });
       }
     }
 
-    return NextResponse.json({ success: true, id: data?.id }, { status: 201 });
+    return NextResponse.json({ success: true, id: leadResult.messageId, leadId: leadResult.lead?.id }, { status: 201 });
   } catch (error) {
     logger.error('contact_message_post_unexpected', {
       error: error instanceof Error ? error.message : String(error),

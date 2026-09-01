@@ -20,6 +20,7 @@ export * from './hooks/use-analytics';
 
 export * from './validation';
 export * from './lead-scoring';
+export * from './services/lead-engine.service';
 export * from './leads/notify-sales';
 export * from './analytics-tracking';
 export * from './hooks/use-customer-workspace';
