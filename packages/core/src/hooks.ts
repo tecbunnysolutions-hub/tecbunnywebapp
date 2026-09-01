@@ -157,3 +157,7 @@ export const useCart = () => {
 export * from './hooks/use-debounce';
 export * from './hooks/use-page-content';
 export * from './hooks/use-payment-methods';
+export * from './hooks/use-funnel-event-tracking';
+export * from './hooks/use-customer-workspace';
+export * from './hooks/use-analytics';
+export * from './hooks/use-warranty-telemetry';

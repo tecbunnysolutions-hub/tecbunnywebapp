@@ -1,5 +1,5 @@
-import { createServiceClient } from '@tecbunny/core/supabase/service-client';
-import { getSessionWithRole } from '@tecbunny/core/auth/session-server';
+import { createServiceClient } from '@tecbunny/database/admin';
+import { getSessionWithRole } from '@tecbunny/core/auth/server-role';
 import { NextRequest, NextResponse } from 'next/server';
 
 export const runtime = 'nodejs';
@@ -39,10 +39,10 @@ interface SourceDashboard {
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await getSessionWithRole();
+    const { session, role } = await getSessionWithRole(request);
 
     // Check permissions
-    const canRead = session?.user?.email && ['admin', 'marketing_manager', 'marketing_executive', 'sales_manager', 'sales_executive'].includes(session.user.user_metadata?.role);
+    const canRead = session?.user?.email && (role === 'superadmin' || ['admin', 'marketing_manager', 'marketing_executive', 'sales_manager', 'sales_executive'].includes(role || ''));
 
     if (!canRead) {
       return NextResponse.json(

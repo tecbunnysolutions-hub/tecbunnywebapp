@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServiceClient } from '@tecbunny/core/supabase/service-client';
+import { createServiceClient } from '@tecbunny/database/admin';
 
 export const runtime = 'nodejs';
 
