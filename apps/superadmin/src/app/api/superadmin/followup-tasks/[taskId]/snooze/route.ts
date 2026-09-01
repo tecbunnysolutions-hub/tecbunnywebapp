@@ -9,9 +9,10 @@ import { verifySuperadminSessionToken } from '@tecbunny/core/server';
  */
 export async function POST(
   request: Request,
-  { params }: { params: { taskId: string } }
+  { params }: { params: Promise<{ taskId: string }> }
 ) {
   try {
+    const { taskId } = await params;
     const token = request.headers.get('cookie')?.split('superadmin-session=')[1]?.split(';')[0];
     const session = await verifySuperadminSessionToken(token, request);
 
@@ -24,13 +25,13 @@ export async function POST(
 
     // Call database function to snooze task
     const { data, error } = await supabase.rpc('snooze_followup_task', {
-      task_id: params.taskId,
+      task_id: taskId,
       snooze_hours: snoozeHours,
     });
 
     if (error) {
       logger.error('followup_task_snooze_failed', {
-        taskId: params.taskId,
+        taskId,
         error: error.message,
       });
       return NextResponse.json({ error: 'Failed to snooze task' }, { status: 500 });

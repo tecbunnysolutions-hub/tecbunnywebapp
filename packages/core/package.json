@@ -51,6 +51,7 @@
     "./email/client": "./src/email/client.ts",
     "./email/index": "./src/email/index.ts",
     "./email/queue": "./src/email/queue.ts",
+    "./email/send-assessment-confirmation": "./src/email/send-assessment-confirmation.ts",
     "./email/service": "./src/email/service.ts",
     "./email/templates": "./src/email/templates.ts",
     "./email/types": "./src/email/types.ts",

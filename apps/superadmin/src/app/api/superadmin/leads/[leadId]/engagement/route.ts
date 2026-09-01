@@ -9,9 +9,10 @@ import { logger } from '@tecbunny/core';
  */
 export async function POST(
   request: Request,
-  { params }: { params: { leadId: string } }
+  { params }: { params: Promise<{ leadId: string }> }
 ) {
   try {
+    const { leadId } = await params;
     const { interactionType, durationSeconds, sourceUrl, metadata } = await request.json();
 
     if (!interactionType) {
@@ -22,7 +23,7 @@ export async function POST(
 
     // Log engagement
     const { data, error } = await supabase.rpc('log_lead_engagement', {
-      lead_id: params.leadId,
+      lead_id: leadId,
       interaction_type: interactionType,
       duration_seconds: durationSeconds || null,
       source_url: sourceUrl || null,
@@ -31,7 +32,7 @@ export async function POST(
 
     if (error) {
       logger.error('lead_engagement_log_failed', {
-        leadId: params.leadId,
+        leadId,
         interactionType,
         error: error.message,
       });
@@ -39,7 +40,7 @@ export async function POST(
     }
 
     logger.info('lead_engagement_logged', {
-      leadId: params.leadId,
+      leadId,
       interactionType,
     });
 

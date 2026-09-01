@@ -8,7 +8,7 @@ interface FunnelEventOptions {
 }
 
 export function useFunnelEventTracking() {
-  const sessionIdRef = useRef<string>();
+  const sessionIdRef = useRef<string | null>(null);
 
   // Initialize session on mount
   useEffect(() => {

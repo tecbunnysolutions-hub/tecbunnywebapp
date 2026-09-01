@@ -13,8 +13,6 @@ declare module 'lucide-react' {
     LucideProps & React.RefAttributes<SVGSVGElement>
   >;
 
-  export const createLucideIcon: (iconName: string, iconNode: any[]) => LucideIcon;
-
   export const Activity: LucideIcon;
   export const AlertCircle: LucideIcon;
   export const AlertTriangle: LucideIcon;
@@ -70,9 +68,9 @@ declare module 'lucide-react' {
   export const FileDown: LucideIcon;
   export const FileSearch: LucideIcon;
   export const FileSpreadsheet: LucideIcon;
+  export const Files: LucideIcon;
   export const FileText: LucideIcon;
   export const FileUp: LucideIcon;
-  export const Files: LucideIcon;
   export const Filter: LucideIcon;
   export const Fingerprint: LucideIcon;
   export const FlameKindling: LucideIcon;
@@ -180,7 +178,6 @@ declare module 'lucide-react' {
   export const X: LucideIcon;
   export const XCircle: LucideIcon;
   export const Zap: LucideIcon;
-
   const icon: LucideIcon;
   export default icon;
 }
