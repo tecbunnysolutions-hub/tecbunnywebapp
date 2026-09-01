@@ -5,7 +5,7 @@ import nodemailer from 'nodemailer';
 
 
 
-import { logger } from "@tecbunny/core";
+import { logger, LeadEngineService } from "@tecbunny/core";
 import { getCustomSetupBlueprintSummary } from "@tecbunny/core/custom-setup-service";
 import { DEFAULT_CUSTOM_SETUP_TEMPLATE_SLUG } from "@tecbunny/core/custom-setup.constants";
 import {
@@ -300,20 +300,34 @@ export async function POST(req: NextRequest) {
     if (insertResult.error) {
       logger.error('quotes.insert_failed', { error: insertResult.error, userId: user?.id });
     } else if (insertResult.data) {
-      // Create a lead in the leads table
-      const leadInsertResult = await serviceClient.from('leads').insert({
-        user_id: user?.id || null,
-        customer_name: customerName,
-        customer_email: customerEmail,
-        customer_phone: customerPhone || null,
-        customer_address: customerAddress || null,
-        status: 'new',
-        type: 'quote',
-        product_id: 'custom_setup',
-        data: { quote_number: insertResult.data.quote_number, summary: safeSummary }
-      });
-      if (leadInsertResult.error) {
-        logger.error('quotes.lead_insert_failed', { error: leadInsertResult.error, userId: user?.id });
+      // Create a canonical lead in sls_leads via LeadEngineService
+      try {
+        await LeadEngineService.createLeadFromIntake(serviceClient, {
+          first_name: customerName.split(/\s+/)[0] || customerName,
+          last_name: customerName.split(/\s+/).slice(1).join(' ') || undefined,
+          email: customerEmail,
+          phone: customerPhone || undefined,
+          company_name: undefined,
+          source_name: 'quote',
+          form_identifier: 'custom_setup_quote',
+          origin_path: '/custom-setup',
+          message: `Custom setup quote generated - Quote #${insertResult.data.quote_number}`,
+          requirement: `Custom setup quote - ${safeSummary || 'No summary'}`,
+          metadata: {
+            quote_number: insertResult.data.quote_number,
+            quote_summary: safeSummary,
+            customer_address: customerAddress || null,
+            gst_included: !!gstIncluded,
+          }
+        });
+      } catch (leadError) {
+        logger.error('quotes.canonical_lead_creation_failed', {
+          error: leadError instanceof Error ? leadError.message : String(leadError),
+          quoteNumber: insertResult.data.quote_number,
+          userId: user?.id
+        });
+        // Don't fail the quote creation if canonical lead creation fails,
+        // but log the error for monitoring
       }
     }
 
