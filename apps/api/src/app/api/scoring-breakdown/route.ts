@@ -192,7 +192,7 @@ export async function GET(request: NextRequest) {
 
     // 5. ASSESSMENT COMPLETENESS (0-68)
     let completenessScore = 0;
-    let completenessDetails = [];
+    const completenessDetails = [];
 
     if (hasPhone) {
       completenessScore += 14;

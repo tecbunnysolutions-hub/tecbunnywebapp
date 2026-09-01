@@ -116,17 +116,18 @@ BEGIN
   RETURN QUERY
   WITH lead_data AS (
     SELECT
-      COALESCE(source, 'Direct') as source,
-      COUNT(*) as total,
-      COUNT(*) FILTER (WHERE lead_score >= 75) as hot_count,
-      COUNT(*) FILTER (WHERE lead_score >= 50 AND lead_score < 75) as warm_count,
-      COUNT(*) FILTER (WHERE lead_score < 50) as cold_count,
-      COUNT(*) FILTER (WHERE status = 'converted') as converted,
-      AVG(lead_score) as avg_score
-    FROM sls_leads
-    WHERE deleted_at IS NULL
-      AND (org_id_filter IS NULL OR org_id = org_id_filter)
-    GROUP BY source
+      COALESCE(ls.name, 'Direct') as source,
+      COUNT(DISTINCT l.id) as total,
+      COUNT(DISTINCT l.id) FILTER (WHERE l.lead_score >= 75) as hot_count,
+      COUNT(DISTINCT l.id) FILTER (WHERE l.lead_score >= 50 AND l.lead_score < 75) as warm_count,
+      COUNT(DISTINCT l.id) FILTER (WHERE l.lead_score < 50) as cold_count,
+      COUNT(DISTINCT l.id) FILTER (WHERE l.status = 'converted') as converted,
+      AVG(l.lead_score) as avg_score
+    FROM sls_leads l
+    LEFT JOIN sls_lead_sources ls ON l.lead_source_id = ls.id
+    WHERE l.deleted_at IS NULL
+      AND (org_id_filter IS NULL OR l.org_id = org_id_filter)
+    GROUP BY ls.name
   )
   SELECT
     source,
@@ -208,13 +209,14 @@ BEGIN
     l.company,
     COALESCE(l.estimated_value, 0)::BIGINT,
     l.lead_score,
-    l.source,
+    COALESCE(ls.name, 'Direct'),
     COALESCE(u.full_name, u.name, 'Unassigned'),
     l.last_contact_at,
     l.next_followup_at,
     l.status,
     l.contact_method
   FROM sls_leads l
+  LEFT JOIN sls_lead_sources ls ON l.lead_source_id = ls.id
   LEFT JOIN sls_lead_assignments a ON l.id = a.lead_id AND a.deleted_at IS NULL
   LEFT JOIN profiles u ON a.assigned_to = u.id
   WHERE l.deleted_at IS NULL
