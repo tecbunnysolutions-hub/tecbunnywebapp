@@ -33,105 +33,78 @@ describe('LeadMonitoringService', () => {
     it('should return HEALTHY status when all metrics within thresholds', async () => {
       // Mock data: healthy state
       mockSupabase.from = vi.fn((table: string) => {
+        const makeQuery = (data: any[] = []) => {
+          const query = {
+            select: vi.fn().mockImplementation(() => query).mockReturnThis(),
+            gte: vi.fn().mockImplementation(() => query).mockReturnThis(),
+            is: vi.fn().mockImplementation(() => query).mockReturnThis(),
+            not: vi.fn().mockImplementation(() => query).mockReturnThis(),
+            or: vi.fn().mockImplementation(() => query).mockReturnThis(),
+            eq: vi.fn().mockImplementation(() => query).mockReturnThis(),
+            then: (resolve: (value: { data: any[] | null }) => void) => resolve({ data }),
+          };
+          return query;
+        };
+
         if (table === 'sls_leads') {
-          return {
-            select: vi
-              .fn()
-              .mockResolvedValue({
-                data: [
-                  {
-                    id: '1',
-                    email: 'user@example.com',
-                    phone: '+919000000001',
-                    first_name: 'John',
-                    lead_owner_id: 'exec-1',
-                    heat_level: 'WARM',
-                    status: 'NEW',
-                    lead_score: 50,
-                    source_id: 'source-1',
-                  },
-                  {
-                    id: '2',
-                    email: 'user2@example.com',
-                    phone: '+919000000002',
-                    first_name: 'Jane',
-                    lead_owner_id: 'exec-1',
-                    heat_level: 'WARM',
-                    status: 'NEW',
-                    lead_score: 50,
-                    source_id: 'source-1',
-                  },
-                ],
-              })
-              .mockReturnThis(),
-            gte: vi.fn().mockReturnThis(),
-            is: vi.fn().mockReturnThis(),
-            not: vi.fn().mockReturnThis(),
-            or: vi.fn().mockReturnThis(),
-          };
+          return makeQuery([
+            {
+              id: '1',
+              email: 'user@example.com',
+              phone: '+919000000001',
+              first_name: 'John',
+              lead_owner_id: 'exec-1',
+              heat_level: 'WARM',
+              status: 'NEW',
+              lead_score: 50,
+              source_id: 'source-1',
+            },
+            {
+              id: '2',
+              email: 'user2@example.com',
+              phone: '+919000000002',
+              first_name: 'Jane',
+              lead_owner_id: 'exec-1',
+              heat_level: 'WARM',
+              status: 'NEW',
+              lead_score: 50,
+              source_id: 'source-1',
+            },
+          ]);
         } else if (table === 'sls_lead_sources') {
-          return {
-            select: vi
-              .fn()
-              .mockResolvedValue({ data: [{ id: 'source-1', name: 'website' }] })
-              .mockReturnThis(),
-          };
+          return makeQuery([{ id: 'source-1', name: 'website' }]);
         } else if (table === 'sls_lead_assignments') {
-          return {
-            select: vi
-              .fn()
-              .mockResolvedValue({
-                data: [
-                  { id: '1', sales_executive_id: 'exec-1', lead_id: '1' },
-                  { id: '2', sales_executive_id: 'exec-1', lead_id: '2' },
-                ],
-              })
-              .mockReturnThis(),
-            is: vi.fn().mockReturnThis(),
-          };
+          return makeQuery([
+            { id: '1', sales_executive_id: 'exec-1', lead_id: '1' },
+            { id: '2', sales_executive_id: 'exec-1', lead_id: '2' },
+          ]);
         } else if (table === 'lead_followup_tasks') {
-          return {
-            select: vi
-              .fn()
-              .mockResolvedValue({
-                data: [
-                  {
-                    id: '1',
-                    status: 'completed',
-                    due_at: new Date(Date.now() - 3600000).toISOString(),
-                    created_at: new Date(Date.now() - 7200000).toISOString(),
-                    updated_at: new Date(Date.now() - 3600000).toISOString(),
-                  },
-                ],
-              })
-              .mockReturnThis(),
-            gte: vi.fn().mockReturnThis(),
-          };
+          return makeQuery([
+            {
+              id: '1',
+              status: 'completed',
+              due_at: new Date(Date.now() - 3600000).toISOString(),
+              created_at: new Date(Date.now() - 7200000).toISOString(),
+              updated_at: new Date(Date.now() - 3600000).toISOString(),
+            },
+          ]);
         } else if (table === 'contact_messages') {
-          return {
-            select: vi
-              .fn()
-              .mockResolvedValue({
-                data: [
-                  {
-                    id: '1',
-                    lead_id: '1',
-                    lead_source: 'website',
-                    created_at: new Date().toISOString(),
-                  },
-                  {
-                    id: '2',
-                    lead_id: '2',
-                    lead_source: 'website',
-                    created_at: new Date().toISOString(),
-                  },
-                ],
-              })
-              .mockReturnThis(),
-            gte: vi.fn().mockReturnThis(),
-          };
+          return makeQuery([
+            {
+              id: '1',
+              lead_id: '1',
+              lead_source: 'website',
+              created_at: new Date().toISOString(),
+            },
+            {
+              id: '2',
+              lead_id: '2',
+              lead_source: 'website',
+              created_at: new Date().toISOString(),
+            },
+          ]);
         }
-        return { select: vi.fn().mockResolvedValue({ data: [] }).mockReturnThis() };
+        return makeQuery([]);
       });
 
       const health = await LeadMonitoringService.getSystemHealth(mockSupabase as SupabaseClient);

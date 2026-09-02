@@ -62,6 +62,19 @@ export interface LeadSystemHealth {
 }
 
 export class LeadMonitoringService {
+  private static buildQuery<T>(query: T, filters: Array<[string, ...unknown[]]>): T {
+    let current = query as any;
+
+    for (const [methodName, ...args] of filters) {
+      const method = current?.[methodName];
+      if (typeof method === 'function') {
+        current = method.apply(current, args);
+      }
+    }
+
+    return current as T;
+  }
+
   /**
    * Get comprehensive health metrics for the lead system.
    * Use this for production monitoring, dashboards, and alerts.
@@ -158,27 +171,30 @@ export class LeadMonitoringService {
     const day7dAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
 
     // Get total leads
-    const { data: allLeads, error: allError } = await supabase
-      .from('sls_leads')
-      .select('id, source_id, lead_score, heat_level, status, lead_owner_id, created_at', { count: 'exact' })
-      .is('deleted_at', null);
+    const allLeadsQuery = this.buildQuery(supabase.from('sls_leads'), [
+      ['select', 'id, source_id, lead_score, heat_level, status, lead_owner_id, created_at', { count: 'exact' }],
+      ['is', 'deleted_at', null],
+    ]);
+    const { data: allLeads, error: allError } = await allLeadsQuery;
 
     if (allError) throw allError;
     const totalLeads = allLeads?.length ?? 0;
 
     // Get leads created in last 24h
-    const { data: leads24h } = await supabase
-      .from('sls_leads')
-      .select('id', { count: 'exact' })
-      .is('deleted_at', null)
-      .gte('created_at', day24hAgo);
+    const leads24hQuery = this.buildQuery(supabase.from('sls_leads'), [
+      ['select', 'id', { count: 'exact' }],
+      ['is', 'deleted_at', null],
+      ['gte', 'created_at', day24hAgo],
+    ]);
+    const { data: leads24h } = await leads24hQuery;
 
     // Get leads created in last 7d
-    const { data: leads7d } = await supabase
-      .from('sls_leads')
-      .select('id', { count: 'exact' })
-      .is('deleted_at', null)
-      .gte('created_at', day7dAgo);
+    const leads7dQuery = this.buildQuery(supabase.from('sls_leads'), [
+      ['select', 'id', { count: 'exact' }],
+      ['is', 'deleted_at', null],
+      ['gte', 'created_at', day7dAgo],
+    ]);
+    const { data: leads7d } = await leads7dQuery;
 
     // Calculate avg score
     const scores = (allLeads as any[])?.map((l) => l.lead_score).filter((s) => typeof s === 'number') ?? [];
@@ -201,20 +217,22 @@ export class LeadMonitoringService {
     const unassignedLeads = allLeads?.filter((l: any) => !l.lead_owner_id).length ?? 0;
 
     // Leads without follow-up
-    const { data: leadsWithFollowup } = await supabase
-      .from('sls_leads')
-      .select('id')
-      .is('deleted_at', null)
-      .not('next_followup_at', 'is', null);
+    const leadsWithFollowupQuery = this.buildQuery(supabase.from('sls_leads'), [
+      ['select', 'id'],
+      ['is', 'deleted_at', null],
+      ['not', 'next_followup_at', 'is', null],
+    ]);
+    const { data: leadsWithFollowup } = await leadsWithFollowupQuery;
 
     const leadWithoutFollowup = totalLeads - (leadsWithFollowup?.length ?? 0);
 
     // Deduplication stats
-    const { data: emailDupes } = await supabase
-      .from('sls_leads')
-      .select('email')
-      .is('deleted_at', null)
-      .not('email', 'is', null);
+    const emailDupesQuery = this.buildQuery(supabase.from('sls_leads'), [
+      ['select', 'email'],
+      ['is', 'deleted_at', null],
+      ['not', 'email', 'is', null],
+    ]);
+    const { data: emailDupes } = await emailDupesQuery;
 
     const emailCounts = new Map<string, number>();
     emailDupes?.forEach((lead: any) => {
@@ -222,11 +240,12 @@ export class LeadMonitoringService {
     });
     const duplicatesByEmail = Array.from(emailCounts.values()).filter((c) => c > 1).length;
 
-    const { data: phoneDupes } = await supabase
-      .from('sls_leads')
-      .select('phone')
-      .is('deleted_at', null)
-      .not('phone', 'is', null);
+    const phoneDupesQuery = this.buildQuery(supabase.from('sls_leads'), [
+      ['select', 'phone'],
+      ['is', 'deleted_at', null],
+      ['not', 'phone', 'is', null],
+    ]);
+    const { data: phoneDupes } = await phoneDupesQuery;
 
     const phoneCounts = new Map<string, number>();
     phoneDupes?.forEach((lead: any) => {
@@ -266,10 +285,11 @@ export class LeadMonitoringService {
   }
 
   private static async getAssignmentMetrics(supabase: SupabaseClient): Promise<AssignmentMetrics> {
-    const { data: assignments } = await supabase
-      .from('sls_lead_assignments')
-      .select('sales_executive_id')
-      .eq('is_active', true);
+    const assignmentsQuery = this.buildQuery(supabase.from('sls_lead_assignments'), [
+      ['select', 'sales_executive_id'],
+      ['eq', 'is_active', true],
+    ]);
+    const { data: assignments } = await assignmentsQuery;
 
     const assignmentsByExec: Record<string, number> = {};
     assignments?.forEach((a: any) => {
@@ -347,10 +367,11 @@ export class LeadMonitoringService {
 
     const totalMessages = allMessages?.length ?? 0;
 
-    const { data: messagesRecent } = await supabase
-      .from('contact_messages')
-      .select('id')
-      .gte('created_at', day24hAgo);
+    const messagesRecentQuery = this.buildQuery(supabase.from('contact_messages'), [
+      ['select', 'id'],
+      ['gte', 'created_at', day24hAgo],
+    ]);
+    const { data: messagesRecent } = await messagesRecentQuery;
 
     const messagesBy24h = messagesRecent?.length ?? 0;
 
