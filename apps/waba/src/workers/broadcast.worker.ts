@@ -21,6 +21,25 @@ export function startBroadcastWorker() {
       logger.info('Processing broadcast job', { jobId: job.id, phone: job.data.phone });
 
       const { campaign_id, phone, template_name, payload } = job.data;
+      const { data: campaign, error: campaignError } = await supabase
+        .from('mkt_campaigns')
+        .select('status')
+        .eq('id', campaign_id)
+        .maybeSingle();
+
+      if (campaignError) {
+        throw new Error(`Unable to verify campaign state: ${campaignError.message}`);
+      }
+
+      if (!campaign || ['HALTED', 'PAUSED', 'CANCELLED', 'COMPLETED'].includes(campaign.status)) {
+        logger.warn('Broadcast job skipped because campaign is inactive', {
+          jobId: job.id,
+          campaign_id,
+          status: campaign?.status ?? 'MISSING',
+        });
+        return;
+      }
+
       const placeholders = Array.isArray(payload?.placeholders)
         ? payload.placeholders.map((value) => String(value))
         : [];

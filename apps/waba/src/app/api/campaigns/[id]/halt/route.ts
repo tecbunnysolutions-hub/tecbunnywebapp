@@ -74,7 +74,7 @@ export async function POST(
     }
 
     // Halt the campaign with audit trail
-    const haltResult = await withAuditEvent({
+    await withAuditEvent({
       application: 'waba',
       module: 'campaigns',
       screen: '/api/campaigns/[id]/halt',

@@ -1,5 +1,6 @@
 import { createClient } from '@tecbunny/database';
 import { logger } from '../logger';
+import { createHash } from 'crypto';
 
 type SupabaseClient = ReturnType<typeof createClient>;
 
@@ -14,12 +15,13 @@ export interface OutboundMessagePayload {
   campaign_id?: string;
   user_id?: string;
   correlation_id?: string;
+  idempotency_key?: string;
   max_retries?: number;
 }
 
 export interface OutboundEventRecord {
   id: string;
-  status: 'PENDING' | 'PROCESSING' | 'DELIVERED' | 'FAILED' | 'DEAD_LETTER';
+  status: 'PENDING' | 'PROCESSING' | 'RETRYING' | 'DELIVERED' | 'FAILED' | 'DEAD_LETTER';
   attempt_count: number;
   max_retries: number;
   last_error_code: string | null;
@@ -27,6 +29,13 @@ export interface OutboundEventRecord {
   next_retry_at: string | null;
   provider_message_id: string | null;
   phone_number: string;
+  idempotency_key: string;
+  message_type: 'template' | 'text' | 'media' | 'interactive';
+  message_content: Record<string, unknown>;
+  dead_lettered_at: string | null;
+  conversation_id: string | null;
+  campaign_id: string | null;
+  correlation_id: string | null;
 }
 
 export class OutboundEventService {
@@ -39,6 +48,17 @@ export class OutboundEventService {
     payload: OutboundMessagePayload
   ): Promise<OutboundEventRecord> {
     const correlationId = payload.correlation_id || `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const idempotencyKey = payload.idempotency_key || createHash('sha256')
+      .update(JSON.stringify({
+        phone_number: payload.phone_number,
+        message_type: payload.message_type,
+        message_content: payload.message_content,
+        conversation_id: payload.conversation_id || null,
+        lead_id: payload.lead_id || null,
+        campaign_id: payload.campaign_id || null,
+        correlation_id: payload.correlation_id || null,
+      }))
+      .digest('hex');
     
     const { data, error } = await supabase
       .from('waba_outbound_events')
@@ -51,6 +71,7 @@ export class OutboundEventService {
         campaign_id: payload.campaign_id || null,
         user_id: payload.user_id || null,
         correlation_id: correlationId,
+        idempotency_key: idempotencyKey,
         status: 'PENDING',
         attempt_count: 0,
         max_retries: payload.max_retries || 3,
@@ -59,6 +80,13 @@ export class OutboundEventService {
       .single();
 
     if (error) {
+      const { data: existing } = await supabase
+        .from('waba_outbound_events')
+        .select('*')
+        .eq('idempotency_key', idempotencyKey)
+        .maybeSingle();
+      if (existing) return existing as OutboundEventRecord;
+
       logger.error('outbound_event.create_failed', {
         error: error.message,
         phone: payload.phone_number,
@@ -70,6 +98,7 @@ export class OutboundEventService {
       eventId: data.id,
       phone: payload.phone_number,
       correlationId,
+      idempotencyKey,
     });
 
     return data;
@@ -231,8 +260,7 @@ export class OutboundEventService {
     const { data, error } = await supabase
       .from('waba_outbound_events')
       .select('*')
-      .in('status', ['PENDING', 'RETRYING'])
-      .or(`next_retry_at.lte.${now},next_retry_at.is.null`)
+      .or(`status.eq.RETRYING.and(next_retry_at.lte.${now}),status.eq.PENDING.and(next_retry_at.lte.${now})`)
       .order('created_at', { ascending: true })
       .limit(limit);
 
@@ -244,6 +272,40 @@ export class OutboundEventService {
     }
 
     return data || [];
+  }
+
+  /** Claim eligible events atomically. The database function uses row locks. */
+  static async claimPendingRetries(
+    supabase: SupabaseClient,
+    limit: number = 100
+  ): Promise<OutboundEventRecord[]> {
+    const { data, error } = await supabase.rpc('claim_waba_outbound_retries', {
+      batch_size: limit,
+    });
+
+    if (error) {
+      logger.error('outbound_event.claim_retries_failed', { error: error.message });
+      return [];
+    }
+
+    return (data || []) as OutboundEventRecord[];
+  }
+
+  static async recordRetryAttempt(
+    supabase: SupabaseClient,
+    eventId: string,
+    event: OutboundEventRecord,
+    backoffMs: number
+  ): Promise<void> {
+    const { error } = await supabase.from('waba_outbound_retry_history').insert({
+      event_id: eventId,
+      attempt_number: event.attempt_count + 1,
+      status_before: event.status,
+      status_after: 'PROCESSING',
+      backoff_ms: backoffMs,
+    });
+
+    if (error) logger.warn('outbound_event.retry_history_failed', { eventId, error: error.message });
   }
 
   /**

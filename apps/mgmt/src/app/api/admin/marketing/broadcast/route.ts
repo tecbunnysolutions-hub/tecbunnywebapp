@@ -114,6 +114,9 @@ async function processBatchDelivery(
       
       if (channelType === 'whatsapp' && contact.phone && whatsappService) {
         const formattedPhone = enforceIndianFormatting(contact.phone);
+        if (!await whatsappService.checkWhatsAppConsent(formattedPhone)) {
+          throw new Error('Recipient has not opted in to WhatsApp marketing');
+        }
         await whatsappService.sendMessage(formattedPhone, resolvedMessage, 'text');
         successCount++;
       } else if (channelType === 'email' && contact.email) {

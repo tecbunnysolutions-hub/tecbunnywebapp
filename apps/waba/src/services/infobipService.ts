@@ -3,6 +3,7 @@
 import crypto from 'crypto';
 import { supabase } from '@/lib/supabase';
 import { OutboundEventService } from '@tecbunny/core';
+import type { OutboundEventRecord } from '@tecbunny/core';
 
 type OutboundEventContext = {
   conversationId?: string;
@@ -11,6 +12,17 @@ type OutboundEventContext = {
   userId?: string;
   maxRetries?: number;
 };
+
+function existingEventResponse(event: OutboundEventRecord | null) {
+  if (!event || event.status === 'PENDING' || event.status === 'RETRYING') return null;
+  if (event.status === 'DELIVERED') {
+    return {
+      success: true,
+      data: { messages: [{ messageId: event.provider_message_id }] },
+    };
+  }
+  return { success: false, error: `Outbound event is already ${event.status}` };
+}
 
 // Bug #1 fix: Remove all hardcoded credential fallbacks. Missing required env
 // vars throw at runtime so the problem is caught immediately on use, without
@@ -94,17 +106,6 @@ async function sendInfobipRequest(
       }
 
       if (response.status >= 500 && response.status < 600) {
-        if (eventId) {
-          await OutboundEventService.markFailedAndScheduleRetry(
-            supabase,
-            eventId,
-            String(response.status),
-            JSON.stringify(data),
-          ).catch((error) => {
-            console.error('Failed to mark outbound event retry', error);
-          });
-        }
-
         attempt++;
         if (attempt >= maxRetries) {
           await logFailedCall(payload, `Status: ${response.status} - ${JSON.stringify(data)}`);
@@ -132,17 +133,12 @@ async function sendInfobipRequest(
     } catch (error: unknown) {
       attempt++;
       const msg = error instanceof Error ? error.message : String(error);
-      if (eventId) {
-        await OutboundEventService.markFailedAndScheduleRetry(
-          supabase,
-          eventId,
-          'NETWORK_ERROR',
-          msg,
-        ).catch((retryError) => {
-          console.error('Failed to mark outbound event network failure', retryError);
-        });
-      }
       if (attempt >= maxRetries) {
+        if (eventId) {
+          await OutboundEventService.markFailedAndScheduleRetry(supabase, eventId, 'NETWORK_ERROR', msg).catch((retryError) => {
+            console.error('Failed to mark outbound event network failure', retryError);
+          });
+        }
         await logFailedCall(payload, msg);
         return { success: false, error: msg };
       }
@@ -310,6 +306,8 @@ export async function sendTemplateMessage(
     console.error('Failed to create outbound event for template send', error);
     return null;
   });
+  const existingResponse = existingEventResponse(event);
+  if (existingResponse) return existingResponse;
 
   const response = await sendInfobipRequest('/whatsapp/1/message/template', payload, event?.id);
   return response ?? { success: false, error: 'No response from Infobip' };
@@ -354,9 +352,68 @@ export async function sendWhatsAppMessage(
     console.error('Failed to create outbound event for text send', error);
     return null;
   });
+  const existingResponse = existingEventResponse(event);
+  if (existingResponse) return existingResponse;
 
   const response = await sendInfobipRequest('/whatsapp/1/message/text', payload, event?.id);
   return response ?? { success: false, error: 'No response from Infobip' };
+}
+
+export async function retryOutboundEvent(
+  event: OutboundEventRecord,
+): Promise<{ success: boolean; data?: unknown; error?: unknown; status?: number }> {
+  const content = event.message_content;
+
+  if (event.message_type === 'template') {
+    const { systemNumber } = getInfobipConfig();
+    const payload = {
+      messages: [{
+        from: systemNumber,
+        to: event.phone_number,
+        content: {
+          templateName: String(content.templateName ?? ''),
+          templateData: { body: { placeholders: Array.isArray(content.placeholders) ? content.placeholders.map(String) : [] } },
+          language: String(content.language ?? getInfobipConfig().templateLanguage),
+        },
+      }],
+    };
+    return sendInfobipRequest('/whatsapp/1/message/template', payload, event.id);
+  }
+
+  if (event.message_type === 'text') {
+    const { systemNumber } = getInfobipConfig();
+    return sendInfobipRequest('/whatsapp/1/message/text', {
+      from: systemNumber,
+      to: event.phone_number,
+      content: { text: String(content.text ?? '') },
+    }, event.id);
+  }
+
+  if (event.message_type === 'media') {
+    const type = String(content.type ?? 'document');
+    if (!['image', 'video', 'audio', 'document'].includes(type)) {
+      return { success: false, error: `Unsupported media retry type: ${type}` };
+    }
+    const { systemNumber } = getInfobipConfig();
+    const mediaContent: Record<string, unknown> = { mediaUrl: String(content.mediaUrl ?? '') };
+    if (content.caption) mediaContent.caption = String(content.caption);
+    return sendInfobipRequest(`/whatsapp/1/message/${type}`, {
+      from: systemNumber,
+      to: event.phone_number,
+      content: mediaContent,
+    }, event.id);
+  }
+
+  if (event.message_type === 'interactive') {
+    const { systemNumber } = getInfobipConfig();
+    return sendInfobipRequest('/whatsapp/1/message/location', {
+      from: systemNumber,
+      to: event.phone_number,
+      content,
+    }, event.id);
+  }
+
+  return { success: false, error: `Unsupported retry message type: ${event.message_type}` };
 }
 
 export async function sendWhatsAppMedia(
@@ -376,7 +433,18 @@ export async function sendWhatsAppMedia(
     (payload.content as Record<string, unknown>).caption = caption;
   }
 
-  const response = await sendInfobipRequest(`/whatsapp/1/message/${type}`, payload);
+  const event = await OutboundEventService.createEvent(supabase, {
+    phone_number: to,
+    message_type: 'media',
+    message_content: { type, mediaUrl, caption: caption ?? null },
+  }).catch((error) => {
+    console.error('Failed to create outbound event for media send', error);
+    return null;
+  });
+  const existingResponse = existingEventResponse(event);
+  if (existingResponse) return existingResponse;
+
+  const response = await sendInfobipRequest(`/whatsapp/1/message/${type}`, payload, event?.id);
 
   if (response?.success) {
     const msgId = (response.data as { messages?: Array<{ messageId?: string }> })?.messages?.[0]?.messageId;
@@ -412,7 +480,18 @@ export async function sendWhatsAppLocation(
   if (name) (payload.content as Record<string, unknown>).name = name;
   if (address) (payload.content as Record<string, unknown>).address = address;
 
-  const response = await sendInfobipRequest('/whatsapp/1/message/location', payload);
+  const event = await OutboundEventService.createEvent(supabase, {
+    phone_number: to,
+    message_type: 'interactive',
+    message_content: payload.content as Record<string, unknown>,
+  }).catch((error) => {
+    console.error('Failed to create outbound event for location send', error);
+    return null;
+  });
+  const existingResponse = existingEventResponse(event);
+  if (existingResponse) return existingResponse;
+
+  const response = await sendInfobipRequest('/whatsapp/1/message/location', payload, event?.id);
 
   if (response?.success) {
     const msgId = (response.data as { messages?: Array<{ messageId?: string }> })?.messages?.[0]?.messageId;

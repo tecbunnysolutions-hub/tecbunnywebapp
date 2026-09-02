@@ -7,7 +7,7 @@
     "@tecbunny/core": "*",
     "@tecbunny/ui": "*",
     "date-fns": "^4.4.0",
-    "lucide-react": "1.25.0",
+    "lucide-react": "^0.468.0",
     "next": "^16.2.10",
     "react": "19.2.7",
     "react-dom": "19.2.7",

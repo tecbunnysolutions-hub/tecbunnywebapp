@@ -3,6 +3,7 @@ import { createSupabaseServiceClient } from '@tecbunny/core/server';
 import { requireApiRole } from '@tecbunny/core/server-role-guard';
 import { OutboundEventService } from '@tecbunny/core';
 import { logger } from '@tecbunny/core/logger';
+import type { OutboundEventRecord } from '@tecbunny/core';
 
 /**
  * GET /api/waba/dead-letter-queue
@@ -40,7 +41,7 @@ export async function GET(req: NextRequest) {
       success: true,
       correlationId,
       count: events.length,
-      events: events.map((e: any) => ({
+      events: events.map((e: OutboundEventRecord) => ({
         id: e.id,
         phone_number: e.phone_number,
         message_type: e.message_type,

@@ -118,6 +118,15 @@ describe('LeadEngineService.createLeadFromIntake', () => {
 
         if (table === 'lead_followup_tasks') {
           return {
+            select: () => ({
+              eq: () => ({
+                in: () => ({
+                  limit: () => ({
+                    maybeSingle: async () => ({ data: null, error: null }),
+                  }),
+                }),
+              }),
+            }),
             insert: (payload: Record<string, unknown>) => {
               calls.followUps.push(payload);
               return {
@@ -237,6 +246,24 @@ describe('LeadEngineService.createLeadFromIntake', () => {
 
         if (table === 'lead_followup_tasks') {
           return {
+            select: () => ({
+              eq: () => ({
+                in: () => ({
+                  limit: () => ({
+                    maybeSingle: async () => ({ data: null, error: null }),
+                  }),
+                }),
+              }),
+            }),
+            select: () => ({
+              eq: () => ({
+                in: () => ({
+                  limit: () => ({
+                    maybeSingle: async () => ({ data: null, error: null }),
+                  }),
+                }),
+              }),
+            }),
             insert: () => ({
               select: () => ({
                 single: async () => ({ data: { id: 'task-1', due_at: new Date().toISOString() }, error: null }),
@@ -367,6 +394,15 @@ describe('LeadEngineService.createLeadFromIntake', () => {
 
         if (table === 'lead_followup_tasks') {
           return {
+            select: () => ({
+              eq: () => ({
+                in: () => ({
+                  limit: () => ({
+                    maybeSingle: async () => ({ data: null, error: null }),
+                  }),
+                }),
+              }),
+            }),
             insert: (payload: Record<string, unknown>) => {
               calls.followUps.push(payload);
               return {

@@ -4,7 +4,7 @@ import { getRedis } from '@tecbunny/core/redis';
 import { WABA_WEBHOOK_QUEUE_NAME } from '@tecbunny/core/queue';
 import { InboundTriageAgent } from './agents/InboundTriageAgent';
 import { AssignmentOrchestrator } from './agents/AssignmentOrchestrator';
-import { startBroadcastWorker, startEmailWorker, startWebhookWorker, startNurtureScheduler, startNurtureWorker } from './workers';
+import { startBroadcastWorker, startEmailWorker, startWebhookWorker, startNurtureScheduler, startNurtureWorker, startOutboundRetryWorker } from './workers';
 import { RuleEngineService } from './services/RuleEngineService';
 import { processWabaStatusEvents } from './services/webhookStatusService';
 
@@ -23,6 +23,7 @@ async function startWorker() {
   const broadcastWorker = startBroadcastWorker();
   const nurtureScheduler = startNurtureScheduler();
   const nurtureWorker = startNurtureWorker();
+  const outboundRetryWorker = startOutboundRetryWorker();
 
   const worker = new Worker(WABA_WEBHOOK_QUEUE_NAME, async (job: Job) => {
     try {
@@ -81,6 +82,7 @@ async function startWorker() {
     await broadcastWorker.close();
     if (nurtureScheduler) await nurtureScheduler.close();
     if (nurtureWorker) await nurtureWorker.close();
+    await outboundRetryWorker.close();
     process.exit(0);
   };
 

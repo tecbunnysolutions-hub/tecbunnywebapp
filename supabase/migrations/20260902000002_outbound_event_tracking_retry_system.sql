@@ -37,9 +37,23 @@ CREATE TABLE IF NOT EXISTS waba_outbound_events (
   
   -- Metadata for correlation
   correlation_id TEXT,
+  idempotency_key TEXT NOT NULL,
   campaign_id UUID,
   user_id UUID -- User who triggered this send
 );
+
+ALTER TABLE waba_outbound_events
+  ADD COLUMN IF NOT EXISTS idempotency_key TEXT;
+
+UPDATE waba_outbound_events
+SET idempotency_key = id::TEXT
+WHERE idempotency_key IS NULL;
+
+ALTER TABLE waba_outbound_events
+  ALTER COLUMN idempotency_key SET NOT NULL;
+
+CREATE UNIQUE INDEX IF NOT EXISTS uq_waba_outbound_idempotency_key
+ON waba_outbound_events(idempotency_key);
 
 -- Indexes for efficient queries
 CREATE INDEX IF NOT EXISTS idx_waba_outbound_status
@@ -62,6 +76,33 @@ ON waba_outbound_events(conversation_id) WHERE conversation_id IS NOT NULL;
 
 CREATE INDEX IF NOT EXISTS idx_waba_outbound_campaign
 ON waba_outbound_events(campaign_id) WHERE campaign_id IS NOT NULL;
+
+-- Claim retry work atomically so multiple worker instances cannot send the same event.
+CREATE OR REPLACE FUNCTION claim_waba_outbound_retries(batch_size INT DEFAULT 100)
+RETURNS SETOF waba_outbound_events
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  RETURN QUERY
+  WITH candidates AS (
+    SELECT id
+    FROM waba_outbound_events
+    WHERE (
+      (status = 'RETRYING' AND (next_retry_at IS NULL OR next_retry_at <= NOW()))
+      OR (status = 'PENDING' AND next_retry_at IS NOT NULL AND next_retry_at <= NOW())
+    )
+    ORDER BY created_at ASC
+    LIMIT GREATEST(batch_size, 1)
+    FOR UPDATE SKIP LOCKED
+  )
+  UPDATE waba_outbound_events AS events
+  SET status = 'PROCESSING',
+      first_attempt_at = COALESCE(events.first_attempt_at, NOW())
+  FROM candidates
+  WHERE events.id = candidates.id
+  RETURNING events.*;
+END;
+$$;
 
 -- 2. Dead-Letter Queue view for easy admin access
 CREATE OR REPLACE VIEW waba_dead_letter_queue AS
@@ -121,3 +162,4 @@ COMMENT ON COLUMN waba_outbound_events.attempt_count IS 'Number of send attempts
 COMMENT ON COLUMN waba_outbound_events.error_history IS 'JSON array of all errors encountered during retries';
 COMMENT ON TABLE waba_outbound_retry_history IS 'Detailed audit trail of each retry attempt';
 COMMENT ON VIEW waba_dead_letter_queue IS 'Easy view for admins to see failed messages that have exhausted retries';
+COMMENT ON FUNCTION claim_waba_outbound_retries(INT) IS 'Atomically claims eligible outbound events for retry workers';
