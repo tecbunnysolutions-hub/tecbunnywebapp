@@ -106,7 +106,7 @@ export class InboundTriageAgent extends BaseAgent<WebhookData, TriagedPayload | 
       // 24h check never triggers a template fallback.
       const { data: existingConv } = await supabase
         .from('Conversation')
-        .select('id, contact_name, address, pincode, last_interaction_timestamp')
+        .select('id, contact_name, address, pincode, last_interaction_timestamp, ai_active, status')
         .eq('sender_number', senderNumber)
         .maybeSingle();
 
@@ -161,12 +161,25 @@ export class InboundTriageAgent extends BaseAgent<WebhookData, TriagedPayload | 
       // Bug #9 fix: sendWhatsAppMessage no longer inserts a Message row itself.
       // We insert exactly ONE outbound record here, after the send succeeds.
       // Bug #10 fix: Pass previousTimestamp so the 24h check uses the pre-update value.
+      const aiHandoffPaused = existingConv?.ai_active === false || ['PENDING_HUMAN_AGENT', 'ASSIGNED', 'RESOLVED', 'CLOSED'].includes(existingConv?.status ?? '');
+
+      if (aiHandoffPaused) {
+        logger.info('waba_inbound_ai_reply_skipped_human_handoff', {
+          senderNumber,
+          status: existingConv?.status ?? null,
+          aiActive: existingConv?.ai_active ?? null,
+        });
+        lastPayload = fullPayload;
+        continue;
+      }
+
       if (fullPayload.follow_up_question) {
         logger.info('waba_inbound_ai_reply_sending', { senderNumber });
         const sendResult = await sendWhatsAppMessage(
           senderNumber,
           fullPayload.follow_up_question,
           previousTimestamp,
+          { conversationId: existingConv?.id ? String(existingConv.id) : undefined },
         );
 
         if (sendResult?.success) {

@@ -14,10 +14,9 @@ import { getWabaWebhookQueue } from '@tecbunny/core/queue';
  * which always failed against a hex signature. Now we digest as hex and strip
  * the "sha256=" prefix before comparing.
  */
-function verifySignature(payload: Buffer | string, signature: string): boolean {
-  const secret = process.env.INFOBIP_HMAC_SECRET;
+function verifySignature(payload: Buffer | string, signature: string, secret: string | undefined): boolean {
   if (!secret) {
-    console.error('INFOBIP_HMAC_SECRET environment variable is required but not set.');
+    console.error('WhatsApp webhook signing secret is required but not set.');
     return false;
   }
 
@@ -57,14 +56,15 @@ export async function POST(req: Request) {
 
     const url = new URL(req.url);
     const token = url.searchParams.get('token');
+    const webhookSecret = process.env.INFOBIP_HMAC_SECRET;
 
     // Bug #2 fix / Revert: Infobip uses the URL token for this integration.
     // If the token is present in the URL, prioritize validating it.
     if (token) {
-      const envSecret = process.env.INFOBIP_HMAC_SECRET?.replace(/["']/g, "");
+      const envSecret = webhookSecret?.replace(/["']/g, "");
       if (!envSecret) {
-         console.error('INFOBIP_HMAC_SECRET is missing in Vercel environment variables!');
-         return NextResponse.json({ error: 'Server configuration error: INFOBIP_HMAC_SECRET is missing.' }, { status: 500 });
+        console.error('WhatsApp webhook secret is missing in Vercel environment variables!');
+        return NextResponse.json({ error: 'Server configuration error: webhook secret is missing.' }, { status: 500 });
       }
       const tokenBuf = Buffer.from(token, 'utf8');
       const secretBuf = Buffer.from(envSecret, 'utf8');
@@ -82,17 +82,19 @@ export async function POST(req: Request) {
         console.error('Missing signature header and no URL token provided.');
         return NextResponse.json({ error: 'Missing authentication' }, { status: 401 });
       }
-      if (!verifySignature(rawBodyBuffer, signature)) {
+      if (!verifySignature(rawBodyBuffer, signature, webhookSecret)) {
         return NextResponse.json({ error: 'Invalid HMAC signature' }, { status: 401 });
       }
     }
 
-    const body = JSON.parse(rawBody);
+    const parsedBody = JSON.parse(rawBody) as Record<string, unknown>;
+    const body = parsedBody;
 
     // P6-2: Replay attack prevention — reject payloads older than 5 minutes
     // Infobip includes a `timestamp` field in the webhook payload.
     const REPLAY_WINDOW_MS = 5 * 60 * 1000; // 5 minutes
-    const payloadTs = body?.timestamp || body?.results?.[0]?.receivedAt;
+    const replayPayload = body as { timestamp?: unknown; results?: Array<{ receivedAt?: unknown }> };
+    const payloadTs = (replayPayload.timestamp || replayPayload.results?.[0]?.receivedAt) as string | number | undefined;
     if (payloadTs) {
       const ts = new Date(payloadTs).getTime();
       if (!isNaN(ts) && Date.now() - ts > REPLAY_WINDOW_MS) {

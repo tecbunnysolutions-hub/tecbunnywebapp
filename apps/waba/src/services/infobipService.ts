@@ -2,6 +2,15 @@
 // vars throw at module load time so the problem is caught immediately on startup.
 import crypto from 'crypto';
 import { supabase } from '@/lib/supabase';
+import { OutboundEventService } from '@tecbunny/core';
+
+type OutboundEventContext = {
+  conversationId?: string;
+  leadId?: string;
+  campaignId?: string;
+  userId?: string;
+  maxRetries?: number;
+};
 
 // Bug #1 fix: Remove all hardcoded credential fallbacks. Missing required env
 // vars throw at runtime so the problem is caught immediately on use, without
@@ -45,10 +54,17 @@ async function logFailedCall(payload: unknown, errorMsg: string) {
 async function sendInfobipRequest(
   endpoint: string,
   payload: unknown,
+  eventId?: string,
 ): Promise<{ success: boolean; data?: unknown; error?: unknown; status?: number }> {
   const { baseUrl: rawBaseUrl, apiKey } = getInfobipConfig();
   const baseUrl = rawBaseUrl.replace(/^https?:\/\//, '');
   const url = `https://${baseUrl}${endpoint}`;
+
+  if (eventId) {
+    await OutboundEventService.markProcessing(supabase, eventId).catch((error) => {
+      console.error('Failed to mark outbound event processing', error);
+    });
+  }
 
   let attempt = 0;
   const maxRetries = 3;
@@ -68,10 +84,27 @@ async function sendInfobipRequest(
       const data = await response.json().catch(() => ({}));
 
       if (response.ok) {
+        if (eventId) {
+          const providerMessageId = (data as { messages?: Array<{ messageId?: string }> })?.messages?.[0]?.messageId || null;
+          await OutboundEventService.markDelivered(supabase, eventId, providerMessageId || 'unknown', `${response.status}`).catch((error) => {
+            console.error('Failed to mark outbound event delivered', error);
+          });
+        }
         return { success: true, data };
       }
 
       if (response.status >= 500 && response.status < 600) {
+        if (eventId) {
+          await OutboundEventService.markFailedAndScheduleRetry(
+            supabase,
+            eventId,
+            String(response.status),
+            JSON.stringify(data),
+          ).catch((error) => {
+            console.error('Failed to mark outbound event retry', error);
+          });
+        }
+
         attempt++;
         if (attempt >= maxRetries) {
           await logFailedCall(payload, `Status: ${response.status} - ${JSON.stringify(data)}`);
@@ -83,12 +116,32 @@ async function sendInfobipRequest(
       }
 
       // Client error (4xx) — non-retriable
+      if (eventId) {
+        await OutboundEventService.markFailedAndScheduleRetry(
+          supabase,
+          eventId,
+          String(response.status),
+          JSON.stringify(data),
+        ).catch((error) => {
+          console.error('Failed to mark outbound event failed', error);
+        });
+      }
       await logFailedCall(payload, `Status: ${response.status} - ${JSON.stringify(data)}`);
       return { success: false, error: data, status: response.status };
 
     } catch (error: unknown) {
       attempt++;
       const msg = error instanceof Error ? error.message : String(error);
+      if (eventId) {
+        await OutboundEventService.markFailedAndScheduleRetry(
+          supabase,
+          eventId,
+          'NETWORK_ERROR',
+          msg,
+        ).catch((retryError) => {
+          console.error('Failed to mark outbound event network failure', retryError);
+        });
+      }
       if (attempt >= maxRetries) {
         await logFailedCall(payload, msg);
         return { success: false, error: msg };
@@ -223,6 +276,7 @@ export async function sendTemplateMessage(
   to: string,
   templateName: string,
   placeholders: string[] = [],
+  eventContext?: OutboundEventContext,
 ): Promise<{ success: boolean; data?: unknown; error?: unknown; status?: number }> {
   const { systemNumber, templateLanguage } = getInfobipConfig();
   const payload = {
@@ -239,7 +293,25 @@ export async function sendTemplateMessage(
     ],
   };
 
-  const response = await sendInfobipRequest('/whatsapp/1/message/template', payload);
+  const event = await OutboundEventService.createEvent(supabase, {
+    phone_number: to,
+    message_type: 'template',
+    message_content: {
+      templateName,
+      placeholders,
+      language: templateLanguage,
+    },
+    conversation_id: eventContext?.conversationId,
+    lead_id: eventContext?.leadId,
+    campaign_id: eventContext?.campaignId,
+    user_id: eventContext?.userId,
+    max_retries: eventContext?.maxRetries ?? 3,
+  }).catch((error) => {
+    console.error('Failed to create outbound event for template send', error);
+    return null;
+  });
+
+  const response = await sendInfobipRequest('/whatsapp/1/message/template', payload, event?.id);
   return response ?? { success: false, error: 'No response from Infobip' };
 }
 
@@ -247,6 +319,7 @@ export async function sendWhatsAppMessage(
   to: string,
   text: string,
   lastInteractionTimestamp?: string | null,
+  eventContext?: OutboundEventContext,
 ): Promise<{ success: boolean; data?: unknown; error?: unknown; status?: number }> {
   const now = new Date();
 
@@ -258,7 +331,7 @@ export async function sendWhatsAppMessage(
 
   if (isOutside24h) {
     const { templateName } = getInfobipConfig();
-    return sendTemplateMessage(to, templateName);
+    return sendTemplateMessage(to, templateName, [text], eventContext);
   }
 
   const { systemNumber } = getInfobipConfig();
@@ -268,7 +341,21 @@ export async function sendWhatsAppMessage(
     content: { text },
   };
 
-  const response = await sendInfobipRequest('/whatsapp/1/message/text', payload);
+  const event = await OutboundEventService.createEvent(supabase, {
+    phone_number: to,
+    message_type: 'text',
+    message_content: { text },
+    conversation_id: eventContext?.conversationId,
+    lead_id: eventContext?.leadId,
+    campaign_id: eventContext?.campaignId,
+    user_id: eventContext?.userId,
+    max_retries: eventContext?.maxRetries ?? 3,
+  }).catch((error) => {
+    console.error('Failed to create outbound event for text send', error);
+    return null;
+  });
+
+  const response = await sendInfobipRequest('/whatsapp/1/message/text', payload, event?.id);
   return response ?? { success: false, error: 'No response from Infobip' };
 }
 

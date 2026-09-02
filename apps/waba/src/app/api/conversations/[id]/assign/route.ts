@@ -67,6 +67,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
         ...(department !== undefined && { department }),
         ...(priority !== undefined && { priority }),
         status: assigned_to ? 'ASSIGNED' : 'OPEN',
+        ai_active: assigned_to ? false : true,
       }
     });
 

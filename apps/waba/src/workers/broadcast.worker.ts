@@ -25,7 +25,10 @@ export function startBroadcastWorker() {
         ? payload.placeholders.map((value) => String(value))
         : [];
 
-      const response = await sendTemplateMessage(phone, template_name, placeholders);
+      const response = await sendTemplateMessage(phone, template_name, placeholders, {
+        campaignId: campaign_id,
+        maxRetries: 4,
+      });
       if (!response.success) {
         await supabase.from('mkt_campaign_analytics').insert({
           id: crypto.randomUUID(),

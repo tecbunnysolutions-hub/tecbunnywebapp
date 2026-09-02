@@ -43,6 +43,8 @@ export class AssignmentOrchestrator extends BaseAgent<TriagedPayload, void> {
         ? 'LEAD'
         : 'PROCESSING';
 
+    const shouldPauseAi = data.escalate_to_human || !!data.pincode;
+
     // 1. ALWAYS update Conversation CRM fields, regardless of actionable status.
     await supabase
       .from('Conversation')
@@ -58,6 +60,7 @@ export class AssignmentOrchestrator extends BaseAgent<TriagedPayload, void> {
               : undefined,
         notes: data.notes || undefined,
         status: conversationStatus,
+        ai_active: shouldPauseAi ? false : undefined,
       })
       .eq('sender_number', data.senderNumber);
 
@@ -109,7 +112,7 @@ export class AssignmentOrchestrator extends BaseAgent<TriagedPayload, void> {
         logger.info('waba_assignment_manager_matched', { senderNumber: data.senderNumber, assignedUserId });
         
         // Update assigned_to on the Conversation as well
-        await supabase.from('Conversation').update({ assigned_to: assignedUserId }).eq('sender_number', data.senderNumber);
+        await supabase.from('Conversation').update({ assigned_to: assignedUserId, ai_active: false }).eq('sender_number', data.senderNumber);
       } else {
         logger.info('waba_assignment_no_manager_match', { senderNumber: data.senderNumber, pincode: data.pincode });
       }
