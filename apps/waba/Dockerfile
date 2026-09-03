@@ -34,7 +34,7 @@ RUN npx turbo run build --filter=waba
 # ─── Stage 3: worker ───────────────────────────────────────────────────────────
 # Long-running BullMQ consumer. Deploy this target as a separate process so
 # webhook requests can acknowledge quickly while messages are processed async.
-FROM deps AS worker
+FROM deps AS waba-worker
 WORKDIR /app
 COPY . .
 ENV NODE_ENV=production

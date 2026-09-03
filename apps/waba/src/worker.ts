@@ -1,6 +1,6 @@
 import { Worker, Job } from 'bullmq';
 import { logger } from '@tecbunny/core/logger';
-import { getRedis } from '@tecbunny/core/redis';
+import { getRedis, redisPing } from '@tecbunny/core/redis';
 import { WABA_WEBHOOK_QUEUE_NAME } from '@tecbunny/core/queue';
 import { InboundTriageAgent } from './agents/InboundTriageAgent';
 import { AssignmentOrchestrator } from './agents/AssignmentOrchestrator';
@@ -13,6 +13,10 @@ async function startWorker() {
   
   if (!redisConnection) {
     logger.error('waba_worker_failed', { reason: 'Redis connection is not available' });
+    process.exit(1);
+  }
+  if (!await redisPing()) {
+    logger.error('waba_worker_failed', { reason: 'Redis health check failed' });
     process.exit(1);
   }
 

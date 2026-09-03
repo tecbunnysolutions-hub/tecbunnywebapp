@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { getWabaWebhookQueue } from '@tecbunny/core/queue';
+import { logger } from '@tecbunny/core/logger';
 
 // Bug #1 fix: Remove hardcoded secret fallback. Throw at startup if missing.
 // Moving the check to runtime to prevent Vercel build failures when secret is not set.
@@ -120,6 +121,12 @@ export async function POST(req: Request) {
       jobId: providerEventId ? `waba-webhook-${providerEventId}` : undefined,
       removeOnComplete: true,
       removeOnFail: false,
+    });
+
+    logger.info('waba_webhook.accepted', {
+      providerEventId: providerEventId || null,
+      resultCount: Array.isArray(webhookRecord.results) ? webhookRecord.results.length : 0,
+      statusCount: Array.isArray(webhookRecord.statuses) ? webhookRecord.statuses.length : 0,
     });
 
     return NextResponse.json({ status: 'success' }, { status: 200 });
