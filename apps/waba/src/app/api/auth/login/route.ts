@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createSuperadminSessionToken, SUPERADMIN_SESSION_TTL_SECONDS } from '@tecbunny/core/auth/superadmin-session';
+import { verifySuperadminPassword } from '@tecbunny/core/auth/superadmin-password';
 import { logger } from '@tecbunny/core/logger';
 import { rateLimit } from '@tecbunny/core/rate-limit';
 import { z } from 'zod';
@@ -41,9 +42,13 @@ export async function POST(req: Request) {
     if (isSuperadmin) {
       const expectedEmail = (process.env.SUPERADMIN_USER_ID || process.env.SUPERADMIN_EMAIL || '').trim().toLowerCase();
       const expectedPassword = process.env.SUPERADMIN_PASSWORD;
+      const expectedPasswordHash = process.env.SUPERADMIN_PASSWORD_HASH;
+      const passwordMatches = expectedPasswordHash
+        ? await verifySuperadminPassword(password, expectedPasswordHash)
+        : process.env.NODE_ENV !== 'production' && Boolean(expectedPassword) && password === expectedPassword;
       const normalizedEmail = email.trim().toLowerCase();
 
-      if (expectedEmail && expectedPassword && normalizedEmail === expectedEmail && password === expectedPassword) {
+      if (expectedEmail && passwordMatches && normalizedEmail === expectedEmail) {
         const token = await createSuperadminSessionToken(expectedEmail, req as unknown as Request);
         const response = NextResponse.json({ success: true, user: { id: 'superadmin-root-id', email: expectedEmail } });
 
