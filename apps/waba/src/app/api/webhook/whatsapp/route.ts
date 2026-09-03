@@ -57,11 +57,12 @@ export async function POST(req: Request) {
     const url = new URL(req.url);
     const token = url.searchParams.get('token');
     const webhookSecret = process.env.INFOBIP_HMAC_SECRET;
+    const webhookVerifyToken = process.env.WHATSAPP_WEBHOOK_VERIFY_TOKEN || webhookSecret;
 
     // Bug #2 fix / Revert: Infobip uses the URL token for this integration.
     // If the token is present in the URL, prioritize validating it.
     if (token) {
-      const envSecret = webhookSecret?.replace(/["']/g, "");
+      const envSecret = webhookVerifyToken?.replace(/["']/g, "");
       if (!envSecret) {
         console.error('WhatsApp webhook secret is missing in Vercel environment variables!');
         return NextResponse.json({ error: 'Server configuration error: webhook secret is missing.' }, { status: 500 });
@@ -110,7 +111,13 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Queue unavailable' }, { status: 503 });
     }
 
+    const webhookRecord = body as { results?: Array<{ messageId?: string; id?: string }>; statuses?: Array<{ messageId?: string; id?: string }> };
+    const providerEventId = webhookRecord.results?.[0]?.messageId
+      || webhookRecord.statuses?.[0]?.messageId
+      || webhookRecord.results?.[0]?.id
+      || webhookRecord.statuses?.[0]?.id;
     await queue.add('process-webhook', body, {
+      jobId: providerEventId ? `waba-webhook-${providerEventId}` : undefined,
       removeOnComplete: true,
       removeOnFail: false,
     });

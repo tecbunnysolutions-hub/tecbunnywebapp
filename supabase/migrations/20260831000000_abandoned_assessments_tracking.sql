@@ -49,10 +49,12 @@ CREATE INDEX IF NOT EXISTS idx_abandoned_assessments_abandoned_at
 ALTER TABLE abandoned_assessments ENABLE ROW LEVEL SECURITY;
 
 -- Public can insert their own abandoned assessment
+DROP POLICY IF EXISTS "Users can insert abandoned assessments" ON abandoned_assessments;
 CREATE POLICY "Users can insert abandoned assessments" ON abandoned_assessments
   FOR INSERT WITH CHECK (true);
 
 -- Admin/sales can read abandoned assessments for recovery
+DROP POLICY IF EXISTS "Sales and admin can read abandoned assessments" ON abandoned_assessments;
 CREATE POLICY "Sales and admin can read abandoned assessments" ON abandoned_assessments
   FOR SELECT
   USING (
@@ -71,6 +73,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS trigger_mark_abandoned_on_contact_message ON contact_messages;
 CREATE TRIGGER trigger_mark_abandoned_on_contact_message
 AFTER INSERT ON contact_messages
 FOR EACH ROW

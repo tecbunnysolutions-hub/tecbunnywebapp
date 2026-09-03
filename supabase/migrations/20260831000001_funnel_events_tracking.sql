@@ -33,10 +33,12 @@ CREATE INDEX IF NOT EXISTS idx_funnel_events_occurred_at ON funnel_events(occurr
 ALTER TABLE funnel_events ENABLE ROW LEVEL SECURITY;
 
 -- Public can insert events (anonymous tracking)
+DROP POLICY IF EXISTS "Anyone can insert funnel events" ON funnel_events;
 CREATE POLICY "Anyone can insert funnel events" ON funnel_events
   FOR INSERT WITH CHECK (true);
 
 -- Admin/sales/marketing can read funnel events for analytics
+DROP POLICY IF EXISTS "Sales and analytics teams can read funnel events" ON funnel_events;
 CREATE POLICY "Sales and analytics teams can read funnel events" ON funnel_events
   FOR SELECT
   USING (

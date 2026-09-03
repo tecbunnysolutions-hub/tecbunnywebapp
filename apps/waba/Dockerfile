@@ -31,7 +31,16 @@ ENV NEXT_PUBLIC_SUPERADMIN_USER_ID=$NEXT_PUBLIC_SUPERADMIN_USER_ID
 
 RUN npx turbo run build --filter=waba
 
-# ─── Stage 3: runner ───────────────────────────────────────────────────────────
+# ─── Stage 3: worker ───────────────────────────────────────────────────────────
+# Long-running BullMQ consumer. Deploy this target as a separate process so
+# webhook requests can acknowledge quickly while messages are processed async.
+FROM deps AS worker
+WORKDIR /app
+COPY . .
+ENV NODE_ENV=production
+CMD ["npx", "tsx", "apps/waba/src/worker.ts"]
+
+# ─── Stage 4: runner ───────────────────────────────────────────────────────────
 FROM node:20-alpine AS runner
 WORKDIR /app
 
