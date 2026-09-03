@@ -162,13 +162,13 @@ export async function verifySuperadminSessionToken(token: string | undefined | n
   try {
     const payloadText = new TextDecoder().decode(base64UrlDecode(encodedPayload));
     const payload = JSON.parse(payloadText) as Partial<SuperadminSessionPayload>;
-    const configuredEmail = (process.env.SUPERADMIN_USER_ID || process.env.SUPERADMIN_EMAIL || '').trim();
+    const configuredEmail = (process.env.SUPERADMIN_USER_ID || process.env.SUPERADMIN_EMAIL || '').trim().toLowerCase();
     const now = Math.floor(Date.now() / 1000);
 
     if (
       payload.sub !== 'superadmin-root-id' ||
       !payload.email ||
-      payload.email !== configuredEmail ||
+      payload.email.toLowerCase() !== configuredEmail ||
       typeof payload.exp !== 'number' ||
       payload.exp <= now ||
       (payload.jti && await isJtiRevoked(payload.jti))

@@ -12,7 +12,12 @@ export function getRedis(): Redis | null {
   if (!url) return null;
   initializing = true;
   try {
-    client = new Redis(url, { maxRetriesPerRequest: null, enableOfflineQueue: false });
+    client = new Redis(url, {
+      maxRetriesPerRequest: 1,
+      enableOfflineQueue: false,
+      connectTimeout: 2000,
+      retryStrategy: (attempt) => Math.min(attempt * 100, 1000),
+    });
   client.on('error', (e: any) => logger.warn('redis_error', { error: (e as Error).message }));
     client.on('connect', () => logger.info('redis_connect'));
   } catch (e) {

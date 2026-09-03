@@ -17,25 +17,24 @@ export default function LoginPage() {
     setError("");
     
     try {
-      const configuredSuperadminId = (process.env.NEXT_PUBLIC_SUPERADMIN_USER_ID || '').trim().toLowerCase();
-      const isSuperadminLogin = configuredSuperadminId.length > 0 && email.trim().toLowerCase() === configuredSuperadminId;
+      // Try the dedicated superadmin flow first. The endpoint validates the
+      // identifier and password; a 401 simply means this is a staff login.
+      const superadminResponse = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password, isSuperadmin: true })
+      });
 
-      if (isSuperadminLogin) {
-        const res = await fetch('/api/auth/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password, isSuperadmin: true })
-        });
-        
-        if (res.ok) {
-          window.location.href = "/";
-          return;
-        } else {
-          const data = await res.json();
-          setError(data.error || "Invalid superadmin credentials");
-          setLoading(false);
-          return;
-        }
+      if (superadminResponse.ok) {
+        window.location.href = "/";
+        return;
+      }
+
+      if (superadminResponse.status !== 401) {
+        const data = await superadminResponse.json().catch(() => ({}));
+        setError(data.error || "Authentication service is unavailable");
+        setLoading(false);
+        return;
       }
 
       let supabase;
