@@ -10,7 +10,12 @@ function getConfig() {
   if (!baseUrl || !apiKey || !from) {
     throw new Error('INFOBIP_BASE_URL, INFOBIP_API_KEY, and INFOBIP_WHATSAPP_FROM are required');
   }
-  return { url: `https://${baseUrl}/whatsapp/1/message/text`, apiKey, from };
+  return {
+    url: `https://${baseUrl}/whatsapp/1/message/text`,
+    templateUrl: `https://${baseUrl}/whatsapp/1/message/template`,
+    apiKey,
+    from,
+  };
 }
 
 async function sendNotification(...args: unknown[]) {
@@ -18,7 +23,7 @@ async function sendNotification(...args: unknown[]) {
   const phone = strings.find((value) => /^\+?\d{10,15}$/.test(value.replace(/\s/g, '')));
   const text = strings.filter((value) => value !== phone).pop();
   if (!phone || !text) throw new Error('WhatsApp notification requires a recipient phone and message');
-  return new WhatsAppService().sendMessage(phone.replace(/\s/g, ''), text);
+  return new WhatsAppService().sendMessage(phone.replace(/\s/g, ''), text, 'text', false);
 }
 
 export const sendWhatsAppNotification = sendNotification;
@@ -40,7 +45,7 @@ export const sendOutForDeliveryNotification = sendNotification;
 export class WhatsAppService {
   private readonly supabase = createServiceClient();
 
-  async checkWhatsAppConsent(phone: string): Promise<boolean> {
+  async checkWhatsAppConsent(phone: string, _preference?: string): Promise<boolean> {
     const { data, error } = await this.supabase
       .from('waba_contact_consent')
       .select('opted_in, opted_out_at')
@@ -50,36 +55,51 @@ export class WhatsAppService {
     return Boolean(data?.opted_in && !data.opted_out_at);
   }
 
-  async sendMessage(phone: string, text: string, messageType: 'text' = 'text') {
-    if (messageType !== 'text') throw new Error(`Unsupported WhatsApp message type: ${messageType}`);
+  async sendMessage(
+    phone: string,
+    content: string | Record<string, unknown>,
+    messageType: 'text' | 'template' = 'text',
+    preferenceOrRequiresConsent?: string | boolean,
+  ) {
+    const requiresConsent = preferenceOrRequiresConsent === true;
+    const messageContent = typeof content === 'string' ? { text: content } : content;
     const event = await OutboundEventService.createEvent(this.supabase, {
       phone_number: phone,
-      message_type: 'text',
-      message_content: { text },
+      message_type: messageType,
+      message_content: messageContent,
+      requires_consent: requiresConsent,
     });
     if (event.status === 'DELIVERED') {
       return { messages: [{ id: event.provider_message_id ?? undefined }] };
     }
 
-    await OutboundEventService.markProcessing(this.supabase, event.id);
-    const { url, apiKey, from } = getConfig();
+    const processingToken = await OutboundEventService.markProcessing(this.supabase, event.id);
+    const { url, templateUrl, apiKey, from } = getConfig();
     try {
-      const response = await fetch(url, {
+      if (requiresConsent && !await this.checkWhatsAppConsent(phone)) {
+        await OutboundEventService.markBlocked(this.supabase, event.id, 'CONSENT_REVOKED', 'Recipient consent is not active', processingToken);
+        throw new Error('Outbound send blocked: recipient consent is not active');
+      }
+      const isTemplate = messageType === 'template';
+      const providerPayload = isTemplate
+        ? { messages: [{ from, to: phone, content: messageContent }] }
+        : { from, to: phone, content: messageContent };
+      const response = await fetch(isTemplate ? templateUrl : url, {
         method: 'POST',
         headers: { Authorization: `App ${apiKey}`, 'Content-Type': 'application/json', Accept: 'application/json' },
-        body: JSON.stringify({ from, to: phone, content: { text } }),
+        body: JSON.stringify(providerPayload),
       });
       const data = await response.json().catch(() => ({})) as SendResult;
       if (!response.ok) {
-        await OutboundEventService.markFailedAndScheduleRetry(this.supabase, event.id, String(response.status), JSON.stringify(data));
+        await OutboundEventService.markFailedAndScheduleRetry(this.supabase, event.id, String(response.status), JSON.stringify(data), processingToken);
         throw new Error(`Infobip send failed with status ${response.status}`);
       }
       const providerMessageId = data.messages?.[0]?.messageId ?? data.messages?.[0]?.id ?? 'unknown';
-      await OutboundEventService.markDelivered(this.supabase, event.id, providerMessageId, String(response.status));
+      await OutboundEventService.markDelivered(this.supabase, event.id, providerMessageId, String(response.status), processingToken);
       return data;
     } catch (error) {
       if (error instanceof Error && error.message.startsWith('Infobip send failed')) throw error;
-      await OutboundEventService.markFailedAndScheduleRetry(this.supabase, event.id, 'NETWORK_ERROR', error instanceof Error ? error.message : String(error));
+      await OutboundEventService.markFailedAndScheduleRetry(this.supabase, event.id, 'NETWORK_ERROR', error instanceof Error ? error.message : String(error), processingToken);
       throw error;
     }
   }

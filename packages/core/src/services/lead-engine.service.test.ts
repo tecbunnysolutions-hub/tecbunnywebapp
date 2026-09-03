@@ -255,15 +255,6 @@ describe('LeadEngineService.createLeadFromIntake', () => {
                 }),
               }),
             }),
-            select: () => ({
-              eq: () => ({
-                in: () => ({
-                  limit: () => ({
-                    maybeSingle: async () => ({ data: null, error: null }),
-                  }),
-                }),
-              }),
-            }),
             insert: () => ({
               select: () => ({
                 single: async () => ({ data: { id: 'task-1', due_at: new Date().toISOString() }, error: null }),

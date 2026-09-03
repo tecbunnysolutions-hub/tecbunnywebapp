@@ -13,7 +13,9 @@ function SuperadminSignInForm() {
   const [error, setError] = useState('');
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
 
-  const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY?.trim() || undefined;
+  const turnstileSiteKey = process.env.NODE_ENV === 'production'
+    ? process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY?.trim() || undefined
+    : undefined;
 
   const searchParams = useSearchParams();
   const { toast } = useToast();

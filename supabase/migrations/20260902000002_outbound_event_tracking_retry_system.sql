@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS waba_outbound_events (
   phone_number TEXT NOT NULL,
   
   -- Message details
-  message_type TEXT NOT NULL, -- 'template', 'text', 'media', 'interactive'
+  message_type TEXT NOT NULL, -- 'template', 'text', 'media', 'location', 'interactive'
   message_content JSONB NOT NULL, -- Full message payload
   
   -- Retry tracking
@@ -28,6 +28,8 @@ CREATE TABLE IF NOT EXISTS waba_outbound_events (
   -- Timing
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   first_attempt_at TIMESTAMPTZ,
+  lease_expires_at TIMESTAMPTZ,
+  processing_token UUID,
   completed_at TIMESTAMPTZ,
   dead_lettered_at TIMESTAMPTZ,
   
@@ -38,6 +40,7 @@ CREATE TABLE IF NOT EXISTS waba_outbound_events (
   -- Metadata for correlation
   correlation_id TEXT,
   idempotency_key TEXT NOT NULL,
+  requires_consent BOOLEAN NOT NULL DEFAULT FALSE,
   campaign_id UUID,
   user_id UUID -- User who triggered this send
 );
@@ -77,12 +80,26 @@ ON waba_outbound_events(conversation_id) WHERE conversation_id IS NOT NULL;
 CREATE INDEX IF NOT EXISTS idx_waba_outbound_campaign
 ON waba_outbound_events(campaign_id) WHERE campaign_id IS NOT NULL;
 
+ALTER TABLE waba_outbound_events
+  ADD COLUMN IF NOT EXISTS lease_expires_at TIMESTAMPTZ,
+  ADD COLUMN IF NOT EXISTS processing_token UUID,
+  ADD COLUMN IF NOT EXISTS requires_consent BOOLEAN NOT NULL DEFAULT FALSE;
+
 -- Claim retry work atomically so multiple worker instances cannot send the same event.
 CREATE OR REPLACE FUNCTION claim_waba_outbound_retries(batch_size INT DEFAULT 100)
 RETURNS SETOF waba_outbound_events
 LANGUAGE plpgsql
 AS $$
 BEGIN
+  UPDATE waba_outbound_events
+  SET status = 'DEAD_LETTER',
+      dead_lettered_at = COALESCE(dead_lettered_at, NOW()),
+      lease_expires_at = NULL,
+      processing_token = NULL
+  WHERE status = 'PROCESSING'
+    AND lease_expires_at < NOW()
+    AND attempt_count >= max_retries;
+
   RETURN QUERY
   WITH candidates AS (
     SELECT id
@@ -90,14 +107,18 @@ BEGIN
     WHERE (
       (status = 'RETRYING' AND (next_retry_at IS NULL OR next_retry_at <= NOW()))
       OR (status = 'PENDING' AND next_retry_at IS NOT NULL AND next_retry_at <= NOW())
+      OR (status = 'PROCESSING' AND lease_expires_at < NOW() AND attempt_count < max_retries)
     )
     ORDER BY created_at ASC
     LIMIT GREATEST(batch_size, 1)
     FOR UPDATE SKIP LOCKED
   )
   UPDATE waba_outbound_events AS events
-  SET status = 'PROCESSING',
-      first_attempt_at = COALESCE(events.first_attempt_at, NOW())
+    SET status = 'PROCESSING',
+      attempt_count = events.attempt_count + 1,
+      first_attempt_at = COALESCE(events.first_attempt_at, NOW()),
+      lease_expires_at = NOW() + INTERVAL '2 minutes',
+      processing_token = gen_random_uuid()
   FROM candidates
   WHERE events.id = candidates.id
   RETURNING events.*;
@@ -163,3 +184,16 @@ COMMENT ON COLUMN waba_outbound_events.error_history IS 'JSON array of all error
 COMMENT ON TABLE waba_outbound_retry_history IS 'Detailed audit trail of each retry attempt';
 COMMENT ON VIEW waba_dead_letter_queue IS 'Easy view for admins to see failed messages that have exhausted retries';
 COMMENT ON FUNCTION claim_waba_outbound_retries(INT) IS 'Atomically claims eligible outbound events for retry workers';
+
+CREATE OR REPLACE FUNCTION get_waba_outbound_metrics(window_hours INT DEFAULT 24)
+RETURNS TABLE(status TEXT, event_count BIGINT)
+LANGUAGE SQL
+STABLE
+AS $$
+  SELECT status, COUNT(*)
+  FROM waba_outbound_events
+  WHERE created_at >= NOW() - make_interval(hours => GREATEST(window_hours, 1))
+  GROUP BY status;
+$$;
+
+COMMENT ON FUNCTION get_waba_outbound_metrics(INT) IS 'Returns outbound event counts by status for a time window';

@@ -52,7 +52,7 @@ export async function POST(request: Request) {
 
     // Verify Turnstile Captcha if site key is configured
     const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
-    if (turnstileSiteKey) {
+    if (process.env.NODE_ENV === 'production' && turnstileSiteKey) {
       const captcha = await verifyCaptcha(captchaToken, ip);
       if (!captcha.success) {
         logger.warn('superadmin_login.captcha_failed', { ip, error: captcha.error || captcha.errorCodes });
@@ -62,9 +62,11 @@ export async function POST(request: Request) {
 
     const correctUserId = process.env.SUPERADMIN_USER_ID || process.env.SUPERADMIN_EMAIL;
     const correctPasswordHash = process.env.SUPERADMIN_PASSWORD_HASH;
+    const developmentPassword = process.env.SUPERADMIN_PASSWORD;
+    const isProduction = process.env.NODE_ENV === 'production';
 
     // SECURITY: Password hash is mandatory. Plaintext passwords are NOT supported in production.
-    if (!correctUserId || !correctPasswordHash) {
+    if (!correctUserId || (!correctPasswordHash && (isProduction || !developmentPassword))) {
       logger.error('superadmin_login.configuration_missing', {
         hasSuperadminUserId: !!process.env.SUPERADMIN_USER_ID,
         hasSuperadminEmail: !!process.env.SUPERADMIN_EMAIL,
@@ -77,7 +79,9 @@ export async function POST(request: Request) {
       submittedUserId.toLowerCase(),
       correctUserId.trim().toLowerCase()
     );
-    const passwordMatches = await verifySuperadminPassword(submittedPassword, correctPasswordHash);
+    const passwordMatches = correctPasswordHash
+      ? await verifySuperadminPassword(submittedPassword, correctPasswordHash)
+      : !isProduction && constantTimeStringEquals(submittedPassword, developmentPassword!);
 
     if (!userIdMatches || !passwordMatches) {
       logger.warn('superadmin_login.failed_attempt', { userId: submittedUserId, ip });

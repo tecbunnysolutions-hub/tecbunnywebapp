@@ -56,11 +56,8 @@ CREATE POLICY "Users can insert abandoned assessments" ON abandoned_assessments
 CREATE POLICY "Sales and admin can read abandoned assessments" ON abandoned_assessments
   FOR SELECT
   USING (
-    auth.jwt() ->> 'role' IN ('authenticated') 
-    AND (
-      (auth.jwt() ->> 'user_metadata')::jsonb ->> 'role' IN ('admin', 'sales_manager', 'sales_executive', 'marketing_manager', 'marketing_executive')
-      OR auth.uid()::text = (auth.jwt() ->> 'sub')
-    )
+    auth.jwt() ->> 'role' = 'authenticated'
+    AND (auth.jwt() -> 'app_metadata' ->> 'role') IN ('admin', 'sales_manager', 'sales_executive', 'marketing_manager', 'marketing_executive')
   );
 
 -- Update abandoned status when user completes assessment

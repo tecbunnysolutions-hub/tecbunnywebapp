@@ -117,7 +117,7 @@ async function processBatchDelivery(
         if (!await whatsappService.checkWhatsAppConsent(formattedPhone)) {
           throw new Error('Recipient has not opted in to WhatsApp marketing');
         }
-        await whatsappService.sendMessage(formattedPhone, resolvedMessage, 'text');
+        await whatsappService.sendMessage(formattedPhone, resolvedMessage, 'text', true);
         successCount++;
       } else if (channelType === 'email' && contact.email) {
         await improvedEmailService.sendEmail({

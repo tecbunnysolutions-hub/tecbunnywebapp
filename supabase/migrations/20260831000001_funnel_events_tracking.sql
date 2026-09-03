@@ -41,10 +41,8 @@ CREATE POLICY "Sales and analytics teams can read funnel events" ON funnel_event
   FOR SELECT
   USING (
     auth.jwt() ->> 'role' = 'authenticated'
-    AND (
-      (auth.jwt() ->> 'user_metadata')::jsonb ->> 'role' IN (
-        'admin', 'sales_manager', 'sales_executive', 'marketing_manager', 'marketing_executive'
-      )
+    AND (auth.jwt() -> 'app_metadata' ->> 'role') IN (
+      'admin', 'sales_manager', 'sales_executive', 'marketing_manager', 'marketing_executive'
     )
   );
 
