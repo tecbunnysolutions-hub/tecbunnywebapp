@@ -15,7 +15,7 @@ interface PDFBody {
 }
 
 function rm(n: number) {
-  return `RM ${n.toLocaleString('en-MY', { minimumFractionDigits: 0 })}`;
+  return `INR ${n.toLocaleString('en-IN', { minimumFractionDigits: 0 })}`;
 }
 
 export async function POST(req: NextRequest) {
@@ -50,12 +50,13 @@ export async function POST(req: NextRequest) {
 
   // helper: draw text left-aligned
   const text = (str: string, x: number, y: number, size: number, font = fontReg, color = light) => {
-    page.drawText(String(str), { x, y: height - y, size, font, color });
+    page.drawText(String(str).replaceAll('₹', 'INR '), { x, y: height - y, size, font, color });
   };
   // helper: draw text right-aligned
   const textR = (str: string, x: number, y: number, size: number, font = fontReg, color = light) => {
-    const w = font.widthOfTextAtSize(String(str), size);
-    page.drawText(String(str), { x: x - w, y: height - y, size, font, color });
+    const printable = String(str).replaceAll('₹', 'INR ');
+    const w = font.widthOfTextAtSize(printable, size);
+    page.drawText(printable, { x: x - w, y: height - y, size, font, color });
   };
   // helper: filled rect (y from top)
   const rect = (x: number, y: number, w: number, h: number, color: ReturnType<typeof rgb>) => {
@@ -67,7 +68,7 @@ export async function POST(req: NextRequest) {
   text('CCTV Security System Quotation', ML, 22, 16, fontBold, white);
   text('Powered by Tecbunny', ML, 40, 9, fontReg, grey);
   textR(`Ref: ${quoteRef}`, W - MR, 40, 9, fontReg, grey);
-  const today = new Date().toLocaleDateString('en-MY', { day: '2-digit', month: 'short', year: 'numeric' });
+  const today = new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
   textR(`Date: ${today}   Valid: ${validity} days`, W - MR, 52, 9, fontReg, grey);
 
   // ── Customer / site block ────────────────────────────────────

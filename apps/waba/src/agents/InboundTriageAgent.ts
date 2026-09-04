@@ -74,6 +74,35 @@ export class InboundTriageAgent extends BaseAgent<WebhookData, TriagedPayload | 
         await recordInboundConsent(senderNumber, textContent);
       }
 
+      // A message references its conversation by sender_number, so ensure the
+      // parent conversation exists before inserting the inbound message.
+      const { data: existingConv } = await supabase
+        .from('Conversation')
+        .select('id, contact_name, address, pincode, last_interaction_timestamp, ai_active, status')
+        .eq('sender_number', senderNumber)
+        .maybeSingle();
+
+      const previousTimestamp = existingConv?.last_interaction_timestamp ?? null;
+
+      if (existingConv) {
+        await supabase
+          .from('Conversation')
+          .update({
+            last_interaction_timestamp: new Date().toISOString(),
+            status: 'PROCESSING',
+          })
+          .eq('sender_number', senderNumber);
+      } else {
+        const { error: conversationError } = await supabase.from('Conversation').insert({
+          sender_number: senderNumber,
+          last_interaction_timestamp: new Date().toISOString(),
+          status: 'PROCESSING',
+        });
+        if (conversationError) {
+          throw new Error(`Conversation persistence failed for ${senderNumber}: ${conversationError.message}`);
+        }
+      }
+
       // Bug #14 fix: The idempotency check (SELECT then INSERT) is not atomic.
       // Under concurrent workers two jobs for the same messageId can both pass
       // the SELECT before either inserts. We now attempt the INSERT first and
@@ -97,37 +126,7 @@ export class InboundTriageAgent extends BaseAgent<WebhookData, TriagedPayload | 
           continue;
         }
         logger.error('waba_inbound_message_insert_failed', { messageId, senderNumber, error: msgError.message });
-        continue;
-      }
-
-      // Bug #10 fix: Capture last_interaction_timestamp BEFORE updating it.
-      // sendWhatsAppMessage uses this value to check the 24h window. If we
-      // update the conversation first, the timestamp is always "now" and the
-      // 24h check never triggers a template fallback.
-      const { data: existingConv } = await supabase
-        .from('Conversation')
-        .select('id, contact_name, address, pincode, last_interaction_timestamp, ai_active, status')
-        .eq('sender_number', senderNumber)
-        .maybeSingle();
-
-      const previousTimestamp = existingConv?.last_interaction_timestamp ?? null;
-
-      if (existingConv) {
-        await supabase
-          .from('Conversation')
-          .update({
-            last_interaction_timestamp: new Date().toISOString(),
-            status: 'PROCESSING',
-          })
-          .eq('sender_number', senderNumber);
-      } else {
-        // Bug #15 fix: After inserting a new conversation we re-fetch it so
-        // downstream code has a valid conversation object (id, etc.).
-        await supabase.from('Conversation').insert({
-          sender_number: senderNumber,
-          last_interaction_timestamp: new Date().toISOString(),
-          status: 'PROCESSING',
-        });
+        throw new Error(`Inbound message persistence failed for ${messageId}: ${msgError.message}`);
       }
 
       if (!textContent) continue;

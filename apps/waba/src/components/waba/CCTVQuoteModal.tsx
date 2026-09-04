@@ -5,7 +5,7 @@ import {
   CameraType, Resolution, RecorderType, Channels, StorageSize,
   InstallType, Validity, AddonKey,
   ADDON_LIST, CCTVQuoteConfig,
-  calcBreakdown, formatRM, genRef, buildQuoteText,
+  calcBreakdown, formatINR, genRef, buildQuoteText,
 } from '../../lib/cctvQuoteUtils';
 
 interface CCTVQuoteModalProps {
@@ -258,7 +258,7 @@ export function CCTVQuoteModal({ customerName, onClose, onShare }: CCTVQuoteModa
               />
               <span style={{ color: '#cbd5e1', fontSize: '0.78rem', flex: 1 }}>{a.label}</span>
               <span style={{ color: '#64748b', fontSize: '0.72rem', whiteSpace: 'nowrap' }}>
-                {a.price === -1 ? `RM 150/cam` : a.price === 0 ? 'Free' : formatRM(a.price)}
+                {a.price === -1 ? `₹150/cam` : a.price === 0 ? 'Free' : formatINR(a.price)}
               </span>
             </label>
           ))}
@@ -298,13 +298,13 @@ export function CCTVQuoteModal({ customerName, onClose, onShare }: CCTVQuoteModa
             <div key={label as string} style={{ display: 'flex', justifyContent: 'space-between', color: '#cbd5e1', fontSize: '0.82rem', marginBottom: '0.2rem' }}>
               <span>{label}</span>
               <span style={{ color: price as number === 0 ? '#64748b' : '#e2e8f0' }}>
-                {price as number === 0 ? 'Included' : formatRM(price as number)}
+                {price as number === 0 ? 'Included' : formatINR(price as number)}
               </span>
             </div>
           ))}
           <div style={{ borderTop: '1px solid rgba(148, 163, 184, 0.2)', marginTop: '0.6rem', paddingTop: '0.6rem', display: 'flex', justifyContent: 'space-between', fontWeight: 700 }}>
             <span style={{ color: '#f1f5f9' }}>Estimated Total</span>
-            <span style={{ color: '#60a5fa', fontSize: '1rem' }}>{formatRM(breakdown.total)}</span>
+            <span style={{ color: '#60a5fa', fontSize: '1rem' }}>{formatINR(breakdown.total)}</span>
           </div>
         </div>
 

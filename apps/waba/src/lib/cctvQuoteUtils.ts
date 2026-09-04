@@ -25,7 +25,7 @@ export interface CCTVQuoteConfig {
 export interface AddonDef {
   key: AddonKey;
   label: string;
-  /** -1 = RM 150 per camera */
+  /** -1 = INR 150 per camera */
   price: number;
 }
 
@@ -90,8 +90,8 @@ export function calcBreakdown(cfg: CCTVQuoteConfig): QuoteBreakdown {
   };
 }
 
-export function formatRM(n: number): string {
-  return `RM ${n.toLocaleString('en-MY', { minimumFractionDigits: 0 })}`;
+export function formatINR(n: number): string {
+  return `₹${n.toLocaleString('en-IN', { minimumFractionDigits: 0 })}`;
 }
 
 function pad(n: number) { return String(n).padStart(2, '0'); }
@@ -109,7 +109,7 @@ export function buildQuoteText(
   quoteRef: string,
   customerName: string,
 ): string {
-  const dateStr = new Date().toLocaleDateString('en-MY', { day: '2-digit', month: 'short', year: 'numeric' });
+  const dateStr = new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
   const lines: (string | null)[] = [
     `📷 *CCTV Security System Quotation*`,
     `Ref: ${quoteRef}`,
@@ -122,18 +122,18 @@ export function buildQuoteText(
     `━━━━━━━━━━━━━━━━━━`,
     `📦 *System Breakdown*`,
     `━━━━━━━━━━━━━━━━━━`,
-    `• Cameras: ${cfg.cameraCount}x ${cfg.resolution} ${cfg.cameraType} — ${formatRM(bd.cameraTotal)}`,
-    `• Recorder: ${cfg.recorder} ${cfg.channels}-Channel — ${formatRM(bd.recorderTotal)}`,
-    `• Storage: ${cfg.storage} HDD — ${formatRM(bd.storageTotal)}`,
-    `• Cable Run (${cfg.cableRun}m) — ${formatRM(bd.cableTotal)}`,
-    `• ${cfg.installType} — ${formatRM(bd.installTotal)}`,
+    `• Cameras: ${cfg.cameraCount}x ${cfg.resolution} ${cfg.cameraType} — ${formatINR(bd.cameraTotal)}`,
+    `• Recorder: ${cfg.recorder} ${cfg.channels}-Channel — ${formatINR(bd.recorderTotal)}`,
+    `• Storage: ${cfg.storage} HDD — ${formatINR(bd.storageTotal)}`,
+    `• Cable Run (${cfg.cableRun}m) — ${formatINR(bd.cableTotal)}`,
+    `• ${cfg.installType} — ${formatINR(bd.installTotal)}`,
     bd.addonBreakdown.length > 0 ? `\n🔧 *Add-ons:*` : null,
     ...bd.addonBreakdown.map(a =>
-      `• ${a.label}${a.price > 0 ? ` — ${formatRM(a.price)}` : ' — Included'}`
+      `• ${a.label}${a.price > 0 ? ` — ${formatINR(a.price)}` : ' — Included'}`
     ),
     ``,
     `━━━━━━━━━━━━━━━━━━`,
-    `💰 *Estimated Total: ${formatRM(bd.total)}*`,
+    `💰 *Estimated Total: ${formatINR(bd.total)}*`,
     `━━━━━━━━━━━━━━━━━━`,
     cfg.notes.trim() ? `\n📝 *Notes:* ${cfg.notes.trim()}` : null,
     ``,

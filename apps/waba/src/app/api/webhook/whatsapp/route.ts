@@ -50,10 +50,24 @@ function verifySignature(payload: Buffer | string, signature: string, secret: st
   return isValid;
 }
 
+function hashPhone(value: unknown): string | null {
+  if (typeof value !== 'string' || !value.trim()) return null;
+  return crypto.createHash('sha256').update(value.trim()).digest('hex').slice(0, 16);
+}
+
 export async function POST(req: Request) {
   try {
     const rawBodyBuffer = Buffer.from(await req.arrayBuffer());
     const rawBody = rawBodyBuffer.toString('utf8');
+    const requestId = req.headers.get('x-request-id') || crypto.randomUUID();
+    const signature = req.headers.get('x-hub-signature-256') || req.headers.get('x-hub-signature');
+
+    logger.info('waba_webhook.received', {
+      requestId,
+      provider: 'infobip',
+      payloadSize: rawBodyBuffer.byteLength,
+      signaturePresent: Boolean(signature),
+    });
 
     const url = new URL(req.url);
     const token = url.searchParams.get('token');
@@ -79,7 +93,6 @@ export async function POST(req: Request) {
       }
     } else {
       // Fallback to HMAC Signature Verification if token is not in URL
-      const signature = req.headers.get('x-hub-signature-256') || req.headers.get('x-hub-signature');
       if (!signature) {
         console.error('Missing signature header and no URL token provided.');
         return NextResponse.json({ error: 'Missing authentication' }, { status: 401 });
@@ -112,7 +125,9 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Queue unavailable' }, { status: 503 });
     }
 
-    const webhookRecord = body as { results?: Array<{ messageId?: string; id?: string }>; statuses?: Array<{ messageId?: string; id?: string }> };
+    const webhookRecord = body as { results?: Array<{ from?: string; messageId?: string; id?: string }>; statuses?: Array<{ messageId?: string; id?: string }> };
+    const results = Array.isArray(webhookRecord.results) ? webhookRecord.results : [];
+    const statuses = Array.isArray(webhookRecord.statuses) ? webhookRecord.statuses : [];
     const providerEventId = webhookRecord.results?.[0]?.messageId
       || webhookRecord.statuses?.[0]?.messageId
       || webhookRecord.results?.[0]?.id
@@ -124,9 +139,14 @@ export async function POST(req: Request) {
     });
 
     logger.info('waba_webhook.accepted', {
+      requestId,
+      provider: 'infobip',
+      eventType: statuses.length > 0 ? 'status' : results.length > 0 ? 'message' : 'unknown',
       providerEventId: providerEventId || null,
-      resultCount: Array.isArray(webhookRecord.results) ? webhookRecord.results.length : 0,
-      statusCount: Array.isArray(webhookRecord.statuses) ? webhookRecord.statuses.length : 0,
+      senderPhoneHash: hashPhone(results[0]?.from),
+      resultCount: results.length,
+      statusCount: statuses.length,
+      queueInserted: true,
     });
 
     return NextResponse.json({ status: 'success' }, { status: 200 });

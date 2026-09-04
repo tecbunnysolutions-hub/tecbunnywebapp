@@ -65,7 +65,7 @@ export async function processWabaStatusEvents(payload: unknown) {
       provider_payload: event,
     });
     if (eventError) {
-      console.warn('[WebhookStatus] Failed to append status event', { messageId, status, error: eventError.message });
+      throw new Error(`WABA status event persistence failed for ${messageId}: ${eventError.message}`);
     }
 
     const { error: messageError } = await supabase
@@ -73,7 +73,7 @@ export async function processWabaStatusEvents(payload: unknown) {
       .update({ status })
       .eq('message_id', messageId);
     if (messageError) {
-      console.warn('[WebhookStatus] Failed to update message status', { messageId, status, error: messageError.message });
+      throw new Error(`WABA message status update failed for ${messageId}: ${messageError.message}`);
     }
 
     if (status === 'DELIVERED' || status === 'READ' || status === 'FAILED') {

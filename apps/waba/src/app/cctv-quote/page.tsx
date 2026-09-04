@@ -6,7 +6,7 @@ import {
   CameraType, Resolution, RecorderType, Channels, StorageSize,
   InstallType, Validity, AddonKey,
   ADDON_LIST, CCTVQuoteConfig,
-  calcBreakdown, formatRM, genRef, buildQuoteText,
+  calcBreakdown, formatINR, genRef, buildQuoteText,
 } from '../../lib/cctvQuoteUtils';
 
 export default function CCTVQuotePage() {
@@ -68,11 +68,11 @@ export default function CCTVQuotePage() {
           validity: cfg.validity,
           notes: cfg.notes,
           rows: [
-            { item: `${cfg.cameraCount}x ${cfg.resolution} ${cfg.cameraType} Camera`, unitPrice: `${formatRM(bd.cameraUnit)} each`, qty: `${cfg.cameraCount} unit${cfg.cameraCount > 1 ? 's' : ''}`, amount: formatRM(bd.cameraTotal) },
-            { item: `${cfg.recorder} ${cfg.channels}-Channel Recorder`, unitPrice: '', qty: '1 unit', amount: formatRM(bd.recorderTotal) },
-            { item: `${cfg.storage} HDD Storage`, unitPrice: '', qty: '1 unit', amount: formatRM(bd.storageTotal) },
-            { item: `Cabling & Conduit (${cfg.cableRun}m)`, unitPrice: 'RM 2/m', qty: `${cfg.cableRun}m`, amount: formatRM(bd.cableTotal) },
-            { item: `${cfg.installType} Labour`, unitPrice: '', qty: '1 job', amount: formatRM(bd.installTotal) },
+            { item: `${cfg.cameraCount}x ${cfg.resolution} ${cfg.cameraType} Camera`, unitPrice: `${formatINR(bd.cameraUnit)} each`, qty: `${cfg.cameraCount} unit${cfg.cameraCount > 1 ? 's' : ''}`, amount: formatINR(bd.cameraTotal) },
+            { item: `${cfg.recorder} ${cfg.channels}-Channel Recorder`, unitPrice: '', qty: '1 unit', amount: formatINR(bd.recorderTotal) },
+            { item: `${cfg.storage} HDD Storage`, unitPrice: '', qty: '1 unit', amount: formatINR(bd.storageTotal) },
+            { item: `Cabling & Conduit (${cfg.cableRun}m)`, unitPrice: '₹2/m', qty: `${cfg.cableRun}m`, amount: formatINR(bd.cableTotal) },
+            { item: `${cfg.installType} Labour`, unitPrice: '', qty: '1 job', amount: formatINR(bd.installTotal) },
           ],
           addons: bd.addonBreakdown,
           total: bd.total,
@@ -202,7 +202,7 @@ export default function CCTVQuotePage() {
               </div>
             </div>
             <div style={{ marginTop: '0.5rem', color: '#64748b', fontSize: '0.78rem' }}>
-              Unit price: <span style={{ color: '#93c5fd' }}>{formatRM(bd.cameraUnit)}</span> each · Subtotal: <span style={{ color: '#93c5fd' }}>{formatRM(bd.cameraTotal)}</span>
+              Unit price: <span style={{ color: '#93c5fd' }}>{formatINR(bd.cameraUnit)}</span> each · Subtotal: <span style={{ color: '#93c5fd' }}>{formatINR(bd.cameraTotal)}</span>
             </div>
           </div>
 
@@ -264,7 +264,7 @@ export default function CCTVQuotePage() {
                   <input type="checkbox" checked={addons.has(a.key)} onChange={() => toggleAddon(a.key)} style={{ accentColor: '#3b82f6', width: '15px', height: '15px' }} aria-label={a.label} />
                   <span style={{ color: '#cbd5e1', fontSize: '0.82rem', flex: 1 }}>{a.label}</span>
                   <span style={{ color: '#64748b', fontSize: '0.75rem', whiteSpace: 'nowrap' }}>
-                    {a.price === -1 ? `RM 150/cam` : a.price === 0 ? 'Free' : formatRM(a.price)}
+                    {a.price === -1 ? `₹150/cam` : a.price === 0 ? 'Free' : formatINR(a.price)}
                   </span>
                 </label>
               ))}
@@ -303,14 +303,14 @@ export default function CCTVQuotePage() {
                 <div key={label as string} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem' }}>
                   <span style={{ color: '#94a3b8' }}>{label}</span>
                   <span style={{ color: (price as number) === 0 ? '#475569' : '#e2e8f0' }}>
-                    {(price as number) === 0 ? 'Included' : formatRM(price as number)}
+                    {(price as number) === 0 ? 'Included' : formatINR(price as number)}
                   </span>
                 </div>
               ))}
             </div>
             <div style={{ borderTop: '1px solid rgba(148,163,184,0.18)', marginTop: '0.85rem', paddingTop: '0.85rem', display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
               <span style={{ color: '#f1f5f9', fontWeight: 700, fontSize: '0.95rem' }}>Estimated Total</span>
-              <span style={{ color: '#60a5fa', fontWeight: 800, fontSize: '1.4rem' }}>{formatRM(bd.total)}</span>
+              <span style={{ color: '#60a5fa', fontWeight: 800, fontSize: '1.4rem' }}>{formatINR(bd.total)}</span>
             </div>
           </div>
 
