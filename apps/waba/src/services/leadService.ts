@@ -224,11 +224,11 @@ export class LeadService {
    * Helper to infer WABA domain from metadata stored in canonical lead.
    */
   private static inferDomainFromMetadata(
-    metadata: Record<string, unknown> | null,
+    metadata: Record<string, any> | null,
   ): 'TECHNICAL_SERVICE' | 'PRODUCT_SALES' | null {
-    const domain = metadata?.domain;
-    if (domain === 'TECHNICAL_SERVICE' || domain === 'PRODUCT_SALES') {
-      return domain;
+    if (!metadata || !metadata.domain) return null;
+    if (metadata.domain === 'TECHNICAL_SERVICE' || metadata.domain === 'PRODUCT_SALES') {
+      return metadata.domain as 'TECHNICAL_SERVICE' | 'PRODUCT_SALES';
     }
     return null;
   }

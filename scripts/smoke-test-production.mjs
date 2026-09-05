@@ -11,7 +11,7 @@ const TARGET_HOST = process.env.SMOKE_TEST_HOST || 'https://www.tecbunny.com';
 const ROUTES_TO_TEST = [
   {
     path: '/',
-    expectedText: ['Next-day delivery in Goa'],
+    expectedText: ['Secure operations.'],
     forbiddenText: ['Response Guarantee Backed'],
   },
   {

@@ -2,6 +2,7 @@ import { Worker, Queue } from 'bullmq';
 import { logger } from '@tecbunny/core/logger';
 import { getRedis } from '@tecbunny/core/redis';
 import {  createServiceClient  } from '@tecbunny/database/admin';
+import { sendWhatsAppMessage } from '@/services/infobipService';
 
 export const NURTURE_QUEUE_NAME = 'waba_nurture_queue';
 
@@ -47,7 +48,7 @@ export function startNurtureWorker() {
     // 1. Get all active leads
     const { data: leads } = await supabase
       .from('sls_leads')
-      .select('id, heat_level, created_at, status')
+      .select('id, phone, heat_level, created_at, status')
       .not('status', 'eq', 'CONVERTED');
 
     if (!leads || leads.length === 0) return;
@@ -69,12 +70,22 @@ export function startNurtureWorker() {
         if (!sequence.sls_nurture_steps) continue;
 
         for (const step of sequence.sls_nurture_steps) {
-          // If the delay perfectly matches the age of the lead, dispatch action
-          if (step.delay_days === daysSinceCreation) {
+          // Catch up after worker downtime; outbound idempotency prevents duplicates.
+          if (step.delay_days <= daysSinceCreation) {
 
             if (step.action_type === 'SEND_WABA') {
+              if (!lead.phone) {
+                logger.warn('nurture_waba_skipped_missing_phone', { leadId: lead.id, stepId: step.id });
+                continue;
+              }
               logger.info('Dispatching AI Follow-up (WABA)', { leadId: lead.id, stepId: step.id });
-              // e.g. await sendWhatsAppMessage(lead.phone, step.message_template);
+              const result = await sendWhatsAppMessage(lead.phone, step.message_template, null, {
+                leadId: lead.id,
+                idempotencyKey: `nurture:${lead.id}:${step.id}`,
+              });
+              if (!result.success) {
+                throw new Error(`Nurture WABA send failed for ${lead.id}/${step.id}: ${String(result.error ?? 'unknown error')}`);
+              }
             }
             else if (step.action_type === 'CREATE_TASK') {
               logger.info('Dispatching Task for Sales Exec', { leadId: lead.id, stepId: step.id });

@@ -10,6 +10,7 @@ type OutboundEventContext = {
   leadId?: string;
   campaignId?: string;
   userId?: string;
+  idempotencyKey?: string;
   maxRetries?: number;
 };
 
@@ -314,6 +315,7 @@ export async function sendTemplateMessage(
     lead_id: eventContext?.leadId,
     campaign_id: eventContext?.campaignId,
     user_id: eventContext?.userId,
+    idempotency_key: eventContext?.idempotencyKey,
     max_retries: eventContext?.maxRetries ?? 3,
   });
   const existingResponse = existingEventResponse(event);
@@ -357,6 +359,7 @@ export async function sendWhatsAppMessage(
     lead_id: eventContext?.leadId,
     campaign_id: eventContext?.campaignId,
     user_id: eventContext?.userId,
+    idempotency_key: eventContext?.idempotencyKey,
     max_retries: eventContext?.maxRetries ?? 3,
   });
   const existingResponse = existingEventResponse(event);

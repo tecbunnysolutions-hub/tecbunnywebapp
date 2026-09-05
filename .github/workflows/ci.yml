@@ -111,12 +111,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Validate final SQL file exists and is non-empty
-        run: |
-          echo "Checking final SQL file..."
-          if [ ! -s database.sql ]; then
-            echo "ERROR: database.sql is missing or empty"
-            exit 1
-          fi
-          echo "OK: database.sql"
+      - name: Validate tracked migration set
+        run: node scripts/validate-db-readiness.mjs
 

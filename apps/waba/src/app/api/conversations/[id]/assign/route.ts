@@ -8,9 +8,9 @@ import { canAccessConversationSender, canManageUserInScope, resolveActorScope } 
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const resolvedParams = await params;
-    const conversationId = parseInt(resolvedParams.id, 10);
+    const conversationId = resolvedParams.id.trim();
 
-    if (isNaN(conversationId)) {
+    if (!conversationId) {
       return NextResponse.json({ error: 'Bad Request: Invalid conversation ID' }, { status: 400 });
     }
 
