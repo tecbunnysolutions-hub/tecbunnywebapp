@@ -1,6 +1,10 @@
 {
   "name": "tecbunny-monorepo",
   "packageManager": "npm@11.12.1",
+  "engines": {
+    "node": "20.x || 22.x || 24.x",
+    "npm": ">=10.2.0"
+  },
   "private": true,
   "workspaces": [
     "apps/*",

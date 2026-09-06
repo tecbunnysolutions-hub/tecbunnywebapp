@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { logger } from "@tecbunny/core";
 import { GoogleGenAI, Type } from '@google/genai';
-import * as cheerio from 'cheerio';
+import { findAll, getText, removeSubsets } from 'domutils';
+import { parseDocument } from 'htmlparser2';
 import { AdminAuthError, requireAdminContext } from "@tecbunny/core/auth/admin-guard";
 import { validatePublicRemoteUrl } from "@tecbunny/core/security/network-validation";
 
@@ -102,10 +103,11 @@ export async function POST(request: NextRequest) {
 
     const html = await readResponseTextWithLimit(fetchResponse, MAX_REMOTE_HTML_BYTES);
 
-    // Use cheerio to load and strip unnecessary tags
-    const $ = cheerio.load(html);
-    $('script, style, svg, noscript, iframe, img').remove();
-    const rawText = $('body').text().replace(/\s+/g, ' ').trim();
+    const document = parseDocument(html);
+    const removableTags = new Set(['script', 'style', 'svg', 'noscript', 'iframe', 'img']);
+    removeSubsets(findAll((node) => node.type === 'tag' && removableTags.has(node.name), document.children));
+    const body = findAll((node) => node.type === 'tag' && node.name === 'body', document.children)[0];
+    const rawText = getText(body ? [body] : document.children).replace(/\s+/g, ' ').trim();
 
     if (rawText.length < 50) {
       throw new Error("Could not extract meaningful text. The site might be blocking server requests (e.g. CAPTCHA).");
