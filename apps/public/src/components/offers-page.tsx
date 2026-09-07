@@ -123,6 +123,22 @@ export default function OffersPage() {
 
       <section className="relative pt-16 sm:pt-24">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="mb-12 overflow-hidden rounded-3xl border border-amber-400/30 bg-[linear-gradient(120deg,#341b09_0%,#6b2d0c_48%,#17100a_100%)] p-6 text-white shadow-xl sm:p-10">
+            <p className="text-xs font-bold uppercase tracking-[0.25em] text-amber-200">Ganesh Chaturthi festive sale</p>
+            <div className="mt-4 grid gap-6 lg:grid-cols-[1fr_auto] lg:items-end">
+              <div>
+                <h2 className="text-3xl font-black leading-tight sm:text-5xl">Welcome Bappa. Save up to 50%.</h2>
+                <p className="mt-3 max-w-2xl text-sm leading-relaxed text-amber-50/85 sm:text-base">
+                  Celebrate with advanced CCTV systems, computers, and high-performance laptops from Tecbunny, Parcem, Pernem, Goa. Valid till 13 Sept or till stock ends.
+                </p>
+                <p className="mt-3 text-xs font-bold uppercase tracking-[0.16em] text-amber-200">Ganpati Bappa Morya · Terms and conditions apply</p>
+              </div>
+              <div className="flex flex-col gap-3 sm:flex-row lg:flex-col">
+                <Link href="https://www.tecbunny.com" className="rounded-xl bg-amber-300 px-5 py-3 text-center text-sm font-bold text-amber-950 hover:bg-amber-200">Shop online</Link>
+                <Link href="https://wa.me/919604136010?text=Ganesh%20Chaturthi%20sale%20booking%20enquiry" className="rounded-xl border border-amber-200/40 px-5 py-3 text-center text-sm font-bold text-amber-50 hover:bg-amber-200/10">WhatsApp 9604136010</Link>
+              </div>
+            </div>
+          </div>
           <div className="text-center">
             <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-primary">
               Limited time deals

@@ -341,6 +341,38 @@ export default function HomePage({
         <HeroCarousel pageKey="homepage" initialData={initialHeroCarousel} />
       </div>
 
+      <section className="relative overflow-hidden border-y border-amber-400/30 bg-[linear-gradient(120deg,#341b09_0%,#6b2d0c_48%,#17100a_100%)] py-10 sm:py-14">
+        <div className="pointer-events-none absolute -right-20 -top-24 h-64 w-64 rounded-full border border-amber-300/20" />
+        <div className="pointer-events-none absolute -right-8 -top-12 h-40 w-40 rounded-full border border-amber-300/10" />
+        <div className="tb-container relative z-10">
+          <div className="grid gap-8 lg:grid-cols-[1fr_auto] lg:items-center">
+            <div className="max-w-3xl">
+              <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-amber-300/30 bg-amber-300/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.25em] text-amber-200">
+                <Sparkles size={13} /> Ganesh Chaturthi festive sale
+              </div>
+              <h2 className="text-3xl font-black leading-tight text-white sm:text-5xl font-tech">
+                Divine blessings. <span className="text-amber-300">Up to 50% off.</span>
+              </h2>
+              <p className="mt-3 max-w-2xl text-sm leading-relaxed text-amber-50/85 sm:text-base">
+                Welcome Bappa home and upgrade your security or workspace with advanced CCTV systems, high-performance laptops, and computers from Tecbunny in Parcem, Pernem, Goa.
+              </p>
+              <p className="mt-4 text-xs font-bold uppercase tracking-[0.18em] text-amber-200">
+                Valid till 13 Sept or till stock ends · Terms and conditions apply
+              </p>
+            </div>
+            <div className="flex flex-col gap-3 sm:flex-row lg:flex-col">
+              <Button asChild size="lg" className="h-12 rounded-xl bg-amber-300 px-6 text-sm font-bold text-amber-950 shadow-lg shadow-amber-950/30 hover:bg-amber-200">
+                <Link href="https://www.tecbunny.com">Shop festive deals <ArrowRight size={16} className="ml-2" /></Link>
+              </Button>
+              <Button asChild size="lg" variant="outline" className="h-12 rounded-xl border-amber-200/40 bg-transparent px-6 text-sm font-bold text-amber-50 hover:bg-amber-200/10 hover:text-white">
+                <Link href="https://wa.me/919604136010?text=Ganesh%20Chaturthi%20sale%20booking%20enquiry">WhatsApp to book</Link>
+              </Button>
+              <a href="tel:+919604136010" className="text-center text-xs font-semibold text-amber-200 underline-offset-4 hover:underline">Call 9604136010 · Visit Parcem, Pernem</a>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* 4. REAL-TIME REGIONAL SOCIAL PROOF */}
       {hasPartnerBrands ? (
         <RegionalTrustBanner partnerBrands={initialPartnerBrands} />
