@@ -6,6 +6,7 @@ import { getBroadcastQueue } from '@tecbunny/core/queue';
 import { getRedis } from '@tecbunny/core/redis';
 import crypto from 'crypto';
 import { hasBroadcastConsent } from '@/services/consentService';
+import { dedupeCampaignRecipients, type CampaignRecipientInput } from '@/lib/campaignRecipients';
 
 const BROADCAST_PER_RECIPIENT_TTL_SECS = 86_400; // 24 h — prevent same number twice in one day
 
@@ -30,10 +31,15 @@ export async function POST(req: Request) {
     const auth = await requireApiRole({ allowedRoles: ['admin', 'sales_manager', 'marketing_manager', 'superadmin', 'manager'] });
     if (auth.error) return auth.error;
 
-    const { targetStatus, templateName } = await req.json();
+    const body = await req.json();
+    const { targetStatus, templateName, recipients: importedRecipients, offer = '', preview = false } = body;
 
     if (!targetStatus || !templateName) {
       return NextResponse.json({ error: 'Missing targetStatus or templateName' }, { status: 400 });
+    }
+
+    if (importedRecipients !== undefined && (!Array.isArray(importedRecipients) || importedRecipients.length > 5000)) {
+      return NextResponse.json({ error: 'Recipients must be an array of at most 5,000 rows.' }, { status: 400 });
     }
 
     const { data: template, error: templateError } = await supabase
@@ -47,25 +53,59 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Template must be approved by the provider before broadcast.' }, { status: 400 });
     }
 
+    const campaignId = crypto.randomUUID();
+
+    let contacts: Array<{ sender_number: string; contact_name: string | null; offer?: string }> = [];
+    let invalid = 0;
+    let duplicates = 0;
+
+    if (Array.isArray(importedRecipients)) {
+      const normalized = dedupeCampaignRecipients(importedRecipients as CampaignRecipientInput[]);
+      invalid = normalized.invalid;
+      duplicates = normalized.duplicates;
+      contacts = normalized.recipients.map((recipient) => ({
+        sender_number: recipient.phone,
+        contact_name: recipient.name,
+        offer: recipient.offer || String(offer).trim(),
+      }));
+    } else {
+      let query = supabase.from('Conversation').select('sender_number, contact_name');
+      if (targetStatus !== 'ALL') query = query.eq('status', targetStatus);
+      const { data, error: fetchError } = await query;
+      if (fetchError) throw fetchError;
+      contacts = data ?? [];
+    }
+
+    if (!contacts || contacts.length === 0) {
+      return NextResponse.json({ success: true, count: 0, eligible: 0, invalid, duplicates, optedOut: 0, message: 'No eligible contacts found.' });
+    }
+
+    const eligibleContacts: typeof contacts = [];
+    let optedOut = 0;
+    for (const contact of contacts) {
+      if (await hasBroadcastConsent(contact.sender_number)) eligibleContacts.push(contact);
+      else optedOut++;
+    }
+
+    if (preview) {
+      return NextResponse.json({
+        success: true,
+        uploaded: contacts.length + invalid + duplicates,
+        eligible: eligibleContacts.length,
+        invalid,
+        duplicates,
+        optedOut,
+        sample: eligibleContacts.slice(0, 5).map((contact) => ({
+          name: contact.contact_name || contact.sender_number,
+          phone: contact.sender_number,
+          offer: contact.offer || String(offer).trim(),
+        })),
+      });
+    }
+
     const queue = getBroadcastQueue();
     if (!queue) {
       return NextResponse.json({ error: 'Broadcast queue is unavailable. Configure Redis before sending campaigns.' }, { status: 503 });
-    }
-
-    const campaignId = crypto.randomUUID();
-
-    // Find all conversations matching the target status
-    let query = supabase.from('Conversation').select('sender_number, contact_name');
-    
-    if (targetStatus !== 'ALL') {
-      query = query.eq('status', targetStatus);
-    }
-
-    const { data: contacts, error: fetchError } = await query;
-    if (fetchError) throw fetchError;
-
-    if (!contacts || contacts.length === 0) {
-      return NextResponse.json({ success: true, count: 0, message: 'No contacts found for this audience.' });
     }
 
     const campaignResult = await withAuditEvent({
@@ -77,7 +117,7 @@ export async function POST(req: Request) {
       entityType: 'mkt_campaign',
       entityId: campaignId,
       oldValue: null,
-      newValue: { campaignId, targetStatus, templateName, matchedContacts: contacts.length },
+      newValue: { campaignId, targetStatus, templateName, matchedContacts: eligibleContacts.length },
       reason: 'waba_campaign_broadcast',
       context: { userId: auth.session?.user?.id, userEmail: auth.session?.user?.email, role: auth.role },
       apiEndpoint: '/api/campaigns',
@@ -98,13 +138,12 @@ export async function POST(req: Request) {
       let skippedCount = 0;
 
       // Broadcast the template to everyone — per-recipient rate limit (1 per 24h)
-      for (const contact of contacts) {
+      for (const contact of eligibleContacts) {
         try {
           const to = contact.sender_number;
           const name = contact.contact_name || to;
 
-          const hasConsent = await hasBroadcastConsent(to);
-          if (!hasConsent) {
+          if (!(await hasBroadcastConsent(to))) {
             skippedCount++;
             continue;
           }
@@ -123,7 +162,7 @@ export async function POST(req: Request) {
               phone: to,
               template_name: templateName,
               language: 'en',
-              payload: { placeholders: [name] },
+              payload: { placeholders: [name, contact.offer || String(offer).trim()] },
             },
             { jobId: `${campaignId}:${to}` },
           );
@@ -142,7 +181,7 @@ export async function POST(req: Request) {
       return { queued: queuedCount, skipped: skippedCount };
     });
 
-    return NextResponse.json({ success: true, campaignId, queued: campaignResult.queued, count: campaignResult.queued, skipped: campaignResult.skipped });
+    return NextResponse.json({ success: true, campaignId, queued: campaignResult.queued, count: campaignResult.queued, skipped: campaignResult.skipped, invalid, duplicates, optedOut });
   } catch (error) {
     console.error('Campaign Error:', error);
     return NextResponse.json({ error: 'Failed to execute campaign' }, { status: 500 });
