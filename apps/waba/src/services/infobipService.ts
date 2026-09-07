@@ -191,9 +191,12 @@ type ProviderTemplate = {
   id?: string;
   name?: string;
   templateName?: string;
+  template?: { name?: string; id?: string };
   language?: string;
   languageCode?: string;
   status?: string;
+  approvalStatus?: string;
+  approval_status?: string;
   category?: string;
   body?: string;
   content?: string | { text?: string; body?: { text?: string } };
@@ -202,10 +205,17 @@ type ProviderTemplate = {
 };
 
 function getProviderTemplates(data: unknown): ProviderTemplate[] {
+  if (Array.isArray(data)) {
+    return data.filter((item): item is ProviderTemplate => typeof item === 'object' && item !== null);
+  }
   if (!data || typeof data !== 'object') return [];
   const record = data as Record<string, unknown>;
   const candidate = record.templates ?? record.results ?? record.items ?? record.templateList ?? record.data;
-  return Array.isArray(candidate) ? candidate.filter((item): item is ProviderTemplate => typeof item === 'object' && item !== null) : [];
+  if (Array.isArray(candidate)) {
+    return candidate.filter((item): item is ProviderTemplate => typeof item === 'object' && item !== null);
+  }
+  if (candidate && typeof candidate === 'object') return getProviderTemplates(candidate);
+  return [];
 }
 
 function getProviderTemplateContent(template: ProviderTemplate) {
@@ -238,11 +248,11 @@ export async function syncInfobipTemplates(): Promise<{
   let synced = 0;
 
   for (const template of templates) {
-    const name = template.name ?? template.templateName;
+    const name = template.name ?? template.templateName ?? template.template?.name;
     if (!name) continue;
 
     const content = getProviderTemplateContent(template);
-    const providerStatus = (template.status ?? 'UNKNOWN').toUpperCase();
+    const providerStatus = (template.status ?? template.approvalStatus ?? template.approval_status ?? 'UNKNOWN').toUpperCase();
     const { error } = await supabase
       .from('Template')
       .upsert({
@@ -253,7 +263,7 @@ export async function syncInfobipTemplates(): Promise<{
         status: providerStatus === 'APPROVED' ? 'APPROVED' : 'PENDING',
         category: template.category ?? 'MARKETING',
         provider_name: 'infobip',
-        provider_template_id: template.id ?? name,
+        provider_template_id: template.id ?? template.template?.id ?? name,
         provider_status: providerStatus,
         variable_count: countTemplateVariables(content),
         last_synced_at: now,

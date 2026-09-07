@@ -28,7 +28,7 @@ export default function CampaignsPage() {
     fetch("/api/templates")
       .then((response) => response.json())
       .then((data) => {
-        const approved = (data.templates ?? []).filter((template: Template) => template.status === "APPROVED" && template.provider_status === "APPROVED");
+        const approved = (data.templates ?? []).filter((template: Template) => String(template.provider_status ?? template.status ?? "").toUpperCase() === "APPROVED");
         setTemplates(approved);
         if (approved[0]) setTemplateName(approved[0].name);
       })

@@ -49,7 +49,7 @@ export async function POST(req: Request) {
       .maybeSingle();
 
     if (templateError) throw templateError;
-    if (!template || template.status !== 'APPROVED' || template.provider_status !== 'APPROVED') {
+    if (!template || String(template.provider_status ?? '').toUpperCase() !== 'APPROVED') {
       return NextResponse.json({ error: 'Template must be approved by the provider before broadcast.' }, { status: 400 });
     }
 
