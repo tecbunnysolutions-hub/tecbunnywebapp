@@ -10,6 +10,7 @@ export async function middleware(request: NextRequest, event: NextFetchEvent) {
     publicRoutes: [
       'POST /api/auth/login',
       'GET /api/health',
+      'GET /api/webhook/whatsapp',
       'POST /api/webhook/whatsapp',
     ],
   });

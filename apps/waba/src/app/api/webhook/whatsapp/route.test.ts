@@ -14,48 +14,52 @@ vi.mock('@tecbunny/core/logger', () => ({
   },
 }));
 
-import { POST } from './route';
+import { GET, POST } from './route';
 
 describe('WhatsApp webhook route', () => {
   beforeEach(() => {
     queueAdd.mockReset();
     queueAdd.mockResolvedValue({ id: 'job-1' });
-    process.env.INFOBIP_HMAC_SECRET = 'test-webhook-secret';
-    delete process.env.WHATSAPP_WEBHOOK_VERIFY_TOKEN;
+    process.env.META_APP_SECRET = 'test-app-secret';
+    process.env.META_WHATSAPP_VERIFY_TOKEN = 'test-verify-token';
   });
 
-  it('authenticates a URL token and enqueues an idempotent provider event', async () => {
-    const payload = JSON.stringify({ results: [{ messageId: 'provider-message-1', from: '+919876543210' }] });
+  it('verifies the Meta webhook challenge', async () => {
+    const response = await GET(new Request(
+      'https://waba.test/api/webhook/whatsapp?hub.mode=subscribe&hub.verify_token=test-verify-token&hub.challenge=challenge-123',
+    ));
+
+    expect(response.status).toBe(200);
+    expect(await response.text()).toBe('challenge-123');
+  });
+
+  it('authenticates a Meta signature and enqueues an idempotent provider event', async () => {
+    const payload = JSON.stringify({ entry: [{ changes: [{ value: { messages: [{ id: 'provider-message-1', from: '919876543210' }] } }] }] });
+    const signature = crypto.createHmac('sha256', 'test-app-secret').update(payload).digest('hex');
     const response = await POST(new Request(
-      'https://waba.test/api/webhook/whatsapp?token=test-webhook-secret',
-      { method: 'POST', body: payload },
+      'https://waba.test/api/webhook/whatsapp',
+      { method: 'POST', body: payload, headers: { 'x-hub-signature-256': `sha256=${signature}` } },
     ));
 
     expect(response.status).toBe(200);
     expect(queueAdd).toHaveBeenCalledWith(
       'process-webhook',
-      { results: [{ messageId: 'provider-message-1', from: '+919876543210' }] },
+      expect.objectContaining({
+        results: [{
+          from: '919876543210',
+          messageId: 'provider-message-1',
+          message: { text: undefined },
+        }],
+        statuses: [],
+      }),
       expect.objectContaining({ jobId: 'waba-webhook-provider-message-1' }),
     );
   });
 
-  it('authenticates an HMAC signature when no URL token is supplied', async () => {
-    const payload = JSON.stringify({ results: [{ messageId: 'provider-message-2' }] });
-    const signature = crypto.createHmac('sha256', 'test-webhook-secret').update(payload).digest('hex');
-    const response = await POST(new Request('https://waba.test/api/webhook/whatsapp', {
-      method: 'POST',
-      body: payload,
-      headers: { 'x-hub-signature-256': `sha256=${signature}` },
-    }));
-
-    expect(response.status).toBe(200);
-    expect(queueAdd).toHaveBeenCalledOnce();
-  });
-
-  it('rejects an invalid token before touching the queue', async () => {
+  it('rejects an invalid Meta signature before touching the queue', async () => {
     const response = await POST(new Request(
-      'https://waba.test/api/webhook/whatsapp?token=wrong-token',
-      { method: 'POST', body: JSON.stringify({ results: [] }) },
+      'https://waba.test/api/webhook/whatsapp',
+      { method: 'POST', body: JSON.stringify({ entry: [] }), headers: { 'x-hub-signature-256': 'sha256=wrong' } },
     ));
 
     expect(response.status).toBe(401);

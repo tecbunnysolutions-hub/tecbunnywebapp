@@ -10,10 +10,7 @@ import { logger } from '@tecbunny/core/logger';
  * Bug #3 fix: Use timing-safe comparison (crypto.timingSafeEqual) to prevent
  * timing oracle attacks that could reconstruct the HMAC secret byte-by-byte.
  *
- * Bug #19 fix: Infobip sends the signature as a hex string (optionally prefixed
- * with "sha256="). The previous code digested as base64 and compared directly,
- * which always failed against a hex signature. Now we digest as hex and strip
- * the "sha256=" prefix before comparing.
+ * Meta sends the signature as a hex string prefixed with "sha256=".
  */
 function verifySignature(payload: Buffer | string, signature: string, secret: string | undefined): boolean {
   if (!secret) {
@@ -23,25 +20,10 @@ function verifySignature(payload: Buffer | string, signature: string, secret: st
 
   const clean = signature.startsWith('sha256=') ? signature.slice(7) : signature;
 
-  const expectedHex = crypto.createHmac('sha256', secret).update(payload).digest('hex');
-  const expectedBase64 = crypto.createHmac('sha256', secret).update(payload).digest('base64');
-  const expectedBase64Url = crypto.createHmac('sha256', secret).update(payload).digest('base64url');
-
-  const validSignatures = [expectedHex, expectedBase64, expectedBase64Url];
-  
-  let isValid = false;
-  for (const validSig of validSignatures) {
-    try {
-      const expectedBuf = Buffer.from(validSig, 'utf8');
-      const actualBuf = Buffer.from(clean, 'utf8');
-      if (expectedBuf.length === actualBuf.length && crypto.timingSafeEqual(expectedBuf, actualBuf)) {
-        isValid = true;
-        break;
-      }
-    } catch {
-      // ignore
-    }
-  }
+  const expected = crypto.createHmac('sha256', secret).update(payload).digest('hex');
+  const expectedBuf = Buffer.from(expected, 'utf8');
+  const actualBuf = Buffer.from(clean, 'utf8');
+  const isValid = expectedBuf.length === actualBuf.length && crypto.timingSafeEqual(expectedBuf, actualBuf);
 
   if (!isValid) {
     console.error('Signature mismatch for WABA webhook payload.');
@@ -55,6 +37,20 @@ function hashPhone(value: unknown): string | null {
   return crypto.createHash('sha256').update(value.trim()).digest('hex').slice(0, 16);
 }
 
+export async function GET(req: Request) {
+  const url = new URL(req.url);
+  const mode = url.searchParams.get('hub.mode');
+  const token = url.searchParams.get('hub.verify_token');
+  const challenge = url.searchParams.get('hub.challenge');
+  const verifyToken = process.env.META_WHATSAPP_VERIFY_TOKEN;
+
+  if (mode === 'subscribe' && token && challenge && verifyToken && token === verifyToken) {
+    return new Response(challenge, { status: 200, headers: { 'Content-Type': 'text/plain' } });
+  }
+
+  return NextResponse.json({ error: 'Webhook verification failed' }, { status: 403 });
+}
+
 export async function POST(req: Request) {
   try {
     const rawBodyBuffer = Buffer.from(await req.arrayBuffer());
@@ -64,59 +60,21 @@ export async function POST(req: Request) {
 
     logger.info('waba_webhook.received', {
       requestId,
-      provider: 'infobip',
+      provider: 'meta',
       payloadSize: rawBodyBuffer.byteLength,
       signaturePresent: Boolean(signature),
     });
 
-    const url = new URL(req.url);
-    const token = url.searchParams.get('token');
-    const webhookSecret = process.env.INFOBIP_HMAC_SECRET;
-    const webhookVerifyToken = process.env.WHATSAPP_WEBHOOK_VERIFY_TOKEN || webhookSecret;
-
-    // Bug #2 fix / Revert: Infobip uses the URL token for this integration.
-    // If the token is present in the URL, prioritize validating it.
-    if (token) {
-      const envSecret = webhookVerifyToken?.replace(/["']/g, "");
-      if (!envSecret) {
-        console.error('WhatsApp webhook secret is missing in Vercel environment variables!');
-        return NextResponse.json({ error: 'Server configuration error: webhook secret is missing.' }, { status: 500 });
-      }
-      const tokenBuf = Buffer.from(token, 'utf8');
-      const secretBuf = Buffer.from(envSecret, 'utf8');
-      const isTokenValid =
-        tokenBuf.length === secretBuf.length &&
-        crypto.timingSafeEqual(tokenBuf, secretBuf);
-      if (!isTokenValid) {
-        console.error('Invalid URL token: timing-safe comparison failed.');
-        return NextResponse.json({ error: 'Invalid URL token mismatch.' }, { status: 401 });
-      }
-    } else {
-      // Fallback to HMAC Signature Verification if token is not in URL
-      if (!signature) {
-        console.error('Missing signature header and no URL token provided.');
-        return NextResponse.json({ error: 'Missing authentication' }, { status: 401 });
-      }
-      if (!verifySignature(rawBodyBuffer, signature, webhookSecret)) {
-        return NextResponse.json({ error: 'Invalid HMAC signature' }, { status: 401 });
-      }
+    const appSecret = process.env.META_APP_SECRET;
+    if (!signature) {
+      return NextResponse.json({ error: 'Missing signature' }, { status: 401 });
+    }
+    if (!verifySignature(rawBodyBuffer, signature, appSecret)) {
+      return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
     }
 
     const parsedBody = JSON.parse(rawBody) as Record<string, unknown>;
     const body = parsedBody;
-
-    // P6-2: Replay attack prevention — reject payloads older than 5 minutes
-    // Infobip includes a `timestamp` field in the webhook payload.
-    const REPLAY_WINDOW_MS = 5 * 60 * 1000; // 5 minutes
-    const replayPayload = body as { timestamp?: unknown; results?: Array<{ receivedAt?: unknown }> };
-    const payloadTs = (replayPayload.timestamp || replayPayload.results?.[0]?.receivedAt) as string | number | undefined;
-    if (payloadTs) {
-      const ts = new Date(payloadTs).getTime();
-      if (!isNaN(ts) && Date.now() - ts > REPLAY_WINDOW_MS) {
-        console.warn('[webhook] Rejected stale payload (replay protection). Age:', Date.now() - ts, 'ms');
-        return NextResponse.json({ error: 'Payload timestamp too old' }, { status: 400 });
-      }
-    }
 
     // Enqueue payload to BullMQ
     const queue = getWabaWebhookQueue();
@@ -125,14 +83,27 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Queue unavailable' }, { status: 503 });
     }
 
-    const webhookRecord = body as { results?: Array<{ from?: string; messageId?: string; id?: string }>; statuses?: Array<{ messageId?: string; id?: string }> };
-    const results = Array.isArray(webhookRecord.results) ? webhookRecord.results : [];
-    const statuses = Array.isArray(webhookRecord.statuses) ? webhookRecord.statuses : [];
-    const providerEventId = webhookRecord.results?.[0]?.messageId
-      || webhookRecord.statuses?.[0]?.messageId
-      || webhookRecord.results?.[0]?.id
-      || webhookRecord.statuses?.[0]?.id;
-    await queue.add('process-webhook', body, {
+    const webhookRecord = body as {
+      entry?: Array<{ changes?: Array<{ value?: { messages?: Array<{ id?: string; from?: string }>; statuses?: Array<{ id?: string }> } }> }>;
+    };
+    const value = webhookRecord.entry?.[0]?.changes?.[0]?.value;
+    const messages = value?.messages ?? [];
+    const statuses = value?.statuses ?? [];
+    const normalizedBody = {
+      ...body,
+      results: messages.map((message) => ({
+        from: message.from,
+        messageId: message.id,
+        message: { text: (message as { text?: { body?: string } }).text?.body },
+      })),
+      statuses: statuses.map((status) => ({
+        messageId: status.id,
+        status: (status as { status?: string }).status,
+        timestamp: (status as { timestamp?: string }).timestamp,
+      })),
+    };
+    const providerEventId = messages[0]?.id || statuses[0]?.id;
+    await queue.add('process-webhook', normalizedBody, {
       jobId: providerEventId ? `waba-webhook-${providerEventId}` : undefined,
       removeOnComplete: true,
       removeOnFail: false,
@@ -140,11 +111,11 @@ export async function POST(req: Request) {
 
     logger.info('waba_webhook.accepted', {
       requestId,
-      provider: 'infobip',
-      eventType: statuses.length > 0 ? 'status' : results.length > 0 ? 'message' : 'unknown',
+      provider: 'meta',
+      eventType: statuses.length > 0 ? 'status' : messages.length > 0 ? 'message' : 'unknown',
       providerEventId: providerEventId || null,
-      senderPhoneHash: hashPhone(results[0]?.from),
-      resultCount: results.length,
+      senderPhoneHash: hashPhone(messages[0]?.from),
+      resultCount: messages.length,
       statusCount: statuses.length,
       queueInserted: true,
     });

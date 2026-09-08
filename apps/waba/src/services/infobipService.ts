@@ -29,21 +29,19 @@ function existingEventResponse(event: OutboundEventRecord | null) {
 // vars throw at runtime so the problem is caught immediately on use, without
 // breaking Next.js static build pre-evaluation.
 
-const getInfobipConfig = () => {
-  const baseUrl = process.env.INFOBIP_BASE_URL;
-  const apiKey = process.env.INFOBIP_API_KEY;
-  const systemNumber = process.env.INFOBIP_WHATSAPP_FROM;
+const getMetaConfig = () => {
+  const accessToken = process.env.META_ACCESS_TOKEN;
+  const phoneNumberId = process.env.META_PHONE_NUMBER_ID;
 
-  if (!baseUrl) throw new Error('INFOBIP_BASE_URL is required');
-  if (!apiKey) throw new Error('INFOBIP_API_KEY is required');
-  if (!systemNumber) throw new Error('INFOBIP_WHATSAPP_FROM is required');
+  if (!accessToken) throw new Error('META_ACCESS_TOKEN is required');
+  if (!phoneNumberId) throw new Error('META_PHONE_NUMBER_ID is required');
 
   return {
-    baseUrl,
-    apiKey,
-    systemNumber,
-    templateName: process.env.INFOBIP_WHATSAPP_TEMPLATE_NAME ?? 'hello_world',
-    templateLanguage: process.env.INFOBIP_WHATSAPP_TEMPLATE_LANGUAGE ?? 'en'
+    accessToken,
+    phoneNumberId,
+    apiVersion: process.env.META_GRAPH_API_VERSION ?? 'v25.0',
+    templateName: process.env.META_WHATSAPP_TEMPLATE_NAME ?? 'hello_world',
+    templateLanguage: process.env.META_WHATSAPP_TEMPLATE_LANGUAGE ?? 'en_US',
   };
 };
 
@@ -64,15 +62,13 @@ async function logFailedCall(payload: unknown, errorMsg: string) {
   }
 }
 
-async function sendInfobipRequest(
-  endpoint: string,
+async function sendMetaRequest(
   payload: unknown,
   eventId: string,
   claimedProcessingToken?: string | null,
 ): Promise<{ success: boolean; data?: unknown; error?: unknown; status?: number }> {
-  const { baseUrl: rawBaseUrl, apiKey } = getInfobipConfig();
-  const baseUrl = rawBaseUrl.replace(/^https?:\/\//, '');
-  const url = `https://${baseUrl}${endpoint}`;
+  const { accessToken, phoneNumberId, apiVersion } = getMetaConfig();
+  const url = `https://graph.facebook.com/${apiVersion}/${phoneNumberId}/messages`;
 
   const claimedToken = claimedProcessingToken ?? await OutboundEventService.markProcessing(supabase, eventId);
 
@@ -116,7 +112,7 @@ async function sendInfobipRequest(
       const response = await fetch(url, {
         method: 'POST',
         headers: {
-          Authorization: `App ${apiKey}`,
+          Authorization: `Bearer ${accessToken}`,
           'Content-Type': 'application/json',
           Accept: 'application/json',
         },
@@ -126,7 +122,7 @@ async function sendInfobipRequest(
       const data = await response.json().catch(() => ({}));
 
       if (response.ok) {
-        const providerMessageId = (data as { messages?: Array<{ messageId?: string }> })?.messages?.[0]?.messageId || null;
+        const providerMessageId = (data as { messages?: Array<{ id?: string }> })?.messages?.[0]?.id || null;
         await OutboundEventService.markDelivered(supabase, eventId, providerMessageId || 'unknown', `${response.status}`, processingToken);
         return { success: true, data };
       }
@@ -164,18 +160,17 @@ async function sendInfobipRequest(
   return { success: false, error: 'Max retries exhausted' };
 }
 
-async function getInfobipRequest(
-  endpoint: string,
+async function getMetaRequest(
+  path: string,
 ): Promise<{ success: boolean; data?: unknown; error?: unknown; status?: number }> {
-  const { baseUrl: rawBaseUrl, apiKey } = getInfobipConfig();
-  const baseUrl = rawBaseUrl.replace(/^https?:\/\//, '');
-  const url = `https://${baseUrl}${endpoint}`;
+  const { accessToken, apiVersion } = getMetaConfig();
+  const url = `https://graph.facebook.com/${apiVersion}/${path}`;
 
   try {
     const response = await fetch(url, {
       method: 'GET',
       headers: {
-        Authorization: `App ${apiKey}`,
+        Authorization: `Bearer ${accessToken}`,
         Accept: 'application/json',
       },
     });
@@ -236,9 +231,9 @@ export async function syncInfobipTemplates(): Promise<{
   error?: unknown;
   status?: number;
 }> {
-  const { systemNumber } = getInfobipConfig();
-  const endpoint = process.env.INFOBIP_WHATSAPP_TEMPLATE_SYNC_PATH ?? `/whatsapp/2/senders/${encodeURIComponent(systemNumber)}/templates`;
-  const response = await getInfobipRequest(endpoint);
+  const wabaId = process.env.META_WABA_ID;
+  if (!wabaId) throw new Error('META_WABA_ID is required');
+  const response = await getMetaRequest(`${wabaId}/message_templates`);
   if (!response.success) {
     return { success: false, synced: 0, error: response.error, status: response.status };
   }
@@ -262,7 +257,7 @@ export async function syncInfobipTemplates(): Promise<{
         content,
         status: providerStatus === 'APPROVED' ? 'APPROVED' : 'PENDING',
         category: template.category ?? 'MARKETING',
-        provider_name: 'infobip',
+        provider_name: 'meta',
         provider_template_id: template.id ?? template.template?.id ?? name,
         provider_status: providerStatus,
         variable_count: countTemplateVariables(content),
@@ -298,19 +293,18 @@ export async function sendTemplateMessage(
   placeholders: string[] = [],
   eventContext?: OutboundEventContext,
 ): Promise<{ success: boolean; data?: unknown; error?: unknown; status?: number }> {
-  const { systemNumber, templateLanguage } = getInfobipConfig();
+  const { templateLanguage } = getMetaConfig();
   const payload = {
-    messages: [
-      {
-        from: systemNumber,
-        to,
-        content: {
-          templateName,
-          templateData: { body: { placeholders } },
-          language: templateLanguage,
-        },
-      },
-    ],
+    messaging_product: 'whatsapp',
+    to,
+    type: 'template',
+    template: {
+      name: templateName,
+      language: { code: templateLanguage },
+      ...(placeholders.length > 0 ? {
+        components: [{ type: 'body', parameters: placeholders.map((text) => ({ type: 'text', text })) }],
+      } : {}),
+    },
   };
 
   const event = await OutboundEventService.createEvent(supabase, {
@@ -331,8 +325,8 @@ export async function sendTemplateMessage(
   const existingResponse = existingEventResponse(event);
   if (existingResponse) return existingResponse;
 
-  const response = await sendInfobipRequest('/whatsapp/1/message/template', payload, event.id);
-  return response ?? { success: false, error: 'No response from Infobip' };
+  const response = await sendMetaRequest(payload, event.id);
+  return response ?? { success: false, error: 'No response from Meta' };
 }
 
 export async function sendWhatsAppMessage(
@@ -350,15 +344,15 @@ export async function sendWhatsAppMessage(
     now.getTime() - new Date(lastInteractionTimestamp).getTime() > 24 * 60 * 60 * 1000;
 
   if (isOutside24h) {
-    const { templateName } = getInfobipConfig();
+    const { templateName } = getMetaConfig();
     return sendTemplateMessage(to, templateName, [text], eventContext);
   }
 
-  const { systemNumber } = getInfobipConfig();
   const payload = {
-    from: systemNumber,
+    messaging_product: 'whatsapp',
     to,
-    content: { text },
+    type: 'text',
+    text: { body: text },
   };
 
   const event = await OutboundEventService.createEvent(supabase, {
@@ -375,8 +369,8 @@ export async function sendWhatsAppMessage(
   const existingResponse = existingEventResponse(event);
   if (existingResponse) return existingResponse;
 
-  const response = await sendInfobipRequest('/whatsapp/1/message/text', payload, event.id);
-  return response ?? { success: false, error: 'No response from Infobip' };
+  const response = await sendMetaRequest(payload, event.id);
+  return response ?? { success: false, error: 'No response from Meta' };
 }
 
 export async function retryOutboundEvent(
@@ -385,27 +379,28 @@ export async function retryOutboundEvent(
   const content = event.message_content;
 
   if (event.message_type === 'template') {
-    const { systemNumber } = getInfobipConfig();
     const payload = {
-      messages: [{
-        from: systemNumber,
-        to: event.phone_number,
-        content: {
-          templateName: String(content.templateName ?? ''),
-          templateData: { body: { placeholders: Array.isArray(content.placeholders) ? content.placeholders.map(String) : [] } },
-          language: String(content.language ?? getInfobipConfig().templateLanguage),
-        },
-      }],
+      messaging_product: 'whatsapp',
+      to: event.phone_number,
+      type: 'template',
+      template: {
+        name: String(content.templateName ?? ''),
+        language: { code: String(content.language ?? getMetaConfig().templateLanguage) },
+        components: [{
+          type: 'body',
+          parameters: (Array.isArray(content.placeholders) ? content.placeholders : []).map((text) => ({ type: 'text', text: String(text) })),
+        }],
+      },
     };
-    return sendInfobipRequest('/whatsapp/1/message/template', payload, event.id, event.processing_token);
+    return sendMetaRequest(payload, event.id, event.processing_token);
   }
 
   if (event.message_type === 'text') {
-    const { systemNumber } = getInfobipConfig();
-    return sendInfobipRequest('/whatsapp/1/message/text', {
-      from: systemNumber,
+    return sendMetaRequest({
+      messaging_product: 'whatsapp',
       to: event.phone_number,
-      content: { text: String(content.text ?? '') },
+      type: 'text',
+      text: { body: String(content.text ?? '') },
     }, event.id, event.processing_token);
   }
 
@@ -414,22 +409,22 @@ export async function retryOutboundEvent(
     if (!['image', 'video', 'audio', 'document'].includes(type)) {
       return { success: false, error: `Unsupported media retry type: ${type}` };
     }
-    const { systemNumber } = getInfobipConfig();
-    const mediaContent: Record<string, unknown> = { mediaUrl: String(content.mediaUrl ?? '') };
+    const mediaContent: Record<string, unknown> = { link: String(content.mediaUrl ?? '') };
     if (content.caption) mediaContent.caption = String(content.caption);
-    return sendInfobipRequest(`/whatsapp/1/message/${type}`, {
-      from: systemNumber,
+    return sendMetaRequest({
+      messaging_product: 'whatsapp',
       to: event.phone_number,
-      content: mediaContent,
+      type,
+      [type]: mediaContent,
     }, event.id, event.processing_token);
   }
 
   if (event.message_type === 'location') {
-    const { systemNumber } = getInfobipConfig();
-    return sendInfobipRequest('/whatsapp/1/message/location', {
-      from: systemNumber,
+    return sendMetaRequest({
+      messaging_product: 'whatsapp',
       to: event.phone_number,
-      content,
+      type: 'location',
+      location: content,
     }, event.id, event.processing_token);
   }
 
@@ -442,16 +437,14 @@ export async function sendWhatsAppMedia(
   mediaUrl: string,
   caption?: string,
 ): Promise<{ success: boolean; data?: unknown; error?: unknown; status?: number }> {
-  const { systemNumber } = getInfobipConfig();
   const payload: Record<string, unknown> = {
-    from: systemNumber,
+    messaging_product: 'whatsapp',
     to,
-    content: { mediaUrl },
+    type,
+    [type]: { link: mediaUrl },
   };
 
-  if (caption) {
-    (payload.content as Record<string, unknown>).caption = caption;
-  }
+  if (caption) (payload[type] as Record<string, unknown>).caption = caption;
 
   const event = await OutboundEventService.createEvent(supabase, {
     phone_number: to,
@@ -461,7 +454,7 @@ export async function sendWhatsAppMedia(
   const existingResponse = existingEventResponse(event);
   if (existingResponse) return existingResponse;
 
-  const response = await sendInfobipRequest(`/whatsapp/1/message/${type}`, payload, event.id);
+  const response = await sendMetaRequest(payload, event.id);
 
   if (response?.success) {
     const msgId = (response.data as { messages?: Array<{ messageId?: string }> })?.messages?.[0]?.messageId;
@@ -477,7 +470,7 @@ export async function sendWhatsAppMedia(
     });
   }
 
-  return response ?? { success: false, error: 'No response from Infobip' };
+  return response ?? { success: false, error: 'No response from Meta' };
 }
 
 export async function sendWhatsAppLocation(
@@ -487,15 +480,15 @@ export async function sendWhatsAppLocation(
   name?: string,
   address?: string,
 ): Promise<{ success: boolean; data?: unknown; error?: unknown; status?: number }> {
-  const { systemNumber } = getInfobipConfig();
   const payload: Record<string, unknown> = {
-    from: systemNumber,
+    messaging_product: 'whatsapp',
     to,
-    content: { latitude, longitude },
+    type: 'location',
+    location: { latitude, longitude },
   };
 
-  if (name) (payload.content as Record<string, unknown>).name = name;
-  if (address) (payload.content as Record<string, unknown>).address = address;
+  if (name) (payload.location as Record<string, unknown>).name = name;
+  if (address) (payload.location as Record<string, unknown>).address = address;
 
   const event = await OutboundEventService.createEvent(supabase, {
     phone_number: to,
@@ -505,7 +498,7 @@ export async function sendWhatsAppLocation(
   const existingResponse = existingEventResponse(event);
   if (existingResponse) return existingResponse;
 
-  const response = await sendInfobipRequest('/whatsapp/1/message/location', payload, event.id);
+  const response = await sendMetaRequest(payload, event.id);
 
   if (response?.success) {
     const msgId = (response.data as { messages?: Array<{ messageId?: string }> })?.messages?.[0]?.messageId;
@@ -519,5 +512,5 @@ export async function sendWhatsAppLocation(
     });
   }
 
-  return response ?? { success: false, error: 'No response from Infobip' };
+  return response ?? { success: false, error: 'No response from Meta' };
 }
