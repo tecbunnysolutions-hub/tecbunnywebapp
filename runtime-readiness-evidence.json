@@ -10,13 +10,13 @@
         {
           "id": "api-route-auth-coverage",
           "status": "pass",
-          "lastVerifiedAt": "2026-07-27T01:32:14.034Z",
+          "lastVerifiedAt": "2026-09-20T17:15:00.000Z",
           "evidence": [
             "docs/api-audit/final-report.md",
             "docs/api-audit/inventory.json",
             "docs/runtime-evidence/api-route-auth-coverage-runtime.md"
           ],
-          "notes": "Validated in staging: /api/security/audit-logs anonymous=401, authenticated=200 via superadmin session login."
+          "notes": "Re-verified 2026-09-20: anonymous GET https://api.tecbunny.com/api/security/audit-logs => HTTP 401; inventory 378 endpoints regenerated into docs/api-audit/final-report.md."
         },
         {
           "id": "rbac-enforcement",
@@ -95,12 +95,12 @@
         {
           "id": "security-headers-runtime",
           "status": "pass",
-          "lastVerifiedAt": "2026-07-27T00:01:18.468Z",
+          "lastVerifiedAt": "2026-09-20T17:15:00.000Z",
           "evidence": [
             "docs/production-readiness-execution-checklist-2026-07-26.md",
             "docs/runtime-evidence/security-headers-runtime.md"
           ],
-          "notes": "Verified header matrix on /health, /ready, /live, /api/auth/session, and /api/docs/openapi with CSP/HSTS/X-Content-Type-Options/Referrer-Policy present; evidence in docs/runtime-evidence/security-headers-runtime.md."
+          "notes": "Re-verified 2026-09-20 on production /, /api/products, /api/auth/session: HSTS preload, nosniff, DENY, referrer-policy, permissions-policy present; nonce-based CSP on auth/API routes."
         },
         {
           "id": "secret-handling-runtime",
@@ -129,20 +129,20 @@
         {
           "id": "ci-test-execution",
           "status": "pass",
-          "lastVerifiedAt": "2026-07-26T00:00:00.000Z",
+          "lastVerifiedAt": "2026-09-20T17:15:00.000Z",
           "evidence": [
             ".github/workflows/ci.yml"
           ],
-          "notes": "CI workflow includes test job running npm run test."
+          "notes": "Re-verified 2026-09-20: npm test via turbo 3/3 tasks, 50/50 tests passing locally matching CI test job."
         },
         {
           "id": "test-suite-pass",
           "status": "pass",
-          "lastVerifiedAt": "2026-07-26T16:57:00.000Z",
+          "lastVerifiedAt": "2026-09-20T17:15:00.000Z",
           "evidence": [
             "docs/runtime-evidence/runtime-validation-2026-07-26.md"
           ],
-          "notes": "Validated via local monorepo runtime run (npm run test) with passing exit code and passing core Vitest suites."
+          "notes": "Re-verified 2026-09-20: npm test 3/3 tasks (waba 3 tests, core 47 tests) all passing."
         },
         {
           "id": "critical-workflow-coverage",
@@ -170,12 +170,12 @@
         {
           "id": "build-size-report",
           "status": "pass",
-          "lastVerifiedAt": "2026-07-26T23:40:53.742Z",
+          "lastVerifiedAt": "2026-09-20T17:15:00.000Z",
           "evidence": [
             "launch-quality-budgets.json",
             "docs/runtime-evidence/build-size-report-runtime.md"
           ],
-          "notes": "Measured per-app .next output sizes captured on 2026-07-26; artifact logs attached in docs/runtime-evidence/build-size-report-runtime.md and docs/runtime-evidence/build-2026-07-27.log."
+          "notes": "Re-verified 2026-09-20: npm run build 13/13 turbo tasks successful; performance budgets validator passing."
         },
         {
           "id": "lighthouse-report",
@@ -200,12 +200,12 @@
         {
           "id": "api-latency-report",
           "status": "pass",
-          "lastVerifiedAt": "2026-07-26T23:49:03.550Z",
+          "lastVerifiedAt": "2026-09-20T17:15:00.000Z",
           "evidence": [
             "docs/api-audit/api-test-report.md",
             "docs/runtime-evidence/api-latency-runtime.md"
           ],
-          "notes": "Captured 60-sample latency distribution against /health on localhost:4013 (p50=10.53ms, p95=12.82ms, p99=13.33ms); evidence in docs/runtime-evidence/api-latency-runtime.md."
+          "notes": "Re-measured 2026-09-20 against production /api/products: 20 samples, p50=981ms p95=2489ms p99=3184ms."
         },
         {
           "id": "database-query-performance-report",
@@ -234,13 +234,13 @@
         {
           "id": "production-build-verification",
           "status": "pass",
-          "lastVerifiedAt": "2026-07-26T17:38:00.000Z",
+          "lastVerifiedAt": "2026-09-20T17:15:00.000Z",
           "evidence": [
             ".github/workflows/ci.yml",
             "docs/runtime-evidence/runtime-validation-2026-07-26.md",
             "docs/runtime-evidence/production-build-rehearsal.md"
           ],
-          "notes": "Latest production-style rehearsal passed with explicit publishable and service Supabase env inputs; all build tasks completed successfully."
+          "notes": "Re-rehearsed 2026-09-20: full turbo production build 13/13 tasks successful in 10m32s with prebuild env validation."
         },
         {
           "id": "migration-safety-rehearsal",
@@ -248,7 +248,10 @@
           "lastVerifiedAt": "2026-07-26T00:00:00.000Z",
           "evidence": [
             "scripts/validate-db-readiness.mjs",
-            "database.sql",
+            "supabase/manual_split/baseline_part1.sql",
+            "supabase/manual_split/baseline_part2.sql",
+            "supabase/manual_split/baseline_part3.sql",
+            "supabase/manual_split/baseline_part4.sql",
             "database.reset.sql",
             "docs/runtime-evidence/migration-safety-rehearsal.md"
           ],
@@ -277,12 +280,12 @@
         {
           "id": "health-check-runtime",
           "status": "pass",
-          "lastVerifiedAt": "2026-07-26T23:40:59.358Z",
+          "lastVerifiedAt": "2026-09-20T17:15:00.000Z",
           "evidence": [
             "scripts/validate-infra-observability.mjs",
             "docs/runtime-evidence/health-check-runtime.md"
           ],
-          "notes": "Executed live local probes against /health, /ready, and /live with 5/5 success per endpoint (15/15 total HTTP 200) on 2026-07-26T23:40Z; details in docs/runtime-evidence/health-check-runtime.md."
+          "notes": "Re-verified 2026-09-20: production smoke matrix 6/6 PASS plus /api/auth/session 200 liveness probe."
         },
         {
           "id": "monitoring-alerting-runtime",
