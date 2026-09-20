@@ -100,3 +100,41 @@ export function applyPublicProductOrdering(
   }
   return query.order('created_at', { ascending: false });
 }
+
+/**
+ * Probe the live products table schema and return the set of column names
+ * that actually exist, or null when the schema can't be determined.
+ *
+ * The production products table is legacy and has drifted from the local
+ * migrations (missing columns such as is_active, sale_price, discount_price).
+ * Passing this column set into applyPublicProductVisibilityFilters /
+ * applyPublicProductOrdering keeps those helpers from referencing columns
+ * that don't exist, which is what makes PostgREST return 42703 errors and
+ * the whole catalog render the "temporarily unavailable" fallback.
+ */
+export async function ensureProductColumns(supabase: any): Promise<Set<string> | null> {
+  try {
+    // 1. Try the public schema view, when it exists.
+    const { data: viewData, error: viewError } = await supabase
+      .from('products_columns_view')
+      .select('column_name');
+
+    if (!viewError && viewData && viewData.length > 0) {
+      return new Set<string>(viewData.map((c: any) => String(c.column_name)));
+    }
+
+    // 2. Fall back to selecting a single row and reading its keys.
+    const { data: rowData, error: rowError } = await supabase
+      .from('products')
+      .select('*')
+      .limit(1);
+
+    if (!rowError && rowData && rowData.length > 0) {
+      return new Set<string>(Object.keys(rowData[0]));
+    }
+
+    return null;
+  } catch {
+    return null;
+  }
+}

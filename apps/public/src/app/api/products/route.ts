@@ -7,6 +7,7 @@ import {
   PUBLIC_PRODUCT_STATUSES,
   applyPublicProductOrdering,
   applyPublicProductVisibilityFilters,
+  ensureProductColumns,
 } from '@tecbunny/core/product-visibility';
 
 const CACHE_CONTROL = 'no-store, max-age=0, must-revalidate';
@@ -97,10 +98,12 @@ export async function GET(request: NextRequest) {
 
   try {
     const supabase = createClient(url, key);
+    const productColumns = await ensureProductColumns(supabase);
     let query = applyPublicProductVisibilityFilters(
       supabase
         .from('products')
-        .select('*', { count: 'exact' })
+        .select('*', { count: 'exact' }),
+      productColumns
     );
 
     if (cleanStatus) {
@@ -125,7 +128,7 @@ export async function GET(request: NextRequest) {
       ].join(','));
     }
 
-    const { data, error, count } = await applyPublicProductOrdering(query)
+    const { data, error, count } = await applyPublicProductOrdering(query, productColumns)
       .range(offset, offset + limit - 1);
 
     if (error) {
