@@ -105,19 +105,19 @@ describe('Security & Transaction Deep Audit Suite', () => {
 
   // ─── 3. Authoritative Pricing & Fallback Hierarchy ─────────────────────────
   describe('Authoritative Pricing & Fallback Hierarchy', () => {
-    it('always selects the first positive price in the 6-field hierarchy', () => {
-      expect(resolvePublicProductPrice({ price: 0, selling_price: 2499 })).toBe(2499);
-      expect(resolvePublicProductPrice({ price: null, selling_price: null, sale_price: 1999 })).toBe(1999);
-      expect(resolvePublicProductPrice({ offer_price: 1499, discount_price: 1200 })).toBe(1499);
-      expect(resolvePublicProductPrice({ unit_price: 799 })).toBe(799);
+    it('always selects the first positive price in the 4-field hierarchy', () => {
+      expect(resolvePublicProductPrice({ offer_price: 1499, selling_price: 2499 })).toBe(1499);
+      expect(resolvePublicProductPrice({ offer_price: null, selling_price: 2499 })).toBe(2499);
+      expect(resolvePublicProductPrice({ offer_price: 0, selling_price: 0, mrp: 3998 })).toBe(3998);
+      expect(resolvePublicProductPrice({ dealer_price: 799 })).toBe(799);
     });
 
     it('excludes inactive, deleted, or unpriced products from public catalog', () => {
-      expect(isPubliclyVisibleProduct({ price: 500, status: 'archived' })).toBe(false);
-      expect(isPubliclyVisibleProduct({ price: 500, is_active: false })).toBe(false);
-      expect(isPubliclyVisibleProduct({ price: 500, deleted_at: '2026-08-01T00:00:00Z' })).toBe(false);
-      expect(isPubliclyVisibleProduct({ price: 0 })).toBe(false);
-      expect(isPubliclyVisibleProduct({ price: 500, status: 'published' })).toBe(true);
+      expect(isPubliclyVisibleProduct({ selling_price: 500, status: 'archived' })).toBe(false);
+      expect(isPubliclyVisibleProduct({ selling_price: 500, is_active: false })).toBe(false);
+      expect(isPubliclyVisibleProduct({ selling_price: 500, deleted_at: '2026-08-01T00:00:00Z' })).toBe(false);
+      expect(isPubliclyVisibleProduct({ selling_price: 0, mrp: 0 })).toBe(false);
+      expect(isPubliclyVisibleProduct({ selling_price: 500, status: 'published' })).toBe(true);
     });
   });
 

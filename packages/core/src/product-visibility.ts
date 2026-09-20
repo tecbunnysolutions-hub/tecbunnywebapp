@@ -1,10 +1,20 @@
+/**
+ * Canonical price columns for the public catalog, in resolution order.
+ *
+ * The catalog only recognizes four prices:
+ *   - offer_price   – the active offer price (what the customer pays when set)
+ *   - selling_price – the sale price (what the customer pays by default)
+ *   - mrp           – the maximum retail price (strikethrough / fallback)
+ *   - dealer_price  – the dealer price (last-resort fallback)
+ *
+ * The first column with a positive value wins, so offer price always beats
+ * the sale price, which beats MRP, which beats dealer price.
+ */
 export const PUBLIC_PRODUCT_PRICE_COLUMNS = [
-  'price',
-  'selling_price',
-  'sale_price',
   'offer_price',
-  'discount_price',
-  'unit_price',
+  'selling_price',
+  'mrp',
+  'dealer_price',
 ] as const;
 
 export const PUBLIC_PRODUCT_STATUSES = ['active', 'published'] as const;

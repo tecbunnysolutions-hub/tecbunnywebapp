@@ -28,40 +28,38 @@ function createQueryRecorder() {
 }
 
 describe('product visibility', () => {
-  it('accepts a product with price = 0, selling_price > 0', () => {
+  it('accepts a product with offer_price = 0, selling_price > 0', () => {
     expect(isPubliclyVisibleProduct({
       status: 'active',
       is_deleted: false,
-      price: 0,
+      offer_price: 0,
       selling_price: 5000,
     })).toBe(true);
   });
 
-  it('accepts a product with price = null, sale_price > 0', () => {
+  it('accepts a product with selling_price = null, mrp > 0', () => {
     expect(isPubliclyVisibleProduct({
       status: 'active',
       is_deleted: false,
-      price: null,
-      sale_price: 3200,
+      selling_price: null,
+      mrp: 3200,
     })).toBe(true);
   });
 
   it('accepts a product with status = published', () => {
     expect(isPubliclyVisibleProduct({
       status: 'published',
-      price: 1500,
+      selling_price: 1500,
     })).toBe(true);
   });
 
   it('rejects a product when all prices = 0', () => {
     expect(isPubliclyVisibleProduct({
       status: 'active',
-      price: 0,
-      selling_price: 0,
-      sale_price: 0,
       offer_price: 0,
-      discount_price: 0,
-      unit_price: 0,
+      selling_price: 0,
+      mrp: 0,
+      dealer_price: 0,
     })).toBe(false);
   });
 
@@ -69,7 +67,7 @@ describe('product visibility', () => {
     expect(isPubliclyVisibleProduct({
       status: 'active',
       is_deleted: true,
-      price: 5000,
+      selling_price: 5000,
     })).toBe(false);
   });
 
@@ -77,14 +75,14 @@ describe('product visibility', () => {
     expect(isPubliclyVisibleProduct({
       status: 'active',
       deleted_at: '2026-08-30T00:00:00.000Z',
-      price: 5000,
+      selling_price: 5000,
     })).toBe(false);
   });
 
   it('rejects a product with status = draft', () => {
     expect(isPubliclyVisibleProduct({
       status: 'draft',
-      price: 5000,
+      selling_price: 5000,
     })).toBe(false);
   });
 
@@ -92,7 +90,7 @@ describe('product visibility', () => {
     expect(isPubliclyVisibleProduct({
       status: 'active',
       is_active: false,
-      price: 5000,
+      selling_price: 5000,
     })).toBe(false);
   });
 

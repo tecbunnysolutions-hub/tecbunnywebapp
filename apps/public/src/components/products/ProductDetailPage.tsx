@@ -178,7 +178,7 @@ export function ProductDetailPage({ productId, initialProduct, sourceContext }: 
         ? rawHsn.trim()
         : undefined;
 
-      const rawPrice = [p.price, p.selling_price, p.sale_price, p.offer_price, p.discount_price, p.unit_price]
+      const rawPrice = [p.offer_price, p.selling_price, p.mrp, p.dealer_price]
         .map((value) => typeof value === 'number' ? value : Number(value))
         .find((value) => Number.isFinite(value) && value > 0) || 0;
       // fall back to rawPrice — avoid showing a fake discount when MRP isn't stored
@@ -386,7 +386,7 @@ export function ProductDetailPage({ productId, initialProduct, sourceContext }: 
           ? rawHsn.trim()
           : undefined;
 
-        const rawPrice = [data.price, data.selling_price, data.sale_price, data.offer_price, data.discount_price, data.unit_price]
+        const rawPrice = [data.offer_price, data.selling_price, data.mrp, data.dealer_price]
           .map((value) => typeof value === 'number' ? value : Number(value))
           .find((value) => Number.isFinite(value) && value > 0) || 0;
         // fall back to rawPrice — avoid showing a fake discount when MRP isn't stored

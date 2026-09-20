@@ -274,7 +274,7 @@ function normalizeRawProduct(p: Record<string, unknown>): Product {
   const toNonEmptyString = (value: unknown): string | undefined =>
     typeof value === 'string' && value.trim().length > 0 ? value.trim() : undefined;
 
-  const rawPrice = [p.price, p.selling_price, p.sale_price, p.offer_price, p.discount_price, p.unit_price]
+  const rawPrice = [p.offer_price, p.selling_price, p.mrp, p.dealer_price]
     .map(toNumber)
     .find((value) => Number.isFinite(value) && value > 0) || 0;
   // fall back to rawPrice (not rawPrice*1.2) — avoid showing a fake discount when MRP isn't stored
