@@ -55,6 +55,29 @@ function hashPhone(value: unknown): string | null {
   return crypto.createHash('sha256').update(value.trim()).digest('hex').slice(0, 16);
 }
 
+function verifyAgainstAnySecret(payload: Buffer | string, signature: string, secrets: Array<string | undefined>): boolean {
+  return secrets.some((secret) => verifySignature(payload, signature, secret));
+}
+
+/**
+ * Meta webhook verification challenge (GET). Meta calls this endpoint with
+ * hub.mode=subscribe, hub.verify_token and hub.challenge when the webhook is
+ * configured in the Meta app dashboard.
+ */
+export async function GET(req: Request) {
+  const url = new URL(req.url);
+  const mode = url.searchParams.get('hub.mode');
+  const token = url.searchParams.get('hub.verify_token');
+  const challenge = url.searchParams.get('hub.challenge');
+  const verifyToken = process.env.META_WHATSAPP_VERIFY_TOKEN;
+
+  if (mode === 'subscribe' && token && challenge && verifyToken && token === verifyToken) {
+    return new Response(challenge, { status: 200, headers: { 'Content-Type': 'text/plain' } });
+  }
+
+  return NextResponse.json({ error: 'Webhook verification failed' }, { status: 403 });
+}
+
 export async function POST(req: Request) {
   try {
     const rawBodyBuffer = Buffer.from(await req.arrayBuffer());
@@ -71,8 +94,9 @@ export async function POST(req: Request) {
 
     const url = new URL(req.url);
     const token = url.searchParams.get('token');
-    const webhookSecret = process.env.INFOBIP_HMAC_SECRET;
-    const webhookVerifyToken = process.env.WHATSAPP_WEBHOOK_VERIFY_TOKEN || webhookSecret;
+    const infobipSecret = process.env.INFOBIP_HMAC_SECRET;
+    const metaAppSecret = process.env.META_APP_SECRET;
+    const webhookVerifyToken = process.env.WHATSAPP_WEBHOOK_VERIFY_TOKEN || infobipSecret;
 
     // Bug #2 fix / Revert: Infobip uses the URL token for this integration.
     // If the token is present in the URL, prioritize validating it.
@@ -92,29 +116,33 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: 'Invalid URL token mismatch.' }, { status: 401 });
       }
     } else {
-      // Fallback to HMAC Signature Verification if token is not in URL
+      // Fallback to HMAC Signature Verification if token is not in URL.
+      // Accept either the Meta app secret (Meta webhooks) or the Infobip HMAC secret.
       if (!signature) {
         console.error('Missing signature header and no URL token provided.');
         return NextResponse.json({ error: 'Missing authentication' }, { status: 401 });
       }
-      if (!verifySignature(rawBodyBuffer, signature, webhookSecret)) {
+      if (!verifyAgainstAnySecret(rawBodyBuffer, signature, [metaAppSecret, infobipSecret])) {
         return NextResponse.json({ error: 'Invalid HMAC signature' }, { status: 401 });
       }
     }
 
     const parsedBody = JSON.parse(rawBody) as Record<string, unknown>;
     const body = parsedBody;
+    const isMetaPayload = Array.isArray((body as { entry?: unknown }).entry);
 
     // P6-2: Replay attack prevention — reject payloads older than 5 minutes
     // Infobip includes a `timestamp` field in the webhook payload.
-    const REPLAY_WINDOW_MS = 5 * 60 * 1000; // 5 minutes
-    const replayPayload = body as { timestamp?: unknown; results?: Array<{ receivedAt?: unknown }> };
-    const payloadTs = (replayPayload.timestamp || replayPayload.results?.[0]?.receivedAt) as string | number | undefined;
-    if (payloadTs) {
-      const ts = new Date(payloadTs).getTime();
-      if (!isNaN(ts) && Date.now() - ts > REPLAY_WINDOW_MS) {
-        console.warn('[webhook] Rejected stale payload (replay protection). Age:', Date.now() - ts, 'ms');
-        return NextResponse.json({ error: 'Payload timestamp too old' }, { status: 400 });
+    if (!isMetaPayload) {
+      const REPLAY_WINDOW_MS = 5 * 60 * 1000; // 5 minutes
+      const replayPayload = body as { timestamp?: unknown; results?: Array<{ receivedAt?: unknown }> };
+      const payloadTs = (replayPayload.timestamp || replayPayload.results?.[0]?.receivedAt) as string | number | undefined;
+      if (payloadTs) {
+        const ts = new Date(payloadTs).getTime();
+        if (!isNaN(ts) && Date.now() - ts > REPLAY_WINDOW_MS) {
+          console.warn('[webhook] Rejected stale payload (replay protection). Age:', Date.now() - ts, 'ms');
+          return NextResponse.json({ error: 'Payload timestamp too old' }, { status: 400 });
+        }
       }
     }
 
@@ -125,14 +153,40 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Queue unavailable' }, { status: 503 });
     }
 
-    const webhookRecord = body as { results?: Array<{ from?: string; messageId?: string; id?: string }>; statuses?: Array<{ messageId?: string; id?: string }> };
-    const results = Array.isArray(webhookRecord.results) ? webhookRecord.results : [];
-    const statuses = Array.isArray(webhookRecord.statuses) ? webhookRecord.statuses : [];
-    const providerEventId = webhookRecord.results?.[0]?.messageId
-      || webhookRecord.statuses?.[0]?.messageId
-      || webhookRecord.results?.[0]?.id
-      || webhookRecord.statuses?.[0]?.id;
-    await queue.add('process-webhook', body, {
+    type NormalizedResult = { from?: string; messageId?: string; message?: { text?: string } };
+    type NormalizedStatus = { messageId?: string; status?: string; timestamp?: string };
+    let results: NormalizedResult[] = [];
+    let statuses: NormalizedStatus[] = [];
+    let queuePayload: Record<string, unknown> = body;
+
+    if (isMetaPayload) {
+      // Meta Cloud API shape: { entry: [{ changes: [{ value: { messages, statuses } }] }] }
+      // Normalized into the internal results/statuses contract the worker consumes.
+      const metaBody = body as {
+        entry?: Array<{ changes?: Array<{ value?: { messages?: Array<{ id?: string; from?: string; text?: { body?: string } }>; statuses?: Array<{ id?: string; status?: string; timestamp?: string }> } }> }>;
+      };
+      for (const entry of metaBody.entry ?? []) {
+        for (const change of entry.changes ?? []) {
+          for (const message of change.value?.messages ?? []) {
+            results.push({ from: message.from, messageId: message.id, message: { text: message.text?.body } });
+          }
+          for (const status of change.value?.statuses ?? []) {
+            statuses.push({ messageId: status.id, status: status.status, timestamp: status.timestamp });
+          }
+        }
+      }
+      queuePayload = { ...body, results, statuses };
+    } else {
+      const webhookRecord = body as { results?: Array<{ from?: string; messageId?: string; id?: string }>; statuses?: Array<{ messageId?: string; id?: string }> };
+      results = Array.isArray(webhookRecord.results) ? webhookRecord.results : [];
+      statuses = Array.isArray(webhookRecord.statuses) ? webhookRecord.statuses : [];
+    }
+
+    const providerEventId = results[0]?.messageId
+      || statuses[0]?.messageId
+      || (results[0] as { id?: string } | undefined)?.id
+      || (statuses[0] as { id?: string } | undefined)?.id;
+    await queue.add('process-webhook', queuePayload, {
       jobId: providerEventId ? `waba-webhook-${providerEventId}` : undefined,
       removeOnComplete: true,
       removeOnFail: false,
@@ -140,7 +194,7 @@ export async function POST(req: Request) {
 
     logger.info('waba_webhook.accepted', {
       requestId,
-      provider: 'infobip',
+      provider: isMetaPayload ? 'meta' : 'infobip',
       eventType: statuses.length > 0 ? 'status' : results.length > 0 ? 'message' : 'unknown',
       providerEventId: providerEventId || null,
       senderPhoneHash: hashPhone(results[0]?.from),

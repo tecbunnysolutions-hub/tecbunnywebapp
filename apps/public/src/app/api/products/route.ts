@@ -5,6 +5,7 @@ import { logger } from '@tecbunny/core/logger';
 import { getProductDisplayImage } from '@tecbunny/core/image-utils';
 import {
   PUBLIC_PRODUCT_STATUSES,
+  applyPublicProductOrdering,
   applyPublicProductVisibilityFilters,
 } from '@tecbunny/core/product-visibility';
 
@@ -124,9 +125,7 @@ export async function GET(request: NextRequest) {
       ].join(','));
     }
 
-    const { data, error, count } = await query
-      .order('prioritized', { ascending: false, nullsFirst: false })
-      .order('created_at', { ascending: false })
+    const { data, error, count } = await applyPublicProductOrdering(query)
       .range(offset, offset + limit - 1);
 
     if (error) {

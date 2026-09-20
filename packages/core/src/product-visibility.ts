@@ -80,3 +80,23 @@ export function applyPublicProductVisibilityFilters(
 
   return next;
 }
+
+/**
+ * Order by `prioritized` desc (then `created_at` desc) only when the live
+ * products table actually has the column. The production table is legacy and
+ * has drifted, so an unconditional ORDER BY on a missing column makes PostgREST
+ * return an error and the whole catalog render the "temporarily unavailable"
+ * fallback. Pass the known column set (from a schema probe) or omit to skip
+ * the prioritized sort when it can't be confirmed.
+ */
+export function applyPublicProductOrdering(
+  query: any,
+  columns?: Set<string> | null
+): any {
+  if (columns && columns.has('prioritized')) {
+    return query
+      .order('prioritized', { ascending: false, nullsFirst: false })
+      .order('created_at', { ascending: false });
+  }
+  return query.order('created_at', { ascending: false });
+}

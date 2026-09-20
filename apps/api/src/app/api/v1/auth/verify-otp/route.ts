@@ -1,1 +1,4 @@
-export { POST, runtime, maxDuration } from '../../../auth/verify-otp/route';
+export const runtime = 'nodejs';
+export const maxDuration = 30;
+
+export { POST } from '../../../auth/verify-otp/route';
