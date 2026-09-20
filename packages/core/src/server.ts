@@ -6,6 +6,7 @@ export * from './auth/superadmin-session';
 export * from './auth/superadmin-password';
 export { default as improvedEmailService } from './improved-email-service';
 export * from './rate-limit';
+export * from './request-ip';
 export * from './captcha/captcha-service';
 export * from './checkout-engine';
 export * from './enhanced-commission-service';

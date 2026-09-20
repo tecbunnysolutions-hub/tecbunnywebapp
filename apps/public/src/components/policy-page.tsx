@@ -6,6 +6,7 @@ import Link from 'next/link';
 
 import sanitizeHtml from "@tecbunny/core/sanitize-html";
 import { usePageContent } from '@tecbunny/core/hooks';
+import styles from './policy-page.module.css';
 
 
 interface PolicyPageProps {
@@ -96,44 +97,6 @@ export default function PolicyPage({ pageKey, defaultTitle = 'Policy', initialCo
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-background text-foreground">
-      <style dangerouslySetInnerHTML={{ __html: `
-        .policy-content h2 {
-          font-size: 1.5rem !important;
-          font-weight: 700 !important;
-          margin-top: 3rem !important;
-          margin-bottom: 1.25rem !important;
-          color: hsl(var(--foreground)) !important;
-          border-bottom: 1px solid hsl(var(--border)) !important;
-          padding-bottom: 0.625rem !important;
-        }
-        .policy-content h3 {
-          font-size: 1.25rem !important;
-          font-weight: 600 !important;
-          margin-top: 2.25rem !important;
-          margin-bottom: 1rem !important;
-          color: hsl(var(--primary)) !important;
-        }
-        .policy-content p {
-          margin-bottom: 1.5rem !important;
-          line-height: 1.8 !important;
-          color: hsl(var(--muted-foreground)) !important;
-        }
-        .policy-content ul, .policy-content ol {
-          margin-top: 1rem !important;
-          margin-bottom: 1.75rem !important;
-          padding-left: 1.75rem !important;
-          list-style-type: disc !important;
-        }
-        .policy-content li {
-          margin-bottom: 0.875rem !important;
-          line-height: 1.7 !important;
-          color: hsl(var(--muted-foreground)) !important;
-        }
-        .policy-content strong, .policy-content b {
-          color: hsl(var(--foreground)) !important;
-          font-weight: 600 !important;
-        }
-      ` }} />
       <div className="pointer-events-none absolute inset-0 bg-noise opacity-10" />
       
       {/* Decorative Blur Orbs */}
@@ -162,7 +125,7 @@ export default function PolicyPage({ pageKey, defaultTitle = 'Policy', initialCo
             )}
           </div>
  
-          <div className="policy-content mt-8 space-y-6 text-sm text-muted-foreground">
+          <div className={`${styles.policyContent} mt-8 space-y-6 text-sm text-muted-foreground`}>
             {enhancedHtml && (
               <div
                 className="prose prose-invert max-w-none"

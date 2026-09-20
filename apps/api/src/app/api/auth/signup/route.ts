@@ -3,20 +3,13 @@ import { createClient } from '@supabase/supabase-js';
 
 import { logger } from "@tecbunny/core";
 import { rateLimit } from "@tecbunny/core/rate-limit";
-import { AuthService } from "@tecbunny/core/server";
+import { AuthService, getTrustedClientIp } from "@tecbunny/core/server";
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY;
 const isSupabaseConfigured = Boolean(SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY);
 const SIGNUP_IP_LIMIT = { limit: 5, windowMs: 15 * 60 * 1000 };
 const SIGNUP_IDENTIFIER_LIMIT = { limit: 3, windowMs: 30 * 60 * 1000 };
-
-function getClientIp(request: NextRequest) {
-  return request.headers.get('cf-connecting-ip')?.trim()
-    || request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
-    || request.headers.get('x-real-ip')?.trim()
-    || 'unknown';
-}
 
 function getSupabaseAdmin() {
   if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
@@ -41,7 +34,7 @@ export async function POST(request: NextRequest) {
     }
 
     const payload = await request.json();
-    const clientIp = getClientIp(request);
+    const clientIp = getTrustedClientIp(request);
     const { email, mobile: _mobile } = payload;
     
     const normalizedEmail = typeof email === 'string' ? email.trim().toLowerCase() : '';

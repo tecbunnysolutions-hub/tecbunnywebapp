@@ -44,12 +44,10 @@ const nextConfig = {
     unoptimized: isStaticExport,
     formats: ['image/avif', 'image/webp'],
     minimumCacheTTL: 31536000,
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: '**',
-      },
-    ],
+    remotePatterns: allowedImageHosts.map((hostname) => ({
+      protocol: 'https',
+      hostname,
+    })),
   },
   reactStrictMode: true,
   webpack(config, { isServer }) {

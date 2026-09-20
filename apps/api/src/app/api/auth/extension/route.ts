@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@tecbunny/database';
 import { ExtensionAuthError, assertExtensionOrigin, extensionJson, extensionOptionsResponse, getExtensionCorsHeaders } from '../../extension-security';
 import { logger } from '@tecbunny/core/logger';
+import { verifySuperadminPassword } from '@tecbunny/core/server';
 
 export const dynamic = 'force-dynamic';
 
@@ -46,7 +47,8 @@ export async function POST(request: NextRequest) {
     const submittedPassword = String(password ?? '').trim();
     const configuredUserId = (process.env.SUPERADMIN_USER_ID || '').trim();
     const configuredEmail = (process.env.SUPERADMIN_EMAIL || '').trim();
-    const configuredPassword = process.env.SUPERADMIN_PASSWORD || '';
+    const configuredPasswordHash = process.env.SUPERADMIN_PASSWORD_HASH || '';
+    const developmentPassword = process.env.SUPERADMIN_PASSWORD || '';
 
     const allowedUserIds = [configuredUserId, configuredEmail].filter(Boolean);
     const superadminIdMatches = allowedUserIds.some(
@@ -59,7 +61,13 @@ export async function POST(request: NextRequest) {
 
     // If the submitted ID/email matches a configured superadmin identifier, validate password immediately.
     if (superadminIdMatches) {
-      if (!configuredPassword || !constantTimeStringEquals(submittedPassword, configuredPassword)) {
+      const passwordMatches = configuredPasswordHash
+        ? await verifySuperadminPassword(submittedPassword, configuredPasswordHash)
+        : process.env.NODE_ENV !== 'production'
+          && Boolean(developmentPassword)
+          && constantTimeStringEquals(submittedPassword, developmentPassword);
+
+      if (!passwordMatches) {
         logger.warn('auth_extension.root_check.password_mismatch');
         return extensionJson(
           request,

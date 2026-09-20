@@ -6,10 +6,8 @@ import HomePage from '@/components/home-page';
 import { createPageMetadata } from "@tecbunny/core/metadata";
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 
-// Homepage product cards must reflect current catalogue data immediately.
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
-export const fetchCache = 'force-no-store';
+// Revalidate homepage every 60 seconds (ISR) to fix 2.8s Document Request Latency
+export const revalidate = 60;
 
 
 // Homepage metadata for SEO

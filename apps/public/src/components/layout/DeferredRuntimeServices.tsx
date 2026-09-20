@@ -170,6 +170,7 @@ fbq('init', '${metaPixelId}');
 fbq('track', 'PageView');`}
           </Script>
           <noscript>
+            {/* The analytics fallback must remain a raw pixel for noscript clients. */}
             <img
               alt=""
               height="1"

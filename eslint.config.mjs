@@ -1,5 +1,6 @@
 // For more info, see https://github.com/storybookjs/eslint-plugin-storybook#configuration-flat-config-format
 import storybook from "eslint-plugin-storybook";
+import jsxA11y from 'eslint-plugin-jsx-a11y';
 
 import importPlugin from 'eslint-plugin-import';
 import tseslint from 'typescript-eslint';
@@ -43,6 +44,21 @@ export default [{
   },
   plugins: {
     "@typescript-eslint": tseslint.plugin,
+    "tecbunny-jsx-a11y": jsxA11y,
+  },
+  rules: {
+    'tecbunny-jsx-a11y/alt-text': 'error',
+    'tecbunny-jsx-a11y/anchor-has-content': 'error',
+    'tecbunny-jsx-a11y/aria-props': 'error',
+    'tecbunny-jsx-a11y/aria-role': 'error',
+    'tecbunny-jsx-a11y/click-events-have-key-events': 'warn',
+    'tecbunny-jsx-a11y/heading-has-content': 'error',
+    'tecbunny-jsx-a11y/interactive-supports-focus': 'warn',
+    'tecbunny-jsx-a11y/label-has-associated-control': 'error',
+    'tecbunny-jsx-a11y/no-autofocus': 'warn',
+    'tecbunny-jsx-a11y/no-noninteractive-element-interactions': 'warn',
+    'tecbunny-jsx-a11y/no-static-element-interactions': 'warn',
+    'tecbunny-jsx-a11y/role-has-required-aria-props': 'error',
   },
 }, {
   files: ["apps/**/*.tsx", "apps/**/*.jsx"],

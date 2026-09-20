@@ -12,6 +12,7 @@ import {
   Cpu,
 } from 'lucide-react';
 import { cn } from "@tecbunny/core/utils";
+import styles from './InteractiveTopologyDiagram.module.css';
 
 interface InteractiveTopologyDiagramProps {
   config: {
@@ -396,26 +397,6 @@ export function InteractiveTopologyDiagram({ config }: InteractiveTopologyDiagra
 
   return (
     <div className="rounded-3xl border border-border bg-card/40 p-4 sm:p-6 backdrop-blur-xl relative overflow-hidden transition-all duration-300">
-      {/* Glow Filter & Keyframe styling */}
-      <style dangerouslySetInnerHTML={{ __html: `
-        @keyframes topology-dash-flow {
-          to {
-            stroke-dashoffset: -24;
-          }
-        }
-        .animate-topology-dash {
-          stroke-dasharray: 6 6;
-          animation: topology-dash-flow 1.5s linear infinite;
-        }
-        @keyframes radar-scan {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
-        }
-        .animate-radar-scan {
-          animation: radar-scan 12s linear infinite;
-        }
-      ` }} />
-
       {/* Top Banner / System Console Info */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b border-border pb-4 mb-6 gap-3">
         <div>
@@ -483,7 +464,7 @@ export function InteractiveTopologyDiagram({ config }: InteractiveTopologyDiagra
               cx={centralNode.x}
               cy={centralNode.y}
               r="35"
-              className="stroke-primary/10 fill-none stroke-[1.5] stroke-dasharray-[4_8] animate-radar-scan origin-center"
+              className={cn("stroke-primary/10 fill-none stroke-[1.5] stroke-dasharray-[4_8] origin-center", styles.animateRadarScan)}
               style={{ transformOrigin: `${centralNode.x}px ${centralNode.y}px` }}
             />
 
@@ -538,7 +519,8 @@ export function InteractiveTopologyDiagram({ config }: InteractiveTopologyDiagra
                     x2={centralNode.x}
                     y2={centralNode.y}
                     className={cn(
-                      "animate-topology-dash transition-all duration-300 stroke-[1.5]",
+                      styles.animateTopologyDash,
+                      "transition-all duration-300 stroke-[1.5]",
                       isSpecificActive ? "opacity-100" : "opacity-40"
                     )}
                     stroke={activeStroke}

@@ -5,6 +5,7 @@ import { createClient } from '@tecbunny/database';
 
 import { useCallback, useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import Image from 'next/image';
 
 import { ArrowLeft, Smartphone, Copy, Check, QrCode, Clock, CreditCard } from 'lucide-react';
 
@@ -393,12 +394,13 @@ export default function UPIPaymentPage() {
                 <div className="text-center">
                   {qrCodeUrl ? (
                     <div className="space-y-2">
-                      <img 
+                      <Image
                         src={qrCodeUrl} 
                         alt="UPI Payment QR Code" 
                         className="mx-auto border rounded-lg shadow-sm"
                         width={200}
                         height={200}
+                        unoptimized
                       />
                       <p className="text-sm text-slate-300">
                         Scan with any UPI app to pay ₹{order?.total.toFixed(2)}

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { requireSupabaseServiceEnv } from "@tecbunny/database";
 import { logger } from '@tecbunny/core/logger';
+import { getTrustedClientIp } from '@tecbunny/core/server';
 
 let supabaseAdmin: any = null;
 
@@ -19,13 +20,6 @@ function getSupabaseAdmin(): any {
   return supabaseAdmin;
 }
 
-function getClientIp(request: NextRequest) {
-  return request.headers.get('cf-connecting-ip')?.trim()
-    || request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
-    || request.headers.get('x-real-ip')?.trim()
-    || 'unknown';
-}
-
 function maskEmail(email: string): string {
   const [local, domain] = email.split('@');
   if (!domain) return email;
@@ -36,7 +30,7 @@ function maskEmail(email: string): string {
 export async function POST(request: NextRequest) {
   try {
     logger.info('auth_resolve_phone.audit.requested');
-    const ip = getClientIp(request);
+    const ip = getTrustedClientIp(request);
     
     // Use dynamic import for rateLimit since this is a serverless function and we want the async version
     const { rateLimit } = await import('@tecbunny/core/server');

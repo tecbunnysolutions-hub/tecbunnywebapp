@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
         { status: 503, headers: corsHeaders }
       );
     }
-    if (!configuredPasswordHash && !configuredPasswordPlain) {
+    if (!configuredPasswordHash && (process.env.NODE_ENV === 'production' || !configuredPasswordPlain)) {
       logger.error('superadmin_extension_auth.password_not_configured');
       return NextResponse.json(
         { error: 'Superadmin credentials are not configured on the server.' },
@@ -81,7 +81,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!configuredPasswordHash) {
+    if (!configuredPasswordHash && process.env.NODE_ENV !== 'production') {
       logger.warn('superadmin_extension_auth.using_plaintext_password', { env: process.env.NODE_ENV });
     }
 
@@ -99,7 +99,8 @@ export async function POST(request: NextRequest) {
     if (superadminIdMatches) {
       const passwordMatches = configuredPasswordHash
         ? await verifySuperadminPassword(submittedPassword, configuredPasswordHash)
-        : constantTimeStringEquals(submittedPassword, configuredPasswordPlain);
+        : process.env.NODE_ENV !== 'production'
+          && constantTimeStringEquals(submittedPassword, configuredPasswordPlain);
 
       if (!passwordMatches) {
         logger.warn('superadmin_extension_auth.password_mismatch');

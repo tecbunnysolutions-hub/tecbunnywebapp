@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { logger } from "@tecbunny/core";
 import { rateLimit } from "@tecbunny/core/rate-limit";
 import { requireSupabaseServiceEnv } from "@tecbunny/database";
-import { AuthService } from "@tecbunny/core/server";
+import { AuthService, getTrustedClientIp } from "@tecbunny/core/server";
 import { apiFailure, apiSuccess, apiValidationError } from '../../../../lib/api-contract';
 
 const SEND_OTP_IP_LIMIT = { limit: 3, windowMs: 5 * 60 * 1000 };
@@ -46,13 +46,6 @@ function getSupabaseAdmin(): any {
   return supabaseAdmin;
 }
 
-function getClientIp(request: NextRequest) {
-  return request.headers.get('cf-connecting-ip')?.trim()
-    || request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
-    || request.headers.get('x-real-ip')?.trim()
-    || 'unknown';
-}
-
 export async function POST(request: NextRequest) {
   const correlationId = request.headers.get('x-correlation-id');
   const meta = { requestId: correlationId, version: 'v1' };
@@ -77,7 +70,7 @@ export async function POST(request: NextRequest) {
     const normalizedEmail = email;
     const normalizedMobile = mobile;
 
-    const ip = getClientIp(request);
+    const ip = getTrustedClientIp(request);
     const ipRl = await rateLimit(`otp_ip:${ip}`, SEND_OTP_IP_LIMIT.limit, SEND_OTP_IP_LIMIT.windowMs);
     if (!ipRl.allowed) {
       return apiFailure(429, {
