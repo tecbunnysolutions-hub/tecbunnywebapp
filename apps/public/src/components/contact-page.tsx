@@ -38,6 +38,9 @@ import {
 import { useToast } from "@tecbunny/ui";
 import { useAnalytics } from '@tecbunny/core';
 import { trpc } from '@/components/providers/TRPCProvider';
+import { COMPANY_STATS } from '@tecbunny/core/company-stats';
+
+const RT = COMPANY_STATS.responseTimes;
 
 const SUBJECT_OPTIONS = ['general', 'support', 'sales', 'billing', 'partnership', 'feedback', 'web_development'] as const;
 const SUBJECT_LABELS: Record<(typeof SUBJECT_OPTIONS)[number], string> = {
@@ -267,7 +270,7 @@ export default function ContactPage() {
                   {
                     icon: 'Mail',
                     title: 'Support & Repairs',
-                    badge: 'Avg Response <9h',
+                    badge: RT.generalEnquiryBadge,
                     details: [
                       { text: companyInfo.supportEmail || 'support@tecbunny.com', href: `mailto:${companyInfo.supportEmail || 'support@tecbunny.com'}` },
                       '₹499 Site Visit Fee (adjusted on final bill)',
@@ -279,7 +282,7 @@ export default function ContactPage() {
                     badge: 'Active SLA Clients',
                     details: [
                       'Round-the-clock priority dispatch',
-                      'Target Response: <2 Hours',
+                      RT.criticalAmcShort,
                     ],
                   },
                 ]).map((info: any, index: number) => {
@@ -350,12 +353,12 @@ export default function ContactPage() {
                   <div className="rounded-xl border border-border/50 bg-background/50 p-3">
                     <p className="font-semibold text-foreground">General Enquiries &amp; Sales</p>
                     <p className="text-muted-foreground mt-0.5">Mon–Sat: 9:00 AM – 7:00 PM IST</p>
-                    <p className="text-primary font-mono text-[10px] mt-1">Avg Response: ~9.2 Hours</p>
+                    <p className="text-primary font-mono text-[10px] mt-1">{RT.generalEnquiry}</p>
                   </div>
                   <div className="rounded-xl border border-border/50 bg-background/50 p-3">
                     <p className="font-semibold text-foreground">Critical AMC Incident Desk</p>
                     <p className="text-muted-foreground mt-0.5">24×7 Coverage (Active SLA)</p>
-                    <p className="text-emerald-400 font-mono text-[10px] mt-1">SLA Target: &lt;2 Hours</p>
+                    <p className="text-emerald-400 font-mono text-[10px] mt-1">SLA {RT.criticalAmcShort}</p>
                   </div>
                 </div>
               </div>

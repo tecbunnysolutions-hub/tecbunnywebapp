@@ -5,6 +5,7 @@ export const metadata: Metadata = {
   title: 'Get Your Free Infrastructure Guide | TecBunny',
   description:
     'Tell us about your CCTV, Networking, or Smart Automation needs and get an instant technical guide plus a callback from our team.',
+  robots: { index: false, follow: false },
 };
 
 export default function LeadCapturePage() {

@@ -1,4 +1,5 @@
 import { createServiceClient } from '@tecbunny/database/admin';
+import { logger } from '@tecbunny/core';
 import { NextRequest, NextResponse } from 'next/server';
 
 export const runtime = 'nodejs';
@@ -55,7 +56,7 @@ export async function POST(request: NextRequest) {
       .limit(1);
 
     if (checkError) {
-      console.error('Error checking for duplicate abandoned assessments:', checkError);
+      logger.error('abandoned_assessments.dedupe_check_failed', { error: checkError });
     }
 
     // If recent abandoned record exists, update it instead of creating new
@@ -85,7 +86,7 @@ export async function POST(request: NextRequest) {
         .eq('id', recentAbandoned[0].id);
 
       if (updateError) {
-        console.error('Error updating abandoned assessment:', updateError);
+        logger.error('abandoned_assessments.update_failed', { error: updateError });
         return NextResponse.json(
           { success: false, error: 'Failed to update abandoned assessment' },
           { status: 500 }

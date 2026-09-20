@@ -46,7 +46,7 @@ const INDUSTRIES = [
     desc: 'High-density guest Wi-Fi, RFID door locks, ColorVu IP security, and smart room automation for luxury hotels and resorts across Goa.',
     href: '/industries/hospitality',
     icon: Building2,
-    highlights: ['Zero-Deadzone Guest Wi-Fi', 'Contactless RFID Keycards', 'Pool & Perimeter CCTV', 'GRMS Energy Automation'],
+    highlights: ['Property-Wide Guest Wi-Fi', 'Contactless RFID Keycards', 'Pool & Perimeter CCTV', 'GRMS Energy Automation'],
     badge: 'Popular Vertical'
   },
   {
@@ -69,7 +69,7 @@ const INDUSTRIES = [
   },
   {
     key: 'healthcare',
-    title: 'Healthcare & Clinics',
+    title: 'Healthcare & Hospitals',
     desc: 'Strictly segregated, privacy-focused clinical VLANs, zero-downtime server setups, and 24/7 reliability for medical diagnostic centers.',
     href: '/industries/healthcare',
     icon: Activity,

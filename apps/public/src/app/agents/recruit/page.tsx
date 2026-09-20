@@ -2,12 +2,17 @@ import React from 'react';
 import { Metadata } from 'next';
 import { Shield, Zap, TrendingUp, Users, Wallet, Rocket, CheckCircle2, MessageSquare } from 'lucide-react';
 import { Button } from "@tecbunny/ui";
+import { createPageMetadata } from '@tecbunny/core/metadata';
 import Link from 'next/link';
 
-export const metadata: Metadata = {
-  title: 'Become a TecBunny Certified Agent | Earn High Commissions',
-  description: 'Join the TecBunny Certified Agent program. Perfect for tech bloggers, sysadmins, and freelance consultants. Earn high commissions on CCTV and IT infrastructure referrals.',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return createPageMetadata({
+    title: 'Become a TecBunny Certified Agent | Earn High Commissions',
+    description: 'Join the TecBunny Certified Agent program. Perfect for tech bloggers, sysadmins, and freelance consultants. Earn high commissions on CCTV and IT infrastructure referrals.',
+    keywords: ['TecBunny agent program', 'CCTV referral commissions', 'IT infrastructure partner Goa'],
+    path: '/agents/recruit',
+  });
+}
 
 export default function AgentRecruitPage() {
   return (

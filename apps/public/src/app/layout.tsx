@@ -16,6 +16,7 @@ import {DeferredFloatingAIAssistant} from '@/components/layout/DeferredFloatingA
 import {DeferredRuntimeServices} from '@/components/layout/DeferredRuntimeServices';
 import {TRPCProvider} from '@/components/providers/TRPCProvider';
 import {FeatureFlagProviderLoader} from '@/components/providers/FeatureFlagProviderLoader';
+import {ENTITY} from '@/lib/entity';
 
 import { Analytics } from '@vercel/analytics/react';
 
@@ -33,21 +34,21 @@ export const metadata: Metadata = {
   manifest: '/manifest.webmanifest',
   metadataBase: new URL('https://www.tecbunny.com'),
   title: {
-    default: 'CCTV & IT Services in Goa | TecBunny Solutions',
+    default: 'Enterprise IT & Security Solutions in Goa | TecBunny',
     template: '%s | TecBunny',
   },
   description:
-    'TecBunny Solutions provides CCTV installation, IT services, AMC support, and home automation in Goa and Maharashtra. Secure your space with tech experts.',
+    'Enterprise IT infrastructure, CCTV & physical security, networking, smart buildings, and managed AMC services across Goa and Maharashtra — by TecBunny Solutions.',
   applicationName: 'TecBunny Solutions',
   keywords: [
+    'enterprise IT infrastructure Goa',
     'CCTV installation Goa',
     'IT services Goa',
     'AMC services Goa',
-    'home automation Goa',
-    'RFID lock system Goa',
+    'smart building automation Goa',
+    'RFID access control Goa',
     'computer networking Goa',
-    'CCTV Maharashtra',
-    'smart security systems',
+    'managed IT services Maharashtra',
     'TecBunny',
   ],
   authors: [{ name: 'TecBunny Solutions' }],
@@ -61,9 +62,9 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     url: 'https://www.tecbunny.com',
-    title: 'TecBunny | CCTV, IT Services & Home Automation in Goa',
+    title: 'TecBunny | Enterprise IT, Security & Smart Infrastructure in Goa',
     description:
-      'TecBunny Solutions provides CCTV installation, IT services, AMC support, and home automation in Goa and Maharashtra. Secure your space with tech experts.',
+      'Enterprise IT infrastructure, CCTV & physical security, networking, smart buildings, and managed AMC services across Goa and Maharashtra — by TecBunny Solutions.',
     siteName: 'TecBunny Solutions',
     images: [
       {
@@ -76,9 +77,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'TecBunny | CCTV, IT Services & Home Automation in Goa',
+    title: 'TecBunny | Enterprise IT, Security & Smart Infrastructure in Goa',
     description:
-      'TecBunny Solutions provides CCTV installation, IT services, AMC support, and home automation in Goa and Maharashtra. Secure your space with tech experts.',
+      'Enterprise IT infrastructure, CCTV & physical security, networking, smart buildings, and managed AMC services across Goa and Maharashtra — by TecBunny Solutions.',
     images: [BRAND_LOGO_URL],
     site: xHandle,
     creator: xHandle,
@@ -160,7 +161,7 @@ const structuredData = {
       url: 'https://www.tecbunny.com',
       name: 'TecBunny Solutions',
       description:
-        'TecBunny Solutions provides CCTV installation, IT services, AMC support, networking, home automation, and RFID lock systems in Goa and Maharashtra.',
+        'TecBunny Solutions delivers enterprise IT infrastructure, CCTV and physical security, networking, smart building automation, and RFID access control in Goa and Maharashtra.',
       publisher: { '@id': 'https://www.tecbunny.com/#organization' },
       author: { '@id': 'https://www.tecbunny.com/#organization' },
       potentialAction: {
@@ -176,7 +177,7 @@ const structuredData = {
       '@type': 'WebPage',
       '@id': 'https://www.tecbunny.com/#webpage',
       url: 'https://www.tecbunny.com',
-      name: 'TecBunny Solutions | CCTV, IT Services & Home Automation in Goa',
+      name: 'TecBunny Solutions | Enterprise IT, Security & Smart Infrastructure in Goa',
       isPartOf: { '@id': 'https://www.tecbunny.com/#website' },
       about: { '@id': 'https://www.tecbunny.com/#localbusiness' },
       primaryImageOfPage: { '@id': 'https://www.tecbunny.com/#logo' },
@@ -198,8 +199,7 @@ const structuredData = {
       name: 'TecBunny Solutions',
       url: 'https://www.tecbunny.com',
       logo: BRAND_LOGO_URL,
-      description:
-        'TecBunny Solutions offers CCTV, IT services, AMC support, home automation, RFID lock systems, and custom tech setups across Goa and Maharashtra.',
+      description: ENTITY.description,
       sameAs: sameAsLinks,
       founder: [
         {
@@ -234,8 +234,7 @@ const structuredData = {
       url: 'https://www.tecbunny.com',
       logo: BRAND_LOGO_URL,
       image: BRAND_LOGO_URL,
-      description:
-        'CCTV installation, IT services, AMC support, networking, home automation, and RFID lock systems in Goa and Maharashtra.',
+      description: ENTITY.shortDescription,
       telephone: '+91-9604136010',
       email: 'support@tecbunny.com',
       priceRange: '\u20b9\u20b9',

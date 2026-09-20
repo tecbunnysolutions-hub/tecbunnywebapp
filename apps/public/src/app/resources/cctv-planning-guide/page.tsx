@@ -17,6 +17,7 @@ import { BRAND_LOGO_URL } from '@tecbunny/ui';
 import { TechnologyAssessmentFunnel } from '@/components/TechnologyAssessmentFunnel';
 import { WhatsAppFloatingButton } from '@/components/WhatsAppFloatingButton';
 import { CommercialInfrastructureCalculator } from '@/components/CommercialInfrastructureCalculator';
+import { BreadcrumbJsonLd } from '@/components/BreadcrumbJsonLd';
 
 export async function generateMetadata(): Promise<Metadata> {
   return createPageMetadata({
@@ -37,6 +38,13 @@ export async function generateMetadata(): Promise<Metadata> {
 export default function CCTVPlanningGuidePage() {
   return (
     <div className="relative min-h-screen bg-[#09090B] text-zinc-200 selection:bg-blue-500/20 selection:text-white overflow-hidden pb-20">
+      <BreadcrumbJsonLd
+        items={[
+          { name: 'Home', url: 'https://www.tecbunny.com' },
+          { name: 'Resources', url: 'https://www.tecbunny.com/resources' },
+          { name: 'CCTV Planning Guide', url: 'https://www.tecbunny.com/resources/cctv-planning-guide' },
+        ]}
+      />
       <div className="pointer-events-none absolute inset-0 -z-10">
         <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]" />
         <div className="absolute -left-40 top-0 h-[48rem] w-[48rem] rounded-full bg-blue-500/5 blur-[160px]" />

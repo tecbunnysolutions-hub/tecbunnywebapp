@@ -2,19 +2,17 @@ import Link from 'next/link';
 import { ArrowLeft, FileText, Shield, Truck, RotateCcw, Undo2 } from 'lucide-react';
 
 import { Metadata } from 'next';
+import { createPageMetadata } from '@tecbunny/core/metadata';
 
 
-// Static metadata for better SEO and performance
-export const metadata: Metadata = {
-  title: 'Policies - TecBunny Store',
-  description: 'Read our privacy policy, terms of service, shipping information, and return policy.',
-  keywords: ['policies', 'privacy', 'terms', 'shipping', 'returns', 'TecBunny'],
-  openGraph: {
+export async function generateMetadata(): Promise<Metadata> {
+  return createPageMetadata({
     title: 'Policies - TecBunny Store',
     description: 'Read our privacy policy, terms of service, shipping information, and return policy.',
-    type: 'website',
-  },
-};
+    keywords: ['policies', 'privacy', 'terms', 'shipping', 'returns', 'TecBunny'],
+    path: '/info/policies',
+  });
+}
 
 // Force static generation
 // export const dynamic = 'force-static';

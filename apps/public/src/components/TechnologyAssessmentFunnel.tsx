@@ -551,7 +551,7 @@ ${formData.additionalNotes.trim() || 'None'}
           <span className="text-xs font-bold uppercase tracking-[0.3em] text-emerald-400 font-mono">Assessment Request Confirmed</span>
           <h3 className="text-3xl sm:text-4xl font-extrabold text-white font-tech">Your Requirements Are in Engineering Review</h3>
           <p className="text-zinc-300 text-sm sm:text-base leading-relaxed font-light max-w-xl mx-auto">
-            Our certified systems engineering team has received your project specifications for <strong className="text-white font-medium">{formData.company || 'your facility'}</strong>.
+            Our systems engineering team has received your project specifications for <strong className="text-white font-medium">{formData.company || 'your facility'}</strong>.
           </p>
         </div>
 

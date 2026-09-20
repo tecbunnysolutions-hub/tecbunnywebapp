@@ -68,7 +68,7 @@ export default async function AssessmentPage({
             </h1>
 
             <p className="text-base sm:text-lg font-light leading-relaxed text-zinc-300 max-w-2xl mx-auto">
-              Tell us about your organization and infrastructure requirements. Our certified systems architects will review your specifications, deliver a custom blueprint, and arrange an on-site physical survey.
+              Tell us about your organization and infrastructure requirements. Our systems architects will review your specifications, deliver a custom blueprint, and arrange an on-site physical survey.
             </p>
 
             <div className="pt-2 flex flex-wrap justify-center items-center gap-6 text-xs text-zinc-400">
@@ -117,7 +117,7 @@ export default async function AssessmentPage({
             </li>
             <li className="flex items-center gap-2">
               <CheckCircle2 size={14} className="text-blue-400" />
-              Certified field engineers across Goa
+              Experienced field engineers across Goa
             </li>
             <li className="flex items-center gap-2">
               <Building2 size={14} className="text-blue-400" />

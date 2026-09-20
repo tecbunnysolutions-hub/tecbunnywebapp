@@ -2,17 +2,16 @@ import { Metadata } from 'next';
 import { Building, MapPin, Phone, Mail, FileText, Shield, Award } from 'lucide-react';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@tecbunny/ui";
+import { createPageMetadata } from '@tecbunny/core/metadata';
 
-export const metadata: Metadata = {
-  title: 'Business Information - TecBunny Store',
-  description: 'Official business registration details, company information, and legal documentation for TECBUNNY SOLUTIONS PRIVATE LIMITED.',
-  keywords: ['business', 'registration', 'company', 'legal', 'GST', 'CIN', 'PAN', 'TecBunny'],
-  openGraph: {
+export async function generateMetadata(): Promise<Metadata> {
+  return createPageMetadata({
     title: 'Business Information - TecBunny Store',
-    description: 'Official business registration details and company information for TECBUNNY SOLUTIONS PRIVATE LIMITED.',
-    type: 'website',
-  },
-};
+    description: 'Official business registration details, company information, and legal documentation for TECBUNNY SOLUTIONS PRIVATE LIMITED.',
+    keywords: ['business', 'registration', 'company', 'legal', 'GST', 'CIN', 'PAN', 'TecBunny'],
+    path: '/about/business-info',
+  });
+}
 
 // export const dynamic = 'force-static';
 

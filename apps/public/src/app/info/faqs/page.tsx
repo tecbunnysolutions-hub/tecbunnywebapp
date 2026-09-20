@@ -1,11 +1,23 @@
 import { createClient } from '@tecbunny/database';
 import { createServiceClient, isSupabaseServiceConfigured } from '@tecbunny/database/admin';
 import { Suspense } from 'react';
+import type { Metadata } from 'next';
 
 import FaqsClient from '@/components/FaqsClient';
 import { Skeleton } from "@tecbunny/ui";
+import { createPageMetadata } from '@tecbunny/core/metadata';
+import { stripHtmlToPlainText } from '@tecbunny/core/strings';
 
 export const revalidate = 60; // Revalidate at most once every minute
+
+export async function generateMetadata(): Promise<Metadata> {
+  return createPageMetadata({
+    title: 'Frequently Asked Questions | TecBunny Solutions Goa',
+    description: 'Answers about CCTV installation, IT services, AMC support, pricing, warranties, and service coverage across Goa and Maharashtra.',
+    keywords: ['TecBunny FAQ', 'CCTV questions Goa', 'IT services FAQ', 'AMC support questions'],
+    path: '/info/faqs',
+  });
+}
 
 type FaqRow = {
   id: string;
@@ -67,7 +79,32 @@ export default async function FaqsPage() {
 
 async function FaqsLoader() {
   const faqs = await fetchFaqs();
-  return <FaqsClient initialFaqs={faqs} />;
+
+  // AEO: FAQPage structured data mirroring the visible FAQ list.
+  const faqJsonLd = faqs.length > 0 ? {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqs.map((faq) => ({
+      '@type': 'Question',
+      name: faq.question,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: stripHtmlToPlainText(faq.answer),
+      },
+    })),
+  } : null;
+
+  return (
+    <>
+      {faqJsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd).replace(/</g, '\\u003c') }}
+        />
+      )}
+      <FaqsClient initialFaqs={faqs} />
+    </>
+  );
 }
 
 // Layout-stable skeleton skeleton loader to prevent layout shifts (CLS)

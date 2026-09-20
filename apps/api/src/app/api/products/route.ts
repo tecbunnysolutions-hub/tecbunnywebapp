@@ -617,7 +617,8 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const debugMode = request.nextUrl.searchParams.get('debug') === '1';
+    // Debug mode is restricted to non-production to avoid leaking internal error details.
+    const debugMode = process.env.NODE_ENV !== 'production' && request.nextUrl.searchParams.get('debug') === '1';
     const summariseError = (err: unknown) => {
       if (!err || typeof err !== 'object') {
         return undefined;

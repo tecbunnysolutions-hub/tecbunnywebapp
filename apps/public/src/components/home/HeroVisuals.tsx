@@ -3,11 +3,13 @@
 import React from 'react';
 import { Clock3, ShieldCheck } from 'lucide-react';
 import { usePrefersReducedMotion } from '@/hooks/use-prefers-reduced-motion';
+import { COMPANY_STATS } from '@tecbunny/core/company-stats';
 
+const RT = COMPANY_STATS.responseTimes;
 const RESPONSE_TIMES = [
-  { label: 'General enquiry response', value: 'Average: 9.2 hours' },
-  { label: 'Critical AMC incident', value: 'Response target: <2 hours' },
-  { label: 'On-site critical fault', value: 'Target: same business day' },
+  { label: 'General enquiry response', value: RT.generalEnquiry },
+  { label: 'Critical AMC incident', value: RT.criticalAmc },
+  { label: 'On-site critical fault', value: RT.onsiteCriticalFault },
 ];
 
 function useFinePointer() {

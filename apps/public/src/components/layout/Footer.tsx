@@ -282,7 +282,7 @@ export function Footer() {
               <li><Link href="/industries/hospitality" className="hover:text-blue-400 transition-all hover:translate-x-0.5 inline-block text-slate-300">Hospitality & Resorts</Link></li>
               <li><Link href="/industries/offices" className="hover:text-blue-400 transition-all hover:translate-x-0.5 inline-block text-slate-300">Corporate Offices</Link></li>
               <li><Link href="/industries/education" className="hover:text-blue-400 transition-all hover:translate-x-0.5 inline-block text-slate-300">Schools & Campuses</Link></li>
-              <li><Link href="/industries/healthcare" className="hover:text-blue-400 transition-all hover:translate-x-0.5 inline-block text-slate-300">Hospitals & Clinics</Link></li>
+              <li><Link href="/industries/healthcare" className="hover:text-blue-400 transition-all hover:translate-x-0.5 inline-block text-slate-300">Healthcare &amp; Hospitals</Link></li>
               <li><Link href="/industries/retail" className="hover:text-blue-400 transition-all hover:translate-x-0.5 inline-block text-slate-300">Retail & Commercial</Link></li>
               <li><Link href="/industries" className="hover:text-blue-400 transition-all hover:translate-x-0.5 inline-block text-blue-400 font-bold">All Industries &rarr;</Link></li>
             </ul>

@@ -2,13 +2,17 @@ import type { Metadata } from 'next';
 
 import PolicyPage from '@/components/policy-page';
 import { getPolicyContent } from "@tecbunny/core/settings";
+import { createPageMetadata } from '@tecbunny/core/metadata';
 
 export const revalidate = 300;
 
-export const metadata: Metadata = {
-  title: 'Privacy Policy',
-  description: 'Read how TecBunny Solutions collects, stores, and protects your personal information.',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return createPageMetadata({
+    title: 'Privacy Policy',
+    description: 'Read how TecBunny Solutions collects, stores, and protects your personal information.',
+    path: '/info/policies/privacy',
+  });
+}
 
 export default async function PrivacyPolicyPage() {
   const content = await getPolicyContent('privacy_policy', 'Privacy Policy');

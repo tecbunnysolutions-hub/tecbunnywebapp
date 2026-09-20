@@ -16,6 +16,7 @@ import {
 import { Button } from "@tecbunny/ui";
 import { createPageMetadata } from "@tecbunny/core/metadata";
 import { InfrastructureLeadForm } from '@/components/InfrastructureLeadForm';
+import { BreadcrumbJsonLd } from '@/components/BreadcrumbJsonLd';
 
 export async function generateMetadata(): Promise<Metadata> {
   return createPageMetadata({
@@ -46,7 +47,7 @@ export default function NorthGoaNetworkingPage() {
   const subServices = [
     {
       title: "B2B Structured Cabling & Fiber",
-      subtitle: "Certified Cat6/Cat6A copper and optical fiber cabling for North Goa commercial complexes.",
+      subtitle: "Professional Cat6/Cat6A copper and optical fiber cabling for North Goa commercial complexes.",
       icon: Server,
       gradient: "from-blue-500/20 via-indigo-500/10 to-transparent",
       border: "hover:border-blue-500/35",
@@ -105,6 +106,14 @@ export default function NorthGoaNetworkingPage() {
 
   return (
     <div className="relative min-h-screen bg-[#09090B] text-zinc-200 selection:bg-blue-500/20 selection:text-white overflow-hidden pt-0 pb-16 sm:pt-0 sm:pb-24">
+      <BreadcrumbJsonLd
+        items={[
+          { name: 'Home', url: 'https://www.tecbunny.com' },
+          { name: 'Services', url: 'https://www.tecbunny.com/services' },
+          { name: 'Network Infrastructure', url: 'https://www.tecbunny.com/services/network-infrastructure' },
+          { name: 'North Goa', url: 'https://www.tecbunny.com/services/network-infrastructure/north-goa' },
+        ]}
+      />
       {/* Background Grid */}
       <div className="pointer-events-none absolute inset-0 -z-10">
         <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]" />
@@ -262,7 +271,7 @@ export default function NorthGoaNetworkingPage() {
             <span className="text-sm uppercase tracking-[0.45em] text-blue-500 font-bold">Request a Proposal</span>
             <h2 className="mt-3 text-3xl font-bold text-white font-tech tracking-tight">Request Site Network Survey</h2>
             <p className="mt-4 text-zinc-300 font-light text-sm">
-              Provide details below. A certified systems engineer will connect with you to organize a physical network layout audit.
+              Provide details below. A systems engineer will connect with you to organize a physical network layout audit.
             </p>
           </div>
           <InfrastructureLeadForm />

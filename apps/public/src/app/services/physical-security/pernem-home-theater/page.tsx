@@ -18,6 +18,7 @@ import {
 import { Button } from "@tecbunny/ui";
 import { createPageMetadata } from "@tecbunny/core/metadata";
 import { InfrastructureLeadForm } from '@/components/InfrastructureLeadForm';
+import { BreadcrumbJsonLd } from '@/components/BreadcrumbJsonLd';
 
 export async function generateMetadata(): Promise<Metadata> {
   return createPageMetadata({
@@ -107,6 +108,14 @@ export default function PernemHomeTheaterPage() {
 
   return (
     <div className="relative min-h-screen bg-[#09090B] text-zinc-200 selection:bg-purple-500/20 selection:text-white overflow-hidden pt-0 pb-16 sm:pt-0 sm:pb-24">
+      <BreadcrumbJsonLd
+        items={[
+          { name: 'Home', url: 'https://www.tecbunny.com' },
+          { name: 'Services', url: 'https://www.tecbunny.com/services' },
+          { name: 'Physical Security', url: 'https://www.tecbunny.com/services/physical-security' },
+          { name: 'Pernem Home Theater', url: 'https://www.tecbunny.com/services/physical-security/pernem-home-theater' },
+        ]}
+      />
       {/* Background Grid */}
       <div className="pointer-events-none absolute inset-0 -z-10">
         <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]" />
@@ -264,7 +273,7 @@ export default function PernemHomeTheaterPage() {
             <span className="text-sm uppercase tracking-[0.45em] text-purple-500 font-bold">Request an Estimate</span>
             <h2 className="mt-3 text-3xl font-bold text-white font-tech tracking-tight">Request Acoustic Survey</h2>
             <p className="mt-4 text-zinc-300 font-light text-sm">
-              Provide your details below. A certified smart home systems consultant will connect with you to review blueprints or plan a room walkthrough.
+              Provide your details below. A smart home systems consultant will connect with you to review blueprints or plan a room walkthrough.
             </p>
           </div>
           <InfrastructureLeadForm />

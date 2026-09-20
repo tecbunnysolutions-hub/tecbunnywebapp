@@ -124,7 +124,7 @@ export default function LifecycleHardwarePage() {
     },
     {
       title: "Secure Asset Refresh & E-Waste Disposal",
-      subtitle: "Orderly hardware lifecycle transitions and certified data sanitization.",
+      subtitle: "Orderly hardware lifecycle transitions and secure data sanitization.",
       icon: Cpu,
       gradient: "from-amber-500/20 via-orange-500/10 to-transparent",
       border: "hover:border-amber-500/35",
@@ -242,7 +242,7 @@ export default function LifecycleHardwarePage() {
             <span className="text-xs uppercase tracking-[0.35em] text-blue-400 font-bold font-mono">Offerings</span>
             <h2 className="mt-3 text-3xl sm:text-4xl font-bold text-white font-tech tracking-tight">Our Hardware Management Capabilities</h2>
             <p className="mt-4 text-zinc-400 text-sm sm:text-base font-light">
-              Enterprise procurement, custom workstation deployments, proactive AMC agreements, and certified data wiping.
+              Enterprise procurement, custom workstation deployments, proactive AMC agreements, and secure data wiping.
             </p>
           </div>
 

@@ -133,7 +133,7 @@ export default async function CustomisedSetupsPage({
             </p>
             <div className="flex flex-wrap gap-3 text-sm">
               <span className="inline-flex items-center gap-2 rounded-md border border-border px-3 py-2 text-muted-foreground">
-                <Wrench className="h-4 w-4" /> Certified on-site specialists
+                <Wrench className="h-4 w-4" /> Professional on-site specialists
               </span>
               <span className="inline-flex items-center gap-2 rounded-md border border-border px-3 py-2 text-muted-foreground">
                 <ShieldCheck className="h-4 w-4" /> Compliance-ready hardware choices

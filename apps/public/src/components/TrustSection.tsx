@@ -9,6 +9,7 @@ import {
   CheckCircle2, 
   FileCheck 
 } from 'lucide-react';
+import { UNVERIFIED_WORDING } from '@tecbunny/core/verified-credentials';
 
 export const TRUST_POINTS = [
   {
@@ -18,14 +19,14 @@ export const TRUST_POINTS = [
     badge: 'Legal & Tax Compliant'
   },
   {
-    title: 'Certified Engineering Team',
-    desc: 'Our on-site field engineers carry certifications across enterprise routing, structured cabling, and physical security standards.',
+    title: 'Experienced Engineering Team',
+    desc: `Our on-site field engineers work to enterprise routing, structured cabling, and physical security standards — ${UNVERIFIED_WORDING.engineeringTeam}.`,
     icon: Award,
     badge: 'Technical Competence'
   },
   {
-    title: 'Tier-1 OEM Hardware Partners',
-    desc: 'We deploy genuine enterprise equipment sourced from authorized distributors of Cisco, Ubiquiti, Hikvision, Dahua, and Honeywell.',
+    title: 'Tier-1 OEM Hardware',
+    desc: `We deploy genuine enterprise equipment from Cisco, Ubiquiti, Hikvision, Dahua, and Honeywell — ${UNVERIFIED_WORDING.oemSourcing}.`,
     icon: Cpu,
     badge: '100% Genuine'
   },

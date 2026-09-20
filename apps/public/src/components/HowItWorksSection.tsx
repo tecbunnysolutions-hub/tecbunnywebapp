@@ -21,7 +21,7 @@ export const DEPLOYMENT_STEPS = [
   {
     step: '02',
     title: 'Site Assessment',
-    desc: 'Our certified engineers conduct on-site physical surveys across Goa to map cabling paths, RF interference, and mounting zones.',
+    desc: 'Our field engineers conduct on-site physical surveys across Goa to map cabling paths, RF interference, and mounting zones.',
     icon: MapPin,
     badge: 'On-Site Survey'
   },
@@ -42,7 +42,7 @@ export const DEPLOYMENT_STEPS = [
   {
     step: '05',
     title: 'Professional Installation',
-    desc: 'Certified deployment including clean rack architectures, structured Cat6/fiber pulls, and surge protection.',
+    desc: 'Professional deployment including clean rack architectures, structured Cat6/fiber pulls, and surge protection.',
     icon: Wrench,
     badge: 'Deployment'
   },

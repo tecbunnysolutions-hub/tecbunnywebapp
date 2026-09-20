@@ -16,6 +16,19 @@ export const COMPANY_STATS = {
   targetUptime: '99.9%',
   /** Year the company was established. */
   establishedYear: 2025,
+  /** Response-time targets shown across homepage hero + contact page. Single source of truth. */
+  responseTimes: {
+    /** General enquiry / sales response. */
+    generalEnquiry: 'Average: 9.2 hours',
+    /** Contact-page badge for general enquiries. */
+    generalEnquiryBadge: 'Avg Response <9h',
+    /** Critical AMC incident response target. */
+    criticalAmc: 'Response target: <2 hours',
+    /** Contact-page label for the critical AMC SLA target. */
+    criticalAmcShort: 'Target Response: <2 Hours',
+    /** On-site critical fault target. */
+    onsiteCriticalFault: 'Target: same business day',
+  },
 } as const;
 
 export type CompanyStats = typeof COMPANY_STATS;

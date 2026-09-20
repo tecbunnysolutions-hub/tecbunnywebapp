@@ -21,7 +21,7 @@ export default function AboutPage() {
             </span>
           </h1>
           <p className="mx-auto mt-4 max-w-2xl text-base text-muted-foreground sm:text-lg">
-            We make top-quality security and smart technology easy, reliable, and affordable for your home or business in Goa.
+            We design and maintain enterprise-grade security, network, and smart-building infrastructure for businesses across Goa — from commercial sites to premium residences.
           </p>
         </div>
       </section>
@@ -33,11 +33,11 @@ export default function AboutPage() {
             <div className="relative bento-card p-8">
               <h3 className="text-2xl font-semibold tech-heading">Our Mission</h3>
               <div className="mt-4 text-sm leading-relaxed text-muted-foreground space-y-4">
-                <p>We believe everyone deserves peace of mind. Our mission is simple:</p>
+                <p>We believe every organization deserves dependable infrastructure. Our mission is simple:</p>
                 <ul className="list-disc pl-5 space-y-2">
-                  <li><strong className="text-foreground">Top-Quality Tech for Everyone:</strong> Get the best surveillance and smart systems without the confusing tech jargon.</li>
-                  <li><strong className="text-foreground">Better Prices, Direct to You:</strong> Enjoy massive savings because we skip the middleman and work directly with top brands.</li>
-                  <li><strong className="text-foreground">Local Support You Can Count On:</strong> Rest easy knowing our Goa-based team is always here to keep your systems running smoothly.</li>
+                  <li><strong className="text-foreground">Enterprise-Grade Engineering:</strong> Proven infrastructure patterns and documented deployments — without unnecessary complexity.</li>
+                  <li><strong className="text-foreground">Transparent Commercial Terms:</strong> Itemized BOMs, GST invoicing, and direct OEM-channel sourcing.</li>
+                  <li><strong className="text-foreground">Local Support You Can Count On:</strong> A Goa-based engineering team with defined response targets.</li>
                 </ul>
               </div>
               <div className="mt-6 flex gap-4">
@@ -58,22 +58,22 @@ export default function AboutPage() {
             <div className="flex gap-4">
               <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">🏷️</div>
               <div>
-                <h4 className="text-lg font-semibold tech-heading">Incredible Value</h4>
-                <p className="mt-1 text-sm text-muted-foreground">Get premium equipment at prices that beat traditional retail.</p>
+                <h4 className="text-lg font-semibold tech-heading">Transparent Value</h4>
+                <p className="mt-1 text-sm text-muted-foreground">Genuine Tier-1 equipment with itemized BOM pricing and GST input credit.</p>
               </div>
             </div>
             <div className="flex gap-4">
               <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">🛠️</div>
               <div>
                 <h4 className="text-lg font-semibold tech-heading">Done-For-You Service</h4>
-                <p className="mt-1 text-sm text-muted-foreground">Professional installation and friendly support, every step of the way.</p>
+                <p className="mt-1 text-sm text-muted-foreground">Professional installation and SLA-backed support, every step of the way.</p>
               </div>
             </div>
             <div className="flex gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">🏠</div>
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">🧰</div>
               <div>
-                <h4 className="text-lg font-semibold tech-heading">Mess-Free Installation</h4>
-                <p className="mt-1 text-sm text-muted-foreground">Clean, wire-free, and careful installations that respect your space.</p>
+                <h4 className="text-lg font-semibold tech-heading">Clean, Documented Installation</h4>
+                <p className="mt-1 text-sm text-muted-foreground">Structured cabling, labeled racks, and as-built documentation at every handover.</p>
               </div>
             </div>
           </div>
@@ -135,13 +135,13 @@ export default function AboutPage() {
             <span className="text-xs font-semibold uppercase tracking-[0.3em] text-primary">Ecosystem</span>
             <h2 className="mt-3 text-3xl font-semibold tech-heading">Partner &amp; Brand Relationships</h2>
             <p className="mt-3 text-sm text-muted-foreground">
-              We deploy certified hardware and configure standards-compliant enterprise ecosystems.
+              We deploy genuine Tier-1 hardware and configure standards-compliant enterprise ecosystems.
             </p>
           </div>
 
           <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             <div className="bento-card p-6 text-center space-y-2">
-              <span className="inline-block rounded-full bg-blue-500/10 px-3 py-1 text-xs font-bold uppercase text-blue-400">Certified Installer</span>
+              <span className="inline-block rounded-full bg-blue-500/10 px-3 py-1 text-xs font-bold uppercase text-blue-400">Professional Installer</span>
               <h3 className="text-base font-bold font-tech text-foreground">CP PLUS &amp; Hikvision</h3>
               <p className="text-xs text-muted-foreground font-light">Direct sourcing, firmware security patching, and OEM-backed warranty servicing for surveillance systems.</p>
             </div>
@@ -187,7 +187,7 @@ export default function AboutPage() {
               <span className="text-xs font-mono font-bold text-primary">2025 · SECURITY EXPANSION</span>
               <h3 className="text-base font-bold font-tech text-foreground mt-2">CCTV &amp; Access Control</h3>
               <p className="text-xs text-muted-foreground font-light mt-2 leading-relaxed">
-                Delivered 100+ commercial and residential surveillance installations across North and South Goa with instant quotation calculators.
+                Delivered {COMPANY_STATS.sitesSecured}+ commercial and residential surveillance installations across North and South Goa with instant quotation calculators.
               </p>
             </div>
             <div className="bento-card p-6 relative">
@@ -281,7 +281,7 @@ export default function AboutPage() {
       <section className="bg-muted/20 py-16 text-center border-t border-border">
         <div className="mx-auto max-w-4xl px-4 sm:px-6">
           <h2 className="text-3xl font-semibold tech-heading">Ready to Experience the Difference?</h2>
-          <p className="mt-3 text-sm text-muted-foreground">Join local businesses and homeowners who trust Tecbunny for their technology needs.</p>
+          <p className="mt-3 text-sm text-muted-foreground">Join the businesses that trust TecBunny for mission-critical technology infrastructure.</p>
           <div className="mt-6 flex flex-col items-center justify-center gap-4 sm:flex-row">
             <Link href="/contact" className="rounded-lg bg-primary hover:bg-primary/90 px-6 py-3 text-sm font-semibold text-white transition-colors">
               Contact TecBunny

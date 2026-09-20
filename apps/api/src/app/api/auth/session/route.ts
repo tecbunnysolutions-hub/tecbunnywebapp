@@ -63,7 +63,7 @@ export async function GET(request: NextRequest) {
       .single();
 
     if (profileError) {
-      console.error('Error fetching user profile:', profileError);
+      logger.error('auth.session.profile_lookup_failed', { error: profileError });
       return NextResponse.json({ 
         session: {
           user: session.user,

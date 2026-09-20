@@ -115,7 +115,7 @@ export default function LocalServiceLandingPage({
                 </div>
                 <div className="mt-4 flex items-center gap-2 text-xs font-semibold text-primary/80">
                   <div className="h-1.5 w-1.5 rounded-full bg-primary" />
-                  Certified network availability for {locationLabel} service nodes.
+                  Professional network availability for {locationLabel} service nodes.
                 </div>
               </div>
             </div>

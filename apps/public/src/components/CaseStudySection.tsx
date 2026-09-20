@@ -41,7 +41,7 @@ export const ARCHITECTURE_CASE_STUDIES: CaseStudy[] = [
     approach: 'High-density Wi-Fi 6 heatmapping with dedicated ceiling access points per cluster and IP67 weather-sealed low-light ColorVu IP cameras.',
     solution: 'Gigabit fiber backbone connecting Ubiquiti UniFi 6 APs, isolated Guest/POS/Admin VLANs, and 4K IP NVR with RAID-1 redundancy.',
     implementation: 'Staged 4-day deployment during low-occupancy window with structured Cat6 LSZH cabling in concealed PVC conduits.',
-    result: '100% property-wide Wi-Fi coverage with zero guest dead zones, isolated POS billing security, and clear 24/7 low-light perimeter surveillance.',
+    result: 'Full property-wide Wi-Fi coverage engineered to eliminate guest dead zones, isolated POS billing security, and clear 24/7 low-light perimeter surveillance.',
     technologies: ['Wi-Fi 6 (802.11ax)', 'ColorVu IP Cameras', 'VLAN Segmentation', 'PoE+ Managed Switches', 'Cat6 LSZH Cabling']
   },
   {
@@ -54,14 +54,14 @@ export const ARCHITECTURE_CASE_STUDIES: CaseStudy[] = [
     approach: 'Dual-ISP WAN load balancer with automated sub-second failover and centralized biometric facial recognition attendance.',
     solution: 'Fortinet Next-Gen Firewall with dual fiber links, 48-port Gigabit patch panels, and RFID/biometric door controllers synced with HRMS.',
     implementation: 'Weekend deployment with zero workday operational downtime and full port-mapping documentation handed over.',
-    result: 'Zero network interruption during primary ISP outages, sub-second door transit speeds, and exportable employee attendance audit trails.',
+    result: 'Continuous connectivity during primary ISP outages, rapid door transit speeds, and exportable employee attendance audit trails.',
     technologies: ['Dual-WAN Auto-Failover', 'Facial Recognition Terminals', '42U Server Rack Cabling', 'Network Bandwidth Throttling']
   }
 ];
 
 export function CaseStudySection({
   title = "Architecture & Engineering Project Framework",
-  subtitle = "How our certified engineers design, deploy, and support mission-critical technology infrastructure across commercial properties in Goa.",
+  subtitle = "How our engineering team designs, deploys, and supports mission-critical technology infrastructure across commercial properties in Goa.",
   className = ""
 }: {
   title?: string;
@@ -90,7 +90,7 @@ export function CaseStudySection({
               href="/assessment" 
               onClick={() => trackEvent('resource_cta_clicked', { cta: 'request_similar_project', page: 'case_studies' })}
             >
-              🎯 Request a Similar Project →
+              Get Technology Assessment →
             </Link>
           </Button>
         </div>
@@ -148,7 +148,7 @@ export function CaseStudySection({
 
               <div className="mt-8 pt-5 border-t border-zinc-800/60 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="space-y-1">
-                  <span className="text-xs text-zinc-400 font-medium">✓ Verified Deployment</span>
+                  <span className="text-xs text-zinc-400 font-medium">Representative Deployment Architecture</span>
                   <span className="text-xs text-zinc-500">Facing a similar challenge?</span>
                 </div>
                 <Link
@@ -159,7 +159,7 @@ export function CaseStudySection({
                     trackEvent('resource_cta_clicked', { cta: 'case_study_assessment', caseStudy: study.id });
                   }}
                 >
-                  🚀 Get Started →
+                  Get Technology Assessment →
                 </Link>
               </div>
             </div>
@@ -168,7 +168,7 @@ export function CaseStudySection({
 
         <div className="mt-10 rounded-2xl border border-dashed border-zinc-800 bg-zinc-950/60 p-6 text-center text-xs text-zinc-400 max-w-3xl mx-auto">
           <p>
-            <strong className="text-zinc-300">Verified Project Framework</strong> — Every case study represents genuine engineering architectures executed by TecBunny Solutions Pvt. Ltd. Specific client entity identities are protected under NDA agreements.
+            <strong className="text-zinc-300">Representative Project Architectures</strong> — These case studies illustrate the engineering architectures TecBunny Solutions designs and deploys. Client identities and site details are generalized for confidentiality.
           </p>
         </div>
       </div>

@@ -110,7 +110,7 @@ export default function HomePage({
             <div className="reveal-section is-revealed max-w-3xl space-y-6" data-reveal-id="hero-copy">
               <div className="inline-flex items-center gap-2 rounded-full border border-blue-500/20 bg-blue-500/10 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.22em] text-blue-300">
                 <ShieldCheck size={13} />
-                Goa-based IT &amp; security partner
+                Enterprise IT &amp; security partner in Goa
               </div>
 
               <h1 className="text-3xl font-extrabold leading-[0.98] text-white sm:text-4xl md:text-5xl xl:text-6xl font-tech tracking-tight" aria-label="Secure operations. Smarter systems. Built for business continuity.">
@@ -126,7 +126,7 @@ export default function HomePage({
 
               <div className="flex flex-wrap items-center gap-3 text-[11px] font-medium text-zinc-300">
                 <span className="inline-flex items-center gap-2 rounded-full border border-zinc-800 bg-zinc-900/70 px-2.5 py-1.5">
-                  <ShieldCheck size={12} className="text-blue-400" /> Certified installations
+                  <ShieldCheck size={12} className="text-blue-400" /> Professional installations
                 </span>
                 <span className="inline-flex items-center gap-2 rounded-full border border-zinc-800 bg-zinc-900/70 px-2.5 py-1.5">
                   <Clock size={12} className="text-blue-400" /> Fast site response
@@ -144,7 +144,7 @@ export default function HomePage({
                 </Button>
                 <Button asChild variant="outline" size="lg" className="border-zinc-800 bg-zinc-900/60 hover:bg-zinc-800 text-zinc-200 hover:text-white font-semibold rounded-xl h-12 px-5 text-xs">
                   <Link href="/contact?subject=sales&service=enterprise_solutions&intent=enterprise_consultation&source=homepage_hero">
-                    TALK TO AN ENTERPRISE SPECIALIST
+                    TALK TO AN ENGINEER
                   </Link>
                 </Button>
               </div>
@@ -174,7 +174,7 @@ export default function HomePage({
                     href="/contact?subject=sales&service=enterprise_solutions&intent=enterprise_consultation&source=homepage_hero"
                     className="tb-button-primary w-full text-center flex items-center justify-center gap-1.5 h-11 text-xs uppercase tracking-wider font-semibold rounded-xl"
                   >
-                    Talk to Enterprise Team
+                    Talk to an Engineer
                     <ArrowRight size={14} />
                   </Link>
                 </div>
@@ -528,16 +528,12 @@ export default function HomePage({
           </div>
           <dl className="grid gap-6 md:grid-cols-2">
             <div className="space-y-2 rounded-lg border border-zinc-800 bg-zinc-950/60 p-4">
-              <dt className="text-sm font-semibold text-white">Do you fit CCTV in homes in Goa?</dt>
-              <dd className="text-sm text-zinc-400 leading-relaxed">Yes. We fit CCTV in homes, villas, and flats in Goa. We help you pick the right camera count and type for your space. AMC, support access, and warranty coverage depend on the selected plan. We also check old camera wiring and update it where included in the quote.</dd>
-            </div>
-            <div className="space-y-2 rounded-lg border border-zinc-800 bg-zinc-950/60 p-4">
               <dt className="text-sm font-semibold text-white">How much does CCTV cost in Goa?</dt>
               <dd className="text-sm text-zinc-400 leading-relaxed">Our CCTV prices start at Rs 8,000 for a basic 2-camera setup. A full 4-camera NVR kit starts at Rs 15,000. All costs include fitting, cabling, and a one-year warranty. We also offer easy monthly payment plans. Ask us for a free quote today.</dd>
             </div>
             <div className="space-y-2 rounded-lg border border-zinc-800 bg-zinc-950/60 p-4">
               <dt className="text-sm font-semibold text-white">Do you set up Wi-Fi networks in Goa?</dt>
-              <dd className="text-sm text-zinc-400 leading-relaxed">Yes. We set up Wi-Fi, LAN networks, and cable runs for homes, offices, and hotels across Goa. We use Ubiquiti, Cisco, and Fortinet gear. Every network job comes with a 90-day free support period and a full handover report.</dd>
+              <dd className="text-sm text-zinc-400 leading-relaxed">Yes. We set up Wi-Fi, LAN networks, and cable runs for offices, hotels, and commercial properties across Goa. We use Ubiquiti, Cisco, and Fortinet gear. Every network job comes with a 90-day free support period and a full handover report.</dd>
             </div>
             <div className="space-y-2 rounded-lg border border-zinc-800 bg-zinc-950/60 p-4">
               <dt className="text-sm font-semibold text-white">What does an AMC plan cover?</dt>
@@ -546,6 +542,10 @@ export default function HomePage({
             <div className="space-y-2 rounded-lg border border-zinc-800 bg-zinc-950/60 p-4">
               <dt className="text-sm font-semibold text-white">Do you serve areas outside Goa?</dt>
               <dd className="text-sm text-zinc-400 leading-relaxed">Yes. We serve clients in Mumbai, Pune, and Nashik for large IT and CCTV jobs. We also run remote IT support for firms across India. For jobs outside Goa, we can send a team or work with a local vendor under our watch. Call us to get a fast quote.</dd>
+            </div>
+            <div className="space-y-2 rounded-lg border border-zinc-800 bg-zinc-950/60 p-4">
+              <dt className="text-sm font-semibold text-white">Do you fit CCTV in homes in Goa?</dt>
+              <dd className="text-sm text-zinc-400 leading-relaxed">Yes. Alongside our commercial work, we fit CCTV in homes, villas, and flats in Goa. We help you pick the right camera count and type for your space. AMC, support access, and warranty coverage depend on the selected plan.</dd>
             </div>
           </dl>
           <p className="mt-8 text-sm text-zinc-500">
@@ -570,7 +570,7 @@ export default function HomePage({
                   Ready to Upgrade Your Commercial IT &amp; Security Infrastructure?
                 </h2>
                 <p className="tb-lede text-base sm:text-lg text-zinc-300 font-light max-w-2xl leading-relaxed">
-                  Request a free, no-obligation technology assessment. Our certified engineers will review your property blueprint, calculate network density, and provide an itemized proposal within 24 hours.
+                  Request a free, no-obligation technology assessment. Our engineering team will review your property blueprint, calculate network density, and provide an itemized proposal within 24 hours.
                 </p>
               </div>
               <div className={cn('reveal-item rounded-2xl border border-zinc-800 bg-zinc-900/80 p-8 text-center space-y-4 shadow-xl', revealDelayClass(120))}>

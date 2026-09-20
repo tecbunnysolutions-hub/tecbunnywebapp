@@ -484,7 +484,7 @@ export function CommercialInfrastructureCalculator({
       <div className="mt-8 pt-4 border-t border-zinc-850 flex items-start gap-2 text-[11px] text-zinc-500">
         <AlertCircle size={14} className="text-blue-400 shrink-0 mt-0.5" />
         <span>
-          <strong>Preliminary planning estimate</strong> — Final storage and network capacity requires physical on-site RF heatmapping, cable path verification, and structural wall inspection by our certified engineers.
+          <strong>Preliminary planning estimate</strong> — Final storage and network capacity requires physical on-site RF heatmapping, cable path verification, and structural wall inspection by our field engineers.
         </span>
       </div>
     </div>

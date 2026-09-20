@@ -12,11 +12,6 @@ export const revalidate = 60;
 // AEO: FAQPage structured data mirroring the visible FAQ section in home-page.tsx
 const homeFaqs: Array<{ question: string; answer: string }> = [
   {
-    question: 'Do you fit CCTV in homes in Goa?',
-    answer:
-      'Yes. We fit CCTV in homes, villas, and flats in Goa. We help you pick the right camera count and type for your space. AMC, support access, and warranty coverage depend on the selected plan. We also check old camera wiring and update it where included in the quote.',
-  },
-  {
     question: 'How much does CCTV cost in Goa?',
     answer:
       'Our CCTV prices start at Rs 8,000 for a basic 2-camera setup. A full 4-camera NVR kit starts at Rs 15,000. All costs include fitting, cabling, and a one-year warranty. We also offer easy monthly payment plans. Ask us for a free quote today.',
@@ -24,7 +19,7 @@ const homeFaqs: Array<{ question: string; answer: string }> = [
   {
     question: 'Do you set up Wi-Fi networks in Goa?',
     answer:
-      'Yes. We set up Wi-Fi, LAN networks, and cable runs for homes, offices, and hotels across Goa. We use Ubiquiti, Cisco, and Fortinet gear. Every network job comes with a 90-day free support period and a full handover report.',
+      'Yes. We set up Wi-Fi, LAN networks, and cable runs for offices, hotels, and commercial properties across Goa. We use Ubiquiti, Cisco, and Fortinet gear. Every network job comes with a 90-day free support period and a full handover report.',
   },
   {
     question: 'What does an AMC plan cover?',
@@ -35,6 +30,11 @@ const homeFaqs: Array<{ question: string; answer: string }> = [
     question: 'Do you serve areas outside Goa?',
     answer:
       'Yes. We serve clients in Mumbai, Pune, and Nashik for large IT and CCTV jobs. We also run remote IT support for firms across India. For jobs outside Goa, we can send a team or work with a local vendor under our watch. Call us to get a fast quote.',
+  },
+  {
+    question: 'Do you fit CCTV in homes in Goa?',
+    answer:
+      'Yes. Alongside our commercial work, we fit CCTV in homes, villas, and flats in Goa. We help you pick the right camera count and type for your space. AMC, support access, and warranty coverage depend on the selected plan.',
   },
 ];
 
@@ -56,18 +56,18 @@ const serializeJsonLd = (data: unknown) => JSON.stringify(data).replace(/</g, '\
 // Homepage metadata for SEO
 export async function generateMetadata(): Promise<Metadata> {
   return createPageMetadata({
-  title: 'CCTV Installation & IT Services in Goa | TecBunny Solutions',
+  title: 'Enterprise IT Infrastructure & Security in Goa | TecBunny',
   description:
-    'CCTV installation, IT infrastructure, AMC support, and home automation in Goa and Maharashtra. TecBunny Solutions delivers enterprise cybersecurity, managed ITES back-office workflows, and smart automation for businesses.',
+    'Enterprise IT infrastructure, CCTV & physical security, networking, smart buildings, and managed AMC services across Goa and Maharashtra — by TecBunny Solutions.',
   keywords: [
+    'enterprise IT infrastructure Goa',
     'CCTV installation Goa',
-    'CCTV',
     'IT services Goa',
     'AMC services Goa',
-    'home automation Goa',
-    'managed ITES',
+    'smart building automation Goa',
+    'managed IT services',
     'network infrastructure',
-    'cybersecurity audit',
+    'physical security systems',
     'smart access control',
     'IT lifecycle management',
     'TecBunny',

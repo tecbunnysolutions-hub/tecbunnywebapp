@@ -9,7 +9,8 @@ import CheckoutPage from '@/components/checkout/CheckoutPage';
 export const metadata: Metadata = {
   title: 'Checkout | Complete Your Purchase',
   description: 'Complete your purchase securely. Enter shipping details, select payment method, and review your order before checkout.',
-  keywords: 'checkout, payment, shipping, order completion, secure payment'
+  keywords: 'checkout, payment, shipping, order completion, secure payment',
+  robots: { index: false, follow: false },
 };
 
 export default function Checkout() {

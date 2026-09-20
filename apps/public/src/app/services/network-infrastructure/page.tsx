@@ -21,6 +21,7 @@ import { HowItWorksSection } from '@/components/HowItWorksSection';
 import { TrustSection } from '@/components/TrustSection';
 import { WhatsAppFloatingButton } from '@/components/WhatsAppFloatingButton';
 import { BreadcrumbJsonLd } from '@/components/BreadcrumbJsonLd';
+import { ServiceLocations } from '@/components/ServiceLocations';
 
 export async function generateMetadata(): Promise<Metadata> {
   return createPageMetadata({
@@ -44,7 +45,7 @@ export async function generateMetadata(): Promise<Metadata> {
 const FAQS = [
   {
     question: "How do you calculate the required number of Wi-Fi access points for our office or resort?",
-    answer: "During our physical on-site survey, we map floorplans, wall materials (such as Portuguese laterite stone), and peak user device counts to calculate precise radio frequency (RF) heatmaps that guarantee zero dead zones."
+    answer: "During our physical on-site survey, we map floorplans, wall materials (such as Portuguese laterite stone), and peak user device counts to calculate precise radio frequency (RF) heatmaps engineered to eliminate coverage gaps."
   },
   {
     question: "What brand hardware do you supply and configure?",
@@ -85,7 +86,7 @@ export default function NetworkInfrastructurePage() {
     },
     {
       title: "Structured Cabling & 10G Fiber Optics",
-      subtitle: "Certified physical layer planning and clean execution to support decades of operations.",
+      subtitle: "Standards-based physical layer planning and clean execution to support decades of operations.",
       icon: Server,
       gradient: "from-purple-500/20 via-pink-500/10 to-transparent",
       border: "hover:border-purple-500/35",
@@ -292,6 +293,9 @@ export default function NetworkInfrastructurePage() {
 
       {/* Trust Section */}
       <TrustSection />
+
+      {/* Location-specific service pages (local SEO internal links) */}
+      <ServiceLocations serviceUrl="/services/network-infrastructure" />
 
       {/* FAQ Section with JSON-LD Schema */}
       <section className="py-16 sm:py-20 border-b border-zinc-900">

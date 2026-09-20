@@ -1,4 +1,5 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@500;700;800&display=swap');
+/* NOTE: No webfont imports — production apps use the system font stack.
+   Add a self-hosted font here only with an explicit performance review. */
 
 :root {
   /* ==================== BRAND COLOR PALETTE ==================== */

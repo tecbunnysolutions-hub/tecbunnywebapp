@@ -23,6 +23,7 @@
     "validate:visual-baselines": "node scripts/validate-visual-baselines.mjs",
     "validate:launch-evidence": "node scripts/validate-launch-evidence.mjs",
     "validate:theme-contract": "node scripts/validate-theme-contract.mjs",
+    "validate:seo-contract": "node scripts/validate-seo-contract.mjs",
     "validate:launch-readiness": "node scripts/validate-launch-readiness.mjs",
     "validate:runtime-readiness": "node scripts/validate-runtime-readiness.mjs runtime-readiness-evidence.json --mode=strict",
     "validate:runtime-readiness:advisory": "node scripts/validate-runtime-readiness.mjs runtime-readiness-evidence.json --mode=advisory",

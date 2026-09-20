@@ -34,6 +34,7 @@ export async function generateMetadata({ params }: BlueprintPageProps): Promise<
   return {
     title,
     description,
+    alternates: { canonical: `https://www.tecbunny.com/blueprints/${id}` },
     openGraph: {
       title,
       description,

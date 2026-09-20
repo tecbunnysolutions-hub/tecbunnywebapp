@@ -361,7 +361,7 @@ export function InteractiveTopologyDiagram({ config }: InteractiveTopologyDiagra
           { key: 'Combined Stream', val: `${getFluctuatedVal(24.2, 1.8)} Mbps`, sparkType: 'cam-more' },
           { key: 'Connection Mode', val: 'Aux Switch / Port Splitting' },
           { key: 'Diagnostics Code', val: 'CODE: 200 (ONLINE)' },
-          { key: 'Compliance Grade', val: 'Tier-1 Certified' },
+          { key: 'Compliance Grade', val: 'Tier-1 Grade' },
         ];
       default:
         return [

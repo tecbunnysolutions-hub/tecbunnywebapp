@@ -21,6 +21,7 @@ import { HowItWorksSection } from '@/components/HowItWorksSection';
 import { TrustSection } from '@/components/TrustSection';
 import { WhatsAppFloatingButton } from '@/components/WhatsAppFloatingButton';
 import { BreadcrumbJsonLd } from '@/components/BreadcrumbJsonLd';
+import { ServiceLocations } from '@/components/ServiceLocations';
 
 export async function generateMetadata(): Promise<Metadata> {
   return createPageMetadata({
@@ -291,6 +292,9 @@ export default function PhysicalSecurityPage() {
 
       {/* Trust Section */}
       <TrustSection />
+
+      {/* Location-specific service pages (local SEO internal links) */}
+      <ServiceLocations serviceUrl="/services/physical-security" />
 
       {/* FAQ Section with JSON-LD Schema */}
       <section className="py-16 sm:py-20 border-b border-zinc-900">

@@ -105,7 +105,7 @@ const servicePricing: ServicePricingCategory[] = [
       },
       {
         name: 'Upgrade Services',
-        summary: 'Extend hardware life with certified performance upgrades.',
+        summary: 'Extend hardware life with professional performance upgrades.',
         tiers: [
           { label: 'Upgrade Service Ticket', price: '₹999', detail: 'Covers labour for RAM, SSD, or GPU swaps (parts extra).', amount: 999 }
         ]

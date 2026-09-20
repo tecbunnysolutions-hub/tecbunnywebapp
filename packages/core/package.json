@@ -40,6 +40,7 @@
     "./config-service": "./src/config-service.ts",
     "./constants": "./src/constants.ts",
     "./company-stats": "./src/company-stats.ts",
+    "./verified-credentials": "./src/verified-credentials.ts",
     "./components/EnterpriseAnalyticsAutoTracker": "./src/components/EnterpriseAnalyticsAutoTracker.tsx",
     "./crypto-utils": "./src/crypto-utils.ts",
     "./custom-setup-pricing": "./src/custom-setup-pricing.ts",
