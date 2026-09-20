@@ -9,6 +9,49 @@ import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 // Revalidate homepage every 60 seconds (ISR) to fix 2.8s Document Request Latency
 export const revalidate = 60;
 
+// AEO: FAQPage structured data mirroring the visible FAQ section in home-page.tsx
+const homeFaqs: Array<{ question: string; answer: string }> = [
+  {
+    question: 'Do you fit CCTV in homes in Goa?',
+    answer:
+      'Yes. We fit CCTV in homes, villas, and flats in Goa. We help you pick the right camera count and type for your space. AMC, support access, and warranty coverage depend on the selected plan. We also check old camera wiring and update it where included in the quote.',
+  },
+  {
+    question: 'How much does CCTV cost in Goa?',
+    answer:
+      'Our CCTV prices start at Rs 8,000 for a basic 2-camera setup. A full 4-camera NVR kit starts at Rs 15,000. All costs include fitting, cabling, and a one-year warranty. We also offer easy monthly payment plans. Ask us for a free quote today.',
+  },
+  {
+    question: 'Do you set up Wi-Fi networks in Goa?',
+    answer:
+      'Yes. We set up Wi-Fi, LAN networks, and cable runs for homes, offices, and hotels across Goa. We use Ubiquiti, Cisco, and Fortinet gear. Every network job comes with a 90-day free support period and a full handover report.',
+  },
+  {
+    question: 'What does an AMC plan cover?',
+    answer:
+      'An AMC (Annual Maintenance Contract) covers your CCTV or IT kit for the full year. It can include planned check-ups, remote support, on-site fixes, and audit reports, with response targets defined in your plan. It helps reduce ad hoc repairs and keeps your gear maintained.',
+  },
+  {
+    question: 'Do you serve areas outside Goa?',
+    answer:
+      'Yes. We serve clients in Mumbai, Pune, and Nashik for large IT and CCTV jobs. We also run remote IT support for firms across India. For jobs outside Goa, we can send a team or work with a local vendor under our watch. Call us to get a fast quote.',
+  },
+];
+
+const homeFaqJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  '@id': 'https://www.tecbunny.com/#faq',
+  isPartOf: { '@id': 'https://www.tecbunny.com/#webpage' },
+  mainEntity: homeFaqs.map((faq) => ({
+    '@type': 'Question',
+    name: faq.question,
+    acceptedAnswer: { '@type': 'Answer', text: faq.answer },
+  })),
+};
+
+const serializeJsonLd = (data: unknown) => JSON.stringify(data).replace(/</g, '\\u003c');
+
 
 // Homepage metadata for SEO
 export async function generateMetadata(): Promise<Metadata> {
@@ -104,14 +147,19 @@ function parsePartnerBrands(value: unknown): PartnerBrand[] {
 
 export default function Page() {
   return (
-    <Suspense fallback={<HomePageSkeleton />}>
-      <HomePageDataLoader />
-    </Suspense>
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: serializeJsonLd(homeFaqJsonLd) }}
+      />
+      <Suspense fallback={<HomePageSkeleton />}>
+        <HomePageDataLoader />
+      </Suspense>
+    </>
   );
 }
 
 async function HomePageDataLoader() {
-  let initialProducts: HomePageProps['initialProducts'] = undefined;
   let initialPartnerBrands: PartnerBrand[] = [];
   // Default to {} so HeroCarousel skips client-side fetch when no data is configured.
   let initialHeroCarousel: HomePageProps['initialHeroCarousel'] = {};
@@ -122,27 +170,10 @@ async function HomePageDataLoader() {
       process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
     );
 
-    const [productsResult, brandsResult, heroResult] = await Promise.allSettled([
-      supabase.from('products').select('*').eq('status', 'active').limit(12),
+    const [brandsResult, heroResult] = await Promise.allSettled([
       supabase.from('settings').select('value').eq('key', 'partnerBrands').maybeSingle(),
       supabase.from('page_content').select('data').eq('key', 'hero-carousels').maybeSingle(),
     ]);
-
-    if (productsResult.status === 'fulfilled' && productsResult.value.data && !productsResult.value.error) {
-      const items = Array.isArray(productsResult.value.data) ? productsResult.value.data : [];
-
-      const hasAnyImage = (item: unknown) => {
-        if (!item || typeof item !== 'object') return false;
-        const record = item as Record<string, unknown>;
-        if (record.image) return true;
-        if (Array.isArray(record.images) && record.images.length > 0) return true;
-        if (record.image_urls) return true;
-        return false;
-      };
-
-      const itemsWithImages = items.filter(hasAnyImage);
-      initialProducts = (itemsWithImages.length ? itemsWithImages : items).slice(0, 4);
-    }
 
     if (brandsResult.status === 'fulfilled' && brandsResult.value.data && !brandsResult.value.error) {
       initialPartnerBrands = parsePartnerBrands(brandsResult.value.data.value);
@@ -157,7 +188,6 @@ async function HomePageDataLoader() {
 
   return (
     <HomePage
-      initialProducts={initialProducts}
       initialPartnerBrands={initialPartnerBrands}
       initialHeroCarousel={initialHeroCarousel}
     />

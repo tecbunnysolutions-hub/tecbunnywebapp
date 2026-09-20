@@ -6,9 +6,19 @@ import { createClient } from '@tecbunny/database';
 export const revalidate = 300;
 
 export const metadata: Metadata = {
-  title: 'Blog — TecBunny',
-  description: 'Insights on CCTV, IT infrastructure, smart security, and tech tips from the TecBunny team.',
+  title: 'Blog — CCTV, IT & Smart Security Insights | TecBunny',
+  description: 'Insights on CCTV, IT infrastructure, smart security, and tech tips from the TecBunny team in Goa, India.',
+  alternates: { canonical: 'https://www.tecbunny.com/blog' },
+  openGraph: {
+    type: 'website',
+    url: 'https://www.tecbunny.com/blog',
+    title: 'TecBunny Blog — CCTV, IT & Smart Security Insights',
+    description: 'Insights on CCTV, IT infrastructure, smart security, and tech tips from the TecBunny team in Goa, India.',
+    siteName: 'TecBunny Solutions',
+  },
 };
+
+const serializeJsonLd = (data: unknown) => JSON.stringify(data).replace(/</g, '\\u003c');
 
 export default async function BlogPage() {
   const supabase = await createClient();
@@ -21,8 +31,30 @@ export default async function BlogPage() {
 
   const items = posts ?? [];
 
+  const blogJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Blog',
+    '@id': 'https://www.tecbunny.com/blog#blog',
+    url: 'https://www.tecbunny.com/blog',
+    name: 'TecBunny Blog',
+    description: 'Insights on CCTV, IT infrastructure, smart security, and tech tips from the TecBunny team in Goa, India.',
+    inLanguage: 'en-IN',
+    publisher: { '@id': 'https://www.tecbunny.com/#organization' },
+    isPartOf: { '@id': 'https://www.tecbunny.com/#website' },
+    blogPost: items.slice(0, 10).map((post: { slug: string; title: string; published_at: string | null }) => ({
+      '@type': 'BlogPosting',
+      headline: post.title,
+      url: `https://www.tecbunny.com/blog/${post.slug}`,
+      datePublished: post.published_at ?? undefined,
+    })),
+  };
+
   return (
     <main className="min-h-screen bg-black text-zinc-100">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: serializeJsonLd(blogJsonLd) }}
+      />
       <div className="mx-auto max-w-5xl px-6 py-20 sm:py-28">
         <h1 className="text-4xl font-black tracking-tight sm:text-5xl">
           TecBunny <span className="text-indigo-400">Blog</span>

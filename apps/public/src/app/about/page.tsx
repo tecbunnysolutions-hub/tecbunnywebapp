@@ -15,6 +15,26 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 // Optimized for static generation
+const aboutPageJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'AboutPage',
+  '@id': 'https://www.tecbunny.com/about#aboutpage',
+  url: 'https://www.tecbunny.com/about',
+  name: 'About TecBunny Solutions',
+  description: 'Learn about TecBunny Solutions, a Goa-based technology partner for CCTV, IT services, AMC support, smart automation, and secure infrastructure.',
+  isPartOf: { '@id': 'https://www.tecbunny.com/#website' },
+  about: { '@id': 'https://www.tecbunny.com/#organization' },
+  mainEntity: { '@id': 'https://www.tecbunny.com/#localbusiness' },
+};
+
 export default function Page() {
-  return <AboutPage />;
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(aboutPageJsonLd).replace(/</g, '\\u003c') }}
+      />
+      <AboutPage />
+    </>
+  );
 }

@@ -28,6 +28,7 @@ export * from './analytics-tracking';
 export * from './hooks/use-customer-workspace';
 export * from './schemas/order.schema';
 export * from './store/globalDrawerStore';
+export * from './company-stats';
 export * from './services/marketplace.service';
 export * from './services/foundation.service';
 export * from './services/crm-module.service';

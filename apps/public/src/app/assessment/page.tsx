@@ -101,13 +101,14 @@ export default async function AssessmentPage({
         </div>
       </section>
 
-      {/* Trust & Process Components */}
+      {/* Trust & Process Components — compact variants keep the form as the star of this page */}
       <HowItWorksSection 
+        variant="compact"
         title="What Happens After You Submit?" 
-        subtitle="Our transparent 8-step deployment process ensures you understand every stage before committing capital."
+        subtitle="A transparent deployment process — you understand every stage before committing capital."
       />
 
-      <TrustSection />
+      <TrustSection variant="compact" />
 
       {/* Structured Data for the Assessment Page */}
       <script

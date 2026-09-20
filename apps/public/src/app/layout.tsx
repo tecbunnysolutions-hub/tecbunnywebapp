@@ -54,6 +54,9 @@ export const metadata: Metadata = {
   publisher: 'TecBunny Solutions',
   alternates: {
     canonical: 'https://www.tecbunny.com',
+    types: {
+      'application/rss+xml': 'https://www.tecbunny.com/feed.xml',
+    },
   },
   openGraph: {
     type: 'website',
@@ -132,17 +135,24 @@ const structuredData = {
   '@graph': [
     {
       '@context': 'https://schema.org',
-      '@type': 'ITPrivateLimitedCompany',
-      'name': 'Tecbunny Solutions Private Limited',
+      '@type': 'Corporation',
+      '@id': 'https://www.tecbunny.com/#corporation',
+      'name': 'TecBunny Solutions Private Limited',
+      'legalName': 'TECBUNNY SOLUTIONS PRIVATE LIMITED',
+      'url': 'https://www.tecbunny.com',
       'address': {
         '@type': 'PostalAddress',
-        'streetAddress': 'H No 11, Nhayginwada, Parse, Parxem',
-        'addressLocality': 'North Goa, Pernem',
+        'streetAddress': 'H. No. 11, Nhayginwada, Parse, Parxem',
+        'addressLocality': 'Pernem, North Goa',
         'addressRegion': 'Goa',
         'postalCode': '403512',
         'addressCountry': 'IN'
       },
-      'cin': 'U80200GA2025PTC017488'
+      'identifier': {
+        '@type': 'PropertyValue',
+        'propertyID': 'CIN',
+        'value': 'U80200GA2025PTC017488'
+      }
     },
     {
       '@type': 'WebSite',

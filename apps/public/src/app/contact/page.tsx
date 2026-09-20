@@ -49,9 +49,24 @@ const contactFaqJsonLd = {
   ],
 };
 
+const contactPageJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'ContactPage',
+  '@id': 'https://www.tecbunny.com/contact#contactpage',
+  url: 'https://www.tecbunny.com/contact',
+  name: 'Contact TecBunny Solutions',
+  description: 'Get in touch with TecBunny Solutions for technology services, custom solutions, and technical support.',
+  isPartOf: { '@id': 'https://www.tecbunny.com/#website' },
+  about: { '@id': 'https://www.tecbunny.com/#localbusiness' },
+};
+
 export default function Page() {
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(contactPageJsonLd).replace(/</g, '\\u003c') }}
+      />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(contactFaqJsonLd).replace(/</g, '\\u003c') }}

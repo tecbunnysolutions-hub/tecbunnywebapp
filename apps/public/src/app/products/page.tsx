@@ -100,7 +100,34 @@ async function ShopPageDataLoader({ searchParams }: { searchParams?: Promise<Rec
   const rawProducts = productsRes.data || [];
   const rawOffers = offersRes.data || [];
 
+  // SEO/AEO: CollectionPage + ItemList structured data for the product catalogue
+  const itemListJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    '@id': 'https://www.tecbunny.com/products#collection',
+    url: 'https://www.tecbunny.com/products',
+    name: 'TecBunny Product Catalogue',
+    description: 'Shop premium CCTV systems, surveillance cameras, computer hardware, and accessories curated by TecBunny.',
+    isPartOf: { '@id': 'https://www.tecbunny.com/#website' },
+    mainEntity: {
+      '@type': 'ItemList',
+      numberOfItems: productsRes.count ?? rawProducts.length,
+      itemListElement: rawProducts.slice(0, 20).map((product: { id?: string | number; name?: string }, index: number) => ({
+        '@type': 'ListItem',
+        position: from + index + 1,
+        url: `https://www.tecbunny.com/products/${product.id}`,
+        name: product.name,
+      })),
+    },
+  };
+
   return (
-    <ShopPageContent initialRawProducts={rawProducts} initialRawAutoOffers={rawOffers} />
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListJsonLd).replace(/</g, '\\u003c') }}
+      />
+      <ShopPageContent initialRawProducts={rawProducts} initialRawAutoOffers={rawOffers} />
+    </>
   );
 }

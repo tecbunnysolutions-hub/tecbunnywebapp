@@ -72,12 +72,19 @@ export const DEPLOYMENT_STEPS = [
 export function HowItWorksSection({
   title = "Our Structured 8-Step Project Lifecycle",
   subtitle = "From initial property survey to ongoing SLA support, every deployment is executed with strict engineering rigor.",
-  className = ""
+  className = "",
+  variant = "full"
 }: {
   title?: string;
   subtitle?: string;
   className?: string;
+  variant?: 'full' | 'compact';
 }) {
+  // Compact mode surfaces the four milestone steps instead of all eight.
+  const steps = variant === 'compact'
+    ? DEPLOYMENT_STEPS.filter((s) => ['01', '03', '05', '08'].includes(s.step))
+    : DEPLOYMENT_STEPS;
+
   return (
     <section className={`py-16 sm:py-20 ${className}`}>
       <div className="container mx-auto px-6 max-w-screen-2xl">
@@ -94,7 +101,7 @@ export function HowItWorksSection({
         </div>
 
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {DEPLOYMENT_STEPS.map((item, idx) => {
+          {steps.map((item, idx) => {
             const Icon = item.icon;
             return (
               <div 

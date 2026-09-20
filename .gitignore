@@ -122,6 +122,7 @@ lib-cov
 # Temporary folders
 tmp/
 temp/
+.lighthouse-tmp/
 
 .env*.local
 /scratch/

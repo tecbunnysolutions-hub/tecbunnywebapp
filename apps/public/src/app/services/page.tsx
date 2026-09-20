@@ -2,6 +2,7 @@ import { isSupabaseServiceConfigured, createServiceClient } from "@tecbunny/data
 import { Metadata } from 'next';
 
 import ServicesPage from '@/components/services-page';
+import { BreadcrumbJsonLd } from '@/components/BreadcrumbJsonLd';
 import { logger } from '@tecbunny/core';
 
 import {  createSupabaseClient as createPublicSupabaseClient  } from '@tecbunny/database/server';
@@ -163,5 +164,15 @@ export default async function Page() {
     return String(a.title).localeCompare(String(b.title));
   });
 
-  return <ServicesPage services={services} hasServiceLoadError={hasServiceLoadError} />;
+  return (
+    <>
+      <BreadcrumbJsonLd
+        items={[
+          { name: 'Home', url: 'https://www.tecbunny.com' },
+          { name: 'Services', url: 'https://www.tecbunny.com/services' },
+        ]}
+      />
+      <ServicesPage services={services} hasServiceLoadError={hasServiceLoadError} />
+    </>
+  );
 }

@@ -1,9 +1,8 @@
 'use client';
 
-import React, { Suspense } from 'react';
+import React from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
-import HeroCarousel from './HeroCarousel';
 import {
   ArrowRight,
   ChevronRight,
@@ -12,58 +11,26 @@ import {
   Server,
   Zap,
   Layers,
-  Sliders,
-  FileText,
-  TrendingDown,
   Building2,
-  Award,
   Activity,
   ShoppingBag,
-  Lock,
   Wifi,
-  Shield,
   Clock
 } from 'lucide-react';
 
-import { getProductDisplayImage } from "@tecbunny/core/image-utils";
 import { cn, revealDelayClass } from "@tecbunny/core/utils";
+import { COMPANY_STATS } from '@tecbunny/core/company-stats';
 import { OptimizedImage, Button } from "@tecbunny/ui";
-import type { Product } from '@tecbunny/core';
 import { RegionalTrustBanner } from './RegionalTrustBanner';
 import { HeroRotator } from './home/HeroRotator';
-import { TrustSection } from './TrustSection';
-import { HowItWorksSection } from './HowItWorksSection';
-import { CaseStudySection } from './CaseStudySection';
-import { WhatsAppFloatingButton } from './WhatsAppFloatingButton';
 
 const DynamicBehavioralCouponPopup = dynamic(() => import('./BehavioralCouponPopup').then(mod => mod.BehavioralCouponPopup), { ssr: false });
 const DynamicAmbientEffects = dynamic(() => import('./home/AmbientEffects').then(mod => mod.AmbientEffects), { ssr: false });
 const DynamicHeroVisuals = dynamic(() => import('./home/HeroVisuals').then(mod => mod.HeroVisuals), { ssr: false });
-const TrackQuoteForm = dynamic(() => import('./home/TrackQuoteForm').then(mod => mod.TrackQuoteForm), { ssr: false });
 
-const AddToCartButton = dynamic(
-  () => import('@/components/cart/AddToCartButton').then((module) => module.AddToCartButton),
-  { ssr: false }
-);
-
-type DbProduct = {
-  id: string;
-  title?: string;
-  name?: string;
-  price?: number;
-  mrp?: number;
-  image?: string | null;
-  images?: Array<string | { url?: string | null }>;
-  status?: string | null;
-  description?: string | null;
-  category?: string | null;
-  popularity?: number | null;
-  rating?: number | null;
-  reviewCount?: number | null;
-  created_at?: string | null;
-  updated_at?: string | null;
-  stock_status?: 'in_stock' | 'low_stock' | 'out_of_stock' | 'backorder' | null;
-};
+// Below-the-fold sections are code-split into separate chunks but still server-rendered for SEO.
+const HeroCarousel = dynamic(() => import('./HeroCarousel'));
+const CaseStudySection = dynamic(() => import('./CaseStudySection').then(mod => mod.CaseStudySection));
 
 const FEATURE_PILLARS = [
   {
@@ -97,11 +64,9 @@ const FEATURE_PILLARS = [
 ];
 
 export default function HomePage({
-  initialProducts = [],
   initialPartnerBrands = [],
   initialHeroCarousel = null,
 }: {
-  initialProducts?: DbProduct[];
   initialPartnerBrands?: Array<{ name: string; logoUrl: string }>;
   initialHeroCarousel?: any;
 }) {
@@ -226,11 +191,11 @@ export default function HomePage({
 
               <div className="grid max-w-lg grid-cols-3 gap-4 rounded-2xl border border-zinc-800 bg-zinc-950/60 p-4">
                 <div className="group border-r border-zinc-800 pr-3 last:border-r-0 last:pr-0">
-                  <p className="text-2xl font-black text-white font-tech group-hover:text-blue-400 transition-colors">280+</p>
+                  <p className="text-2xl font-black text-white font-tech group-hover:text-blue-400 transition-colors">{COMPANY_STATS.sitesSecured}+</p>
                   <p className="mt-1 text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-500">Sites secured</p>
                 </div>
                 <div className="group border-r border-zinc-800 pr-3 last:border-r-0 last:pr-0">
-                  <p className="text-2xl font-black text-white font-tech group-hover:text-blue-400 transition-colors">24/7</p>
+                  <p className="text-2xl font-black text-white font-tech group-hover:text-blue-400 transition-colors">{COMPANY_STATS.supportAvailability}</p>
                   <p className="mt-1 text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-500">Remote support</p>
                 </div>
                 <div className="group">
@@ -245,93 +210,30 @@ export default function HomePage({
         </div>
       </section>
 
-      {/* Instant Quote & Negotiation System Promotion */}
-      <section className="tb-section relative overflow-hidden" style={{ contentVisibility: 'auto', containIntrinsicSize: '600px' }}>
+      {/* Custom configurator teaser — full experience lives at /customised-setups */}
+      <section className="tb-section relative overflow-hidden" style={{ contentVisibility: 'auto', containIntrinsicSize: '300px' }}>
         <div className="tb-container relative z-10">
-          <div className="grid gap-12 lg:grid-cols-12 lg:items-center">
-            {/* Left Column: Promotion Info */}
-            <div className="lg:col-span-7 space-y-6">
-              <div className="inline-flex items-center gap-2 rounded-lg border border-blue-500/20 bg-blue-500/5 px-3 py-1 text-xs font-semibold text-blue-400">
-                <Sparkles size={14} className="animate-pulse" />
-                Instant Quotation & Live Negotiation
+          <div className="tb-panel relative overflow-hidden border border-blue-500/20 bg-gradient-to-br from-blue-950/30 via-zinc-950 to-zinc-950 p-8 sm:p-10">
+            <div className="relative z-10 flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+              <div className="max-w-2xl space-y-3">
+                <div className="inline-flex items-center gap-2 rounded-lg border border-blue-500/20 bg-blue-500/5 px-3 py-1 text-xs font-semibold text-blue-400">
+                  <Sparkles size={14} />
+                  Instant Quotation &amp; Live Negotiation
+                </div>
+                <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-white font-tech leading-tight">
+                  Design Your Custom IT System. Name Your Price, Get an Instant Quote.
+                </h2>
+                <p className="text-sm text-zinc-400 leading-relaxed">
+                  Pick exactly what you need, see the real price, and download a formal PDF quote with 7-day validity. Minimum offer 70% of the quote total; GST included.
+                </p>
               </div>
-              <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-white font-tech leading-tight animate-reveal">
-                Design Your Custom IT System. <br />
-                <span className="text-zinc-200">Name Your Price, Get an Instant Quote.</span>
-              </h2>
-              <p className="tb-lede max-w-2xl text-base">
-                Stop waiting for quotes. Pick exactly what you need, see the real price, and get a custom deal instantly.
-              </p>
-              
-              {/* Feature grid */}
-              <div className="grid gap-4 sm:grid-cols-2 pt-2">
-                <div className="flex gap-3">
-                  <div className="tb-icon-tile">
-                    <Sliders size={18} />
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-semibold text-white">Live Customization</h3>
-                    <p className="text-xs text-zinc-500 mt-1">Adjust cameras, cabling, storage & accessories dynamically.</p>
-                  </div>
-                </div>
-                
-                <div className="flex gap-3">
-                  <div className="tb-icon-tile">
-                    <TrendingDown size={18} />
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-semibold text-white">Live Bidding Engine</h3>
-                    <p className="text-xs text-zinc-500 mt-1">Submit an eligible offer for review; a counter-offer is never guaranteed.</p>
-                  </div>
-                </div>
-
-                <div className="flex gap-3">
-                  <div className="tb-icon-tile">
-                    <FileText size={18} />
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-semibold text-white">Instant Formal PDF</h3>
-                    <p className="text-xs text-zinc-500 mt-1">Download custom pricing summaries with 7-day validity details.</p>
-                  </div>
-                </div>
-
-                <div className="flex gap-3">
-                  <div className="tb-icon-tile">
-                    <ShieldCheck size={18} />
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-semibold text-white">System Compatibility</h3>
-                    <p className="text-xs text-zinc-500 mt-1">Auto-verifies storage parameters & power needs in real time.</p>
-                  </div>
-                </div>
-              </div>
-
-              <aside className="rounded-xl border border-zinc-800 bg-zinc-950/60 p-4" aria-labelledby="negotiation-rules">
-                <h3 id="negotiation-rules" className="text-sm font-semibold text-white">Name Your Price: rules</h3>
-                <dl className="mt-3 grid gap-x-5 gap-y-2 text-xs sm:grid-cols-2">
-                  <div><dt className="font-medium text-zinc-300">Eligible products</dt><dd className="text-zinc-500">Custom CCTV and IT system configurations only; standard store products use their listed price.</dd></div>
-                  <div><dt className="font-medium text-zinc-300">Minimum offer</dt><dd className="text-zinc-500">At least 70% of the displayed custom-quote total.</dd></div>
-                  <div><dt className="font-medium text-zinc-300">Quote validity</dt><dd className="text-zinc-500">7 calendar days from issue.</dd></div>
-                  <div><dt className="font-medium text-zinc-300">Stock</dt><dd className="text-zinc-500">Not reserved until the quote is accepted and the order is confirmed.</dd></div>
-                  <div><dt className="font-medium text-zinc-300">Counter-offers</dt><dd className="text-zinc-500">A counter-offer is discretionary; final terms are shown on the reviewed quote.</dd></div>
-                  <div><dt className="font-medium text-zinc-300">GST and shipping</dt><dd className="text-zinc-500">GST is included in the quote total. Shipping is separate unless the final quote says otherwise.</dd></div>
-                </dl>
-              </aside>
-
-              <div className="flex flex-col sm:flex-row gap-4 pt-4">
-                <Link
-                  href="/customised-setups"
-                  className="tb-button-primary"
-                >
-                  Start Custom Setup Configurator
-                  <ArrowRight size={16} className="ml-2" />
-                </Link>
-              </div>
-            </div>
-
-            {/* Right Column: Dynamic Quote Tracking Panel */}
-            <div className="lg:col-span-5">
-              <TrackQuoteForm />
+              <Link
+                href="/customised-setups"
+                className="tb-button-primary shrink-0"
+              >
+                Start Custom Setup Configurator
+                <ArrowRight size={16} className="ml-2" />
+              </Link>
             </div>
           </div>
         </div>
@@ -340,38 +242,6 @@ export default function HomePage({
       <div>
         <HeroCarousel pageKey="homepage" initialData={initialHeroCarousel} />
       </div>
-
-      <section className="relative overflow-hidden border-y border-amber-400/30 bg-[linear-gradient(120deg,#341b09_0%,#6b2d0c_48%,#17100a_100%)] py-10 sm:py-14">
-        <div className="pointer-events-none absolute -right-20 -top-24 h-64 w-64 rounded-full border border-amber-300/20" />
-        <div className="pointer-events-none absolute -right-8 -top-12 h-40 w-40 rounded-full border border-amber-300/10" />
-        <div className="tb-container relative z-10">
-          <div className="grid gap-8 lg:grid-cols-[1fr_auto] lg:items-center">
-            <div className="max-w-3xl">
-              <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-amber-300/30 bg-amber-300/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.25em] text-amber-200">
-                <Sparkles size={13} /> Ganesh Chaturthi festive sale
-              </div>
-              <h2 className="text-3xl font-black leading-tight text-white sm:text-5xl font-tech">
-                Divine blessings. <span className="text-amber-300">Up to 50% off.</span>
-              </h2>
-              <p className="mt-3 max-w-2xl text-sm leading-relaxed text-amber-50/85 sm:text-base">
-                Welcome Bappa home and upgrade your security or workspace with advanced CCTV systems, high-performance laptops, and computers from Tecbunny in Parcem, Pernem, Goa.
-              </p>
-              <p className="mt-4 text-xs font-bold uppercase tracking-[0.18em] text-amber-200">
-                Valid till 13 Sept or till stock ends · Terms and conditions apply
-              </p>
-            </div>
-            <div className="flex flex-col gap-3 sm:flex-row lg:flex-col">
-              <Button asChild size="lg" className="h-12 rounded-xl bg-amber-300 px-6 text-sm font-bold text-amber-950 shadow-lg shadow-amber-950/30 hover:bg-amber-200">
-                <Link href="https://www.tecbunny.com">Shop festive deals <ArrowRight size={16} className="ml-2" /></Link>
-              </Button>
-              <Button asChild size="lg" variant="outline" className="h-12 rounded-xl border-amber-200/40 bg-transparent px-6 text-sm font-bold text-amber-50 hover:bg-amber-200/10 hover:text-white">
-                <Link href="https://wa.me/919604136010?text=Ganesh%20Chaturthi%20sale%20booking%20enquiry">WhatsApp to book</Link>
-              </Button>
-              <a href="tel:+919604136010" className="text-center text-xs font-semibold text-amber-200 underline-offset-4 hover:underline">Call 9604136010 · Visit Parcem, Pernem</a>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* 4. REAL-TIME REGIONAL SOCIAL PROOF */}
       {hasPartnerBrands ? (
@@ -487,117 +357,22 @@ export default function HomePage({
             </div>
           </div>
 
-          <div className="mt-12 rounded-xl border border-zinc-800 bg-zinc-950/60 p-6 sm:p-8">
-            <h3 className="text-lg font-semibold text-white mb-3">Our IT Service Coverage Areas Across Goa and India</h3>
-            <p className="text-sm text-zinc-400 leading-relaxed">
-              We do CCTV, IT, and smart home work across <strong className="text-zinc-300">North Goa</strong> — Pernem, Mapusa, Calangute, Baga, Anjuna, Siolim, Vagator, Chopdem, Arambol, Morjim, and Candolim. We cover <strong className="text-zinc-300">South Goa</strong> too — Panaji, Margao, Vasco, Ponda, and Cortalim. We also serve big IT and CCTV jobs in <strong className="text-zinc-300">Mumbai, Pune, and Nashik</strong>. Call us today for a fast CCTV, network, or AMC quote.
-            </p>
-          </div>
         </div>
       </section>
 
-      <section className="tb-section reveal-section is-revealed" data-reveal-id="plans" style={{ contentVisibility: 'auto', containIntrinsicSize: '600px' }}>
-        <div className="tb-container grid gap-12 lg:grid-cols-2 lg:items-center">
-          <div className={cn('tb-panel reveal-item relative p-5 sm:p-10', revealDelayClass(0))}>
-            <h3 className="text-2xl font-semibold text-white sm:text-3xl">Simple to Use and Hard to Break: Smart Systems</h3>
-            <p className="tb-lede mt-4 text-sm sm:text-base">
-              Enjoy peace of mind with smart systems designed for everyday people, backed by our friendly local support.
-            </p>
-            <div className="mt-6 grid gap-4">
-              {['Unified monitoring', 'Actionable reporting', 'Hands-on lifecycle support'].map((item, index) => (
-                <div key={item} className={cn('reveal-item flex items-center gap-3 rounded-lg border border-zinc-800 bg-zinc-900/50 px-4 py-3 text-sm text-zinc-300', revealDelayClass(100 + index * 70))}>
-                  <Layers size={16} className="text-blue-500" />
-                  {item}
-                </div>
-              ))}
-            </div>
-          </div>
-
-        </div>
-      </section>
-
-      <section className="tb-section reveal-section is-revealed" data-reveal-id="hardware" style={{ contentVisibility: 'auto', containIntrinsicSize: '600px' }}>
+      <section className="tb-section reveal-section is-revealed" data-reveal-id="hardware" style={{ contentVisibility: 'auto', containIntrinsicSize: '300px' }}>
         <div className="tb-container">
-          <div className="mb-10 flex flex-wrap items-center justify-between gap-4">
-            <div>
+          <div className="tb-panel flex flex-col gap-6 p-8 sm:p-10 lg:flex-row lg:items-center lg:justify-between">
+            <div className="max-w-2xl space-y-3">
               <span className="tb-kicker">Storefront</span>
-              <h2 className="mt-3 text-3xl font-semibold text-white">Our Featured Hardware for IT and Smart Home Systems</h2>
+              <h2 className="text-2xl sm:text-3xl font-semibold text-white">Need hardware?</h2>
+              <p className="text-sm text-zinc-400 leading-relaxed">
+                Browse our catalog of business hardware — CCTV kits, NVRs, laptops, and core components. Genuine products, GST invoice, and delivery eligibility confirmed at checkout.
+              </p>
             </div>
-            <Link
-              href="/products"
-              className="tb-text-link"
-            >
-              Browse catalog <ArrowRight size={16} />
+            <Link href="/products" className="tb-button-secondary shrink-0 inline-flex items-center gap-2">
+              Browse Hardware <ArrowRight size={16} />
             </Link>
-          </div>
-
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {initialProducts.length === 0 && (
-              <div className="col-span-full rounded-lg border border-dashed border-zinc-800 bg-zinc-950/70 p-8 text-center text-zinc-500">
-                No products available yet.
-              </div>
-            )}
-
-            {initialProducts.map((product, index) => {
-              const title = product.title || product.name || 'Product';
-              const rawPrice = Number(product.price ?? product.mrp ?? 0);
-              const rawMrp = Number(product.mrp ?? rawPrice);
-              
-              const price = rawPrice;
-              const oldPrice = rawMrp;
-              const imageUrl = getProductDisplayImage(product) || '';
-              const resolvedProduct: Product = {
-                ...product,
-                title,
-                name: title,
-                description: (product.description ?? '').trim(),
-                price,
-                category: product.category || 'General',
-                image: imageUrl || '',
-                popularity: product.popularity ?? 0,
-                rating: product.rating ?? 0,
-                reviewCount: product.reviewCount ?? 0,
-                created_at: product.created_at || new Date().toISOString(),
-              } as Product;
-
-              return (
-                <div key={product.id} className={cn('tb-card reveal-item flex flex-col justify-between p-5', revealDelayClass(index * 90))}>
-                  <Link href={`/products/${product.id}`} className="group/product-link block">
-                    <div className="group/product relative mb-4 flex h-32 sm:h-40 items-center justify-center overflow-hidden rounded-lg bg-white p-2 border border-zinc-800">
-                      {imageUrl ? (
-                        <OptimizedImage
-                          src={imageUrl}
-                          alt={title}
-                          fill
-                          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                          className="h-full w-full object-contain transition-transform duration-500 group-hover/product:scale-105"
-                          transformation={{ width: 480, height: 320, quality: 75 }}
-                        />
-                      ) : (
-                        <div className="absolute inset-0 bg-zinc-950 flex flex-col items-center justify-center gap-2 border border-zinc-800 rounded-lg text-zinc-500 hover:text-blue-500 hover:border-blue-500/20 transition-all duration-300">
-                          <Server size={36} className="text-zinc-600 group-hover/product-link:text-blue-500 transition-colors" />
-                          <span className="text-[10px] uppercase tracking-wider font-semibold text-zinc-500 font-tech">Hardware</span>
-                        </div>
-                      )}
-                    </div>
-                    <h3 className="text-sm font-semibold text-white group-hover/product-link:text-blue-500 transition-colors line-clamp-2 min-h-[40px]">{title}</h3>
-                  </Link>
-                  <div>
-                    <div className="mt-3 flex items-center gap-2 text-sm">
-                      <span className="text-blue-400 font-semibold">₹{price.toLocaleString('en-IN')}</span>
-                      {oldPrice > price && (
-                        <span className="text-zinc-500 line-through">₹{oldPrice.toLocaleString('en-IN')}</span>
-                      )}
-                    </div>
-                    <AddToCartButton
-                      product={resolvedProduct}
-                      className="mt-4 min-h-11 w-full rounded-lg border border-zinc-800 bg-zinc-900/50 px-4 py-2 text-xs font-semibold text-white hover:border-blue-500/30 transition-colors"
-                      size="sm"
-                    />
-                  </div>
-                </div>
-              );
-            })}
           </div>
         </div>
       </section>
@@ -660,24 +435,6 @@ export default function HomePage({
               </div>
             </div>
 
-            {/* Education */}
-            <div className="rounded-3xl border border-zinc-850 bg-zinc-900/30 p-7 flex flex-col justify-between group hover:border-blue-500/30 transition-all duration-300">
-              <div className="space-y-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-400 group-hover:scale-105 transition-transform">
-                  <Award size={22} />
-                </div>
-                <h3 className="text-xl font-bold text-white font-tech">Schools &amp; Campuses</h3>
-                <p className="text-xs text-zinc-400 font-light leading-relaxed">
-                  Content-filtering firewalls, computer lab high-density cabling, and perimeter AI security cameras with gate transit tracking.
-                </p>
-              </div>
-              <div className="mt-6 pt-4 border-t border-zinc-850/60">
-                <Link href="/industries/education" className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-400 hover:text-blue-300">
-                  View Campus Solutions <ArrowRight size={14} />
-                </Link>
-              </div>
-            </div>
-
             {/* Healthcare */}
             <div className="rounded-3xl border border-zinc-850 bg-zinc-900/30 p-7 flex flex-col justify-between group hover:border-blue-500/30 transition-all duration-300">
               <div className="space-y-4">
@@ -714,34 +471,11 @@ export default function HomePage({
               </div>
             </div>
 
-            {/* Builders & Commercial Developments */}
-            <div className="rounded-3xl border border-zinc-850 bg-zinc-900/30 p-7 flex flex-col justify-between group hover:border-blue-500/30 transition-all duration-300">
-              <div className="space-y-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 group-hover:scale-105 transition-transform">
-                  <Zap size={22} />
-                </div>
-                <h3 className="text-xl font-bold text-white font-tech">Builders &amp; Real Estate Developers</h3>
-                <p className="text-xs text-zinc-400 font-light leading-relaxed">
-                  Pre-construction structured cabling blueprints, perimeter smart gate automation, and complete builder technology handovers.
-                </p>
-              </div>
-              <div className="mt-6 pt-4 border-t border-zinc-850/60">
-                <Link href="/services/smart-infrastructure" className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-400 hover:text-blue-300">
-                  View Builder Solutions <ArrowRight size={14} />
-                </Link>
-              </div>
-            </div>
           </div>
         </div>
       </section>
 
-      {/* Structured 8-Step Lifecycle */}
-      <HowItWorksSection />
-
-      {/* Factual Trust Section */}
-      <TrustSection />
-
-      {/* Reusable B2B Case Study Architecture Framework */}
+      {/* B2B case studies — full 8-step lifecycle and trust details live on /assessment and /industries */}
       <CaseStudySection />
 
       <section className="tb-section reveal-section is-revealed" data-reveal-id="about" style={{ contentVisibility: 'auto', containIntrinsicSize: '400px' }}>
@@ -749,19 +483,10 @@ export default function HomePage({
           <div className="mx-auto max-w-4xl space-y-6 text-sm leading-relaxed text-zinc-400 sm:text-base">
             <h2 className="text-3xl font-semibold text-white mb-8 font-tech">One Team, One Partner for All Your IT and Tech Needs</h2>
             <p>
-              At TecBunny, we use tech to help your business grow. We are a team of CCTV experts, IT engineers, and support staff. We build and run tech systems for your firm in Goa, Maharashtra, and India.
+              At TecBunny, we are a team of CCTV experts, IT engineers, and support staff. We started by fitting CCTV cameras and access control for hotels, hospitals, schools, and offices — today we run full IT systems, keep your data safe, and link CCTV, networks, and smart office tools to work as one. One team, one point of call, in Goa and across India.
             </p>
             <p>
-              We started by fitting CCTV cameras and access control for hotels, hospitals, schools, and offices. Now we do much more. We run full IT systems, keep your data safe, and help your team work better every day.
-            </p>
-            <p>
-              We link CCTV, networks, and smart office tools to work as one. One team. One point of call. Need a CCTV fix, a network job, or an IT help desk? We can do all of it — in Goa and across India.
-            </p>
-            <p>
-              We hold brand deals and service licences with Hikvision, Dahua, CP Plus, Cisco, Ubiquiti, and Fortinet. Every CCTV or IT job we do comes with a clear SLA, fair pricing, and one account manager.
-            </p>
-            <p>
-              We are based in Pernem, North Goa. We know local tech issues well — the humidity, power cuts, and dust that affect CCTV and IT gear in Goa. This local know-how helps us do better, faster work for our clients across the state and beyond.
+              We hold brand deals and service licences with Hikvision, Dahua, CP Plus, Cisco, Ubiquiti, and Fortinet. Based in Pernem, North Goa, we know local conditions — humidity, power cuts, and dust — and every job comes with a clear SLA, fair pricing, and one account manager.
             </p>
           </div>
         </div>
@@ -783,10 +508,6 @@ export default function HomePage({
               <dd className="text-sm text-zinc-400 leading-relaxed">Our CCTV prices start at Rs 8,000 for a basic 2-camera setup. A full 4-camera NVR kit starts at Rs 15,000. All costs include fitting, cabling, and a one-year warranty. We also offer easy monthly payment plans. Ask us for a free quote today.</dd>
             </div>
             <div className="space-y-2 rounded-lg border border-zinc-800 bg-zinc-950/60 p-4">
-              <dt className="text-sm font-semibold text-white">Do you service and repair old CCTV?</dt>
-              <dd className="text-sm text-zinc-400 leading-relaxed">Yes. We can service, fix, or upgrade most CCTV brands. We do on-site checks, camera swaps, NVR updates, and cable fixes. Our AMC plans cover all of this for a flat yearly fee. We also stock spare parts for Hikvision, Dahua, and CP Plus systems.</dd>
-            </div>
-            <div className="space-y-2 rounded-lg border border-zinc-800 bg-zinc-950/60 p-4">
               <dt className="text-sm font-semibold text-white">Do you set up Wi-Fi networks in Goa?</dt>
               <dd className="text-sm text-zinc-400 leading-relaxed">Yes. We set up Wi-Fi, LAN networks, and cable runs for homes, offices, and hotels across Goa. We use Ubiquiti, Cisco, and Fortinet gear. Every network job comes with a 90-day free support period and a full handover report.</dd>
             </div>
@@ -795,34 +516,16 @@ export default function HomePage({
               <dd className="text-sm text-zinc-400 leading-relaxed">An AMC (Annual Maintenance Contract) covers your CCTV or IT kit for the full year. It can include planned check-ups, remote support, on-site fixes, and audit reports, with response targets defined in your plan. It helps reduce ad hoc repairs and keeps your gear maintained.</dd>
             </div>
             <div className="space-y-2 rounded-lg border border-zinc-800 bg-zinc-950/60 p-4">
-              <dt className="text-sm font-semibold text-white">Do you do smart home setup in Goa?</dt>
-              <dd className="text-sm text-zinc-400 leading-relaxed">Yes. We fit smart lights, smart locks, RFID access, and AV systems in homes and resorts across Goa. We work with top smart home brands and link your devices to one app on your phone. All smart home jobs come with a warranty and tech support.</dd>
-            </div>
-            <div className="space-y-2 rounded-lg border border-zinc-800 bg-zinc-950/60 p-4">
-              <dt className="text-sm font-semibold text-white">Do you fit CCTV for hotels in Goa?</dt>
-              <dd className="text-sm text-zinc-400 leading-relaxed">Yes. Hotels are a key service area. We fit CCTV in hotel lobbies, car parks, pools, lifts, and guest floors. We plan a full CCTV layout map with the hotel team before we start. AMC and support coverage are defined in the project proposal.</dd>
-            </div>
-            <div className="space-y-2 rounded-lg border border-zinc-800 bg-zinc-950/60 p-4">
               <dt className="text-sm font-semibold text-white">Do you serve areas outside Goa?</dt>
               <dd className="text-sm text-zinc-400 leading-relaxed">Yes. We serve clients in Mumbai, Pune, and Nashik for large IT and CCTV jobs. We also run remote IT support for firms across India. For jobs outside Goa, we can send a team or work with a local vendor under our watch. Call us to get a fast quote.</dd>
             </div>
-            <div className="space-y-2 rounded-lg border border-zinc-800 bg-zinc-950/60 p-4">
-              <dt className="text-sm font-semibold text-white">How fast do you respond to faults?</dt>
-              <dd className="text-sm text-zinc-400 leading-relaxed">Our service response times are shown in the clearly labelled panel at the top of this page. The applicable target depends on whether the request is a general enquiry, a critical AMC incident, or an on-site critical fault, and on plan coverage.</dd>
-            </div>
-            <div className="space-y-2 rounded-lg border border-zinc-800 bg-zinc-950/60 p-4">
-              <dt className="text-sm font-semibold text-white">What is an NVR and DVR for CCTV?</dt>
-              <dd className="text-sm text-zinc-400 leading-relaxed">A DVR (Digital Video Recorder) records from older analog CCTV cameras. An NVR (Network Video Recorder) records from IP cameras over a LAN. We help you pick the right one for your setup and budget. Most new CCTV systems use NVR units with remote view on your phone.</dd>
-            </div>
-            <div className="space-y-2 rounded-lg border border-zinc-800 bg-zinc-950/60 p-4">
-              <dt className="text-sm font-semibold text-white">Do you fit RFID locks and smart access?</dt>
-              <dd className="text-sm text-zinc-400 leading-relaxed">Yes. We fit RFID card readers, smart door locks, and access systems for offices, hotels, and flats in Goa. You can track who enters and exits your space in real time. We can also link the access system to your CCTV for a full audit trail.</dd>
-            </div>
-            <div className="space-y-2 rounded-lg border border-zinc-800 bg-zinc-950/60 p-4">
-              <dt className="text-sm font-semibold text-white">Do you work with builders and architects?</dt>
-              <dd className="text-sm text-zinc-400 leading-relaxed">Yes. We work with builders, fit-out teams, and architects to plan CCTV, network, and smart home cables at the build stage. Planning cables early saves money and time later. Call us for a free design consult on any new build or fit-out project in Goa.</dd>
-            </div>
           </dl>
+          <p className="mt-8 text-sm text-zinc-500">
+            More questions?{' '}
+            <Link href="/contact" className="text-blue-400 hover:text-blue-300 transition-colors">
+              See all FAQs or ask us directly &rarr;
+            </Link>
+          </p>
         </div>
       </section>
 
