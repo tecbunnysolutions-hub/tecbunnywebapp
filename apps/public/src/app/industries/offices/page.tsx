@@ -75,7 +75,7 @@ export default function OfficesIndustryPage() {
         },
         {
           title: "Certified Structured Cat6 & 10G Fiber Cabling",
-          desc: "Complete physical layer deployments with patch panels, cable managers, and ventilated server racks tested to Fluke performance standards.",
+          desc: "Complete physical layer deployments with patch panels, cable managers, and ventilated server racks tested to structured-cabling performance standards.",
           points: [
             "Clean color-coded cable runs with indelible port labeling",
             "High-airflow rack enclosures with centralized UPS battery backup",

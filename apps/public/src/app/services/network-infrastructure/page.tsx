@@ -56,7 +56,7 @@ const FAQS = [
   },
   {
     question: "Do your cable installations come certified?",
-    answer: "Yes, every single Cat6, Cat6A, and optical fiber run is terminated to numbered patch panels and tested to Fluke performance standards with full certification reports provided upon project handover."
+    answer: "Yes, every single Cat6, Cat6A, and optical fiber run is terminated to numbered patch panels and certified with calibrated cable testers, with full test reports provided upon project handover."
   }
 ];
 
@@ -99,7 +99,7 @@ export default function NetworkInfrastructurePage() {
           desc: "Proper patch panel layout, clear labeling, cable management tracks, and systemized server racks."
         },
         {
-          label: "Fluke Performance Certification",
+          label: "Certified Cable Testing",
           desc: "Full testing and certification of every cable run to guarantee maximum performance and zero line noise."
         }
       ]
@@ -231,7 +231,7 @@ export default function NetworkInfrastructurePage() {
               <div className="text-blue-400 font-mono font-bold text-sm">03 / Clutter</div>
               <h3 className="text-lg font-bold text-white font-tech">Unorganized Server Racks &amp; Noise</h3>
               <p className="text-xs text-zinc-400 font-light leading-relaxed">
-                Tangled, unlabelled cables cause hours of diagnostic delays. We install clean, color-coded patch panels, ventilated racks, and Fluke-certified runs.
+                Tangled, unlabelled cables cause hours of diagnostic delays. We install clean, color-coded patch panels, ventilated racks, and certified cable runs.
               </p>
             </div>
           </div>

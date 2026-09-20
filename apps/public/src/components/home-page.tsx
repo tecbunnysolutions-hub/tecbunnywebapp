@@ -15,7 +15,9 @@ import {
   Activity,
   ShoppingBag,
   Wifi,
-  Clock
+  Clock,
+  Lock,
+  Cpu
 } from 'lucide-react';
 
 import { cn, revealDelayClass } from "@tecbunny/core/utils";
@@ -32,34 +34,57 @@ const DynamicHeroVisuals = dynamic(() => import('./home/HeroVisuals').then(mod =
 const HeroCarousel = dynamic(() => import('./HeroCarousel'));
 const CaseStudySection = dynamic(() => import('./CaseStudySection').then(mod => mod.CaseStudySection));
 
+// Canonical solutions taxonomy — mirrors the Solutions menu in the site header
+// (components/layout/Header.tsx navLinks) so homepage pillars never diverge from nav.
 const FEATURE_PILLARS = [
   {
-    title: 'Core IT and Network Infrastructure for Your Business',
-    desc: 'Resilient digital foundations, seamless cloud migrations, and managed IT support.',
+    title: 'Network & IT Infrastructure',
+    desc: 'Structured cabling, Wi-Fi 6, VLANs, firewalls, and managed switching.',
     icon: Server,
     accent: 'from-zinc-900 to-zinc-950',
     href: '/services/network-infrastructure',
   },
   {
-    title: 'IT Security and Compliance for Your Business Network',
-    desc: 'Continuous threat detection, data backup, and uncompromised protection.',
+    title: 'Physical Security & CCTV',
+    desc: 'IP surveillance, NVR/DVR systems, perimeter monitoring, and low-light cameras.',
     icon: ShieldCheck,
-    accent: 'from-zinc-900 to-zinc-950',
-    href: '/services/software-system-admin',
-  },
-  {
-    title: 'Physical Tech and Smart Building Infrastructure in Goa',
-    desc: 'CCTV installation, IP surveillance, RFID access control, smart automation, and structured cabling.',
-    icon: Zap,
     accent: 'from-zinc-900 to-zinc-950',
     href: '/services/physical-security',
   },
   {
-    title: 'Managed ITES and Business Process Outsourcing Services',
-    desc: 'Optimized business processes, technical support desks, and back-office automation.',
-    icon: Layers,
+    title: 'Smart Access Control',
+    desc: 'RFID keycards, biometric terminals, smart door locks, and visitor management.',
+    icon: Lock,
+    accent: 'from-zinc-900 to-zinc-950',
+    href: '/services/smart-access-control',
+  },
+  {
+    title: 'Smart Infrastructure for Hotels',
+    desc: 'Guest-room automation, GRMS energy control, and hospitality integrations.',
+    icon: Building2,
     accent: 'from-zinc-900 to-zinc-950',
     href: '/services/smart-infrastructure',
+  },
+  {
+    title: 'Lifecycle Hardware Management',
+    desc: 'Enterprise procurement, workstation staging, AMC support, and secure asset refresh.',
+    icon: Cpu,
+    accent: 'from-zinc-900 to-zinc-950',
+    href: '/services/lifecycle-hardware',
+  },
+  {
+    title: 'Software & System Administration',
+    desc: 'Patch audits, backups, endpoint security, and remote system administration.',
+    icon: Layers,
+    accent: 'from-zinc-900 to-zinc-950',
+    href: '/services/software-system-admin',
+  },
+  {
+    title: 'Enterprise Redundancy Solutions',
+    desc: 'Dual-ISP failover, UPS power conditioning, and business-continuity engineering.',
+    icon: Zap,
+    accent: 'from-zinc-900 to-zinc-950',
+    href: '/solutions',
   },
 ];
 
@@ -210,31 +235,22 @@ export default function HomePage({
         </div>
       </section>
 
-      {/* Custom configurator teaser — full experience lives at /customised-setups */}
-      <section className="tb-section relative overflow-hidden" style={{ contentVisibility: 'auto', containIntrinsicSize: '300px' }}>
+      {/* The configurator is a standalone application at /customised-setups —
+          the homepage only links to it and ships zero configurator code. */}
+      <section className="tb-section relative overflow-hidden" style={{ contentVisibility: 'auto', containIntrinsicSize: '120px' }}>
         <div className="tb-container relative z-10">
-          <div className="tb-panel relative overflow-hidden border border-blue-500/20 bg-gradient-to-br from-blue-950/30 via-zinc-950 to-zinc-950 p-8 sm:p-10">
-            <div className="relative z-10 flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-              <div className="max-w-2xl space-y-3">
-                <div className="inline-flex items-center gap-2 rounded-lg border border-blue-500/20 bg-blue-500/5 px-3 py-1 text-xs font-semibold text-blue-400">
-                  <Sparkles size={14} />
-                  Instant Quotation &amp; Live Negotiation
-                </div>
-                <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-white font-tech leading-tight">
-                  Design Your Custom IT System. Name Your Price, Get an Instant Quote.
-                </h2>
-                <p className="text-sm text-zinc-400 leading-relaxed">
-                  Pick exactly what you need, see the real price, and download a formal PDF quote with 7-day validity. Minimum offer 70% of the quote total; GST included.
-                </p>
-              </div>
-              <Link
-                href="/customised-setups"
-                className="tb-button-primary shrink-0"
-              >
-                Start Custom Setup Configurator
-                <ArrowRight size={16} className="ml-2" />
-              </Link>
+          <div className="flex flex-col gap-4 rounded-2xl border border-blue-500/20 bg-zinc-950/60 p-5 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-start gap-3 sm:items-center">
+              <Sparkles size={16} className="mt-0.5 shrink-0 text-blue-400 sm:mt-0" />
+              <p className="text-sm text-zinc-300">
+                <span className="font-semibold text-white">Custom IT configurator:</span>{' '}
+                design your setup, name your price, and download a formal PDF quote on the dedicated tool.
+              </p>
             </div>
+            <Link href="/customised-setups" className="tb-button-primary shrink-0">
+              Open Configurator
+              <ArrowRight size={16} className="ml-2" />
+            </Link>
           </div>
         </div>
       </section>
@@ -284,10 +300,10 @@ export default function HomePage({
       <section className="tb-section reveal-section is-revealed" data-reveal-id="pillars" style={{ contentVisibility: 'auto', containIntrinsicSize: '600px' }}>
         <div className="tb-container">
           <div className="mb-14 max-w-2xl">
-            <span className="tb-kicker">Core pillars</span>
-            <h2 className="mt-4 text-3xl font-semibold text-white sm:text-4xl">Systems Engineered for Scale and Designed for Security</h2>
+            <span className="tb-kicker">Solutions</span>
+            <h2 className="mt-4 text-3xl font-semibold text-white sm:text-4xl">One Partner Across Your Entire Technology Stack</h2>
             <p className="tb-lede mt-4 text-sm sm:text-base">
-              Comprehensive IT and ITES solutions tailored to the demands of modern business.
+              The same seven solution tracks you will find in our navigation — from network cabling to enterprise redundancy.
             </p>
           </div>
 
@@ -313,6 +329,18 @@ export default function HomePage({
                 </Link>
               </div>
             ))}
+            <Link
+              href="/services"
+              className={cn(
+                'tb-card reveal-item flex flex-col items-start justify-between border-dashed p-6 transition-colors hover:border-blue-500/40',
+                revealDelayClass(FEATURE_PILLARS.length * 90)
+              )}
+            >
+              <span className="text-lg font-semibold text-white">View all solutions &amp; services</span>
+              <span className="mt-6 tb-text-link text-xs uppercase tracking-[0.2em]">
+                All Solutions <ChevronRight size={14} />
+              </span>
+            </Link>
           </div>
         </div>
       </section>

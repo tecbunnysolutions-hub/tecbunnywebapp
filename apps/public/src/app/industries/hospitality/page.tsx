@@ -153,7 +153,7 @@ export default function HospitalityIndustryPage() {
         },
         {
           question: "How long does a typical resort CCTV or network deployment take?",
-          answer: "For a 20-50 room boutique hotel or resort, installation and Fluke cable certification typically take 5 to 10 working days, scheduled to avoid disturbing active guests."
+          answer: "For a 20-50 room boutique hotel or resort, installation and cable certification testing typically take 5 to 10 working days, scheduled to avoid disturbing active guests."
         }
       ]}
     />

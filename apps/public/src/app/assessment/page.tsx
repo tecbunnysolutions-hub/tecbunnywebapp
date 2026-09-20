@@ -13,7 +13,6 @@ import {
 import { createPageMetadata } from '@tecbunny/core/metadata';
 import { BRAND_LOGO_URL } from '@tecbunny/ui';
 import { TechnologyAssessmentFunnel } from '@/components/TechnologyAssessmentFunnel';
-import { TrustSection } from '@/components/TrustSection';
 import { HowItWorksSection } from '@/components/HowItWorksSection';
 import { WhatsAppFloatingButton } from '@/components/WhatsAppFloatingButton';
 
@@ -101,14 +100,32 @@ export default async function AssessmentPage({
         </div>
       </section>
 
-      {/* Trust & Process Components — compact variants keep the form as the star of this page */}
+      {/* Post-submit process — compact variant keeps the form as the star of this page */}
       <HowItWorksSection 
         variant="compact"
         title="What Happens After You Submit?" 
         subtitle="A transparent deployment process — you understand every stage before committing capital."
       />
 
-      <TrustSection variant="compact" />
+      {/* Slim trust strip — full trust details live on /industries and /about */}
+      <section className="py-8 border-t border-zinc-900">
+        <div className="container mx-auto px-6 max-w-4xl">
+          <ul className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-xs text-zinc-400">
+            <li className="flex items-center gap-2">
+              <ShieldCheck size={14} className="text-blue-400" />
+              Registered Indian enterprise with GST invoicing
+            </li>
+            <li className="flex items-center gap-2">
+              <CheckCircle2 size={14} className="text-blue-400" />
+              Certified field engineers across Goa
+            </li>
+            <li className="flex items-center gap-2">
+              <Building2 size={14} className="text-blue-400" />
+              Genuine Tier-1 OEM hardware
+            </li>
+          </ul>
+        </div>
+      </section>
 
       {/* Structured Data for the Assessment Page */}
       <script

@@ -49,7 +49,7 @@ export const DEPLOYMENT_STEPS = [
   {
     step: '06',
     title: 'Rigorous Testing',
-    desc: 'Comprehensive Fluke cable certification, throughput load tests, VLAN isolation checks, and camera frame verification.',
+    desc: 'Comprehensive cable certification testing, throughput load tests, VLAN isolation checks, and camera frame verification.',
     icon: CheckCircle2,
     badge: 'Quality Assurance'
   },

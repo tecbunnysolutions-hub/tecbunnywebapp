@@ -130,12 +130,12 @@ export default function LifecycleHardwarePage() {
       border: "hover:border-amber-500/35",
       points: [
         {
-          label: "DoD-Standard Data Wiping",
-          desc: "Multi-pass drive sanitization preventing corporate or customer data recovery from decommissioned drives."
+          label: "Multi-Pass Secure Data Wiping",
+          desc: "Multi-pass drive sanitization aligned with recognized data-destruction standards, preventing corporate or customer data recovery from decommissioned drives."
         },
         {
           label: "Environmentally Responsible Recycling",
-          desc: "Certified e-waste collection and material reclamation in compliance with environmental standards."
+          desc: "E-waste collection and material reclamation through authorized recyclers, in line with environmental standards."
         },
         {
           label: "Asset Inventory Reporting",
@@ -284,11 +284,11 @@ export default function LifecycleHardwarePage() {
         </div>
       </section>
 
-      {/* Structured Lifecycle */}
-      <HowItWorksSection />
+      {/* Structured Lifecycle — compact variant; the full 8-step detail lives on /assessment */}
+      <HowItWorksSection variant="compact" />
 
-      {/* Trust Section */}
-      <TrustSection />
+      {/* Trust Section — compact variant keeps this page focused on hardware offerings */}
+      <TrustSection variant="compact" />
 
       {/* FAQ Section with JSON-LD Schema */}
       <section className="py-16 sm:py-20 border-b border-zinc-900">

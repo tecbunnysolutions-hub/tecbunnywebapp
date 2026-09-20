@@ -70,7 +70,7 @@ const INDUSTRIES = [
   {
     key: 'healthcare',
     title: 'Healthcare & Clinics',
-    desc: 'Strictly segregated HIPAA-compliant clinical VLANs, zero-downtime server setups, and 24/7 reliability for medical diagnostic centers.',
+    desc: 'Strictly segregated, privacy-focused clinical VLANs, zero-downtime server setups, and 24/7 reliability for medical diagnostic centers.',
     href: '/industries/healthcare',
     icon: Activity,
     highlights: ['Isolated Patient Data VLANs', 'UPS Battery Redundancy', 'Restricted Area Smart Locks', 'Continuous HD Recording'],
@@ -91,7 +91,7 @@ const INDUSTRIES = [
     desc: 'Pre-construction structured cabling, fiber risers, automated vehicle gates, and turn-key builder technology commissioning.',
     href: '/industries/builders',
     icon: Building2,
-    highlights: ['Low-Voltage CAD Schematics', 'Vertical Fiber Risers', 'Perimeter ANPR & Barriers', 'As-Built Fluke Certification'],
+    highlights: ['Low-Voltage CAD Schematics', 'Vertical Fiber Risers', 'Perimeter ANPR & Barriers', 'As-Built Cable Certification'],
     badge: 'Pre-Construction'
   }
 ];
@@ -201,9 +201,10 @@ export default function IndustriesIndexPage() {
         </div>
       </section>
 
-      {/* Structured Lifecycle & Trust */}
-      <HowItWorksSection />
-      <TrustSection />
+      {/* Structured Lifecycle & Trust — compact variants keep this index lean;
+          per-industry detail lives on each vertical landing page */}
+      <HowItWorksSection variant="compact" />
+      <TrustSection variant="compact" />
     </div>
   );
 }
