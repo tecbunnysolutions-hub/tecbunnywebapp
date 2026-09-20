@@ -25,3 +25,8 @@ Derived from docs/api-audit/inventory.json on 2026-09-20.
 ## Runtime spot check (2026-09-20)
 Anonymous probe: GET https://api.tecbunny.com/api/security/audit-logs
 Result: HTTP 401 (no session cookie, no bearer token) — gateway auth wall confirmed.
+
+Extended role-denial drill 2026-09-20 (4/4 rejected): forged bearer 401, forged
+superadmin-session cookie 401, anonymous superadmin-only tRPC mutation
+projects.create UNAUTHORIZED. Full transcripts:
+docs/runtime-evidence/rbac-enforcement-runtime.md.

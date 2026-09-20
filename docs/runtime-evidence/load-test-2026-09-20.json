@@ -1,0 +1,25 @@
+{
+  "generatedAt": "2026-09-20T13:25:02.918Z",
+  "durationS": 47,
+  "concurrency": 10,
+  "endpoints": [
+    "https://www.tecbunny.com/",
+    "https://www.tecbunny.com/products",
+    "https://www.tecbunny.com/services",
+    "https://www.tecbunny.com/api/products?limit=1"
+  ],
+  "totalRequests": 436,
+  "rps": 9.3,
+  "errors": 0,
+  "errorRatePct": 0,
+  "statusCodes": {
+    "200": 436
+  },
+  "latencyMs": {
+    "min": 429,
+    "p50": 878,
+    "p95": 2408,
+    "p99": 3100,
+    "max": 3458
+  }
+}

@@ -90,6 +90,9 @@ jobs:
         run: npm ci
       - name: Run tests
         run: npm test
+      - name: Run coverage (packages/core, enforced thresholds)
+        run: npx vitest run --coverage
+        working-directory: packages/core
       - name: Run lint
         run: npm run lint
       - name: Run product validation gates

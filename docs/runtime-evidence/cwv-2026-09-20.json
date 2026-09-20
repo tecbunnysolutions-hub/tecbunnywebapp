@@ -1,0 +1,48 @@
+{
+  "generatedAt": "2026-09-20T13:23:42.023Z",
+  "method": "playwright+cdp (lab)",
+  "results": [
+    {
+      "page": "home",
+      "url": "https://www.tecbunny.com/",
+      "wallLoadMs": 7432,
+      "ttfbMs": 160,
+      "fcpMs": 1340,
+      "lcpMs": 2108,
+      "cls": 0.002,
+      "inpMs": null,
+      "jsHeapUsedMB": 11.9,
+      "domNodes": 3162,
+      "layoutCount": 12,
+      "jankTaskDurationS": null
+    },
+    {
+      "page": "products",
+      "url": "https://www.tecbunny.com/products",
+      "wallLoadMs": 8204,
+      "ttfbMs": 52,
+      "fcpMs": 808,
+      "lcpMs": 3048,
+      "cls": 0.002,
+      "inpMs": null,
+      "jsHeapUsedMB": 13,
+      "domNodes": 5423,
+      "layoutCount": 10,
+      "jankTaskDurationS": null
+    },
+    {
+      "page": "services",
+      "url": "https://www.tecbunny.com/services",
+      "wallLoadMs": 6510,
+      "ttfbMs": 50,
+      "fcpMs": 552,
+      "lcpMs": 1168,
+      "cls": 0.152,
+      "inpMs": null,
+      "jsHeapUsedMB": 10.6,
+      "domNodes": 1678,
+      "layoutCount": 8,
+      "jankTaskDurationS": null
+    }
+  ]
+}
