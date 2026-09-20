@@ -1,11 +1,11 @@
-import { getAdminClient } from './admin';
+import { getAdminClient } from '@tecbunny/database/admin';
 
 export async function createSecureServiceClient(requiredPermission?: string) {
-  const { getServerAuthState } = await import('@tecbunny/core/server-role-guard');
-  const { hasPermission } = await import('@tecbunny/core/roles');
-  
+  const { getServerAuthState } = await import('./server-role-guard');
+  const { hasPermission } = await import('./roles');
+
   const authState = await getServerAuthState();
-  
+
   if (!authState.session) {
     throw new Error('Unauthorized: No active session to use Secure Service Client');
   }

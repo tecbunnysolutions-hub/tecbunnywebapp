@@ -3,7 +3,6 @@ export * from './types';
 export * from './browser';
 export * from './server';
 export * from './admin';
-export * from './secure';
 export * from './middleware';
 export * from './storage';
 export * from './schemas/foundation.schema';

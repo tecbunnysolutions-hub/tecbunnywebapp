@@ -34,6 +34,20 @@ export function formatNumber(num: number): string {
 }
 
 /**
+ * Converts a string into a URL-safe slug: lowercases, strips diacritics,
+ * replaces non-alphanumeric runs with hyphens, trims edge hyphens, and caps length.
+ */
+export function slugify(value: string, maxLength: number = 60): string {
+  return value
+    .toLowerCase()
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, maxLength);
+}
+
+/**
  * Truncates text to a specified length with ellipsis
  */
 export function truncateText(text: string, maxLength: number): string {

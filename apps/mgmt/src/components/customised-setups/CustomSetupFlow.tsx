@@ -75,6 +75,8 @@ import { buildPricingCatalog } from "@tecbunny/core/custom-setup-pricing-server"
 
 export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupFlowProps) {
   const isTech = variant === 'tech';
+  const router = useRouter();
+  const { toast } = useToast();
   const [pricingCatalog, setPricingCatalog] = useState<{
     analog: AnalogPricing;
     ip: IpPricing;
@@ -167,8 +169,6 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
   const [isDownloadModalOpen, setIsDownloadModalOpen] = useState(false);
   const [anonForm, setAnonForm] = useState({ name: '', phone: '', address: '', email: '' });
   const [activeOffer, setActiveOffer] = useState<ActiveOffer | null>(null);
-  const router = useRouter();
-  const { toast } = useToast();
 
   const { user, loading: authLoading } = useAuth();
   const { addToCart } = useCart();

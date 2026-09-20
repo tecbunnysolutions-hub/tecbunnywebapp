@@ -1,11 +1,13 @@
 'use client';
 
 import * as React from 'react';
-import Image, { type ImageProps } from 'next/image';
+import Image from 'next/image';
 
 import { cn } from '../../lib/utils';
 
 import { logger } from '@tecbunny/core/logger';
+
+type ImageProps = React.ComponentProps<typeof Image>;
 
 interface OptimizedImageProps extends Omit<ImageProps, 'src' | 'alt' | 'width' | 'height' | 'fill' | 'quality' | 'placeholder' | 'blurDataURL'> {
   src: string;

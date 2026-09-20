@@ -3,7 +3,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { requireSupabasePublicEnv } from './env';
 export * from './env';
 export * from './types';
-import { isAtLeast, normalizeRole, type UserRole } from '@tecbunny/core/roles';
+import { isAtLeast, normalizeRole, type UserRole } from '@tecbunny/shared/roles';
 
 export interface RoleCheckOptions {
   allowedRoles?: UserRole[];

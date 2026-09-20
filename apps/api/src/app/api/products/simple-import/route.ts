@@ -2,6 +2,7 @@ import { createSupabaseServiceClient, isSupabaseServiceConfigured } from "@tecbu
 import { NextRequest, NextResponse } from 'next/server';
 import { logger } from "@tecbunny/core";
 import { AdminAuthError, requireAdminContext } from "@tecbunny/core/auth/admin-guard";
+import { slugify } from '@tecbunny/core/utils';
 
 export async function POST(request: NextRequest) {
   try {
@@ -59,17 +60,6 @@ export async function POST(request: NextRequest) {
         error: `Missing required columns: ${missingHeaders.join(', ')}` 
       }, { status: 400 });
     }
-
-    // Helper for handle slugification
-    const slugify = (val: string) => {
-      return val
-        .toLowerCase()
-        .normalize('NFKD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/^-+|-+$/g, '')
-        .slice(0, 60);
-    };
 
     // Parse data rows
     const productGroups: { [key: string]: { main: any | null; variants: any[] } } = {};

@@ -11,6 +11,7 @@ import { getProductDisplayImage } from "@tecbunny/core/image-utils";
 import { applyPublicProductVisibilityFilters, isPubliclyVisibleProduct } from "@tecbunny/core/product-visibility";
 import { classifyProductTax, TaxClassificationError, type ProductTaxClassification } from "@tecbunny/core/ai/tax-classification";
 import { processAndUploadExternalImage } from "@tecbunny/core/image-processor";
+import { slugify } from "@tecbunny/core/utils";
 
 const HANDLE_MAX_LENGTH = 60;
 const PUBLIC_PRODUCTS_CACHE_CONTROL = 'public, s-maxage=300, stale-while-revalidate=900';
@@ -96,16 +97,6 @@ const COLUMN_ALIASES: Record<string, string[]> = {
   mrp: ['mrp', 'maximum_retail_price', 'list_price'],
   price: ['price', 'selling_price', 'unit_price'],
 };
-
-function slugifyInput(value: string): string {
-  return value
-    .toLowerCase()
-    .normalize('NFKD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .slice(0, HANDLE_MAX_LENGTH);
-}
 
 function normalizeProductRecord(product: any) {
   if (!product || typeof product !== 'object') {
@@ -721,8 +712,8 @@ export async function POST(request: NextRequest) {
     const normalizedProductType = typeof product_type === 'string' && product_type.trim() ? product_type.trim() : undefined;
     const normalizedCategory = typeof category === 'string' && category.trim() ? category.trim() : undefined;
     const resolvedCategory = normalizedCategory ?? normalizedProductType ?? 'General';
-    const slugFromTitle = normalizedTitle ? slugifyInput(normalizedTitle) : '';
-    const slugFromHandle = normalizedHandle ? slugifyInput(normalizedHandle) : '';
+    const slugFromTitle = normalizedTitle ? slugify(normalizedTitle, HANDLE_MAX_LENGTH) : '';
+    const slugFromHandle = normalizedHandle ? slugify(normalizedHandle, HANDLE_MAX_LENGTH) : '';
     const baseHandleSegment = slugFromHandle || slugFromTitle || `product-${crypto.randomUUID().slice(0, 8)}`;
     const derivedHandle = (baseHandleSegment.startsWith('id-') ? baseHandleSegment : `id-${baseHandleSegment}`).slice(0, HANDLE_MAX_LENGTH);
 

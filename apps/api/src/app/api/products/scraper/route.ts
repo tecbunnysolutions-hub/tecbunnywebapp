@@ -1,6 +1,7 @@
 import { createSupabaseServiceClient, isSupabaseServiceConfigured } from "@tecbunny/core/server";;
 import { NextRequest, NextResponse } from 'next/server';
 import { processAndUploadExternalImage } from "@tecbunny/core/image-processor";
+import { slugify } from '@tecbunny/core/utils';
 import { ExtensionAuthError, extensionJson, extensionOptionsResponse, requireExtensionAdmin } from '../../extension-security';
 
 export async function OPTIONS(request: NextRequest) {
@@ -58,17 +59,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 5. Generate unique handle slug
-    const slugify = (val: string) => {
-      return val
-        .toLowerCase()
-        .normalize('NFKD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/^-+|-+$/g, '')
-        .slice(0, 50);
-    };
-
-    const baseSlug = slugify(title) || 'scraped-product';
+    const baseSlug = slugify(title, 50) || 'scraped-product';
     const randomSuffix = Math.random().toString(36).substring(2, 6);
     const handle = `${baseSlug}-${randomSuffix}`;
 

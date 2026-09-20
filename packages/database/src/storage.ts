@@ -2,8 +2,8 @@ import { getAdminClient } from './admin';
 import { isSupabaseServiceConfigured } from './env';
 export * from './env';
 export * from './types';
-import { logger } from '@tecbunny/core/logger';
-import { optimizeImage, createOptimizeImageStream } from '@tecbunny/core/image-processor';
+import { logger } from '@tecbunny/shared/logger';
+import { optimizeImage, createOptimizeImageStream } from '@tecbunny/shared/image-processor';
 import { Readable } from 'stream';
 
 function getSupabaseClient(operation: string) {

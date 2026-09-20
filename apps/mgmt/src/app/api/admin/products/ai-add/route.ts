@@ -21,6 +21,7 @@ import { logger } from "@tecbunny/core/logger";
 import { getSessionWithRole } from "@tecbunny/core/auth/server-role";
 import { getSystemPrompt } from "@tecbunny/core/ai/prompts";
 import { TaxClassificationError } from "@tecbunny/core/ai/tax-classification";
+import { slugify } from "@tecbunny/core/utils";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Constants
@@ -79,17 +80,11 @@ async function buildIngestionPrompt(rawInput: string, imageBase64?: string): Pro
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Slug helper
+// Slug helper: shared implementation imported from @tecbunny/core/utils
 // ─────────────────────────────────────────────────────────────────────────────
 
-function slugify(value: string): string {
-  return value
-    .toLowerCase()
-    .normalize('NFKD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .slice(0, HANDLE_MAX);
+function slugifyHandle(value: string): string {
+  return slugify(value, HANDLE_MAX);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -301,8 +296,8 @@ export async function POST(request: NextRequest) {
 
     // ── 7. Build and finalise handle ─────────────────────────────────────────
     const rawHandle = withDefaults.handle
-      ? slugify(String(withDefaults.handle))
-      : slugify(String(withDefaults.title || withDefaults.name || 'product'));
+      ? slugifyHandle(String(withDefaults.handle))
+      : slugifyHandle(String(withDefaults.title || withDefaults.name || 'product'));
 
     const prefixedHandle = rawHandle.startsWith('id-') ? rawHandle : `id-${rawHandle}`;
     const uniqueHandle = await ensureUniqueHandle(supabase, prefixedHandle);
