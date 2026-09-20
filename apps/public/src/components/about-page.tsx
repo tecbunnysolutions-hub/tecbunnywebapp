@@ -283,12 +283,17 @@ export default function AboutPage() {
           <h2 className="text-3xl font-semibold tech-heading">Ready to Experience the Difference?</h2>
           <p className="mt-3 text-sm text-muted-foreground">Join local businesses and homeowners who trust Tecbunny for their technology needs.</p>
           <div className="mt-6 flex flex-col items-center justify-center gap-4 sm:flex-row">
-            <Link href="/products" className="rounded-lg bg-primary hover:bg-primary/90 px-6 py-3 text-sm font-semibold text-white transition-colors">
-              Shop Now
+            <Link href="/contact" className="rounded-lg bg-primary hover:bg-primary/90 px-6 py-3 text-sm font-semibold text-white transition-colors">
+              Contact TecBunny
             </Link>
-            <Link href="/contact" className="rounded-lg border border-border bg-muted/20 hover:bg-muted/40 px-6 py-3 text-sm font-semibold text-foreground transition-colors">
-              Contact Us
-            </Link>
+            <a
+              href="https://wa.me/919604136010"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="rounded-lg border border-border bg-muted/20 hover:bg-muted/40 px-6 py-3 text-sm font-semibold text-foreground transition-colors"
+            >
+              WhatsApp Us
+            </a>
           </div>
         </div>
       </section>

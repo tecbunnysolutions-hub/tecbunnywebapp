@@ -16,7 +16,6 @@ import {
 
 import { Button } from "@tecbunny/ui";
 import { createPageMetadata } from "@tecbunny/core/metadata";
-import { TechnologyAssessmentFunnel } from '@/components/TechnologyAssessmentFunnel';
 import { HowItWorksSection } from '@/components/HowItWorksSection';
 import { TrustSection } from '@/components/TrustSection';
 import { WhatsAppFloatingButton } from '@/components/WhatsAppFloatingButton';
@@ -332,17 +331,29 @@ export default function LifecycleHardwarePage() {
         </div>
       </section>
 
-      {/* Intake Funnel */}
+      {/* Intake CTA — full assessment form lives on /assessment to avoid duplicating the funnel */}
       <section id="assessment-funnel" className="py-16 sm:py-24 bg-zinc-950/20">
         <div className="container mx-auto px-6 max-w-screen-2xl">
-          <div className="text-center max-w-3xl mx-auto mb-12 space-y-3">
+          <div className="mx-auto max-w-3xl rounded-2xl border border-blue-500/20 bg-gradient-to-br from-blue-950/30 via-zinc-950 to-zinc-950 p-8 text-center sm:p-12 space-y-4">
             <span className="text-xs uppercase tracking-[0.35em] text-blue-400 font-bold font-mono">Proposal Intake</span>
             <h2 className="text-3xl sm:text-4xl font-bold text-white font-tech tracking-tight">Discuss Your Hardware Requirements</h2>
-            <p className="text-zinc-400 text-sm sm:text-base font-light">
-              Submit your hardware or AMC requirements below. Your enquiry is securely routed to our enterprise solutions team.
+            <p className="text-zinc-400 text-sm sm:text-base font-light max-w-xl mx-auto">
+              Tell us about your hardware or AMC requirements in the free assessment — our enterprise solutions team will respond with an itemized proposal.
             </p>
+            <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
+              <Button asChild size="lg" className="bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl h-12 px-8 text-sm shadow-lg shadow-blue-500/25">
+                <Link href="/assessment?service=lifecycle-hardware&context=service_lifecycle_hardware">
+                  Start Free Assessment <ArrowRight size={16} className="ml-2" />
+                </Link>
+              </Button>
+              <Link
+                href="/contact?subject=sales&service=lifecycle_hardware&intent=enterprise_consultation&source=service_lifecycle_hardware"
+                className="text-xs text-zinc-400 hover:text-white transition-colors"
+              >
+                Or talk directly to our hardware team
+              </Link>
+            </div>
           </div>
-          <TechnologyAssessmentFunnel defaultService="lifecycle-hardware" sourceContext="service_lifecycle_hardware" />
         </div>
       </section>
     </div>
