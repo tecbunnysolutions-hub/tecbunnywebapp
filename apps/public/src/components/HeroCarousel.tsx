@@ -168,7 +168,7 @@ export default function HeroCarousel({ pageKey, intervalMs = 6000, className, in
                 priority
                 quality={60}
                 className="h-full w-full object-cover"
-                onError={event => {
+                onError={(event: React.SyntheticEvent<HTMLImageElement>) => {
                   const target = event.currentTarget as HTMLImageElement;
                   target.onerror = null;
                   target.src = 'https://placehold.co/1200x600?text=Hero+Banner';
