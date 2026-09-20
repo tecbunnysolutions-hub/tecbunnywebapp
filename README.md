@@ -1118,8 +1118,6 @@ The following section provides a comprehensive structural mapping and detailed b
 │   │   ├── 20260621095702_create_otp_verifications.sql
 │   │   ├── 20260621230000_dynamic_rbac_schema.sql
 │   │   └── 20260622000000_immutable_audit_trails.sql
-│   ├── update_products.sql
-│   └── upload_and_update_sql.js
 ├── tailwind.config.ts
 └── tsconfig.json
 ```
@@ -1767,7 +1765,6 @@ The following section provides a comprehensive structural mapping and detailed b
 | `src/types/fontkit.d.ts` | General component/module | None | None |
 | `src/types/pdfkit-standalone.d.ts` | General component/module | None | pdfkit |
 | `database.sql` | Consolidated final database schema | None | None |
-| `supabase/upload_and_update_sql.js` | Supabase DB config/migration | None | fs, @supabase/supabase-js, sharp, crypto |
 | `tailwind.config.ts` | General component/module | None | tailwindcss |
 | `tsconfig.json` | Configuration/Data | None | None |
 ## 4. Installation & Setup Lifecycle
