@@ -104,6 +104,27 @@ function TelemetrySparkline({ data, color }: { data: number[]; color: string }) 
   );
 }
 
+/* Static keyframes — defined once at module scope and rendered as style children
+   so no dangerouslySetInnerHTML is ever used with dynamic content. */
+const TOPOLOGY_CSS = `
+        @keyframes topology-dash-flow {
+          to {
+            stroke-dashoffset: -24;
+          }
+        }
+        .animate-topology-dash {
+          stroke-dasharray: 6 6;
+          animation: topology-dash-flow 1.5s linear infinite;
+        }
+        @keyframes radar-scan {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+        .animate-radar-scan {
+          animation: radar-scan 12s linear infinite;
+        }
+      `;
+
 export function InteractiveTopologyDiagram({ config }: InteractiveTopologyDiagramProps) {
   const [activeNodeId, setActiveNodeId] = useState<string>('switch');
   const [telemetryTick, setTelemetryTick] = useState<number>(0);
@@ -400,24 +421,7 @@ export function InteractiveTopologyDiagram({ config }: InteractiveTopologyDiagra
   return (
     <div className="rounded-3xl border border-border bg-card/40 p-4 sm:p-6 backdrop-blur-xl relative overflow-hidden transition-all duration-300">
       {/* Glow Filter & Keyframe styling */}
-      <style dangerouslySetInnerHTML={{ __html: `
-        @keyframes topology-dash-flow {
-          to {
-            stroke-dashoffset: -24;
-          }
-        }
-        .animate-topology-dash {
-          stroke-dasharray: 6 6;
-          animation: topology-dash-flow 1.5s linear infinite;
-        }
-        @keyframes radar-scan {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
-        }
-        .animate-radar-scan {
-          animation: radar-scan 12s linear infinite;
-        }
-      ` }} />
+      <style>{TOPOLOGY_CSS}</style>
 
       {/* Top Banner / System Console Info */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b border-border pb-4 mb-6 gap-3">

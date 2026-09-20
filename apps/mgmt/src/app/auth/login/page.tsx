@@ -31,8 +31,15 @@ const ROLE_LABELS: Record<string, string> = {
   accounts: 'Accounts',
 };
 
-async function resolveStaffRole(supabase: ReturnType<typeof createClient>, user: any) {
-  const metadataRole = normalizeRole(user?.app_metadata?.role);
+interface AuthUser {
+  id: string;
+  app_metadata?: Record<string, unknown>;
+  user_metadata?: Record<string, unknown>;
+}
+
+async function resolveStaffRole(supabase: ReturnType<typeof createClient>, user: AuthUser | null) {
+  if (!user) return null;
+  const metadataRole = normalizeRole(user.app_metadata?.role);
   if (metadataRole && metadataRole !== 'superadmin') {
     return metadataRole;
   }

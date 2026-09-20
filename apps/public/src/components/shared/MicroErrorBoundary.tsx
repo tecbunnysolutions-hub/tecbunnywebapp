@@ -25,17 +25,12 @@ export class MicroErrorBoundary extends Component<Props, State> {
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    // Log silently to telemetry/monitoring
-    console.error("Micro-component failed:", error, errorInfo);
-    try {
-      logger.error('Micro-component Exception', {
-        message: error.message,
-        stack: error.stack,
-        info: errorInfo.componentStack
-      });
-    } catch (e) {
-      // Ignore logger errors
-    }
+    // Log to telemetry/monitoring (logger is console-backed in the browser and cannot throw)
+    logger.error('Micro-component Exception', {
+      message: error.message,
+      stack: error.stack,
+      info: errorInfo.componentStack
+    });
   }
 
   private handleReset = () => {

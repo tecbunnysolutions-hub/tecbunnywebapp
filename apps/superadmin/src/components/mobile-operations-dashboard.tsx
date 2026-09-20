@@ -3,6 +3,7 @@
 import * as React from 'react';
 import { Phone, MessageCircle, Clock, TrendingUp, AlertCircle, User, ChevronRight } from 'lucide-react';
 import { Card, Badge, Skeleton, Button, Dialog, DialogContent, DialogHeader, DialogTitle } from '@tecbunny/ui';
+import { logger } from '@tecbunny/core';
 import { 
   getLeadMetrics, 
   getHotLeadsPriorityQueue, 
@@ -17,37 +18,55 @@ export function MobileOperationsDashboard() {
   const [revenueMetrics, setRevenueMetrics] = React.useState<RevenueMetrics | null>(null);
   const [hotLeads, setHotLeads] = React.useState<HotLead[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
+  const [fetchError, setFetchError] = React.useState<string | null>(null);
+  const [retryCount, setRetryCount] = React.useState(0);
   const [selectedLead, setSelectedLead] = React.useState<HotLead | null>(null);
   const [activeTab, setActiveTab] = React.useState<'home' | 'leads' | 'pipeline' | 'profile'>('home');
 
   React.useEffect(() => {
+    let cancelled = false;
     const fetchData = async () => {
       try {
         setIsLoading(true);
+        setFetchError(null);
         const [metrics, revenue, leads] = await Promise.all([
           getLeadMetrics(),
           getRevenueMetrics(),
           getHotLeadsPriorityQueue(),
         ]);
 
+        if (cancelled) return;
         setLeadMetrics(metrics);
         setRevenueMetrics(revenue);
         setHotLeads(leads || []);
       } catch (error) {
-        console.error('Error fetching mobile dashboard:', error);
+        if (cancelled) return;
+        logger.error('Error fetching mobile dashboard', { error: error instanceof Error ? error.message : String(error) });
+        setFetchError('Unable to load dashboard data. Please try again.');
       } finally {
-        setIsLoading(false);
+        if (!cancelled) setIsLoading(false);
       }
     };
 
     fetchData();
-  }, []);
+    return () => { cancelled = true; };
+  }, [retryCount]);
 
   if (isLoading) {
     return (
       <div className="min-h-screen bg-zinc-950 flex flex-col">
         <Skeleton className="w-full h-32" />
         <Skeleton className="w-full h-48 mt-4" />
+      </div>
+    );
+  }
+
+  if (fetchError) {
+    return (
+      <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center gap-4 px-6 text-center">
+        <AlertCircle className="h-8 w-8 text-red-500" />
+        <p className="text-sm text-zinc-300">{fetchError}</p>
+        <Button onClick={() => setRetryCount((count) => count + 1)}>Retry</Button>
       </div>
     );
   }

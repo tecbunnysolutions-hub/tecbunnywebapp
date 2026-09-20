@@ -16,6 +16,7 @@ import { Label } from "@tecbunny/ui";
 import { RadioGroup, RadioGroupItem } from "@tecbunny/ui";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@tecbunny/ui";
 import { useToast } from "@tecbunny/ui";
+import { logger } from '@tecbunny/core';
 
 import type { CustomSetupBlueprintComponentSummary, CustomSetupBlueprintSummary } from "@tecbunny/core/custom-setup-service";
 import { useAuth, useCart } from "@tecbunny/core/hooks";
@@ -101,8 +102,17 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
   });
 
   useEffect(() => {
-    buildPricingCatalog(blueprint).then(setPricingCatalog).catch(console.error);
-  }, [blueprint]);
+    buildPricingCatalog(blueprint)
+      .then(setPricingCatalog)
+      .catch((err) => {
+        logger.error('Failed to build pricing catalog', { error: err instanceof Error ? err.message : String(err) });
+        toast({
+          title: 'Live pricing unavailable',
+          description: 'Showing standard pricing. Some options may differ at checkout.',
+          variant: 'destructive',
+        });
+      });
+  }, [blueprint, toast]);
 
   const analogPricing = pricingCatalog.analog;
   const ipPricing = pricingCatalog.ip;
@@ -111,15 +121,6 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
   const monitorOption = pricingCatalog.monitorOption;
   const installationOption = pricingCatalog.installationOption;
   const selectableHddOptions = hddOptions.length ? hddOptions : FALLBACK_HDD_OPTIONS;
-
-  // Debug: Log pricing source - disabled for production
-
-  //   hasBlueprintData: !!blueprint,
-  //   blueprintSystems: blueprint?.systems?.length || 0,
-  //   usingFallback: !blueprint,
-  //   timestamp: new Date().toISOString(),
-  //   sampleDvrPricing: analogPricing.dvr[0] || null
-  // });
 
   const [system, setSystem] = useState<SetupSystem>('analog');
   const [premiseType, setPremiseType] = useState<'Residential' | 'Commercial' | 'Industrial'>('Residential');

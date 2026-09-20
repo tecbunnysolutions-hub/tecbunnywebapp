@@ -14,6 +14,7 @@ import { Label } from "@tecbunny/ui";
 import { RadioGroup, RadioGroupItem } from "@tecbunny/ui";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@tecbunny/ui";
 import { useToast } from "@tecbunny/ui";
+import { logger } from '@tecbunny/core';
 import type { CustomSetupBlueprintComponentSummary, CustomSetupBlueprintSummary } from "@tecbunny/core/custom-setup-service";
 import { useAuth, useCart } from "@tecbunny/core/hooks";
 import { cn } from "@tecbunny/core/utils";
@@ -95,8 +96,17 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
   });
 
   useEffect(() => {
-    buildPricingCatalog(blueprint).then(setPricingCatalog).catch(console.error);
-  }, [blueprint]);
+    buildPricingCatalog(blueprint)
+      .then(setPricingCatalog)
+      .catch((err) => {
+        logger.error('Failed to build pricing catalog', { error: err instanceof Error ? err.message : String(err) });
+        toast({
+          title: 'Live pricing unavailable',
+          description: 'Showing standard pricing. Some options may differ at checkout.',
+          variant: 'destructive',
+        });
+      });
+  }, [blueprint, toast]);
 
   const analogPricing = pricingCatalog.analog;
   const ipPricing = pricingCatalog.ip;
@@ -180,7 +190,7 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
           });
         }
       } catch (err) {
-        console.error('Failed to fetch custom setup offers:', err);
+        logger.error('Failed to fetch custom setup offers', { error: err instanceof Error ? err.message : String(err) });
       }
     };
     fetchActiveOffer();
@@ -332,7 +342,7 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
           setAccessoryPricing(data.value);
         }
       })
-      .catch((err) => console.error('Failed to load accessory pricing overrides:', err));
+      .catch((err) => logger.error('Failed to load accessory pricing overrides', { error: err instanceof Error ? err.message : String(err) }));
   }, []);
 
   useEffect(() => {
@@ -572,7 +582,8 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
       document.body.appendChild(link);
       link.click();
       link.remove();
-      window.URL.revokeObjectURL(url);
+      // Defer revocation so the browser can start the download on slow devices
+      window.setTimeout(() => window.URL.revokeObjectURL(url), 5000);
 
       toast({ title: 'Quote ready', description: `Downloaded quote PDF successfully. Quote Number: ${quoteNumber}` });
       setIsDownloadModalOpen(false);
@@ -744,7 +755,8 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
       document.body.appendChild(link);
       link.click();
       link.remove();
-      window.URL.revokeObjectURL(url);
+      // Defer revocation so the browser can start the download on slow devices
+      window.setTimeout(() => window.URL.revokeObjectURL(url), 5000);
 
       toast({ title: 'Bid Quote ready', description: `Generated and downloaded your negotiated quote PDF. Quote Number: ${quoteNumber}` });
       setIsBidding(false);

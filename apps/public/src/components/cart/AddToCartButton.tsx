@@ -5,6 +5,7 @@ import { ShoppingCart } from 'lucide-react';
 
 import { Button } from "@tecbunny/ui";
 import { useCart } from "@tecbunny/core/hooks";
+import { logger } from '@tecbunny/core';
 import type { Product } from '@tecbunny/core';
 
 interface AddToCartButtonProps {
@@ -16,7 +17,7 @@ interface AddToCartButtonProps {
 export function AddToCartButton({ product, className, size = "sm" }: AddToCartButtonProps) {
   const { addToCart, removeFromCart } = useCart();
   const [busy, setBusy] = React.useState(false);
-  const stockStatus = (product as any).stock_status;
+  const stockStatus = product.stock_status;
   const isOutOfStock = stockStatus === 'out_of_stock';
   const buttonLabel = isOutOfStock ? 'Out of Stock' : stockStatus === 'backorder' ? 'Pre-order' : 'Add to Cart';
 
@@ -42,8 +43,7 @@ export function AddToCartButton({ product, className, size = "sm" }: AddToCartBu
         } catch (error) {
           // Rollback state if the backend fails
           removeFromCart(product.id);
-          // Assuming toast is available globally or we log the error
-          console.error("Cart sync failed, rolled back", error);
+          logger.error("Cart sync failed, rolled back", { error: error instanceof Error ? error.message : String(error), productId: product.id });
         } finally {
           setTimeout(() => setBusy(false), 300);
         }

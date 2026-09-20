@@ -65,14 +65,14 @@ export function CheckoutWizard() {
             <h2 className="text-2xl font-bold mb-6">Lock in your deployment window.</h2>
             <div className="grid grid-cols-2 gap-4 mb-8">
               <label className="border-2 border-indigo-500 bg-indigo-50/30 p-4 rounded-xl cursor-pointer flex flex-col items-center justify-center text-center">
-                <input type="radio" name="time" className="sr-only" defaultChecked onChange={() => dispatch({ type: "UPDATE_PAYLOAD", data: { plan: "Morning" } })}/>
-                <Calendar className="w-6 h-6 text-indigo-600 mb-2" />
+                <input type="radio" name="time" className="sr-only" defaultChecked aria-label="Morning deployment window, 8 AM to 12 PM" onChange={() => dispatch({ type: "UPDATE_PAYLOAD", data: { plan: "Morning" } })}/>
+                <Calendar className="w-6 h-6 text-indigo-600 mb-2" aria-hidden="true" />
                 <span className="font-bold text-gray-900">Morning</span>
                 <span className="text-sm text-gray-500">8 AM - 12 PM</span>
               </label>
               <label className="border-2 border-gray-100 bg-white hover:border-gray-200 p-4 rounded-xl cursor-pointer flex flex-col items-center justify-center text-center transition-all">
-                <input type="radio" name="time" className="sr-only" onChange={() => dispatch({ type: "UPDATE_PAYLOAD", data: { plan: "Afternoon" } })}/>
-                <Calendar className="w-6 h-6 text-gray-400 mb-2" />
+                <input type="radio" name="time" className="sr-only" aria-label="Afternoon deployment window, 12 PM to 4 PM" onChange={() => dispatch({ type: "UPDATE_PAYLOAD", data: { plan: "Afternoon" } })}/>
+                <Calendar className="w-6 h-6 text-gray-400 mb-2" aria-hidden="true" />
                 <span className="font-bold text-gray-900">Afternoon</span>
                 <span className="text-sm text-gray-500">12 PM - 4 PM</span>
               </label>
@@ -101,7 +101,7 @@ export function CheckoutWizard() {
                  <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none text-gray-400">
                    <MapPin className="w-5 h-5" />
                  </div>
-                 <Input className="h-14 pl-12 rounded-xl bg-gray-50" placeholder="Your Address" defaultValue={state.payload?.address} onChange={(e) => dispatch({ type: "UPDATE_PAYLOAD", data: { address: e.target.value }})} />
+                 <Input className="h-14 pl-12 rounded-xl bg-gray-50" placeholder="Your Address" value={state.payload?.address ?? ''} onChange={(e) => dispatch({ type: "UPDATE_PAYLOAD", data: { address: e.target.value }})} />
               </div>
               <div className="bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-xl p-4 flex items-start gap-3">
                  <Lock className="w-5 h-5 text-emerald-600 mt-0.5 flex-shrink-0" />

@@ -28,7 +28,7 @@ export function useViralAttribution() {
         logger.info('viral_attribution_marker_dropped', { blueprintId });
       }
     } catch (err) {
-      console.error('Failed to drop viral attribution marker', err);
+      logger.error('Failed to drop viral attribution marker', { error: err instanceof Error ? err.message : String(err) });
     }
   }, []);
 

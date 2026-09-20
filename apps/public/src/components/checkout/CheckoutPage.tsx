@@ -89,7 +89,8 @@ export default function CheckoutPage() {
             setGstError(data.error);
           }
         } catch (error) {
-          console.error(error);
+          logger.error('GST verification lookup failed', { error: error instanceof Error ? error.message : String(error) });
+          setGstError('Unable to verify GSTIN right now. Please try again.');
         } finally {
           setIsFetchingGst(false);
         }

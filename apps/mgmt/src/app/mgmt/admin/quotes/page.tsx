@@ -16,6 +16,7 @@ import { Label } from "@tecbunny/ui";
 export default function AdminQuotesPage() {
   const [quotes, setQuotes] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [selectedQuote, setSelectedQuote] = useState<any>(null);
   const [showBidModal, setShowBidModal] = useState(false);
   const [showAdvanceModal, setShowAdvanceModal] = useState(false);
@@ -28,17 +29,27 @@ export default function AdminQuotesPage() {
   const { toast } = useToast();
 
   useEffect(() => {
+    let cancelled = false;
     fetch('/api/admin/quotes')
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) throw new Error(`Failed to load quotes (HTTP ${res.status})`);
+        return res.json();
+      })
       .then(data => {
+        if (cancelled) return;
         setQuotes(Array.isArray(data) ? data : []);
-        setLoading(false);
       })
       .catch(err => {
-        console.error(err);
-        setLoading(false);
+        if (cancelled) return;
+        const message = err instanceof Error ? err.message : 'Failed to load quotes';
+        setError(message);
+        toast({ variant: 'destructive', title: 'Unable to load quotes', description: message });
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
       });
-  }, []);
+    return () => { cancelled = true; };
+  }, [toast]);
 
   const handleRespond = async (action: 'approve' | 'counter' | 'reject'): Promise<void> => {
     if (action === 'counter' && !counterPrice) {
@@ -161,6 +172,11 @@ export default function AdminQuotesPage() {
         <CardContent>
           {loading ? (
              <div className="flex justify-center p-8"><Loader2 className="animate-spin text-primary" /></div>
+          ) : error ? (
+             <div className="p-8 text-center">
+               <p className="text-destructive">Failed to load quotes: {error}</p>
+               <Button variant="outline" className="mt-4" onClick={() => { setError(null); setLoading(true); window.location.reload(); }}>Retry</Button>
+             </div>
           ) : quotes.length === 0 ? (
              <p className="text-center p-8 text-muted-foreground">No quotes found.</p>
           ) : (

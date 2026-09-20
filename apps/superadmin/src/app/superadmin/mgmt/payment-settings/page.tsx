@@ -7,6 +7,7 @@ import {
   HelpCircle, Eye, EyeOff, Globe 
 } from 'lucide-react';
 import { useToast } from "@tecbunny/ui";
+import { logger } from '@tecbunny/core';
 
 export default function PaymentSettingsConsole() {
   const [isEnabled, setIsEnabled] = useState(true);
@@ -38,7 +39,8 @@ export default function PaymentSettingsConsole() {
           setEnvironment(data.payu_environment || 'test');
         }
       } catch (err) {
-        console.error('Failed to load payment settings:', err);
+        logger.error('Failed to load payment settings', { error: err instanceof Error ? err.message : String(err) });
+        toast({ variant: 'destructive', title: 'Unable to load payment settings', description: 'Please refresh the page to try again.' });
       } finally {
         setIsLoading(false);
       }

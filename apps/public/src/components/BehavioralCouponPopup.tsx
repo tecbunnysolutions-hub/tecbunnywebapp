@@ -28,9 +28,19 @@ export function BehavioralCouponPopup() {
         .eq('id', user.id)
         .maybeSingle();
 
-      if (!error && (data as any)?.marketing_metadata?.suggested_coupon) {
-        const suggested = (data as any).marketing_metadata.suggested_coupon;
-        setCoupon(suggested);
+      const metadata = (data as Record<string, unknown> | null)?.['marketing_metadata'];
+      const suggested =
+        metadata && typeof metadata === 'object'
+          ? (metadata as { suggested_coupon?: unknown }).suggested_coupon
+          : undefined;
+      const isValidCoupon =
+        suggested &&
+        typeof suggested === 'object' &&
+        typeof (suggested as { code?: unknown }).code === 'string' &&
+        typeof (suggested as { reason?: unknown }).reason === 'string';
+
+      if (!error && isValidCoupon) {
+        setCoupon(suggested as { code: string; reason: string });
         
         // Show after a short delay for impact
         timer = setTimeout(() => setIsVisible(true), 3000);

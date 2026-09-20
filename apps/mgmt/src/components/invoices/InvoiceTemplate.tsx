@@ -82,23 +82,31 @@ export function InvoiceTemplate({ order, settings, autoPrint }: InvoiceTemplateP
         const printContent = invoiceRef.current;
         if (!printContent) return;
 
-        const printWindow = window.open('', '', 'height=800,width=800');
-        if (printWindow) {
-            printWindow.document.write('<html><head><title>Print Invoice</title>');
-            printWindow.document.write('<script src="https://cdn.tailwindcss.com"></script>');
-            printWindow.document.write('<style> body { -webkit-print-color-adjust: exact; font-family: sans-serif; } @page { size: A4; margin: 0; } </style>');
-            printWindow.document.write('</head><body class="p-8">');
-            const sanitizedHtml = sanitizeHtml(printContent.innerHTML);
-            printWindow.document.write(sanitizedHtml);
-            printWindow.document.write('</body></html>');
-            printWindow.document.close();
-            printWindow.focus();
-            
-            setTimeout(() => {
-                printWindow.print();
-                printWindow.close();
-            }, 250);
-        }
+        const sanitizedHtml = sanitizeHtml(printContent.innerHTML);
+        // Reuse the app's already-loaded stylesheets instead of injecting external CDN scripts
+        const styles = Array.from(document.querySelectorAll('style, link[rel="stylesheet"]'))
+            .map((node) => node.outerHTML)
+            .join('\n');
+
+        const iframe = document.createElement('iframe');
+        iframe.setAttribute('aria-hidden', 'true');
+        iframe.style.position = 'fixed';
+        iframe.style.right = '0';
+        iframe.style.bottom = '0';
+        iframe.style.width = '0';
+        iframe.style.height = '0';
+        iframe.style.border = '0';
+        iframe.srcdoc = `<!DOCTYPE html><html><head><title>Print Invoice</title>${styles}<style>body { -webkit-print-color-adjust: exact; print-color-adjust: exact; font-family: sans-serif; } @page { size: A4; margin: 0; }</style></head><body class="p-8">${sanitizedHtml}</body></html>`;
+
+        iframe.onload = () => {
+            try {
+                iframe.contentWindow?.focus();
+                iframe.contentWindow?.print();
+            } finally {
+                window.setTimeout(() => iframe.remove(), 1000);
+            }
+        };
+        document.body.appendChild(iframe);
     };
 
     React.useEffect(() => {

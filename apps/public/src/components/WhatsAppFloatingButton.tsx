@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { MessageSquare, X } from 'lucide-react';
-import { useAnalytics } from '@tecbunny/core';
+import { useAnalytics, logger } from '@tecbunny/core';
 
 function WhatsAppIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
@@ -48,8 +48,9 @@ export function WhatsAppFloatingButton({
         context: defaultContext || 'floating_button',
         service: defaultService || 'general',
       });
-    } catch {
-      // safe fallback
+    } catch (err) {
+      // Analytics must never block navigation to WhatsApp
+      logger.error('WhatsApp click tracking failed', { error: err instanceof Error ? err.message : String(err) });
     }
   };
 

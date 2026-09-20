@@ -27,18 +27,31 @@ export default function AgentOrderPage() {
   const [customerProfile, setCustomerProfile] = React.useState<{ name?: string | null; email?: string | null; mobile?: string | null; gstin?: string | null } | null>(null)
 
   React.useEffect(() => {
-    supabase.from('products').select('*').then(({ data, error }: any) => {
-      if (error) {
-        toast({ variant: 'destructive', title: 'Unable to load products', description: error.message })
-        return
+    let cancelled = false;
+    (async () => {
+      try {
+        const { data, error } = await supabase.from('products').select('*');
+        if (cancelled) return;
+        if (error) {
+          toast({ variant: 'destructive', title: 'Unable to load products', description: error.message })
+          return
+        }
+        const normalized = (data || []).map((product: any) => ({
+          ...product,
+          name: product?.name || product?.title || product?.model_number || 'Unnamed Product',
+          price: Number(product?.price ?? product?.offer_price ?? product?.mrp ?? 0),
+        }))
+        setProducts(normalized)
+      } catch (err) {
+        if (cancelled) return;
+        toast({
+          variant: 'destructive',
+          title: 'Unable to load products',
+          description: err instanceof Error ? err.message : 'Unexpected error while loading products',
+        })
       }
-      const normalized = (data || []).map((product: any) => ({
-        ...product,
-        name: product?.name || product?.title || product?.model_number || 'Unnamed Product',
-        price: Number(product?.price ?? product?.offer_price ?? product?.mrp ?? 0),
-      }))
-      setProducts(normalized)
-    })
+    })()
+    return () => { cancelled = true }
   }, [supabase, toast])
 
   const findCustomer = async () => {

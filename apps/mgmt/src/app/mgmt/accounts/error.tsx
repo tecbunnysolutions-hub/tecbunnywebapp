@@ -1,9 +1,10 @@
 ﻿'use client';
 
 import { useEffect } from 'react';
+import { logger } from '@tecbunny/core';
 
 export default function Error({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
-  useEffect(() => { console.error(error); }, [error]);
+  useEffect(() => { logger.error('Route error boundary triggered', { message: error?.message, digest: error?.digest }); }, [error]);
   return (
     <div className="min-h-[60vh] flex items-center justify-center px-4">
       <div className="max-w-md rounded-xl border border-red-500/40 bg-red-500/10 p-6 text-center text-red-100">

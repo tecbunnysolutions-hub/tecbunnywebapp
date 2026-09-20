@@ -268,9 +268,14 @@ interface ShopPageContentProps {
   initialRawAutoOffers?: any[];
 }
 
-function normalizeRawProduct(p: any): Product {
+function normalizeRawProduct(p: Record<string, unknown>): Product {
+  const toNumber = (value: unknown): number =>
+    typeof value === 'number' ? value : Number(value);
+  const toNonEmptyString = (value: unknown): string | undefined =>
+    typeof value === 'string' && value.trim().length > 0 ? value.trim() : undefined;
+
   const rawPrice = [p.price, p.selling_price, p.sale_price, p.offer_price, p.discount_price, p.unit_price]
-    .map((value) => typeof value === 'number' ? value : Number(value))
+    .map(toNumber)
     .find((value) => Number.isFinite(value) && value > 0) || 0;
   // fall back to rawPrice (not rawPrice*1.2) — avoid showing a fake discount when MRP isn't stored
   const rawMrp = typeof p.mrp === 'number' ? p.mrp : Number(p.mrp) || rawPrice;
@@ -288,16 +293,16 @@ function normalizeRawProduct(p: any): Product {
     }
   );
 
-  const rawHsn =
+  const rawHsn: unknown =
     p.hsnCode ??
-    (p as any).hsn_code ??
-    (p as any).hsn ??
-    (p as any).hsn_sac ??
+    p.hsn_code ??
+    p.hsn ??
+    p.hsn_sac ??
     null;
-  const rawGst =
+  const rawGst: unknown =
     p.gstRate ??
-    (p as any).gst_rate ??
-    (p as any).gst_percentage ??
+    p.gst_rate ??
+    p.gst_percentage ??
     null;
 
   let resolvedGst: number | undefined;
@@ -317,21 +322,21 @@ function normalizeRawProduct(p: any): Product {
 
   return {
     ...p,
-    id: p.id,
+    id: toNonEmptyString(p.id) ?? String(p.id ?? ''),
     name: resolvedTitle,
     title: resolvedTitle,
-    category: p.category || p.product_type || 'General',
-    brand: p.brand || p.vendor || undefined,
+    category: toNonEmptyString(p.category) ?? toNonEmptyString(p.product_type) ?? 'General',
+    brand: toNonEmptyString(p.brand) ?? toNonEmptyString(p.vendor),
     price: priceNum,
     mrp: mrpNum,
-    popularity: p.popularity || 0,
-    rating: p.rating || 0,
-    reviewCount: p.review_count ?? p.reviewCount ?? 0,
-    created_at: p.created_at || new Date().toISOString(),
+    popularity: toNumber(p.popularity) || 0,
+    rating: toNumber(p.rating) || 0,
+    reviewCount: toNumber(p.review_count ?? p.reviewCount) || 0,
+    created_at: toNonEmptyString(p.created_at) ?? new Date().toISOString(),
     image: finalImage || undefined,
     hsnCode: resolvedHsn,
     gstRate: resolvedGst,
-  } as Product;
+  } as unknown as Product;
 }
 
 export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: ShopPageContentProps) {

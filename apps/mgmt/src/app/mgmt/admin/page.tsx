@@ -113,7 +113,7 @@ export default function AdminDashboard() {
     }, [range]);
 
     React.useEffect(() => {
-        setTimeout(() => { fetchStats(); }, 0);
+        fetchStats();
     }, [fetchStats]);
 
     // Calculate growth indicators
@@ -164,7 +164,7 @@ export default function AdminDashboard() {
                         <div className="rounded-2xl border border-destructive/30 bg-destructive/10 p-6">
                             <p className="text-destructive">Error loading dashboard: {error}</p>
                             <button
-                                onClick={() => window.location.reload()}
+                                onClick={fetchStats}
                                 className="mt-3 px-4 py-2 rounded-lg bg-destructive text-destructive-foreground text-sm hover:bg-destructive/90"
                             >
                                 Retry

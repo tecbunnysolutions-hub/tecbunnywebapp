@@ -24,7 +24,7 @@ import { StarRating } from './StarRating';
 
 interface ProductDetailPageProps {
   productId: string;
-  initialProduct?: any;
+  initialProduct?: (Partial<Product> & Record<string, unknown>) | null;
   sourceContext?: {
     source: string;
     ref: string | null;
@@ -47,6 +47,8 @@ export function ProductDetailPage({ productId, initialProduct, sourceContext }: 
   const submitInquiry = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmittingInquiry(true);
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
     try {
       const res = await fetch('/api/inquiries', {
         method: 'POST',
@@ -55,8 +57,10 @@ export function ProductDetailPage({ productId, initialProduct, sourceContext }: 
           ...inquiryData,
           type: inquiryType,
           productId
-        })
+        }),
+        signal: controller.signal,
       });
+      if (!isMountedRef.current) return;
       if (res.ok) {
         toast({ title: 'Success', description: 'We have received your inquiry! Our team will contact you shortly.' });
         setInquiryType(null);
@@ -65,9 +69,15 @@ export function ProductDetailPage({ productId, initialProduct, sourceContext }: 
         toast({ title: 'Error', description: 'Failed to submit. Please try again.', variant: 'destructive' });
       }
     } catch (err) {
+      if (!isMountedRef.current) return;
+      logger.error('Inquiry submission failed', { error: err instanceof Error ? err.message : String(err), productId });
       toast({ title: 'Error', description: 'Failed to submit. Please try again.', variant: 'destructive' });
+    } finally {
+      clearTimeout(timeoutId);
+      if (isMountedRef.current) {
+        setIsSubmittingInquiry(false);
+      }
     }
-    setIsSubmittingInquiry(false);
   };
 
   const [pincode, setPincode] = useState<string>('');
@@ -144,16 +154,16 @@ export function ProductDetailPage({ productId, initialProduct, sourceContext }: 
         .map((value) => (typeof value === 'string' ? value.trim() : ''))
         .find((value) => value.length > 0) || 'Product';
 
-      const rawHsn =
+      const rawHsn: unknown =
         p.hsnCode ??
-        (p as any).hsn_code ??
-        (p as any).hsn ??
-        (p as any).hsn_sac ??
+        p.hsn_code ??
+        p['hsn'] ??
+        p['hsn_sac'] ??
         null;
-      const rawGst =
+      const rawGst: unknown =
         p.gstRate ??
-        (p as any).gst_rate ??
-        (p as any).gst_percentage ??
+        p.gst_rate ??
+        p['gst_percentage'] ??
         null;
 
       let resolvedGst: number | undefined;

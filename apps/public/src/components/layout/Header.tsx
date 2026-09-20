@@ -97,22 +97,27 @@ export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
   const [mobileSubmenuOpen, setMobileSubmenuOpen] = React.useState<string | null>(null);
   const [desktopSubmenuOpen, setDesktopSubmenuOpen] = React.useState<string | null>(null);
+  const company = companyInfo as typeof companyInfo & {
+    city?: string;
+    state?: string;
+    phone?: string;
+  };
   let initialLocation = 'Goa';
-  if (typeof (companyInfo as any)?.locationShort === 'string' && (companyInfo as any).locationShort.trim()) {
-    initialLocation = (companyInfo as any).locationShort.trim();
-  } else if (typeof (companyInfo as any)?.registeredAddress === 'string') {
-    const match = (companyInfo as any).registeredAddress.match(/([A-Za-z\s]+Goa)/i);
+  if (typeof company.locationShort === 'string' && company.locationShort.trim()) {
+    initialLocation = company.locationShort.trim();
+  } else if (typeof company.registeredAddress === 'string') {
+    const match = company.registeredAddress.match(/([A-Za-z\s]+Goa)/i);
     if (match && match[1]) {
       initialLocation = match[1].replace(/\s+/g, ' ').trim();
     }
-  } else if (typeof (companyInfo as any)?.city === 'string' && typeof (companyInfo as any)?.state === 'string') {
-    initialLocation = `${(companyInfo as any).city}, ${(companyInfo as any).state}`;
+  } else if (typeof company.city === 'string' && typeof company.state === 'string') {
+    initialLocation = `${company.city}, ${company.state}`;
   }
 
   const [topInfo, setTopInfo] = React.useState({
     location: initialLocation,
-    phone: (companyInfo as any)?.supportPhone || (companyInfo as any)?.phone || process.env.NEXT_PUBLIC_SUPPORT_PHONE || '+91 96041 36010',
-    hours: (companyInfo as any)?.supportHours || '',
+    phone: company.supportPhone || company.phone || process.env.NEXT_PUBLIC_SUPPORT_PHONE || '+91 96041 36010',
+    hours: company.supportHours || '',
   });
 
   React.useEffect(() => {
