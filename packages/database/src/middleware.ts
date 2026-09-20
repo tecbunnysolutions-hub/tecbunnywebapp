@@ -225,7 +225,9 @@ export async function updateSession(
     if (options?.onUnauthorized) {
       return options.onUnauthorized(request);
     }
-    const redirectUrl = request.nextUrl.clone();
+    // `nextUrl` is typed as the standard URL in consumers, which has no clone().
+    // Construct a copy so its path and query can be safely changed.
+    const redirectUrl = new URL(request.nextUrl.toString());
     redirectUrl.pathname = loginRoute;
     redirectUrl.searchParams.set('redirectedFrom', pathname);
     return NextResponse.redirect(redirectUrl);
