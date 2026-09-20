@@ -1,4 +1,4 @@
-import { Suspense } from 'react';
+import { Suspense, type ComponentProps } from 'react';
 
 import type { Metadata } from 'next';
 
@@ -61,30 +61,38 @@ function HomePageSkeleton() {
   );
 }
 
-function parsePartnerBrands(value: unknown) {
+type PartnerBrand = { name: string; logoUrl: string };
+type HomePageProps = ComponentProps<typeof HomePage>;
+
+function parsePartnerBrands(value: unknown): PartnerBrand[] {
   if (Array.isArray(value)) {
     return value
-      .map((item: any) => ({
-        name: typeof item === 'object' && item?.name ? String(item.name).trim() : '',
-        logoUrl: typeof item === 'object' && item?.logoUrl ? String(item.logoUrl).trim() : '',
-      }))
+      .map((item: unknown) => {
+        const record = item && typeof item === 'object'
+          ? item as Record<string, unknown>
+          : {};
+        return {
+          name: record.name ? String(record.name).trim() : '',
+          logoUrl: record.logoUrl ? String(record.logoUrl).trim() : '',
+        };
+      })
       .filter((brand) => brand.name.length > 0);
   }
 
   if (typeof value !== 'string') {
-    return undefined;
+    return [];
   }
 
   const trimmed = value.trim();
   if (!trimmed) {
-    return undefined;
+    return [];
   }
 
   if (trimmed.startsWith('[')) {
     try {
       return parsePartnerBrands(JSON.parse(trimmed));
     } catch {
-      return undefined;
+      return [];
     }
   }
 
@@ -103,10 +111,10 @@ export default function Page() {
 }
 
 async function HomePageDataLoader() {
-  let initialProducts = undefined;
-  let initialPartnerBrands = undefined;
+  let initialProducts: HomePageProps['initialProducts'] = undefined;
+  let initialPartnerBrands: PartnerBrand[] = [];
   // Default to {} so HeroCarousel skips client-side fetch when no data is configured.
-  let initialHeroCarousel: any = {};
+  let initialHeroCarousel: HomePageProps['initialHeroCarousel'] = {};
 
   try {
     const supabase = createSupabaseClient(
@@ -123,10 +131,12 @@ async function HomePageDataLoader() {
     if (productsResult.status === 'fulfilled' && productsResult.value.data && !productsResult.value.error) {
       const items = Array.isArray(productsResult.value.data) ? productsResult.value.data : [];
 
-      const hasAnyImage = (item: any) => {
-        if (item.image) return true;
-        if (Array.isArray(item.images) && item.images.length) return true;
-        if (item.image_urls) return true;
+      const hasAnyImage = (item: unknown) => {
+        if (!item || typeof item !== 'object') return false;
+        const record = item as Record<string, unknown>;
+        if (record.image) return true;
+        if (Array.isArray(record.images) && record.images.length > 0) return true;
+        if (record.image_urls) return true;
         return false;
       };
 

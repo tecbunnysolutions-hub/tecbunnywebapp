@@ -99,7 +99,7 @@ export async function createPageMetadata({
       canonical,
     },
     openGraph: {
-      ...openGraph,
+      ...(openGraph && typeof openGraph === 'object' ? openGraph : {}),
       title: safeTitle,
       description: safeDescription,
       type: 'website',
@@ -115,7 +115,7 @@ export async function createPageMetadata({
       ],
     },
     twitter: {
-      ...twitter,
+      ...(twitter && typeof twitter === 'object' ? twitter : {}),
       card: 'summary_large_image',
       title: safeTitle,
       description: safeDescription,
