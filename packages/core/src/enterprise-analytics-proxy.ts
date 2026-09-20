@@ -1,10 +1,14 @@
-import type { NextFetchEvent, NextRequest } from 'next/server';
+import type { NextRequest } from 'next/server';
+
+export type EnterpriseProxyEvent = {
+  waitUntil(promise: Promise<unknown>): void;
+};
 
 type ProxyTelemetryOptions = {
   application: string;
   response: Response;
   startedAt: number;
-  event?: NextFetchEvent;
+  event?: EnterpriseProxyEvent;
   sameOriginIngest?: boolean;
 };
 

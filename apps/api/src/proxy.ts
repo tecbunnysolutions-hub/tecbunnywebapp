@@ -1,8 +1,8 @@
-import { NextResponse, type NextFetchEvent, type NextRequest } from 'next/server';
+import { NextResponse, type NextRequest } from 'next/server';
 import { executeUnifiedPolicyMiddleware } from '@tecbunny/core/auth/unified-middleware';
-import { emitEnterpriseProxyTelemetry } from '@tecbunny/core/enterprise-analytics-proxy';
+import { emitEnterpriseProxyTelemetry, type EnterpriseProxyEvent } from '@tecbunny/core/enterprise-analytics-proxy';
 
-export async function proxy(request: NextRequest, event: NextFetchEvent) {
+export async function proxy(request: NextRequest, event: EnterpriseProxyEvent) {
   const startedAt = Date.now();
   const pathname = request.nextUrl.pathname;
 
