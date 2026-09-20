@@ -3,7 +3,7 @@ import { createClient } from '@tecbunny/database';
 
 
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type SyntheticEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, RefreshCw, Share2, Shield, Truck, MessageSquare } from 'lucide-react';
 import Image from 'next/image';
@@ -528,7 +528,7 @@ export function ProductDetailPage({ productId, initialProduct, sourceContext }: 
                   quality={85}
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                   className="max-w-full max-h-full object-contain relative z-0 transition-transform duration-500 group-hover:scale-105"
-                  onError={(e) => {
+                  onError={(e: SyntheticEvent<HTMLImageElement>) => {
                     const target = e.target as HTMLImageElement;
                     target.src = `https://placehold.co/600x600/0f172a/94a3b8.png?text=${encodeURIComponent(displayName)}`;
                     target.srcset = "";
@@ -575,7 +575,7 @@ export function ProductDetailPage({ productId, initialProduct, sourceContext }: 
                       height={80}
                       className="w-full h-full object-contain rounded-lg opacity-80 hover:opacity-100 transition-opacity"
                       loading="lazy"
-                      onError={(e) => {
+                      onError={(e: SyntheticEvent<HTMLImageElement>) => {
                         const target = e.target as HTMLImageElement;
                         target.src = `https://placehold.co/150x150/0f172a/94a3b8.png?text=View+${index + 1}`;
                         target.srcset = "";

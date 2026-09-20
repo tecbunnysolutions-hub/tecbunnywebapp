@@ -144,7 +144,7 @@ gtag('config', '${gaId}', { anonymize_ip: true, send_page_view: false });`}
             src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
             strategy="lazyOnload"
             nonce={nonce}
-            onError={(e) => { console.warn('GA failed to load', e); }}
+            onError={(e: Error) => { console.warn('GA failed to load', e); }}
           />
         </AnalyticsBoundary>
       ) : null}
@@ -156,7 +156,7 @@ gtag('config', '${gaId}', { anonymize_ip: true, send_page_view: false });`}
             id="meta-pixel-init"
             strategy="lazyOnload"
             nonce={nonce}
-            onError={(e) => { console.warn('Meta Pixel failed to load', e); }}
+            onError={(e: Error) => { console.warn('Meta Pixel failed to load', e); }}
           >
             {`!function(f,b,e,v,n,t,s)
 {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
