@@ -102,18 +102,33 @@ export function DeferredRuntimeServices({ gaId, metaPixelId, nonce }: DeferredRu
     }
   }, []);
 
-  // Update GA consent when user makes a choice
+  // Update GA consent when user makes a choice. Updates are pushed through a
+  // local dataLayer stub so they are queued even before gtag.js loads — the
+  // 190KB library is only fetched after the user accepts, and it replays the
+  // queued consent state on arrival.
   React.useEffect(() => {
-    if (typeof window === 'undefined' || !window.gtag) return;
+    if (typeof window === 'undefined' || analyticsConsent === 'unknown') return;
+
+    const w = window as Window & {
+      dataLayer?: unknown[];
+      gtag?: (...args: unknown[]) => void;
+    };
+    w.dataLayer = w.dataLayer ?? [];
+    if (typeof w.gtag !== 'function') {
+      w.gtag = (...args: unknown[]) => {
+        w.dataLayer?.push(args);
+      };
+    }
+
     if (analyticsConsent === 'accepted') {
-      window.gtag('consent', 'update', {
+      w.gtag('consent', 'update', {
         analytics_storage: 'granted',
         ad_storage: 'granted',
         ad_user_data: 'granted',
         ad_personalization: 'granted',
       });
     } else if (analyticsConsent === 'rejected') {
-      window.gtag('consent', 'update', {
+      w.gtag('consent', 'update', {
         analytics_storage: 'denied',
         ad_storage: 'denied',
         ad_user_data: 'denied',
@@ -140,12 +155,17 @@ gtag('consent', 'default', {
 gtag('js', new Date());
 gtag('config', '${gaId}', { anonymize_ip: true, send_page_view: false });`}
           </Script>
-          <Script
-            src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
-            strategy="lazyOnload"
-            nonce={nonce}
-            onError={(e: Error) => { console.warn('GA failed to load', e); }}
-          />
+          {/* gtag.js (~190KB) is only fetched after the visitor accepts
+              analytics consent — consent defaults above are queued via the
+              inline dataLayer stub and replayed when the library arrives. */}
+          {analyticsConsent === 'accepted' ? (
+            <Script
+              src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
+              strategy="lazyOnload"
+              nonce={nonce}
+              onError={(e: Error) => { console.warn('GA failed to load', e); }}
+            />
+          ) : null}
         </AnalyticsBoundary>
       ) : null}
       <CookieConsentBanner onConsentChange={setAnalyticsConsent} />

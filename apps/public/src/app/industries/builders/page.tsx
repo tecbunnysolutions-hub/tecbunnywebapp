@@ -1,15 +1,15 @@
 import type { Metadata } from 'next';
-import { 
-  Building2, 
-  Shield, 
-  Lock, 
-  Zap, 
-  Server, 
-  Layers, 
-  FileText, 
+import {
+  Building2,
+  Shield,
+  Lock,
+  Zap,
+  Server,
+  Layers,
+  FileText,
   Activity,
   Cpu
-} from 'lucide-react';
+} from '@/components/industry-icons';
 import { createPageMetadata } from '@tecbunny/core/metadata';
 import { BRAND_LOGO_URL } from '@tecbunny/ui';
 import { IndustryLandingPage } from '@/components/IndustryLandingPage';

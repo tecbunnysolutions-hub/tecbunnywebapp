@@ -1,15 +1,15 @@
 import type { Metadata } from 'next';
-import { 
-  Server, 
-  Wifi, 
-  Lock, 
-  Shield, 
-  Cpu, 
-  Layers, 
-  Briefcase, 
-  Terminal, 
-  Key 
-} from 'lucide-react';
+import {
+  Server,
+  Wifi,
+  Lock,
+  Shield,
+  Cpu,
+  Layers,
+  Briefcase,
+  Terminal,
+  Key
+} from '@/components/industry-icons';
 import { createPageMetadata } from '@tecbunny/core/metadata';
 import { BRAND_LOGO_URL } from '@tecbunny/ui';
 import { IndustryLandingPage } from '@/components/IndustryLandingPage';

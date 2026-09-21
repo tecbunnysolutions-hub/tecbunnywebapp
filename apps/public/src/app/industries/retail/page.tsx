@@ -1,14 +1,14 @@
 import type { Metadata } from 'next';
-import { 
-  ShoppingBag, 
-  Shield, 
-  Wifi, 
-  Lock, 
-  Server, 
-  Eye, 
-  Zap, 
-  Activity 
-} from 'lucide-react';
+import {
+  ShoppingBag,
+  Shield,
+  Wifi,
+  Lock,
+  Server,
+  Eye,
+  Zap,
+  Activity
+} from '@/components/industry-icons';
 import { createPageMetadata } from '@tecbunny/core/metadata';
 import { BRAND_LOGO_URL } from '@tecbunny/ui';
 import { IndustryLandingPage } from '@/components/IndustryLandingPage';

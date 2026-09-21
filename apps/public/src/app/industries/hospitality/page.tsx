@@ -1,15 +1,15 @@
 import type { Metadata } from 'next';
-import { 
-  Wifi, 
-  Shield, 
-  Lock, 
-  Zap, 
-  Server, 
-  Headphones, 
-  Eye, 
-  Key, 
-  Activity 
-} from 'lucide-react';
+import {
+  Wifi,
+  Shield,
+  Lock,
+  Zap,
+  Server,
+  Headphones,
+  Eye,
+  Key,
+  Activity
+} from '@/components/industry-icons';
 import { createPageMetadata } from '@tecbunny/core/metadata';
 import { BRAND_LOGO_URL } from '@tecbunny/ui';
 import { IndustryLandingPage } from '@/components/IndustryLandingPage';

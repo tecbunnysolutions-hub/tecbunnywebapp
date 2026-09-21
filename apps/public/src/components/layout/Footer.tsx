@@ -241,7 +241,7 @@ export function Footer() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-10 mb-16">
           {/* Column 1: Services */}
           <div>
-            <h4 className="text-white text-sm font-tech font-bold uppercase tracking-[0.2em] mb-4 text-blue-400">Solutions</h4>
+            <h3 className="text-white text-sm font-tech font-bold uppercase tracking-[0.2em] mb-4 text-blue-400">Solutions</h3>
             <ul className="space-y-2.5 text-xs font-medium">
               {ENTITY.services.map((service) => (
                 <li key={service.url}>
@@ -255,7 +255,7 @@ export function Footer() {
 
           {/* Column 2: Industries */}
           <div>
-            <h4 className="text-white text-sm font-tech font-bold uppercase tracking-[0.2em] mb-4 text-blue-400">Industries</h4>
+            <h3 className="text-white text-sm font-tech font-bold uppercase tracking-[0.2em] mb-4 text-blue-400">Industries</h3>
             <ul className="space-y-2.5 text-xs font-medium">
               {ENTITY.industries.map((industry) => (
                 <li key={industry.url}>
@@ -270,7 +270,7 @@ export function Footer() {
 
           {/* Column 3: Resources & Assessment */}
           <div>
-            <h4 className="text-white text-sm font-tech font-bold uppercase tracking-[0.2em] mb-4 text-blue-400">Resources</h4>
+            <h3 className="text-white text-sm font-tech font-bold uppercase tracking-[0.2em] mb-4 text-blue-400">Resources</h3>
             <ul className="space-y-2.5 text-xs font-medium">
               <li><Link href="/assessment" className="text-emerald-400 font-bold hover:underline inline-block">Free Technology Assessment</Link></li>
               <li><Link href="/resources/infrastructure-planning-guide" className="hover:text-blue-400 transition-all hover:translate-x-0.5 inline-block text-slate-300">IT Infrastructure Guide</Link></li>
@@ -283,7 +283,7 @@ export function Footer() {
 
           {/* Column 4: Company & Policies */}
           <div>
-            <h4 className="text-white text-sm font-tech font-bold uppercase tracking-[0.2em] mb-4 text-blue-400">Company</h4>
+            <h3 className="text-white text-sm font-tech font-bold uppercase tracking-[0.2em] mb-4 text-blue-400">Company</h3>
             <ul className="space-y-2.5 text-xs font-medium">
               <li><Link href="/about" className="hover:text-blue-400 transition-all hover:translate-x-0.5 inline-block text-slate-300">About TecBunny</Link></li>
               <li><Link href="/contact" className="hover:text-blue-400 transition-all hover:translate-x-0.5 inline-block text-slate-300">Contact & Support</Link></li>
@@ -295,17 +295,17 @@ export function Footer() {
 
           {/* Column 5: Contact & Location */}
           <div className="text-xs font-medium space-y-3">
-            <h4 className="text-white text-sm font-tech font-bold uppercase tracking-[0.2em] mb-4 text-blue-400">Headquarters</h4>
+            <h3 className="text-white text-sm font-tech font-bold uppercase tracking-[0.2em] mb-4 text-blue-400">Headquarters</h3>
             <address className="leading-relaxed text-slate-300 not-italic text-xs">{address}</address>
             <div className="space-y-1.5 pt-1 font-mono">
               <p className="text-blue-400 hover:text-blue-300 transition-colors font-bold text-xs">
-                <a href={`tel:${supportPhone.replace(/\s+/g,'')}`}>{supportPhone}</a>
+                <a className="inline-flex min-h-[24px] items-center" href={`tel:${supportPhone.replace(/\s+/g,'')}`}>{supportPhone}</a>
               </p>
               <p className="text-blue-400 hover:text-blue-300 transition-colors font-bold text-xs">
-                <a href={`mailto:${supportEmail}`}>{supportEmail}</a>
+                <a className="inline-flex min-h-[24px] items-center" href={`mailto:${supportEmail}`}>{supportEmail}</a>
               </p>
               <p className="text-emerald-400 hover:text-emerald-300 transition-colors font-bold text-xs">
-                <a href="https://wa.me/919604136010" target="_blank" rel="noopener noreferrer">WhatsApp Support &rarr;</a>
+                <a className="inline-flex min-h-[24px] items-center" href="https://wa.me/919604136010" target="_blank" rel="noopener noreferrer">WhatsApp Support &rarr;</a>
               </p>
             </div>
           </div>

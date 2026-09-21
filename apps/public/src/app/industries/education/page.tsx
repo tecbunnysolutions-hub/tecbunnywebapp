@@ -1,14 +1,14 @@
 import type { Metadata } from 'next';
-import { 
-  Award, 
-  Wifi, 
-  Shield, 
-  Lock, 
-  Server, 
-  Cpu, 
-  Layers, 
-  Eye 
-} from 'lucide-react';
+import {
+  Award,
+  Wifi,
+  Shield,
+  Lock,
+  Server,
+  Cpu,
+  Layers,
+  Eye
+} from '@/components/industry-icons';
 import { createPageMetadata } from '@tecbunny/core/metadata';
 import { BRAND_LOGO_URL } from '@tecbunny/ui';
 import { IndustryLandingPage } from '@/components/IndustryLandingPage';

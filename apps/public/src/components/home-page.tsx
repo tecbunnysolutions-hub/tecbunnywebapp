@@ -1,5 +1,3 @@
-'use client';
-
 import React from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
@@ -27,9 +25,8 @@ import { RegionalTrustBanner } from './RegionalTrustBanner';
 import { HeroRotator } from './home/HeroRotator';
 import { HowItWorksSection } from './HowItWorksSection';
 
-const DynamicBehavioralCouponPopup = dynamic(() => import('./BehavioralCouponPopup').then(mod => mod.BehavioralCouponPopup), { ssr: false });
-const DynamicAmbientEffects = dynamic(() => import('./home/AmbientEffects').then(mod => mod.AmbientEffects), { ssr: false });
-const DynamicHeroVisuals = dynamic(() => import('./home/HeroVisuals').then(mod => mod.HeroVisuals), { ssr: false });
+import { HeroVisuals } from './home/HeroVisuals';
+import { DeferredAmbientEffects, DeferredBehavioralCouponPopup } from './home/HomeClientRuntime';
 
 // Below-the-fold sections are code-split into separate chunks but still server-rendered for SEO.
 const HeroCarousel = dynamic(() => import('./HeroCarousel'));
@@ -100,10 +97,10 @@ export default function HomePage({
 
   return (
     <div className="tb-page relative overflow-hidden selection:bg-blue-500/20 selection:text-white">
-      <DynamicBehavioralCouponPopup />
+      <DeferredBehavioralCouponPopup />
 
       <section className="relative flex min-h-[72vh] items-center overflow-hidden py-14 sm:py-20 lg:py-24">
-        <DynamicAmbientEffects />
+        <DeferredAmbientEffects />
         <div className="pointer-events-none absolute inset-0 bg-noise opacity-[0.06] brightness-100 contrast-150" />
 
         <div className="tb-container relative z-10">
@@ -173,7 +170,7 @@ export default function HomePage({
                 <div className="rounded-2xl border border-blue-500/20 bg-blue-500/5 p-5 transition-all duration-300 hover:border-blue-500/40 hover:bg-blue-500/10">
                   <div>
                     <span className="text-[10px] font-bold tracking-widest uppercase text-blue-400">Business?</span>
-                    <h3 className="mt-1 text-lg font-bold text-white font-tech">Enterprise solutions</h3>
+                    <p className="mt-1 text-lg font-bold text-white font-tech">Enterprise solutions</p>
                     <p className="text-xs text-zinc-400 mt-2 mb-4 leading-relaxed font-light">
                       CCTV, networks, smart locks, and IT support for Goa hotels, resorts, and offices.
                     </p>
@@ -190,7 +187,7 @@ export default function HomePage({
                 <div className="rounded-2xl border border-zinc-800 bg-zinc-900/10 p-5 transition-all duration-300 hover:border-zinc-700 hover:bg-zinc-900/20">
                   <div>
                     <span className="text-[10px] font-bold tracking-widest uppercase text-zinc-500">Need hardware?</span>
-                    <h3 className="mt-1 text-lg font-bold text-white font-tech">Shop products</h3>
+                    <p className="mt-1 text-lg font-bold text-white font-tech">Shop products</p>
                     <p className="text-xs text-zinc-450 mt-2 mb-4 leading-relaxed font-light">
                       PCs, NVR hardware, and core components, with delivery eligibility confirmed at checkout.
                     </p>
@@ -207,7 +204,7 @@ export default function HomePage({
                 <div className="rounded-2xl border border-zinc-800 bg-zinc-900/10 p-5 transition-all duration-300 hover:border-zinc-700 hover:bg-zinc-900/20">
                   <div>
                     <span className="text-[10px] font-bold tracking-widest uppercase text-zinc-500">Need repair or service?</span>
-                    <h3 className="mt-1 text-lg font-bold text-white font-tech">Book service</h3>
+                    <p className="mt-1 text-lg font-bold text-white font-tech">Book service</p>
                     <p className="text-xs text-zinc-450 mt-2 mb-4 leading-relaxed font-light">
                       Request CCTV, network, IT, or AMC help from our local service team.
                     </p>
@@ -238,7 +235,7 @@ export default function HomePage({
               </div>
             </div>
 
-            <DynamicHeroVisuals />
+            <HeroVisuals />
           </div>
         </div>
       </section>

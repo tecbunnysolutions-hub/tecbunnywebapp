@@ -1,5 +1,4 @@
 import type {Metadata, Viewport} from 'next';
-import { headers } from 'next/headers';
 
 const BRAND_LOGO_URL = 'https://fbcsagupcxheyiusjfak.supabase.co/storage/v1/object/public/TecBunny%20Solution/TECBUNNY_SOLUTIONS_PVT_LTD-removebg-preview.png';
 import { Suspense } from 'react';
@@ -336,10 +335,17 @@ export default async function RootLayout({
 }>) {
   const gaId = process.env.NEXT_PUBLIC_GA_ID || 'G-VCCMTMSVP4';
   const metaPixelId = process.env.NEXT_PUBLIC_META_PIXEL_ID;
-  const nonce = (await headers()).get('x-nonce') ?? undefined;
+  // NOTE: no per-request CSP nonce is read here. Middleware only sets x-nonce
+  // on protected routes (/checkout, /orders, /payment, /profile), and reading
+  // headers() in this shared layout forced EVERY public page into dynamic
+  // rendering — defeating ISR/CDN caching for zero benefit (public routes
+  // receive no nonce-based CSP). next-themes' inline init script may be
+  // blocked by CSP on protected routes, so the default dark theme is applied
+  // statically via className="dark" below to avoid any theme flash there.
   return (
     <html
       lang="en"
+      className="dark"
       suppressHydrationWarning
       style={{
         ['--font-body' as string]: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
@@ -355,13 +361,12 @@ export default async function RootLayout({
         <link rel="dns-prefetch" href="https://www.instagram.com" />
         <link rel="dns-prefetch" href="https://maps.googleapis.com" />
         <script
-          nonce={nonce}
             type="application/ld+json"
             dangerouslySetInnerHTML={{ __html: serializeJsonLd(structuredData) }}
           />
       </head>
       <body className="font-body antialiased overflow-x-hidden w-full" suppressHydrationWarning>
-        <ThemeProvider nonce={nonce}>
+        <ThemeProvider>
           <TRPCProvider>
             <FeatureFlagProviderLoader>
               <AppProvider>
@@ -378,7 +383,7 @@ export default async function RootLayout({
                   </TechShell>
                   <DeferredFloatingAIAssistant />
 
-                  <DeferredRuntimeServices gaId={gaId} metaPixelId={metaPixelId} nonce={nonce} />
+                  <DeferredRuntimeServices gaId={gaId} metaPixelId={metaPixelId} />
                   <Analytics />
                 </OrderProvider>
               </AppProvider>

@@ -946,13 +946,21 @@
   .glitch-text::before {
     left: 2px;
     text-shadow: -1px 0 #06b6d4;
-    animation: glitch-anim-2 3s infinite linear alternate-reverse;
   }
 
   .glitch-text::after {
     left: -2px;
     text-shadow: -1px 0 #0891b2;
-    animation: glitch-anim 2.5s infinite linear alternate-reverse;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .glitch-text::before {
+      animation: glitch-anim-2 3s infinite linear alternate-reverse;
+    }
+
+    .glitch-text::after {
+      animation: glitch-anim 2.5s infinite linear alternate-reverse;
+    }
   }
 
   .hero-rotator {
