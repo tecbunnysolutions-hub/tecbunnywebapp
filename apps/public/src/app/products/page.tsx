@@ -4,6 +4,7 @@ import { Suspense } from 'react';
 import type { Metadata } from 'next';
 
 import { ShopPageContent } from '@/components/products/ShopPageContent';
+import { ProductsSeoContent } from '@/components/products/ProductsSeoContent';
 import { BreadcrumbJsonLd } from '@/components/BreadcrumbJsonLd';
 import { createPageMetadata } from "@tecbunny/core/metadata";
 import { applyPublicProductOrdering, applyPublicProductVisibilityFilters, ensureProductColumns } from "@tecbunny/core/product-visibility";
