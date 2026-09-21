@@ -7,6 +7,7 @@ import { Button } from "@tecbunny/ui";
 import { useCart } from "@tecbunny/core/hooks";
 import { logger } from '@tecbunny/core';
 import type { Product } from '@tecbunny/core';
+import { trackMetaAddToCart } from '@/lib/meta/pixel';
 
 interface AddToCartButtonProps {
   product: Product;
@@ -35,6 +36,13 @@ export function AddToCartButton({ product, className, size = "sm" }: AddToCartBu
         setBusy(true);
         // Optimistic UI update - instantly reflects in cart
         addToCart(product);
+        // Meta AddToCart — mirrors to CAPI with a shared event_id for dedup.
+        trackMetaAddToCart({
+          id: product.id,
+          title: product.title || product.name,
+          price: typeof product.price === 'number' && Number.isFinite(product.price) ? product.price : undefined,
+          category: typeof product.category === 'string' ? product.category : undefined,
+        });
         
         try {
           // Simulate or perform backend API sync here

@@ -31,6 +31,18 @@ export function getWhatsAppConsultationUrl(context?: string, service?: string): 
   return `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
 }
 
+/**
+ * Module 4 — product-context click-to-chat. Builds a wa.me deep link carrying
+ * the product name and SKU so sales staff see the inquiry context immediately.
+ */
+export function getWhatsAppProductInquiryUrl(productName: string, sku?: string): string {
+  const phone = '919604136010';
+  const safeName = (productName || 'a product').trim().slice(0, 120);
+  const safeSku = (sku || '').trim().slice(0, 64);
+  const message = `Hi TecBunny, I'm inquiring about ${safeName}${safeSku ? ` - SKU: ${safeSku}` : ''}. Please share pricing and availability.`;
+  return `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+}
+
 export function WhatsAppFloatingButton({
   defaultService,
   defaultContext,

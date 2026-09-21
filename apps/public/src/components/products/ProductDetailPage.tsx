@@ -21,6 +21,8 @@ import { useAnalytics } from '@tecbunny/core';
 import { useToast } from "@tecbunny/ui";
 import { useBehavioralCRO } from '../../hooks/use-behavioral-cro';
 import { StarRating } from './StarRating';
+import { trackMetaContact, trackMetaLead, trackMetaViewContent } from '@/lib/meta/pixel';
+import { getWhatsAppProductInquiryUrl } from '@/components/WhatsAppFloatingButton';
 
 interface ProductDetailPageProps {
   productId: string;
@@ -62,6 +64,8 @@ export function ProductDetailPage({ productId, initialProduct, sourceContext }: 
       });
       if (!isMountedRef.current) return;
       if (res.ok) {
+        // Meta Lead — mirrors to CAPI with SHA-256 hashed email/phone for EMQ.
+        trackMetaLead({ email: inquiryData.email, phone: inquiryData.phone }, displayName);
         toast({ title: 'Success', description: 'We have received your inquiry! Our team will contact you shortly.' });
         setInquiryType(null);
         setInquiryData({ name: '', phone: '', email: '', message: '' });
@@ -206,6 +210,21 @@ export function ProductDetailPage({ productId, initialProduct, sourceContext }: 
   const [activeTab, setActiveTab] = useState<'specs' | 'description' | 'warranty'>('specs');
   const supabase = createClient();
   const displayName = product?.title || product?.name || 'Product';
+
+  // Meta ViewContent — fired once per product view, deduplicated with CAPI via event_id.
+  const metaViewTrackedRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!product?.id) return;
+    const productKey = String(product.id);
+    if (metaViewTrackedRef.current === productKey) return;
+    metaViewTrackedRef.current = productKey;
+    trackMetaViewContent({
+      id: product.id,
+      title: product.title || product.name,
+      price: typeof product.price === 'number' && Number.isFinite(product.price) ? product.price : undefined,
+      category: typeof product.category === 'string' ? product.category : undefined,
+    });
+  }, [product]);
 
   const skuValue = useMemo(() => {
     if (!product) return '';
@@ -701,6 +720,20 @@ export function ProductDetailPage({ productId, initialProduct, sourceContext }: 
                     <MessageSquare className="h-4 w-4 text-emerald-500 shrink-0" />
                     Request B2B Quote
                   </Button>
+                  <a
+                    href={getWhatsAppProductInquiryUrl(displayName, skuValue)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => {
+                      trackEvent('whatsapp_product_inquiry', { productId: product.id, productName: displayName });
+                      trackMetaContact(displayName);
+                    }}
+                    className="flex-1 h-12 inline-flex items-center justify-center gap-2 rounded-xl border border-[#25D366]/40 bg-[#25D366]/10 hover:bg-[#25D366]/20 hover:border-[#25D366]/60 text-[#25D366] text-sm font-semibold uppercase tracking-wider transition-all duration-300 cursor-pointer"
+                    aria-label={`Chat on WhatsApp about ${displayName}`}
+                  >
+                    <MessageSquare className="h-4 w-4 shrink-0" />
+                    WhatsApp Us
+                  </a>
                 </div>
 
                 <div className="border border-border/40 bg-muted/5 rounded-2xl p-4 mt-2">

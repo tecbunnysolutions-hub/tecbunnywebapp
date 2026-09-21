@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { getWabaWebhookQueue } from '@tecbunny/core/queue';
 import { logger } from '@tecbunny/core/logger';
+import { sendWhatsAppTextMessage } from '@/lib/whatsapp-cloud-api';
 
 // Bug #1 fix: Remove hardcoded secret fallback. Throw at startup if missing.
 // Moving the check to runtime to prevent Vercel build failures when secret is not set.
@@ -69,7 +70,8 @@ export async function GET(req: Request) {
   const mode = url.searchParams.get('hub.mode');
   const token = url.searchParams.get('hub.verify_token');
   const challenge = url.searchParams.get('hub.challenge');
-  const verifyToken = process.env.META_WHATSAPP_VERIFY_TOKEN;
+  // WHATSAPP_VERIFY_TOKEN is accepted as an alias for the Meta dashboard token.
+  const verifyToken = process.env.META_WHATSAPP_VERIFY_TOKEN || process.env.WHATSAPP_VERIFY_TOKEN;
 
   if (mode === 'subscribe' && token && challenge && verifyToken && token === verifyToken) {
     return new Response(challenge, { status: 200, headers: { 'Content-Type': 'text/plain' } });
@@ -176,6 +178,22 @@ export async function POST(req: Request) {
         }
       }
       queuePayload = { ...body, results, statuses };
+
+      // Optional auto-reply (Meta Cloud API, free within the 24h session window).
+      // Disabled by default; enable with META_WHATSAPP_AUTO_REPLY=true once
+      // WHATSAPP_TOKEN and WHATSAPP_PHONE_NUMBER_ID are configured. Fire-and-forget
+      // so the 200 ACK to Meta is never delayed by the Graph API round-trip.
+      if (process.env.META_WHATSAPP_AUTO_REPLY === 'true') {
+        const replyText = (process.env.META_WHATSAPP_AUTO_REPLY_TEXT ||
+          'Thanks for contacting TecBunny! Our team has received your message and will respond shortly.').slice(0, 1024);
+        for (const result of results) {
+          if (result.from && result.message?.text) {
+            void sendWhatsAppTextMessage(result.from, replyText).catch((error) =>
+              logger.error('waba_webhook.auto_reply_failed', { error: error instanceof Error ? error.message : String(error) }),
+            );
+          }
+        }
+      }
     } else {
       const webhookRecord = body as { results?: Array<{ from?: string; messageId?: string; id?: string }>; statuses?: Array<{ messageId?: string; id?: string }> };
       results = Array.isArray(webhookRecord.results) ? webhookRecord.results : [];

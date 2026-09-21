@@ -187,7 +187,9 @@ t.src=v;s=b.getElementsByTagName(e)[0];
 s.parentNode.insertBefore(t,s)}(window, document,'script',
 'https://connect.facebook.net/en_US/fbevents.js');
 fbq('init', '${metaPixelId}');
-fbq('track', 'PageView');`}
+var metaPageViewId=(window.crypto&&crypto.randomUUID)?'tb_pageview_'+crypto.randomUUID():'tb_pageview_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,12);
+fbq('track', 'PageView', {}, {eventID: metaPageViewId});
+try{if(navigator.sendBeacon){navigator.sendBeacon('/api/meta/conversions',new Blob([JSON.stringify({event_name:'PageView',event_id:metaPageViewId,event_source_url:location.href})],{type:'application/json'}));}}catch(e){}`}
           </Script>
           <noscript>
             {/* The analytics fallback must remain a raw pixel for noscript clients. */}
