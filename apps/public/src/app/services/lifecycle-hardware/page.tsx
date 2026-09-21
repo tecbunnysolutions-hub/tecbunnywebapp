@@ -41,7 +41,7 @@ export async function generateMetadata(): Promise<Metadata> {
 const FAQS = [
   {
     question: "What hardware brands can TecBunny procure for our company?",
-    answer: "We procure genuine Tier-1 business workstations, laptops, monitors, and servers directly from authorized enterprise channels including Dell, HP, Lenovo, Asus, and Intel."
+    answer: "We procure genuine Tier-1 business workstations, laptops, monitors, and servers through established enterprise channels including Dell, HP, Lenovo, Asus, and Intel, with valid OEM warranty coverage."
   },
   {
     question: "What is included in an Annual Maintenance Contract (AMC)?",
@@ -67,8 +67,8 @@ export default function LifecycleHardwarePage() {
       border: "hover:border-blue-500/35",
       points: [
         {
-          label: "Authorized OEM Channels",
-          desc: "Procure systems directly from Tier-1 manufacturers (Dell, HP, Lenovo) ensuring 100% genuine hardware and valid warranty coverage."
+          label: "Genuine OEM Channels",
+          desc: "Procure systems through established Tier-1 manufacturer channels (Dell, HP, Lenovo) ensuring 100% genuine hardware and valid warranty coverage."
         },
         {
           label: "Standardized Fleet Blueprints",
@@ -285,7 +285,11 @@ export default function LifecycleHardwarePage() {
       </section>
 
       {/* Structured Lifecycle — compact variant; the full 8-step detail lives on /assessment */}
-      <HowItWorksSection variant="compact" />
+      <HowItWorksSection
+        variant="canonical-link"
+        title="How hardware lifecycle engagements run"
+        subtitle="Procurement, staging, deployment, and secure refresh — see the full lifecycle on our services page."
+      />
 
       {/* Trust Section — compact variant keeps this page focused on hardware offerings */}
       <TrustSection variant="compact" />

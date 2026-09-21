@@ -283,8 +283,8 @@ export function IndustryLandingPage({
         </div>
       </section>
 
-      {/* Structured 8-Step Lifecycle */}
-      <HowItWorksSection />
+      {/* Process pointer — full lifecycle lives on /services#process */}
+      <HowItWorksSection variant="canonical-link" />
 
       {/* Genuine Case Study Section (if available) */}
       {caseStudy && (
@@ -293,7 +293,7 @@ export function IndustryLandingPage({
             <div className="rounded-3xl border border-zinc-850 bg-gradient-to-br from-zinc-950 via-zinc-900/40 to-zinc-950 p-8 sm:p-12">
               <div className="max-w-3xl space-y-6">
                 <span className="text-xs font-bold uppercase tracking-[0.35em] text-emerald-400 font-mono flex items-center gap-2">
-                  <ShieldCheck size={16} /> Verified Deployment Case Study
+                  <ShieldCheck size={16} /> Deployment Case Study
                 </span>
                 <h3 className="text-2xl sm:text-3xl font-bold text-white font-tech">
                   {caseStudy.title}

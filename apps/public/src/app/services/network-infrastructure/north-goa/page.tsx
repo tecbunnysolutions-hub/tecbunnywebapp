@@ -61,8 +61,8 @@ export default function NorthGoaNetworkingPage() {
           desc: "Clean rack organization with logical labeling, patch panels, and battery-backed UPS power rails."
         },
         {
-          label: "Certified Cable Testing",
-          desc: "Every single run is tested and validated for performance certification prior to client sign-off."
+          label: "Documented Cable Testing",
+          desc: "Every single run is tested and validated with documented test reports prior to client sign-off."
         }
       ]
     },

@@ -282,6 +282,43 @@ if (locationsSource) {
 }
 
 /* ------------------------------------------------------------------ */
+/* 6. Claim governance: no unverified certification/compliance claims    */
+/* ------------------------------------------------------------------ */
+
+import { readdirSync, statSync } from 'node:fs';
+
+function walk(dir, out = []) {
+  for (const entry of readdirSync(dir)) {
+    const abs = join(dir, entry);
+    if (statSync(abs).isDirectory()) walk(abs, out);
+    else if (/\.(tsx|ts|mdx)$/.test(entry)) out.push(abs);
+  }
+  return out;
+}
+
+const BANNED_CLAIM_PATTERNS = [
+  [/\bHIPAA\b/i, 'HIPAA compliance claim'],
+  [/\b[Ff]luke\b/, 'Fluke certification claim'],
+  [/\b[Aa]uthorized (partner|reseller|distributor|dealer|retailer)\b/i, 'unverified authorized-partner claim'],
+  [/\b[Vv]erified [Dd]eployment\b/, 'unverified verified-deployment claim'],
+  [/\b[Cc]ertified [Cc]able [Tt]esting\b/, 'unverified cable-certification claim'],
+];
+
+const publicSrc = join(appDir, 'src');
+for (const file of walk(publicSrc)) {
+  // The credentials registry itself is allowed to mention claim labels.
+  if (file.includes('verified-credentials')) continue;
+  const content = read(file);
+  if (!content) continue;
+  const rel = file.replace(root + '\\', '').replace(root + '/', '');
+  for (const [pattern, label] of BANNED_CLAIM_PATTERNS) {
+    if (pattern.test(content)) {
+      errors.push(`claim governance: ${rel} contains ${label} — use UNVERIFIED_WORDING from @tecbunny/core/verified-credentials`);
+    }
+  }
+}
+
+/* ------------------------------------------------------------------ */
 /* Report                                                              */
 /* ------------------------------------------------------------------ */
 

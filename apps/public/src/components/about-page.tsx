@@ -151,7 +151,7 @@ export default function AboutPage() {
               <p className="text-xs text-muted-foreground font-light">Enterprise Wi-Fi 6/7, managed switches, multi-gigabit gateways, and fiber distribution network deployment.</p>
             </div>
             <div className="bento-card p-6 text-center space-y-2">
-              <span className="inline-block rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-bold uppercase text-emerald-400">Authorized Reseller</span>
+              <span className="inline-block rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-bold uppercase text-emerald-400">Genuine Channel Sourcing</span>
               <h3 className="text-base font-bold font-tech text-foreground">Dahua &amp; Matrix Comsec</h3>
               <p className="text-xs text-muted-foreground font-light">RFID hotel lock management, biometric access controllers, and IP intercom solutions for modern properties.</p>
             </div>

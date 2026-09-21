@@ -287,7 +287,11 @@ export default function SmartAccessControlPage() {
       </section>
 
       {/* Structured Lifecycle */}
-      <HowItWorksSection />
+      <HowItWorksSection
+        variant="canonical-link"
+        title="How an access control project runs"
+        subtitle="Door audits, controller installation, and credential handover — see the full lifecycle on our services page."
+      />
 
       {/* Trust Section */}
       <TrustSection />

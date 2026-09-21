@@ -201,9 +201,13 @@ export default function IndustriesIndexPage() {
         </div>
       </section>
 
-      {/* Structured Lifecycle & Trust — compact variants keep this index lean;
-          per-industry detail lives on each vertical landing page */}
-      <HowItWorksSection variant="compact" />
+      {/* Process pointer + trust — compact; per-industry detail lives on each vertical landing page,
+          full lifecycle on /services#process */}
+      <HowItWorksSection
+        variant="canonical-link"
+        title="How industry deployments run"
+        subtitle="Every vertical follows our structured 8-step engineering lifecycle."
+      />
       <TrustSection variant="compact" />
     </div>
   );

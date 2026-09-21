@@ -676,7 +676,7 @@ ${form.details.trim()}
                 </div>
                 <div className="space-y-1.5 pt-4">
                   <h4 className="text-xs font-bold text-white">What hardware brands do you configure?</h4>
-                  <p className="text-[11px] text-zinc-500 leading-relaxed font-light">We configure authorized enterprise hardware including Digisol, HFCL IO, TP-Link Omada, Hikvision, CP Plus, and Honeywell.</p>
+                  <p className="text-[11px] text-zinc-500 leading-relaxed font-light">We configure genuine enterprise hardware including Digisol, HFCL IO, TP-Link Omada, Hikvision, CP Plus, and Honeywell.</p>
                 </div>
                 <div className="space-y-1.5 pt-4">
                   <h4 className="text-xs font-bold text-white">Do you offer Net-30 payment terms?</h4>

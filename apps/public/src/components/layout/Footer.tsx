@@ -12,6 +12,7 @@ import { Globe, FileText, Shield } from 'lucide-react';
 
 import { logger } from '@tecbunny/core';
 import { useAnalytics } from '@tecbunny/core';
+import { ENTITY } from '@/lib/entity';
 
 function WhatsAppIcon(props: React.SVGProps<SVGSVGElement>) {
     return (
@@ -242,36 +243,13 @@ export function Footer() {
           <div>
             <h4 className="text-white text-sm font-tech font-bold uppercase tracking-[0.2em] mb-4 text-blue-400">Solutions</h4>
             <ul className="space-y-2.5 text-xs font-medium">
-              <li>
-                <Link href="/services/network-infrastructure" className="hover:text-blue-400 transition-all hover:translate-x-0.5 inline-block text-slate-300">
-                  Network & IT Infrastructure
-                </Link>
-              </li>
-              <li>
-                <Link href="/services/physical-security" className="hover:text-blue-400 transition-all hover:translate-x-0.5 inline-block text-slate-300">
-                  Security & IP Surveillance
-                </Link>
-              </li>
-              <li>
-                <Link href="/services/smart-access-control" className="hover:text-blue-400 transition-all hover:translate-x-0.5 inline-block text-slate-300">
-                  Smart Access Control & Locks
-                </Link>
-              </li>
-              <li>
-                <Link href="/services/smart-infrastructure" className="hover:text-blue-400 transition-all hover:translate-x-0.5 inline-block text-slate-300">
-                  Hotel Smart Infrastructure
-                </Link>
-              </li>
-              <li>
-                <Link href="/services/lifecycle-hardware" className="hover:text-blue-400 transition-all hover:translate-x-0.5 inline-block text-slate-300">
-                  Lifecycle Hardware & AMC
-                </Link>
-              </li>
-              <li>
-                <Link href="/services/software-system-admin" className="hover:text-blue-400 transition-all hover:translate-x-0.5 inline-block text-slate-300">
-                  System Administration & Cloud
-                </Link>
-              </li>
+              {ENTITY.services.map((service) => (
+                <li key={service.url}>
+                  <Link href={service.url} className="hover:text-blue-400 transition-all hover:translate-x-0.5 inline-block text-slate-300">
+                    {service.navLabel}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
@@ -279,11 +257,13 @@ export function Footer() {
           <div>
             <h4 className="text-white text-sm font-tech font-bold uppercase tracking-[0.2em] mb-4 text-blue-400">Industries</h4>
             <ul className="space-y-2.5 text-xs font-medium">
-              <li><Link href="/industries/hospitality" className="hover:text-blue-400 transition-all hover:translate-x-0.5 inline-block text-slate-300">Hospitality & Resorts</Link></li>
-              <li><Link href="/industries/offices" className="hover:text-blue-400 transition-all hover:translate-x-0.5 inline-block text-slate-300">Corporate Offices</Link></li>
-              <li><Link href="/industries/education" className="hover:text-blue-400 transition-all hover:translate-x-0.5 inline-block text-slate-300">Schools & Campuses</Link></li>
-              <li><Link href="/industries/healthcare" className="hover:text-blue-400 transition-all hover:translate-x-0.5 inline-block text-slate-300">Healthcare &amp; Hospitals</Link></li>
-              <li><Link href="/industries/retail" className="hover:text-blue-400 transition-all hover:translate-x-0.5 inline-block text-slate-300">Retail & Commercial</Link></li>
+              {ENTITY.industries.map((industry) => (
+                <li key={industry.url}>
+                  <Link href={industry.url} className="hover:text-blue-400 transition-all hover:translate-x-0.5 inline-block text-slate-300">
+                    {industry.navLabel}
+                  </Link>
+                </li>
+              ))}
               <li><Link href="/industries" className="hover:text-blue-400 transition-all hover:translate-x-0.5 inline-block text-blue-400 font-bold">All Industries &rarr;</Link></li>
             </ul>
           </div>

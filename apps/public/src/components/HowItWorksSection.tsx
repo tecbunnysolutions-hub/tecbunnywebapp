@@ -1,4 +1,6 @@
 import React from 'react';
+import Link from 'next/link';
+import { ArrowRight } from 'lucide-react';
 import { 
   FileCheck, 
   MapPin, 
@@ -78,12 +80,35 @@ export function HowItWorksSection({
   title?: string;
   subtitle?: string;
   className?: string;
-  variant?: 'full' | 'compact';
+  variant?: 'full' | 'compact' | 'summary' | 'canonical-link';
 }) {
-  // Compact mode surfaces the four milestone steps instead of all eight.
-  const steps = variant === 'compact'
+  // compact/summary surface the four milestone steps; full shows all eight.
+  const steps = (variant === 'compact' || variant === 'summary')
     ? DEPLOYMENT_STEPS.filter((s) => ['01', '03', '05', '08'].includes(s.step))
     : DEPLOYMENT_STEPS;
+
+  // canonical-link: a short contextual pointer to the canonical process page.
+  if (variant === 'canonical-link') {
+    return (
+      <section className={`py-10 sm:py-14 ${className}`}>
+        <div className="container mx-auto px-6 max-w-screen-2xl">
+          <div className="rounded-2xl border border-zinc-850 bg-zinc-950/60 p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5">
+            <div className="max-w-2xl space-y-2">
+              <span className="text-xs font-bold uppercase tracking-[0.35em] text-blue-400 font-mono">Structured Execution</span>
+              <h2 className="text-xl sm:text-2xl font-bold text-white font-tech tracking-tight">{title}</h2>
+              <p className="text-sm text-zinc-400 font-light leading-relaxed">{subtitle}</p>
+            </div>
+            <Link
+              href="/services#process"
+              className="inline-flex shrink-0 items-center gap-2 rounded-xl border border-blue-500/30 bg-blue-500/10 px-5 py-3 text-xs font-bold uppercase tracking-widest text-blue-300 transition-colors hover:bg-blue-500/20 hover:text-white"
+            >
+              See Our Full 8-Step Process <ArrowRight size={14} />
+            </Link>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className={`py-16 sm:py-20 ${className}`}>

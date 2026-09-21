@@ -294,7 +294,11 @@ export default function SmartInfrastructurePage() {
       </section>
 
       {/* Structured Lifecycle */}
-      <HowItWorksSection />
+      <HowItWorksSection
+        variant="canonical-link"
+        title="How a smart infrastructure project runs"
+        subtitle="Room-by-room design, GRMS installation, and commissioning — see the full lifecycle on our services page."
+      />
 
       {/* Trust Section */}
       <TrustSection />

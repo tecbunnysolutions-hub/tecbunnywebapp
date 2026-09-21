@@ -287,8 +287,12 @@ export default function PhysicalSecurityPage() {
         </div>
       </section>
 
-      {/* Structured Lifecycle */}
-      <HowItWorksSection />
+      {/* Service-specific process pointer — full lifecycle lives on /services#process */}
+      <HowItWorksSection
+        variant="canonical-link"
+        title="How a CCTV & physical security project runs"
+        subtitle="Coverage mapping, clean installation, and verified handover — see the full lifecycle on our services page."
+      />
 
       {/* Trust Section */}
       <TrustSection />

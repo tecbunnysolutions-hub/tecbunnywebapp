@@ -29,20 +29,20 @@ export const ENTITY = {
     'Enterprise IT infrastructure, CCTV and physical security, AMC support, networking, smart building automation, and RFID access control in Goa and Maharashtra.',
 
   services: [
-    { name: 'Network Infrastructure', url: '/services/network-infrastructure' },
-    { name: 'CCTV & Physical Security', url: '/services/physical-security' },
-    { name: 'Smart Access Control', url: '/services/smart-access-control' },
-    { name: 'Smart Infrastructure', url: '/services/smart-infrastructure' },
-    { name: 'Lifecycle Hardware', url: '/services/lifecycle-hardware' },
-    { name: 'Software & System Administration', url: '/services/software-system-admin' },
+    { name: 'Network Infrastructure', navLabel: 'Network & IT Infrastructure', url: '/services/network-infrastructure' },
+    { name: 'CCTV & Physical Security', navLabel: 'Physical Security & CCTV', url: '/services/physical-security' },
+    { name: 'Smart Access Control', navLabel: 'Smart Access Control', url: '/services/smart-access-control' },
+    { name: 'Smart Infrastructure', navLabel: 'Hotel Smart Infrastructure', url: '/services/smart-infrastructure' },
+    { name: 'Lifecycle Hardware', navLabel: 'Lifecycle Hardware & AMC', url: '/services/lifecycle-hardware' },
+    { name: 'Software & System Administration', navLabel: 'Software & System Admin', url: '/services/software-system-admin' },
   ] as const,
 
   industries: [
-    { name: 'Hospitality', url: '/industries/hospitality' },
-    { name: 'Corporate Offices', url: '/industries/offices' },
-    { name: 'Education', url: '/industries/education' },
-    { name: 'Healthcare', url: '/industries/healthcare' },
-    { name: 'Retail', url: '/industries/retail' },
-    { name: 'Builders', url: '/industries/builders' },
+    { name: 'Hospitality', navLabel: 'Hospitality & Resorts', url: '/industries/hospitality' },
+    { name: 'Corporate Offices', navLabel: 'Offices & Co-working', url: '/industries/offices' },
+    { name: 'Education', navLabel: 'Education & Campuses', url: '/industries/education' },
+    { name: 'Healthcare', navLabel: 'Healthcare & Hospitals', url: '/industries/healthcare' },
+    { name: 'Retail', navLabel: 'Retail & Commercial', url: '/industries/retail' },
+    { name: 'Builders', navLabel: 'Builders & Developers', url: '/industries/builders' },
   ] as const,
 } as const;

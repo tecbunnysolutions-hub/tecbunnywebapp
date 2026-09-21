@@ -36,6 +36,7 @@ import { usePermissions } from '../hooks/use-permissions';
 import { useRevealSections } from '../hooks/use-reveal-sections';
 import type { Product, Service } from '@tecbunny/core';
 import { BRAND_LOGO_URL } from "@tecbunny/ui";
+import { HowItWorksSection } from './HowItWorksSection';
 
 const iconMap: Record<string, ComponentType<LucideProps>> = {
   Wrench,
@@ -607,6 +608,12 @@ export default function ServicesPage({ services, hasServiceLoadError = false }: 
               </div>
             </div>
           </div>
+        </section>
+
+        {/* Canonical 8-step project lifecycle — the single full instance on the site.
+            Other pages link here or use the compact/summary/canonical-link variants. */}
+        <section id="process" className="reveal-section scroll-mt-24" data-reveal-id="process">
+          <HowItWorksSection />
         </section>
 
         {/* Dynamic Services Catalog */}

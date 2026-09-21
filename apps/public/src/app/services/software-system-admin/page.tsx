@@ -287,7 +287,11 @@ export default function SoftwareSystemAdminPage() {
       </section>
 
       {/* Structured Lifecycle */}
-      <HowItWorksSection />
+      <HowItWorksSection
+        variant="canonical-link"
+        title="How managed system administration works"
+        subtitle="Onboarding audit, patch cadence, and SLA-backed support — see the full lifecycle on our services page."
+      />
 
       {/* Trust Section */}
       <TrustSection />

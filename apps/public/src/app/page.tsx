@@ -10,12 +10,8 @@ import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 export const revalidate = 60;
 
 // AEO: FAQPage structured data mirroring the visible FAQ section in home-page.tsx
+// Keep in sync with the <dl> in components/home-page.tsx (validator enforces parity).
 const homeFaqs: Array<{ question: string; answer: string }> = [
-  {
-    question: 'How much does CCTV cost in Goa?',
-    answer:
-      'Our CCTV prices start at Rs 8,000 for a basic 2-camera setup. A full 4-camera NVR kit starts at Rs 15,000. All costs include fitting, cabling, and a one-year warranty. We also offer easy monthly payment plans. Ask us for a free quote today.',
-  },
   {
     question: 'Do you set up Wi-Fi networks in Goa?',
     answer:
@@ -30,11 +26,6 @@ const homeFaqs: Array<{ question: string; answer: string }> = [
     question: 'Do you serve areas outside Goa?',
     answer:
       'Yes. We serve clients in Mumbai, Pune, and Nashik for large IT and CCTV jobs. We also run remote IT support for firms across India. For jobs outside Goa, we can send a team or work with a local vendor under our watch. Call us to get a fast quote.',
-  },
-  {
-    question: 'Do you fit CCTV in homes in Goa?',
-    answer:
-      'Yes. Alongside our commercial work, we fit CCTV in homes, villas, and flats in Goa. We help you pick the right camera count and type for your space. AMC, support access, and warranty coverage depend on the selected plan.',
   },
 ];
 
@@ -61,15 +52,11 @@ export async function generateMetadata(): Promise<Metadata> {
     'Enterprise IT infrastructure, CCTV & physical security, networking, smart buildings, and managed AMC services across Goa and Maharashtra — by TecBunny Solutions.',
   keywords: [
     'enterprise IT infrastructure Goa',
-    'CCTV installation Goa',
-    'IT services Goa',
-    'AMC services Goa',
-    'smart building automation Goa',
-    'managed IT services',
-    'network infrastructure',
-    'physical security systems',
+    'CCTV physical security Goa',
     'smart access control',
+    'smart building automation Goa',
     'IT lifecycle management',
+    'managed IT services Goa',
     'TecBunny',
   ],
   path: '/',

@@ -7,6 +7,7 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Logo } from "@tecbunny/ui";
+import { ENTITY } from '@/lib/entity';
 import {
   Menu,
   X,
@@ -46,17 +47,12 @@ function WhatsAppIcon(props: React.SVGProps<SVGSVGElement>) {
 }
 
 const navLinks = [
-  { 
-    name: 'Solutions', 
+  {
+    name: 'Solutions',
     href: '/services',
     children: [
       { name: 'All Solutions & Services', href: '/services' },
-      { name: 'Network & IT Infrastructure', href: '/services/network-infrastructure' },
-      { name: 'Physical Security & CCTV', href: '/services/physical-security' },
-      { name: 'Smart Access Control', href: '/services/smart-access-control' },
-      { name: 'Lifecycle Hardware Management', href: '/services/lifecycle-hardware' },
-      { name: 'Software & System Admin', href: '/services/software-system-admin' },
-      { name: 'Smart Infrastructure for Hotels', href: '/services/smart-infrastructure' },
+      ...ENTITY.services.map((s) => ({ name: s.navLabel, href: s.url })),
       { name: 'Enterprise Redundancy Solutions', href: '/solutions' },
     ]
   },
@@ -65,11 +61,7 @@ const navLinks = [
     href: '/industries',
     children: [
       { name: 'All Industries Overview', href: '/industries' },
-      { name: 'Hospitality & Resorts', href: '/industries/hospitality' },
-      { name: 'Offices & Co-working', href: '/industries/offices' },
-      { name: 'Education & Campuses', href: '/industries/education' },
-      { name: 'Healthcare & Hospitals', href: '/industries/healthcare' },
-      { name: 'Retail & Commercial', href: '/industries/retail' },
+      ...ENTITY.industries.map((i) => ({ name: i.navLabel, href: i.url })),
     ]
   },
   { name: 'Products', href: '/products' },

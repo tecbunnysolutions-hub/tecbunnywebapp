@@ -49,15 +49,15 @@ const FAQS = [
   },
   {
     question: "What brand hardware do you supply and configure?",
-    answer: "We supply and configure Tier-1 OEM enterprise equipment including Ubiquiti UniFi, Cisco, Fortinet, Digisol, and HFCL IO, sourced through authorized national distributors with full warranty support."
+    answer: "We supply and configure Tier-1 OEM enterprise equipment including Ubiquiti UniFi, Cisco, Fortinet, Digisol, and HFCL IO, sourced through established national distribution channels with full warranty support."
   },
   {
     question: "How does dual-ISP automatic failover work?",
     answer: "We install a multi-WAN hardware router that monitors primary and secondary internet lines (e.g. Airtel fiber + backup broadband). If the primary line drops, active traffic switches in milliseconds without interrupting video calls or cloud database sessions."
   },
   {
-    question: "Do your cable installations come certified?",
-    answer: "Yes, every single Cat6, Cat6A, and optical fiber run is terminated to numbered patch panels and certified with calibrated cable testers, with full test reports provided upon project handover."
+    question: "Do your cable installations come with test documentation?",
+    answer: "Yes, every single Cat6, Cat6A, and optical fiber run is terminated to numbered patch panels and tested with calibrated cable testers, with full test reports provided upon project handover."
   }
 ];
 
@@ -100,8 +100,8 @@ export default function NetworkInfrastructurePage() {
           desc: "Proper patch panel layout, clear labeling, cable management tracks, and systemized server racks."
         },
         {
-          label: "Certified Cable Testing",
-          desc: "Full testing and certification of every cable run to guarantee maximum performance and zero line noise."
+          label: "Documented Cable Testing",
+          desc: "Full testing and documented test reports for every cable run to verify performance and line integrity."
         }
       ]
     },
@@ -288,8 +288,12 @@ export default function NetworkInfrastructurePage() {
         </div>
       </section>
 
-      {/* Structured 8-Step Lifecycle */}
-      <HowItWorksSection />
+      {/* Service-specific process pointer — full lifecycle lives on /services#process */}
+      <HowItWorksSection
+        variant="canonical-link"
+        title="How a network infrastructure project runs"
+        subtitle="Survey, engineering, clean deployment, and documented handover — see the full lifecycle on our services page."
+      />
 
       {/* Trust Section */}
       <TrustSection />

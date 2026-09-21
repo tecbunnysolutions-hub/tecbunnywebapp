@@ -331,8 +331,8 @@ export default function BusinessInfoPage() {
                   <Building className="h-6 w-6 text-orange-600" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-orange-800">Authorized Retailer</h3>
-                  <p className="text-orange-700 text-sm">Authorized to sell electronic goods</p>
+                  <h3 className="font-semibold text-orange-800">Registered Business Seller</h3>
+                  <p className="text-orange-700 text-sm">GST-registered seller of electronic goods</p>
                 </div>
               </div>
             </div>

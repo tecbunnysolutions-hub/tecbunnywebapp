@@ -101,10 +101,10 @@ export default async function AssessmentPage({
       </section>
 
       {/* Post-submit process — compact variant keeps the form as the star of this page */}
-      <HowItWorksSection 
+      <HowItWorksSection
         variant="compact"
-        title="What Happens After You Submit?" 
-        subtitle="A transparent deployment process — you understand every stage before committing capital."
+        title="What Happens Next?"
+        subtitle="Three clear stages from submission to a scoped proposal."
       />
 
       {/* Slim trust strip — full trust details live on /industries and /about */}
@@ -124,6 +124,49 @@ export default async function AssessmentPage({
               Genuine Tier-1 OEM hardware
             </li>
           </ul>
+        </div>
+      </section>
+
+      {/* Short FAQ — deep answers live on /info/faqs */}
+      <section className="py-10 border-t border-zinc-900">
+        <div className="container mx-auto px-6 max-w-4xl">
+          <h2 className="text-2xl font-bold text-white font-tech mb-6">Common Questions</h2>
+          <dl className="space-y-4">
+            <div className="rounded-xl border border-zinc-800 bg-zinc-950/60 p-5">
+              <dt className="text-sm font-semibold text-white">Is the assessment really free?</dt>
+              <dd className="mt-1 text-sm text-zinc-400 font-light leading-relaxed">
+                Yes. The site survey, blueprint review, and itemized proposal carry no charge and no obligation.
+              </dd>
+            </div>
+            <div className="rounded-xl border border-zinc-800 bg-zinc-950/60 p-5">
+              <dt className="text-sm font-semibold text-white">How quickly will I hear back?</dt>
+              <dd className="mt-1 text-sm text-zinc-400 font-light leading-relaxed">
+                Our engineering team responds the same business day and schedules the on-site survey within 48 hours across Goa.
+              </dd>
+            </div>
+            <div className="rounded-xl border border-zinc-800 bg-zinc-950/60 p-5">
+              <dt className="text-sm font-semibold text-white">What do you need from me?</dt>
+              <dd className="mt-1 text-sm text-zinc-400 font-light leading-relaxed">
+                Just your business type, property size, and current pain points — the form guides you through the rest in under two minutes.
+              </dd>
+            </div>
+          </dl>
+        </div>
+      </section>
+
+      {/* Final CTA */}
+      <section className="py-10">
+        <div className="container mx-auto px-6 max-w-4xl">
+          <div className="rounded-2xl border border-blue-500/30 bg-gradient-to-br from-blue-950/40 via-zinc-950 to-zinc-950 p-8 text-center">
+            <h2 className="text-2xl sm:text-3xl font-bold text-white font-tech">Prefer to talk it through first?</h2>
+            <p className="mt-2 text-sm text-zinc-400 font-light">Speak directly with an engineer about your site before committing to a survey.</p>
+            <Link
+              href="/contact?subject=sales&intent=enterprise_consultation&source=assessment_footer"
+              className="mt-5 inline-flex items-center justify-center rounded-xl bg-blue-600 hover:bg-blue-500 px-6 py-3 text-sm font-bold uppercase tracking-wider text-white transition-colors"
+            >
+              Talk to an Engineer
+            </Link>
+          </div>
         </div>
       </section>
 

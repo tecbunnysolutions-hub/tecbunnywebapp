@@ -65,7 +65,7 @@ export default function BuildersIndustryPage() {
       solutions={[
         {
           title: "Structured Cabling & Fiber Riser Blueprints",
-          desc: "Full low-voltage CAD schematics with Cat6A/OM4 fiber riser calculations, MDF/IDF closet layout plans, and certified cable test reports.",
+          desc: "Full low-voltage CAD schematics with Cat6A/OM4 fiber riser calculations, MDF/IDF closet layout plans, and cable test reports.",
           points: [
             "Pure copper Cat6/Cat6A LSZH cabling meeting TIA/EIA standards",
             "Dedicated MDF server room design with clean cable tray routing",
@@ -131,8 +131,8 @@ export default function BuildersIndustryPage() {
           answer: "Yes. Our project engineers participate in site MEP coordination meetings, review CAD electrical drawings, mark low-voltage conduits, and supervise cable pulling to ensure strict adherence to structured cabling standards."
         },
         {
-          question: "Do you provide as-built drawings and cable test certification?",
-          answer: "Yes. Every developer project handover includes certified cable test reports, labeled patch panel port maps, equipment serial number rosters, and CAD as-built network diagrams."
+          question: "Do you provide as-built drawings and cable test documentation?",
+          answer: "Yes. Every developer project handover includes cable test reports, labeled patch panel port maps, equipment serial number rosters, and CAD as-built network diagrams."
         },
         {
           question: "Can you provide post-handover AMC support for the society or building management?",
