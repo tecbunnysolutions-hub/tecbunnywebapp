@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 
 import PolicyPage from '@/components/policy-page';
+import { BreadcrumbJsonLd } from '@/components/BreadcrumbJsonLd';
 import { getPolicyContent } from "@tecbunny/core/settings";
 import { createPageMetadata } from '@tecbunny/core/metadata';
 
@@ -16,5 +17,16 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function RefundCancellationPolicyPage() {
   const content = await getPolicyContent('refund_cancellation_policy', 'Refund & Cancellation Policy');
-  return <PolicyPage pageKey="refund_cancellation_policy" defaultTitle="Refund & Cancellation Policy" initialContent={content} />;
+  return (
+    <>
+      <BreadcrumbJsonLd
+        items={[
+          { name: 'Home', url: 'https://www.tecbunny.com' },
+          { name: 'Policies', url: 'https://www.tecbunny.com/info/policies' },
+          { name: 'Refund & Cancellation Policy', url: 'https://www.tecbunny.com/info/policies/refund-cancellation' },
+        ]}
+      />
+      <PolicyPage pageKey="refund_cancellation_policy" defaultTitle="Refund & Cancellation Policy" initialContent={content} />
+    </>
+  );
 }

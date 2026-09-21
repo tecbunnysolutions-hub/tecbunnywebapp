@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 
 import PolicyPage from '@/components/policy-page';
+import { BreadcrumbJsonLd } from '@/components/BreadcrumbJsonLd';
 import { getPolicyContent } from "@tecbunny/core/settings";
 import { createPageMetadata } from '@tecbunny/core/metadata';
 
@@ -16,5 +17,16 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function ShippingPolicyPage() {
   const content = await getPolicyContent('shipping_policy', 'Shipping Policy');
-  return <PolicyPage pageKey="shipping_policy" defaultTitle="Shipping Policy" initialContent={content} />;
+  return (
+    <>
+      <BreadcrumbJsonLd
+        items={[
+          { name: 'Home', url: 'https://www.tecbunny.com' },
+          { name: 'Policies', url: 'https://www.tecbunny.com/info/policies' },
+          { name: 'Shipping Policy', url: 'https://www.tecbunny.com/info/policies/shipping' },
+        ]}
+      />
+      <PolicyPage pageKey="shipping_policy" defaultTitle="Shipping Policy" initialContent={content} />
+    </>
+  );
 }

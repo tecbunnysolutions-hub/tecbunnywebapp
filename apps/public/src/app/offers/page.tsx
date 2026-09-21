@@ -2,6 +2,7 @@ import { Metadata } from 'next';
 import { createPageMetadata } from '@tecbunny/core/metadata';
 
 import OffersPage from '@/components/offers-page';
+import { BreadcrumbJsonLd } from '@/components/BreadcrumbJsonLd';
 
 export async function generateMetadata(): Promise<Metadata> {
   return createPageMetadata({
@@ -16,5 +17,15 @@ export async function generateMetadata(): Promise<Metadata> {
 // export const dynamic = 'force-static';
 
 export default function Page() {
-  return <OffersPage />;
+  return (
+    <>
+      <BreadcrumbJsonLd
+        items={[
+          { name: 'Home', url: 'https://www.tecbunny.com' },
+          { name: 'Offers', url: 'https://www.tecbunny.com/offers' },
+        ]}
+      />
+      <OffersPage />
+    </>
+  );
 }

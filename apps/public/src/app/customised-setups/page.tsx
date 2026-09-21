@@ -12,6 +12,7 @@ import { DEFAULT_CUSTOM_SETUP_TEMPLATE_SLUG } from "@tecbunny/core/custom-setup.
 import { getCustomSetupBlueprintSummary } from "@tecbunny/core/custom-setup-service";
 
 import { createPageMetadata } from "@tecbunny/core/metadata";
+import { BreadcrumbJsonLd } from '@/components/BreadcrumbJsonLd';
 
 export async function generateMetadata(): Promise<Metadata> {
   return createPageMetadata({
@@ -55,6 +56,12 @@ export default async function CustomisedSetupsPage({
 
   return (
     <main className="min-h-screen bg-background text-foreground">
+      <BreadcrumbJsonLd
+        items={[
+          { name: 'Home', url: 'https://www.tecbunny.com' },
+          { name: 'Customised Setups', url: 'https://www.tecbunny.com/customised-setups' },
+        ]}
+      />
       <section className="relative pt-28 pb-12 overflow-hidden border-b border-border">
         <div className="absolute inset-0 bg-noise opacity-10"></div>
         <div className="relative z-10 mx-auto max-w-5xl px-4 text-center sm:px-6 lg:px-8">

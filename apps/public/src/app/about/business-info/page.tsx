@@ -3,6 +3,7 @@ import { Building, MapPin, Phone, Mail, FileText, Shield, Award } from 'lucide-r
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@tecbunny/ui";
 import { createPageMetadata } from '@tecbunny/core/metadata';
+import { BreadcrumbJsonLd } from '@/components/BreadcrumbJsonLd';
 
 export async function generateMetadata(): Promise<Metadata> {
   return createPageMetadata({
@@ -18,6 +19,13 @@ export async function generateMetadata(): Promise<Metadata> {
 export default function BusinessInfoPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+      <BreadcrumbJsonLd
+        items={[
+          { name: 'Home', url: 'https://www.tecbunny.com' },
+          { name: 'About', url: 'https://www.tecbunny.com/about' },
+          { name: 'Business Information', url: 'https://www.tecbunny.com/about/business-info' },
+        ]}
+      />
       {/* Header */}
       <div className="bg-white border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

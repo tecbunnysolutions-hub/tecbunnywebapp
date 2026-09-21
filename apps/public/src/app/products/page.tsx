@@ -4,6 +4,7 @@ import { Suspense } from 'react';
 import type { Metadata } from 'next';
 
 import { ShopPageContent } from '@/components/products/ShopPageContent';
+import { BreadcrumbJsonLd } from '@/components/BreadcrumbJsonLd';
 import { createPageMetadata } from "@tecbunny/core/metadata";
 import { applyPublicProductOrdering, applyPublicProductVisibilityFilters, ensureProductColumns } from "@tecbunny/core/product-visibility";
 
@@ -127,7 +128,14 @@ async function ShopPageDataLoader({ searchParams }: { searchParams?: Promise<Rec
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListJsonLd).replace(/</g, '\\u003c') }}
       />
+      <BreadcrumbJsonLd
+        items={[
+          { name: 'Home', url: 'https://www.tecbunny.com' },
+          { name: 'Products', url: 'https://www.tecbunny.com/products' },
+        ]}
+      />
       <ShopPageContent initialRawProducts={rawProducts} initialRawAutoOffers={rawOffers} />
+      <ProductsSeoContent />
     </>
   );
 }

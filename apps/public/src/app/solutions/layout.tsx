@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { createPageMetadata } from '@tecbunny/core/metadata';
+import { BreadcrumbJsonLd } from '@/components/BreadcrumbJsonLd';
 
 export async function generateMetadata(): Promise<Metadata> {
   return createPageMetadata({
@@ -18,5 +19,15 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default function SolutionsLayout({ children }: { children: React.ReactNode }) {
-  return children;
+  return (
+    <>
+      <BreadcrumbJsonLd
+        items={[
+          { name: 'Home', url: 'https://www.tecbunny.com' },
+          { name: 'Solutions', url: 'https://www.tecbunny.com/solutions' },
+        ]}
+      />
+      {children}
+    </>
+  );
 }

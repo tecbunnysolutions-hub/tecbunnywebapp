@@ -111,16 +111,25 @@ export default function HomePage({
                 Enterprise IT &amp; security partner in Goa
               </div>
 
-              <h1 className="text-3xl font-extrabold leading-[0.98] text-white sm:text-4xl md:text-5xl xl:text-6xl font-tech tracking-tight" aria-label="Secure operations. Smarter systems. Built for business continuity.">
-                <span className="glitch-text block pb-3 text-blue-400" data-text="Secure operations.">Secure operations.</span>
-                <span className="block text-zinc-100">Smarter systems.</span>
+              <h1 className="text-3xl font-extrabold leading-[0.98] text-white sm:text-4xl md:text-5xl xl:text-6xl font-tech tracking-tight" aria-label="Enterprise IT and security infrastructure in Goa. Secure operations, smarter systems.">
+                <span className="glitch-text block pb-3 text-blue-400" data-text="Enterprise IT & security.">Enterprise IT &amp; security.</span>
+                <span className="block text-zinc-100">Infrastructure in Goa.</span>
               </h1>
 
               <HeroRotator />
 
               <p className="tb-lede max-w-2xl text-base sm:text-xl text-zinc-300">
+                <span className="font-semibold text-white">Secure operations. Smarter systems.</span>{' '}
                 TecBunny helps hotels, offices, clinics, schools, and growing businesses in Goa and Maharashtra keep their CCTV, networks, smart access, and IT systems running securely with clear support and practical upgrades.
               </p>
+
+              {/* AEO: short summary + plain-language definition near the top of the page */}
+              <div className="max-w-2xl space-y-2 rounded-xl border border-blue-500/20 bg-blue-500/5 p-4">
+                <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-blue-400">Key takeaway</p>
+                <p className="text-sm leading-relaxed text-zinc-200">
+                  TecBunny is an IT infrastructure and security integration company based in Pernem, North Goa. In short: we design, install, and maintain CCTV, Wi-Fi, access control, and office IT systems for hotels, offices, clinics, schools, and retail businesses across Goa and Maharashtra — with one team, one SLA, and one point of contact.
+                </p>
+              </div>
 
               <ul className="grid gap-2 pl-5 text-sm text-zinc-300 sm:grid-cols-2">
                 <li className="list-disc">CCTV, NVR and access-control installations</li>
@@ -170,7 +179,7 @@ export default function HomePage({
                 <div className="rounded-2xl border border-blue-500/20 bg-blue-500/5 p-5 transition-all duration-300 hover:border-blue-500/40 hover:bg-blue-500/10">
                   <div>
                     <span className="text-[10px] font-bold tracking-widest uppercase text-blue-400">Business?</span>
-                    <p className="mt-1 text-lg font-bold text-white font-tech">Enterprise solutions</p>
+                    <h2 className="mt-1 text-lg font-bold text-white font-tech">Enterprise solutions</h2>
                     <p className="text-xs text-zinc-400 mt-2 mb-4 leading-relaxed font-light">
                       CCTV, networks, smart locks, and IT support for Goa hotels, resorts, and offices.
                     </p>
@@ -187,7 +196,7 @@ export default function HomePage({
                 <div className="rounded-2xl border border-zinc-800 bg-zinc-900/10 p-5 transition-all duration-300 hover:border-zinc-700 hover:bg-zinc-900/20">
                   <div>
                     <span className="text-[10px] font-bold tracking-widest uppercase text-zinc-500">Need hardware?</span>
-                    <p className="mt-1 text-lg font-bold text-white font-tech">Shop products</p>
+                    <h2 className="mt-1 text-lg font-bold text-white font-tech">Shop products</h2>
                     <p className="text-xs text-zinc-450 mt-2 mb-4 leading-relaxed font-light">
                       PCs, NVR hardware, and core components, with delivery eligibility confirmed at checkout.
                     </p>
@@ -204,7 +213,7 @@ export default function HomePage({
                 <div className="rounded-2xl border border-zinc-800 bg-zinc-900/10 p-5 transition-all duration-300 hover:border-zinc-700 hover:bg-zinc-900/20">
                   <div>
                     <span className="text-[10px] font-bold tracking-widest uppercase text-zinc-500">Need repair or service?</span>
-                    <p className="mt-1 text-lg font-bold text-white font-tech">Book service</p>
+                    <h2 className="mt-1 text-lg font-bold text-white font-tech">Book service</h2>
                     <p className="text-xs text-zinc-450 mt-2 mb-4 leading-relaxed font-light">
                       Request CCTV, network, IT, or AMC help from our local service team.
                     </p>
@@ -273,9 +282,9 @@ export default function HomePage({
       {hasPartnerBrands ? (
         <section className="border-y border-zinc-800 bg-zinc-950/60 py-8 sm:py-10" style={{ contentVisibility: 'auto', containIntrinsicSize: '200px' }}>
           <div className="tb-container">
-            <p className="text-center text-xs font-semibold uppercase tracking-[0.35em] text-zinc-500 mb-6">
+            <h2 className="text-center text-xs font-semibold uppercase tracking-[0.35em] text-zinc-500 mb-6">
               Product Brands We Deploy
-            </p>
+            </h2>
             <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-6 md:gap-x-16">
               {initialPartnerBrands.map((brand) => (
                 <span key={brand.name} className="flex items-center justify-center transition-all hover:scale-105 duration-200">
@@ -308,7 +317,7 @@ export default function HomePage({
             <span className="tb-kicker">Solutions</span>
             <h2 className="mt-4 text-3xl font-semibold text-white sm:text-4xl">What services does TecBunny provide?</h2>
             <p className="tb-lede mt-4 text-sm sm:text-base">
-              We cover the core technology layers businesses rely on most: network cabling, CCTV, access control, smart infrastructure, and managed IT support.
+              In short: we cover the core technology layers businesses rely on most — network cabling, CCTV, access control, smart infrastructure, and managed IT support.
             </p>
           </div>
 
@@ -330,7 +339,7 @@ export default function HomePage({
                   href={pillar.href}
                   className="mt-6 tb-text-link text-xs uppercase tracking-[0.2em]"
                 >
-                  Explore <ChevronRight size={14} />
+                  Explore {pillar.title} <ChevronRight size={14} />
                 </Link>
               </div>
             ))}
@@ -359,7 +368,7 @@ export default function HomePage({
             <span className="tb-kicker">What we deliver</span>
             <h2 className="mt-4 text-3xl font-semibold text-white sm:text-4xl">What does TecBunny deliver for businesses in Goa?</h2>
             <p className="tb-lede mt-4 text-sm sm:text-base">
-              We bring together network, security, automation, and managed support into one accountable delivery model with clear service phases and support coverage.
+              Direct answer: we bring together network, security, automation, and managed support into one accountable delivery model with clear service phases and support coverage.
             </p>
           </div>
 
@@ -413,9 +422,9 @@ export default function HomePage({
           <div className="tb-panel flex flex-col gap-6 p-8 sm:p-10 lg:flex-row lg:items-center lg:justify-between">
             <div className="max-w-2xl space-y-3">
               <span className="tb-kicker">Storefront</span>
-              <h2 className="text-2xl sm:text-3xl font-semibold text-white">Need hardware?</h2>
+              <h2 className="text-2xl sm:text-3xl font-semibold text-white">Where can I buy business hardware in Goa?</h2>
               <p className="text-sm text-zinc-400 leading-relaxed">
-                Browse our catalog of business hardware — CCTV kits, NVRs, laptops, and core components. Genuine products, GST invoice, and delivery eligibility confirmed at checkout.
+                Direct answer: from the TecBunny storefront. Browse our catalog of business hardware — CCTV kits, NVRs, laptops, and core components. Genuine products, GST invoice, and delivery eligibility confirmed at checkout.
               </p>
             </div>
             <Link href="/products" className="tb-button-secondary shrink-0 inline-flex items-center gap-2">
@@ -432,10 +441,10 @@ export default function HomePage({
             <div className="max-w-2xl">
               <span className="tb-kicker">Industry Verticals</span>
               <h2 className="mt-3 text-3xl sm:text-4xl font-bold text-white font-tech tracking-tight">
-                Specialized IT &amp; Security Infrastructure for Goa Businesses
+                Which industries does TecBunny serve in Goa?
               </h2>
               <p className="tb-lede mt-3 text-sm sm:text-base text-zinc-400">
-                Tailored engineering architectures designed for the specific physical and operational needs of your industry.
+                Direct answer: hospitality and resorts, corporate offices and co-working spaces, healthcare and hospitals, and retail and commercial stores — each with an engineering architecture matched to its physical and operational needs.
               </p>
             </div>
             <Link
@@ -536,12 +545,86 @@ export default function HomePage({
       <section className="tb-section reveal-section is-revealed" data-reveal-id="about" style={{ contentVisibility: 'auto', containIntrinsicSize: '400px' }}>
         <div className="tb-container">
           <div className="mx-auto max-w-4xl space-y-6 text-sm leading-relaxed text-zinc-400 sm:text-base">
-            <h2 className="text-3xl font-semibold text-white mb-8 font-tech">One Team, One Partner for All Your IT and Tech Needs</h2>
+            <h2 className="text-3xl font-semibold text-white mb-8 font-tech">Who is TecBunny?</h2>
             <p>
-              At TecBunny, we are a team of CCTV experts, IT engineers, and support staff. We started by fitting CCTV cameras and access control for hotels, hospitals, schools, and offices — today we run full IT systems, keep your data safe, and link CCTV, networks, and smart office tools to work as one. One team, one point of call, in Goa and across India.
+              TecBunny is a team of CCTV experts, IT engineers, and support staff — one partner for all your business IT and security technology needs. We started by fitting CCTV cameras and access control for hotels, hospitals, schools, and offices — today we run full IT systems, keep your data safe, and link CCTV, networks, and smart office tools to work as one. One team, one point of call, in Goa and across India.
             </p>
             <p>
               We deploy genuine enterprise hardware from Hikvision, Dahua, CP Plus, Cisco, Ubiquiti, and Fortinet through established distribution channels. Based in Pernem, North Goa, we know local conditions — humidity, power cuts, and dust — and every job comes with a clear SLA, fair pricing, and one account manager.
+            </p>
+            <p>
+              Our camera, NVR, and door-controller designs follow open standards — see the{' '}
+              <a
+                href="https://www.onvif.org/profiles/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-400 underline underline-offset-2 transition-colors hover:text-blue-300"
+              >
+                ONVIF interoperability profiles for IP security devices
+              </a>{' '}
+              we engineer against, so your system stays compatible across brands instead of locking you into one vendor.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* AEO: comparison table + decision steps for "should I" queries */}
+      <section className="tb-section reveal-section is-revealed" data-reveal-id="compare" style={{ contentVisibility: 'auto', containIntrinsicSize: '600px' }}>
+        <div className="tb-container">
+          <div className="mb-10 max-w-3xl">
+            <span className="tb-kicker">Decision guide</span>
+            <h2 className="mt-4 text-3xl font-semibold text-white sm:text-4xl">Should I choose an AMC plan or pay-per-visit support?</h2>
+            <p className="tb-lede mt-4 text-sm sm:text-base">
+              Direct answer: if your business relies on CCTV, network, or IT systems every day, an AMC plan usually costs less than repeated emergency repairs and keeps equipment maintained. Pay-per-visit support suits very small setups with only a handful of devices.
+            </p>
+          </div>
+
+          <div className="overflow-x-auto rounded-2xl border border-zinc-800">
+            <table className="w-full min-w-[620px] text-left text-sm">
+              <thead>
+                <tr className="border-b border-zinc-800 bg-zinc-950/80">
+                  <th scope="col" className="px-5 py-3.5 font-semibold text-white">Factor</th>
+                  <th scope="col" className="px-5 py-3.5 font-semibold text-white">AMC plan</th>
+                  <th scope="col" className="px-5 py-3.5 font-semibold text-white">Pay-per-visit support</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-zinc-850 text-zinc-400">
+                <tr>
+                  <th scope="row" className="px-5 py-3.5 font-medium text-zinc-300">Best for</th>
+                  <td className="px-5 py-3.5">Hotels, offices, clinics, and schools that depend on systems daily</td>
+                  <td className="px-5 py-3.5">Very small shops or offices with a few devices</td>
+                </tr>
+                <tr>
+                  <th scope="row" className="px-5 py-3.5 font-medium text-zinc-300">Cost pattern</th>
+                  <td className="px-5 py-3.5">Fixed annual fee, predictable budget</td>
+                  <td className="px-5 py-3.5">Per-visit charges that spike during breakdowns</td>
+                </tr>
+                <tr>
+                  <th scope="row" className="px-5 py-3.5 font-medium text-zinc-300">Response time</th>
+                  <td className="px-5 py-3.5">Defined response targets in your plan</td>
+                  <td className="px-5 py-3.5">First-available scheduling, no priority</td>
+                </tr>
+                <tr>
+                  <th scope="row" className="px-5 py-3.5 font-medium text-zinc-300">Preventive care</th>
+                  <td className="px-5 py-3.5">Planned check-ups, audits, and reports included</td>
+                  <td className="px-5 py-3.5">Reactive fixes only — faults found when they fail</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div className="mt-8 max-w-3xl">
+            <h3 className="text-lg font-semibold text-white">How do I decide in three steps?</h3>
+            <ol className="mt-3 list-decimal space-y-2 pl-5 text-sm leading-relaxed text-zinc-400">
+              <li>Count the devices your business depends on daily — cameras, recorders, access points, switches, and workstations.</li>
+              <li>Estimate what one day of downtime costs you in lost bookings, billing, or operations.</li>
+              <li>If downtime costs more than an annual plan, choose an AMC; otherwise start with pay-per-visit and review yearly.</li>
+            </ol>
+            <p className="mt-4 text-sm text-zinc-500">
+              Not sure which fits?{' '}
+              <Link href="/assessment" className="text-blue-400 hover:text-blue-300 transition-colors">
+                Get a free technology assessment &rarr;
+              </Link>
             </p>
           </div>
         </div>
@@ -565,6 +648,14 @@ export default function HomePage({
             <div className="space-y-2 rounded-lg border border-zinc-800 bg-zinc-950/60 p-4">
               <dt className="text-sm font-semibold text-white">Do you serve areas outside Goa?</dt>
               <dd className="text-sm text-zinc-400 leading-relaxed">Yes. We serve clients in Mumbai, Pune, and Nashik for large IT and CCTV jobs. We also run remote IT support for firms across India. For jobs outside Goa, we can send a team or work with a local vendor under our watch. Call us to get a fast quote.</dd>
+            </div>
+            <div className="space-y-2 rounded-lg border border-zinc-800 bg-zinc-950/60 p-4">
+              <dt className="text-sm font-semibold text-white">How much does CCTV installation cost in Goa?</dt>
+              <dd className="text-sm text-zinc-400 leading-relaxed">It depends on camera count, cable runs, recorder capacity, and site conditions. We quote per site after a survey, with an itemized estimate so you can see hardware, cabling, and labour separately. Request a free assessment to get an exact figure for your property.</dd>
+            </div>
+            <div className="space-y-2 rounded-lg border border-zinc-800 bg-zinc-950/60 p-4">
+              <dt className="text-sm font-semibold text-white">How do I get started with TecBunny?</dt>
+              <dd className="text-sm text-zinc-400 leading-relaxed">Three steps: book a free technology assessment, let our engineers survey your site and review your existing systems, then receive an itemized proposal with a clear scope and support plan. There is no obligation to proceed.</dd>
             </div>
           </dl>
           <p className="mt-8 text-sm text-zinc-500">

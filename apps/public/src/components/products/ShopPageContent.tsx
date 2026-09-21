@@ -791,15 +791,15 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
                 Equipment Manifest
               </div>
               <h1 className="text-2xl font-black tracking-tight text-white sm:text-3xl md:text-4xl uppercase leading-tight">
-                Enterprise-Grade <br className="sm:hidden" />
+                CCTV, IT Hardware <br className="sm:hidden" />
                 <span className="bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-500 bg-clip-text text-transparent">
-                  Hardware & Gear
+                  &amp; Security Systems
                 </span>
               </h1>
               <p className="max-w-xl text-base leading-relaxed text-zinc-300 font-light">
                 {searchQuery 
                   ? `Found results matching "${searchQuery}"` 
-                  : 'High-performance infrastructure and components, engineered for maximum reliability.'
+                  : 'Genuine CCTV cameras, recorders, computers, and IT accessories at live prices — with professional installation and support across Goa and Maharashtra.'
                 }
               </p>
             </div>
@@ -969,6 +969,7 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
             )}
 
             {/* Product Grid */}
+            <h2 className="sr-only">Product catalogue — CCTV cameras, computers, and IT accessories</h2>
             <div className="reveal-section is-revealed" data-reveal-id="products-grid">
               {loading ? (
                 <div className="grid gap-4 sm:gap-6 grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 min-h-[400px]">

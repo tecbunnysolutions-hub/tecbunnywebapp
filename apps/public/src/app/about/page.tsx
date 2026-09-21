@@ -1,6 +1,7 @@
 import { Metadata } from 'next';
 
 import AboutPage from '@/components/about-page';
+import { BreadcrumbJsonLd } from '@/components/BreadcrumbJsonLd';
 import { createPageMetadata } from "@tecbunny/core/metadata";
 import { ENTITY } from '@/lib/entity';
 
@@ -31,6 +32,12 @@ const aboutPageJsonLd = {
 export default function Page() {
   return (
     <>
+      <BreadcrumbJsonLd
+        items={[
+          { name: 'Home', url: 'https://www.tecbunny.com' },
+          { name: 'About', url: 'https://www.tecbunny.com/about' },
+        ]}
+      />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(aboutPageJsonLd).replace(/</g, '\\u003c') }}

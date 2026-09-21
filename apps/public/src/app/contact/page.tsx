@@ -2,6 +2,7 @@ import { Suspense } from 'react';
 import { Metadata } from 'next';
 
 import ContactPage from '@/components/contact-page';
+import { BreadcrumbJsonLd } from '@/components/BreadcrumbJsonLd';
 import { createPageMetadata } from "@tecbunny/core/metadata";
 
 // Static metadata for better SEO and performance
@@ -63,6 +64,12 @@ const contactPageJsonLd = {
 export default function Page() {
   return (
     <>
+      <BreadcrumbJsonLd
+        items={[
+          { name: 'Home', url: 'https://www.tecbunny.com' },
+          { name: 'Contact', url: 'https://www.tecbunny.com/contact' },
+        ]}
+      />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(contactPageJsonLd).replace(/</g, '\\u003c') }}

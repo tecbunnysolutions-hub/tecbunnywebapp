@@ -3,6 +3,7 @@ import { ArrowLeft, FileText, Shield, Truck, RotateCcw, Undo2 } from 'lucide-rea
 
 import { Metadata } from 'next';
 import { createPageMetadata } from '@tecbunny/core/metadata';
+import { BreadcrumbJsonLd } from '@/components/BreadcrumbJsonLd';
 
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -58,6 +59,12 @@ export default function PoliciesPage() {
 
   return (
     <div className="relative overflow-hidden bg-background text-foreground">
+      <BreadcrumbJsonLd
+        items={[
+          { name: 'Home', url: 'https://www.tecbunny.com' },
+          { name: 'Policies', url: 'https://www.tecbunny.com/info/policies' },
+        ]}
+      />
       {/* Dynamic Background Accents */}
       <div className="pointer-events-none absolute inset-0 bg-noise opacity-10" />
       <div className="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[120px] pointer-events-none" />

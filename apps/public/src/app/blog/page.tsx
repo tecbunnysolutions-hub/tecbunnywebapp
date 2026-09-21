@@ -3,6 +3,8 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { createClient } from '@tecbunny/database';
 
+import { BreadcrumbJsonLd } from '@/components/BreadcrumbJsonLd';
+
 export const revalidate = 300;
 
 export const metadata: Metadata = {
@@ -51,6 +53,12 @@ export default async function BlogPage() {
 
   return (
     <main className="min-h-screen bg-black text-zinc-100">
+      <BreadcrumbJsonLd
+        items={[
+          { name: 'Home', url: 'https://www.tecbunny.com' },
+          { name: 'Blog', url: 'https://www.tecbunny.com/blog' },
+        ]}
+      />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: serializeJsonLd(blogJsonLd) }}

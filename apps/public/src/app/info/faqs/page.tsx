@@ -4,6 +4,7 @@ import { Suspense } from 'react';
 import type { Metadata } from 'next';
 
 import FaqsClient from '@/components/FaqsClient';
+import { BreadcrumbJsonLd } from '@/components/BreadcrumbJsonLd';
 import { Skeleton } from "@tecbunny/ui";
 import { createPageMetadata } from '@tecbunny/core/metadata';
 import { stripHtmlToPlainText } from '@tecbunny/core/strings';
@@ -59,6 +60,12 @@ async function fetchFaqs() {
 export default async function FaqsPage() {
   return (
     <div className="container mx-auto px-4 pt-24 pb-16 max-w-4xl min-h-screen">
+      <BreadcrumbJsonLd
+        items={[
+          { name: 'Home', url: 'https://www.tecbunny.com' },
+          { name: 'FAQs', url: 'https://www.tecbunny.com/info/faqs' },
+        ]}
+      />
       {/* Header section with explicit bounding height to prevent CLS */}
       <div className="text-center mb-12 min-h-[120px] flex flex-col justify-center">
         <h1 className="text-4xl font-extrabold tracking-tight lg:text-5xl mb-3 bg-clip-text text-transparent bg-gradient-to-r from-primary to-blue-400">

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 
 import PolicyPage from '@/components/policy-page';
+import { BreadcrumbJsonLd } from '@/components/BreadcrumbJsonLd';
 import { getPolicyContent } from "@tecbunny/core/settings";
 import { createPageMetadata } from '@tecbunny/core/metadata';
 
@@ -16,5 +17,16 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function ReturnPolicyPage() {
   const content = await getPolicyContent('return_policy', 'Return & Exchange Policy');
-  return <PolicyPage pageKey="return_policy" defaultTitle="Return & Exchange Policy" initialContent={content} />;
+  return (
+    <>
+      <BreadcrumbJsonLd
+        items={[
+          { name: 'Home', url: 'https://www.tecbunny.com' },
+          { name: 'Policies', url: 'https://www.tecbunny.com/info/policies' },
+          { name: 'Return & Exchange Policy', url: 'https://www.tecbunny.com/info/policies/return' },
+        ]}
+      />
+      <PolicyPage pageKey="return_policy" defaultTitle="Return & Exchange Policy" initialContent={content} />
+    </>
+  );
 }

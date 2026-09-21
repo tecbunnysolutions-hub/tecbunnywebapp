@@ -3,6 +3,7 @@ import { Metadata } from 'next';
 import { Shield, Zap, TrendingUp, Users, Wallet, Rocket, CheckCircle2, MessageSquare } from 'lucide-react';
 import { Button } from "@tecbunny/ui";
 import { createPageMetadata } from '@tecbunny/core/metadata';
+import { BreadcrumbJsonLd } from '@/components/BreadcrumbJsonLd';
 import Link from 'next/link';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -17,6 +18,12 @@ export async function generateMetadata(): Promise<Metadata> {
 export default function AgentRecruitPage() {
   return (
     <div className="min-h-screen bg-background text-foreground">
+      <BreadcrumbJsonLd
+        items={[
+          { name: 'Home', url: 'https://www.tecbunny.com' },
+          { name: 'Agent Program', url: 'https://www.tecbunny.com/agents/recruit' },
+        ]}
+      />
       {/* Hero Section */}
       <section className="relative overflow-hidden border-b border-border py-20 lg:py-32">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_-20%,rgba(37,99,235,0.1),transparent)]" />

@@ -3,6 +3,7 @@ import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
 import { BlueprintShowcase } from '@/components/customised-setups/BlueprintShowcase';
+import { BreadcrumbJsonLd } from '@/components/BreadcrumbJsonLd';
 
 interface BlueprintPageProps {
   params: Promise<{ id: string }>;
@@ -73,8 +74,18 @@ export default async function BlueprintPage({ params }: BlueprintPageProps) {
 
   if (!blueprint) notFound();
 
+  const config = blueprint.config_payload;
+  const blueprintName = `${config.cameraCount}x Node ${config.systemType} Security Blueprint`;
+
   return (
     <main className="min-h-screen bg-background pt-20">
+      <BreadcrumbJsonLd
+        items={[
+          { name: 'Home', url: 'https://www.tecbunny.com' },
+          { name: 'Customised Setups', url: 'https://www.tecbunny.com/customised-setups' },
+          { name: blueprintName, url: `https://www.tecbunny.com/blueprints/${id}` },
+        ]}
+      />
       <BlueprintShowcase blueprint={blueprint} />
     </main>
   );

@@ -27,6 +27,16 @@ const homeFaqs: Array<{ question: string; answer: string }> = [
     answer:
       'Yes. We serve clients in Mumbai, Pune, and Nashik for large IT and CCTV jobs. We also run remote IT support for firms across India. For jobs outside Goa, we can send a team or work with a local vendor under our watch. Call us to get a fast quote.',
   },
+  {
+    question: 'How much does CCTV installation cost in Goa?',
+    answer:
+      'It depends on camera count, cable runs, recorder capacity, and site conditions. We quote per site after a survey, with an itemized estimate so you can see hardware, cabling, and labour separately. Request a free assessment to get an exact figure for your property.',
+  },
+  {
+    question: 'How do I get started with TecBunny?',
+    answer:
+      'Three steps: book a free technology assessment, let our engineers survey your site and review your existing systems, then receive an itemized proposal with a clear scope and support plan. There is no obligation to proceed.',
+  },
 ];
 
 const homeFaqJsonLd = {
