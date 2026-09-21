@@ -96,12 +96,13 @@ export function trackMetaEvent(eventName: MetaStandardEvent, options: DispatchOp
   if (typeof window === 'undefined') return '';
 
   const eventId = options.eventId ?? generateMetaEventId(eventName);
-  const pixelReady = typeof window.fbq === 'function';
+  // Capture into a const so TS narrows it inside the try block.
+  const fbq = typeof window.fbq === 'function' ? window.fbq : undefined;
 
   // 1) Browser pixel (no-op until consent is accepted and fbevents.js loads).
-  if (pixelReady) {
+  if (fbq) {
     try {
-      window.fbq('track', eventName, options.params ?? {}, { eventID: eventId });
+      fbq('track', eventName, options.params ?? {}, { eventID: eventId });
     } catch (error) {
       console.warn('Meta pixel dispatch failed', error);
     }
@@ -109,7 +110,7 @@ export function trackMetaEvent(eventName: MetaStandardEvent, options: DispatchOp
 
   // 2) Server-side CAPI mirror. Only sent when the pixel is active so tracking
   //    stays consent-aligned. keepalive lets the request survive navigation.
-  if (pixelReady) {
+  if (fbq) {
     try {
       const { fbp, fbc } = getMetaBrowserCookies();
       void fetch('/api/meta/conversions', {

@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { getWabaWebhookQueue } from '@tecbunny/core/queue';
 import { logger } from '@tecbunny/core/logger';
-import { sendWhatsAppTextMessage } from '@/lib/whatsapp-cloud-api';
+import { sendWhatsAppTextMessage } from '@tecbunny/core/whatsapp-cloud-api';
 
 // Bug #1 fix: Remove hardcoded secret fallback. Throw at startup if missing.
 // Moving the check to runtime to prevent Vercel build failures when secret is not set.
@@ -188,7 +188,7 @@ export async function POST(req: Request) {
           'Thanks for contacting TecBunny! Our team has received your message and will respond shortly.').slice(0, 1024);
         for (const result of results) {
           if (result.from && result.message?.text) {
-            void sendWhatsAppTextMessage(result.from, replyText).catch((error) =>
+            void sendWhatsAppTextMessage(result.from, replyText).catch((error: unknown) =>
               logger.error('waba_webhook.auto_reply_failed', { error: error instanceof Error ? error.message : String(error) }),
             );
           }

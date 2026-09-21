@@ -128,6 +128,7 @@
     "./two-factor-manager": "./src/two-factor-manager.ts",
     "./telemetry": "./src/telemetry/index.ts",
     "./types/products": "./src/types/products.ts",
+    "./whatsapp-cloud-api": "./src/whatsapp-cloud-api.ts",
     "./types": "./src/types.ts",
     "./utils": "./src/utils.ts",
     "./validation": "./src/validation/index.ts",
