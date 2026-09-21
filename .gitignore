@@ -12,7 +12,9 @@ node_modules.repair-backup/
 !.yarn/versions
 
 # testing
-/coverage
+coverage/
+# keep curated readiness evidence tracked
+!docs/runtime-evidence/coverage/
 
 # next.js
 /.next/
