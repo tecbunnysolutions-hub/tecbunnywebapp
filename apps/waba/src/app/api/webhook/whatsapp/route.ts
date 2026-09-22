@@ -168,7 +168,7 @@ export async function POST(req: Request) {
       // id + optional caption instead of text.body — surface it so the worker can
       // store a placeholder instead of dropping the message silently.
       const metaBody = body as {
-        entry?: Array<{ changes?: Array<{ value?: { messages?: Array<{ id?: string; from?: string; type?: string; text?: { body?: string } } & Record<string, { id?: string; caption?: string } | undefined>>; statuses?: Array<{ id?: string; status?: string; timestamp?: string }> } }> }>;
+        entry?: Array<{ changes?: Array<{ value?: { messages?: Array<{ id?: string; from?: string; type?: string; text?: { body?: string }; interactive?: { type?: string; button_reply?: { id?: string; title?: string }; list_reply?: { id?: string; title?: string; description?: string } } } & Record<string, { id?: string; caption?: string } | undefined>>; statuses?: Array<{ id?: string; status?: string; timestamp?: string }> } }> }>;
       };
       const MEDIA_TYPES = ['image', 'document', 'audio', 'video', 'sticker'] as const;
       for (const entry of metaBody.entry ?? []) {
@@ -176,10 +176,13 @@ export async function POST(req: Request) {
           for (const message of change.value?.messages ?? []) {
             const mediaType = MEDIA_TYPES.find((type) => message[type]?.id);
             const media = mediaType ? message[mediaType] : undefined;
+            // Interactive replies carry the tapped button/list row, not text.
+            const interactiveReply = message.interactive?.button_reply?.title
+              ?? message.interactive?.list_reply?.title;
             results.push({
               from: message.from,
               messageId: message.id,
-              message: { text: message.text?.body ?? (mediaType ? `[${mediaType}${media?.caption ? `: ${media.caption}` : ''}]` : undefined) },
+              message: { text: message.text?.body ?? interactiveReply ?? (mediaType ? `[${mediaType}${media?.caption ? `: ${media.caption}` : ''}]` : undefined) },
               ...(mediaType ? { mediaType, mediaId: media?.id, mediaCaption: media?.caption } : {}),
             });
           }
