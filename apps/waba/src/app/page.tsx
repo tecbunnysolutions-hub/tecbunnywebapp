@@ -15,6 +15,7 @@ export default function Dashboard() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
 
   const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [workspaceUsers, setWorkspaceUsers] = useState<User[]>([]);
   const [activeConversation, setActiveConversation] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [templates, setTemplates] = useState<Template[]>([]);
@@ -71,6 +72,17 @@ export default function Dashboard() {
     } catch (err) { console.error(err); }
   }
 
+  async function fetchWorkspaceUsers() {
+    try {
+      const res = await fetch('/api/users');
+      if (!res.ok) return;
+      const data = await res.json();
+      if (Array.isArray(data.users)) setWorkspaceUsers(data.users);
+    } catch (err) {
+      console.error('Failed to load workspace users', err);
+    }
+  }
+
   useEffect(() => {
     // 1. Authenticate Agent
     fetch('/api/auth/me').then(res => res.json()).then(data => {
@@ -80,6 +92,7 @@ export default function Dashboard() {
         setCurrentUser(data.user);
         fetchConversations();
         fetchTemplates();
+        fetchWorkspaceUsers();
       }
     });
   }, []);
@@ -224,17 +237,27 @@ export default function Dashboard() {
           contact_name: crmName,
           status: crmStatus,
           notes: crmNotes,
-          assigned_to: crmAssignedTo,
+          assigned_to: crmAssignedTo || null,
           department: crmDepartment,
           ai_active: crmAiActive,
           deal_value: crmDealValue,
           active_flow: crmActiveFlow
         })
       });
-      if (res.ok) fetchConversations();
-    } catch (err) { console.error(err); }
-    setIsSavingCrm(false);
-    setShowCrm(false); // hide on mobile after save
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setChatNotice({ tone: 'error', message: data.error || 'Could not save customer details.' });
+        return;
+      }
+      await fetchConversations();
+      setChatNotice({ tone: 'info', message: 'Customer details saved.' });
+      setShowCrm(false); // close the profile drawer after saving on mobile
+    } catch (err) {
+      console.error(err);
+      setChatNotice({ tone: 'error', message: 'Could not save customer details. Check your connection and try again.' });
+    } finally {
+      setIsSavingCrm(false);
+    }
   };
 
   if (!currentUser) {
@@ -326,6 +349,7 @@ export default function Dashboard() {
               showCrm={showCrm}
               setShowCrm={setShowCrm}
               activeConvObj={activeConvObj}
+              workspaceUsers={workspaceUsers}
               crmName={crmName}
               setCrmName={setCrmName}
               crmStatus={crmStatus}
