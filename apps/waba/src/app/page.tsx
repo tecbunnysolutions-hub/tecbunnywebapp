@@ -264,27 +264,37 @@ export default function Dashboard() {
 
   return (
     <div className="dashboard-container">
-      <nav aria-label="WABA operations" style={{ position: 'fixed', top: '0.85rem', right: '1.5rem', zIndex: 20, display: 'flex', gap: '0.85rem', fontSize: '0.85rem' }}>
-        <Link href="/analytics" style={{ color: '#bfdbfe', textDecoration: 'none' }}>Analytics</Link>
-        <Link href="/contacts" style={{ color: '#bfdbfe', textDecoration: 'none' }}>Consent</Link>
-        <Link href="/campaigns" style={{ color: '#bfdbfe', textDecoration: 'none' }}>Campaigns</Link>
-        <Link href="/templates" style={{ color: '#bfdbfe', textDecoration: 'none' }}>Templates</Link>
-      </nav>
-      {/* PANE 1: Sidebar / Conversation List */}
-      <Sidebar
-        showSidebar={showSidebar}
-        setShowSidebar={setShowSidebar}
-        currentUser={currentUser}
-        globalAiOverride={globalAiOverride}
-        setGlobalAiOverride={setGlobalAiOverride}
-        loading={loading}
-        conversations={conversations}
-        activeConversation={activeConversation}
-        onSelectConversation={handleSelectConversation}
-      />
+      <header className="dashboard-topbar">
+        <div className="dashboard-brand">
+          <span className="dashboard-brand-mark" aria-hidden="true">TB</span>
+          <div>
+            <strong>TecBunny <span>WABA</span></strong>
+            <small>Customer messaging workspace</small>
+          </div>
+        </div>
+        <nav className="dashboard-nav" aria-label="WABA operations">
+          <Link href="/analytics">Analytics</Link>
+          <Link href="/contacts">Consent</Link>
+          <Link href="/campaigns">Campaigns</Link>
+          <Link href="/templates">Templates</Link>
+        </nav>
+      </header>
+      <main className="dashboard-workspace">
+        {/* PANE 1: Sidebar / Conversation List */}
+        <Sidebar
+          showSidebar={showSidebar}
+          setShowSidebar={setShowSidebar}
+          currentUser={currentUser}
+          globalAiOverride={globalAiOverride}
+          setGlobalAiOverride={setGlobalAiOverride}
+          loading={loading}
+          conversations={conversations}
+          activeConversation={activeConversation}
+          onSelectConversation={handleSelectConversation}
+        />
 
-      {/* PANE 2 & 3: Chat Area + CRM Details */}
-      <div className="glass-panel chat-area">
+        {/* PANE 2 & 3: Chat Area + CRM Details */}
+        <div className="glass-panel chat-area">
         {activeConversation ? (
           <>
             {/* PANE 2: Chat Main */}
@@ -344,7 +354,8 @@ export default function Dashboard() {
             <p>Choose a contact from the sidebar to view your message history.</p>
           </div>
         )}
-      </div>
+        </div>
+      </main>
     </div>
   );
 }

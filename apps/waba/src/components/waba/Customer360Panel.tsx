@@ -39,7 +39,7 @@ export function Customer360Panel({
   const [activeTab, setActiveTab] = useState<Customer360Tab>('PROFILE');
 
   return (
-    <div className={`crm-panel ${!showCrm ? 'hidden' : ''}`} style={{ width: '350px', display: 'flex', flexDirection: 'column' }}>
+    <div className={`crm-panel ${!showCrm ? 'hidden' : ''}`}>
       <div className="crm-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h3>Customer 360°</h3>
         <button className="mobile-toggle" type="button" onClick={() => setShowCrm(false)} aria-label="Close customer profile panel">Close</button>

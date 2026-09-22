@@ -49,7 +49,7 @@ export function Sidebar({
 
   return (
     <div className={`glass-panel sidebar ${!showSidebar ? 'hidden' : ''}`}>
-      <div className="sidebar-header" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+      <div className="sidebar-header">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <h2>Workspace <span style={{ fontSize: '0.8rem', color: '#94a3b8', fontWeight: 'normal' }}>({currentUser.name})</span></h2>
           <div style={{ display: 'flex', gap: '8px' }}>
@@ -65,7 +65,7 @@ export function Sidebar({
         </div>
 
         {/* Workspace Navigation Tabs */}
-        <div role="tablist" aria-label="Conversation workspace view" style={{ display: 'flex', gap: '4px', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+        <div className="workspace-tabs" role="tablist" aria-label="Conversation workspace view">
           <button
             type="button"
             role="tab"
@@ -87,7 +87,7 @@ export function Sidebar({
         </div>
 
         {/* Sub-navigation */}
-        <div style={{ display: 'flex', gap: '4px', overflowX: 'auto', paddingBottom: '4px' }}>
+        <div className="queue-filters">
           {activeTab === 'queue' ? (
             ['unassigned', 'assigned', 'waiting', 'urgent', 'vip'].map(q => (
               <button
@@ -116,7 +116,7 @@ export function Sidebar({
         </div>
       </div>
 
-      <div className="conversation-list" style={{ marginTop: '12px' }}>
+      <div className="conversation-list">
         {loading ? (
           <div className="spinner"></div>
         ) : filteredConversations.length === 0 ? (

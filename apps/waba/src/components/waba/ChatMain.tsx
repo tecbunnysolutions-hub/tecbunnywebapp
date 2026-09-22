@@ -427,9 +427,15 @@ export function ChatMain({
           ) : (
             <>
               <div className="attachment-toolbar">
-                <button type="button" onClick={() => fileInputRef.current?.click()} title="Send image or video" aria-label="Attach image or video">Image</button>
-                <button type="button" onClick={() => docInputRef.current?.click()} title="Send document" aria-label="Attach document">Document</button>
-                <button type="button" onClick={() => setShowCCTVQuote(true)} title="Build and share a CCTV quotation" aria-label="Open CCTV quotation builder">📷 CCTV Quote</button>
+                <button className="attachment-action" type="button" onClick={() => fileInputRef.current?.click()} title="Send image or video" aria-label="Attach image or video">
+                  <span className="attachment-action-icon" aria-hidden="true">▧</span><span className="attachment-action-label">Image</span>
+                </button>
+                <button className="attachment-action" type="button" onClick={() => docInputRef.current?.click()} title="Send document" aria-label="Attach document">
+                  <span className="attachment-action-icon" aria-hidden="true">▤</span><span className="attachment-action-label">Document</span>
+                </button>
+                <button className="attachment-action quote-action" type="button" onClick={() => setShowCCTVQuote(true)} title="Build and share a CCTV quotation" aria-label="Open CCTV quotation builder">
+                  <span className="attachment-action-icon" aria-hidden="true">⌗</span><span className="attachment-action-label">CCTV quote</span>
+                </button>
                 <input type="file" ref={fileInputRef} onChange={(e) => handleFileUpload(e, 'image')} accept="image/*,video/*" style={{ display: 'none' }} aria-label="Image or video upload" />
                 <input type="file" ref={docInputRef} onChange={(e) => handleFileUpload(e, 'document')} accept=".pdf,.doc,.docx" style={{ display: 'none' }} aria-label="Document upload" />
               </div>
