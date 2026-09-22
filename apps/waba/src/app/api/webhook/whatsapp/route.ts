@@ -4,6 +4,24 @@ import { getWabaWebhookQueue } from '@tecbunny/core/queue';
 import { logger } from '@tecbunny/core/logger';
 import { sendWhatsAppTextMessage } from '@tecbunny/core/whatsapp-cloud-api';
 
+/**
+ * Persistent debug trail (Hobby plan hides Vercel runtime logs). Writes each
+ * webhook stage to a `webhook_debug_log` Supabase table so delivery can be
+ * traced without log access. Fails silently if the table/DB is unavailable.
+ */
+async function writeDebugTrail(stage: string, detail: Record<string, unknown>): Promise<void> {
+  try {
+    const { supabase } = await import('@/lib/supabase');
+    await supabase.from('webhook_debug_log').insert({
+      stage,
+      detail,
+      created_at: new Date().toISOString(),
+    });
+  } catch {
+    // Never let debug logging break webhook processing.
+  }
+}
+
 // Bug #1 fix: Remove hardcoded secret fallback. Throw at startup if missing.
 // Moving the check to runtime to prevent Vercel build failures when secret is not set.
 
@@ -242,6 +260,7 @@ export async function POST(req: Request) {
     // a 200, so inline failures are logged only.
     if (isMetaPayload) {
       runAfterResponse(async () => {
+        await writeDebugTrail('inline_started', { requestId, providerEventId: providerEventId || null, results: results.length });
         try {
           const { InboundTriageAgent } = await import('@/agents/InboundTriageAgent');
           const { AssignmentOrchestrator } = await import('@/agents/AssignmentOrchestrator');
@@ -251,6 +270,7 @@ export async function POST(req: Request) {
           const orchestrator = new AssignmentOrchestrator();
 
           const triageResult = await triageAgent.execute(queuePayload as never);
+          await writeDebugTrail('triage_done', { requestId, hasResult: Boolean(triageResult) });
           let ruleEngineHandled = false;
           if (triageResult) {
             ruleEngineHandled = await RuleEngineService.evaluateRules(triageResult);
@@ -258,8 +278,13 @@ export async function POST(req: Request) {
           if (triageResult && !ruleEngineHandled) {
             await orchestrator.execute(triageResult);
           }
+          await writeDebugTrail('inline_processed', { requestId, providerEventId: providerEventId || null });
           logger.info('waba_webhook.inline_processed', { requestId, providerEventId: providerEventId || null });
         } catch (inlineError) {
+          await writeDebugTrail('inline_failed', {
+            requestId,
+            error: inlineError instanceof Error ? inlineError.message : String(inlineError),
+          });
           logger.error('waba_webhook.inline_failed', {
             requestId,
             error: inlineError instanceof Error ? inlineError.message : String(inlineError),
