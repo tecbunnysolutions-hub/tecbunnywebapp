@@ -155,7 +155,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Queue unavailable' }, { status: 503 });
     }
 
-    type NormalizedResult = { from?: string; messageId?: string; message?: { text?: string } };
+    type NormalizedResult = { from?: string; messageId?: string; message?: { text?: string }; mediaType?: string; mediaId?: string; mediaCaption?: string };
     type NormalizedStatus = { messageId?: string; status?: string; timestamp?: string };
     let results: NormalizedResult[] = [];
     let statuses: NormalizedStatus[] = [];
@@ -164,13 +164,24 @@ export async function POST(req: Request) {
     if (isMetaPayload) {
       // Meta Cloud API shape: { entry: [{ changes: [{ value: { messages, statuses } }] }] }
       // Normalized into the internal results/statuses contract the worker consumes.
+      // Inbound media (image/document/audio/video/sticker) carries an opaque media
+      // id + optional caption instead of text.body — surface it so the worker can
+      // store a placeholder instead of dropping the message silently.
       const metaBody = body as {
-        entry?: Array<{ changes?: Array<{ value?: { messages?: Array<{ id?: string; from?: string; text?: { body?: string } }>; statuses?: Array<{ id?: string; status?: string; timestamp?: string }> } }> }>;
+        entry?: Array<{ changes?: Array<{ value?: { messages?: Array<{ id?: string; from?: string; type?: string; text?: { body?: string } } & Record<string, { id?: string; caption?: string } | undefined>>; statuses?: Array<{ id?: string; status?: string; timestamp?: string }> } }> }>;
       };
+      const MEDIA_TYPES = ['image', 'document', 'audio', 'video', 'sticker'] as const;
       for (const entry of metaBody.entry ?? []) {
         for (const change of entry.changes ?? []) {
           for (const message of change.value?.messages ?? []) {
-            results.push({ from: message.from, messageId: message.id, message: { text: message.text?.body } });
+            const mediaType = MEDIA_TYPES.find((type) => message[type]?.id);
+            const media = mediaType ? message[mediaType] : undefined;
+            results.push({
+              from: message.from,
+              messageId: message.id,
+              message: { text: message.text?.body ?? (mediaType ? `[${mediaType}${media?.caption ? `: ${media.caption}` : ''}]` : undefined) },
+              ...(mediaType ? { mediaType, mediaId: media?.id, mediaCaption: media?.caption } : {}),
+            });
           }
           for (const status of change.value?.statuses ?? []) {
             statuses.push({ messageId: status.id, status: status.status, timestamp: status.timestamp });
