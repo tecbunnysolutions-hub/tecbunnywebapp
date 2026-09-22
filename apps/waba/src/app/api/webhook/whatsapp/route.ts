@@ -56,6 +56,21 @@ function hashPhone(value: unknown): string | null {
   return crypto.createHash('sha256').update(value.trim()).digest('hex').slice(0, 16);
 }
 
+/**
+ * Run background work after the response is ACKed. Uses Next's after() in a
+ * real request scope; falls back to a plain promise in environments without one
+ * (e.g. vitest, where after() throws "called outside a request scope").
+ */
+function runAfterResponse(work: () => Promise<void>): void {
+  try {
+    after(work);
+  } catch {
+    void work().catch((error) =>
+      logger.error('waba_webhook.background_failed', { error: error instanceof Error ? error.message : String(error) }),
+    );
+  }
+}
+
 function verifyAgainstAnySecret(payload: Buffer | string, signature: string, secrets: Array<string | undefined>): boolean {
   return secrets.some((secret) => verifySignature(payload, signature, secret));
 }
@@ -216,20 +231,17 @@ export async function POST(req: Request) {
       || (results[0] as { id?: string } | undefined)?.id
       || (statuses[0] as { id?: string } | undefined)?.id;
 
-    // OPTION B: prefer the BullMQ worker when Redis is available (a persistent
-    // worker host is deployed); otherwise process Meta payloads inline via
-    // after() so Vercel serverless still delivers to the inbox. after() ACKs
-    // Meta within the ~10s window while triage (which calls Gemini AI) runs in
-    // the background. Meta does not retry a 200, so inline failures are logged.
-    if (queue) {
-      await queue.add('process-webhook', queuePayload, {
-        jobId: providerEventId ? `waba-webhook-${providerEventId}` : undefined,
-        removeOnComplete: true,
-        removeOnFail: false,
-      });
-      logger.info('waba_webhook.queued', { requestId, providerEventId: providerEventId || null });
-    } else if (isMetaPayload) {
-      after(async () => {
+    // OPTION B: process Meta payloads inline via after() so Vercel serverless
+    // delivers to the inbox WITHOUT needing the long-lived BullMQ worker. The
+    // worker (worker.ts / Docker waba-worker) only runs on a persistent host;
+    // on Vercel it never consumes the queue, so enqueue-only leaves the inbox
+    // empty. We therefore ALWAYS run inline for Meta payloads, and ADDITIONALLY
+    // enqueue when a queue exists (dedup by jobId prevents double-processing if
+    // a worker is later deployed). after() ACKs Meta within the ~10s window while
+    // triage (which calls Gemini AI) runs in the background. Meta does not retry
+    // a 200, so inline failures are logged only.
+    if (isMetaPayload) {
+      runAfterResponse(async () => {
         try {
           const { InboundTriageAgent } = await import('@/agents/InboundTriageAgent');
           const { AssignmentOrchestrator } = await import('@/agents/AssignmentOrchestrator');
@@ -254,9 +266,18 @@ export async function POST(req: Request) {
           });
         }
       });
-      logger.info('waba_webhook.inline_scheduled', { requestId, reason: 'queue_unavailable' });
-    } else {
-      // Infobip payloads require the worker (no inline path) — surface the gap.
+      logger.info('waba_webhook.inline_scheduled', { requestId, providerEventId: providerEventId || null });
+    }
+
+    if (queue) {
+      await queue.add('process-webhook', queuePayload, {
+        jobId: providerEventId ? `waba-webhook-${providerEventId}` : undefined,
+        removeOnComplete: true,
+        removeOnFail: false,
+      });
+      logger.info('waba_webhook.queued', { requestId, providerEventId: providerEventId || null });
+    } else if (!isMetaPayload) {
+      // Infobip payloads have no inline path — they require the worker. Surface it.
       console.error('Webhook queue not available and inline processing only supports Meta payloads');
       return NextResponse.json({ error: 'Queue unavailable' }, { status: 503 });
     }
