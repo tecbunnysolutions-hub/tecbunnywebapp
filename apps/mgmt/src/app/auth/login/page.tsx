@@ -123,6 +123,19 @@ function StaffSignInForm() {
         return;
       }
 
+      // The edge middleware authorizes strictly from the JWT app_metadata.role
+      // claim. If the role only exists in the profiles table, the middleware
+      // would bounce the user straight back to this login page — fail loudly instead.
+      if (!normalizeRole(twoFactorUser.app_metadata?.role)) {
+        await supabase.auth.signOut();
+        setError(
+          'Your staff role is not synced to your login credentials. ' +
+          'Ask an administrator to re-save your role (Admin → Manage Role), then sign in again.'
+        );
+        setShowTwoFactor(false);
+        return;
+      }
+
       window.location.href = getRedirectPath(userRole);
     } catch (err) {
       console.error('2FA verification error:', err);
@@ -234,6 +247,18 @@ function StaffSignInForm() {
         setError(
           'Access denied. This portal is for TecBunny staff only. ' +
           'Customer accounts cannot log in here. Please visit tecbunny.com.'
+        );
+        return;
+      }
+
+      // The edge middleware authorizes strictly from the JWT app_metadata.role
+      // claim. If the role only exists in the profiles table, the middleware
+      // would bounce the user straight back to this login page — fail loudly instead.
+      if (!normalizeRole(authUser.app_metadata?.role)) {
+        await supabase.auth.signOut();
+        setError(
+          'Your staff role is not synced to your login credentials. ' +
+          'Ask an administrator to re-save your role (Admin → Manage Role), then sign in again.'
         );
         return;
       }
