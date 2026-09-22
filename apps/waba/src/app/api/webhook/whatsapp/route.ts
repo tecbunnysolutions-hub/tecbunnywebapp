@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, after } from 'next/server';
 import crypto from 'crypto';
 import { getWabaWebhookQueue } from '@tecbunny/core/queue';
 import { logger } from '@tecbunny/core/logger';
@@ -148,12 +148,9 @@ export async function POST(req: Request) {
       }
     }
 
-    // Enqueue payload to BullMQ
+    // Resolve the BullMQ queue (null when Redis is not configured / unreachable).
+    // When null, Meta payloads are processed inline via after() below (Option B).
     const queue = getWabaWebhookQueue();
-    if (!queue) {
-      console.error('Webhook queue not available');
-      return NextResponse.json({ error: 'Queue unavailable' }, { status: 503 });
-    }
 
     type NormalizedResult = { from?: string; messageId?: string; message?: { text?: string }; mediaType?: string; mediaId?: string; mediaCaption?: string };
     type NormalizedStatus = { messageId?: string; status?: string; timestamp?: string };
@@ -218,11 +215,51 @@ export async function POST(req: Request) {
       || statuses[0]?.messageId
       || (results[0] as { id?: string } | undefined)?.id
       || (statuses[0] as { id?: string } | undefined)?.id;
-    await queue.add('process-webhook', queuePayload, {
-      jobId: providerEventId ? `waba-webhook-${providerEventId}` : undefined,
-      removeOnComplete: true,
-      removeOnFail: false,
-    });
+
+    // OPTION B: prefer the BullMQ worker when Redis is available (a persistent
+    // worker host is deployed); otherwise process Meta payloads inline via
+    // after() so Vercel serverless still delivers to the inbox. after() ACKs
+    // Meta within the ~10s window while triage (which calls Gemini AI) runs in
+    // the background. Meta does not retry a 200, so inline failures are logged.
+    if (queue) {
+      await queue.add('process-webhook', queuePayload, {
+        jobId: providerEventId ? `waba-webhook-${providerEventId}` : undefined,
+        removeOnComplete: true,
+        removeOnFail: false,
+      });
+      logger.info('waba_webhook.queued', { requestId, providerEventId: providerEventId || null });
+    } else if (isMetaPayload) {
+      after(async () => {
+        try {
+          const { InboundTriageAgent } = await import('@/agents/InboundTriageAgent');
+          const { AssignmentOrchestrator } = await import('@/agents/AssignmentOrchestrator');
+          const { RuleEngineService } = await import('@/services/RuleEngineService');
+
+          const triageAgent = new InboundTriageAgent();
+          const orchestrator = new AssignmentOrchestrator();
+
+          const triageResult = await triageAgent.execute(queuePayload as never);
+          let ruleEngineHandled = false;
+          if (triageResult) {
+            ruleEngineHandled = await RuleEngineService.evaluateRules(triageResult);
+          }
+          if (triageResult && !ruleEngineHandled) {
+            await orchestrator.execute(triageResult);
+          }
+          logger.info('waba_webhook.inline_processed', { requestId, providerEventId: providerEventId || null });
+        } catch (inlineError) {
+          logger.error('waba_webhook.inline_failed', {
+            requestId,
+            error: inlineError instanceof Error ? inlineError.message : String(inlineError),
+          });
+        }
+      });
+      logger.info('waba_webhook.inline_scheduled', { requestId, reason: 'queue_unavailable' });
+    } else {
+      // Infobip payloads require the worker (no inline path) — surface the gap.
+      console.error('Webhook queue not available and inline processing only supports Meta payloads');
+      return NextResponse.json({ error: 'Queue unavailable' }, { status: 503 });
+    }
 
     logger.info('waba_webhook.accepted', {
       requestId,
