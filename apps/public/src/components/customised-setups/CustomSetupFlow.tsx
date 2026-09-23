@@ -117,15 +117,6 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
   const installationOption = pricingCatalog.installationOption;
   const selectableHddOptions = hddOptions.length ? hddOptions : FALLBACK_HDD_OPTIONS;
 
-  // Debug: Log pricing source - disabled for production
-
-  //   hasBlueprintData: !!blueprint,
-  //   blueprintSystems: blueprint?.systems?.length || 0,
-  //   usingFallback: !blueprint,
-  //   timestamp: new Date().toISOString(),
-  //   sampleDvrPricing: analogPricing.dvr[0] || null
-  // });
-
   const [system, setSystem] = useState<SetupSystem>('analog');
   const [premiseType, setPremiseType] = useState<'Residential' | 'Commercial' | 'Industrial'>('Residential');
   const [automationEnabled, setAutomationEnabled] = useState<boolean>(true);

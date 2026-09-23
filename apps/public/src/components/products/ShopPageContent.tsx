@@ -359,7 +359,6 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
   }, [initialRawProducts, initialRawAutoOffers]);
 
   const [products, setProducts] = React.useState<Product[]>(initialEnrichedProducts);
-  const [filteredProducts, setFilteredProducts] = React.useState<Product[]>([]);
   const [loading, setLoading] = React.useState(!initialRawProducts || initialRawProducts.length === 0);
   const [fetchWarning, setFetchWarning] = React.useState<string | null>(null);
   const [isMobileFilterOpen, setIsMobileFilterOpen] = React.useState(false);
@@ -507,8 +506,8 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
     fetchProducts();
   }, [refresh, initialRawProducts]);
 
-  // Filter and sort products
-  React.useEffect(() => {
+  // Derive filtered products from the current catalog and URL filters.
+  const filteredProducts = React.useMemo(() => {
     let filtered = [...products];
 
     // Apply filters
@@ -558,7 +557,7 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
         filtered.sort((a, b) => b.popularity - a.popularity);
     }
 
-    setFilteredProducts(filtered);
+    return filtered;
   }, [products, searchQuery, categoryFilter, brandFilter, priceRange, sortOption]);
 
   const handleSearch = (e: React.FormEvent) => {
