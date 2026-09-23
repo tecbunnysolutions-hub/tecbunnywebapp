@@ -398,7 +398,6 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
   
   const [localSearchQuery, setLocalSearchQuery] = React.useState(searchQuery);
   const { addToCart } = useCart();
-  useRevealSections('[data-reveal-id]', filteredProducts.length);
   
   // Update URL parameters
   const updateUrlParams = React.useCallback((params: Record<string, string>) => {
@@ -559,6 +558,8 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
 
     return filtered;
   }, [products, searchQuery, categoryFilter, brandFilter, priceRange, sortOption]);
+
+  useRevealSections('[data-reveal-id]', filteredProducts.length);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
