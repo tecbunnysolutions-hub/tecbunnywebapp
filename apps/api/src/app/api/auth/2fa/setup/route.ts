@@ -4,6 +4,13 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import { twoFactorManager } from "@tecbunny/core/two-factor-manager";
 import { logger } from "@tecbunny/core";
+import { z } from 'zod';
+
+const enrollmentSchema = z.object({
+  secret: z.string().regex(/^[A-Z2-7]{16,128}$/),
+  backupCodes: z.array(z.string().min(8).max(64)).min(1).max(20),
+  verificationCode: z.string().regex(/^\d{6}$/),
+});
 
 // export const dynamic = 'force-dynamic';
 
@@ -62,14 +69,24 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    const { secret, backupCodes, verificationCode } = await request.json();
+    // Re-enrollment must go through the existing disable flow, which verifies
+    // the current factor. A code for a replacement secret proves nothing about it.
+    const status = await twoFactorManager.getTwoFactorStatus(user.id, supabase);
+    if (!status) {
+      return NextResponse.json({ error: 'Unable to verify 2FA status' }, { status: 503 });
+    }
+    if (status.enabled) {
+      return NextResponse.json({ error: 'Verify and disable your existing 2FA before setting it up again.' }, { status: 409 });
+    }
 
-    if (!secret || !backupCodes || !verificationCode) {
+    const parsed = enrollmentSchema.safeParse(await request.json().catch(() => null));
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: 'Missing required fields' },
+        { error: 'Invalid 2FA setup details' },
         { status: 400 }
       );
     }
+    const { secret, backupCodes, verificationCode } = parsed.data;
 
     // Verify the TOTP code to ensure setup is correct
     if (!twoFactorManager.verifyToken(secret, verificationCode)) {

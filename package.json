@@ -57,26 +57,28 @@
   },
   "overrides": {
     "@prisma/dev": {
-      "@hono/node-server": "1.19.13",
-      "valibot": "1.4.2"
+      "@hono/node-server": "1.19.17",
+      "valibot": "1.5.0"
     },
-    "postcss": "8.5.19",
-    "fast-uri": "4.1.0",
-    "valibot": "1.4.2",
-    "sharp": "0.35.3",
+    "postcss": "8.5.28",
+    "fast-uri": "4.2.1",
+    "valibot": "1.5.0",
+    "sharp": "0.35.4",
     "ajv": {
-      "fast-uri": "4.1.0"
+      "fast-uri": "4.2.1"
     },
     "@storybook/mcp": {
-      "valibot": "1.4.2"
+      "valibot": "1.5.0"
     },
     "tmcp": {
-      "valibot": "1.4.2"
+      "valibot": "1.5.0"
     },
-    "next@16.2.10": {
-      "postcss": "8.5.19",
-      "sharp": "0.35.3"
-    }
+    "next@16.3.4": {
+      "postcss": "8.5.28",
+      "sharp": "0.35.4"
+    },
+    "deepmerge-ts": "8.0.2",
+    "mysql2": "3.24.4"
   },
   "lint-staged": {
     "*.{js,ts,jsx,tsx}": [

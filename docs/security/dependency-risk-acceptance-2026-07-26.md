@@ -1,23 +1,30 @@
 # Dependency security review
 
-Reviewed during repository cleanup on 2026-09-23.
+Updated during security remediation on 2026-09-23.
 
-`npm audit --json` reports **25 advisories: 1 critical, 12 high, and 12 moderate**.
-The full local audit is retained in [dependency-audit.json](dependency-audit.json).
-This supersedes the older seven-advisory summary in this file. Production release
-remains blocked by the existing `npm audit --audit-level=high` gate.
+The regenerated lockfile reports **zero vulnerabilities** in both the full
+`npm audit --json` and the production-only `npm audit --omit=dev --json` audit.
+The full snapshot is retained in [dependency-audit.json](dependency-audit.json).
+The existing `npm audit --audit-level=high` CI and release gates remain enabled.
 
-The critical finding concerns the installed Next.js version. Other affected
-packages include Nodemailer, PostCSS, Sharp, Prisma tooling, and SheetJS (`xlsx`).
-Resolve the advisory ranges in the audit, regenerate the lockfile, and verify all
-apps before release. Do not use a forced dependency downgrade to silence the audit.
+Runtime updates include Next.js 16.3.4, Sharp 0.35.4, Nodemailer 9.1.1,
+sanitize-html 2.17.7, PostCSS 8.5.28, and SheetJS 0.20.3. Next.js and Sharp
+address the reported AVIF image-optimization vulnerability. Next.js-related
+workspace manifests were updated together.
 
-SheetJS is imported by `apps/waba/src/app/campaigns/page.tsx` and parses uploaded
-spreadsheets in the browser. The previous description of exclusively server-side
-spreadsheet processing was inaccurate. npm reports no fix for the installed `xlsx`
-release line; replacing the parser or migrating to a maintained distribution needs
-compatibility checks for supported spreadsheet formats. This cleanup does not grant
-security risk acceptance.
+SheetJS is installed from its official distribution, with the tarball integrity
+recorded in the lockfile. The npm registry's xlsx 0.18.5 release was removed.
+Campaign spreadsheet compatibility tests cover the existing XLSX, XLS, and CSV
+import formats.
 
-Rerun the audit after dependency changes; this file and its JSON report are a snapshot,
-not proof of current deployment security.
+Development tooling was also refreshed. Root overrides require patched versions
+of Hono's Node adapter, Fast URI, Valibot, DeepmergeTS, and MySQL2. Prisma's
+configuration loader uses DeepmergeTS's retained `deepmerge` export; client
+generation is part of verification for the transitive major update. No forced
+Prisma downgrade or advisory suppression is used.
+
+The lockfile was regenerated from the workspace manifests because incremental npm
+installs retained obsolete transitive versions despite the overrides. Rerun the
+audits after dependency changes; these results describe the checked dependency
+graph, not proof of production deployment or the absence of all application
+vulnerabilities.

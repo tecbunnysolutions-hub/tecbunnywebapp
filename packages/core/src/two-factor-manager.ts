@@ -195,7 +195,7 @@ class TwoFactorManager {
       const encryptedSecret = this.encryptSecret(secret);
       const hashedBackupCodes = backupCodes.map((backupCode) => this.hashBackupCode(backupCode));
 
-      const { error } = await (client as any)
+      const { data, error } = await (client as any)
         .from('profiles')
         .update({
           two_factor_enabled: true,
@@ -205,9 +205,14 @@ class TwoFactorManager {
           two_factor_backup_codes_used: [],
           two_factor_setup_at: new Date().toISOString()
         } as any)
-        .eq('id', userId);
+        .eq('id', userId)
+        // Guard the write as well as the route: concurrent setup requests must
+        // never overwrite a factor that has just been enabled.
+        .or('two_factor_enabled.is.null,two_factor_enabled.eq.false')
+        .select('id')
+        .maybeSingle();
 
-      if (error) {
+      if (error || !data) {
         logger.error('Error enabling 2FA:', { error });
         return false;
       }

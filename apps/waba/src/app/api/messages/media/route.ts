@@ -4,6 +4,7 @@ import { sendWhatsAppMedia } from '@/services/infobipService';
 import { requireApiRole } from '@tecbunny/core/server-role-guard';
 import crypto from 'crypto';
 import { z } from 'zod';
+import { canAccessConversationSender, resolveActorScope } from '@/lib/authorization-scope';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,6 +19,9 @@ export async function POST(req: Request) {
     if (auth.error) return auth.error;
     if (auth.role === 'customer') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
+    const scope = await resolveActorScope(auth.session.user.id, auth.role);
+    if (!scope) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+
     const formData = await req.formData();
     const file = formData.get('file') as File;
     const parsed = mediaMessageSchema.safeParse({
@@ -30,6 +34,10 @@ export async function POST(req: Request) {
     }
 
     const { to, type } = parsed.data;
+
+    if (!(await canAccessConversationSender(scope, to))) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
 
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);

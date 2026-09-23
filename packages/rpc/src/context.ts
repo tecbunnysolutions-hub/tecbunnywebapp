@@ -10,6 +10,7 @@ export async function createContext({ req, resHeaders }: FetchCreateContextFnOpt
   
   let session = null;
   let role = null;
+  let mfaLevel: string | null = null;
 
   try {
     const cookieHeader = req.headers.get('cookie') || '';
@@ -20,6 +21,7 @@ export async function createContext({ req, resHeaders }: FetchCreateContextFnOpt
       if (superadminPayload) {
         session = { user: { id: 'superadmin-root-id', email: superadminPayload.email } };
         role = 'superadmin';
+        mfaLevel = 'aal2'; // Existing separately signed root-session trust model.
       }
     }
 
@@ -33,6 +35,12 @@ export async function createContext({ req, resHeaders }: FetchCreateContextFnOpt
           if (!error && data?.user) {
             role = data.user.app_metadata?.role || 'customer';
             session = { user: data.user };
+            // The RPC route is public at the gateway. Verify the bearer JWT's
+            // assurance claim here so privileged procedures cannot bypass MFA.
+            const claims = await baseClient.rawClient.auth.getClaims(token);
+            if (!claims.error && claims.data?.claims.sub === data.user.id) {
+              mfaLevel = typeof claims.data.claims.aal === 'string' ? claims.data.claims.aal : null;
+            }
           }
         }
       }
@@ -45,7 +53,8 @@ export async function createContext({ req, resHeaders }: FetchCreateContextFnOpt
     req,
     resHeaders,
     session,
-    role
+    role,
+    mfaLevel,
   };
 }
 

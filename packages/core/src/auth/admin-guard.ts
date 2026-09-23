@@ -126,6 +126,11 @@ export async function requireAdminContext(): Promise<AdminContext> {
     throw new AdminAuthError(403, 'Insufficient permissions');
   }
 
+  const { data: assurance, error: assuranceError } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+  if (assuranceError || assurance?.currentLevel !== 'aal2') {
+    throw new AdminAuthError(403, 'MFA Required');
+  }
+
   return {
     user,
     role: resolvedRole as 'admin',

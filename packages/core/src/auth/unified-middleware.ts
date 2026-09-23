@@ -142,7 +142,11 @@ export async function executeUnifiedPolicyMiddleware(
     requestHeaders,
     loginRoute,
     publicRoutes,
-    enforceMfaRoles: (appType === 'mgmt' || appType === 'superadmin') ? ['admin', 'superadmin'] : undefined,
+    // Keep authenticated enrollment/challenge endpoints reachable at AAL1.
+    // Their handlers still verify the user and any existing factor themselves.
+    enforceMfaRoles: (appType === 'mgmt' || appType === 'superadmin' || appType === 'api')
+      && !['/api/auth/2fa/setup', '/api/auth/2fa/verify', '/api/auth/2fa/status', '/api/auth/2fa/disable', '/api/auth/signout'].includes(pathname)
+      ? ['admin', 'superadmin'] : undefined,
     onUnauthorized: (req: NextRequest) => {
       // Instrument authorization failure (No Session)
       try {
