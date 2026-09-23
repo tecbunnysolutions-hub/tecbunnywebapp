@@ -4,6 +4,7 @@ import { sendWhatsAppMessage, sendWhatsAppLocation } from '@/services/infobipSer
 import { requireApiRole } from '@tecbunny/core/server-role-guard';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { canAccessConversationSender, getAccessibleConversationSenders, resolveActorScope } from '@/lib/authorization-scope';
+import { getMessageError } from '@/lib/message-error';
 
 export const dynamic = 'force-dynamic';
 
@@ -161,7 +162,7 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { to, text, location } = body;
 
-    if (!to) {
+    if (typeof to !== 'string' || !to.trim()) {
       return NextResponse.json({ error: 'Missing "to"' }, { status: 400 });
     }
 
@@ -171,9 +172,22 @@ export async function POST(req: Request) {
     }
 
     let result;
+    let sentText: string | undefined;
     if (location) {
       result = await sendWhatsAppLocation(to, location.latitude, location.longitude, location.name, location.address);
-    } else if (text) {
+    } else if (typeof text === 'string' && text.trim()) {
+      // The service requires the stored inbound timestamp; omitting it silently
+      // converts every manual reply into the default template message.
+      const { data: conversation, error: conversationError } = await supabase
+        .from('Conversation')
+        .select('id, last_interaction_timestamp')
+        .eq('sender_number', to)
+        .maybeSingle();
+      if (conversationError) throw conversationError;
+      if (!conversation) {
+        return NextResponse.json({ error: 'Conversation not found' }, { status: 404 });
+      }
+
       let finalMessage = text;
 
       // Auto-Draft / Rewrite Feature using Gemini
@@ -212,15 +226,39 @@ Manager's Draft:
         }
       }
 
-      result = await sendWhatsAppMessage(to, finalMessage);
+      result = await sendWhatsAppMessage(to, finalMessage, conversation.last_interaction_timestamp, {
+        conversationId: conversation.id,
+        userId: auth.session.user.id,
+      });
+      sentText = finalMessage;
     } else {
       return NextResponse.json({ error: 'Missing "text" or "location"' }, { status: 400 });
     }
 
     if (result?.success) {
+      // Automated replies are stored by the agent. Manual replies must be stored
+      // here so they remain in the conversation after the optimistic UI refreshes.
+      if (sentText !== undefined) {
+        const providerId = (result.data as { messages?: Array<{ id?: string }> })?.messages?.[0]?.id;
+        const { error: saveError } = await supabase.from('Message').insert({
+          id: crypto.randomUUID(),
+          message_id: providerId ?? null,
+          sender_number: to,
+          direction: 'OUTBOUND',
+          message_content: sentText,
+          timestamp: new Date().toISOString(),
+          status: 'SENT',
+          sent_by: 'ADMIN',
+        });
+        if (saveError) {
+          console.error('Reply sent but could not be saved', saveError);
+          // Sending succeeded: do not invite a retry that would duplicate it.
+          return NextResponse.json({ success: true, warning: 'Message sent, but chat history could not be saved. Do not resend it.' });
+        }
+      }
       return NextResponse.json({ success: true });
     } else {
-      return NextResponse.json({ error: result?.error || 'Failed to send' }, { status: 500 });
+      return NextResponse.json({ error: getMessageError(result?.error) }, { status: 502 });
     }
 
   } catch (error: unknown) {

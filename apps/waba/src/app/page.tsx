@@ -9,6 +9,7 @@ import { Sidebar } from '../components/waba/Sidebar';
 import { ChatMain, type ChatNotice } from '../components/waba/ChatMain';
 import { Customer360Panel } from '../components/waba/Customer360Panel';
 import { Conversation, Message, Template, User } from '../components/waba/types';
+import { getMessageError } from '../lib/message-error';
 
 export default function Dashboard() {
   const router = useRouter();
@@ -21,6 +22,8 @@ export default function Dashboard() {
   const [templates, setTemplates] = useState<Template[]>([]);
   const [selectedTemplate, setSelectedTemplate] = useState("");
   const [inputText, setInputText] = useState("");
+  const [isSending, setIsSending] = useState(false);
+  const sendInFlight = useRef(false);
   const [loading, setLoading] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -155,10 +158,11 @@ export default function Dashboard() {
 
   const handleSendMessage = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    if (!inputText.trim() || !activeConversation) return;
+    if (!inputText.trim() || !activeConversation || sendInFlight.current) return;
 
     const textToSend = inputText;
-    setInputText("");
+    sendInFlight.current = true;
+    setIsSending(true);
     setChatNotice(null);
 
     const tempMsg: Message = {
@@ -178,24 +182,32 @@ export default function Dashboard() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ to: activeConversation, text: textToSend })
       });
+      const data = await res.json().catch(() => ({}));
       if (res.ok) {
-        fetchMessages(activeConversation);
+        setInputText("");
+        if (data.warning) {
+          setMessages(prev => prev.map(m => m.id === tempMsg.id ? { ...m, status: 'SENT' } : m));
+          setChatNotice({ tone: 'info', message: data.warning });
+        } else {
+          await fetchMessages(activeConversation);
+        }
       } else {
-        const data = await res.json();
         // Remove the temporary message since it failed to send
         setMessages(prev => prev.filter(m => m.id !== tempMsg.id));
 
         if (data.is_ai_clarification) {
-          setChatNotice({ tone: 'error', message: `AI Editor needs clarification: ${data.error || 'Please add more details to your draft.'}` });
-          setInputText(textToSend); // Restore their draft so they don't have to retype it
+          setChatNotice({ tone: 'error', message: `AI Editor needs clarification: ${getMessageError(data.error, 'Please add more details to your draft.')}` });
         } else {
-          setChatNotice({ tone: 'error', message: `Error sending message: ${data.error || 'Unknown error'}` });
+          setChatNotice({ tone: 'error', message: `Error sending message: ${getMessageError(data.error, `Request failed (HTTP ${res.status}). Please try again.`)}` });
         }
       }
     } catch (err) {
       console.error(err);
       setMessages(prev => prev.filter(m => m.id !== tempMsg.id));
       setChatNotice({ tone: 'error', message: 'Message could not be sent. Please check the connection and try again.' });
+    } finally {
+      sendInFlight.current = false;
+      setIsSending(false);
     }
   };
 
@@ -338,6 +350,7 @@ export default function Dashboard() {
               inputText={inputText}
               setInputText={setInputText}
               isUploading={isUploading}
+              isSending={isSending}
               notice={chatNotice}
               onNoticeClear={() => setChatNotice(null)}
               handleSendMessage={handleSendMessage}

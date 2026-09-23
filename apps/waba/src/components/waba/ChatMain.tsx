@@ -35,6 +35,7 @@ interface ChatMainProps {
   inputText: string;
   setInputText: (text: string) => void;
   isUploading: boolean;
+  isSending: boolean;
   notice?: ChatNotice | null;
   onNoticeClear?: () => void;
   handleSendMessage: (e?: React.FormEvent) => Promise<void>;
@@ -45,7 +46,7 @@ export function ChatMain({
   activeConversation, activeConvObj, displayName, messages, messagesEndRef,
   showSidebar, setShowSidebar, showCrm, setShowCrm, isOutsideWindow,
   templates, selectedTemplate, setSelectedTemplate, inputText, setInputText,
-  isUploading, notice, onNoticeClear, handleSendMessage, handleFileUpload
+  isUploading, isSending, notice, onNoticeClear, handleSendMessage, handleFileUpload
 }: ChatMainProps) {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -375,6 +376,7 @@ export function ChatMain({
                 key={reply.label}
                 type="button"
                 onClick={() => applyCannedReply(reply.text)}
+                disabled={isSending}
                 style={{ border: '1px solid rgba(148, 163, 184, 0.25)', background: 'rgba(15, 23, 42, 0.75)', color: '#cbd5e1', borderRadius: '999px', padding: '0.4rem 0.7rem', fontSize: '0.75rem', cursor: 'pointer' }}
               >
                 {reply.label}
@@ -412,6 +414,7 @@ export function ChatMain({
                 aria-label="Approved message template"
                 style={{ border: '1px solid #ef4444', background: 'rgba(255,255,255,0.05)' }}
                 value={selectedTemplate}
+                disabled={isSending}
                 onChange={(e) => {
                   setSelectedTemplate(e.target.value);
                   const t = templates.find(t => t.id === e.target.value);
@@ -444,6 +447,7 @@ export function ChatMain({
                 type="text"
                 placeholder="Type a message or use / for AI commands..."
                 value={inputText}
+                disabled={isSending}
                 onChange={handleInputChange}
                 autoFocus
                 aria-label="Message text"
@@ -452,7 +456,7 @@ export function ChatMain({
             </>
           )}
 
-          <button type="submit" disabled={(!inputText.trim() && !isUploading) || (isOutsideWindow && !selectedTemplate)} aria-label="Send message">
+          <button type="submit" disabled={isSending || isUploading || !inputText.trim() || (isOutsideWindow && !selectedTemplate)} aria-label={isSending ? 'Sending message' : 'Send message'} title={isSending ? 'Sending message...' : 'Send message'}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <line x1="22" y1="2" x2="11" y2="13"></line>
               <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
