@@ -38,7 +38,7 @@ export default function AgentRecruitPage() {
             </span>
           </h1>
           <p className="mx-auto mb-10 max-w-2xl text-lg text-muted-foreground">
-            Turn your technical expertise and professional network into a high-yield commission engine. We provide the infrastructure; you provide the leads.
+            Refer customers, create approved quotations, and track each booking and installation through a transparent commission ledger.
           </p>
           <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
             <Button size="lg" className="h-12 bg-primary px-8 hover:bg-primary/90 text-primary-foreground" asChild>
@@ -64,13 +64,13 @@ export default function AgentRecruitPage() {
           <div className="grid gap-8 md:grid-cols-3">
             {[
               {
-                title: "High-Margin Commissions",
-                desc: "Earn up to 10% on every hardware sale and service contract. Multi-tier structures for high-volume performers.",
+                title: "Published Commission Rules",
+                desc: "Bronze, Silver, and Gold affiliates earn 5%, 7%, and 10% base commission on eligible pre-GST bookings.",
                 icon: Wallet
               },
               {
                 title: "Real-time Tracking",
-                desc: "Access your dedicated Agent Dashboard to track referrals, order status, and commission redemptions in real-time.",
+                desc: "Access your dedicated dashboard for referral status, payout milestones, statements, and payment history.",
                 icon: TrendingUp
               },
               {
@@ -118,27 +118,35 @@ export default function AgentRecruitPage() {
             <div className="flex-1">
               <div className="relative rounded-3xl border border-border bg-card p-8 shadow-2xl">
                 <div className="absolute -right-4 -top-4 h-24 w-24 rounded-full bg-primary/5 blur-2xl" />
-                <h3 className="mb-6 text-2xl font-bold text-foreground">Agent Milestone Program</h3>
+                <h3 className="mb-6 text-2xl font-bold text-foreground">Affiliate Partner Programme</h3>
                 <div className="space-y-6">
                   <div className="relative pl-8 before:absolute before:left-0 before:top-2 before:h-full before:w-[2px] before:bg-border">
                     <div className="absolute -left-[5px] top-2 h-[10px] w-[10px] rounded-full bg-primary" />
-                    <p className="text-xs font-bold uppercase tracking-widest text-primary">Silver Tier</p>
-                    <p className="text-sm text-muted-foreground mt-1">₹0 - ₹50k Monthly Sales. 5% Base Commission.</p>
+                    <p className="text-xs font-bold uppercase tracking-widest text-primary">Bronze Tier</p>
+                    <p className="text-sm text-muted-foreground mt-1">5% base commission · ₹2,00,000 monthly business limit.</p>
                   </div>
                   <div className="relative pl-8 before:absolute before:left-0 before:top-2 before:h-full before:w-[2px] before:bg-border">
                     <div className="absolute -left-[5px] top-2 h-[10px] w-[10px] rounded-full bg-blue-500" />
-                    <p className="text-xs font-bold uppercase tracking-widest text-blue-500">Gold Tier</p>
-                    <p className="text-sm text-muted-foreground mt-1">₹50k - ₹2L Monthly Sales. 7.5% Commission + Bonus.</p>
+                    <p className="text-xs font-bold uppercase tracking-widest text-blue-500">Silver Tier</p>
+                    <p className="text-sm text-muted-foreground mt-1">7% base commission · ₹5,00,000 monthly business limit.</p>
                   </div>
                   <div className="relative pl-8">
                     <div className="absolute -left-[5px] top-2 h-[10px] w-[10px] rounded-full bg-emerald-500" />
-                    <p className="text-xs font-bold uppercase tracking-widest text-emerald-500">Elite Tier</p>
-                    <p className="text-sm text-muted-foreground mt-1">₹2L+ Monthly Sales. 10% Commission + Priority Support.</p>
+                    <p className="text-xs font-bold uppercase tracking-widest text-emerald-500">Gold Tier</p>
+                    <p className="text-sm text-muted-foreground mt-1">10% base commission · ₹20,00,000 monthly business limit.</p>
                   </div>
                 </div>
               </div>
             </div>
           </div>
+        </div>
+      </section>
+
+      <section className="border-y border-border bg-muted/20 py-16">
+        <div className="container mx-auto grid gap-6 px-4 md:grid-cols-3">
+          <div><h2 className="text-xl font-bold">Optional Platinum</h2><p className="mt-2 text-sm text-muted-foreground">A refundable security deposit equal to 50% of the tier limit activates a 12-month Platinum term. Platinum adds two times the base commission to the base commission.</p></div>
+          <div><h2 className="text-xl font-bold">Approved price uplift</h2><p className="mt-2 text-sm text-muted-foreground">With written approval, quotes may be up to 20% above the eligible base price. Affiliates receive 50% of that approved difference after final settlement.</p></div>
+          <div><h2 className="text-xl font-bold">Payout milestones</h2><p className="mt-2 text-sm text-muted-foreground">40% of base commission is scheduled after booking. The remaining base, uplift share, and Platinum bonus are scheduled after installation and final customer settlement.</p></div>
         </div>
       </section>
 

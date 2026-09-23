@@ -318,6 +318,21 @@ export class EnhancedCommissionService {
     agentRules: AgentCommissionRule[],
     _orderTotal: number
   ): Promise<CommissionBreakdown> {
+    const productEligibility = await this.getProductCommissionEligibility(item.productId);
+    const itemTotal = item.price * item.quantity;
+    if (!productEligibility) {
+      return {
+        product_id: item.productId,
+        product_name: item.name,
+        quantity: item.quantity,
+        unit_price: item.price,
+        total_price: itemTotal,
+        commission_rate: 0,
+        commission_amount: 0,
+        rule_applied: 'commission_free_product'
+      };
+    }
+
     // Find applicable rule for this item
     let applicableRule = agentRules.find(rule => rule.product_id === item.productId);
     
@@ -336,7 +351,6 @@ export class EnhancedCommissionService {
     }
 
     const commissionRate = applicableRule?.commission_rate || 5.0; // Default 5%
-    const itemTotal = item.price * item.quantity;
     const commissionAmount = (itemTotal * commissionRate) / 100;
 
     return {
@@ -349,6 +363,22 @@ export class EnhancedCommissionService {
       commission_amount: Math.round(commissionAmount * 100) / 100,
       rule_applied: applicableRule ? 'custom' : 'default'
     };
+  }
+
+  /** Product rules are opt-in overrides; absent rules preserve existing commission behaviour. */
+  private async getProductCommissionEligibility(productId: string): Promise<boolean> {
+    const supabase = this.supabase;
+    if (!supabase || !isSupabaseServiceConfigured) return true;
+    const { data, error } = await supabase
+      .from('affiliate_product_rules')
+      .select('commission_eligible')
+      .eq('product_id', productId)
+      .maybeSingle();
+    if (error) {
+      logger.warn('affiliate-product-rule.lookup_failed', { productId, error: error.message });
+      return true;
+    }
+    return data?.commission_eligible !== false;
   }
 
   /**

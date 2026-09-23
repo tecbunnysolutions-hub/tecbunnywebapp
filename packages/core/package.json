@@ -18,6 +18,7 @@
     "./ai/tax-classification": "./src/ai/tax-classification.ts",
     "./api-email-route": "./src/api-email-route.ts",
     "./api-response": "./src/api-response.ts",
+    "./affiliate-program": "./src/affiliate-program.ts",
     "./api/with-validation": "./src/api/with-validation.ts",
     "./apiClient": "./src/apiClient.ts",
     "./area-notifications": "./src/area-notifications.ts",
