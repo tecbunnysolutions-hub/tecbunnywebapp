@@ -506,11 +506,11 @@ export default function UserProfile({ user, profile, salesAgentData, orders, ser
                   {agentStatus.status === 'approved' && (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 border border-emerald-500/30 rounded-lg bg-emerald-500/10">
                       <div>
-                        <label className="text-sm font-medium text-muted-foreground">Your Referral Code</label>
+                        <p className="text-sm font-medium text-muted-foreground">Your Referral Code</p>
                         <p className="text-lg font-mono text-foreground font-bold">{agentStatus.referral_code}</p>
                       </div>
                       <div>
-                        <label className="text-sm font-medium text-muted-foreground">Points Balance</label>
+                        <p className="text-sm font-medium text-muted-foreground">Points Balance</p>
                         <p className="text-lg text-foreground font-bold">₹{agentStatus.points_balance || 0}</p>
                       </div>
                     </div>

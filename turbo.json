@@ -1,11 +1,13 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "globalEnv": [
+    "ANALYZE",
     "CASHFREE_ENV",
     "CASHFREE_PROD_APP_ID",
     "CASHFREE_PROD_SECRET_KEY",
     "DATABASE_URL",
     "DIRECT_URL",
+    "DOCKER_BUILD",
     "GEMINI_API_KEY",
     "HUBSPOT_ACCESS_TOKEN",
     "INFOBIP_API_KEY",
@@ -19,6 +21,9 @@
     "META_PHONE_NUMBER_ID",
     "META_WABA_ID",
     "META_WHATSAPP_VERIFY_TOKEN",
+    "NEXT_IMAGE_ALLOWED_HOSTS",
+    "NEXT_OUTPUT_MODE",
+    "NEXT_PUBLIC_*",
     "NODE_ENV",
     "OPENAI_API_KEY",
     "OTP_SECRET_PEPPER",
@@ -60,47 +65,61 @@
       "outputs": []
     },
     "build": {
-      "dependsOn": ["^build", "lint"],
-      "inputs": [
-        "src/**",
-        "package.json",
-        "tsconfig.json",
-        "eslint.config.*",
-        "!../../apps/**"
+      "dependsOn": [
+        "^build",
+        "lint"
       ],
-      "outputs": [".next/**", "!.next/cache/**", "dist/**", "build/**"]
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        ".env*"
+      ],
+      "outputs": [
+        ".next/**",
+        "!.next/cache/**",
+        "dist/**",
+        "build/**"
+      ]
     },
     "@tecbunny/config#build": {
-      "dependsOn": ["^build", "lint"],
+      "dependsOn": [
+        "^build",
+        "lint"
+      ],
       "inputs": [
-        "src/**",
-        "package.json",
-        "tsconfig.json",
-        "eslint.config.*",
-        "!../../apps/**"
+        "$TURBO_DEFAULT$",
+        ".env*"
       ],
       "outputs": []
     },
     "@tecbunny/rpc#build": {
-      "dependsOn": ["^build", "lint"],
+      "dependsOn": [
+        "^build",
+        "lint"
+      ],
       "inputs": [
-        "src/**",
-        "package.json",
-        "tsconfig.json",
-        "eslint.config.*",
-        "!../../apps/**"
+        "$TURBO_DEFAULT$",
+        ".env*"
       ],
       "outputs": []
     },
     "lint": {
-      "dependsOn": ["^lint"],
+      "dependsOn": [
+        "^lint"
+      ],
       "inputs": [
-        "src/**",
-        "package.json",
-        "tsconfig.json",
-        "eslint.config.*",
-        "!../../apps/**"
+        "$TURBO_DEFAULT$",
+        ".env*"
       ]
+    },
+    "typecheck": {
+      "dependsOn": [
+        "^typecheck"
+      ],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        ".env*"
+      ],
+      "outputs": []
     },
     "dev": {
       "cache": false,
@@ -113,5 +132,10 @@
     "clean": {
       "cache": false
     }
-  }
+  },
+  "globalDependencies": [
+    "tsconfig.json",
+    "eslint.config.mjs",
+    ".env*"
+  ]
 }

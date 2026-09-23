@@ -58,12 +58,12 @@ export default function SellerLoginPage() {
 
           <form onSubmit={handleLogin} className="space-y-5">
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300">
+              <label htmlFor="app-seller-login-page-registered-email-username" className="block text-xs font-semibold uppercase tracking-wider text-slate-300">
                 Registered Email / Username
               </label>
               <div className="mt-1 relative">
                 <Mail className="w-4 h-4 absolute left-3 top-3 text-slate-500" />
-                <input
+                <input id="app-seller-login-page-registered-email-username"
                   type="email"
                   required
                   placeholder="seller@business.com"
@@ -75,12 +75,12 @@ export default function SellerLoginPage() {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300">
+              <label htmlFor="app-seller-login-page-password" className="block text-xs font-semibold uppercase tracking-wider text-slate-300">
                 Password
               </label>
               <div className="mt-1 relative">
                 <Lock className="w-4 h-4 absolute left-3 top-3 text-slate-500" />
-                <input
+                <input id="app-seller-login-page-password"
                   type="password"
                   required
                   placeholder="••••••••••••"

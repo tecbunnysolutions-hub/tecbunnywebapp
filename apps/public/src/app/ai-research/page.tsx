@@ -345,8 +345,8 @@ export default function AiResearchPage() {
             
             <form onSubmit={handleLeadVerification} className="space-y-4">
               <div className="space-y-2">
-                <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Corporate Email</label>
-                <Input 
+                <label htmlFor="app-ai-research-page-corporate-email" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Corporate Email</label>
+                <Input id="app-ai-research-page-corporate-email"
                   required 
                   type="email" 
                   placeholder="name@company.com" 
@@ -356,8 +356,8 @@ export default function AiResearchPage() {
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Phone (for WhatsApp OTP)</label>
-                <Input 
+                <label htmlFor="app-ai-research-page-phone-for-whatsapp-otp" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Phone (for WhatsApp OTP)</label>
+                <Input id="app-ai-research-page-phone-for-whatsapp-otp"
                   required 
                   type="tel" 
                   placeholder="+91 12345 67890" 

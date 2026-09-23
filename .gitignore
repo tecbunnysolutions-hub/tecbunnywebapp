@@ -46,6 +46,8 @@ next-env.d.ts
 
 .genkit/*
 .env*
+!.env.example
+!**/.env.example
 
 # firebase
 firebase-debug.log
@@ -135,3 +137,9 @@ n8n/
 *.sql
 !database.sql
 !supabase/migrations/*.sql
+
+# Generated UI previews and local test artifacts
+storybook-static/
+playwright-report/
+test-results/
+/apps/public/public/styles.css

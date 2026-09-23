@@ -425,8 +425,8 @@ export default function UpcomingProjectsPage() {
 
           <form onSubmit={handleSubmit} className="space-y-5 pt-4">
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-zinc-400">Project Name</label>
-              <Input 
+              <label htmlFor="app-projects-page-project-name" className="text-xs font-semibold text-zinc-400">Project Name</label>
+              <Input id="app-projects-page-project-name"
                 value={formName}
                 onChange={(e) => setFormName(e.target.value)}
                 placeholder="e.g. Project Orion Data Vault"
@@ -437,8 +437,8 @@ export default function UpcomingProjectsPage() {
 
             <div className="grid gap-4 md:grid-cols-3">
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-zinc-400">Target Capital (INR)</label>
-                <Input 
+                <label htmlFor="app-projects-page-target-capital-inr" className="text-xs font-semibold text-zinc-400">Target Capital (INR)</label>
+                <Input id="app-projects-page-target-capital-inr"
                   type="number"
                   value={formTargetAmount}
                   onChange={(e) => setFormTargetAmount(e.target.value)}
@@ -449,8 +449,8 @@ export default function UpcomingProjectsPage() {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-zinc-400">Amount Raised (INR)</label>
-                <Input 
+                <label htmlFor="app-projects-page-amount-raised-inr" className="text-xs font-semibold text-zinc-400">Amount Raised (INR)</label>
+                <Input id="app-projects-page-amount-raised-inr"
                   type="number"
                   value={formAmountRaised}
                   onChange={(e) => setFormAmountRaised(e.target.value)}
@@ -460,8 +460,8 @@ export default function UpcomingProjectsPage() {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-zinc-400">Funding Status</label>
-                <select 
+                <label htmlFor="app-projects-page-funding-status" className="text-xs font-semibold text-zinc-400">Funding Status</label>
+                <select id="app-projects-page-funding-status"
                   value={formStatus}
                   onChange={(e) => setFormStatus(e.target.value)}
                   className="flex h-10 w-full rounded-md border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
@@ -475,8 +475,8 @@ export default function UpcomingProjectsPage() {
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-zinc-400">Brief Explanation</label>
-              <Textarea 
+              <label htmlFor="app-projects-page-brief-explanation" className="text-xs font-semibold text-zinc-400">Brief Explanation</label>
+              <Textarea id="app-projects-page-brief-explanation"
                 value={formExplanation}
                 onChange={(e) => setFormExplanation(e.target.value)}
                 placeholder="Truncated on overview card. Focus on core objectives."
@@ -486,8 +486,8 @@ export default function UpcomingProjectsPage() {
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-zinc-400">Strategic Motive</label>
-              <Textarea 
+              <label htmlFor="app-projects-page-strategic-motive" className="text-xs font-semibold text-zinc-400">Strategic Motive</label>
+              <Textarea id="app-projects-page-strategic-motive"
                 value={formMotive}
                 onChange={(e) => setFormMotive(e.target.value)}
                 placeholder="Why are we building this? Strategic significance to partners."
@@ -497,10 +497,10 @@ export default function UpcomingProjectsPage() {
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-zinc-400">
+              <label htmlFor="app-projects-page-detailed-brief-specifications-html-format" className="text-xs font-semibold text-zinc-400">
                 Detailed Brief Specifications (HTML format)
               </label>
-              <Textarea 
+              <Textarea id="app-projects-page-detailed-brief-specifications-html-format"
                 value={formDetailedInfo}
                 onChange={(e) => setFormDetailedInfo(e.target.value)}
                 placeholder="<h3>Executive Summary</h3><p>Detailed analysis</p><ul><li>Specification 1</li></ul>"

@@ -4,7 +4,7 @@ import * as React from 'react';
 import { useRouter } from 'next/navigation';
 import { Plus, User, ShoppingBag, FileSearch } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-import { cn } from "@tecbunny/core/utils";
+import { cn } from "../lib/utils";
 import { enterpriseActions, quickActionIds, type EnterpriseActionId } from './enterprise-actions';
 
 const ACTION_ICONS: Record<EnterpriseActionId, LucideIcon> = {

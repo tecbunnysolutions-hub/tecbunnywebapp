@@ -31,6 +31,7 @@ const allowedImageHosts = Array.from(new Set([
 ].filter(Boolean)));
 
 const nextConfig = {
+  outputFileTracingRoot: path.resolve(__dirname, '../..'),
   ...(isStaticExport ? { output: 'export' } : process.env.DOCKER_BUILD === 'true' ? { output: 'standalone' } : {}),
   compress: true,
   transpilePackages: ["@tecbunny/core", "@tecbunny/ui", "@tecbunny/database", "@tecbunny/config"],

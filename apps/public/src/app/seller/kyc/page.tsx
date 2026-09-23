@@ -44,10 +44,10 @@ export default function SellerKYCOnboardingPage() {
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-semibold uppercase text-slate-400">
+                    <label htmlFor="app-seller-kyc-page-permanent-account-number-pan" className="block text-xs font-semibold uppercase text-slate-400">
                       Permanent Account Number (PAN)
                     </label>
-                    <input
+                    <input id="app-seller-kyc-page-permanent-account-number-pan"
                       type="text"
                       required
                       maxLength={10}
@@ -68,10 +68,10 @@ export default function SellerKYCOnboardingPage() {
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-semibold uppercase text-slate-400">
+                    <label htmlFor="app-seller-kyc-page-account-holder-name" className="block text-xs font-semibold uppercase text-slate-400">
                       Account Holder Name
                     </label>
-                    <input
+                    <input id="app-seller-kyc-page-account-holder-name"
                       type="text"
                       required
                       placeholder="As per bank passbook"
@@ -81,10 +81,10 @@ export default function SellerKYCOnboardingPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold uppercase text-slate-400">
+                    <label htmlFor="app-seller-kyc-page-bank-account-number" className="block text-xs font-semibold uppercase text-slate-400">
                       Bank Account Number
                     </label>
-                    <input
+                    <input id="app-seller-kyc-page-bank-account-number"
                       type="text"
                       required
                       placeholder="9182371283719"
@@ -94,10 +94,10 @@ export default function SellerKYCOnboardingPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold uppercase text-slate-400">
+                    <label htmlFor="app-seller-kyc-page-ifsc-code" className="block text-xs font-semibold uppercase text-slate-400">
                       IFSC Code
                     </label>
-                    <input
+                    <input id="app-seller-kyc-page-ifsc-code"
                       type="text"
                       required
                       maxLength={11}
@@ -108,10 +108,10 @@ export default function SellerKYCOnboardingPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold uppercase text-slate-400">
+                    <label htmlFor="app-seller-kyc-page-bank-name" className="block text-xs font-semibold uppercase text-slate-400">
                       Bank Name
                     </label>
-                    <input
+                    <input id="app-seller-kyc-page-bank-name"
                       type="text"
                       required
                       placeholder="HDFC Bank"
@@ -131,10 +131,10 @@ export default function SellerKYCOnboardingPage() {
                 </h3>
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-xs font-semibold uppercase text-slate-400">
+                    <label htmlFor="app-seller-kyc-page-address-line-1-building" className="block text-xs font-semibold uppercase text-slate-400">
                       Address Line 1 & Building
                     </label>
-                    <input
+                    <input id="app-seller-kyc-page-address-line-1-building"
                       type="text"
                       required
                       placeholder="Plot 42, Industrial Area Phase 2"
@@ -145,8 +145,8 @@ export default function SellerKYCOnboardingPage() {
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div>
-                      <label className="block text-xs font-semibold uppercase text-slate-400">City</label>
-                      <input
+                      <label htmlFor="app-seller-kyc-page-city" className="block text-xs font-semibold uppercase text-slate-400">City</label>
+                      <input id="app-seller-kyc-page-city"
                         type="text"
                         required
                         placeholder="Mumbai"
@@ -156,8 +156,8 @@ export default function SellerKYCOnboardingPage() {
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold uppercase text-slate-400">State</label>
-                      <input
+                      <label htmlFor="app-seller-kyc-page-state" className="block text-xs font-semibold uppercase text-slate-400">State</label>
+                      <input id="app-seller-kyc-page-state"
                         type="text"
                         required
                         placeholder="Maharashtra"
@@ -167,8 +167,8 @@ export default function SellerKYCOnboardingPage() {
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold uppercase text-slate-400">Pincode</label>
-                      <input
+                      <label htmlFor="app-seller-kyc-page-pincode" className="block text-xs font-semibold uppercase text-slate-400">Pincode</label>
+                      <input id="app-seller-kyc-page-pincode"
                         type="text"
                         required
                         maxLength={6}

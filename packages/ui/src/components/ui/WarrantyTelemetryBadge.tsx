@@ -2,8 +2,33 @@
 
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
-import { useWarrantyTelemetry } from "@tecbunny/core/client";
 import { ShieldCheck } from "lucide-react";
+
+interface TelemetryEvent {
+  id: string;
+  region: string;
+  timestamp: number;
+}
+
+const REGIONS = ["North Goa Sector", "Panjim District", "Mapusa Hub", "South Goa Network"];
+
+function useWarrantyTelemetry() {
+  const [activeEvent, setActiveEvent] = useState<TelemetryEvent | null>(null);
+
+  useEffect(() => {
+    const interval = window.setInterval(() => {
+      setActiveEvent({
+        id: Math.random().toString(36).substring(7),
+        region: REGIONS[Math.floor(Math.random() * REGIONS.length)],
+        timestamp: Date.now(),
+      });
+    }, 12_000);
+
+    return () => window.clearInterval(interval);
+  }, []);
+
+  return { activeEvent };
+}
 
 export function WarrantyTelemetryBadge() {
   const { activeEvent } = useWarrantyTelemetry();

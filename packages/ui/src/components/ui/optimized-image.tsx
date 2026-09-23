@@ -5,7 +5,11 @@ import Image from 'next/image';
 
 import { cn } from '../../lib/utils';
 
-import { logger } from '@tecbunny/core/logger';
+const logger = {
+  warn(message: string, meta?: unknown) {
+    console.warn(message, meta);
+  },
+};
 
 type ImageProps = React.ComponentProps<typeof Image>;
 

@@ -359,7 +359,7 @@ ${form.details.trim()}
             {/* Controls */}
             <div className="lg:col-span-7 space-y-6">
               <div className="space-y-3">
-                <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-450 block">Property Type</label>
+                <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-450 block">Property Type</p>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   {(['resort', 'coworking', 'office', 'restaurant'] as const).map((type) => (
                     <button
@@ -422,7 +422,7 @@ ${form.details.trim()}
               </div>
 
               <div className="space-y-3">
-                <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-450 block">Affected Critical Systems</label>
+                <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-450 block">Affected Critical Systems</p>
                 <div className="grid grid-cols-2 gap-3">
                   {[
                     { id: 'wifi', label: 'Guest Wi-Fi / Hotspot' },
@@ -533,8 +533,8 @@ ${form.details.trim()}
               <form onSubmit={handleSubmit} className="space-y-5">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-450 block">Company Legal Name *</label>
-                    <Input 
+                    <label htmlFor="app-solutions-page-company-legal-name" className="text-[10px] font-bold uppercase tracking-wider text-zinc-450 block">Company Legal Name *</label>
+                    <Input id="app-solutions-page-company-legal-name"
                       name="companyName"
                       required
                       placeholder="e.g., Marriott Goa Resort"
@@ -544,8 +544,8 @@ ${form.details.trim()}
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-450 block">GSTIN (For Tax Credit) (Optional)</label>
-                    <Input 
+                    <label htmlFor="app-solutions-page-gstin-for-tax-credit-optional" className="text-[10px] font-bold uppercase tracking-wider text-zinc-450 block">GSTIN (For Tax Credit) (Optional)</label>
+                    <Input id="app-solutions-page-gstin-for-tax-credit-optional"
                       name="gstin"
                       maxLength={15}
                       placeholder="e.g., 30AAMCT1608G1ZO"
@@ -558,8 +558,8 @@ ${form.details.trim()}
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-450 block">WhatsApp Contact Number *</label>
-                    <Input 
+                    <label htmlFor="app-solutions-page-whatsapp-contact-number" className="text-[10px] font-bold uppercase tracking-wider text-zinc-450 block">WhatsApp Contact Number *</label>
+                    <Input id="app-solutions-page-whatsapp-contact-number"
                       name="phone"
                       required
                       placeholder="e.g., +91 96041 36010"
@@ -569,8 +569,8 @@ ${form.details.trim()}
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-450 block">Estimated Project Budget *</label>
-                    <select
+                    <label htmlFor="app-solutions-page-estimated-project-budget" className="text-[10px] font-bold uppercase tracking-wider text-zinc-450 block">Estimated Project Budget *</label>
+                    <select id="app-solutions-page-estimated-project-budget"
                       name="budget"
                       value={form.budget}
                       onChange={handleChange}
@@ -586,8 +586,8 @@ ${form.details.trim()}
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-450 block">Contact Name *</label>
-                    <Input 
+                    <label htmlFor="app-solutions-page-contact-name" className="text-[10px] font-bold uppercase tracking-wider text-zinc-450 block">Contact Name *</label>
+                    <Input id="app-solutions-page-contact-name"
                       name="name"
                       required
                       placeholder="e.g., Shubham Bhisaji"
@@ -597,8 +597,8 @@ ${form.details.trim()}
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-450 block">Corporate Email *</label>
-                    <Input 
+                    <label htmlFor="app-solutions-page-corporate-email" className="text-[10px] font-bold uppercase tracking-wider text-zinc-450 block">Corporate Email *</label>
+                    <Input id="app-solutions-page-corporate-email"
                       name="email"
                       type="email"
                       required
@@ -611,8 +611,8 @@ ${form.details.trim()}
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-450 block">Project Requirements & Scope *</label>
-                  <Textarea 
+                  <label htmlFor="app-solutions-page-project-requirements-scope" className="text-[10px] font-bold uppercase tracking-wider text-zinc-450 block">Project Requirements & Scope *</label>
+                  <Textarea id="app-solutions-page-project-requirements-scope"
                     name="details"
                     required
                     rows={4}

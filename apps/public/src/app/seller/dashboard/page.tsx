@@ -222,8 +222,8 @@ export default function SellerDashboardPage() {
 
           <form onSubmit={handleProductSubmit} className="space-y-4">
             <div>
-              <label className="block text-xs font-semibold text-slate-400">Product Title</label>
-              <input
+              <label htmlFor="app-seller-dashboard-page-product-title" className="block text-xs font-semibold text-slate-400">Product Title</label>
+              <input id="app-seller-dashboard-page-product-title"
                 type="text"
                 required
                 placeholder="e.g. 8-Channel PoE CCTV NVR Recorder"
@@ -235,8 +235,8 @@ export default function SellerDashboardPage() {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-400">SKU / Model Number</label>
-                <input
+                <label htmlFor="app-seller-dashboard-page-sku-model-number" className="block text-xs font-semibold text-slate-400">SKU / Model Number</label>
+                <input id="app-seller-dashboard-page-sku-model-number"
                   type="text"
                   required
                   placeholder="NVR-8CH-POE"
@@ -246,8 +246,8 @@ export default function SellerDashboardPage() {
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-slate-400">Category</label>
-                <select
+                <label htmlFor="app-seller-dashboard-page-category" className="block text-xs font-semibold text-slate-400">Category</label>
+                <select id="app-seller-dashboard-page-category"
                   value={newProduct.category}
                   onChange={(e) => setNewProduct({ ...newProduct, category: e.target.value })}
                   className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 mt-1"
@@ -262,8 +262,8 @@ export default function SellerDashboardPage() {
 
             <div className="grid grid-cols-3 gap-4">
               <div>
-                <label className="block text-xs font-bold text-emerald-400">Seller Purchase Price (₹)</label>
-                <input
+                <label htmlFor="app-seller-dashboard-page-seller-purchase-price" className="block text-xs font-bold text-emerald-400">Seller Purchase Price (₹)</label>
+                <input id="app-seller-dashboard-page-seller-purchase-price"
                   type="number"
                   required
                   placeholder="1200"
@@ -273,8 +273,8 @@ export default function SellerDashboardPage() {
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-slate-400">MRP (₹)</label>
-                <input
+                <label htmlFor="app-seller-dashboard-page-mrp" className="block text-xs font-semibold text-slate-400">MRP (₹)</label>
+                <input id="app-seller-dashboard-page-mrp"
                   type="number"
                   required
                   placeholder="2400"
@@ -284,8 +284,8 @@ export default function SellerDashboardPage() {
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-slate-400">Initial Stock Quantity</label>
-                <input
+                <label htmlFor="app-seller-dashboard-page-initial-stock-quantity" className="block text-xs font-semibold text-slate-400">Initial Stock Quantity</label>
+                <input id="app-seller-dashboard-page-initial-stock-quantity"
                   type="number"
                   required
                   placeholder="50"

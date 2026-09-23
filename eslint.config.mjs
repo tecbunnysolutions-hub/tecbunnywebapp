@@ -19,6 +19,8 @@ const zones = apps.map(app => ({
 }));
 
 export default [{
+  ignores: ['**/.next/**', '**/.turbo/**', '**/dist/**', '**/out/**', '**/build/**', '**/coverage/**', '**/storybook-static/**', '**/next-env.d.ts'],
+}, {
   plugins: {
     import: importPlugin,
   },

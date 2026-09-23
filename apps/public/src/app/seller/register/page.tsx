@@ -64,12 +64,12 @@ export default function SellerRegisterPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300">
+                  <label htmlFor="app-seller-register-page-legal-business-name" className="block text-xs font-semibold uppercase tracking-wider text-slate-300">
                     Legal Business Name
                   </label>
                   <div className="mt-1 relative">
                     <Building2 className="w-4 h-4 absolute left-3 top-3 text-slate-500" />
-                    <input
+                    <input id="app-seller-register-page-legal-business-name"
                       type="text"
                       required
                       placeholder="e.g. Apex Security Solutions Pvt Ltd"
@@ -82,12 +82,12 @@ export default function SellerRegisterPage() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300">
+                    <label htmlFor="app-seller-register-page-owner-authorized-name" className="block text-xs font-semibold uppercase tracking-wider text-slate-300">
                       Owner / Authorized Name
                     </label>
                     <div className="mt-1 relative">
                       <User className="w-4 h-4 absolute left-3 top-3 text-slate-500" />
-                      <input
+                      <input id="app-seller-register-page-owner-authorized-name"
                         type="text"
                         required
                         placeholder="Owner Name"
@@ -98,12 +98,12 @@ export default function SellerRegisterPage() {
                     </div>
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300">
+                    <label htmlFor="app-seller-register-page-official-email-id" className="block text-xs font-semibold uppercase tracking-wider text-slate-300">
                       Official Email ID
                     </label>
                     <div className="mt-1 relative">
                       <Mail className="w-4 h-4 absolute left-3 top-3 text-slate-500" />
-                      <input
+                      <input id="app-seller-register-page-official-email-id"
                         type="email"
                         required
                         placeholder="seller@business.com"
@@ -117,12 +117,12 @@ export default function SellerRegisterPage() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300">
+                    <label htmlFor="app-seller-register-page-mobile-number" className="block text-xs font-semibold uppercase tracking-wider text-slate-300">
                       Mobile Number
                     </label>
                     <div className="mt-1 relative">
                       <Phone className="w-4 h-4 absolute left-3 top-3 text-slate-500" />
-                      <input
+                      <input id="app-seller-register-page-mobile-number"
                         type="tel"
                         required
                         placeholder="+91 9876543210"
@@ -133,10 +133,10 @@ export default function SellerRegisterPage() {
                     </div>
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300">
+                    <label htmlFor="app-seller-register-page-gstin-number" className="block text-xs font-semibold uppercase tracking-wider text-slate-300">
                       GSTIN Number
                     </label>
-                    <input
+                    <input id="app-seller-register-page-gstin-number"
                       type="text"
                       maxLength={15}
                       required
@@ -167,12 +167,12 @@ export default function SellerRegisterPage() {
                 )}
 
                 <div>
-                  <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300">
+                  <label htmlFor="app-seller-register-page-account-password" className="block text-xs font-semibold uppercase tracking-wider text-slate-300">
                     Account Password
                   </label>
                   <div className="mt-1 relative">
                     <Lock className="w-4 h-4 absolute left-3 top-3 text-slate-500" />
-                    <input
+                    <input id="app-seller-register-page-account-password"
                       type="password"
                       required
                       minLength={12}
@@ -204,10 +204,10 @@ export default function SellerRegisterPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300 text-center mb-2">
+                  <label htmlFor="app-seller-register-page-6-digit-verification-code" className="block text-xs font-semibold uppercase tracking-wider text-slate-300 text-center mb-2">
                     6-Digit Verification Code
                   </label>
-                  <input
+                  <input id="app-seller-register-page-6-digit-verification-code"
                     type="text"
                     maxLength={6}
                     required

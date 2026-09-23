@@ -1,21 +1,23 @@
-# Dependency Risk Acceptance
+# Dependency security review
 
-Generated: 2026-09-20 (runtime evidence regeneration)
+Reviewed during repository cleanup on 2026-09-23.
 
+`npm audit --json` reports **25 advisories: 1 critical, 12 high, and 12 moderate**.
+The full local audit is retained in [dependency-audit.json](dependency-audit.json).
+This supersedes the older seven-advisory summary in this file. Production release
+remains blocked by the existing `npm audit --audit-level=high` gate.
 
-## npm audit status (2026-09-20 re-check)
-npm audit --omit=dev on 2026-09-20: 7 vulnerabilities (2 moderate, 4 high, 1 critical),
-ALL in transitive dependency xlsx (SheetJS: GHSA-4r6h-8v6p-xvw6 prototype pollution,
-GHSA-5pgg-2g8v-p4x9 ReDoS). No fix available from upstream.
+The critical finding concerns the installed Next.js version. Other affected
+packages include Nodemailer, PostCSS, Sharp, Prisma tooling, and SheetJS (`xlsx`).
+Resolve the advisory ranges in the audit, regenerate the lockfile, and verify all
+apps before release. Do not use a forced dependency downgrade to silence the audit.
 
-## Risk acceptance decision
-xlsx is used only for server-side spreadsheet import/export of admin-controlled
-files (product/catalog imports), not for rendering untrusted user HTML. The two
-CVE classes (prototype pollution, ReDoS) require a maliciously crafted workbook
-uploaded by an authenticated admin user. Accepted residual risk: LOW-MODERATE.
+SheetJS is imported by `apps/waba/src/app/campaigns/page.tsx` and parses uploaded
+spreadsheets in the browser. The previous description of exclusively server-side
+spreadsheet processing was inaccurate. npm reports no fix for the installed `xlsx`
+release line; replacing the parser or migrating to a maintained distribution needs
+compatibility checks for supported spreadsheet formats. This cleanup does not grant
+security risk acceptance.
 
-## Mitigations
-- Upload endpoints are admin-auth gated (see api-role-mapping.md).
-- File size limits applied at the route level.
-- Revisit on each dependency upgrade cycle; replace with exceljs if exploit
-  surface changes (e.g. if customer-facing upload is ever enabled).
+Rerun the audit after dependency changes; this file and its JSON report are a snapshot,
+not proof of current deployment security.

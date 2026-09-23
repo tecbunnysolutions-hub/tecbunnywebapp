@@ -953,7 +953,7 @@ export default function CheckoutPage() {
                     };
 
                      return (
-                      <label key={method.id} className="cursor-pointer block relative group">
+                      <label aria-label={method.name} key={method.id} className="cursor-pointer block relative group">
                         <input
                           type="radio"
                           name="payment"
@@ -1077,8 +1077,8 @@ export default function CheckoutPage() {
                         </label>
                         {isPartPayment && (
                           <div className="space-y-1.5 animate-fade-in">
-                            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Amount (₹)</label>
-                            <input
+                            <label htmlFor="components-checkout-CheckoutPage-amount" className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Amount (₹)</label>
+                            <input id="components-checkout-CheckoutPage-amount"
                               type="number"
                               min={1}
                               max={displayTotal}

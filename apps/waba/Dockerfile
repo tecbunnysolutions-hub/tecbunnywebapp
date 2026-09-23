@@ -1,21 +1,36 @@
 ﻿# ─── Stage 1: deps ─────────────────────────────────────────────────────────────
-FROM node:20-alpine AS deps
+FROM node:22-alpine AS deps
 RUN apk add --no-cache libc6-compat python3 make g++
 WORKDIR /app
 
-COPY package.json package-lock.json turbo.json ./
+COPY package.json package-lock.json turbo.json .npmrc ./
 COPY packages/ packages/
+COPY apps/api/package.json ./apps/api/package.json
+COPY apps/mgmt/package.json ./apps/mgmt/package.json
+COPY apps/public/package.json ./apps/public/package.json
+COPY apps/superadmin/package.json ./apps/superadmin/package.json
 COPY apps/waba/package.json ./apps/waba/package.json
+COPY apps/webmail/package.json ./apps/webmail/package.json
 
 RUN npm ci --include=dev
 
 # ─── Stage 2: builder ──────────────────────────────────────────────────────────
-FROM node:20-alpine AS builder
+FROM node:22-alpine AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/apps ./apps
+COPY --from=deps /app/packages ./packages
 COPY . .
 
 ENV NEXT_TELEMETRY_DISABLED=1
+ENV DOCKER_BUILD=true
+
+# Public configuration is embedded by Next.js during the build.
+ARG NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
+ARG NEXT_PUBLIC_API_URL
+ARG NEXT_PUBLIC_MGMT_URL
+ARG NEXT_PUBLIC_SUPERADMIN_URL
+ARG NEXT_PUBLIC_TURNSTILE_SITE_KEY
 
 # NEXT_PUBLIC_* vars must be present at build time so Next.js can embed them
 ARG NEXT_PUBLIC_SUPABASE_URL
@@ -38,13 +53,15 @@ FROM deps AS waba-worker
 WORKDIR /app
 COPY . .
 ENV NODE_ENV=production
+ENV HOSTNAME=0.0.0.0
 CMD ["npx", "tsx", "apps/waba/src/worker.ts"]
 
 # ─── Stage 4: runner ───────────────────────────────────────────────────────────
-FROM node:20-alpine AS runner
+FROM node:22-alpine AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
+ENV HOSTNAME=0.0.0.0
 ENV NEXT_TELEMETRY_DISABLED=1
 ARG PORT=3000
 ENV PORT=$PORT

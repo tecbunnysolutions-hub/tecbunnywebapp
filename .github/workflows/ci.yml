@@ -7,7 +7,7 @@ on:
     branches: [main, develop]
 
 env:
-  NODE_VERSION: '20'
+  NODE_VERSION: '22'
   TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
   TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
 
@@ -39,38 +39,11 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: TypeScript — packages/core
-        run: npx tsc --noEmit -p packages/core/tsconfig.json
+      - name: Validate architecture and API boundaries
+        run: npm run validate:architecture && npm run validate:api-boundary
 
-      - name: TypeScript — packages/domain
-        run: npx tsc --noEmit -p packages/domain/tsconfig.json
-
-      - name: TypeScript — apps/api
-        run: npx tsc --noEmit -p apps/api/tsconfig.json
-        env:
-          NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: placeholder
-
-      - name: TypeScript — apps/public
-        run: npx tsc --noEmit -p apps/public/tsconfig.json
-        env:
-          NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: placeholder
-
-      - name: TypeScript — apps/mgmt
-        run: npx tsc --noEmit -p apps/mgmt/tsconfig.json
-        env:
-          NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: placeholder
-
-      - name: TypeScript — apps/waba
-        run: npx tsc --noEmit -p apps/waba/tsconfig.json
-        env:
-          NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: placeholder
-
-      - name: TypeScript — apps/superadmin
-        run: npx tsc --noEmit -p apps/superadmin/tsconfig.json
+      - name: Typecheck all workspaces
+        run: npm run typecheck -- --concurrency=2
         env:
           NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
           NEXT_PUBLIC_SUPABASE_ANON_KEY: placeholder

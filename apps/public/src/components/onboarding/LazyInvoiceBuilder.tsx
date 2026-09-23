@@ -41,8 +41,8 @@ export default function LazyInvoiceBuilder() {
 
               <form onSubmit={handleGenerate} className="space-y-5">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Your Business Name</label>
-                  <input 
+                  <label htmlFor="components-onboarding-LazyInvoiceBuilder-your-business-name" className="block text-sm font-medium text-slate-700 mb-1">Your Business Name</label>
+                  <input id="components-onboarding-LazyInvoiceBuilder-your-business-name"
                     required
                     type="text" 
                     placeholder="e.g. Acme Agency"
@@ -52,8 +52,8 @@ export default function LazyInvoiceBuilder() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Client Name</label>
-                  <input 
+                  <label htmlFor="components-onboarding-LazyInvoiceBuilder-client-name" className="block text-sm font-medium text-slate-700 mb-1">Client Name</label>
+                  <input id="components-onboarding-LazyInvoiceBuilder-client-name"
                     required
                     type="text" 
                     placeholder="e.g. Stark Industries"
@@ -63,8 +63,8 @@ export default function LazyInvoiceBuilder() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Amount (₹)</label>
-                  <input 
+                  <label htmlFor="components-onboarding-LazyInvoiceBuilder-amount" className="block text-sm font-medium text-slate-700 mb-1">Amount (₹)</label>
+                  <input id="components-onboarding-LazyInvoiceBuilder-amount"
                     required
                     type="number" 
                     className="w-full p-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"

@@ -2,7 +2,6 @@
 
 import * as React from 'react';
 import { usePathname } from 'next/navigation';
-import { createClient } from '@tecbunny/database';
 // @ts-ignore
 import { v4 as uuidv4 } from 'uuid';
 
@@ -17,7 +16,21 @@ export const TrackingContext = React.createContext<{
 export function TrackingProvider({ children }: { children: React.ReactNode }) {
   const [sessionId, setSessionId] = React.useState<string | null>(null);
   const pathname = usePathname();
-  const supabase = React.useMemo(() => createClient(), []);
+
+  const sendEvent = React.useCallback(async (eventType: string, metadata: Record<string, unknown>, activeSessionId: string) => {
+    const response = await fetch('/api/analytics/track', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      keepalive: true,
+      body: JSON.stringify({
+        eventType,
+        pageUrl: window.location.href,
+        sessionId: activeSessionId,
+        metadata,
+      }),
+    });
+    if (!response.ok) throw new Error(`Analytics request failed (${response.status})`);
+  }, []);
 
   // Initialize Session ID
   React.useEffect(() => {
@@ -33,29 +46,27 @@ export function TrackingProvider({ children }: { children: React.ReactNode }) {
   React.useEffect(() => {
     if (!sessionId || !pathname) return;
     
-    // Fire and forget insert
+    // Fire and forget through the central API; the browser never writes to the database.
     const insertTrack = async () => {
-      const { error } = await supabase.from('sls_visitor_tracking').insert({
-        session_id: sessionId,
-        url_visited: window.location.href,
-        metadata: { path: pathname, title: document.title },
-      });
-      if (error) console.error('Tracking Error', error);
+      try {
+        await sendEvent('page_view', { path: pathname, title: document.title }, sessionId);
+      } catch (error) {
+        console.error('Tracking Error', error);
+      }
     };
     insertTrack();
 
-  }, [pathname, sessionId, supabase]);
+  }, [pathname, sendEvent, sessionId]);
 
   const trackEvent = React.useCallback(async (eventType: string, metadata?: Record<string, any>) => {
     if (!sessionId) return;
 
-    const { error } = await supabase.from('sls_visitor_tracking').insert({
-      session_id: sessionId,
-      url_visited: window.location.href,
-      metadata: { event_type: eventType, ...metadata },
-    });
-    if (error) console.error('Event Tracking Error', error);
-  }, [sessionId, supabase]);
+    try {
+      await sendEvent(eventType, metadata ?? {}, sessionId);
+    } catch (error) {
+      console.error('Event Tracking Error', error);
+    }
+  }, [sendEvent, sessionId]);
 
   return (
     <TrackingContext.Provider value={{ sessionId, trackEvent }}>

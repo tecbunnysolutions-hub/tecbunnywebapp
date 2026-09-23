@@ -720,9 +720,9 @@ ${formData.additionalNotes.trim() || 'None'}
 
             {/* Timeline */}
             <div className="space-y-3 pt-2">
-              <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider block">
+              <p className="text-xs font-semibold text-zinc-400 uppercase tracking-wider block">
                 Target Implementation Timeline *
-              </label>
+              </p>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 {TIMELINE_OPTIONS.map((time) => {
                   const isSelected = formData.timeline === time.id;

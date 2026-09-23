@@ -12,6 +12,9 @@
     "./security/network-validation": "./src/security/network-validation.ts"
   },
   "sideEffects": false,
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
   "dependencies": {
     "pino": "^10.3.1",
     "pino-pretty": "^13.1.3",

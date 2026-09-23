@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "reset-db": "tsx db/seed.ts"
+    "reset-db": "tsx db/seed.ts",
+    "typecheck": "tsc --noEmit"
   },
   "main": "src/index.ts",
   "types": "src/index.ts",

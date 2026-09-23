@@ -18,8 +18,8 @@ if (!existsSync(migrationsDir)) {
   }
 }
 
-if (!existsSync(path.join(root, 'database.reset.sql'))) {
-  failures.push('database.reset.sql is missing');
+if (!existsSync(path.join(root, 'packages/infra/db/seed.ts'))) {
+  failures.push('the maintained database seed entry point is missing');
 }
 
 if (failures.length) {
@@ -27,5 +27,5 @@ if (failures.length) {
   failures.forEach((failure) => console.error(`- ${failure}`));
   process.exitCode = 1;
 } else {
-  console.log('Validated database readiness contract: migrations and reset SQL are present.');
+  console.log('Validated database readiness contract: migrations and seed entry point are present.');
 }

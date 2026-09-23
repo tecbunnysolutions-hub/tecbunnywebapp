@@ -45,7 +45,7 @@ interface EditProfileDialogProps {
 }
 
 export function EditProfileDialog({ onProfileUpdate, children }: EditProfileDialogProps) {
-  const { user, supabase } = useAuth();
+  const { user } = useAuth();
   const { toast } = useToast();
   const [open, setOpen] = React.useState(false);
 
@@ -71,27 +71,23 @@ export function EditProfileDialog({ onProfileUpdate, children }: EditProfileDial
   const onSubmit = async (data: ProfileFormValues) => {
     if (!user) return;
     
-    const { data: updatedProfile, error } = await supabase
-      .from('profiles')
-      .update({
-        name: data.name,
-        mobile: data.mobile,
-        address: data.address
-      })
-      .eq('id', user.id)
-      .select()
-      .single();
+    const response = await fetch('/api/user/profile', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    const result = await response.json().catch(() => ({})) as { data?: User; error?: string };
 
-    if (error || !updatedProfile) {
+    if (!response.ok || !result.data) {
       toast({
         variant: 'destructive',
         title: 'Update Failed',
-        description: error?.message || 'Could not update your profile.',
+        description: result.error || 'Could not update your profile.',
       });
       return;
     }
     
-    onProfileUpdate(updatedProfile as User);
+    onProfileUpdate(result.data);
     
     toast({
         title: 'Profile Updated',

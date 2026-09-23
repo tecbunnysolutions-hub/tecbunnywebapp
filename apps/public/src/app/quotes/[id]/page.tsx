@@ -497,8 +497,8 @@ export default function QuoteDetailPage() {
           {authStep === 'details' ? (
             <form onSubmit={handleSendOtp} className="space-y-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium text-muted-foreground">Name</label>
-                <input
+                <label htmlFor="app-quotes-id-page-name" className="text-sm font-medium text-muted-foreground">Name</label>
+                <input id="app-quotes-id-page-name"
                   type="text"
                   required
                   placeholder="Enter your name"
@@ -509,8 +509,8 @@ export default function QuoteDetailPage() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-muted-foreground">Mobile Number</label>
-                <input
+                <label htmlFor="app-quotes-id-page-mobile-number" className="text-sm font-medium text-muted-foreground">Mobile Number</label>
+                <input id="app-quotes-id-page-mobile-number"
                   type="tel"
                   required
                   placeholder="Enter your 10-digit mobile number"
@@ -521,8 +521,8 @@ export default function QuoteDetailPage() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-muted-foreground">Email Address (Optional)</label>
-                <input
+                <label htmlFor="app-quotes-id-page-email-address-optional" className="text-sm font-medium text-muted-foreground">Email Address (Optional)</label>
+                <input id="app-quotes-id-page-email-address-optional"
                   type="email"
                   placeholder="Enter your email address"
                   className="w-full bg-muted/50 border border-border rounded-md p-2 text-foreground"
@@ -532,8 +532,8 @@ export default function QuoteDetailPage() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-muted-foreground">Installation Address (Optional)</label>
-                <textarea
+                <label htmlFor="app-quotes-id-page-installation-address-optional" className="text-sm font-medium text-muted-foreground">Installation Address (Optional)</label>
+                <textarea id="app-quotes-id-page-installation-address-optional"
                   placeholder="Enter installation address"
                   className="w-full bg-muted/50 border border-border rounded-md p-2 text-foreground h-20 resize-none"
                   value={authForm.address}
@@ -542,8 +542,8 @@ export default function QuoteDetailPage() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-muted-foreground">Account Password</label>
-                <input
+                <label htmlFor="app-quotes-id-page-account-password" className="text-sm font-medium text-muted-foreground">Account Password</label>
+                <input id="app-quotes-id-page-account-password"
                   type="password"
                   required
                   placeholder="Enter password"
@@ -555,7 +555,7 @@ export default function QuoteDetailPage() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-muted-foreground block">Send OTP via</label>
+                <p className="text-sm font-medium text-muted-foreground block">Send OTP via</p>
                 <div className="flex gap-4">
                   <label className="flex items-center gap-2 text-foreground cursor-pointer">
                     <input

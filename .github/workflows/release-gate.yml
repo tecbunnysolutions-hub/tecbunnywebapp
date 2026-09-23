@@ -14,7 +14,7 @@ on:
         required: true
 
 env:
-  NODE_VERSION: '20'
+  NODE_VERSION: '22'
 
 jobs:
   gate:
@@ -53,8 +53,12 @@ jobs:
         run: npm run smoke:production
 
       - name: Emit release gate summary
+        env:
+          RELEASE_TAG: ${{ github.event.inputs.release_tag }}
+          ROLLBACK_TAG: ${{ github.event.inputs.rollback_tag }}
+          INCIDENT_CHANNEL: ${{ github.event.inputs.incident_channel }}
         run: |
-          echo "Release tag: ${{ github.event.inputs.release_tag }}"
-          echo "Rollback tag: ${{ github.event.inputs.rollback_tag }}"
-          echo "Incident channel: ${{ github.event.inputs.incident_channel }}"
+          echo "Release tag: $RELEASE_TAG"
+          echo "Rollback tag: $ROLLBACK_TAG"
+          echo "Incident channel: $INCIDENT_CHANNEL"
           echo "Release gate checks and production smoke tests completed successfully."

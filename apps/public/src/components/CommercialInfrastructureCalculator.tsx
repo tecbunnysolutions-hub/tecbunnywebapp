@@ -216,8 +216,8 @@ export function CommercialInfrastructureCalculator({
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-xs font-semibold text-zinc-400 block mb-2">Camera Resolution</label>
-                <select
+                <label htmlFor="components-CommercialInfrastructureCalculator-camera-resolution" className="text-xs font-semibold text-zinc-400 block mb-2">Camera Resolution</label>
+                <select id="components-CommercialInfrastructureCalculator-camera-resolution"
                   value={cctvResolution}
                   onChange={(e) => setCctvResolution(e.target.value as any)}
                   className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-xs text-white focus:ring-1 focus:ring-blue-500"
@@ -229,8 +229,8 @@ export function CommercialInfrastructureCalculator({
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-zinc-400 block mb-2">Video Compression Codec</label>
-                <select
+                <label htmlFor="components-CommercialInfrastructureCalculator-video-compression-codec" className="text-xs font-semibold text-zinc-400 block mb-2">Video Compression Codec</label>
+                <select id="components-CommercialInfrastructureCalculator-video-compression-codec"
                   value={cctvCodec}
                   onChange={(e) => setCctvCodec(e.target.value as any)}
                   className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-xs text-white focus:ring-1 focus:ring-blue-500"
@@ -322,8 +322,8 @@ export function CommercialInfrastructureCalculator({
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-xs font-semibold text-zinc-400 block mb-2">Dedicated Workstations</label>
-                <input
+                <label htmlFor="components-CommercialInfrastructureCalculator-dedicated-workstations" className="text-xs font-semibold text-zinc-400 block mb-2">Dedicated Workstations</label>
+                <input id="components-CommercialInfrastructureCalculator-dedicated-workstations"
                   type="number"
                   min="5"
                   max="200"
@@ -334,8 +334,8 @@ export function CommercialInfrastructureCalculator({
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-zinc-400 block mb-2">Workload Profile</label>
-                <select
+                <label htmlFor="components-CommercialInfrastructureCalculator-workload-profile" className="text-xs font-semibold text-zinc-400 block mb-2">Workload Profile</label>
+                <select id="components-CommercialInfrastructureCalculator-workload-profile"
                   value={networkProfile}
                   onChange={(e) => setNetworkProfile(e.target.value as any)}
                   className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-xs text-white focus:ring-1 focus:ring-blue-500"
@@ -417,8 +417,8 @@ export function CommercialInfrastructureCalculator({
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-xs font-semibold text-zinc-400 block mb-2">Public Areas (Pool/Lobby/Dining)</label>
-                <input
+                <label htmlFor="components-CommercialInfrastructureCalculator-public-areas-pool-lobby-dining" className="text-xs font-semibold text-zinc-400 block mb-2">Public Areas (Pool/Lobby/Dining)</label>
+                <input id="components-CommercialInfrastructureCalculator-public-areas-pool-lobby-dining"
                   type="number"
                   min="1"
                   max="15"
@@ -429,8 +429,8 @@ export function CommercialInfrastructureCalculator({
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-zinc-400 block mb-2">Guest Density Profile</label>
-                <select
+                <label htmlFor="components-CommercialInfrastructureCalculator-guest-density-profile" className="text-xs font-semibold text-zinc-400 block mb-2">Guest Density Profile</label>
+                <select id="components-CommercialInfrastructureCalculator-guest-density-profile"
                   value={wifiGuestLoad}
                   onChange={(e) => setWifiGuestLoad(e.target.value as any)}
                   className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-xs text-white focus:ring-1 focus:ring-blue-500"
