@@ -48,33 +48,18 @@ function WhatsAppIcon(props: React.SVGProps<SVGSVGElement>) {
 
 const navLinks = [
   {
-    name: 'Solutions',
+    name: 'Services',
     href: '/services',
     children: [
-      { name: 'All Solutions & Services', href: '/services' },
-      ...ENTITY.services.map((s) => ({ name: s.navLabel, href: s.url })),
-      { name: 'Enterprise Redundancy Solutions', href: '/solutions' },
+      { name: 'All Services', href: '/services' },
+      { name: 'Computers & Mobiles', href: '/services/computers-mobiles' },
+      { name: 'Networking & Internet', href: '/services/networking-internet' },
+      { name: 'CCTV & Security', href: '/services/cctv-security' },
+      { name: 'Government & Business', href: '/services/government-business' },
+      { name: 'Financial & Travel', href: '/services/financial-travel' },
     ]
   },
-  {
-    name: 'Industries',
-    href: '/industries',
-    children: [
-      { name: 'All Industries Overview', href: '/industries' },
-      ...ENTITY.industries.map((i) => ({ name: i.navLabel, href: i.url })),
-    ]
-  },
-  { name: 'Products', href: '/products' },
-  {
-    name: 'Resources',
-    href: '/resources',
-    children: [
-      { name: 'Resources & Guides Hub', href: '/resources' },
-      { name: 'IT Infrastructure Guide', href: '/resources/infrastructure-planning-guide' },
-      { name: 'CCTV Surveillance Guide', href: '/resources/cctv-planning-guide' },
-      { name: 'Custom Setup Configurator', href: '/customised-setups' },
-    ]
-  },
+  { name: 'Shop', href: '/products' },
   { name: 'About', href: '/about' },
   { name: 'Contact', href: '/contact' },
 ];
@@ -384,7 +369,7 @@ export function Header() {
                     onMouseLeave={resetMagneticEffect}
                     className="group relative rounded-xl border border-blue-500 bg-blue-600 px-5 py-2.5 text-sm font-bold text-white transition-all duration-200 hover:bg-blue-500 shadow-lg shadow-blue-500/20"
                   >
-                    Get Free Assessment
+                    Get Help
                   </Link>
                   <Link
                     href="/customised-setups"
@@ -392,7 +377,7 @@ export function Header() {
                     onMouseLeave={resetMagneticEffect}
                     className="group relative rounded-xl border border-zinc-700 bg-zinc-900 px-5 py-2.5 text-sm font-bold text-zinc-200 transition-all duration-200 hover:border-blue-500 hover:text-white shadow-sm"
                   >
-                    Get Free Quote
+                    Get a Quote
                   </Link>
                 </div>
               </>
