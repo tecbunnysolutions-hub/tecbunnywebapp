@@ -36,13 +36,6 @@ declare module 'next/headers' {
   export function cookies(): Promise<any>;
 }
 
-declare module 'next/server' {
-  export type NextRequest = Request & { nextUrl: URL; cookies: any };
-  export const NextRequest: any;
-  export type NextResponse = Response;
-  export const NextResponse: any;
-}
-
 declare module 'next/script' {
   const Script: any;
   export default Script;

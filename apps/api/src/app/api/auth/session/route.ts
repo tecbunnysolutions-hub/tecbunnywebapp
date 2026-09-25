@@ -1,5 +1,5 @@
 import { isSupabasePublicConfigured } from "@tecbunny/core";
-import { createClient } from '@tecbunny/database';
+import { createSupabaseClient as createClient } from '@tecbunny/database/server';
 import { NextRequest, NextResponse } from 'next/server';
 
 
@@ -9,8 +9,10 @@ import { verifySuperadminSessionToken } from "@tecbunny/core/server";
 // Create client for current user authentication
 async function createAuthenticatedClient() {
   const supabase = await createClient();
+  const { data: { user }, error } = await supabase.auth.getUser();
+  if (error || !user) return { supabase, session: null };
   const { data: { session } } = await supabase.auth.getSession();
-  return { supabase, session };
+  return { supabase, session: session ? { ...session, user } : null };
 }
 
 // GET /api/auth/session - Get current user session

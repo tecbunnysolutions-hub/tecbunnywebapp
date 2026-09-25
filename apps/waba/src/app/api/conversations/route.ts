@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import { requireApiRole } from '@tecbunny/core/server-role-guard';
-import { prisma } from '@/lib/prisma';
 import { canAccessConversationSender, canManageUserInScope, resolveActorScope } from '@/lib/authorization-scope';
 
 export const dynamic = 'force-dynamic';
@@ -28,10 +27,9 @@ export async function PATCH(req: Request) {
     }
 
     if (assigned_to !== undefined && assigned_to !== null) {
-      const assignee = await prisma.user.findUnique({
-        where: { id: String(assigned_to) },
-        select: { organization_id: true, branch_id: true },
-      });
+      const { data: assignee, error: assigneeError } = await supabase.from('waba_staff_directory')
+        .select('organization_id, branch_id').eq('id', String(assigned_to)).maybeSingle();
+      if (assigneeError) throw assigneeError;
       if (!assignee) {
         return NextResponse.json({ error: 'Invalid assigned_to user' }, { status: 400 });
       }

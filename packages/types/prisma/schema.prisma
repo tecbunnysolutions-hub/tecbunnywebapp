@@ -20,6 +20,8 @@ model Conversation {
   notes                      String?
   ad_source                  String?
   assigned_to                String?
+  organization_id            String?
+  branch_id                  String?
   department                 String    @default("UNASSIGNED")
   ai_active                  Boolean   @default(true)
   deal_value                 String?

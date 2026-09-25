@@ -1,5 +1,5 @@
 import { isSupabasePublicConfigured } from "@tecbunny/core";
-import { createClient } from '@tecbunny/database';
+import { createSupabaseClient as createClient } from '@tecbunny/database/server';
 import { NextRequest, NextResponse } from 'next/server';
 
 import { logger } from "@tecbunny/core";

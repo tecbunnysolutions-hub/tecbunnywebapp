@@ -1,9 +1,7 @@
 import { NextRequest } from 'next/server';
 
-import {
-  createClient as createServerClient,
-  isSupabaseServiceConfigured
-} from '@tecbunny/database';
+import { createSupabaseClient as createServerClient } from '@tecbunny/database/server';
+import { isSupabaseServiceConfigured } from '@tecbunny/database';
 import { logger } from "@tecbunny/core";
 import { apiError, apiSuccess } from "@tecbunny/core";
 import { requireAdmin } from "@tecbunny/core/admin-auth";

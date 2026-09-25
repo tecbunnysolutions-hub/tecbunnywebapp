@@ -1,4 +1,5 @@
-import { createClient } from '@tecbunny/database';
+import { createClient } from '@supabase/supabase-js';
+import { requireSupabasePublicEnv } from '@tecbunny/database';
 import { logger } from '@tecbunny/core/logger';
 import { getProductDisplayImage } from '@tecbunny/core/image-utils';
 import { stripHtmlToPlainText } from '@tecbunny/core/strings';
@@ -93,7 +94,8 @@ export async function GET() {
 
   let itemsXml = '';
   try {
-    const supabase = await createClient();
+    const { url, publicKey } = requireSupabasePublicEnv();
+    const supabase = createClient(url, publicKey, { auth: { persistSession: false, autoRefreshToken: false } });
     const productColumns = await ensureProductColumns(supabase);
     const { data, error } = await applyPublicProductOrdering(
       applyPublicProductVisibilityFilters(supabase.from('products').select('*'), productColumns),

@@ -1,4 +1,4 @@
-import { createClient } from '@tecbunny/database';
+import { createSupabaseClient as createClient } from '@tecbunny/database/server';
 import { NextRequest, NextResponse } from 'next/server';
 
 import { sendWelcomeNotification, sendWhatsAppNotification } from "@tecbunny/core/whatsapp-service";

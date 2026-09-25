@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import { requireApiRole } from '@tecbunny/core/server-role-guard';
+import { resolveActorScope, canAccessConversationSender } from '@/lib/authorization-scope';
 
 export const dynamic = 'force-dynamic';
 
@@ -20,6 +21,9 @@ export async function PATCH(req: NextRequest) {
     if (!sender_number || typeof sender_number !== 'string') {
       return NextResponse.json({ error: 'sender_number is required' }, { status: 400 });
     }
+
+    const scope = await resolveActorScope(auth.session.user.id, auth.role);
+    if (!scope || !(await canAccessConversationSender(scope, sender_number))) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
     // Mark all INBOUND messages for this conversation as READ
     const { error: msgErr } = await supabase

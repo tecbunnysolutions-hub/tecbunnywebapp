@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@tecbunny/database';
+import { createSupabaseClient as createClient } from '@tecbunny/database/server';
 import { getSessionWithRole } from '@tecbunny/core/auth/server-role';
 import { isAtLeast } from '@tecbunny/core/roles';
 import { logger } from '@tecbunny/core';

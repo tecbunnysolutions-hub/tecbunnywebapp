@@ -27,4 +27,13 @@ describe('API gateway MFA policy', () => {
     await executeUnifiedPolicyMiddleware(new NextRequest('https://api.test/api/auth/2fa/setup/admin'), { appType: 'api' });
     expect(updateSession).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ enforceMfaRoles: ['admin', 'superadmin'] }));
   });
+  it('allows Cashfree checkout resources while retaining nonce protection', async () => {
+    const response = await executeUnifiedPolicyMiddleware(new NextRequest('https://test/payment/cashfree/one'), { appType: 'public' });
+    const csp = response.headers.get('content-security-policy')!;
+    expect(csp).toContain('https://sdk.cashfree.com');
+    expect(csp).toContain('https://api.cashfree.com');
+    expect(csp).toContain('https://sandbox.cashfree.com');
+    expect(csp.split(';').find(directive => directive.trim().startsWith('script-src'))).toContain("'nonce-");
+    expect(csp.split(';').find(directive => directive.trim().startsWith('script-src'))).not.toContain("'unsafe-inline'");
+  });
 });

@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import { createSupabaseClient } from '@tecbunny/database/server';
-import { supabase } from '@/lib/supabase';
 import { verifySuperadminSessionToken } from '@tecbunny/core/auth/superadmin-session';
 import { logger } from '@tecbunny/core/logger';
 
@@ -22,17 +21,6 @@ export async function GET(req: Request) {
       }
     }
 
-    // Legacy non-superadmin agent cookie: resolve against DB, never trust a fixed value
-    const agentMatch = cookieHeader.match(/waba_agent_id=([^;]+)/);
-    const agentId = agentMatch ? agentMatch[1] : null;
-    if (agentId) {
-      const { data: user } = await supabase.from('User').select('*').eq('id', agentId).maybeSingle();
-      if (user) {
-        logger.info('waba_auth_me.audit.legacy_agent_session');
-        return NextResponse.json({ user });
-      }
-    }
-
     // Check actual Supabase session
     try {
       const supabaseClient = await createSupabaseClient();
@@ -45,7 +33,7 @@ export async function GET(req: Request) {
             id: user.id, 
             name: user.user_metadata?.first_name || user.email?.split('@')[0] || 'Agent', 
             email: user.email, 
-            role: user.user_metadata?.role || 'AGENT' 
+            role: user.app_metadata?.role || 'AGENT'
           } 
         });
       }

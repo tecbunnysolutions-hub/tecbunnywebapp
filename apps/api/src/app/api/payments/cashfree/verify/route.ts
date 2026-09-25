@@ -1,83 +1,36 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@tecbunny/database';
-import { logger } from '@tecbunny/core';
+import { logger } from '@tecbunny/core/logger';
 import { rateLimit } from '@tecbunny/core/rate-limit';
-
-const CF_ENV = (process.env.CASHFREE_ENV ?? 'sandbox') as 'sandbox' | 'production';
-const CF_BASE_URL =
-  CF_ENV === 'production'
-    ? 'https://api.cashfree.com/pg'
-    : 'https://sandbox.cashfree.com/pg';
-const CF_APP_ID =
-  CF_ENV === 'production'
-    ? process.env.CASHFREE_PROD_APP_ID ?? ''
-    : process.env.CASHFREE_SANDBOX_APP_ID ?? '';
-const CF_SECRET =
-  CF_ENV === 'production'
-    ? process.env.CASHFREE_PROD_SECRET_KEY ?? ''
-    : process.env.CASHFREE_SANDBOX_SECRET_KEY ?? '';
+import { cashfreeConfig, minorUnits, ownedOrder, PaymentError } from '../shared';
 
 export async function GET(request: NextRequest) {
-  const clientIP =
-    request.headers.get('x-forwarded-for') ||
-    request.headers.get('x-real-ip') ||
-    'unknown';
-
-  if (!rateLimit(clientIP, 'cashfree_verify', { limit: 20, windowMs: 60_000 })) {
-    return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 });
-  }
-
-  const { searchParams } = new URL(request.url);
-  const cfOrderId = searchParams.get('cf_order_id');
-  const orderId = searchParams.get('order_id');
-
-  if (!cfOrderId || !orderId) {
-    return NextResponse.json({ error: 'cf_order_id and order_id are required' }, { status: 400 });
-  }
-
+  const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+  if (!rateLimit(ip, 'cashfree_verify', { limit: 20, windowMs: 60_000 })) return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 });
   try {
-    const cfRes = await fetch(`${CF_BASE_URL}/orders/${cfOrderId}`, {
-      headers: {
-        Accept: 'application/json',
-        'X-Client-Id': CF_APP_ID,
-        'X-Client-Secret': CF_SECRET,
-        'x-api-version': '2025-01-01',
-      },
-      cache: 'no-store',
+    const params = request.nextUrl.searchParams;
+    const transactionId = params.get('cf_order_id');
+    const orderId = params.get('order_id');
+    if (!transactionId || !orderId) throw new PaymentError('cf_order_id and order_id are required', 400);
+    const { supabase, order } = await ownedOrder(orderId);
+    const { data: transaction, error } = await supabase.from('payment_transactions').select('order_id, transaction_id, amount, status, gateway_response').eq('transaction_id', transactionId).eq('payment_method', 'cashfree').maybeSingle();
+    if (error) throw new PaymentError('Could not load payment session', 503);
+    if (!transaction || String(transaction.order_id) !== orderId) throw new PaymentError('Payment does not belong to this order', 409);
+    const environment = transaction.gateway_response?.environment;
+    if (environment !== 'sandbox' && environment !== 'production') throw new PaymentError('Payment session environment is missing', 409);
+    const config = cashfreeConfig(environment);
+    const response = await fetch(`${config.baseUrl}/orders/${encodeURIComponent(transactionId)}`, { headers: config.headers, cache: 'no-store', signal: AbortSignal.timeout(20_000) });
+    if (!response.ok) throw new PaymentError('Could not verify payment', 502);
+    const gateway = await response.json();
+    if (gateway.order_id !== transactionId || gateway.order_currency !== 'INR' || minorUnits(gateway.order_amount) !== minorUnits(transaction.amount) || minorUnits(order.total) !== minorUnits(transaction.amount)) throw new PaymentError('Payment transaction mismatch', 409);
+    if (gateway.order_status !== 'PAID') return NextResponse.json({ order_status: gateway.order_status, is_paid: false }, { headers: { 'Cache-Control': 'no-store' } });
+    const { data: settlement, error: settlementError } = await supabase.rpc('settle_gateway_payment', {
+      p_order_id: orderId, p_transaction_id: transactionId, p_payment_method: 'cashfree', p_status: 'success', p_amount: Number(transaction.amount), p_gateway_response: { ...gateway, environment, currency: 'INR' },
     });
-
-    if (!cfRes.ok) {
-      logger.error('cashfree.verify.api_error', { cfOrderId, status: cfRes.status });
-      return NextResponse.json({ error: 'Could not verify payment' }, { status: 502 });
-    }
-
-    const cfOrder = await cfRes.json();
-    const isPaid = cfOrder.order_status === 'PAID';
-
-    if (isPaid) {
-      const supabase = await createClient();
-      const { error } = await supabase
-        .from('orders')
-        .update({
-          status: 'Payment Confirmed',
-          payment_status: 'Payment Confirmed',
-          payment_method: 'cashfree',
-        })
-        .eq('id', orderId);
-
-      if (error) {
-        logger.error('cashfree.verify.order_update_failed', { orderId, error });
-      }
-    }
-
-    return NextResponse.json({
-      order_status: cfOrder.order_status,
-      is_paid: isPaid,
-    });
+    if (settlementError || settlement?.status !== 'success') throw new PaymentError('Payment received; order confirmation is pending. Please retry verification.', 503);
+    return NextResponse.json({ order_status: 'PAID', is_paid: true }, { headers: { 'Cache-Control': 'no-store' } });
   } catch (error) {
-    logger.error('cashfree.verify.unexpected', { error });
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    logger.error('cashfree.verify.failed', { error: error instanceof Error ? error.message : 'Unknown error' });
+    return NextResponse.json({ error: error instanceof PaymentError ? error.message : 'Payment verification is temporarily unavailable', is_paid: false }, { status: error instanceof PaymentError ? error.status : 503, headers: { 'Cache-Control': 'no-store' } });
   }
 }
-
 export const runtime = 'nodejs';

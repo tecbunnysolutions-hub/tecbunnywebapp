@@ -1,4 +1,4 @@
-import { createClient } from '@tecbunny/database';
+import { createSupabaseClient as createClient } from '@tecbunny/database/server';
 import {  createSupabaseServiceClient, isSupabaseServiceConfigured  } from '@tecbunny/database/admin';
 import crypto from 'crypto';
 

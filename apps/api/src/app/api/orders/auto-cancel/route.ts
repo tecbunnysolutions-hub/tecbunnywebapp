@@ -1,6 +1,6 @@
-import { createClient as createServerClient } from '@tecbunny/database';
+import { createSupabaseClient as createServerClient } from '@tecbunny/database/server';
 import { isAtLeast, normalizeRole } from "@tecbunny/core";
-import { createClient } from '@tecbunny/database';
+import { createSupabaseClient as createClient } from '@tecbunny/database/server';
 import { createSupabaseServiceClient, isSupabaseServiceConfigured } from "@tecbunny/core/server";;
 import { NextRequest, NextResponse } from 'next/server';
 import { timingSafeEqual } from 'crypto';

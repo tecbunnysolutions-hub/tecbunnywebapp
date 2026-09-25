@@ -7,6 +7,7 @@ import { getRedis } from '@tecbunny/core/redis';
 import crypto from 'crypto';
 import { hasBroadcastConsent } from '@/services/consentService';
 import { dedupeCampaignRecipients, type CampaignRecipientInput } from '@/lib/campaignRecipients';
+import { resolveActorScope, getAccessibleConversationSenders } from '@/lib/authorization-scope';
 
 const BROADCAST_PER_RECIPIENT_TTL_SECS = 86_400; // 24 h — prevent same number twice in one day
 
@@ -30,6 +31,9 @@ export async function POST(req: Request) {
   try {
     const auth = await requireApiRole({ allowedRoles: ['admin', 'sales_manager', 'marketing_manager', 'superadmin', 'manager'] });
     if (auth.error) return auth.error;
+    const scope = await resolveActorScope(auth.session.user.id, auth.role);
+    if (!scope) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    const allowedSenders = await getAccessibleConversationSenders(scope);
 
     const body = await req.json();
     const { targetStatus, templateName, recipients: importedRecipients, offer = '', preview = false } = body;
@@ -76,6 +80,10 @@ export async function POST(req: Request) {
       contacts = data ?? [];
     }
 
+    if (allowedSenders) {
+      const allowed = new Set(allowedSenders);
+      contacts = contacts.filter(contact => allowed.has(contact.sender_number));
+    }
     if (!contacts || contacts.length === 0) {
       return NextResponse.json({ success: true, count: 0, eligible: 0, invalid, duplicates, optedOut: 0, message: 'No eligible contacts found.' });
     }

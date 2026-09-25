@@ -1,4 +1,4 @@
-import { createServerClient, type CookieOptions } from '@supabase/ssr';
+import { createServerClient } from '@supabase/ssr';
 import { requireSupabasePublicEnv } from './env';
 export * from './env';
 export * from './types';
@@ -7,32 +7,22 @@ const isLocal = process.env.NODE_ENV === 'development';
 
 export async function getServerClient() {
   const { url, publicKey } = requireSupabasePublicEnv();
-  const { cookies } = await import('next/headers');
+  const { cookies, headers } = await import('next/headers');
   const cookieStore = await cookies();
+  const authorization = (await headers()).get('authorization');
+  const bearer = authorization?.match(/^Bearer\s+([^\s]+)$/i)?.[1];
 
   return createServerClient(url, publicKey, {
+    ...(bearer && !/^v[12]\./.test(bearer) ? { global: { headers: { Authorization: `Bearer ${bearer}` } } } : {}),
     cookies: {
-      get(name: string) {
-        return cookieStore.get(name)?.value;
+      getAll() {
+        return cookieStore.getAll();
       },
-      set(name: string, value: string, options: CookieOptions) {
+      setAll(cookiesToSet) {
         try {
-          cookieStore.set({
+          for (const { name, value, options } of cookiesToSet) cookieStore.set({
             name,
             value,
-            ...options,
-            domain: isLocal ? undefined : '.tecbunny.com',
-            sameSite: 'lax',
-          });
-        } catch {
-          // Ignore if called in Server Component during render
-        }
-      },
-      remove(name: string, options: CookieOptions) {
-        try {
-          cookieStore.set({
-            name,
-            value: '',
             ...options,
             domain: isLocal ? undefined : '.tecbunny.com',
             sameSite: 'lax',
@@ -48,4 +38,3 @@ export async function getServerClient() {
 // Aliases for compatibility
 export { getServerClient as createServerClient };
 export { getServerClient as createSupabaseClient };
-

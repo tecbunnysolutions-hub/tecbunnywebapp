@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { router, publicProcedure, protectedProcedure } from '../trpc';
-import { createClient } from '@tecbunny/database';
+import { createSupabaseClient as createClient } from '@tecbunny/database/server';
 import { FeatureFlags, FeatureFlagDictionary } from '@tecbunny/config';
 import { logger } from '@tecbunny/core';
 

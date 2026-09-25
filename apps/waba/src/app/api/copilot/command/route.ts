@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireApiRole } from '@tecbunny/core/server-role-guard';
+import { resolveActorScope, canAccessConversationSender } from '@/lib/authorization-scope';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
@@ -8,7 +9,7 @@ const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
 
 export async function POST(req: Request) {
   try {
-    const { error } = await requireApiRole();
+    const { error, session, role } = await requireApiRole();
     if (error) return error;
 
     const { conversationId, command } = await req.json();
@@ -17,6 +18,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Missing conversationId or command' }, { status: 400 });
     }
 
+    const scope = await resolveActorScope(session.user.id, role);
+    if (!scope || !(await canAccessConversationSender(scope, conversationId))) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     const conversation = await prisma.conversation.findUnique({
       where: { sender_number: conversationId },
       include: {

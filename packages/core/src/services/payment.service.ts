@@ -193,6 +193,7 @@ export class PaymentService {
 
     if (txnError) {
       logger.error('payu_init.transaction_store_failed', { error: txnError.message, orderId, correlationId });
+      throw new Error('Could not record payment transaction. Please retry before paying.');
     }
 
     return {

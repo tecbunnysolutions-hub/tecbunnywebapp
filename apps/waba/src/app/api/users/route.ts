@@ -20,7 +20,7 @@ export async function GET() {
     }
 
     let query = supabase
-      .from('User')
+      .from('waba_staff_directory')
       .select('id, name, email, role, managed_pincodes')
       .order('name', { ascending: true });
 

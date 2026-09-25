@@ -1,4 +1,4 @@
-import { createClient as createServerClient } from "@tecbunny/core";
+import { createSupabaseClient as createServerClient } from '@tecbunny/database/server';
 import { NextRequest, NextResponse } from 'next/server';
 
 import { rateLimit } from "@tecbunny/core/rate-limit";

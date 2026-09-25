@@ -1,4 +1,5 @@
-import { createClient, isSupabaseServiceConfigured, requireSupabaseServiceEnv } from '@tecbunny/database';
+import { createSupabaseClient as createClient } from '@tecbunny/database/server';
+import { isSupabaseServiceConfigured, requireSupabaseServiceEnv } from '@tecbunny/database';
 import { createClient as createSupabaseServiceRoleClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server'
 import { z } from 'zod';

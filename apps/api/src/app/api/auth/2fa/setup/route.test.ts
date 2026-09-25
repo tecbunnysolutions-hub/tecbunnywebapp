@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { NextRequest } from 'next/server';
 
 const mocks = vi.hoisted(() => ({ getUser: vi.fn(), getTwoFactorStatus: vi.fn(), verifyToken: vi.fn(), enableTwoFactor: vi.fn() }));
-vi.mock('@tecbunny/database', () => ({ createClient: async () => ({ auth: { getUser: mocks.getUser } }) }));
+vi.mock('@tecbunny/database/server', () => ({ createSupabaseClient: async () => ({ auth: { getUser: mocks.getUser } }) }));
 vi.mock('@tecbunny/core', () => ({ logger: { error: vi.fn() } }));
 vi.mock('@tecbunny/core/two-factor-manager', () => ({ twoFactorManager: mocks }));
 import { PUT } from './route';

@@ -1,4 +1,4 @@
-import { createClient } from '@tecbunny/database';
+import { createSupabaseClient as createClient } from '@tecbunny/database/server';
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from "@tecbunny/core/admin-auth";
 import { createQuoteActionToken } from "@tecbunny/core/quotes/action-token";

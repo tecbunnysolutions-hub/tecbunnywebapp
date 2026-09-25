@@ -1,4 +1,5 @@
-import { createClient } from '@tecbunny/database';
+import { createClient } from '@supabase/supabase-js';
+import { requireSupabasePublicEnv } from '@tecbunny/database';
 
 export const revalidate = 3600;
 
@@ -14,7 +15,8 @@ function escapeXml(value: string): string {
 }
 
 export async function GET() {
-  const supabase = await createClient();
+  const { url, publicKey } = requireSupabasePublicEnv();
+  const supabase = createClient(url, publicKey, { auth: { persistSession: false, autoRefreshToken: false } });
   const { data: posts } = await supabase
     .from('blog_posts')
     .select('title, slug, excerpt, seo_description, published_at, updated_at')

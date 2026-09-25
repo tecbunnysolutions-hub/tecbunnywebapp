@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { supabase } from '@/lib/supabase';
 import { logger } from '@tecbunny/core/logger';
 import { requireApiRole } from '@tecbunny/core/server-role-guard';
+import { resolveActorScope, getAccessibleConversationSenders, canAccessConversationSender } from '@/lib/authorization-scope';
 
 export const dynamic = 'force-dynamic';
 
@@ -16,6 +17,9 @@ const consentSchema = z.object({
 export async function GET(request: Request) {
   const auth = await requireApiRole({ allowedRoles: ['admin', 'sales_manager', 'marketing_manager', 'superadmin', 'manager'] });
   if (auth.error) return auth.error;
+  const scope = await resolveActorScope(auth.session.user.id, auth.role);
+  if (!scope) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  const senders = await getAccessibleConversationSenders(scope);
   logger.info('waba_contacts_consent.audit.list_requested', { role: auth.role ?? null });
 
   const { searchParams } = new URL(request.url);
@@ -29,6 +33,10 @@ export async function GET(request: Request) {
 
   if (query) {
     builder = builder.ilike('phone', `%${query}%`);
+  }
+  if (senders) {
+    if (!senders.length) return NextResponse.json({ contacts: [] });
+    builder = builder.in('phone', senders);
   }
 
   const { data, error } = await builder;
@@ -53,6 +61,10 @@ export async function PATCH(request: Request) {
 
   const now = new Date().toISOString();
   const { phone, optedIn, source } = parsed.data;
+  const scope = await resolveActorScope(auth.session.user.id, auth.role);
+  if (!scope || !(await canAccessConversationSender(scope, phone))) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
   const { data, error } = await supabase
     .from('waba_contact_consent')
     .upsert({

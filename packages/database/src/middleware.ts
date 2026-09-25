@@ -132,31 +132,40 @@ export async function updateSession(
     onMfaRequired?: (req: NextRequest) => NextResponse;
   }
 ) {
-  const forwardedHeaders = options?.requestHeaders ?? request.headers;
+  const forwardedHeaders = new Headers(options?.requestHeaders ?? request.headers);
   let response = NextResponse.next({
     request: { headers: forwardedHeaders },
   });
 
   const { url, publicKey } = requireSupabasePublicEnv();
+  const bearerToken = request.headers.get('authorization')?.match(/^Bearer\s+([^\s]+)$/i)?.[1];
+  const supabaseBearer = bearerToken && !/^v[12]\./.test(bearerToken) ? bearerToken : undefined;
+  const pendingCookies = new Map<string, { name: string; value: string; options: CookieOptions }>();
+  const withRefreshedCookies = (result: NextResponse) => {
+    for (const { name, value, options: cookieOptions } of pendingCookies.values()) {
+      result.cookies.set(name, value, cookieOptions);
+    }
+    return result;
+  };
 
   const supabase = createServerClient(url, publicKey, {
+    ...(supabaseBearer ? { global: { headers: { Authorization: `Bearer ${supabaseBearer}` } } } : {}),
     cookies: {
-      get(name: string) {
-        return request.cookies.get(name)?.value;
+      getAll() {
+        return request.cookies.getAll();
       },
-      set(name: string, value: string, cookieOptions: CookieOptions) {
-        request.cookies.set({ name, value, ...cookieOptions });
+      setAll(cookiesToSet) {
+        for (const cookie of cookiesToSet) {
+          request.cookies.set(cookie.name, cookie.value);
+          pendingCookies.set(cookie.name, cookie);
+        }
+        forwardedHeaders.set('cookie', request.cookies.toString());
         response = NextResponse.next({
           request: { headers: forwardedHeaders },
         });
-        response.cookies.set({ name, value, ...cookieOptions });
-      },
-      remove(name: string, cookieOptions: CookieOptions) {
-        request.cookies.set({ name, value: '', ...cookieOptions });
-        response = NextResponse.next({
-          request: { headers: forwardedHeaders },
-        });
-        response.cookies.set({ name, value: '', ...cookieOptions });
+        for (const { name, value, options: cookieOptions } of pendingCookies.values()) {
+          response.cookies.set(name, value, cookieOptions);
+        }
       },
     },
   });
@@ -219,18 +228,18 @@ export async function updateSession(
   }
 
   // IMPORTANT: Avoid using getSession() due to security risks. getUser() verifies the token with the Supabase API.
-  const { data: { user }, error } = await supabase.auth.getUser();
+  const { data: { user }, error } = await supabase.auth.getUser(supabaseBearer);
 
   if (!user || error) {
     if (options?.onUnauthorized) {
-      return options.onUnauthorized(request);
+      return withRefreshedCookies(options.onUnauthorized(request));
     }
     // `nextUrl` is typed as the standard URL in consumers, which has no clone().
     // Construct a copy so its path and query can be safely changed.
     const redirectUrl = new URL(request.nextUrl.toString());
     redirectUrl.pathname = loginRoute;
     redirectUrl.searchParams.set('redirectedFrom', pathname);
-    return NextResponse.redirect(redirectUrl);
+    return withRefreshedCookies(NextResponse.redirect(redirectUrl));
   }
 
   // Extract role strictly from app_metadata (secure). Do not fallback to user_metadata which is client-modifiable.
@@ -238,26 +247,26 @@ export async function updateSession(
   const userRole = normalizeRole(rawRole);
 
   if (!userRole) {
-    if (options?.onForbidden) return options.onForbidden(request);
-    return new NextResponse('Forbidden: Role not assigned', { status: 403 });
+    if (options?.onForbidden) return withRefreshedCookies(options.onForbidden(request));
+    return withRefreshedCookies(new NextResponse('Forbidden: Role not assigned', { status: 403 }));
   }
 
   // Verify Role Restrictions
   if (options && (options.allowedRoles || options.minimumRole)) {
     if (!roleMatches(userRole, { allowedRoles: options.allowedRoles, minimumRole: options.minimumRole })) {
-      if (options?.onForbidden) return options.onForbidden(request);
-      return new NextResponse(`Forbidden: Insufficient Privileges. Role '${userRole}' is not authorized.`, { status: 403 });
+      if (options?.onForbidden) return withRefreshedCookies(options.onForbidden(request));
+      return withRefreshedCookies(new NextResponse(`Forbidden: Insufficient Privileges. Role '${userRole}' is not authorized.`, { status: 403 }));
     }
   }
 
   // Enforce MFA for specific roles
   if (options?.enforceMfaRoles && options.enforceMfaRoles.includes(userRole)) {
-    const { data } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+    const { data } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel(supabaseBearer);
     if (data?.currentLevel !== 'aal2') {
       if (options?.onMfaRequired) {
-        return options.onMfaRequired(request);
+        return withRefreshedCookies(options.onMfaRequired(request));
       }
-      return NextResponse.redirect(new URL('/mfa-setup', request.url));
+      return withRefreshedCookies(NextResponse.redirect(new URL('/mfa-setup', request.url)));
     }
   }
 

@@ -33,7 +33,7 @@ function generateCSP(nonce: string) {
   // react-hot-toast) inject <style> tags without a nonce, and per the CSP spec
   // a nonce in style-src causes 'unsafe-inline' to be ignored — which blocks
   // those tags. Style-based CSP bypass is far lower risk than script injection.
-  const scriptSrc = `script-src 'self' 'nonce-${nonce}' https://challenges.cloudflare.com https://cs.iubenda.com https://cdn.iubenda.com https://static.cloudflareinsights.com https://www.googletagmanager.com https://www.google-analytics.com https://va.vercel-scripts.com https://connect.facebook.net`;
+  const scriptSrc = `script-src 'self' 'nonce-${nonce}' https://challenges.cloudflare.com https://cs.iubenda.com https://cdn.iubenda.com https://static.cloudflareinsights.com https://www.googletagmanager.com https://www.google-analytics.com https://va.vercel-scripts.com https://connect.facebook.net https://sdk.cashfree.com`;
   const styleSrc  = `style-src 'self' 'unsafe-inline' https://fonts.googleapis.com`;
   return [
     "default-src 'self'",
@@ -42,8 +42,8 @@ function generateCSP(nonce: string) {
     "style-src-attr 'unsafe-inline'",
     "font-src 'self' data: https://fonts.gstatic.com",
     "img-src 'self' data: blob: https:",
-    "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://www.google-analytics.com https://region1.analytics.google.com https://analytics.google.com https://www.google.com https://pagead2.googlesyndication.com https://api.postalpincode.in https://cloudflareinsights.com https://static.cloudflareinsights.com https://challenges.cloudflare.com https://vitals.vercel-insights.com https://api.tecbunny.com",
-    "frame-src 'self' https://challenges.cloudflare.com https://www.google.com",
+    "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://www.google-analytics.com https://region1.analytics.google.com https://analytics.google.com https://www.google.com https://pagead2.googlesyndication.com https://api.postalpincode.in https://cloudflareinsights.com https://static.cloudflareinsights.com https://challenges.cloudflare.com https://vitals.vercel-insights.com https://api.tecbunny.com https://api.cashfree.com https://sandbox.cashfree.com",
+    "frame-src 'self' https://challenges.cloudflare.com https://www.google.com https://sdk.cashfree.com https://api.cashfree.com https://sandbox.cashfree.com https://payments.cashfree.com https://payments-test.cashfree.com",
     "worker-src 'self' blob:",
     "object-src 'none'",
     "base-uri 'self'",
@@ -100,7 +100,7 @@ export async function executeUnifiedPolicyMiddleware(
         headers: {
           'Access-Control-Allow-Origin': allowedOrigin,
           'Access-Control-Allow-Credentials': 'true',
-          'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+          'Access-Control-Allow-Methods': 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
           'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With',
           'Access-Control-Max-Age': '86400'
         }
@@ -235,14 +235,14 @@ export async function executeUnifiedPolicyMiddleware(
   if (appType === 'api' && origin) {
     sessionResponse.headers.set('Access-Control-Allow-Origin', allowedOrigin);
     sessionResponse.headers.set('Access-Control-Allow-Credentials', 'true');
-    sessionResponse.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    sessionResponse.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
     sessionResponse.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
   }
 
   // Parse UTM params if present
   const utmSource = request.nextUrl.searchParams.get('utm_source');
   if (utmSource) {
-     sessionResponse.cookies.set('tb_source_context', btoa(JSON.stringify({ source: utmSource })), { path: '/' });
+     sessionResponse.cookies.set('tb_source_context', btoa(Array.from(new TextEncoder().encode(JSON.stringify({ source: utmSource.slice(0, 256) })), byte => String.fromCharCode(byte)).join('')), { path: '/' });
   }
 
   return sessionResponse;

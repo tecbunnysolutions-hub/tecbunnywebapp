@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mocks = vi.hoisted(() => ({ getUser: vi.fn(), assurance: vi.fn(), profile: vi.fn(), verifyRoot: vi.fn() }));
 vi.mock('..', () => ({ ALL_ROLES: ['admin', 'customer', 'superadmin'], normalizeRole: (role: unknown) => role, logger: { warn: vi.fn() } }));
-vi.mock('next/headers', () => ({ cookies: async () => ({ get: () => undefined }) }));
+vi.mock('next/headers', () => ({ cookies: async () => ({ get: () => undefined }), headers: async () => new Headers() }));
 vi.mock('./superadmin-session', () => ({ verifySuperadminSessionToken: mocks.verifyRoot }));
 vi.mock('@tecbunny/database/admin', () => ({
   isSupabaseServiceConfigured: true,

@@ -199,9 +199,13 @@ export async function POST(request: NextRequest) {
       .from('payment_transactions')
       .select('order_id, amount, status')
       .eq('transaction_id', txnId)
+      .eq('payment_method', 'payu')
       .maybeSingle();
 
-    if (existingTxnError || !existingTxn) {
+    if (existingTxnError) {
+      return NextResponse.json({ error: 'Payment confirmation is pending. Please retry verification.' }, { status: 503, headers: { 'Retry-After': '30' } });
+    }
+    if (!existingTxn) {
       logger.warn('payu_callback.unknown_transaction', { correlationId, orderId, txnId, error: existingTxnError?.message });
       const failureUrl = new URL(`/payment/failed`, siteUrl);
       failureUrl.searchParams.set('orderId', orderId);
@@ -210,24 +214,18 @@ export async function POST(request: NextRequest) {
     }
 
     // Idempotency: a gateway may retry the callback. Do not re-process a finalized transaction.
-    if (existingTxn.status === 'success' || existingTxn.status === 'failed') {
+    if (existingTxn.status === 'success' && String(existingTxn.order_id) === orderId && Math.round(Number(existingTxn.amount) * 100) === Math.round(amountNumber * 100)) {
       logger.warn('payu_callback.duplicate_callback', { correlationId, orderId, txnId, existingStatus: existingTxn.status });
-      if (existingTxn.status === 'success') {
-        const successUrl = new URL(`/payment/success`, siteUrl);
-        successUrl.searchParams.set('orderId', orderId);
-        return NextResponse.redirect(successUrl, 303);
-      }
-      const failureUrl = new URL(`/payment/failed`, siteUrl);
-      failureUrl.searchParams.set('orderId', orderId);
-      failureUrl.searchParams.set('reason', 'Payment already processed.');
-      return NextResponse.redirect(failureUrl, 303);
+      const successUrl = new URL(`/payment/success`, siteUrl);
+      successUrl.searchParams.set('orderId', orderId);
+      return NextResponse.redirect(successUrl, 303);
     }
 
     const expectedAmount = Number(existingTxn.amount);
     if (
       existingTxn.order_id !== orderId ||
       !Number.isFinite(expectedAmount) ||
-      Math.abs(expectedAmount - amountNumber) > 0.01
+      Math.round(expectedAmount * 100) !== Math.round(amountNumber * 100)
     ) {
       logger.error('payu_callback.transaction_mismatch', {
         correlationId,
@@ -243,22 +241,30 @@ export async function POST(request: NextRequest) {
       return NextResponse.redirect(failureUrl, 303);
     }
 
-    const { error: rpcError } = await supabase.rpc('complete_payment_transaction', {
+    const { data: settlement, error: rpcError } = await supabase.rpc('settle_gateway_payment', {
       p_order_id: orderId,
       p_transaction_id: txnId,
       p_payment_method: 'payu',
       p_status: isSuccess ? 'success' : 'failed',
       p_gateway_response: { ...payload, hash_verified: true },
-      p_is_success: isSuccess
+      p_amount: amountNumber
     });
 
-    if (rpcError) {
+    if (rpcError || !settlement || !['success', 'failed'].includes(settlement.status)) {
       logger.error('payu_callback.transaction_atomic_update_failed', {
         correlationId,
         orderId,
         txnId,
-        error: rpcError.message,
+        error: rpcError?.message || 'Missing settlement result',
       });
+      return NextResponse.json({ error: 'Payment confirmation is pending. Please retry verification.' }, { status: 503, headers: { 'Retry-After': '30' } });
+    }
+
+    // A late failure must never downgrade an already-settled payment.
+    if (settlement.status === 'success' && !isSuccess) {
+      const successUrl = new URL('/payment/success', siteUrl);
+      successUrl.searchParams.set('orderId', orderId);
+      return NextResponse.redirect(successUrl, 303);
     }
 
     if (!isSuccess) {

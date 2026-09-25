@@ -138,9 +138,11 @@ export async function getServerAuthState(): Promise<ServerAuthState> {
   }
 
   const supabase = await createServerClient();
+  const { headers: requestHeaders } = await import('next/headers');
+  const bearerToken = (await requestHeaders()).get('authorization')?.match(/^Bearer\s+([^\s]+)$/i)?.[1];
   // Security: use getUser() not getSession(). getSession() only reads from cookies
   // without server-side JWT validation. getUser() verifies the token with Supabase auth server.
-  const { data: { user }, error } = await supabase.auth.getUser();
+  const { data: { user }, error } = await supabase.auth.getUser(bearerToken);
 
   if (error || !user) {
     return { supabase, session: null, role: DEFAULT_ROLE, permissions: [], mfaLevel: null };
@@ -148,7 +150,9 @@ export async function getServerAuthState(): Promise<ServerAuthState> {
 
   // Reconstruct a minimal session-like object for compatibility
   const { data: sessionData } = await supabase.auth.getSession();
-  const session = sessionData.session ?? null;
+  const session = bearerToken
+    ? { user, access_token: bearerToken, refresh_token: '', token_type: 'bearer', expires_in: 0 } as Session
+    : sessionData.session ? { ...sessionData.session, user } : null;
 
   // Security: app_metadata is server-controlled (set by admin/service role only).
   // It is the authoritative source of truth for roles.
@@ -166,7 +170,7 @@ export async function getServerAuthState(): Promise<ServerAuthState> {
 
   let mfaLevel: string | null = null;
   if (resolvedRole === 'admin' || resolvedRole === 'superadmin') {
-    const { data } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+    const { data } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel(bearerToken);
     mfaLevel = data?.currentLevel ?? 'aal1';
   }
 

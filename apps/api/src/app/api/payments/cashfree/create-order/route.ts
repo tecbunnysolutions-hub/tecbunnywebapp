@@ -1,103 +1,39 @@
+import { randomUUID } from 'node:crypto';
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@tecbunny/database';
-import { logger } from '@tecbunny/core';
+import { logger } from '@tecbunny/core/logger';
 import { rateLimit } from '@tecbunny/core/rate-limit';
-
-const CF_ENV = (process.env.CASHFREE_ENV ?? 'sandbox') as 'sandbox' | 'production';
-const CF_BASE_URL =
-  CF_ENV === 'production'
-    ? 'https://api.cashfree.com/pg'
-    : 'https://sandbox.cashfree.com/pg';
-// Separate credentials per environment so both can coexist
-const CF_APP_ID =
-  CF_ENV === 'production'
-    ? process.env.CASHFREE_PROD_APP_ID ?? ''
-    : process.env.CASHFREE_SANDBOX_APP_ID ?? '';
-const CF_SECRET =
-  CF_ENV === 'production'
-    ? process.env.CASHFREE_PROD_SECRET_KEY ?? ''
-    : process.env.CASHFREE_SANDBOX_SECRET_KEY ?? '';
+import { cashfreeConfig, minorUnits, ownedOrder, PaymentError } from '../shared';
 
 export async function POST(request: NextRequest) {
-  const clientIP =
-    request.headers.get('x-forwarded-for') ||
-    request.headers.get('x-real-ip') ||
-    'unknown';
-
-  if (!rateLimit(clientIP, 'cashfree_create_order', { limit: 10, windowMs: 60_000 })) {
-    return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 });
-  }
-
+  const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+  if (!rateLimit(ip, 'cashfree_create_order', { limit: 10, windowMs: 60_000 })) return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 });
   try {
-    const body = await request.json();
-    const { order_id } = body as { order_id?: string };
-
-    if (!order_id || typeof order_id !== 'string') {
-      return NextResponse.json({ error: 'order_id is required' }, { status: 400 });
-    }
-
-    const supabase = await createClient();
-    const { data: order, error } = await supabase
-      .from('orders')
-      .select('id, total, customer_name, customer_email, customer_phone')
-      .eq('id', order_id)
-      .single();
-
-    if (error || !order) {
-      logger.warn('cashfree.create_order.not_found', { order_id });
-      return NextResponse.json({ error: 'Order not found' }, { status: 404 });
-    }
-
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.tecbunny.com';
-    // Strip non-digits, take last 10
+    const { order_id } = await request.json();
+    if (typeof order_id !== 'string' || !order_id.trim()) throw new PaymentError('order_id is required', 400);
+    const { supabase, order } = await ownedOrder(order_id);
+    if (['paid', 'payment confirmed'].includes(String(order.payment_status).toLowerCase())) throw new PaymentError('Order is already paid', 409);
+    const config = cashfreeConfig();
+    const amount = minorUnits(order.total) / 100;
+    const transactionId = `tb_${randomUUID()}`;
     const phone = String(order.customer_phone || '').replace(/\D/g, '').slice(-10);
-
-    const cfPayload = {
-      order_amount: Number(order.total).toFixed(2),
-      order_currency: 'INR',
-      customer_details: {
-        // Cashfree customer_id max 32 chars, no hyphens allowed
-        customer_id: `TB${order_id.replace(/-/g, '').slice(0, 30)}`,
-        customer_name: String(order.customer_name || 'Customer').slice(0, 100),
-        customer_email: order.customer_email || 'noreply@tecbunny.com',
-        customer_phone: phone.length === 10 ? phone : '9999999999',
-      },
-      order_meta: {
-        return_url: `${siteUrl}/payment/cashfree/${order_id}/confirm`,
-      },
-      order_note: `TecBunny ${order_id.slice(0, 8)}`,
-    };
-
-    const cfRes = await fetch(`${CF_BASE_URL}/orders`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-        'X-Client-Id': CF_APP_ID,
-        'X-Client-Secret': CF_SECRET,
-        'x-api-version': '2025-01-01',
-      },
-      body: JSON.stringify(cfPayload),
+    if (phone.length !== 10) throw new PaymentError('A valid customer phone number is required', 400);
+    // Persist the gateway/local-order association before starting checkout.
+    const { error: storeError } = await supabase.from('payment_transactions').insert({ order_id, transaction_id: transactionId, payment_method: 'cashfree', amount, status: 'initiated', gateway_response: { environment: config.environment, currency: 'INR' } });
+    if (storeError) throw new PaymentError('Could not record payment session; please retry', 503);
+    const site = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.tecbunny.com';
+    const response = await fetch(`${config.baseUrl}/orders`, {
+      method: 'POST', headers: { ...config.headers, 'x-idempotency-key': transactionId.slice(3) }, signal: AbortSignal.timeout(20_000),
+      body: JSON.stringify({ order_id: transactionId, order_amount: amount, order_currency: 'INR',
+        customer_details: { customer_id: `TB${order_id.replace(/-/g, '').slice(0, 30)}`, customer_name: String(order.customer_name || 'Customer').slice(0, 100), customer_email: order.customer_email, customer_phone: phone },
+        order_meta: { return_url: `${site}/payment/cashfree/${encodeURIComponent(order_id)}/confirm?order_id=${transactionId}` } }),
     });
-
-    if (!cfRes.ok) {
-      const err = await cfRes.json().catch(() => ({}));
-      logger.error('cashfree.create_order.api_error', { status: cfRes.status, err });
-      return NextResponse.json(
-        { error: 'Payment gateway error', details: err },
-        { status: 502 }
-      );
-    }
-
-    const cfData = await cfRes.json();
-    return NextResponse.json({
-      payment_session_id: cfData.payment_session_id,
-      cf_order_id: cfData.cf_order_id,
-    });
+    if (!response.ok) throw new PaymentError('Payment gateway could not create a session', 502);
+    const data = await response.json();
+    if (data.order_id !== transactionId || typeof data.payment_session_id !== 'string' || !data.payment_session_id) throw new PaymentError('Invalid payment gateway response', 502);
+    return NextResponse.json({ payment_session_id: data.payment_session_id, cf_order_id: transactionId, environment: config.environment }, { headers: { 'Cache-Control': 'no-store' } });
   } catch (error) {
-    logger.error('cashfree.create_order.unexpected', { error });
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    logger.error('cashfree.create_order.failed', { error: error instanceof Error ? error.message : 'Unknown error' });
+    return NextResponse.json({ error: error instanceof PaymentError ? error.message : 'Could not create payment session' }, { status: error instanceof PaymentError ? error.status : 503 });
   }
 }
-
 export const runtime = 'nodejs';

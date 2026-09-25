@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 
 import { supabase } from '@/lib/supabase';
 import { requireApiRole } from '@tecbunny/core/server-role-guard';
+import { resolveActorScope, canAccessConversationSender } from '@/lib/authorization-scope';
 
 export const dynamic = 'force-dynamic';
 
@@ -30,6 +31,8 @@ export async function GET(_request: Request, { params }: { params: Promise<{ sen
     const { sender } = await params;
     const senderNumber = decodeURIComponent(sender);
     if (!senderNumber) return NextResponse.json({ error: 'sender is required' }, { status: 400 });
+    const scope = await resolveActorScope(auth.session.user.id, auth.role);
+    if (!scope || !(await canAccessConversationSender(scope, senderNumber))) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
     const { data, error } = await supabase
       .from('waba_conversation_notes')
@@ -55,6 +58,8 @@ export async function POST(request: Request, { params }: { params: Promise<{ sen
     const { sender } = await params;
     const senderNumber = decodeURIComponent(sender);
     if (!senderNumber) return NextResponse.json({ error: 'sender is required' }, { status: 400 });
+    const scope = await resolveActorScope(auth.session.user.id, auth.role);
+    if (!scope || !(await canAccessConversationSender(scope, senderNumber))) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
     const body = await request.json().catch(() => ({}));
     const note = typeof body.note === 'string' ? body.note.trim() : '';

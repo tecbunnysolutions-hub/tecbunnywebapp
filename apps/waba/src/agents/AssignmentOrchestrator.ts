@@ -91,10 +91,20 @@ export class AssignmentOrchestrator extends BaseAgent<TriagedPayload, void> {
     let managerDetails: { email?: string; phone_number?: string; name?: string } | null = null;
 
     if (requiredRole) {
-      const { data: managers } = await supabase
-        .from('User')
+      const { data: conversation, error: ownershipError } = await supabase.from('Conversation')
+        .select('organization_id, branch_id').eq('sender_number', data.senderNumber).maybeSingle();
+      if (ownershipError || !conversation) throw new Error('Could not resolve conversation ownership');
+      let managersQuery = supabase
+        .from('waba_staff_directory')
         .select('id, email, phone_number, name, managed_pincodes')
-        .eq('role', requiredRole);
+        .eq('role', requiredRole.toLowerCase()).not('organization_id', 'is', null);
+      if (conversation.organization_id) managersQuery = managersQuery.eq('organization_id', conversation.organization_id);
+      if (conversation.branch_id) managersQuery = managersQuery.eq('branch_id', conversation.branch_id);
+      // A pincode is not proof of tenant ownership. A global administrator must
+      // assign unowned traffic before automated tenant routing can take over.
+      const { data: managers, error: managersError } = conversation.organization_id
+        ? await managersQuery : { data: [], error: null };
+      if (managersError) throw managersError;
       
       const matchedManager = (managers || []).find(user => {
         if (!user.managed_pincodes) return false;
@@ -112,7 +122,8 @@ export class AssignmentOrchestrator extends BaseAgent<TriagedPayload, void> {
         logger.info('waba_assignment_manager_matched', { senderNumber: data.senderNumber, assignedUserId });
         
         // Update assigned_to on the Conversation as well
-        await supabase.from('Conversation').update({ assigned_to: assignedUserId, ai_active: false }).eq('sender_number', data.senderNumber);
+        const { error: assignmentError } = await supabase.from('Conversation').update({ assigned_to: assignedUserId, ai_active: false }).eq('sender_number', data.senderNumber);
+        if (assignmentError) throw assignmentError;
       } else {
         logger.info('waba_assignment_no_manager_match', { senderNumber: data.senderNumber, pincode: data.pincode });
       }
@@ -212,9 +223,9 @@ export class AssignmentOrchestrator extends BaseAgent<TriagedPayload, void> {
 
     // Try to find any admin user in the DB as a last resort
     const { data: admins } = await supabase
-      .from('User')
+      .from('waba_staff_directory')
       .select('id, email, phone_number, name')
-      .eq('role', 'ADMIN')
+      .eq('role', 'admin')
       .limit(1);
 
     return admins?.[0] ?? null;

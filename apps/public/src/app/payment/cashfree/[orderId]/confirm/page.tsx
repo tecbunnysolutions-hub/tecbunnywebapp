@@ -4,7 +4,7 @@ import { Suspense, useEffect, useState } from 'react';
 import { useParams, useSearchParams, useRouter } from 'next/navigation';
 import { CheckCircle2, XCircle, Loader2, ArrowRight } from 'lucide-react';
 
-type State = 'verifying' | 'paid' | 'failed';
+type State = 'verifying' | 'paid' | 'failed' | 'pending';
 
 function ConfirmContent() {
   const params = useParams();
@@ -12,10 +12,11 @@ function ConfirmContent() {
   const router = useRouter();
 
   const orderId = Array.isArray(params.orderId) ? params.orderId[0] : (params.orderId as string);
-  // Cashfree appends ?order_id=<cf_order_id> to the return_url
+  // The server includes the persisted merchant reference in the return URL.
   const cfOrderId = searchParams.get('order_id');
 
   const [state, setState] = useState<State>('verifying');
+  const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
     if (!cfOrderId || !orderId) {
@@ -23,11 +24,25 @@ function ConfirmContent() {
       return;
     }
 
+    setState('verifying');
     fetch(`/api/payments/cashfree/verify?cf_order_id=${encodeURIComponent(cfOrderId)}&order_id=${encodeURIComponent(orderId)}`)
-      .then(r => r.json())
-      .then((data: { is_paid?: boolean }) => setState(data.is_paid ? 'paid' : 'failed'))
-      .catch(() => setState('failed'));
-  }, [cfOrderId, orderId]);
+      .then(async r => {
+        if (!r.ok) { setState('pending'); return; }
+        const data = await r.json();
+        setState(data.is_paid ? 'paid' : ['EXPIRED', 'TERMINATED'].includes(data.order_status) ? 'failed' : 'pending');
+      })
+      .catch(() => setState('pending'));
+  }, [cfOrderId, orderId, attempt]);
+
+  if (state === 'pending') return (
+    <div className="min-h-screen flex items-center justify-center bg-background text-foreground">
+      <div className="max-w-sm text-center space-y-4">
+        <h1 className="text-2xl font-bold">Confirmation pending</h1>
+        <p>Your payment may have been received. Retry verification before making another payment.</p>
+        <button className="px-5 py-2 bg-primary text-primary-foreground rounded-lg" onClick={() => setAttempt(value => value + 1)}>Retry verification</button>
+      </div>
+    </div>
+  );
 
   if (state === 'verifying') {
     return (

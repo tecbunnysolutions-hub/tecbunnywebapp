@@ -26,7 +26,8 @@ async function safeRows<T>(query: PromiseLike<{ data: T[] | null; error: { messa
 
 export async function GET() {
   try {
-    const auth = await requireApiRole({ allowedRoles: ['admin', 'sales_manager', 'marketing_manager', 'superadmin', 'manager'] });
+    // These aggregates span the shared provider account and have no tenant key.
+    const auth = await requireApiRole({ allowedRoles: ['admin', 'superadmin'] });
     if (auth.error) return auth.error;
     logger.info('waba_analytics.audit.requested', { role: auth.role ?? null });
 

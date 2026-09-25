@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { getSessionWithRole } from '@tecbunny/core/auth/server-role';
 import { logger, LeadEngineService } from '@tecbunny/core';
 import { isAtLeast, type UserRole } from '@tecbunny/core/roles';
-import { createClient } from '@tecbunny/database';
+import { createSupabaseClient as createClient } from '@tecbunny/database/server';
 import { createServiceClient, isSupabaseServiceConfigured } from '@tecbunny/database/admin';
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;

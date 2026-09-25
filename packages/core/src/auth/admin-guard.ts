@@ -2,7 +2,7 @@ import { ALL_ROLES, normalizeRole as normalizeKnownRole, type UserRole } from '.
 import { createSupabaseServiceClient, isSupabaseServiceConfigured } from '@tecbunny/database/admin';
 import { createSupabaseClient } from '@tecbunny/database/server';
 import type { User } from '@supabase/supabase-js';
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 
 
 import { logger } from '..';
@@ -77,10 +77,11 @@ export async function requireAdminContext(): Promise<AdminContext> {
   }
 
   const supabase = await createSupabaseClient();
+  const bearerToken = (await headers()).get('authorization')?.match(/^Bearer\s+([^\s]+)$/i)?.[1];
   const {
     data: { user },
     error,
-  } = await supabase.auth.getUser();
+  } = await supabase.auth.getUser(bearerToken);
 
   if (error) {
     logger.warn('admin_auth_get_user_failed', { error: error.message });
@@ -126,7 +127,7 @@ export async function requireAdminContext(): Promise<AdminContext> {
     throw new AdminAuthError(403, 'Insufficient permissions');
   }
 
-  const { data: assurance, error: assuranceError } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+  const { data: assurance, error: assuranceError } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel(bearerToken);
   if (assuranceError || assurance?.currentLevel !== 'aal2') {
     throw new AdminAuthError(403, 'MFA Required');
   }

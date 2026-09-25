@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { supabase } from '@/lib/supabase';
 import { requireApiRole, hasServerPermission } from '@tecbunny/core/server-role-guard';
 import { PERMS } from '@tecbunny/core/roles';
 import { canAccessConversationSender, canManageUserInScope, resolveActorScope } from '@/lib/authorization-scope';
@@ -47,10 +48,9 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     }
 
     if (assigned_to !== undefined && assigned_to !== null) {
-      const assignee = await prisma.user.findUnique({
-        where: { id: String(assigned_to) },
-        select: { organization_id: true, branch_id: true },
-      });
+      const { data: assignee, error: assigneeError } = await supabase.from('waba_staff_directory')
+        .select('organization_id, branch_id').eq('id', String(assigned_to)).maybeSingle();
+      if (assigneeError) throw assigneeError;
       if (!assignee) {
         return NextResponse.json({ error: 'Bad Request: assignee does not exist' }, { status: 400 });
       }

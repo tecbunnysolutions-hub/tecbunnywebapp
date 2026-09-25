@@ -45,14 +45,13 @@ export default function CashfreePaymentPage() {
           throw new Error((err as any).error || 'Failed to create payment session');
         }
 
-        const { payment_session_id } = await orderRes.json();
+        const { payment_session_id, environment } = await orderRes.json();
+        if (environment !== 'sandbox' && environment !== 'production') throw new Error('Invalid payment environment');
         if (cancelled) return;
 
         // Step 2 — initialise SDK
         const cashfree = await load({
-          mode:
-            (process.env.NEXT_PUBLIC_CASHFREE_ENV as 'sandbox' | 'production' | undefined) ||
-            'production',
+          mode: environment,
         });
 
         if (cancelled || !cashfree) return;

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSessionWithRole } from '@tecbunny/core/auth/server-role';
 import { logger } from '@tecbunny/core/logger';
 import { isAtLeast, type UserRole } from '@tecbunny/core/roles';
-import { createClient } from '@tecbunny/database';
+import { createSupabaseClient as createClient } from '@tecbunny/database/server';
 import { createServiceClient, isSupabaseServiceConfigured } from '@tecbunny/database/admin';
 
 export const revalidate = 300; // Cache for 5 minutes
