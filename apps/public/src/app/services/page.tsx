@@ -1,5 +1,6 @@
 import { isSupabaseServiceConfigured, createServiceClient } from "@tecbunny/database/admin";
 import { Metadata } from 'next';
+import { redirect } from 'next/navigation';
 
 import ServicesPage from '@/components/services-page';
 import { BreadcrumbJsonLd } from '@/components/BreadcrumbJsonLd';
@@ -23,6 +24,10 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export const revalidate = 300;
+
+// TecBunny is a technology business. These legacy third-party service records must
+// never be surfaced through its public catalogue, even if they remain in shared data.
+const EXCLUDED_NON_TECBUNNY_SERVICES = /\b(pan|residence|caste|divergence|application drafting|resume making|msme|fssai|shop\s*(?:&|and)?\s*establishment|gst registration|rto|insurance|money transfer|aeps|lic payment|tax payment|fine payment|flight ticket|bus ticket|train ticket)\b/i;
 
 type ServiceRow = {
   id: string | number;
@@ -116,7 +121,9 @@ function normalizeService(row: ServiceRow): Service {
   };
 }
 
-export default async function Page() {
+export default async function Page({ searchParams }: { searchParams: Promise<{ query?: string }> }) {
+  const { query } = await searchParams;
+  if (query?.trim()) redirect(`/search?query=${encodeURIComponent(query.trim())}`);
   let services: Service[] = [];
   let hasServiceLoadError = false;
 
@@ -147,7 +154,8 @@ export default async function Page() {
       const serviceRows = (Array.isArray(data) ? (data as unknown[]) : []).filter(isServiceRow);
       services = serviceRows
         .map(normalizeService)
-        .filter((service) => service.is_active !== false);
+        .filter((service) => service.is_active !== false)
+        .filter((service) => !EXCLUDED_NON_TECBUNNY_SERVICES.test(`${service.title} ${service.description} ${service.category} ${service.features.join(' ')}`));
     }
   } catch (error) {
     logger.error('Error in services page', { error });

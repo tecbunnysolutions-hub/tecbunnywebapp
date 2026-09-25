@@ -1,0 +1,17 @@
+import Link from 'next/link';
+import { ArrowRight, Search } from 'lucide-react';
+
+const results = [
+  { title: 'CCTV Installation', terms: ['cctv', 'camera', 'security', 'dvr', 'nvr'], href: '/services/cctv-security', description: 'Cameras, installation, repair and security solutions.' },
+  { title: 'Computer & Laptop Repair', terms: ['laptop', 'computer', 'desktop', 'repair', 'accessory'], href: '/services/computers-mobiles', description: 'Device repair, upgrades, parts and accessories.' },
+  { title: 'Wi-Fi & Network Setup', terms: ['wifi', 'wi-fi', 'internet', 'router', 'network', 'jio', 'airfiber'], href: '/services/networking-internet', description: 'Wi-Fi support, networking and Jio AirFiber help.' },
+  { title: 'IT Support & AMC', terms: ['it support', 'amc', 'maintenance', 'remote support', 'business it'], href: '/services/lifecycle-hardware', description: 'Practical IT support, maintenance and upgrades for your business.' },
+  { title: 'Access Control', terms: ['access control', 'biometric', 'rfid', 'smart lock'], href: '/services/smart-access-control', description: 'Secure access systems for homes, shops and businesses.' },
+  { title: 'Hotel & Resort Technology', terms: ['hotel', 'resort', 'hospitality'], href: '/services/smart-infrastructure', description: 'Technology systems designed for hospitality operations.' },
+];
+
+export default async function SearchPage({ searchParams }: { searchParams: Promise<{ query?: string }> }) {
+  const { query = '' } = await searchParams; const term = query.trim().toLowerCase();
+  const matches = term ? results.filter((result) => `${result.title} ${result.terms.join(' ')}`.includes(term) || result.terms.some((item) => item.includes(term))) : results;
+  return <div className="bg-zinc-950 text-white"><section className="tb-container py-12 sm:py-16"><Link href="/" className="text-sm font-semibold text-blue-300">← Home</Link><h1 className="mt-5 text-3xl font-bold sm:text-4xl">Find the service you need</h1><form action="/search" className="mt-6 flex max-w-2xl gap-2 rounded-xl border border-zinc-700 bg-zinc-900 p-2"><Search className="m-3 text-zinc-400"/><input name="query" defaultValue={query} aria-label="Search services" className="min-w-0 flex-1 bg-transparent py-3 outline-none" placeholder="Search CCTV, laptop repair, Wi-Fi, access control..."/><button className="rounded-lg bg-blue-600 px-4 font-bold">Search</button></form><p className="mt-8 text-zinc-400">{term ? `Results for “${query}”` : 'Browse common services'}</p><div className="mt-4 grid gap-3 sm:grid-cols-2">{matches.length ? matches.map((result) => <Link key={result.title} href={result.href} className="rounded-xl border border-zinc-800 bg-zinc-900 p-5 hover:border-blue-500"><h2 className="font-bold">{result.title}</h2><p className="mt-2 text-sm text-zinc-400">{result.description}</p><span className="mt-4 inline-flex items-center gap-1 text-sm font-bold text-blue-300">Get help <ArrowRight size={15}/></span></Link>) : <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-5"><h2 className="font-bold">Not sure which service fits?</h2><p className="mt-2 text-sm text-zinc-400">Contact TecBunny and we’ll guide you to the right service.</p><Link href="/contact?intent=service_request&source=search" className="mt-4 inline-flex items-center gap-1 text-sm font-bold text-blue-300">Contact us <ArrowRight size={15}/></Link></div>}</div></section></div>;
+}

@@ -408,7 +408,7 @@ export default function OrderConfirmationPage({ orderId }: OrderConfirmationPage
                   <div>
                     <p className="font-medium mb-2">Pickup Location:</p>
                     <p className="text-sm text-muted-foreground whitespace-pre-line">
-                      {(order.pickup_store || order.delivery_address || 'Shivparvati Enterprises, Chawdewada, Parcem, Pernem Goa.').trim()}
+                      {(order.pickup_store || order.delivery_address || 'TecBunny Solutions, Pernem, North Goa.').trim()}
                     </p>
                     {order.status === 'Ready for Pickup' && order.pickup_code && (
                       <div className="mt-4 p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-lg">

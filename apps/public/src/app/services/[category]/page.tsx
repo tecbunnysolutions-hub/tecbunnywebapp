@@ -6,8 +6,6 @@ const categories = {
   'computers-mobiles': { title: 'Computers & Mobiles', intro: 'Get the right device, accessories, repair or upgrade without the guesswork.', items: ['Laptop & desktop sales', 'Computer accessories', 'Mobile phones & accessories', 'Computer & laptop repair', 'Mobile repair', 'Parts & upgrades'] },
   'networking-internet': { title: 'Networking & Internet', intro: 'Reliable internet and Wi-Fi for homes, shops and businesses.', items: ['Wi-Fi setup & repair', 'Router, repeater & range extender', 'Network configuration', 'Networking installation', 'Jio AirFiber new connection', 'Jio AirFiber repair'] },
   'cctv-security': { title: 'CCTV & Security', intro: 'Protect your home, shop or workplace with a setup that fits your space.', items: ['CCTV cameras', 'IP & Wi-Fi cameras', 'DVR & NVR systems', 'CCTV installation', 'CCTV repair', 'Security solutions'] },
-  'government-business': { title: 'Government & Business Services', intro: 'Practical help with applications, documents and registrations.', items: ['PAN card', 'Residence, caste & divergence certificates', 'Application drafting & resume making', 'MSME & FSSAI', 'Shop & Establishment', 'GST registration'] },
-  'financial-travel': { title: 'Financial & Travel Services', intro: 'Complete routine payments, insurance and travel bookings in one place.', items: ['Insurance & LIC payments', 'Domestic money transfer & AePS', 'Tax & fine payments', 'Flight tickets', 'Bus tickets', 'Train tickets'] },
 } as const;
 
 export function generateStaticParams() { return Object.keys(categories).map((category) => ({ category })); }

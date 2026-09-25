@@ -52,14 +52,16 @@ const navLinks = [
     href: '/services',
     children: [
       { name: 'All Services', href: '/services' },
-      { name: 'Computers & Mobiles', href: '/services/computers-mobiles' },
+      { name: 'Computers & Devices', href: '/services/computers-mobiles' },
       { name: 'Networking & Internet', href: '/services/networking-internet' },
       { name: 'CCTV & Security', href: '/services/cctv-security' },
-      { name: 'Government & Business', href: '/services/government-business' },
-      { name: 'Financial & Travel', href: '/services/financial-travel' },
+      { name: 'IT Infrastructure', href: '/services/network-infrastructure' },
+      { name: 'IT Support & AMC', href: '/services/lifecycle-hardware' },
+      { name: 'Hotel & Resort Technology', href: '/services/smart-infrastructure' },
     ]
   },
-  { name: 'Shop', href: '/products' },
+  { name: 'Products', href: '/products' },
+  { name: 'Industries', href: '/industries' },
   { name: 'About', href: '/about' },
   { name: 'Contact', href: '/contact' },
 ];
@@ -364,20 +366,20 @@ export function Header() {
 
                 <div className="flex items-center gap-2">
                   <Link
-                    href="/assessment"
+                    href="/contact?intent=service_request&source=header"
                     onMouseMove={applyMagneticEffect}
                     onMouseLeave={resetMagneticEffect}
                     className="group relative rounded-xl border border-blue-500 bg-blue-600 px-5 py-2.5 text-sm font-bold text-white transition-all duration-200 hover:bg-blue-500 shadow-lg shadow-blue-500/20"
                   >
-                    Get Help
+                    Contact Us
                   </Link>
                   <Link
-                    href="/customised-setups"
+                    href="/products"
                     onMouseMove={applyMagneticEffect}
                     onMouseLeave={resetMagneticEffect}
                     className="group relative rounded-xl border border-zinc-700 bg-zinc-900 px-5 py-2.5 text-sm font-bold text-zinc-200 transition-all duration-200 hover:border-blue-500 hover:text-white shadow-sm"
                   >
-                    Get a Quote
+                    Shop Products
                   </Link>
                 </div>
               </>
@@ -580,18 +582,18 @@ export function Header() {
           )}
           <div className="pt-3 border-t border-zinc-800 space-y-2">
             <Link
-              href="/assessment"
+              href="/contact?intent=service_request&source=mobile_header"
               onClick={() => setMobileMenuOpen(false)}
               className="block w-full rounded-xl bg-blue-600 py-3 text-center text-xs font-bold uppercase tracking-wider text-white shadow-lg shadow-blue-500/20 hover:bg-blue-500 transition-colors"
             >
-              Get Free Assessment
+              Contact Us
             </Link>
             <Link
-              href="/customised-setups"
+              href="/products"
               onClick={() => setMobileMenuOpen(false)}
               className="block w-full rounded-xl border border-blue-500/20 bg-blue-500/10 py-2.5 text-center text-xs font-semibold text-blue-200 hover:text-white transition-colors"
             >
-              Get Free Quote
+              Shop Products
             </Link>
           </div>
         </div>

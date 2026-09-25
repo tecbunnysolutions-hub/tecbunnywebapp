@@ -59,7 +59,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return createPageMetadata({
   title: 'Technology, Repair, CCTV & Digital Services in Goa | TecBunny',
   description:
-    'Computer repair, CCTV installation, Wi-Fi and networking, government services, insurance, travel tickets and more in Goa — by TecBunny Solutions.',
+    'Computer repair, CCTV installation, Wi-Fi and networking, access control, technology products and IT support in Goa — by TecBunny Solutions.',
   keywords: [
     'enterprise IT infrastructure Goa',
     'CCTV physical security Goa',
