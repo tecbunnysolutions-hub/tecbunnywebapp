@@ -1,10 +1,9 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
 
-import { ShieldCheck, Wrench } from 'lucide-react';
+import { Building2, FileText, Headphones, Network, ShieldCheck, Wrench } from 'lucide-react';
 
 import { Button } from "@tecbunny/ui";
-import { RefreshButton } from '@/components/customised-setups/RefreshButton';
 import { QuoteCTA } from '@/components/customised-setups/QuoteCTA';
 import { QuotationStatusLookup } from '@/components/customised-setups/QuotationStatusLookup';
 import CustomSetupFlow from '@/components/customised-setups/ClientCustomSetupFlow';
@@ -16,10 +15,10 @@ import { BreadcrumbJsonLd } from '@/components/BreadcrumbJsonLd';
 
 export async function generateMetadata(): Promise<Metadata> {
   return createPageMetadata({
-  title: 'Custom Surveillance Setups & Estimator | TecBunny',
-  description: 'Design and estimate custom CCTV deployment, smart home automation, and networking bundles tailored for your premises in Goa.',
+  title: 'Build Your Custom Technology Setup | TecBunny',
+  description: 'Tell TecBunny about your property and requirements to build the right CCTV, networking, security, and technology setup.',
   path: '/customised-setups',
-  keywords: ['surveillance setups', 'CCTV estimator', 'home security configurations', 'Goa security systems'],
+  keywords: ['custom technology setup', 'CCTV estimator', 'networking setup', 'IT infrastructure Goa', 'security systems Goa'],
 });
 }
 
@@ -62,43 +61,43 @@ export default async function CustomisedSetupsPage({
           { name: 'Customised Setups', url: 'https://www.tecbunny.com/customised-setups' },
         ]}
       />
-      <section className="relative pt-28 pb-12 overflow-hidden border-b border-border">
-        <div className="absolute inset-0 bg-noise opacity-10"></div>
+      <section className="tb-setup-hero relative overflow-hidden border-b border-border pt-24 pb-14 sm:pt-28 sm:pb-20">
+        <div className="tb-setup-blueprint" aria-hidden="true"><Network /><span /><Building2 /><span /><ShieldCheck /><span /><FileText /></div>
         <div className="relative z-10 mx-auto max-w-5xl px-4 text-center sm:px-6 lg:px-8">
-          <span className="inline-flex items-center gap-2 rounded-full border border-border bg-muted/40 px-3 py-1 text-xs font-semibold text-primary">
-            <ShieldCheck className="h-4 w-4" /> Custom Setup Configurator
+          <span className="inline-flex items-center gap-2 rounded-full border border-blue-400/30 bg-blue-400/10 px-3 py-1 text-xs font-semibold text-blue-200">
+            <ShieldCheck className="h-4 w-4" /> TecBunny setup planner
           </span>
-          <h1 className="mt-6 text-4xl md:text-5xl font-bold text-foreground">
-            Design Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-blue-400">Ecosystem</span>
+          <h1 className="mt-6 text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
+            Build your custom <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-blue-300">technology setup.</span>
           </h1>
-          <p className="mt-4 text-muted-foreground max-w-3xl mx-auto font-tech">
-            Build a bespoke security and IT solution tailored to your exact floor plan. Select your premises, define your needs, and let our system draft a blueprint for you.
+          <p className="mt-4 mx-auto max-w-3xl text-base leading-relaxed text-muted-foreground sm:text-lg">
+            Tell us about your property, requirements, and budget. TecBunny will help you create the right technology setup with recommended equipment, pricing, and installation options.
           </p>
+          <p className="mt-3 text-sm font-medium text-blue-200">No technical knowledge required.</p>
           <div className="mt-6 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
             <Button asChild size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90">
-              <Link href="#setup-planner">Start your setup</Link>
+              <Link href="#setup-planner">Start building my setup</Link>
             </Button>
             <Button asChild size="lg" variant="outline" className="border-border text-foreground hover:bg-muted">
-              <Link href="/contact">Request a site survey</Link>
+              <Link href="/contact?intent=engineer_consultation&source=custom_setup_hero">Talk to an engineer</Link>
             </Button>
-            <RefreshButton />
           </div>
         </div>
       </section>
 
       <section className="border-b border-border bg-muted/10 py-10">
         <div className="mx-auto grid max-w-6xl gap-6 px-4 sm:px-6 lg:grid-cols-3 lg:px-8">
-          <div className="rounded-2xl border border-border bg-card/70 p-6">
-            <p className="text-sm font-semibold text-primary">1. Scope the site</p>
-            <p className="mt-2 text-sm text-muted-foreground">Choose the premises type, surveillance path, and approximate camera count before diving into component details.</p>
+          <div className="tb-setup-process rounded-2xl border border-border bg-card/70 p-6">
+            <p className="text-sm font-semibold text-primary">01 · Tell us what you need</p>
+            <p className="mt-2 text-sm text-muted-foreground">Choose your property type and the systems you want help with. “I don’t know” is always okay.</p>
           </div>
-          <div className="rounded-2xl border border-border bg-card/70 p-6">
-            <p className="text-sm font-semibold text-primary">2. Configure hardware</p>
-            <p className="mt-2 text-sm text-muted-foreground">Adjust recorder, cabling, storage, and accessories with live pricing matched to your selected capacity.</p>
+          <div className="tb-setup-process rounded-2xl border border-border bg-card/70 p-6">
+            <p className="text-sm font-semibold text-primary">02 · Customize your setup</p>
+            <p className="mt-2 text-sm text-muted-foreground">Start simple, then refine equipment and installation options when you are ready.</p>
           </div>
-          <div className="rounded-2xl border border-border bg-card/70 p-6">
-            <p className="text-sm font-semibold text-primary">3. Review and proceed</p>
-            <p className="mt-2 text-sm text-muted-foreground">Review the blueprint, download a quote, negotiate pricing, or book installation once the proposal looks right.</p>
+          <div className="tb-setup-process rounded-2xl border border-border bg-card/70 p-6">
+            <p className="text-sm font-semibold text-primary">03 · Get your recommendation &amp; quote</p>
+            <p className="mt-2 text-sm text-muted-foreground">Review your estimated setup, request a formal quote, or ask an engineer to verify it.</p>
           </div>
         </div>
       </section>
@@ -107,9 +106,9 @@ export default async function CustomisedSetupsPage({
         <div className="mx-auto mb-8 max-w-6xl">
           <div className="max-w-3xl space-y-3">
             <p className="text-sm font-semibold uppercase tracking-[0.2em] text-primary">Setup Planner</p>
-            <h2 className="text-3xl font-semibold text-foreground">Start with the essentials, then refine the build.</h2>
+            <h2 className="text-3xl font-semibold text-foreground">Start with the essentials. We’ll handle the technical detail.</h2>
             <p className="text-muted-foreground">
-              The configurator now follows the same sequence our solutions team uses: qualify the site, choose the hardware path, then confirm pricing and next steps.
+              Your estimate is a helpful starting point, not a final engineering design. You can adjust technical equipment after you describe the basics.
             </p>
           </div>
         </div>
@@ -120,8 +119,8 @@ export default async function CustomisedSetupsPage({
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="mb-6 max-w-3xl space-y-2">
             <p className="text-sm font-semibold uppercase tracking-[0.2em] text-primary">Quote Tools</p>
-            <h2 className="text-2xl font-semibold text-foreground">Already know what you need?</h2>
-            <p className="text-muted-foreground">Generate a formal quote or look up an existing quotation without interrupting the main setup flow.</p>
+            <h2 className="text-2xl font-semibold text-foreground">Already have a quote?</h2>
+            <p className="text-muted-foreground">Download a formal quote or check an existing quotation without interrupting your setup builder.</p>
           </div>
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <QuoteCTA />
@@ -134,10 +133,7 @@ export default async function CustomisedSetupsPage({
         <div className="mx-auto flex max-w-6xl flex-col gap-8 px-4 lg:flex-row lg:items-center lg:justify-between">
           <div className="max-w-2xl space-y-4">
             <h2 className="text-3xl font-semibold text-foreground">What happens after you share this estimate?</h2>
-            <p className="text-muted-foreground">
-              A TecBunny engineer validates cable runs, storage retention, and power plans before scheduling deployment.
-              Expect a full bill of materials and implementation timeline within one business day.
-            </p>
+            <p className="text-muted-foreground">A TecBunny engineer validates cable runs, storage retention, power plans, and installation requirements before finalizing your proposal.</p>
             <div className="flex flex-wrap gap-3 text-sm">
               <span className="inline-flex items-center gap-2 rounded-md border border-border px-3 py-2 text-muted-foreground">
                 <Wrench className="h-4 w-4" /> Professional on-site specialists

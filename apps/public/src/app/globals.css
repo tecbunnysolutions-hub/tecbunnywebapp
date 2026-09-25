@@ -1541,4 +1541,58 @@ html[data-promo-banner="expanded"] .site-shell {
           background: linear-gradient(90deg, rgba(59, 130, 246, 0.2), transparent);
           border-left-color: #3b82f6;
         }
+
+/* Premium public-site interactions: transform/opacity only, with reduced-motion fallback. */
+.tb-premium-hero {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  background:
+    radial-gradient(48rem 30rem at 88% 30%, rgba(37, 99, 235, 0.2), transparent 62%),
+    radial-gradient(32rem 24rem at 72% 88%, rgba(14, 165, 233, 0.11), transparent 64%),
+    linear-gradient(145deg, #0b1120 0%, #09090b 62%, #05070d 100%);
+}
+
+.tb-premium-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  opacity: 0.32;
+  background-image: linear-gradient(rgba(148, 163, 184, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(148, 163, 184, 0.1) 1px, transparent 1px);
+  background-size: 52px 52px;
+  mask-image: linear-gradient(90deg, transparent, black 52%, transparent);
+}
+
+.tb-hero-reveal { animation: tb-rise-in 560ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+.tb-hero-reveal--1 { animation-delay: 90ms; }
+.tb-hero-reveal--2 { animation-delay: 170ms; }
+.tb-hero-reveal--3 { animation-delay: 250ms; }
+.tb-hero-reveal--4 { animation-delay: 330ms; }
+.tb-hero-reveal--5 { animation-delay: 410ms; }
+
+.tb-premium-button, .tb-service-card { transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease, background-color 180ms ease; }
+.tb-premium-button:hover { transform: translateY(-1px); box-shadow: 0 12px 28px rgba(37, 99, 235, 0.2); }
+.tb-service-card:hover { transform: translateY(-4px); border-color: rgba(96, 165, 250, 0.62); background-color: rgba(24, 24, 27, 0.96); box-shadow: 0 18px 36px rgba(0, 0, 0, 0.24); }
+.tb-service-card__icon, .tb-service-card__link { transition: transform 180ms ease, color 180ms ease; }
+.tb-service-card:hover .tb-service-card__icon { transform: translateY(-2px) scale(1.06); }
+.tb-service-card:hover .tb-service-card__link { transform: translateX(3px); color: #dbeafe; }
+
+@keyframes tb-rise-in { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .tb-hero-reveal { animation: none; }
+  .tb-premium-button, .tb-service-card, .tb-service-card__icon, .tb-service-card__link { transition: none; }
+}
+
+.tb-setup-hero {
+  background: radial-gradient(38rem 24rem at 82% 38%, rgba(37, 99, 235, 0.16), transparent 70%), linear-gradient(145deg, rgba(15, 23, 42, 0.88), rgba(9, 9, 11, 0.98));
+}
+.tb-setup-blueprint { position: absolute; right: 6%; top: 50%; display: flex; align-items: center; gap: 0.7rem; color: rgba(96, 165, 250, 0.24); transform: translateY(-50%); pointer-events: none; }
+.tb-setup-blueprint svg { width: 2rem; height: 2rem; stroke-width: 1.25; }
+.tb-setup-blueprint span { width: 3.5rem; height: 1px; background: linear-gradient(90deg, rgba(96, 165, 250, 0.04), rgba(96, 165, 250, 0.55), rgba(96, 165, 250, 0.04)); }
+.tb-setup-process { transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease; }
+.tb-setup-process:hover { transform: translateY(-3px); border-color: rgba(96, 165, 250, 0.48); box-shadow: 0 14px 30px rgba(0, 0, 0, 0.16); }
+@media (max-width: 767px) { .tb-setup-blueprint { right: -6rem; opacity: 0.55; } .tb-setup-blueprint span { width: 2rem; } }
+@media (prefers-reduced-motion: reduce) { .tb-setup-process { transition: none; } }
       

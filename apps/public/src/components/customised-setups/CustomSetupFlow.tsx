@@ -222,8 +222,8 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
     : undefined;
   const selectMutedClassName = isTech ? 'text-slate-300' : 'text-muted-foreground';
   const stepLabels = [
-    { id: 1 as const, title: 'Scope' },
-    { id: 2 as const, title: 'Configure' },
+    { id: 1 as const, title: 'Tell us' },
+    { id: 2 as const, title: 'Customize' },
     { id: 3 as const, title: 'Review' },
   ];
 
@@ -1807,8 +1807,8 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
             <>
               <Card className={cardClassName}>
                 <CardHeader className={cardHeaderClassName}>
-                  <CardTitle className="text-white">Select Premises Type</CardTitle>
-                  <CardDescription className={cardDescriptionClassName}>Choose the environment that best matches your site.</CardDescription>
+                  <CardTitle className="text-white">What are you setting up?</CardTitle>
+                  <CardDescription className={cardDescriptionClassName}>Choose the environment that best matches your property.</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
@@ -1848,26 +1848,26 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
 
               <Card className={cardClassName}>
                 <CardHeader className={cardHeaderClassName}>
-                  <CardTitle className={isTech ? 'text-white' : undefined}>Scope your surveillance stack</CardTitle>
-                  <CardDescription className={cardDescriptionClassName}>Start with the deployment path and camera quantity. Detailed hardware options come next.</CardDescription>
+                  <CardTitle className={isTech ? 'text-white' : undefined}>Start with the basics</CardTitle>
+                  <CardDescription className={cardDescriptionClassName}>Choose a starting point for your CCTV setup. You can change technical equipment later.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div className="space-y-2">
-                    <Label>Choose recorder path</Label>
+                    <Label>What kind of CCTV setup do you prefer?</Label>
                     <RadioGroup value={system} onValueChange={(value: SetupSystem) => setSystem(value)} className="grid gap-3 sm:grid-cols-2">
                       <Label className={cn('flex cursor-pointer items-center justify-between rounded-lg border p-4', isTech && 'border-border bg-muted/40 text-foreground', system === 'analog' && (isTech ? 'border-primary bg-primary/10' : 'border-primary'))}
                         htmlFor="system-analog-tech-step">
                         <div>
-                          <span className="block text-lg font-semibold">Analog (DVR)</span>
-                          <span className={cn('text-xs', isTech ? 'text-muted-foreground' : 'text-muted-foreground')}>Best for coaxial retrofits and budget installations</span>
+                          <span className="block text-lg font-semibold">Standard CCTV</span>
+                          <span className={cn('text-xs', isTech ? 'text-muted-foreground' : 'text-muted-foreground')}>A practical choice for many homes and small businesses</span>
                         </div>
                         <RadioGroupItem value="analog" id="system-analog-tech-step" aria-label="Choose analog DVR system" />
                       </Label>
                       <Label className={cn('flex cursor-pointer items-center justify-between rounded-lg border p-4', isTech && 'border-border bg-muted/40 text-foreground', system === 'ip' && (isTech ? 'border-primary bg-primary/10' : 'border-primary'))}
                         htmlFor="system-ip-tech-step">
                         <div>
-                          <span className="block text-lg font-semibold">IP (NVR)</span>
-                          <span className={cn('text-xs', isTech ? 'text-muted-foreground' : 'text-muted-foreground')}>PoE-based deployments with smart analytics</span>
+                          <span className="block text-lg font-semibold">Network CCTV</span>
+                          <span className={cn('text-xs', isTech ? 'text-muted-foreground' : 'text-muted-foreground')}>A connected setup with flexible expansion options</span>
                         </div>
                         <RadioGroupItem value="ip" id="system-ip-tech-step" aria-label="Choose IP NVR system" />
                       </Label>
@@ -1875,7 +1875,7 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="camera-count-tech-step">Number of cameras</Label>
+                    <Label htmlFor="camera-count-tech-step">How many areas need coverage?</Label>
                     <Input
                       id="camera-count-tech-step"
                       type="number"
@@ -1884,15 +1884,15 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
                       value={cameraCountInput}
                       onChange={handleCameraCountChange}
                       onBlur={handleCameraCountBlur}
-                      placeholder="Enter number of cameras"
+                      placeholder="Enter an estimate, or use 4 to start"
                       className={inputClassName}
                     />
-                    <p className={cn('text-xs', isTech ? 'text-slate-400' : 'text-muted-foreground')}>Supported range: 1 to 32 cameras.</p>
+                    <p className={cn('text-xs', isTech ? 'text-slate-400' : 'text-muted-foreground')}>Not sure? Start with the estimate shown and TecBunny can recommend the right final coverage after a site survey.</p>
                   </div>
 
                   <div className="flex justify-end border-t border-border pt-4">
                     <Button onClick={() => setCurrentStep(2)} className="bg-primary text-primary-foreground hover:bg-primary/90">
-                      Continue to hardware
+                      Continue to customize
                     </Button>
                   </div>
                 </CardContent>
