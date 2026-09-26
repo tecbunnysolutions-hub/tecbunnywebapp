@@ -59,6 +59,15 @@ export async function executeUnifiedPolicyMiddleware(
   const { appType, publicRoutes = [], loginRoute = '/login' } = options;
   const pathname = request.nextUrl.pathname;
   const requestHeaders = new Headers(request.headers);
+  const mfaBypassPaths = new Set([
+    '/mfa-setup',
+    '/superadmin/mfa-setup',
+    '/api/auth/2fa/setup',
+    '/api/auth/2fa/verify',
+    '/api/auth/2fa/status',
+    '/api/auth/2fa/disable',
+    '/api/auth/signout',
+  ]);
 
   // Per-request CSP nonce — eliminates 'unsafe-inline' requirement
   const nonce = generateNonce();
@@ -145,7 +154,7 @@ export async function executeUnifiedPolicyMiddleware(
     // Keep authenticated enrollment/challenge endpoints reachable at AAL1.
     // Their handlers still verify the user and any existing factor themselves.
     enforceMfaRoles: (appType === 'mgmt' || appType === 'superadmin' || appType === 'api')
-      && !['/api/auth/2fa/setup', '/api/auth/2fa/verify', '/api/auth/2fa/status', '/api/auth/2fa/disable', '/api/auth/signout'].includes(pathname)
+      && !mfaBypassPaths.has(pathname)
       ? ['admin', 'superadmin'] : undefined,
     onUnauthorized: (req: NextRequest) => {
       // Instrument authorization failure (No Session)
@@ -203,8 +212,9 @@ export async function executeUnifiedPolicyMiddleware(
         return NextResponse.json({ error: 'MFA Required' }, { status: 403 });
       }
       
-      const mfaSetupUrl = new URL(appType === 'superadmin' ? '/superadmin/mfa-setup' : '/mfa-setup', req.url);
-      mfaSetupUrl.searchParams.set('next', pathname);
+      const setupPath = appType === 'superadmin' ? '/superadmin/mfa-setup' : '/mfa-setup';
+      const mfaSetupUrl = new URL(setupPath, req.url);
+      mfaSetupUrl.searchParams.set('next', pathname === setupPath ? '/mgmt' : pathname);
       return NextResponse.redirect(mfaSetupUrl);
     }
   });

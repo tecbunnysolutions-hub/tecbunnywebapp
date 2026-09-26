@@ -36,22 +36,25 @@ export class SupabaseUserRepository implements IUserRepository {
       'sync_role_fetch'
     );
 
-    if (!roleRecord) {
-      throw new Error(`Role catalog entry not found for ${role}`);
+    if (roleRecord) {
+      await this.baseClient.executeQuery(
+        this.supabaseAdmin.from('user_roles').delete().eq('user_id', userId),
+        'sync_role_delete_old'
+      );
+
+      await this.baseClient.executeQuery(
+        this.supabaseAdmin.from('user_roles').insert({
+          user_id: userId,
+          role_id: roleRecord.id,
+        }),
+        'sync_role_insert_new'
+      );
+    } else {
+      // Some deployed databases use profile + JWT claims without the legacy
+      // roles/user_roles catalogue. Do not block a valid staff assignment:
+      // MGMT authorization reads the synchronized JWT claim below.
+      logger.warn('role_catalog_entry_missing_using_jwt_sync', { userId, role });
     }
-
-    await this.baseClient.executeQuery(
-      this.supabaseAdmin.from('user_roles').delete().eq('user_id', userId),
-      'sync_role_delete_old'
-    );
-
-    await this.baseClient.executeQuery(
-      this.supabaseAdmin.from('user_roles').insert({
-        user_id: userId,
-        role_id: roleRecord.id,
-      }),
-      'sync_role_insert_new'
-    );
 
     const { data: authUser, error: authReadError } = await this.supabaseAdmin.auth.admin.getUserById(userId);
     if (authReadError) throw new Error(`Failed to load auth metadata: ${authReadError.message}`);
