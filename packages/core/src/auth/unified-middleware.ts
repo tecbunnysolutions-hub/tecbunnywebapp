@@ -27,13 +27,20 @@ function generateNonce(): string {
   return randomBase64(16);
 }
 
-function generateCSP(nonce: string) {
+function generateCSP(nonce: string, allowInlineScripts = false) {
   // Scripts stay strictly nonce-based (the primary XSS defence). Styles allow
   // 'unsafe-inline' because runtime CSS-in-JS libraries (e.g. goober via
   // react-hot-toast) inject <style> tags without a nonce, and per the CSP spec
   // a nonce in style-src causes 'unsafe-inline' to be ignored — which blocks
   // those tags. Style-based CSP bypass is far lower risk than script injection.
-  const scriptSrc = `script-src 'self' 'nonce-${nonce}' https://challenges.cloudflare.com https://cs.iubenda.com https://cdn.iubenda.com https://static.cloudflareinsights.com https://www.googletagmanager.com https://www.google-analytics.com https://va.vercel-scripts.com https://connect.facebook.net https://sdk.cashfree.com`;
+  // The Management portal's App Router response contains framework-generated
+  // inline Flight scripts. Its current deployment does not propagate the
+  // request nonce onto those scripts, so a nonce-only policy prevents React
+  // from hydrating and closes the RSC stream. Scope inline compatibility to
+  // that authenticated internal app; all other applications stay nonce-only.
+  const scriptSrc = allowInlineScripts
+    ? `script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com https://cs.iubenda.com https://cdn.iubenda.com https://static.cloudflareinsights.com https://www.googletagmanager.com https://www.google-analytics.com https://va.vercel-scripts.com https://connect.facebook.net https://sdk.cashfree.com`
+    : `script-src 'self' 'nonce-${nonce}' https://challenges.cloudflare.com https://cs.iubenda.com https://cdn.iubenda.com https://static.cloudflareinsights.com https://www.googletagmanager.com https://www.google-analytics.com https://va.vercel-scripts.com https://connect.facebook.net https://sdk.cashfree.com`;
   const styleSrc  = `style-src 'self' 'unsafe-inline' https://fonts.googleapis.com`;
   return [
     "default-src 'self'",
@@ -71,7 +78,7 @@ export async function executeUnifiedPolicyMiddleware(
 
   // Per-request CSP nonce — eliminates 'unsafe-inline' requirement
   const nonce = generateNonce();
-  const csp = generateCSP(nonce);
+  const csp = generateCSP(nonce, appType === 'mgmt');
 
   // Security Headers (applied to both requestHeaders and final response)
   requestHeaders.set('content-security-policy', csp);
