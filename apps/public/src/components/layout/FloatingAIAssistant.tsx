@@ -62,6 +62,14 @@ export function FloatingAIAssistant() {
   };
 
   const aiHref = '/ai-research';
+  const helpOptions = [
+    ['Need CCTV', 'cctv_quote'],
+    ['Fix my network', 'network_support'],
+    ['Book a repair', 'repair_request'],
+    ['Plan business IT', 'business_it'],
+    ['Ask about a product', 'product_enquiry'],
+    ['I’m not sure', 'help_me_choose'],
+  ] as const;
 
   return (
     <div className="floating-ai-anchor fixed bottom-6 right-4 z-50 sm:right-6 flex flex-col gap-4 items-end">
@@ -73,8 +81,8 @@ export function FloatingAIAssistant() {
                 <Bot className="h-5 w-5" />
               </span>
               <div>
-                <p className="text-sm font-semibold text-foreground">AI Assistant</p>
-                <p className="text-xs text-muted-foreground">Ask anything about products.</p>
+                <p className="text-sm font-semibold text-foreground">Get help</p>
+                <p className="text-xs text-muted-foreground">Tell TecBunny what you need.</p>
               </div>
             </div>
             <button
@@ -87,21 +95,15 @@ export function FloatingAIAssistant() {
             </button>
           </div>
 
-          <div className="mt-4 space-y-2">
-            <Link
-              href={aiHref}
-              className="flex items-center justify-between rounded-xl border border-primary/20 bg-primary/10 px-4 py-3 text-sm font-semibold text-primary transition hover:border-primary/50 hover:bg-primary/20"
-              onClick={() => setOpen(false)}
-            >
-              <span className="flex items-center gap-2">
-                <Sparkles className="h-4 w-4" />
-                Start AI Research
-              </span>
-              <ArrowRight className="h-4 w-4" />
+          <div className="mt-4 grid grid-cols-2 gap-2">
+            {helpOptions.map(([label, intent]) => (
+              <Link key={intent} href={`/contact?subject=${intent === 'network_support' || intent === 'repair_request' ? 'support' : 'sales'}&intent=${intent}&source=floating_help`} onClick={() => setOpen(false)} className="rounded-xl border border-border bg-muted/20 px-3 py-2.5 text-xs font-semibold text-foreground transition hover:border-primary/50 hover:bg-primary/10">
+                {label}
+              </Link>
+            ))}
+            <Link href={aiHref} className="col-span-2 flex items-center justify-between rounded-xl border border-primary/20 bg-primary/10 px-3 py-2.5 text-xs font-semibold text-primary transition hover:border-primary/50 hover:bg-primary/20" onClick={() => setOpen(false)}>
+              <span className="flex items-center gap-2"><Sparkles className="h-4 w-4" /> Explore with AI</span><ArrowRight className="h-4 w-4" />
             </Link>
-            <p className="text-[11px] text-muted-foreground">
-              Need pricing? Share your requirements and get recommendations.
-            </p>
           </div>
         </div>
       )}
@@ -133,14 +135,14 @@ export function FloatingAIAssistant() {
         {/* AI Bot Button */}
         <button
           type="button"
-          aria-label="Open AI assistant"
+          aria-label="Open Get Help options"
           onClick={() => setOpen((prev) => !prev)}
           className={cn(
             'group flex h-14 w-14 items-center justify-center rounded-full border border-primary/30 bg-gradient-to-br from-primary/60 to-primary text-white shadow-[0_0_25px_rgba(37,99,235,0.45)] transition hover:shadow-[0_0_35px_rgba(37,99,235,0.65)]',
             open && 'ring-2 ring-primary/60'
           )}
         >
-          <Bot className="h-6 w-6 transition-transform group-hover:scale-110" />
+          <span className="text-xs font-bold">Help</span>
         </button>
       </div>
     </div>

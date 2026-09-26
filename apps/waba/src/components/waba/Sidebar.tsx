@@ -21,9 +21,23 @@ export function Sidebar({
   const [activeTab, setActiveTab] = React.useState('queue'); // 'queue' or 'team'
   const [activeQueue, setActiveQueue] = React.useState('unassigned'); // unassigned, assigned, waiting, urgent, vip, resolved, closed
   const [activeTeam, setActiveTeam] = React.useState('sales'); // sales, support, accounts, marketing, engineers
+  const [search, setSearch] = React.useState('');
+
+  React.useEffect(() => {
+    const focusSearch = (event: KeyboardEvent) => {
+      if (event.key === '/' && !(event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement)) {
+        event.preventDefault();
+        document.getElementById('conversation-search')?.focus();
+      }
+    };
+    window.addEventListener('keydown', focusSearch);
+    return () => window.removeEventListener('keydown', focusSearch);
+  }, []);
 
   // Filter conversations based on selected queue or team
   const filteredConversations = conversations.filter(conv => {
+    const matchesSearch = !search.trim() || [conv.contact_name, conv.sender_number, conv.status, conv.department].filter(Boolean).join(' ').toLowerCase().includes(search.trim().toLowerCase());
+    if (!matchesSearch) return false;
     if (activeTab === 'queue') {
       switch(activeQueue) {
         case 'unassigned': return !conv.assigned_to;
@@ -51,7 +65,7 @@ export function Sidebar({
     <div className={`glass-panel sidebar ${!showSidebar ? 'hidden' : ''}`}>
       <div className="sidebar-header">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h2>Workspace <span style={{ fontSize: '0.8rem', color: '#94a3b8', fontWeight: 'normal' }}>({currentUser.name})</span></h2>
+          <h2>Inbox <span style={{ fontSize: '0.8rem', color: '#94a3b8', fontWeight: 'normal' }}>({currentUser.name})</span></h2>
           <div style={{ display: 'flex', gap: '8px' }}>
             <Link
               href="/cctv-quote"
@@ -63,6 +77,10 @@ export function Sidebar({
             <button className="mobile-toggle" onClick={() => setShowSidebar(false)} aria-label="Close conversation list">Close</button>
           </div>
         </div>
+        <label htmlFor="conversation-search" style={{ display: 'block', marginTop: '12px' }}>
+          <span className="sr-only">Search conversations</span>
+          <input id="conversation-search" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search customer, phone or status…" style={{ width: '100%', minHeight: '40px', borderRadius: '8px', border: '1px solid rgba(148,163,184,.3)', background: 'rgba(15,23,42,.7)', color: 'white', padding: '0 10px' }} />
+        </label>
 
         {/* Workspace Navigation Tabs */}
         <div className="workspace-tabs" role="tablist" aria-label="Conversation workspace view">
@@ -73,7 +91,7 @@ export function Sidebar({
             onClick={() => setActiveTab('queue')}
             style={{ flex: 1, padding: '8px', background: activeTab === 'queue' ? 'rgba(255,255,255,0.1)' : 'transparent', border: 'none', color: 'white', cursor: 'pointer', borderBottom: activeTab === 'queue' ? '2px solid var(--accent)' : 'none' }}
           >
-            Queues
+            Conversations
           </button>
           <button
             type="button"
@@ -82,7 +100,7 @@ export function Sidebar({
             onClick={() => setActiveTab('team')}
             style={{ flex: 1, padding: '8px', background: activeTab === 'team' ? 'rgba(255,255,255,0.1)' : 'transparent', border: 'none', color: 'white', cursor: 'pointer', borderBottom: activeTab === 'team' ? '2px solid var(--accent)' : 'none' }}
           >
-            Team View
+            Assigned teams
           </button>
         </div>
 
@@ -97,7 +115,7 @@ export function Sidebar({
                 onClick={() => setActiveQueue(q)}
                 style={{ fontSize: '0.75rem', padding: '4px 8px', borderRadius: '12px', background: activeQueue === q ? 'var(--accent)' : 'rgba(255,255,255,0.1)', border: 'none', color: 'white', cursor: 'pointer', whiteSpace: 'nowrap' }}
               >
-                {q.charAt(0).toUpperCase() + q.slice(1)}
+                {({ unassigned: 'Needs owner', assigned: 'Assigned to me', waiting: 'Needs reply', urgent: 'Urgent', vip: 'Important' } as Record<string, string>)[q]}
               </button>
             ))
           ) : (
@@ -120,7 +138,7 @@ export function Sidebar({
         {loading ? (
           <div className="spinner"></div>
         ) : filteredConversations.length === 0 ? (
-          <div style={{ padding: '20px', textAlign: 'center', color: '#94a3b8', fontSize: '0.9rem' }}>No chats in this view</div>
+          <div style={{ padding: '24px 20px', textAlign: 'center', color: '#94a3b8', fontSize: '0.9rem' }}><strong style={{ display: 'block', color: '#e2e8f0', marginBottom: '6px' }}>{search ? 'No matching conversations' : 'You’re all caught up 🎉'}</strong>{search ? 'Try a customer name, phone number, status, or team.' : 'There are no conversations needing attention here.'}</div>
         ) : (
           filteredConversations.map(conv => (
             <button

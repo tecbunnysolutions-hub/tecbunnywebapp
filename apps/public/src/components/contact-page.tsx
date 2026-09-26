@@ -58,6 +58,15 @@ const SUBJECT_SELECT_OPTIONS = SUBJECT_OPTIONS.map(value => ({
   label: SUBJECT_LABELS[value],
 }));
 
+const HELP_INTENTS = [
+  { label: 'Need CCTV', subject: 'sales' as const, message: 'I need help with CCTV and security.' },
+  { label: 'Fix my network', subject: 'support' as const, message: 'I need help with Wi-Fi or networking.' },
+  { label: 'Repair something', subject: 'support' as const, message: 'I need help with a device repair.' },
+  { label: 'Plan business IT', subject: 'sales' as const, message: 'I need a technology setup for my business.' },
+  { label: 'Ask about a product', subject: 'sales' as const, message: 'I would like help choosing a product.' },
+  { label: 'I’m not sure', subject: 'general' as const, message: 'I am not sure what solution I need. Please help me choose.' },
+];
+
 const contactSchema = z.object({
   name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
   email: z.string().email({ message: 'Please enter a valid email address.' }),
@@ -143,18 +152,26 @@ export default function ContactPage() {
     setIsSubmitting(true);
     try {
       const normalizedSubject = SUBJECT_LABELS[values.subject] ?? values.subject;
+      const context = [
+        intentParam ? `Intent: ${intentParam}` : null,
+        serviceParam ? `Service: ${serviceParam}` : null,
+        sourceParam ? `Source: ${sourceParam}` : null,
+        typeof window !== 'undefined' ? `Page: ${window.location.pathname}` : null,
+      ].filter(Boolean).join(' | ');
       const payload = {
         name: values.name.trim(),
         email: values.email.trim(),
         phone: values.phone.trim(),
         subject: normalizedSubject,
-        message: values.message.trim(),
+        message: `${values.message.trim()}${context ? `\n\n${context}` : ''}`,
         origin_path: values.subject === 'web_development'
           ? '/webdev'
           : sourceParam === 'services_core_desk'
             ? '/services'
             : '/contact',
-        form_identifier: values.subject === 'web_development'
+        form_identifier: intentParam
+          ? `intent_${intentParam}`
+          : values.subject === 'web_development'
           ? 'web_development_contact'
           : sourceParam === 'services_core_desk'
             ? 'services_core_desk'
@@ -168,7 +185,7 @@ export default function ContactPage() {
 
       toast({
         title: 'Message sent!',
-        description: "Thank you for contacting us. General enquiries receive a response within one business day.",
+        description: 'Your request has been saved with its details so our team can assist you.',
       });
 
       void trackEvent('contact_form_submit', {
@@ -243,6 +260,25 @@ export default function ContactPage() {
             {content?.content?.hero?.description ||
               'Have a question? Want a custom quote? Speak directly with our local experts who will build and support your perfect system.'}
           </p>
+        </div>
+
+        <div className="mx-auto mt-8 max-w-3xl">
+          <p className="text-center text-sm font-semibold text-foreground">What can we help you with?</p>
+          <div className="mt-3 flex flex-wrap justify-center gap-2">
+            {HELP_INTENTS.map((intent) => (
+              <button
+                key={intent.label}
+                type="button"
+                onClick={() => {
+                  form.setValue('subject', intent.subject, { shouldDirty: true, shouldValidate: true });
+                  form.setValue('message', intent.message, { shouldDirty: true, shouldValidate: true });
+                }}
+                className="min-h-11 rounded-full border border-border bg-muted/20 px-4 text-sm font-medium text-foreground transition hover:border-primary/50 hover:bg-primary/10"
+              >
+                {intent.label}
+              </button>
+            ))}
+          </div>
         </div>
 
         <div className="mt-16 grid gap-12 lg:grid-cols-2">

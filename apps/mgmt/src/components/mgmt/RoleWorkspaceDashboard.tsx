@@ -339,8 +339,9 @@ export function RoleWorkspaceDashboard({ kind }: RoleWorkspaceDashboardProps) {
         <div className="grid gap-6 p-5 sm:p-7 lg:grid-cols-[1.4fr_0.6fr] lg:p-9">
           <div className="min-w-0">
             <p className="text-xs font-bold uppercase tracking-[0.22em] text-blue-300">{config.eyebrow}</p>
+            <p className="mt-3 text-sm font-semibold text-blue-100">Good {new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 18 ? 'afternoon' : 'evening'}, {user?.name || 'there'}.</p>
             <h1 className="mt-3 max-w-3xl text-3xl font-black tracking-tight text-white sm:text-4xl">
-              {config.title}
+              Here’s what needs your attention today.
             </h1>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-zinc-400 sm:text-base">{config.description}</p>
             <div className="mt-5 flex flex-wrap items-center gap-2 text-xs">
@@ -372,7 +373,7 @@ export function RoleWorkspaceDashboard({ kind }: RoleWorkspaceDashboardProps) {
         </div>
       </section>
 
-      <section aria-label="Decision brief" className="grid gap-3 lg:grid-cols-3">
+      <section aria-label="Today at a glance" className="grid gap-3 lg:grid-cols-3">
         {decisionBriefItems.map((item) => {
           const Icon = item.icon;
           return (
@@ -392,11 +393,11 @@ export function RoleWorkspaceDashboard({ kind }: RoleWorkspaceDashboardProps) {
         })}
       </section>
 
-      <section aria-label="Workflow inbox" className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 sm:p-6">
+      <section aria-label="My work" className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 sm:p-6">
         <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-zinc-500">Workflow inbox</p>
-            <h2 className="mt-1 text-xl font-bold text-white">Prioritized next moves</h2>
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-zinc-500">My work</p>
+            <h2 className="mt-1 text-xl font-bold text-white">Start with these next actions</h2>
           </div>
           <span className="rounded-full border border-zinc-700 px-3 py-1 text-xs font-semibold text-zinc-400">
             {workflowTasks.length} open item{workflowTasks.length === 1 ? '' : 's'}

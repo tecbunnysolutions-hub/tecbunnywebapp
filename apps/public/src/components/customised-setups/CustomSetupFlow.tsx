@@ -71,6 +71,12 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
   const router = useRouter();
   const { toast } = useToast();
   const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1);
+  const [selectedNeeds, setSelectedNeeds] = useState<string[]>(['cctv']);
+  const [cctvNeed, setCctvNeed] = useState('New CCTV Installation');
+  const [businessName, setBusinessName] = useState('');
+  const [location, setLocation] = useState('');
+  const [propertySize, setPropertySize] = useState('Not Sure');
+  const [budget, setBudget] = useState('Not Sure');
   const [pricingCatalog, setPricingCatalog] = useState<{
     analog: AnalogPricing;
     ip: IpPricing;
@@ -208,6 +214,15 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
   };
 
   const cameraCountLabel = cameraCount <= 0 ? 'None' : `${cameraCount} Camera${cameraCount > 1 ? 's' : ''}`;
+  const toggleNeed = (need: string) => setSelectedNeeds((current) => current.includes(need) ? current.filter((item) => item !== need) : [...current, need]);
+  const continueFromRequirement = () => {
+    if (!selectedNeeds.includes('cctv')) {
+      const requirement = selectedNeeds.join(', ') || 'Help choosing a technology setup';
+      router.push(`/contact?intent=custom_setup_consultation&source=custom_setup_planner&message=${encodeURIComponent(`Requirement: ${requirement}. Property: ${premiseType}. Location: ${location || 'Not provided'}. Budget: ${budget}.`)}`);
+      return;
+    }
+    setCurrentStep(2);
+  };
 
   const cardClassName = isTech ? 'border-border bg-card/60 text-card-foreground' : undefined;
   const cardHeaderClassName = isTech ? 'text-foreground font-semibold' : undefined;
@@ -517,6 +532,13 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
 
 
       const customSetupConfig = {
+        selectedNeeds,
+        cctvNeed,
+        businessName,
+        location,
+        propertySize,
+        budget,
+        premiseType,
         system,
         cameraCount,
         analogSelections,
@@ -689,6 +711,13 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
 
 
       const customSetupConfig = {
+        selectedNeeds,
+        cctvNeed,
+        businessName,
+        location,
+        propertySize,
+        budget,
+        premiseType,
         system,
         cameraCount,
         analogSelections,
@@ -1807,11 +1836,19 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
             <>
               <Card className={cardClassName}>
                 <CardHeader className={cardHeaderClassName}>
-                  <CardTitle className="text-white">What are you setting up?</CardTitle>
-                  <CardDescription className={cardDescriptionClassName}>Choose the environment that best matches your property.</CardDescription>
+                  <CardTitle className="text-white">What do you need help with?</CardTitle>
+                  <CardDescription className={cardDescriptionClassName}>Choose one or more areas. We only ask for the details that matter next.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                    {[
+                      { value: 'cctv', label: 'CCTV & Security', icon: '📹' }, { value: 'networking', label: 'Networking & Wi-Fi', icon: '📡' },
+                      { value: 'computers', label: 'Computers & Laptops', icon: '💻' }, { value: 'infrastructure', label: 'IT Infrastructure', icon: '🖥️' },
+                      { value: 'support', label: 'IT Support / AMC', icon: '🛠️' }, { value: 'hotel', label: 'Hotel / Resort Technology', icon: '🏨' },
+                      { value: 'business', label: 'Custom Business Setup', icon: '🏢' }, { value: 'help', label: "I'm not sure", icon: '✨' },
+                    ].map((option) => <button key={option.value} type="button" onClick={() => toggleNeed(option.value)} className={cn('rounded-xl border p-4 text-left transition', selectedNeeds.includes(option.value) ? 'border-primary bg-primary/10 text-foreground ring-1 ring-primary/50' : 'border-border bg-muted/30 text-muted-foreground hover:border-primary/60')}><span className="text-xl">{option.icon}</span><span className="mt-2 block text-sm font-semibold">{option.label}</span></button>)}
+                  </div>
+                  <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-6 border-t border-border pt-6">
                     {([
                       { value: 'Residential', label: 'Residential', description: 'Villas & Apartments', icon: 'home' },
                       { value: 'Commercial', label: 'Commercial', description: 'Shops & Offices', icon: 'building' },
@@ -1843,15 +1880,26 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
                       </button>
                     ))}
                   </div>
+                  <div className="mt-6 grid gap-4 sm:grid-cols-2">
+                    <div className="space-y-2"><Label htmlFor="setup-business-name">Business / property name <span className="text-muted-foreground">(optional)</span></Label><Input id="setup-business-name" value={businessName} onChange={(event) => setBusinessName(event.target.value)} placeholder="e.g. Seaside Villa" className={inputClassName} /></div>
+                    <div className="space-y-2"><Label htmlFor="setup-location">City / area</Label><Input id="setup-location" value={location} onChange={(event) => setLocation(event.target.value)} placeholder="e.g. Pernem, Goa" className={inputClassName} /></div>
+                  </div>
+                  <div className="mt-4 grid gap-4 sm:grid-cols-2"><div className="space-y-2"><Label>Approximate size</Label><RadioGroup value={propertySize} onValueChange={setPropertySize} className="grid grid-cols-4 gap-2">{['Small', 'Medium', 'Large', 'Not Sure'].map((option) => <Label key={option} className={cn('cursor-pointer rounded-md border px-2 py-2 text-center text-xs', propertySize === option ? 'border-primary bg-primary/10' : 'border-border')}><span>{option}</span><RadioGroupItem className="sr-only" value={option} /></Label>)}</RadioGroup></div><div className="space-y-2"><Label>Approximate budget</Label><Select value={budget} onValueChange={setBudget}><SelectTrigger className={selectTriggerClassName}><SelectValue /></SelectTrigger><SelectContent className={selectContentClassName}>{['Under ₹25,000', '₹25,000 – ₹50,000', '₹50,000 – ₹1 Lakh', '₹1 – ₹3 Lakh', '₹3 Lakh+', 'Not Sure'].map((option) => <SelectItem key={option} value={option} className={selectItemClassName}>{option}</SelectItem>)}</SelectContent></Select></div></div>
                 </CardContent>
               </Card>
 
               <Card className={cardClassName}>
                 <CardHeader className={cardHeaderClassName}>
-                  <CardTitle className={isTech ? 'text-white' : undefined}>Start with the basics</CardTitle>
-                  <CardDescription className={cardDescriptionClassName}>Choose a starting point for your CCTV setup. You can change technical equipment later.</CardDescription>
+                  <CardTitle className={isTech ? 'text-white' : undefined}>Tell us a little about it</CardTitle>
+                  <CardDescription className={cardDescriptionClassName}>A few simple choices are enough to create a starting recommendation.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
+                  <div className="space-y-2">
+                    <Label>What do you need?</Label>
+                    <RadioGroup value={cctvNeed} onValueChange={setCctvNeed} className="grid gap-2 sm:grid-cols-2">
+                      {['New CCTV Installation', 'Upgrade Existing CCTV', 'Replace Cameras', 'Not Sure'].map((option) => <Label key={option} className={cn('flex cursor-pointer items-center justify-between rounded-lg border p-3 text-sm', cctvNeed === option ? 'border-primary bg-primary/10' : 'border-border bg-muted/30')}><span>{option}</span><RadioGroupItem value={option} /></Label>)}
+                    </RadioGroup>
+                  </div>
                   <div className="space-y-2">
                     <Label>What kind of CCTV setup do you prefer?</Label>
                     <RadioGroup value={system} onValueChange={(value: SetupSystem) => setSystem(value)} className="grid gap-3 sm:grid-cols-2">
@@ -1876,23 +1924,14 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
 
                   <div className="space-y-2">
                     <Label htmlFor="camera-count-tech-step">How many areas need coverage?</Label>
-                    <Input
-                      id="camera-count-tech-step"
-                      type="number"
-                      min={1}
-                      max={32}
-                      value={cameraCountInput}
-                      onChange={handleCameraCountChange}
-                      onBlur={handleCameraCountBlur}
-                      placeholder="Enter an estimate, or use 4 to start"
-                      className={inputClassName}
-                    />
+                    <div className="grid grid-cols-4 gap-2 sm:grid-cols-7">{[4, 6, 8, 12, 16, 20].map((count) => <Button key={count} type="button" variant={cameraCount === count ? 'default' : 'outline'} onClick={() => { setCameraCount(count); setCameraCountInput(String(count)); }} className="min-h-10">{count}</Button>)}<Button type="button" variant="outline" onClick={() => { setCameraCount(4); setCameraCountInput('4'); }}>?</Button></div>
+                    <Input id="camera-count-tech-step" type="number" min={1} max={32} value={cameraCountInput} onChange={handleCameraCountChange} onBlur={handleCameraCountBlur} placeholder="Or enter a number" className={inputClassName} />
                     <p className={cn('text-xs', isTech ? 'text-slate-400' : 'text-muted-foreground')}>Not sure? Start with the estimate shown and TecBunny can recommend the right final coverage after a site survey.</p>
                   </div>
 
                   <div className="flex justify-end border-t border-border pt-4">
-                    <Button onClick={() => setCurrentStep(2)} className="bg-primary text-primary-foreground hover:bg-primary/90">
-                      Continue to customize
+                    <Button onClick={continueFromRequirement} className="bg-primary text-primary-foreground hover:bg-primary/90">
+                      Continue
                     </Button>
                   </div>
                 </CardContent>
@@ -1902,7 +1941,10 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
 
           {currentStep === 2 && (
             <>
-              {activeAnalog ? renderAnalogControls() : renderIpControls()}
+              <details className="group rounded-xl border border-border bg-card/40 p-4">
+                <summary className="cursor-pointer list-none text-sm font-semibold text-foreground">Advanced options <span className="ml-2 text-xs font-normal text-muted-foreground">Camera details, cabling, recorder and network equipment</span></summary>
+                <div className="pt-5">{activeAnalog ? renderAnalogControls() : renderIpControls()}</div>
+              </details>
 
               <Card className={cardClassName}>
                 <CardHeader className={cardHeaderClassName}>
@@ -2321,10 +2363,10 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
                 <div className="flex flex-col gap-2">
                   {currentStep < 3 ? (
                     <Button
-                      onClick={() => setCurrentStep(currentStep === 1 ? 2 : 3)}
+                      onClick={() => currentStep === 1 ? continueFromRequirement() : setCurrentStep(3)}
                       className="w-full bg-primary hover:bg-primary/90 text-white font-bold uppercase tracking-wider"
                     >
-                      {currentStep === 1 ? 'Continue to hardware' : 'Review proposal'}
+                      {currentStep === 1 ? 'Continue' : 'Review my setup'}
                     </Button>
                   ) : (
                     <>
@@ -2357,6 +2399,9 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
               </div>
             </div>
           </div>
+        </div>
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-card/95 p-3 backdrop-blur lg:hidden">
+          <div className="mx-auto flex max-w-lg items-center justify-between gap-3"><div><p className="text-xs text-muted-foreground">Estimated setup</p><p className="font-bold text-foreground">{formatCurrency(totals.overall.sale)}</p></div><Button onClick={() => currentStep === 1 ? continueFromRequirement() : currentStep === 2 ? setCurrentStep(3) : handleInlineQuoteDownload()} className="min-h-11">{currentStep === 1 ? 'Continue' : currentStep === 2 ? 'View my setup' : 'Get my quote'}</Button></div>
         </div>
       </div>
     </section>

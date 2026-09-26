@@ -1,346 +1,68 @@
 'use client';
-import { createClient } from '@tecbunny/database';
-
-
 
 import * as React from 'react';
 import Link from 'next/link';
-import { Logo } from "@tecbunny/ui";
-
-import { Globe, FileText, Shield } from 'lucide-react';
-
-
-import { logger } from '@tecbunny/core';
-import { useAnalytics } from '@tecbunny/core';
+import { usePathname } from 'next/navigation';
+import { ArrowRight, ChevronDown, Globe, Mail, MapPin, MessageCircle, Phone } from 'lucide-react';
+import { Logo } from '@tecbunny/ui';
+import { logger, useAnalytics } from '@tecbunny/core';
 import { ENTITY } from '@/lib/entity';
 
-function WhatsAppIcon(props: React.SVGProps<SVGSVGElement>) {
-    return (
-        <svg
-            viewBox="0 0 24 24"
-            fill="currentColor"
-            height="1em"
-            width="1em"
-            {...props}
-        >
-            <path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38c1.45.79 3.08 1.21 4.79 1.21 5.46 0 9.91-4.45 9.91-9.91S17.5 2 12.04 2m.01 1.67c4.56 0 8.25 3.69 8.25 8.25 0 4.56-3.69 8.25-8.25 8.25-1.53 0-3-.42-4.29-1.19l-.3-.18-3.18.83.85-3.11-.2-.32a8.182 8.182 0 0 1-1.25-4.38c0-4.56 3.69-8.25 8.25-8.25M9.42 7.72l-.12.02c-.15.03-.3.06-.44.09-.15.03-.28.06-.41.1-.39.12-.76.3-1.09.56-.33.27-.63.6-.88.97-.27.41-.43.85-.43 1.32 0 .5.16.98.48 1.41.32.43.72.84 1.2 1.24.48.4 1 1.03 1.63 1.28.63.25 1.22.4 1.84.4.45 0 .86-.08 1.23-.25.37-.17.63-.38.83-.63.2-.25.32-.54.4-.85.08-.31.13-.64.13-1s-.05-.72-.13-1.03c-.08-.31-.2-.59-.4-.84-.2-.25-.46-.46-.83-.63-.37-.17-.78-.25-1.23-.25-.62 0-1.21.15-1.84.4-.05.02-.1.04-.15.07-.1.03-.18.07-.27.1-.1.03-.18.05-.28.07l-.17.04c-.06.01-.1.02-.12.02-.02 0-.04.01-.06.01-.02 0-.03 0-.03-.01s0-.01 0-.01l-.01-.01c0-.01.01-.02.01-.04 0-.02 0-.04.01-.06.01-.02.01-.04.02-.06a.7.7 0 0 1 .05-.12c.04-.08.08-.15.14-.23.06-.08.12-.15.2-.22.07-.07.15-.14.23-.2.08-.06.16-.12.25-.17.09-.05.18-.09.28-.13.05-.02.1-.04.13-.05.28-.11.53-.17.75-.17.22 0 .43.03.62.09.19.06.37.14.53.25.16.11.3.25.41.41s.19.34.24.54c.05.2.07.4.07.61 0 .02 0 .03 0 .03s0 .02 0 .02l-.01.03c0 .01-.01.02-.01.03 0 .01-.01.02-.02.03-.01.01-.02.02-.04.03l-.05.03-.06.03c-.02.01-.05.02-.08.03-.03.01-.06.02-.1.04-.04.01-.07.02-.11.04-.04.01-.07.03-.11.04-.04.02-.07.03-.1.05s-.07.04-.1.06-.06.04-.1.07c-.03.02-.06.04-.1.07l-.07.05c-.01 0-.01.01-.01.01s0 .01 0 .01l.01.01c.22-.12.44-.24.67-.35.23-.11.45-.24.67-.35.22-.11.44-.22.65-.33.21-.11.42-.22.62-.33l.2-.1c.14-.07.26-.15.39-.22.13-.07.25-.15.36-.24.11-.09.22-.18.31-.29s.18-.23.25-.36a2.64 2.64 0 0 0 .28-1.38c0-.52-.13-1-.39-1.44a3.17 3.17 0 0 0-1.08-1.21c-.4-.33-.86-.57-1.36-.72s-1.02-.22-1.56-.22c-.54 0-1.06.07-1.56.22s-.96.39-1.36.72c-.4.34-.72.75-.97 1.21-.25.46-.38.96-.38 1.51 0 .42.09.82.26 1.17.17.35.4.66.68.92.28.26.59.47.92.62.33.15.68.25 1.04.28h.1c.02 0 .03 0 .03-.01s0-.01 0-.01l-.01-.01c0-.01 0-.01.01-.02l.01-.02c0-.01.01-.02.01-.03l.01-.03c.01-.02.01-.03.01-.05 0-.02 0-.04.01-.06 0-.02.01-.04.01-.06a.71.71 0 0 0 0-.1c0-.04 0-.08-.02-.13s-.04-.1-.07-.15a.43.43 0 0 0-.1-.13c-.04-.04-.08-.08-.13-.11-.05-.03-.1-.06-.17-.08-.07-.02-.13-.04-.2-.06-.07-.02-.15-.03-.22-.04-.04-.01-.07-.01-.11-.02l-.11-.02h-.04z" />
-        </svg>
-    );
+const DEFAULT_COMPANY_INFO = { supportEmail: 'support@tecbunny.com', supportPhone: '+91 96041 36010', registeredAddress: 'H. No. 11, Nhayginwada, Parse, Parxem, Pernem, North Goa, Goa - 403512', gstin: '30AAMCT1608G1ZO' };
+const FALLBACK_SOCIAL_LINKS = { facebookUrl: 'https://www.facebook.com/profile.php?id=61578165368064', instagramUrl: 'https://www.instagram.com/tecbunny_solutions/', twitterUrl: process.env.NEXT_PUBLIC_X_URL || '' };
+type FooterLink = { label: string; href: string };
+
+const linkGroups: { title: string; links: FooterLink[] }[] = [
+  { title: 'Solutions', links: [{ label: 'Network & IT Infrastructure', href: '/services/network-infrastructure' }, { label: 'CCTV & Security', href: '/services/physical-security' }, { label: 'Access Control', href: '/services/smart-access-control' }, { label: 'IT Support & AMC', href: '/services/lifecycle-hardware' }, { label: 'Custom Setups', href: '/customised-setups' }] },
+  { title: 'Products', links: [{ label: 'Browse all products', href: '/products' }, { label: 'Computers & laptops', href: '/products' }, { label: 'CCTV & security equipment', href: '/products' }, { label: 'Networking equipment', href: '/products' }, { label: 'Accessories & storage', href: '/products' }] },
+  { title: 'Industries', links: [{ label: 'Hotels & resorts', href: '/industries/hospitality' }, { label: 'Offices & co-working', href: '/industries/offices' }, { label: 'Retail & commercial', href: '/industries/retail' }, { label: 'Education & campuses', href: '/industries/education' }, { label: 'Healthcare', href: '/industries/healthcare' }] },
+  { title: 'Help', links: [{ label: 'Get help choosing', href: '/contact?intent=help_me_choose&source=footer' }, { label: 'Request a quote', href: '/contact?intent=quote_request&source=footer' }, { label: 'Book a site survey', href: '/assessment' }, { label: 'Repair & support', href: '/contact?intent=service_request&source=footer' }, { label: 'FAQs', href: '/info/faqs' }] },
+  { title: 'Company', links: [{ label: 'About TecBunny', href: '/about' }, { label: 'Projects', href: '/projects' }, { label: 'Industries', href: '/industries' }, { label: 'Contact', href: '/contact' }, { label: 'Careers', href: '/agents/recruit' }] },
+];
+
+function FacebookIcon(props: React.SVGProps<SVGSVGElement>) { return <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" {...props}><path d="M13.5 22v-8h2.7l.4-3.1h-3.1V8.9c0-.9.3-1.5 1.6-1.5h1.7V4.6c-.3 0-1.3-.1-2.5-.1-2.5 0-4.2 1.5-4.2 4.3v2.4H7.3V14h2.8v8h3.4Z" /></svg>; }
+function InstagramIcon(props: React.SVGProps<SVGSVGElement>) { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true" {...props}><rect x="3" y="3" width="18" height="18" rx="5" /><circle cx="12" cy="12" r="4" /><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" /></svg>; }
+function XIcon(props: React.SVGProps<SVGSVGElement>) { return <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" {...props}><path d="M18.9 3h3.2l-7 8 8.2 10h-6.4l-5-6.1L6.2 21H3l7.5-8.6L2.7 3h6.6l4.5 5.5L18.9 3Zm-1.1 16.2h1.8L8.3 4.7H6.4l11.4 14.5Z" /></svg>; }
+function LinkedinIcon(props: React.SVGProps<SVGSVGElement>) { return <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" {...props}><path d="M6.9 21H3.5V9h3.4v12ZM5.2 7.4a2 2 0 1 1 0-4 2 2 0 0 1 0 4ZM21 21h-3.4v-5.9c0-1.4 0-3.1-1.9-3.1s-2.2 1.5-2.2 3v6H10V9h3.3v1.6h.1c.5-.9 1.6-1.9 3.3-1.9 3.5 0 4.2 2.3 4.2 5.3v7Z" /></svg>; }
+function YoutubeIcon(props: React.SVGProps<SVGSVGElement>) { return <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" {...props}><path d="M21.6 7.2a3 3 0 0 0-2.1-2.1C17.6 4.6 12 4.6 12 4.6s-5.6 0-7.5.5a3 3 0 0 0-2.1 2.1C2 9.1 2 12 2 12s0 2.9.4 4.8a3 3 0 0 0 2.1 2.1c1.9.5 7.5.5 7.5.5s5.6 0 7.5-.5a3 3 0 0 0 2.1-2.1c.4-1.9.4-4.8.4-4.8s0-2.9-.4-4.8ZM10 15.4V8.6l5.8 3.4L10 15.4Z" /></svg>; }
+
+function getFooterContext(pathname: string) {
+  if (pathname.includes('physical-security') || pathname.includes('cctv-security')) return { label: 'Get a CCTV quote', intent: 'cctv_quote' };
+  if (pathname.includes('network')) return { label: 'Plan your network', intent: 'networking_consultation' };
+  if (pathname.includes('customised-setups')) return { label: 'Talk through your setup', intent: 'custom_setup_consultation' };
+  if (pathname.includes('products')) return { label: 'Ask about a product', intent: 'product_enquiry' };
+  return { label: 'Get help', intent: 'help_me_choose' };
 }
-
-function FacebookIcon(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" {...props}>
-      <path d="M13.5 22v-8h2.7l.4-3.1h-3.1V8.9c0-.9.3-1.5 1.6-1.5h1.7V4.6c-.3 0-1.3-.1-2.5-.1-2.5 0-4.2 1.5-4.2 4.3v2.4H7.3V14h2.8v8h3.4Z" />
-    </svg>
-  );
-}
-
-function XIcon(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" {...props}>
-      <path d="M18.9 3h3.2l-7 8 8.2 10h-6.4l-5-6.1L6.2 21H3l7.5-8.6L2.7 3h6.6l4.5 5.5L18.9 3Zm-1.1 16.2h1.8L8.3 4.7H6.4l11.4 14.5Z" />
-    </svg>
-  );
-}
-
-function InstagramIcon(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true" {...props}>
-      <rect x="3" y="3" width="18" height="18" rx="5" />
-      <circle cx="12" cy="12" r="4" />
-      <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" />
-    </svg>
-  );
-}
-
-function LinkedinIcon(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" {...props}>
-      <path d="M6.9 21H3.5V9h3.4v12ZM5.2 7.4a2 2 0 1 1 0-4 2 2 0 0 1 0 4ZM21 21h-3.4v-5.9c0-1.4 0-3.1-1.9-3.1s-2.2 1.5-2.2 3v6H10V9h3.3v1.6h.1c.5-.9 1.6-1.9 3.3-1.9 3.5 0 4.2 2.3 4.2 5.3v7Z" />
-    </svg>
-  );
-}
-
-function YoutubeIcon(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" {...props}>
-      <path d="M21.6 7.2a3 3 0 0 0-2.1-2.1C17.6 4.6 12 4.6 12 4.6s-5.6 0-7.5.5a3 3 0 0 0-2.1 2.1C2 9.1 2 12 2 12s0 2.9.4 4.8a3 3 0 0 0 2.1 2.1c1.9.5 7.5.5 7.5.5s5.6 0 7.5-.5a3 3 0 0 0 2.1-2.1c.4-1.9.4-4.8.4-4.8s0-2.9-.4-4.8ZM10 15.4V8.6l5.8 3.4L10 15.4Z" />
-    </svg>
-  );
-}
-
-const DEFAULT_COMPANY_INFO = {
-  supportEmail: 'support@tecbunny.com',
-  supportPhone: '+91 96041 36010',
-  registeredAddress: 'H. No. 11, Nhayginwada, Parse, Parxem, Pernem, North Goa, Goa - 403512',
-  gstin: '30AAMCT1608G1ZO',
-};
-
-const FALLBACK_SOCIAL_LINKS = {
-  facebookUrl: 'https://www.facebook.com/profile.php?id=61578165368064',
-  instagramUrl: 'https://www.instagram.com/tecbunny_solutions/',
-  twitterUrl: process.env.NEXT_PUBLIC_X_URL || '',
-};
 
 export function Footer() {
-  const [companyInfo, setCompanyInfo] = React.useState<{supportEmail?: string; supportPhone?: string; registeredAddress?: string; gstin?: string}>(DEFAULT_COMPANY_INFO);
-  const [socialLinks, setSocialLinks] = React.useState<Record<string, string>>({});
-  const [subscribeEmail, setSubscribeEmail] = React.useState('');
-  const [subscribeStatus, setSubscribeStatus] = React.useState<'idle' | 'loading' | 'success' | 'error'>('idle');
-  const [subscribeMessage, setSubscribeMessage] = React.useState<string | null>(null);
-  const isMountedRef = React.useRef(true);
-  const subscribeAbortRef = React.useRef<AbortController | null>(null);
-  const supabase = React.useMemo(() => createClient(), []);
+  const pathname = usePathname();
   const { trackEvent } = useAnalytics();
-
-  React.useEffect(() => {
-    isMountedRef.current = true;
-    fetch('/company-info.json')
-      .then(r => r.ok ? r.json() : null)
-      .then(data => data && setCompanyInfo(data))
-      .catch(() => {});
-
-    return () => {
-      isMountedRef.current = false;
-      subscribeAbortRef.current?.abort();
-    };
-  }, []);
-
-  const handleSocialClick = (platform: string) => {
-    trackEvent('social_click', { platform });
-  };
-
-  const handleSubscribe = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const email = subscribeEmail.trim().toLowerCase();
-
-    if (!email || !/.+@.+\..+/.test(email)) {
-      setSubscribeStatus('error');
-      setSubscribeMessage('Please enter a valid email address.');
-      return;
-    }
-
-    if (!isMountedRef.current) return;
-    setSubscribeStatus('loading');
-    setSubscribeMessage(null);
-
-    try {
-      subscribeAbortRef.current?.abort();
-      const controller = new AbortController();
-      subscribeAbortRef.current = controller;
-
-      const response = await fetch('/api/contact-messages', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        signal: controller.signal,
-        body: JSON.stringify({
-          name: 'Newsletter Subscriber',
-          email,
-          subject: 'System Updates Subscription',
-          message: 'Please subscribe me to system updates and product announcements.',
-        }),
-      });
-
-      if (!response.ok) {
-        let errorMessage = 'Subscription failed. Please try again later.';
-        try {
-          const data = await response.json();
-          if (typeof data?.error === 'string') {
-            errorMessage = data.error;
-          }
-        } catch (parseError) {
-          logger.warn('footer_subscribe_response_parse_failed', {
-            error: parseError instanceof Error ? parseError.message : String(parseError),
-          });
-        }
-        throw new Error(errorMessage);
-      }
-
-      trackEvent('newsletter_subscribe', { status: 'success' });
-      if (!isMountedRef.current) return;
-      setSubscribeStatus('success');
-      setSubscribeMessage('You are subscribed! We will keep you updated.');
-      setSubscribeEmail('');
-    } catch (error) {
-      if (!isMountedRef.current) return;
-      trackEvent('newsletter_subscribe', { status: 'error' });
-      logger.error('footer_subscribe_failed', {
-        error: error instanceof Error ? error.message : String(error),
-      });
-      setSubscribeStatus('error');
-      setSubscribeMessage(error instanceof Error ? error.message : 'Subscription failed.');
-    }
-  };
-
-  React.useEffect(() => {
-    const loadSettings = async () => {
-      try {
-        const response = await fetch(
-          '/api/settings?keys=facebookUrl,twitterUrl,instagramUrl,linkedinUrl,youtubeUrl,websiteUrl,phone,support_email'
-        );
-        if (!response.ok) {
-          logger.error('Footer: failed to load settings from api', { status: response.status });
-          setSocialLinks(FALLBACK_SOCIAL_LINKS);
-          return;
-        }
-
-        const data = await response.json();
-        const links: Record<string, string> = {};
-        Object.keys(data).forEach((key) => {
-          if (data[key] && !['phone', 'support_email'].includes(key)) {
-            links[key] = data[key] as string;
-          }
-        });
-
-        setSocialLinks({
-          ...FALLBACK_SOCIAL_LINKS,
-          ...links,
-        });
-
-        if (data.phone || data.support_email) {
-          setCompanyInfo((current) => ({
-            ...current,
-            supportPhone: data.phone ? String(data.phone).trim() : current.supportPhone,
-            supportEmail: data.support_email ? String(data.support_email).trim() : current.supportEmail,
-          }));
-        }
-      } catch (error) {
-        logger.error('Footer: unexpected error while loading settings', { error });
-        setSocialLinks(FALLBACK_SOCIAL_LINKS);
-      }
-    };
-
-    loadSettings();
-  }, []);
-
+  const [companyInfo, setCompanyInfo] = React.useState(DEFAULT_COMPANY_INFO);
+  const [socialLinks, setSocialLinks] = React.useState<Record<string, string>>(FALLBACK_SOCIAL_LINKS);
+  const context = getFooterContext(pathname || '');
   const supportEmail = companyInfo.supportEmail || DEFAULT_COMPANY_INFO.supportEmail;
   const supportPhone = companyInfo.supportPhone || DEFAULT_COMPANY_INFO.supportPhone;
   const address = companyInfo.registeredAddress || DEFAULT_COMPANY_INFO.registeredAddress;
+  const contactHref = (intent: string) => `/contact?intent=${intent}&source=footer`;
 
-  const socialPlatforms = React.useMemo(
-    () => [
-      { key: 'facebookUrl', icon: FacebookIcon, label: 'Facebook' },
-      { key: 'instagramUrl', icon: InstagramIcon, label: 'Instagram' },
-      { key: 'twitterUrl', icon: XIcon, label: 'X' },
-      { key: 'linkedinUrl', icon: LinkedinIcon, label: 'LinkedIn' },
-      { key: 'youtubeUrl', icon: YoutubeIcon, label: 'YouTube' },
-      { key: 'websiteUrl', icon: Globe, label: 'Website' },
-    ],
-    []
-  );
+  React.useEffect(() => {
+    fetch('/company-info.json').then((response) => response.ok ? response.json() : null).then((data) => { if (data) setCompanyInfo((current) => ({ ...current, ...data })); }).catch(() => undefined);
+    fetch('/api/settings?keys=facebookUrl,twitterUrl,instagramUrl,linkedinUrl,youtubeUrl,websiteUrl,phone,support_email').then((response) => response.ok ? response.json() : Promise.reject(new Error(String(response.status)))).then((data) => {
+      const links = Object.fromEntries(Object.entries(data).filter(([key, value]) => Boolean(value) && !['phone', 'support_email'].includes(key))) as Record<string, string>;
+      setSocialLinks((current) => ({ ...current, ...links }));
+      if (data.phone || data.support_email) setCompanyInfo((current) => ({ ...current, supportPhone: data.phone || current.supportPhone, supportEmail: data.support_email || current.supportEmail }));
+    }).catch((error) => logger.warn('footer_settings_load_failed', { error: error instanceof Error ? error.message : String(error) }));
+  }, []);
 
-  const activeSocialPlatforms = socialPlatforms.filter(({ key }) => Boolean(socialLinks[key]));
+  const socialPlatforms = [{ key: 'facebookUrl', icon: FacebookIcon, label: 'Facebook' }, { key: 'instagramUrl', icon: InstagramIcon, label: 'Instagram' }, { key: 'twitterUrl', icon: XIcon, label: 'X' }, { key: 'linkedinUrl', icon: LinkedinIcon, label: 'LinkedIn' }, { key: 'youtubeUrl', icon: YoutubeIcon, label: 'YouTube' }, { key: 'websiteUrl', icon: Globe, label: 'Website' }].filter(({ key }) => Boolean(socialLinks[key]));
+  const trackFooterClick = (action: string, intent?: string) => trackEvent('footer_cta_click', { action, intent, page: pathname || '/' });
+  const whatsappHref = `https://wa.me/919604136010?text=${encodeURIComponent('Hello TecBunny, I need help with a technology requirement.')}`;
 
-  return (
-    <footer className="relative bg-[#0F172A] text-slate-400 border-t border-slate-800 py-16 sm:py-24 font-sans">
-      <div className="absolute top-0 left-0 h-px w-full bg-gradient-to-r from-transparent via-blue-500/20 to-transparent"></div>
-      <div className="relative z-10 max-w-screen-2xl mx-auto px-6 sm:px-8">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-10 mb-16">
-          {/* Column 1: Services */}
-          <div>
-            <h3 className="text-white text-sm font-tech font-bold uppercase tracking-[0.2em] mb-4 text-blue-400">Solutions</h3>
-            <ul className="space-y-2.5 text-xs font-medium">
-              {ENTITY.services.map((service) => (
-                <li key={service.url}>
-                  <Link href={service.url} className="hover:text-blue-400 transition-all hover:translate-x-0.5 inline-block text-slate-300">
-                    {service.navLabel}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Column 2: Industries */}
-          <div>
-            <h3 className="text-white text-sm font-tech font-bold uppercase tracking-[0.2em] mb-4 text-blue-400">Industries</h3>
-            <ul className="space-y-2.5 text-xs font-medium">
-              {ENTITY.industries.map((industry) => (
-                <li key={industry.url}>
-                  <Link href={industry.url} className="hover:text-blue-400 transition-all hover:translate-x-0.5 inline-block text-slate-300">
-                    {industry.navLabel}
-                  </Link>
-                </li>
-              ))}
-              <li><Link href="/industries" className="hover:text-blue-400 transition-all hover:translate-x-0.5 inline-block text-blue-400 font-bold">All Industries &rarr;</Link></li>
-            </ul>
-          </div>
-
-          {/* Column 3: Resources & Assessment */}
-          <div>
-            <h3 className="text-white text-sm font-tech font-bold uppercase tracking-[0.2em] mb-4 text-blue-400">Resources</h3>
-            <ul className="space-y-2.5 text-xs font-medium">
-              <li><Link href="/assessment" className="text-emerald-400 font-bold hover:underline inline-block">Free Technology Assessment</Link></li>
-              <li><Link href="/resources/infrastructure-planning-guide" className="hover:text-blue-400 transition-all hover:translate-x-0.5 inline-block text-slate-300">IT Infrastructure Guide</Link></li>
-              <li><Link href="/resources/cctv-planning-guide" className="hover:text-blue-400 transition-all hover:translate-x-0.5 inline-block text-slate-300">CCTV Planning Guide</Link></li>
-              <li><Link href="/customised-setups" className="hover:text-blue-400 transition-all hover:translate-x-0.5 inline-block text-slate-300">Custom Setup Configurator</Link></li>
-              <li><Link href="/solutions" className="hover:text-blue-400 transition-all hover:translate-x-0.5 inline-block text-slate-300">Downtime Cost Calculator</Link></li>
-              <li><Link href="/products" className="hover:text-blue-400 transition-all hover:translate-x-0.5 inline-block text-slate-300">Products Catalog</Link></li>
-            </ul>
-          </div>
-
-          {/* Column 4: Company & Policies */}
-          <div>
-            <h3 className="text-white text-sm font-tech font-bold uppercase tracking-[0.2em] mb-4 text-blue-400">Company</h3>
-            <ul className="space-y-2.5 text-xs font-medium">
-              <li><Link href="/about" className="hover:text-blue-400 transition-all hover:translate-x-0.5 inline-block text-slate-300">About TecBunny</Link></li>
-              <li><Link href="/contact" className="hover:text-blue-400 transition-all hover:translate-x-0.5 inline-block text-slate-300">Contact & Support</Link></li>
-              <li><Link href="/info/policies/privacy" className="hover:text-blue-400 transition-all hover:translate-x-0.5 inline-block text-slate-300">Privacy Policy</Link></li>
-              <li><Link href="/info/policies/terms" className="hover:text-blue-400 transition-all hover:translate-x-0.5 inline-block text-slate-300">Terms of Service</Link></li>
-              <li><Link href="/info/policies/shipping" className="hover:text-blue-400 transition-all hover:translate-x-0.5 inline-block text-slate-300">Shipping & Delivery</Link></li>
-            </ul>
-          </div>
-
-          {/* Column 5: Contact & Location */}
-          <div className="text-xs font-medium space-y-3">
-            <h3 className="text-white text-sm font-tech font-bold uppercase tracking-[0.2em] mb-4 text-blue-400">Headquarters</h3>
-            <address className="leading-relaxed text-slate-300 not-italic text-xs">{address}</address>
-            <div className="space-y-1.5 pt-1 font-mono">
-              <p className="text-blue-400 hover:text-blue-300 transition-colors font-bold text-xs">
-                <a className="inline-flex min-h-[24px] items-center" href={`tel:${supportPhone.replace(/\s+/g,'')}`}>{supportPhone}</a>
-              </p>
-              <p className="text-blue-400 hover:text-blue-300 transition-colors font-bold text-xs">
-                <a className="inline-flex min-h-[24px] items-center" href={`mailto:${supportEmail}`}>{supportEmail}</a>
-              </p>
-              <p className="text-emerald-400 hover:text-emerald-300 transition-colors font-bold text-xs">
-                <a className="inline-flex min-h-[24px] items-center" href="https://wa.me/919604136010" target="_blank" rel="noopener noreferrer">WhatsApp Support &rarr;</a>
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Footer Bottom (Copyright, CIN, GSTIN, and Socials) */}
-        <div className="flex flex-col md:flex-row justify-between items-center gap-6 pt-10 border-t border-slate-800 text-sm tracking-wide text-slate-400 font-medium">
-          <div className="flex flex-col items-center gap-2 md:flex-row md:items-center md:gap-6 text-center md:text-left">
-            <p>© 2026 TecBunny Solutions. All rights reserved.</p>
-            <div className="flex items-center gap-3 font-mono">
-              <span>CIN: U80200GA2025PTC017488</span>
-              <span className="hidden md:inline">|</span>
-              <span>GSTIN: {companyInfo.gstin || '30AAMCT1608G1ZO'}</span>
-            </div>
-          </div>
-
-          {activeSocialPlatforms.length > 0 && (
-            <div className="flex gap-5">
-              {activeSocialPlatforms.map(({ key, icon: Icon, label }) => (
-                <a
-                  key={key}
-                  href={socialLinks[key]}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="p-2 min-h-[48px] min-w-[48px] flex items-center justify-center rounded-lg bg-slate-800 text-slate-400 hover:bg-blue-600 hover:text-white hover:scale-110 transition-all shadow-sm hover:shadow-[0_0_15px_rgba(37,99,235,0.4)]"
-                  onClick={() => handleSocialClick(label)}
-                >
-                  <Icon className="h-5 w-5" />
-                  <span className="sr-only">{label}</span>
-                </a>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-    </footer>
-  );
+  return <footer className="relative overflow-hidden border-t border-slate-800 bg-[#08152a] font-sans text-slate-300"><div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-cyan-400/60 to-transparent" /><div className="mx-auto max-w-screen-2xl px-5 py-10 sm:px-8 sm:py-14">
+    <section className="rounded-2xl border border-cyan-300/20 bg-gradient-to-br from-blue-600/25 via-[#10244a] to-cyan-500/10 px-6 py-7 shadow-2xl shadow-blue-950/20 sm:px-9 sm:py-9" aria-labelledby="footer-help-heading"><div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between"><div className="max-w-2xl"><p className="mb-2 text-xs font-bold uppercase tracking-[0.18em] text-cyan-300">Talk to TecBunny</p><h2 id="footer-help-heading" className="text-2xl font-bold tracking-tight text-white sm:text-3xl">Not sure what you need?</h2><p className="mt-2 text-base leading-7 text-slate-300">Tell us about your requirement and we’ll help you choose the right technology solution.</p></div><div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap lg:justify-end"><Link href={contactHref(context.intent)} onClick={() => trackFooterClick('contextual_help', context.intent)} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-cyan-300 px-5 py-3 text-sm font-bold text-slate-950 transition hover:bg-cyan-200">{context.label}<ArrowRight className="h-4 w-4" /></Link><Link href={contactHref('quote_request')} onClick={() => trackFooterClick('quote_request', 'quote_request')} className="inline-flex min-h-11 items-center justify-center rounded-lg border border-slate-500/80 px-5 py-3 text-sm font-semibold text-white transition hover:border-cyan-300 hover:bg-white/10">Request a quote</Link><Link href={contactHref('engineer_consultation')} onClick={() => trackFooterClick('engineer_consultation', 'engineer_consultation')} className="inline-flex min-h-11 items-center justify-center gap-2 px-3 py-3 text-sm font-semibold text-cyan-200 transition hover:text-white">Talk to an engineer<ArrowRight className="h-4 w-4" /></Link></div></div></section>
+    <div className="mt-12 grid gap-10 lg:grid-cols-[1.35fr_3fr]"><section className="max-w-sm"><Link href="/" aria-label="TecBunny home" className="inline-flex"><Logo /></Link><p className="mt-5 text-base leading-7 text-slate-300">Technology, security and IT support for businesses and homes across Goa.</p><Link href={contactHref('help_me_choose')} onClick={() => trackFooterClick('brand_help', 'help_me_choose')} className="mt-6 inline-flex min-h-11 items-center gap-2 rounded-lg border border-cyan-300/50 px-4 py-2 text-sm font-semibold text-cyan-100 transition hover:bg-cyan-300 hover:text-slate-950">Get help choosing <ArrowRight className="h-4 w-4" /></Link></section><div className="hidden grid-cols-2 gap-x-8 gap-y-10 sm:grid lg:grid-cols-5">{linkGroups.map((group) => <nav key={group.title} aria-label={group.title}><h3 className="text-sm font-bold text-white">{group.title}</h3><ul className="mt-4 space-y-3">{group.links.map((link) => <li key={link.label}><Link href={link.href} className="text-sm leading-5 text-slate-300 transition hover:text-cyan-200">{link.label}</Link></li>)}</ul></nav>)}</div><div className="sm:hidden">{linkGroups.map((group) => <details key={group.title} className="border-b border-slate-700/80 py-3"><summary className="flex min-h-8 cursor-pointer list-none items-center justify-between text-sm font-bold text-white">{group.title}<ChevronDown className="h-4 w-4 text-cyan-300" /></summary><ul className="space-y-3 pb-2 pt-4">{group.links.map((link) => <li key={link.label}><Link href={link.href} className="block py-1 text-sm text-slate-300">{link.label}</Link></li>)}</ul></details>)}</div></div>
+    <section className="mt-12 grid gap-7 border-y border-slate-700/80 py-8 md:grid-cols-[1fr_auto] md:items-center" aria-label="Contact TecBunny"><div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3"><div className="flex gap-3"><MapPin className="mt-0.5 h-5 w-5 shrink-0 text-cyan-300" /><div><p className="text-sm font-bold text-white">Based in Goa</p><address className="mt-1 text-sm leading-6 not-italic">{address}</address></div></div><div className="space-y-2"><a href={`tel:${supportPhone.replace(/\s+/g, '')}`} onClick={() => trackFooterClick('call')} className="flex items-center gap-2 text-sm font-semibold text-white hover:text-cyan-200"><Phone className="h-4 w-4 text-cyan-300" />{supportPhone}</a><a href={`mailto:${supportEmail}`} onClick={() => trackFooterClick('email')} className="flex items-center gap-2 text-sm font-semibold text-white hover:text-cyan-200"><Mail className="h-4 w-4 text-cyan-300" />{supportEmail}</a></div><a href={whatsappHref} target="_blank" rel="noopener noreferrer" onClick={() => trackFooterClick('whatsapp')} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-emerald-500 px-4 py-2 text-sm font-bold text-white transition hover:bg-emerald-400"><MessageCircle className="h-4 w-4" />WhatsApp us</a></div><a href="https://maps.google.com/?q=H.+No.+11,+Nhayginwada,+Parse,+Parxem,+Pernem,+North+Goa,+Goa+403512" target="_blank" rel="noopener noreferrer" onClick={() => trackFooterClick('directions')} className="inline-flex min-h-11 items-center justify-center rounded-lg border border-slate-600 px-4 py-2 text-sm font-semibold text-white transition hover:border-cyan-300 hover:text-cyan-100">Get directions</a></section>
+    <div className="flex flex-col gap-6 py-7 text-sm md:flex-row md:items-center md:justify-between"><div className="flex flex-wrap items-center gap-x-5 gap-y-2"><span>© 2026 TecBunny Solutions Pvt. Ltd.</span><span>CIN: {ENTITY.cin}</span><span>GSTIN: {companyInfo.gstin || DEFAULT_COMPANY_INFO.gstin}</span></div><nav aria-label="Legal" className="flex flex-wrap gap-x-5 gap-y-2"><Link href="/info/policies/privacy" className="hover:text-cyan-200">Privacy</Link><Link href="/info/policies/terms" className="hover:text-cyan-200">Terms</Link><Link href="/info/policies/terms" className="hover:text-cyan-200">Service terms</Link><Link href="/sitemap.xml" className="hover:text-cyan-200">Sitemap</Link></nav></div>
+    {socialPlatforms.length > 0 && <div className="flex items-center gap-3 border-t border-slate-800 pt-6"><span className="mr-1 text-sm text-slate-400">Follow TecBunny</span>{socialPlatforms.map(({ key, icon: Icon, label }) => <a key={key} href={socialLinks[key]} target="_blank" rel="noopener noreferrer" aria-label={label} onClick={() => trackEvent('social_click', { platform: label })} className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-slate-800 text-slate-300 transition hover:bg-cyan-300 hover:text-slate-950"><Icon className="h-4 w-4" /></a>)}</div>}
+  </div></footer>;
 }
