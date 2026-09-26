@@ -71,7 +71,6 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
   const router = useRouter();
   const { toast } = useToast();
   const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1);
-  const [selectedNeeds, setSelectedNeeds] = useState<string[]>(['cctv']);
   const [cctvNeed, setCctvNeed] = useState('New CCTV Installation');
   const [businessName, setBusinessName] = useState('');
   const [location, setLocation] = useState('');
@@ -214,15 +213,7 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
   };
 
   const cameraCountLabel = cameraCount <= 0 ? 'None' : `${cameraCount} Camera${cameraCount > 1 ? 's' : ''}`;
-  const toggleNeed = (need: string) => setSelectedNeeds((current) => current.includes(need) ? current.filter((item) => item !== need) : [...current, need]);
-  const continueFromRequirement = () => {
-    if (!selectedNeeds.includes('cctv')) {
-      const requirement = selectedNeeds.join(', ') || 'Help choosing a technology setup';
-      router.push(`/contact?intent=custom_setup_consultation&source=custom_setup_planner&message=${encodeURIComponent(`Requirement: ${requirement}. Property: ${premiseType}. Location: ${location || 'Not provided'}. Budget: ${budget}.`)}`);
-      return;
-    }
-    setCurrentStep(2);
-  };
+  const continueFromRequirement = () => setCurrentStep(2);
 
   const cardClassName = isTech ? 'border-border bg-card/60 text-card-foreground' : undefined;
   const cardHeaderClassName = isTech ? 'text-foreground font-semibold' : undefined;
@@ -532,7 +523,7 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
 
 
       const customSetupConfig = {
-        selectedNeeds,
+        selectedNeeds: ['CCTV & Security'],
         cctvNeed,
         businessName,
         location,
@@ -711,7 +702,7 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
 
 
       const customSetupConfig = {
-        selectedNeeds,
+        selectedNeeds: ['CCTV & Security'],
         cctvNeed,
         businessName,
         location,
@@ -843,6 +834,13 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
 
     try {
       const customSetupConfig = {
+        selectedNeeds: ['CCTV & Security'],
+        cctvNeed,
+        businessName,
+        location,
+        propertySize,
+        budget,
+        premiseType,
         system,
         cameraCount,
         analogSelections,
@@ -1837,16 +1835,14 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
               <Card className={cardClassName}>
                 <CardHeader className={cardHeaderClassName}>
                   <CardTitle className="text-white">What do you need help with?</CardTitle>
-                  <CardDescription className={cardDescriptionClassName}>Choose one or more areas. We only ask for the details that matter next.</CardDescription>
+                  <CardDescription className={cardDescriptionClassName}>This planner creates a custom CCTV setup and estimate.</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                     {[
-                      { value: 'cctv', label: 'CCTV & Security', icon: '📹' }, { value: 'networking', label: 'Networking & Wi-Fi', icon: '📡' },
-                      { value: 'computers', label: 'Computers & Laptops', icon: '💻' }, { value: 'infrastructure', label: 'IT Infrastructure', icon: '🖥️' },
-                      { value: 'support', label: 'IT Support / AMC', icon: '🛠️' }, { value: 'hotel', label: 'Hotel / Resort Technology', icon: '🏨' },
-                      { value: 'business', label: 'Custom Business Setup', icon: '🏢' }, { value: 'help', label: "I'm not sure", icon: '✨' },
-                    ].map((option) => <button key={option.value} type="button" onClick={() => toggleNeed(option.value)} className={cn('rounded-xl border p-4 text-left transition', selectedNeeds.includes(option.value) ? 'border-primary bg-primary/10 text-foreground ring-1 ring-primary/50' : 'border-border bg-muted/30 text-muted-foreground hover:border-primary/60')}><span className="text-xl">{option.icon}</span><span className="mt-2 block text-sm font-semibold">{option.label}</span></button>)}
+                      { value: 'New CCTV Installation', label: 'New CCTV installation', icon: '📹' }, { value: 'Upgrade Existing CCTV', label: 'Upgrade existing CCTV', icon: '⬆️' },
+                      { value: 'Replace Cameras', label: 'Replace cameras', icon: '🔁' }, { value: 'Not Sure', label: "I'm not sure", icon: '✨' },
+                    ].map((option) => <button key={option.value} type="button" onClick={() => setCctvNeed(option.value)} className={cn('rounded-xl border p-4 text-left transition', cctvNeed === option.value ? 'border-primary bg-primary/10 text-foreground ring-1 ring-primary/50' : 'border-border bg-muted/30 text-muted-foreground hover:border-primary/60')}><span className="text-xl">{option.icon}</span><span className="mt-2 block text-sm font-semibold">{option.label}</span></button>)}
                   </div>
                   <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-6 border-t border-border pt-6">
                     {([
@@ -1894,12 +1890,6 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
                   <CardDescription className={cardDescriptionClassName}>A few simple choices are enough to create a starting recommendation.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                  <div className="space-y-2">
-                    <Label>What do you need?</Label>
-                    <RadioGroup value={cctvNeed} onValueChange={setCctvNeed} className="grid gap-2 sm:grid-cols-2">
-                      {['New CCTV Installation', 'Upgrade Existing CCTV', 'Replace Cameras', 'Not Sure'].map((option) => <Label key={option} className={cn('flex cursor-pointer items-center justify-between rounded-lg border p-3 text-sm', cctvNeed === option ? 'border-primary bg-primary/10' : 'border-border bg-muted/30')}><span>{option}</span><RadioGroupItem value={option} /></Label>)}
-                    </RadioGroup>
-                  </div>
                   <div className="space-y-2">
                     <Label>What kind of CCTV setup do you prefer?</Label>
                     <RadioGroup value={system} onValueChange={(value: SetupSystem) => setSystem(value)} className="grid gap-3 sm:grid-cols-2">

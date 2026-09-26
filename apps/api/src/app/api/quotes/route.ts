@@ -130,6 +130,13 @@ export async function POST(req: NextRequest) {
         conduitMeters = 0,
         installationIncluded,
         automationEnabled = true,
+        selectedNeeds = [],
+        cctvNeed = null,
+        businessName = null,
+        location = null,
+        propertySize = null,
+        budget = null,
+        premiseType = null,
       } = customSetupConfig;
 
       const totals = calculateTotals({
@@ -241,6 +248,15 @@ export async function POST(req: NextRequest) {
         items,
         totals: totals.overall,
         breakdown: totals.system.breakdown,
+        requirementContext: {
+          selectedNeeds: Array.isArray(selectedNeeds) ? selectedNeeds : [],
+          cctvNeed: typeof cctvNeed === 'string' ? cctvNeed : null,
+          businessName: typeof businessName === 'string' ? businessName : null,
+          location: typeof location === 'string' ? location : null,
+          propertySize: typeof propertySize === 'string' ? propertySize : null,
+          budget: typeof budget === 'string' ? budget : null,
+          premiseType: typeof premiseType === 'string' ? premiseType : null,
+        },
       };
     }
 
@@ -307,7 +323,7 @@ export async function POST(req: NextRequest) {
           last_name: customerName.split(/\s+/).slice(1).join(' ') || undefined,
           email: customerEmail,
           phone: customerPhone || undefined,
-          company_name: undefined,
+          company_name: typeof customSetupConfig?.businessName === 'string' ? customSetupConfig.businessName : undefined,
           source_name: 'quote',
           form_identifier: 'custom_setup_quote',
           origin_path: '/custom-setup',
@@ -318,6 +334,7 @@ export async function POST(req: NextRequest) {
             quote_summary: safeSummary,
             customer_address: customerAddress || null,
             gst_included: !!gstIncluded,
+            custom_setup: finalSelections?.requirementContext ?? null,
           }
         });
       } catch (leadError) {

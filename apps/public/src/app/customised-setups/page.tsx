@@ -15,10 +15,10 @@ import { BreadcrumbJsonLd } from '@/components/BreadcrumbJsonLd';
 
 export async function generateMetadata(): Promise<Metadata> {
   return createPageMetadata({
-  title: 'Build Your Custom Technology Setup | TecBunny',
-  description: 'Tell TecBunny about your property and requirements to build the right CCTV, networking, security, and technology setup.',
+  title: 'Build Your Custom CCTV Setup | TecBunny',
+  description: 'Plan a custom CCTV setup with recommended equipment, installation options, and a TecBunny quote.',
   path: '/customised-setups',
-  keywords: ['custom technology setup', 'CCTV estimator', 'networking setup', 'IT infrastructure Goa', 'security systems Goa'],
+  keywords: ['custom CCTV setup', 'CCTV estimator', 'CCTV installation Goa', 'security systems Goa'],
 });
 }
 
@@ -68,10 +68,10 @@ export default async function CustomisedSetupsPage({
             <ShieldCheck className="h-4 w-4" /> TecBunny setup planner
           </span>
           <h1 className="mt-6 text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
-            Build your custom <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-blue-300">technology setup.</span>
+            Build your custom <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-blue-300">CCTV setup.</span>
           </h1>
           <p className="mt-4 mx-auto max-w-3xl text-base leading-relaxed text-muted-foreground sm:text-lg">
-            Tell us about your property, requirements, and budget. TecBunny will help you create the right technology setup with recommended equipment, pricing, and installation options.
+            Tell us about your property, coverage needs, and budget. TecBunny will help you create the right CCTV setup with recommended equipment, pricing, and installation options.
           </p>
           <p className="mt-3 text-sm font-medium text-blue-200">No technical knowledge required.</p>
           <div className="mt-6 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">

@@ -19,6 +19,7 @@ import {
   buildCableEntries,
   buildCameraMatrix,
   buildHddOptionsFromComponents,
+  buildPriceOptionsFromComponents,
   pickFirstOption,
   findComponentBySlug,
 } from './custom-setup-pricing';
@@ -199,9 +200,12 @@ export async function buildPricingCatalog(blueprint: CustomSetupBlueprintSummary
     fallbacks.hddOptions
   );
 
-  const monitorComponent =
-    analogSystem?.components.find((component) => component.slug.includes('monitor')) ??
-    ipSystem?.components.find((component) => component.slug.includes('monitor'));
+  const allComponents = blueprint.systems.flatMap((system) => system.components);
+  const findConfiguredComponents = (slugs: string[]) => allComponents.filter((component) => slugs.includes(component.slug));
+  const monitorComponents = findConfiguredComponents(['monitor-display', 'surveillance-monitor']);
+  const rackComponents = findConfiguredComponents(['network-rack', 'rack-cabinet']);
+  const conduitComponents = findConfiguredComponents(['conduit-pipe']);
+  const monitorComponent = monitorComponents[0];
 
   const installationComponent =
     analogSystem?.components.find((component) => component.slug === 'installation-service') ??
@@ -214,9 +218,9 @@ export async function buildPricingCatalog(blueprint: CustomSetupBlueprintSummary
     analog: analogPricing,
     ip: ipPricing,
     hddOptions,
-    monitorOptions: fallbacks.monitorOptions,
-    rackOptions: fallbacks.rackOptions,
-    conduitOptions: fallbacks.conduitOptions,
+    monitorOptions: buildPriceOptionsFromComponents(monitorComponents, fallbacks.monitorOptions),
+    rackOptions: buildPriceOptionsFromComponents(rackComponents, fallbacks.rackOptions),
+    conduitOptions: buildPriceOptionsFromComponents(conduitComponents, fallbacks.conduitOptions),
     wallMountAddon: fallbacks.wallMountAddon,
     spikeGuardOption: fallbacks.spikeGuardOption,
     monitorOption,

@@ -497,6 +497,26 @@ export function buildHddOptionsFromComponents(
   return entries.sort((a, b) => a.label.localeCompare(b.label));
 }
 
+/** Converts configured blueprint options into customer-facing priced choices. */
+export function buildPriceOptionsFromComponents(
+  components: Array<CustomSetupBlueprintComponentSummary | undefined>,
+  fallback: PriceEntry[]
+): PriceEntry[] {
+  const entries: PriceEntry[] = [];
+  const seen = new Set<string>();
+  for (const component of components) {
+    if (!component) continue;
+    for (const option of component.options) {
+      if (seen.has(option.id)) continue;
+      const base = option.unitPrice ?? component.unitPrice ?? component.basePrice ?? 0;
+      const { mrp, sale } = resolvePricePair(option, component, base, base);
+      entries.push({ id: option.id, label: option.label || component.name, mrp, sale });
+      seen.add(option.id);
+    }
+  }
+  return entries.length ? entries : fallback;
+}
+
 export function pickFirstOption(component: CustomSetupBlueprintComponentSummary | undefined): PriceEntry | null {
   if (!component || !component.options.length) {
     return null;
