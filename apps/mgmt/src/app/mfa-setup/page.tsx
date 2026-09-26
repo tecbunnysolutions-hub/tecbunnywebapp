@@ -1,7 +1,7 @@
 'use client';
 
-import { Suspense } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 import { TwoFactorSetup } from '@/components/auth/TwoFactorSetup';
 
@@ -13,23 +13,19 @@ function resolveNextPath(next: string | null): string {
   return next;
 }
 
-function MfaSetupContent() {
+export default function MfaSetupPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const nextPath = resolveNextPath(searchParams.get('next'));
+  const [nextPath, setNextPath] = useState('/mgmt');
+
+  useEffect(() => {
+    const requestedPath = new URLSearchParams(window.location.search).get('next');
+    setNextPath(resolveNextPath(requestedPath));
+  }, []);
 
   return (
     <TwoFactorSetup
       onComplete={() => router.replace(nextPath)}
       onCancel={() => router.replace('/auth/login')}
     />
-  );
-}
-
-export default function MfaSetupPage() {
-  return (
-    <Suspense fallback={<main className="min-h-screen bg-background" />}>
-      <MfaSetupContent />
-    </Suspense>
   );
 }
