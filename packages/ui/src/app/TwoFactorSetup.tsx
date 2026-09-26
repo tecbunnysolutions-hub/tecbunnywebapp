@@ -27,6 +27,7 @@ interface SetupData {
 export function TwoFactorSetup({ onComplete, onCancel }: TwoFactorSetupProps) {
   const [step, setStep] = useState<'setup' | 'verify' | 'complete'>('setup');
   const [setupData, setSetupData] = useState<SetupData | null>(null);
+  const [setupError, setSetupError] = useState<string | null>(null);
   const [verificationCode, setVerificationCode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [copiedCodes, setCopiedCodes] = useState<Set<number>>(new Set());
@@ -34,6 +35,7 @@ export function TwoFactorSetup({ onComplete, onCancel }: TwoFactorSetupProps) {
 
   const initiateSetup = useCallback(async () => {
     setIsLoading(true);
+    setSetupError(null);
     try {
       const response = await fetch('/api/auth/2fa/setup', {
         method: 'POST',
@@ -50,17 +52,18 @@ export function TwoFactorSetup({ onComplete, onCancel }: TwoFactorSetupProps) {
 
       setSetupData(data);
     } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to start 2FA setup';
       logger.error('Setup error in TwoFactorSetup', { error });
+      setSetupError(message);
       toast({
         title: 'Setup failed',
-        description: error instanceof Error ? error.message : 'Failed to setup 2FA',
+        description: message,
         variant: 'destructive',
       });
-      onCancel();
     } finally {
       setIsLoading(false);
     }
-  }, [toast, onCancel]);
+  }, [toast]);
 
   useEffect(() => {
     // Start 2FA setup
@@ -282,6 +285,23 @@ export function TwoFactorSetup({ onComplete, onCancel }: TwoFactorSetupProps) {
             <div className="text-center py-8">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
               <p className="tech-body">Setting up 2FA...</p>
+            </div>
+          ) : setupError ? (
+            <div className="space-y-4">
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  We could not start two-factor setup. {setupError}
+                </AlertDescription>
+              </Alert>
+              <div className="flex flex-col gap-3 sm:flex-row">
+                <Button onClick={initiateSetup} className="flex-1" size="lg">
+                  Try again
+                </Button>
+                <Button variant="outline" onClick={onCancel} className="flex-1" size="lg">
+                  Sign out
+                </Button>
+              </div>
             </div>
           ) : setupData ? (
             <div className="space-y-6">
