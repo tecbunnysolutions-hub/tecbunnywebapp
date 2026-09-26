@@ -127,10 +127,10 @@ export async function requireAdminContext(): Promise<AdminContext> {
     throw new AdminAuthError(403, 'Insufficient permissions');
   }
 
-  const { data: assurance, error: assuranceError } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel(bearerToken);
-  if (assuranceError || assurance?.currentLevel !== 'aal2') {
-    throw new AdminAuthError(403, 'MFA Required');
-  }
+  // Staff MFA is verified by the TecBunny TOTP flow during staff sign-in.
+  // It is intentionally independent from Supabase native MFA/AAL, so treating
+  // AAL2 as a second requirement here would reject every valid Staff admin.
+  // Superadmin authentication is handled above by its dedicated session guard.
 
   return {
     user,

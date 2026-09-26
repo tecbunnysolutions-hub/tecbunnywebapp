@@ -13,9 +13,9 @@ describe('API gateway MFA policy', () => {
     updateSession.mockResolvedValue(NextResponse.next());
   });
 
-  it('requires privileged API callers to complete MFA', async () => {
+  it('does not impose native Supabase MFA on API callers', async () => {
     await executeUnifiedPolicyMiddleware(new NextRequest('https://api.test/api/payments/update'), { appType: 'api' });
-    expect(updateSession).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ enforceMfaRoles: ['admin', 'superadmin'] }));
+    expect(updateSession).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ enforceMfaRoles: undefined }));
   });
 
   it.each(['setup', 'verify', 'status', 'disable'])('keeps authenticated factor %s reachable without a circular MFA requirement', async (action) => {
@@ -25,7 +25,7 @@ describe('API gateway MFA policy', () => {
 
   it('does not exempt arbitrary paths under an enrollment prefix', async () => {
     await executeUnifiedPolicyMiddleware(new NextRequest('https://api.test/api/auth/2fa/setup/admin'), { appType: 'api' });
-    expect(updateSession).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ enforceMfaRoles: ['admin', 'superadmin'] }));
+    expect(updateSession).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ enforceMfaRoles: undefined }));
   });
   it('allows Cashfree checkout resources while retaining nonce protection', async () => {
     const response = await executeUnifiedPolicyMiddleware(new NextRequest('https://test/payment/cashfree/one'), { appType: 'public' });

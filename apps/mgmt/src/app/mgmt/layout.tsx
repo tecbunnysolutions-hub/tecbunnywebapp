@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useMemo, useState, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from "@tecbunny/core/hooks";
 import { GlobalShell, NavSection } from '@tecbunny/admin-ui';
 import { isAtLeast } from '@tecbunny/core/roles';
@@ -61,7 +61,9 @@ const QUICK_CREATE_ROUTES: Record<string, string> = {
 export default function ManagementLayout({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
   const [fabOpen, setFabOpen] = useState(false);
+  const isAdminWorkspace = pathname === '/mgmt/admin' || pathname.startsWith('/mgmt/admin/');
 
   const handleQuickCreate = useCallback((label: string) => {
     setFabOpen(false);
@@ -86,6 +88,13 @@ export default function ManagementLayout({ children }: { children: React.ReactNo
       }
     }
   }, [loading, user, router]);
+
+  // Admin owns a complete internal shell (navigation, header, command tools).
+  // Do not wrap it in the general Workspace shell, which creates duplicated
+  // sidebars and competing viewport/scroll containers.
+  if (isAdminWorkspace) {
+    return <>{children}</>;
+  }
 
   if (loading || !user || user.role === 'customer') {
     return null;
