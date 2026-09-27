@@ -24,6 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Input Fields
   const superadminUser = document.getElementById('superadminUser');
   const superadminPass = document.getElementById('superadminPass');
+  const superadminOtp = document.getElementById('superadminOtp');
   const titleInput = document.getElementById('productTitle');
   const priceInput = document.getElementById('productPrice');
   const mrpInput = document.getElementById('productMrp');
@@ -332,7 +333,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     try {
       if (email && pass) {
-        const { response, authUrl } = await postAuthWithFallback({ email, password: pass });
+        const otp = superadminOtp ? superadminOtp.value.replace(/\D/g, '') : '';
+        const { response, authUrl } = await postAuthWithFallback({ email, password: pass, ...(otp ? { otp } : {}) });
 
         const { rawBody, json } = await parseApiResponseBody(response);
         const data = json && typeof json === 'object' ? json : null;

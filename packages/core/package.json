@@ -29,6 +29,8 @@
     "./auth/session-server": "./src/auth/server-role.ts",
     "./auth/superadmin": "./src/auth/superadmin-session.ts",
     "./auth/superadmin-password": "./src/auth/superadmin-password.ts",
+    "./auth/superadmin-login": "./src/auth/superadmin-login.ts",
+    "./request-ip": "./src/request-ip.ts",
     "./auth/superadmin-session": "./src/auth/superadmin-session.ts",
     "./auth/unified-middleware": "./src/auth/unified-middleware.ts",
     "./supabase/service-client": "./src/server.ts",

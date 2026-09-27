@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 export default function LoginPage() {
   const [userId, setUserId] = useState('');
   const [password, setPassword] = useState('');
+  const [otp, setOtp] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -19,7 +20,7 @@ export default function LoginPage() {
       const res = await fetch('/api/admin-auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, password }),
+        body: JSON.stringify({ userId, password, otp: otp || undefined }),
       });
 
       if (res.ok) {
@@ -82,6 +83,21 @@ export default function LoginPage() {
                 placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+              />
+            </div>
+            <div>
+              <label htmlFor="otp" className="sr-only">
+                Authenticator code
+              </label>
+              <input
+                id="otp"
+                name="otp"
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                className="relative block w-full rounded-md border-0 py-1.5 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:z-10 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 px-3"
+                placeholder="Authenticator code (if enabled)"
+                value={otp}
+                onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
               />
             </div>
           </div>

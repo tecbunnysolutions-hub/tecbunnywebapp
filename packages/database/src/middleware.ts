@@ -43,15 +43,15 @@ function base64UrlDecode(value: string) {
   return Uint8Array.from(binary, (char) => char.charCodeAt(0));
 }
 
+// Must match packages/core/src/auth/superadmin-session.ts: session tokens are
+// signed with a key derived for this purpose, never with the raw shared secret.
+const SUPERADMIN_KEY_CONTEXT = 'tecbunny:superadmin-session:v2';
+
 async function hmacSha256(data: string, secret: string) {
   if (!cachedCryptoKey || cachedKeySecret !== secret) {
-    cachedCryptoKey = await crypto.subtle.importKey(
-      'raw',
-      textEncoder.encode(secret),
-      { name: 'HMAC', hash: 'SHA-256' },
-      false,
-      ['sign']
-    );
+    const rootKey = await crypto.subtle.importKey('raw', textEncoder.encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+    const derived = await crypto.subtle.sign('HMAC', rootKey, textEncoder.encode(SUPERADMIN_KEY_CONTEXT));
+    cachedCryptoKey = await crypto.subtle.importKey('raw', derived, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
     cachedKeySecret = secret;
   }
   return new Uint8Array(await crypto.subtle.sign('HMAC', cachedCryptoKey, textEncoder.encode(data)));
@@ -79,8 +79,10 @@ async function verifySuperadminSessionTokenForMiddleware(token: string | undefin
   const secret = process.env.SUPERADMIN_SESSION_SECRET || process.env.SESSION_SECRET;
   if (!secret) return null;
 
+  // Only v2 tokens are issued. The version prefix is not covered by the
+  // signature, so older prefixes must not select weaker verification.
   const [version, encodedPayload, encodedSignature] = token.split('.');
-  if ((version !== 'v1' && version !== 'v2') || !encodedPayload || !encodedSignature) return null;
+  if (version !== 'v2' || !encodedPayload || !encodedSignature) return null;
 
   const expectedSignature = await hmacSha256(encodedPayload, secret);
   let actualSignature: Uint8Array;
@@ -108,12 +110,26 @@ async function verifySuperadminSessionTokenForMiddleware(token: string | undefin
       return null;
     }
 
-    if (version === 'v2' && payload.fp !== await generateFingerprint(request)) return null;
+    if (payload.fp !== await generateFingerprint(request)) return null;
 
     return payload as SuperadminSessionPayload;
   } catch {
     return null;
   }
+}
+
+/**
+ * Public-route path patterns match exactly. `*` matches one path segment and a
+ * trailing `/**` matches the path itself and everything below it.
+ */
+export function matchesPathPattern(pathname: string, pattern: string): boolean {
+  const subtree = pattern.endsWith('/**');
+  const base = subtree ? pattern.slice(0, -3) : pattern;
+  const expression = base
+    .split('/')
+    .map((segment) => (segment === '*' ? '[^/]+' : segment.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')))
+    .join('/');
+  return new RegExp(`^${expression}${subtree ? '(?:/.*)?' : ''}$`).test(pathname);
 }
 
 /**
@@ -183,7 +199,7 @@ export async function updateSession(
       return false;
     }
 
-    return pathname === allowedPath || pathname.startsWith(`${allowedPath}/`);
+    return matchesPathPattern(pathname, allowedPath);
   };
   
   // Allow public routes
@@ -193,7 +209,7 @@ export async function updateSession(
 
   // Allow auth callback or login route
   const loginRoute = options?.loginRoute || '/auth/login';
-  if (pathname.startsWith(loginRoute) || pathname.startsWith('/auth/callback')) {
+  if (matchesPathPattern(pathname, `${loginRoute}/**`) || matchesPathPattern(pathname, '/auth/callback/**')) {
     return response;
   }
 

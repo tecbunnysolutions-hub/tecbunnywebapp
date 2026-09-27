@@ -29,6 +29,8 @@ export async function proxy(request: NextRequest, event: EnterpriseProxyEvent) {
     const response = await executeUnifiedPolicyMiddleware(request, {
       appType: 'api',
       loginRoute: '/login',
+      // Entries match exactly; `*` is one path segment and `/**` a subtree.
+      // Everything else requires a session, then the route's own guard.
       publicRoutes: [
         'GET /api/auth/session',
         'POST /api/auth/callback',
@@ -63,7 +65,10 @@ export async function proxy(request: NextRequest, event: EnterpriseProxyEvent) {
         'POST /api/webhooks/customer/signup',
         'GET /api/webhook/whatsapp',
         'POST /api/webhook/whatsapp',
-        '/api/health',
+        'GET /api/health',
+        'GET /api/health/summary',
+        'GET /api/health/otp',
+        'GET /api/health/email',
         'GET /api/settings',
         'GET /api/metadata',
         'GET /api/page-content',
@@ -71,7 +76,8 @@ export async function proxy(request: NextRequest, event: EnterpriseProxyEvent) {
         'GET /api/offers',
         'GET /api/coupons',
         'GET /api/products',
-        'GET /api/projects',
+        'GET /api/products/*',
+        'GET /api/projects/**',
         'POST /api/checkout/calculate',
         'POST /api/cart/sync',
         'GET /api/orders',
@@ -91,29 +97,30 @@ export async function proxy(request: NextRequest, event: EnterpriseProxyEvent) {
         'POST /api/ai/research',
         'GET /api/ai/research',
         'POST /api/quotes',
+        'POST /api/quotes/bid',
+        // Customer quote links carry a signed action token checked by each handler.
+        'GET /api/quotes/*',
+        'POST /api/quotes/*/accept-counter',
+        'POST /api/quotes/*/reject-counter',
+        'GET /api/quotes/*/advance-payment/confirm',
+        'POST /api/quotes/*/advance-payment/confirm',
+        'POST /api/quotes/*/advance-payment/generate-link',
         'POST /api/uploads/quote-documents',
-        // The tRPC catch-all route (/api/trpc/[trpc]) hosts a mix of public and
-        // protected procedures (see packages/rpc/src/routers/*.ts -- e.g.
-        // featureFlags.getAll, coupons.getAll/getByCode/getById, offers.getAll,
-        // projects.getAll, pageContent.get, contactMessages.submit are all
-        // `publicProcedure`, called anonymously by every public-site page load).
-        // This gateway-level auth wall has no visibility into individual
-        // procedure names -- httpBatchLink can even batch several procedure
-        // calls into one comma-joined path (e.g.
-        // /api/trpc/featureFlags.getAll,pageContent.get) -- so it was blocking
-        // ALL anonymous tRPC calls with a 307 redirect to /login, which
-        // surfaced as real "failed API/telemetry events" for anonymous
-        // visitors (e.g. featureFlags.getAll) in the Superadmin Platform
-        // Reliability notification. tRPC already enforces its own auth
-        // boundary correctly: `protectedProcedure` (packages/rpc/src/trpc.ts)
-        // throws UNAUTHORIZED unless `ctx.session.user` is set, and
-        // `createContext` (packages/rpc/src/context.ts) independently verifies
-        // the superadmin cookie or Supabase bearer token against the real Auth
-        // API -- so this is not a case of removing real protection, just an
-        // incorrect/redundant duplicate gate at the wrong layer. Rate limiting
-        // and CORS/security headers in executeUnifiedPolicyMiddleware still
-        // apply to every request regardless of this publicRoutes entry.
-        '/api/trpc',
+        'GET /api/v1/embed/configurator',
+        // Server-to-server endpoints; each handler verifies its shared secret.
+        'POST /api/marketing/triggers/order-delivered-followup',
+        'POST /api/notifications/send',
+        'POST /api/customer/notifications',
+        'GET /api/cron/*',
+        'POST /api/indexnow',
+        // The tRPC catch-all (/api/trpc/[trpc]) hosts a mix of public and
+        // protected procedures, and httpBatchLink can batch several procedure
+        // names into one comma-joined path, so this gateway cannot tell them
+        // apart. tRPC enforces its own boundary: `protectedProcedure` and
+        // `adminProcedure` (packages/rpc/src/trpc.ts) require a verified
+        // session, AAL2 for privileged roles and, for admin procedures, an
+        // admin role. Rate limiting and security headers still apply here.
+        '/api/trpc/**',
       ],
     });
     emitEnterpriseProxyTelemetry(request, { application: 'api', response, startedAt, event, sameOriginIngest: true });

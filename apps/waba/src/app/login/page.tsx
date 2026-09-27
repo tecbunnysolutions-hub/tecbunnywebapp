@@ -10,6 +10,8 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [mfaFactorId, setMfaFactorId] = useState<string | null>(null);
   const [mfaCode, setMfaCode] = useState("");
+  const [isSuperadmin, setIsSuperadmin] = useState(false);
+  const [superadminCode, setSuperadminCode] = useState("");
 
   const handleMfaVerify = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,22 +41,22 @@ export default function LoginPage() {
     setError("");
     
     try {
-      // Try the dedicated superadmin flow first. The endpoint validates the
-      // identifier and password; a 401 simply means this is a staff login.
-      const superadminResponse = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password, isSuperadmin: true })
-      });
+      // Root (superadmin) sign-in is explicit so ordinary staff logins never
+      // consume the root login attempt budget.
+      if (isSuperadmin) {
+        const superadminResponse = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password, otp: superadminCode || undefined, isSuperadmin: true })
+        });
 
-      if (superadminResponse.ok) {
-        window.location.href = "/";
-        return;
-      }
+        if (superadminResponse.ok) {
+          window.location.href = "/";
+          return;
+        }
 
-      if (superadminResponse.status !== 401) {
         const data = await superadminResponse.json().catch(() => ({}));
-        setError(data.error || "Authentication service is unavailable");
+        setError(data.error || "Superadmin sign-in failed");
         setLoading(false);
         return;
       }
@@ -164,6 +166,27 @@ export default function LoginPage() {
               required
             />
           </div>
+
+          <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem', color: '#94a3b8' }}>
+            <input type="checkbox" checked={isSuperadmin} onChange={e => setIsSuperadmin(e.target.checked)} />
+            Sign in as superadmin
+          </label>
+
+          {isSuperadmin && (
+            <div className="crm-field">
+              <label htmlFor="waba-superadmin-code">Authenticator code (if enabled)</label>
+              <input
+                id="waba-superadmin-code"
+                type="text"
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                className="crm-input"
+                value={superadminCode}
+                onChange={e => setSuperadminCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                placeholder="000000"
+              />
+            </div>
+          )}
 
           <button 
             type="submit"

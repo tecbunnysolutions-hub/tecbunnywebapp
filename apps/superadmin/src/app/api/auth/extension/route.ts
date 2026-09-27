@@ -1,27 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { logger } from '@tecbunny/core';
-import { createSuperadminSessionToken, verifySuperadminPassword } from '@tecbunny/core/server';
+import { createSuperadminSessionToken, getTrustedClientIp, verifySuperadminLogin } from '@tecbunny/core/server';
 
 export const dynamic = 'force-dynamic';
 
-const textEncoder = new TextEncoder();
-
-function constantTimeStringEquals(left: string, right: string) {
-  const leftBytes = textEncoder.encode(left);
-  const rightBytes = textEncoder.encode(right);
-  const maxLength = Math.max(leftBytes.length, rightBytes.length);
-  let diff = leftBytes.length ^ rightBytes.length;
-
-  for (let index = 0; index < maxLength; index += 1) {
-    diff |= (leftBytes[index] ?? 0) ^ (rightBytes[index] ?? 0);
+function isAllowedOrigin(origin: string) {
+  if (/^chrome-extension:\/\/[a-p]{32}$/i.test(origin)) return true;
+  try {
+    const url = new URL(origin);
+    return url.protocol === 'https:' && (url.hostname === 'tecbunny.com' || url.hostname.endsWith('.tecbunny.com'));
+  } catch {
+    return false;
   }
-
-  return diff === 0;
 }
 
 // CORS headers for chrome extension
 function getCorsHeaders(request: NextRequest) {
-  const origin = request.headers.get('origin') || '';
+  const origin = (request.headers.get('origin') || '').trim();
   const headers: Record<string, string> = {
     Vary: 'Origin',
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
@@ -29,13 +24,8 @@ function getCorsHeaders(request: NextRequest) {
     'Access-Control-Max-Age': '600',
   };
 
-  // Allow chrome-extension origins and tecbunny.com origins
-  if (
-    /^chrome-extension:\/\/[a-p]{32}$/i.test(origin.trim()) ||
-    origin.includes('tecbunny.com') ||
-    !origin
-  ) {
-    headers['Access-Control-Allow-Origin'] = origin || '*';
+  if (origin && isAllowedOrigin(origin)) {
+    headers['Access-Control-Allow-Origin'] = origin;
   }
 
   return headers;
@@ -52,7 +42,7 @@ export async function POST(request: NextRequest) {
     logger.info('superadmin_extension_auth.requested');
 
     const body = await request.json();
-    const { email, password } = body;
+    const { email, password, otp } = body ?? {};
 
     if (!email || !password) {
       return NextResponse.json(
@@ -61,77 +51,32 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const configuredUserId = (process.env.SUPERADMIN_USER_ID || '').trim();
-    const configuredEmail = (process.env.SUPERADMIN_EMAIL || '').trim();
-    const configuredPasswordHash = process.env.SUPERADMIN_PASSWORD_HASH || '';
-    const configuredPasswordPlain = process.env.SUPERADMIN_PASSWORD || '';
-
-    if (!configuredUserId && !configuredEmail) {
-      logger.error('superadmin_extension_auth.configuration_missing');
-      return NextResponse.json(
-        { error: 'Superadmin credentials are not configured on the server.' },
-        { status: 503, headers: corsHeaders }
-      );
-    }
-    if (!configuredPasswordHash && (process.env.NODE_ENV === 'production' || !configuredPasswordPlain)) {
-      logger.error('superadmin_extension_auth.password_not_configured');
-      return NextResponse.json(
-        { error: 'Superadmin credentials are not configured on the server.' },
-        { status: 503, headers: corsHeaders }
-      );
-    }
-
-    if (!configuredPasswordHash && process.env.NODE_ENV !== 'production') {
-      logger.warn('superadmin_extension_auth.using_plaintext_password', { env: process.env.NODE_ENV });
-    }
-
-    const submittedInput = (email || '').trim();
-    const submittedPassword = String(password ?? '').trim();
-    const allowedUserIds = [configuredUserId, configuredEmail].filter(Boolean);
-    const superadminIdMatches = allowedUserIds.some(
-      (candidate) => constantTimeStringEquals(submittedInput.toLowerCase(), candidate.toLowerCase())
-    );
-
-    logger.info('superadmin_extension_auth.root_check', {
-      superadminIdMatches,
+    // Shared root credential check: attempt limits, password hash and, when
+    // configured, the authenticator code.
+    const login = await verifySuperadminLogin({
+      identifier: String(email),
+      password: String(password),
+      otp: typeof otp === 'string' ? otp : null,
+      clientKey: getTrustedClientIp(request),
     });
-
-    if (superadminIdMatches) {
-      const passwordMatches = configuredPasswordHash
-        ? await verifySuperadminPassword(submittedPassword, configuredPasswordHash)
-        : process.env.NODE_ENV !== 'production'
-          && constantTimeStringEquals(submittedPassword, configuredPasswordPlain);
-
-      if (!passwordMatches) {
-        logger.warn('superadmin_extension_auth.password_mismatch');
-        return NextResponse.json(
-          { error: 'Invalid login credentials' },
-          { status: 401, headers: corsHeaders }
-        );
-      }
-
-      const token = await createSuperadminSessionToken(submittedInput, request);
-
-      logger.info('superadmin_extension_auth.success', { userId: submittedInput });
-
-      return NextResponse.json(
-        {
-          success: true,
-          access_token: token,
-          user: {
-            id: 'superadmin-root-id',
-            email: email.trim(),
-            role: 'superadmin',
-          },
-        },
-        { status: 200, headers: corsHeaders }
-      );
+    if (!login.ok) {
+      return NextResponse.json({ error: login.error }, { status: login.status, headers: corsHeaders });
     }
 
-    logger.warn('superadmin_extension_auth.invalid_credentials', { submittedInput });
+    const token = await createSuperadminSessionToken(login.email, request);
+    logger.info('superadmin_extension_auth.success');
+
     return NextResponse.json(
-      { error: 'Invalid login credentials' },
-      { status: 401, headers: corsHeaders }
+      {
+        success: true,
+        access_token: token,
+        user: {
+          id: 'superadmin-root-id',
+          email: login.email,
+          role: 'superadmin',
+        },
+      },
+      { status: 200, headers: corsHeaders }
     );
   } catch (error: any) {
     logger.error('superadmin_extension_auth.error', {

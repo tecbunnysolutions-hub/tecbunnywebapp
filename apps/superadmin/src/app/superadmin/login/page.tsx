@@ -8,6 +8,7 @@ import { Input, Label, useToast, Turnstile } from "@tecbunny/ui";
 function SuperadminSignInForm() {
   const [userId, setUserId] = useState('');
   const [password, setPassword] = useState('');
+  const [otp, setOtp] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -54,6 +55,7 @@ function SuperadminSignInForm() {
         body: JSON.stringify({
           userId: userId.trim(),
           password,
+          otp: otp || undefined,
           captchaToken
         })
       });
@@ -147,6 +149,22 @@ function SuperadminSignInForm() {
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>
+            </div>
+
+            {/* Authenticator code (required once SUPERADMIN_TOTP_SECRET is configured) */}
+            <div>
+              <Label htmlFor="superadmin-otp" className="text-xs text-muted-foreground mb-1.5 block">
+                Authenticator Code
+              </Label>
+              <Input
+                id="superadmin-otp"
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                value={otp}
+                onChange={e => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                placeholder="000000"
+                className="w-full bg-muted/50 border border-border rounded-lg px-4 py-3 text-foreground outline-none focus:border-primary transition-colors"
+              />
             </div>
 
             {/* Error Message */}

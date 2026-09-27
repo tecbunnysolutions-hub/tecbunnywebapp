@@ -59,15 +59,16 @@ function getSessionSecret() {
   return secret;
 }
 
+// The configured secret may be shared with other signers (for example
+// SESSION_SECRET). Derive a purpose-specific key so no other token format can
+// ever verify as a superadmin credential. Must match packages/database/src/middleware.ts.
+const SUPERADMIN_KEY_CONTEXT = 'tecbunny:superadmin-session:v2';
+
 async function hmacSha256(data: string, secret: string) {
   if (!cachedCryptoKey || cachedKeySecret !== secret) {
-    cachedCryptoKey = await crypto.subtle.importKey(
-      'raw',
-      textEncoder.encode(secret),
-      { name: 'HMAC', hash: 'SHA-256' },
-      false,
-      ['sign']
-    );
+    const rootKey = await crypto.subtle.importKey('raw', textEncoder.encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+    const derived = await crypto.subtle.sign('HMAC', rootKey, textEncoder.encode(SUPERADMIN_KEY_CONTEXT));
+    cachedCryptoKey = await crypto.subtle.importKey('raw', derived, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
     cachedKeySecret = secret;
   }
   return new Uint8Array(await crypto.subtle.sign('HMAC', cachedCryptoKey, textEncoder.encode(data)));

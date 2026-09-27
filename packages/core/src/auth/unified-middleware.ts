@@ -2,6 +2,26 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { updateSession } from '@tecbunny/database/middleware';
 import { telemetry } from '../telemetry';
 import { logger } from '../logger-browser';
+import { ALL_ROLES, type UserRole } from '../roles';
+
+/** Every signed-in role except customers: the audience of internal apps. */
+export const STAFF_GATEWAY_ROLES: UserRole[] = ALL_ROLES.filter((role) => role !== 'customer');
+
+const DEFAULT_ALLOWED_ROLES: Partial<Record<UnifiedMiddlewareOptions['appType'], UserRole[]>> = {
+  mgmt: STAFF_GATEWAY_ROLES,
+  superadmin: ['superadmin'],
+};
+
+function configuredExtensionIds(): Set<string> {
+  const ids = new Set<string>();
+  const single = process.env.CHROME_EXTENSION_ID?.trim().toLowerCase();
+  if (single && /^[a-p]{32}$/.test(single)) ids.add(single);
+  for (const origin of (process.env.CHROME_EXTENSION_ALLOWED_ORIGINS || '').split(',')) {
+    const match = /^chrome-extension:\/\/([a-p]{32})$/i.exec(origin.trim());
+    if (match) ids.add(match[1].toLowerCase());
+  }
+  return ids;
+}
 
 /** Edge-compatible random bytes using Web Crypto API (no Node.js crypto module). */
 function webRandomBytes(byteLength: number): Uint8Array {
@@ -20,6 +40,8 @@ export interface UnifiedMiddlewareOptions {
   appType: 'api' | 'public' | 'superadmin' | 'mgmt';
   publicRoutes?: string[];
   loginRoute?: string;
+  /** Roles admitted past the gateway; defaults per app (see DEFAULT_ALLOWED_ROLES). */
+  allowedRoles?: UserRole[];
 }
 
 /** Generate a fresh cryptographic nonce per request. */
@@ -27,20 +49,15 @@ function generateNonce(): string {
   return randomBase64(16);
 }
 
-function generateCSP(nonce: string, allowInlineScripts = false) {
+function generateCSP(nonce: string) {
   // Scripts stay strictly nonce-based (the primary XSS defence). Styles allow
   // 'unsafe-inline' because runtime CSS-in-JS libraries (e.g. goober via
   // react-hot-toast) inject <style> tags without a nonce, and per the CSP spec
   // a nonce in style-src causes 'unsafe-inline' to be ignored — which blocks
   // those tags. Style-based CSP bypass is far lower risk than script injection.
-  // The Management portal's App Router response contains framework-generated
-  // inline Flight scripts. Its current deployment does not propagate the
-  // request nonce onto those scripts, so a nonce-only policy prevents React
-  // from hydrating and closes the RSC stream. Scope inline compatibility to
-  // that authenticated internal app; all other applications stay nonce-only.
-  const scriptSrc = allowInlineScripts
-    ? `script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com https://cs.iubenda.com https://cdn.iubenda.com https://static.cloudflareinsights.com https://www.googletagmanager.com https://www.google-analytics.com https://va.vercel-scripts.com https://connect.facebook.net https://sdk.cashfree.com`
-    : `script-src 'self' 'nonce-${nonce}' https://challenges.cloudflare.com https://cs.iubenda.com https://cdn.iubenda.com https://static.cloudflareinsights.com https://www.googletagmanager.com https://www.google-analytics.com https://va.vercel-scripts.com https://connect.facebook.net https://sdk.cashfree.com`;
+  // Apps must render dynamically (e.g. `await headers()` in the root layout)
+  // so Next.js can stamp this nonce onto its inline scripts.
+  const scriptSrc = `script-src 'self' 'nonce-${nonce}' https://challenges.cloudflare.com https://cs.iubenda.com https://cdn.iubenda.com https://static.cloudflareinsights.com https://www.googletagmanager.com https://www.google-analytics.com https://va.vercel-scripts.com https://connect.facebook.net https://sdk.cashfree.com`;
   const styleSrc  = `style-src 'self' 'unsafe-inline' https://fonts.googleapis.com`;
   return [
     "default-src 'self'",
@@ -78,7 +95,7 @@ export async function executeUnifiedPolicyMiddleware(
 
   // Per-request CSP nonce — eliminates 'unsafe-inline' requirement
   const nonce = generateNonce();
-  const csp = generateCSP(nonce, appType === 'mgmt');
+  const csp = generateCSP(nonce);
 
   // Security Headers (applied to both requestHeaders and final response)
   requestHeaders.set('content-security-policy', csp);
@@ -97,11 +114,16 @@ export async function executeUnifiedPolicyMiddleware(
     if (origin) {
       try {
         const url = new URL(origin);
+        const isProduction = process.env.NODE_ENV === 'production';
+        const extensionIds = configuredExtensionIds();
+        const isAllowedExtension = url.protocol === 'chrome-extension:'
+          && /^[a-p]{32}$/i.test(url.hostname)
+          // Only the configured TecBunny extension; any extension in development.
+          && (extensionIds.size > 0 ? extensionIds.has(url.hostname.toLowerCase()) : !isProduction);
         if (
-          url.hostname === 'localhost' || 
-          url.hostname === 'tecbunny.com' || 
-          url.hostname.endsWith('.tecbunny.com') ||
-          (url.protocol === 'chrome-extension:' && /^[a-p]{32}$/i.test(url.hostname))
+          (url.hostname === 'localhost' && !isProduction) ||
+          (url.protocol === 'https:' && (url.hostname === 'tecbunny.com' || url.hostname.endsWith('.tecbunny.com'))) ||
+          isAllowedExtension
         ) {
           allowedOrigin = origin;
         }
@@ -154,7 +176,8 @@ export async function executeUnifiedPolicyMiddleware(
 
   // Defer to updateSession for token validation and role checking
   const sessionResponse = await updateSession(request, {
-    allowedRoles: undefined, // Role enforcement is now handled by Prisma Extension and Route Guards
+    // Internal apps admit staff only; route guards still apply finer permissions.
+    allowedRoles: options.allowedRoles ?? DEFAULT_ALLOWED_ROLES[appType],
     requestHeaders,
     loginRoute,
     publicRoutes,

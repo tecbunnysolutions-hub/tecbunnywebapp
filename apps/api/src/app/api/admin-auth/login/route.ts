@@ -1,43 +1,19 @@
-import { createSuperadminSessionToken } from '@tecbunny/core/auth/superadmin-session';
-import { rateLimit } from '@tecbunny/core/rate-limit';
-import { getTrustedClientIp, verifySuperadminPassword } from '@tecbunny/core/server';
+import { createSuperadminSessionToken, SUPERADMIN_SESSION_TTL_SECONDS } from '@tecbunny/core/auth/superadmin-session';
+import { getTrustedClientIp, verifyCaptcha, verifySuperadminLogin } from '@tecbunny/core/server';
 import { z } from 'zod';
 import { apiFailure, apiSuccess, apiValidationError } from '../../../../lib/api-contract';
 
 const loginPayloadSchema = z.object({
-  userId: z.string().trim().min(1).max(64),
+  userId: z.string().trim().min(1).max(320),
   password: z.string().min(10).max(128),
+  otp: z.string().trim().max(10).optional(),
+  captchaToken: z.string().max(4096).optional(),
 });
-
-const LOGIN_RATE_LIMIT = { limit: 5, windowMs: 60 * 1000 };
-const textEncoder = new TextEncoder();
-
-function constantTimeStringEquals(left: string, right: string) {
-  const leftBytes = textEncoder.encode(left);
-  const rightBytes = textEncoder.encode(right);
-  const maxLength = Math.max(leftBytes.length, rightBytes.length);
-  let difference = leftBytes.length ^ rightBytes.length;
-
-  for (let index = 0; index < maxLength; index += 1) {
-    difference |= (leftBytes[index] ?? 0) ^ (rightBytes[index] ?? 0);
-  }
-
-  return difference === 0;
-}
 
 export async function POST(request: Request) {
   const requestId = request.headers.get('x-correlation-id');
   const meta = { requestId, version: 'v1' };
   try {
-    const ip = getTrustedClientIp(request);
-    const rl = await rateLimit(`superadmin_login_ip:${ip}`, LOGIN_RATE_LIMIT.limit, LOGIN_RATE_LIMIT.windowMs);
-    if (!rl.allowed) {
-      return apiFailure(429, {
-        code: 'RATE_LIMITED',
-        message: 'Too many login attempts. Please try again in one minute.',
-      }, { meta });
-    }
-
     let rawBody: unknown;
     try {
       rawBody = await request.json();
@@ -53,56 +29,38 @@ export async function POST(request: Request) {
       return apiValidationError(parsedBody.error, meta);
     }
 
-    const { userId, password } = parsedBody.data;
+    const { userId, password, otp, captchaToken } = parsedBody.data;
+    const ip = getTrustedClientIp(request);
 
-    const expectedUserId = process.env.SUPERADMIN_USER_ID;
-    const expectedPasswordHash = process.env.SUPERADMIN_PASSWORD_HASH;
-    const developmentPassword = process.env.SUPERADMIN_PASSWORD;
-
-    if (!expectedUserId || (!expectedPasswordHash && (process.env.NODE_ENV === 'production' || !developmentPassword))) {
-      return apiFailure(503, {
-        code: 'SERVICE_UNAVAILABLE',
-        message: 'Superadmin credentials are not configured in the environment',
-      }, { meta });
+    // Same bot check as the superadmin console login when Turnstile is configured.
+    if (process.env.NODE_ENV === 'production' && process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY) {
+      const captcha = await verifyCaptcha(captchaToken ?? null, ip);
+      if (!captcha.success) {
+        return apiFailure(400, { code: 'VALIDATION_ERROR', message: 'Security verification failed. Please try again.' }, { meta });
+      }
     }
 
-    const identifierRl = await rateLimit(`superadmin_login_user:${userId.toLowerCase()}`, LOGIN_RATE_LIMIT.limit, LOGIN_RATE_LIMIT.windowMs);
-    if (!identifierRl.allowed) {
-      return apiFailure(429, {
-        code: 'RATE_LIMITED',
-        message: 'Too many login attempts. Please try again in one minute.',
-      }, { meta });
+    const login = await verifySuperadminLogin({ identifier: userId, password, otp, clientKey: ip });
+    if (!login.ok) {
+      const code = login.status === 429 ? 'RATE_LIMITED' : login.status === 503 ? 'SERVICE_UNAVAILABLE' : 'INVALID_CREDENTIALS';
+      return apiFailure(login.status, { code, message: login.error }, { meta });
     }
 
-    const userIdMatches = constantTimeStringEquals(userId, expectedUserId);
-    const passwordMatches = expectedPasswordHash
-      ? await verifySuperadminPassword(password, expectedPasswordHash)
-      : constantTimeStringEquals(password, developmentPassword!);
+    const token = await createSuperadminSessionToken(login.email, request);
+    const response = apiSuccess({ authenticated: true }, {
+      message: 'Authentication successful',
+      meta,
+    });
 
-    if (userIdMatches && passwordMatches) {
-      const token = await createSuperadminSessionToken(userId, request);
+    response.cookies.set('superadmin-session', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      path: '/',
+      maxAge: SUPERADMIN_SESSION_TTL_SECONDS,
+    });
 
-      const response = apiSuccess({ authenticated: true }, {
-        message: 'Authentication successful',
-        meta,
-      });
-      
-      // Set the session cookie securely
-      response.cookies.set('superadmin-session', token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
-        path: '/',
-        maxAge: 60 * 60 * 24 // 24 hours
-      });
-
-      return response;
-    }
-
-    return apiFailure(401, {
-      code: 'INVALID_CREDENTIALS',
-      message: 'Invalid superadmin credentials',
-    }, { meta });
+    return response;
   } catch (error) {
     console.error('Login error:', error);
     return apiFailure(500, {

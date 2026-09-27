@@ -23,6 +23,24 @@ describe('Registered gateway and storefront proxies', () => {
     // /api/orders is explicitly public, so use PATCH to exercise private mutations.
     expect((await proxy(new NextRequest(`https://test${path}`, { method: 'PATCH' }), { waitUntil: vi.fn() })).status).toBe(401);
   });
+  it.each([
+    ['POST', '/api/orders/auto-cancel'],
+    ['POST', '/api/orders/update-status'],
+    ['GET', '/api/health/orders'],
+    ['POST', '/api/auth/signup/extra'],
+    ['GET', '/api/settingsx'],
+  ])('does not extend public entries to other paths (%s %s)', async (method, path) => {
+    expect((await proxy(new NextRequest(`https://test${path}`, { method }), { waitUntil: vi.fn() })).status).toBe(401);
+  });
+  it.each([
+    ['POST', '/api/quotes/bid'],
+    ['POST', '/api/quotes/2026061234/accept-counter'],
+    ['GET', '/api/trpc/featureFlags.getAll,pageContent.get'],
+    ['POST', '/api/marketing/triggers/order-delivered-followup'],
+    ['GET', '/api/cron/abandoned-carts'],
+  ])('admits explicitly public or secret-verified endpoints (%s %s)', async (method, path) => {
+    expect((await proxy(new NextRequest(`https://test${path}`, { method }), { waitUntil: vi.fn() })).status).toBe(200);
+  });
   it.each(['/payment/cashfree/one', '/checkout', '/orders', '/profile'])('redirects anonymous storefront access to %s', async path => {
     const response = await storefront(new NextRequest(`https://test${path}`));
     expect(response.status).toBe(307);

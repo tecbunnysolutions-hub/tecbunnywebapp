@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import "./globals.css";
 import { AppProvider } from "@tecbunny/core/context/AppProvider";
 import { EnterpriseAnalyticsAutoTracker } from "@tecbunny/core/components/EnterpriseAnalyticsAutoTracker";
@@ -13,11 +14,15 @@ export const metadata: Metadata = {
   robots: "noindex, nofollow",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Render per request so Next.js applies the CSP nonce from the gateway to
+  // its inline scripts; the portal's policy does not allow unsafe-inline.
+  await headers();
+
   return (
     <html
       lang="en"
