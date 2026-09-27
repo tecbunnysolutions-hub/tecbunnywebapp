@@ -110,6 +110,30 @@ try {
   await db.exec(`RESET ROLE; UPDATE public.profiles SET role='admin' WHERE id='${owner}'; SET ROLE authenticated`);
   assert.equal((await db.query('SELECT * FROM public."Conversation"')).rows.length, 3);
   console.log('PASS: canonical ownership backfill, unassignment, cross-tenant assignment denial, immutability and restrictive tenant/branch RLS');
+
+  await db.exec(`RESET ROLE;
+    CREATE FUNCTION public.award_commission_atomic(p_order_id uuid, p_agent_id uuid, p_commission_amount numeric, p_commission_data jsonb DEFAULT NULL)
+      RETURNS jsonb LANGUAGE sql SECURITY DEFINER AS $$ SELECT '{}'::jsonb $$;
+    GRANT EXECUTE ON FUNCTION public.award_commission_atomic(uuid, uuid, numeric, jsonb) TO PUBLIC, anon, authenticated;
+    CREATE TABLE public.lead_followup_tasks (id int PRIMARY KEY);
+    GRANT ALL ON public.lead_followup_tasks TO anon, authenticated;
+    GRANT SELECT, INSERT, UPDATE ON public.profiles TO authenticated;`);
+  const accessMigration = await readFile(new URL('../supabase/migrations/20260927000001_restrict_privileged_access.sql', import.meta.url), 'utf8');
+  await db.exec(accessMigration);
+  await db.exec(accessMigration);
+  await db.exec('SET ROLE anon');
+  await assert.rejects(db.query(`SELECT public.award_commission_atomic('${owner}', '${owner}', 1000000)`), /permission denied/);
+  await assert.rejects(db.query('SELECT * FROM public.lead_followup_tasks'), /permission denied/);
+  await db.exec(`RESET ROLE; SET ROLE authenticated; SET request.jwt.claim.sub='${owner}'`);
+  await assert.rejects(db.exec(`UPDATE public.profiles SET role='superadmin' WHERE id='${owner}'`), /service role/);
+  await assert.rejects(db.exec(`UPDATE public.profiles SET company_id='org-b' WHERE id='${owner}'`), /service role/);
+  await assert.rejects(db.exec(`INSERT INTO public.profiles (id, role) VALUES ('00000000-0000-0000-0000-000000000003', 'admin')`), /service role/);
+  await db.exec(`INSERT INTO public.profiles (id, email, role) VALUES ('00000000-0000-0000-0000-000000000004', 'new@example.test', 'customer')`);
+  await db.exec(`UPDATE public.profiles SET email='new@example.test' WHERE id='00000000-0000-0000-0000-000000000004'`);
+  await db.exec('RESET ROLE');
+  await db.exec(`UPDATE public.profiles SET role='sales_manager' WHERE id='00000000-0000-0000-0000-000000000004'`);
+  assert.equal((await db.query(`SELECT role FROM public.profiles WHERE id='00000000-0000-0000-0000-000000000004'`)).rows[0].role, 'sales_manager');
+  console.log('PASS: server-only functions and tables are closed to anon/authenticated; privileged profile columns are service-role only');
 } finally {
   await db.close();
 }

@@ -34,7 +34,7 @@ describe('2FA enrollment', () => {
 
   it('allows first enrollment after verification', async () => {
     expect((await PUT(request())).status).toBe(200);
-    expect(mocks.enableTwoFactor).toHaveBeenCalledWith('user-1', validBody.secret, validBody.backupCodes, expect.anything());
+    expect(mocks.enableTwoFactor).toHaveBeenCalledWith('user-1', validBody.secret, validBody.backupCodes);
   });
 
   it('rejects invalid codes and malformed enrollment input', async () => {

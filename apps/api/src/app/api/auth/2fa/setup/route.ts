@@ -27,7 +27,7 @@ export async function POST(_request: NextRequest) {
     }
 
     // Check if 2FA is already enabled
-  const status = await twoFactorManager.getTwoFactorStatus(user.id, supabase);
+  const status = await twoFactorManager.getTwoFactorStatus(user.id);
     if (status?.enabled) {
       return NextResponse.json(
         { error: '2FA is already enabled for this account' },
@@ -71,7 +71,7 @@ export async function PUT(request: NextRequest) {
 
     // Re-enrollment must go through the existing disable flow, which verifies
     // the current factor. A code for a replacement secret proves nothing about it.
-    const status = await twoFactorManager.getTwoFactorStatus(user.id, supabase);
+    const status = await twoFactorManager.getTwoFactorStatus(user.id);
     if (!status) {
       return NextResponse.json({ error: 'Unable to verify 2FA status' }, { status: 503 });
     }
@@ -97,7 +97,7 @@ export async function PUT(request: NextRequest) {
     }
 
     // Enable 2FA for the user
-  const success = await twoFactorManager.enableTwoFactor(user.id, secret, backupCodes, supabase);
+  const success = await twoFactorManager.enableTwoFactor(user.id, secret, backupCodes);
 
     if (!success) {
       return NextResponse.json(

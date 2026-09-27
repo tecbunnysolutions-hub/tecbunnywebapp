@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 
 import { twoFactorManager } from "@tecbunny/core/two-factor-manager";
+import { rateLimit } from "@tecbunny/core/rate-limit";
 
 // export const dynamic = 'force-dynamic';
 
@@ -18,6 +19,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Bound code guessing per account (Redis-backed when configured).
+    const attempts = await rateLimit(`2fa_disable:${user.id}`, 5, 5 * 60 * 1000);
+    if (!attempts.allowed) {
+      return NextResponse.json({ error: 'Too many attempts. Please wait a few minutes.' }, { status: 429 });
+    }
+
     const { code } = await request.json();
 
     if (!code || typeof code !== 'string') {
@@ -28,7 +35,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify the code before disabling (for security)
-  const result = await twoFactorManager.verifyTwoFactor(user.id, code, supabase);
+  const result = await twoFactorManager.verifyTwoFactor(user.id, code);
 
     if (!result.success) {
       return NextResponse.json(
@@ -38,7 +45,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Disable 2FA
-  const success = await twoFactorManager.disableTwoFactor(user.id, supabase);
+  const success = await twoFactorManager.disableTwoFactor(user.id);
 
     if (!success) {
       return NextResponse.json(

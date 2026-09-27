@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createSupabaseClient as createClient } from '@tecbunny/database/server';
+import { createSupabaseServiceClient, isSupabaseServiceConfigured } from '@tecbunny/database/admin';
 import { LeadMonitoringService, logger } from '@tecbunny/core';
 import { getSessionWithRole } from '@tecbunny/core/auth/server-role';
 import { isAtLeast, type UserRole } from '@tecbunny/core/roles';
@@ -34,7 +35,8 @@ export async function GET(request: NextRequest) {
 
     logger.info('admin_leads_health.requested', { correlationId, userId: session.user.id });
 
-    const supabase = await createClient();
+    // Lead monitoring tables are service-role only; the admin check above gates access.
+    const supabase = isSupabaseServiceConfigured ? createSupabaseServiceClient() : await createClient();
     const health = await LeadMonitoringService.getSystemHealth(supabase);
 
     logger.info('admin_leads_health.success', {
@@ -75,7 +77,8 @@ export async function POST(request: NextRequest) {
 
     logger.info('admin_leads_audit.started', { correlationId, userId: session.user.id });
 
-    const supabase = await createClient();
+    // Lead monitoring tables are service-role only; the admin check above gates access.
+    const supabase = isSupabaseServiceConfigured ? createSupabaseServiceClient() : await createClient();
     const audit = await LeadMonitoringService.auditDataQuality(supabase);
 
     logger.info('admin_leads_audit.completed', {

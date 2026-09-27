@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 
 import { twoFactorManager } from "@tecbunny/core/two-factor-manager";
+import { rateLimit } from "@tecbunny/core/rate-limit";
 
 export async function POST(request: NextRequest) {
   try {
@@ -16,6 +17,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Bound code guessing per account (Redis-backed when configured).
+    const attempts = await rateLimit(`2fa_verify:${user.id}`, 5, 5 * 60 * 1000);
+    if (!attempts.allowed) {
+      return NextResponse.json({ error: 'Too many attempts. Please wait a few minutes.' }, { status: 429 });
+    }
+
     const { code } = await request.json();
 
     if (!code || typeof code !== 'string') {
@@ -26,7 +33,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify the 2FA code
-  const result = await twoFactorManager.verifyTwoFactor(user.id, code, supabase);
+  const result = await twoFactorManager.verifyTwoFactor(user.id, code);
 
     if (!result.success) {
       return NextResponse.json(
