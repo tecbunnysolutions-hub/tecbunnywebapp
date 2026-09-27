@@ -110,7 +110,6 @@ export function NativeMfaSetup({ onComplete, onCancel }: NativeMfaSetupProps) {
           {enrollment && (
             <div className="space-y-3 text-center">
               {/* Supabase returns the QR code as an SVG data URL. */}
-              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={enrollment.qrCode} alt="Authenticator QR code" className="mx-auto h-48 w-48 rounded bg-white p-2" />
               <p className="text-xs text-muted-foreground break-all">
                 Manual entry key: <span className="font-mono">{enrollment.secret}</span>

@@ -85,7 +85,9 @@ export function GlobalShell({
     <div className="flex h-screen bg-slate-50 overflow-hidden font-sans">
       {/* Mobile sidebar backdrop */}
       {mobileMenuOpen && (
-        <div 
+        <button
+          type="button"
+          aria-label="Close menu"
           className="fixed inset-0 z-40 bg-slate-900/50 backdrop-blur-sm lg:hidden"
           onClick={() => setMobileMenuOpen(false)}
         />

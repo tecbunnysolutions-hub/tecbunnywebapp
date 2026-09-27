@@ -3,7 +3,7 @@ import { supabase } from '@/lib/supabase';
 import { sendWhatsAppMessage, sendWhatsAppLocation } from '@/services/infobipService';
 import { requireApiRole } from '@tecbunny/core/server-role-guard';
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { canAccessConversationSender, getAccessibleConversationSenders, resolveActorScope } from '@/lib/authorization-scope';
+import { canAccessConversationSender, resolveActorScope } from '@/lib/authorization-scope';
 import { getMessageError } from '@/lib/message-error';
 
 export const dynamic = 'force-dynamic';
@@ -80,8 +80,7 @@ export async function GET(req: Request) {
 
     const { limit, offset } = getPagination(searchParams, { limit: 50, maxLimit: 100 });
 
-    const scopedSenderNumbers = await getAccessibleConversationSenders(scope);
-    if (scopedSenderNumbers && scopedSenderNumbers.length === 0) {
+    if (!scope.isGlobal && !scope.organizationId) {
       return NextResponse.json({
         conversations: [],
         pagination: {
@@ -92,40 +91,41 @@ export async function GET(req: Request) {
       });
     }
 
-    // Note: Since Prisma's relation 'messages' was used, we fetch conversations, then fetch latest message for each.
+    // Apply the tenant boundary in the database rather than through an
+    // intermediate list of sender numbers, which grows without bound.
     let conversationsQuery = supabase
       .from('Conversation')
       .select('*')
       .order('last_interaction_timestamp', { ascending: false })
       .range(offset, offset + limit - 1);
 
-    if (scopedSenderNumbers) {
-      conversationsQuery = conversationsQuery.in('sender_number', scopedSenderNumbers);
+    if (!scope.isGlobal) {
+      conversationsQuery = conversationsQuery.eq('organization_id', scope.organizationId as string);
+      if (scope.branchId) conversationsQuery = conversationsQuery.eq('branch_id', scope.branchId);
     }
 
     const { data: conversations, error: convError } = await conversationsQuery;
 
     if (convError) throw convError;
 
-    // Fetch latest message per conversation in a SINGLE query (fix for N+1).
-    // We pull all messages for the relevant sender numbers ordered by timestamp
-    // descending, then keep only the first occurrence of each sender_number.
+    // Latest message per conversation. One bounded query per conversation on
+    // this page (at most `limit`), so a busy sender cannot crowd others out of
+    // a shared, row-capped result set.
     const conversationRows = (conversations || []) as ConversationRow[];
-    const senderNumbers = conversationRows.map((conversation) => conversation.sender_number);
     const latestMessagesBySender = new Map<string, LatestMessageRow>();
 
-    if (senderNumbers.length > 0) {
-      const { data: allLatest } = await supabase
+    const latestResults = await Promise.all(conversationRows.map((conversation) =>
+      supabase
         .from('Message')
         .select('id, sender_number, direction, message_content, timestamp, status, media_url, media_type')
-        .in('sender_number', senderNumbers)
-        .order('timestamp', { ascending: false });
-
-      for (const msg of ((allLatest || []) as LatestMessageRow[])) {
-        if (!latestMessagesBySender.has(msg.sender_number)) {
-          latestMessagesBySender.set(msg.sender_number, msg);
-        }
-      }
+        .eq('sender_number', conversation.sender_number)
+        .order('timestamp', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+    ));
+    for (const { data } of latestResults) {
+      const message = data as LatestMessageRow | null;
+      if (message) latestMessagesBySender.set(message.sender_number, message);
     }
 
     const conversationsWithMessages = conversationRows.map((conv) => ({

@@ -5,6 +5,7 @@ import { NextResponse } from 'next/server'
 import { z } from 'zod';
 
 import { rateLimit } from '@tecbunny/core/rate-limit';
+import { getTrustedClientIp } from '@tecbunny/core/request-ip';
 import { logger } from '@tecbunny/core/logger';
 import { checkoutEngine } from '@tecbunny/core/checkout-engine';
 
@@ -59,12 +60,8 @@ const createOrderPayloadSchema = z.object({
 });
 
 function requesterKey(request: Request) {
-  const ip = request.headers.get('cf-connecting-ip')?.trim()
-    || request.headers.get('x-real-ip')?.trim()
-    || request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
-    || 'unknown';
-  const ua = request.headers.get('user-agent')?.trim() || 'unknown';
-  return `${ip}|${ua}`.slice(0, 240);
+  // Client IP only; caller-controlled headers must not select a new bucket.
+  return getTrustedClientIp(request)
 }
 
 function createSupabaseServiceClient() {

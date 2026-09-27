@@ -78,6 +78,7 @@ export function Logo({ className, width = 40, height = 40, alt = 'TecBunny Logo'
   }, []);
 
   return (
+    // eslint-disable-next-line tecbunny-jsx-a11y/no-noninteractive-element-interactions -- onError is an image load fallback, not a user interaction
     <img
       src={logoSrc}
       alt={alt}

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 import { createClient } from '@tecbunny/database';
 
@@ -22,6 +23,7 @@ function resolveNextPath(next: string | null): string {
 }
 
 export default function MfaSetupPage() {
+  const router = useRouter();
   const [nextPath, setNextPath] = useState('/mgmt');
 
   useEffect(() => {
@@ -31,11 +33,14 @@ export default function MfaSetupPage() {
 
   return (
     <NativeMfaSetup
-      // A full navigation lets the gateway read the upgraded (AAL2) session cookies.
-      onComplete={() => window.location.assign(nextPath)}
+      // The next request carries the upgraded (AAL2) session cookies to the gateway.
+      onComplete={() => {
+        router.replace(nextPath);
+        router.refresh();
+      }}
       onCancel={async () => {
         await createClient().auth.signOut();
-        window.location.assign('/auth/login');
+        router.replace('/auth/login');
       }}
     />
   );

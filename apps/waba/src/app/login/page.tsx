@@ -1,9 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { createClient } from '@tecbunny/database';
 
 export default function LoginPage() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -25,7 +27,7 @@ export default function LoginPage() {
         setLoading(false);
         return;
       }
-      window.location.href = "/";
+      router.replace("/");
     } catch (err: unknown) {
       console.error(err);
       setError("An unexpected error occurred");
@@ -51,7 +53,7 @@ export default function LoginPage() {
         });
 
         if (superadminResponse.ok) {
-          window.location.href = "/";
+          router.replace("/");
           return;
         }
 
@@ -93,7 +95,7 @@ export default function LoginPage() {
             return;
           }
         }
-        window.location.href = "/";
+        router.replace("/");
       }
     } catch (err: unknown) {
       console.error(err);
