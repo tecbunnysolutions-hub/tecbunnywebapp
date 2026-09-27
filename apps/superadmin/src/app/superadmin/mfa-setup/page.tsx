@@ -26,7 +26,8 @@ export default function MFASetupPage() {
         if (error) throw error;
         
         if (data.type === 'totp') {
-          setQr(data.totp.qr_code);
+          // Encode the otpauth URI; qr_code is already a rendered SVG data URL.
+          setQr(data.totp.uri);
           setFactorId(data.id);
         }
       } catch (err: any) {

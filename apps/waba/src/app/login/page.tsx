@@ -8,6 +8,28 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [mfaFactorId, setMfaFactorId] = useState<string | null>(null);
+  const [mfaCode, setMfaCode] = useState("");
+
+  const handleMfaVerify = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!mfaFactorId) return;
+    setLoading(true);
+    setError("");
+    try {
+      const { error: verifyError } = await createClient().auth.mfa.challengeAndVerify({ factorId: mfaFactorId, code: mfaCode.trim() });
+      if (verifyError) {
+        setError(verifyError.message || "Invalid verification code");
+        setLoading(false);
+        return;
+      }
+      window.location.href = "/";
+    } catch (err: unknown) {
+      console.error(err);
+      setError("An unexpected error occurred");
+      setLoading(false);
+    }
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -58,6 +80,17 @@ export default function LoginPage() {
       }
 
       if (data.user) {
+        // Complete the account's second factor so privileged APIs see AAL2.
+        const { data: assurance } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+        if (assurance?.nextLevel === 'aal2' && assurance.currentLevel !== 'aal2') {
+          const { data: factors } = await supabase.auth.mfa.listFactors();
+          const factor = factors?.totp?.find((candidate: { id: string; status: string }) => candidate.status === 'verified');
+          if (factor) {
+            setMfaFactorId(factor.id);
+            setLoading(false);
+            return;
+          }
+        }
         window.location.href = "/";
       }
     } catch (err: unknown) {
@@ -82,6 +115,31 @@ export default function LoginPage() {
           </div>
         )}
 
+        {mfaFactorId ? (
+          <form onSubmit={handleMfaVerify} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div className="crm-field">
+              <label htmlFor="waba-mfa-code">Authenticator code</label>
+              <input
+                id="waba-mfa-code"
+                type="text"
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                className="crm-input"
+                value={mfaCode}
+                onChange={e => setMfaCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                placeholder="000000"
+                required
+              />
+            </div>
+            <button
+              type="submit"
+              disabled={loading || mfaCode.length !== 6}
+              style={{ padding: '1rem', background: '#3b82f6', color: 'white', border: 'none', borderRadius: '8px', fontWeight: 600, cursor: loading ? 'not-allowed' : 'pointer', fontSize: '1rem' }}
+            >
+              {loading ? 'Verifying...' : 'Verify'}
+            </button>
+          </form>
+        ) : (
         <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           <div className="crm-field">
             <label>Email Address</label>
@@ -126,6 +184,7 @@ export default function LoginPage() {
             {loading ? 'Authenticating...' : 'Sign In to Workspace'}
           </button>
         </form>
+        )}
       </div>
     </div>
   );

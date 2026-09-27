@@ -111,6 +111,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (otpRecord.purpose !== 'registration') {
+      logger.warn('complete_signup.otp_purpose_mismatch', { otpId, purpose: otpRecord.purpose });
+      return NextResponse.json(
+        { error: 'OTP was not issued for account registration' },
+        { status: 400 }
+      );
+    }
+
+    // The code proves control of the single channel it was delivered to.
+    const verifiedChannel = otpRecord.channel === 'email' ? 'email' : 'whatsapp';
+
     // Verify OTP record binds cleanly to the registration identifiers
     const normalizedMobile = String(mobile).replace(/\D/g, '');
     if (normalizedMobile.length < 10 || normalizedMobile.length > 15) {
@@ -174,24 +185,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if user already exists — targeted query avoids fetching all users
-    const orFilters: string[] = [];
-    orFilters.push(`email.eq.${normalizedEmail}`);
-    if (normalizedMobile) orFilters.push(`mobile.eq.${normalizedMobile}`);
-
-    if (orFilters.length > 0) {
-      const { data: existingProfiles } = await supabaseAdminClient
-        .from('profiles')
-        .select('id')
-        .or(orFilters.join(','))
-        .limit(1);
-
-      if (existingProfiles && existingProfiles.length > 0) {
-        return NextResponse.json(
-          { error: 'An account with this email address or mobile number already exists' },
-          { status: 409 }
-        );
-      }
+    // Check if user already exists. Separate equality filters keep request
+    // values out of PostgREST filter syntax.
+    const existingChecks = [
+      supabaseAdminClient.from('profiles').select('id').eq('email', normalizedEmail).limit(1),
+      supabaseAdminClient.from('profiles').select('id').eq('mobile', normalizedMobile).limit(1),
+    ];
+    const existingResults = await Promise.all(existingChecks);
+    if (existingResults.some(({ data }: { data: unknown[] | null }) => Array.isArray(data) && data.length > 0)) {
+      return NextResponse.json(
+        { error: 'An account with this email address or mobile number already exists' },
+        { status: 409 }
+      );
     }
 
     // Create user account NOW (after OTP verification)
@@ -203,8 +208,13 @@ export async function POST(request: NextRequest) {
       email_confirm: true,
       user_metadata: {
         name,
-        role: 'customer',
         mobile: normalizedMobile
+      },
+      // Supabase needs both confirmations for password sign-in, but only one
+      // channel was proven. Order history and similar lookups rely on this.
+      app_metadata: {
+        role: 'customer',
+        verified_channels: [verifiedChannel],
       }
     };
 

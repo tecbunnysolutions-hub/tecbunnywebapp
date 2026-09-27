@@ -101,15 +101,18 @@ function StaffSignInForm() {
     setError('');
 
     try {
-      const response = await fetch('/api/auth/2fa/verify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code, userId: twoFactorUser.id }),
-      });
+      // Supabase MFA raises this session to AAL2, which the gateway and the
+      // privileged route guards verify server-side.
+      const { data: factors, error: factorsError } = await supabase.auth.mfa.listFactors();
+      const factor = factors?.totp?.find((candidate: { id: string; status: string }) => candidate.status === 'verified');
+      if (factorsError || !factor) {
+        setError('No authenticator is enrolled for this account.');
+        return;
+      }
 
-      if (!response.ok) {
-        const data = await response.json();
-        setError(data.error || 'Invalid 2FA code.');
+      const { error: verifyError } = await supabase.auth.mfa.challengeAndVerify({ factorId: factor.id, code });
+      if (verifyError) {
+        setError(verifyError.message || 'Invalid 2FA code.');
         return;
       }
 
@@ -224,18 +227,13 @@ function StaffSignInForm() {
       setLockoutUntil(null);
       setCaptchaToken(null);
 
-      // Check 2FA
-      try {
-        const twoFaResponse = await fetch('/api/auth/2fa/status');
-        const twoFaStatus = await twoFaResponse.json();
-        if (twoFaResponse.ok && twoFaStatus.enabled) {
-          setTwoFactorUser(authUser);
-          setShowTwoFactor(true);
-          setIsLoading(false);
-          return;
-        }
-      } catch {
-        // 2FA check failed, proceed without it
+      // Check whether this account has an enrolled second factor to complete.
+      const { data: assurance } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+      if (assurance?.nextLevel === 'aal2' && assurance.currentLevel !== 'aal2') {
+        setTwoFactorUser(authUser);
+        setShowTwoFactor(true);
+        setIsLoading(false);
+        return;
       }
 
       // Check staff role

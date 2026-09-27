@@ -25,6 +25,9 @@ const verifyOtpSchema = z.object({
     .regex(/^[0-9+\-()\s]{8,20}$/)
     .transform((value) => value.replace(/\D/g, ''))
     .optional(),
+  otpId: z.string().trim().min(1).max(128),
+  type: z.enum(['signup', 'recovery']).optional(),
+  channel: z.string().trim().max(20).optional(),
   flow: z.enum(['signup', 'login', 'password_reset']).optional(),
   purpose: z.enum(['signup', 'login', 'password_reset']).optional(),
 }).refine((payload) => Boolean(payload.email || payload.mobile), {
@@ -98,8 +101,11 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    const requestedFlow = body.flow ?? body.purpose;
+    const type = body.type ?? (requestedFlow === 'password_reset' ? 'recovery' : 'signup');
+
     const authService = new AuthService(supabaseAdmin);
-    const result = await authService.verifyOtp(body);
+    const result = await authService.verifyOtp({ ...body, type });
 
     if (!result.success) {
       const code = result.error.code === 'FORBIDDEN' ? 'FORBIDDEN' : 'VALIDATION_ERROR';

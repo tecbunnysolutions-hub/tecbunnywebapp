@@ -158,13 +158,12 @@ export async function executeUnifiedPolicyMiddleware(
     requestHeaders,
     loginRoute,
     publicRoutes,
-    // Staff authenticates its own TOTP factor during the sign-in flow. That
-    // custom factor does not elevate Supabase's native AAL claim, so enforcing
-    // native AAL2 for MGMT/API would permanently redirect valid staff users.
-    // Keep native MFA enforcement only for the Superadmin application, which
-    // uses the native Supabase MFA enrollment flow.
-    enforceMfaRoles: appType === 'superadmin' && !mfaBypassPaths.has(pathname)
-      ? ['superadmin'] : undefined,
+    // Privileged accounts must hold an AAL2 session (Supabase MFA). Enrollment
+    // and challenge endpoints stay reachable at AAL1; their handlers still
+    // verify the user themselves.
+    enforceMfaRoles: (appType === 'mgmt' || appType === 'superadmin' || appType === 'api')
+      && !mfaBypassPaths.has(pathname)
+      ? ['admin', 'superadmin'] : undefined,
     onUnauthorized: (req: NextRequest) => {
       // Instrument authorization failure (No Session)
       try {

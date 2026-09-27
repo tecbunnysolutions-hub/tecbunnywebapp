@@ -2,6 +2,12 @@ import { AppError, Result, success, failure } from '../errors';
 import { OTPManager, type OTPChannel } from '../otp-manager';
 import { verifyCaptcha } from '../captcha/captcha-service';
 import { logger } from '../logger';
+import { normalizeRole } from '../roles';
+
+const isStaffRole = (value: unknown) => {
+  const role = normalizeRole(value);
+  return Boolean(role && role !== 'customer');
+};
 
 export class AuthService {
   private otpService: OTPManager;
@@ -178,9 +184,7 @@ export class AuthService {
         }
         
         if (profileRole) {
-          const role = profileRole.trim().toLowerCase();
-          const isStaff = ['superadmin', 'admin', 'manager', 'sales', 'service_engineer', 'accounts'].includes(role);
-          if (isStaff) {
+          if (isStaffRole(profileRole)) {
             return failure(new AppError('FORBIDDEN', 'High-privilege account detected. Please use the Staff Portal to authenticate.', 403, false, { redirectTo: '/staff/login' }));
           }
         }
@@ -262,7 +266,12 @@ export class AuthService {
 
     let user: any = null;
     try {
-      if (normalizedRequestEmail) {
+      if (typeof otpRecord.user_id === 'string' && otpRecord.user_id) {
+        // Reset codes are issued for one account; never re-resolve the target
+        // from request identifiers when the code already names it.
+        const { data: userData } = await this.supabaseAdmin.auth.admin.getUserById(otpRecord.user_id);
+        user = userData?.user;
+      } else if (normalizedRequestEmail) {
         const { data: profile } = await this.supabaseAdmin.from('profiles').select('id').eq('email', normalizedRequestEmail).maybeSingle();
         if (profile) {
           const { data: userData } = await this.supabaseAdmin.auth.admin.getUserById(profile.id);
@@ -310,6 +319,15 @@ export class AuthService {
     const normalizedEmail = typeof email === 'string' ? email.trim().toLowerCase() : undefined;
     const normalizedMobile = mobile ? String(mobile).replace(/\D/g, '') : undefined;
 
+    // Verify the captcha before any account lookup so the staff-account
+    // response below cannot be used for unauthenticated enumeration.
+    if (siteKey) {
+      const captcha = await verifyCaptcha(captchaToken, clientIp);
+      if (!captcha.success) {
+        return failure(AppError.badRequest(`Captcha verification failed: ${captcha.error || captcha.errorCodes?.join(', ') || 'Please retry.'}`));
+      }
+    }
+
     const searchVal = normalizedEmail || normalizedMobile;
     if (searchVal) {
       let query = this.supabaseAdmin.from('profiles').select('role');
@@ -321,18 +339,9 @@ export class AuthService {
       
       const { data: profile } = await query.maybeSingle();
       if (profile?.role) {
-        const role = profile.role.trim().toLowerCase();
-        const isStaff = ['superadmin', 'admin', 'manager', 'sales', 'service_engineer', 'accounts'].includes(role);
-        if (isStaff) {
+        if (isStaffRole(profile.role)) {
           return failure(new AppError('FORBIDDEN', 'High-privilege account detected. Please log in through the Staff Portal.', 403, false, { redirectTo: '/staff/login' }));
         }
-      }
-    }
-
-    if (siteKey) {
-      const captcha = await verifyCaptcha(captchaToken, clientIp);
-      if (!captcha.success) {
-        return failure(AppError.badRequest(`Captcha verification failed: ${captcha.error || captcha.errorCodes?.join(', ') || 'Please retry.'}`));
       }
     }
 

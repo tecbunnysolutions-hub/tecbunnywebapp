@@ -1,10 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-import type { User } from '@supabase/supabase-js';
-
 import { verifyCaptcha } from "@tecbunny/core/captcha/captcha-service";
-import { logger } from "@tecbunny/core";
+import { logger, normalizeRole } from "@tecbunny/core";
 import { rateLimit } from "@tecbunny/core/rate-limit";
 import { OTPManager, type OTPChannel } from "@tecbunny/core/otp-manager";
 
@@ -68,56 +66,59 @@ export async function POST(request: NextRequest) {
       }
     );
 
-    // Check if user exists via email or mobile
-    if (email) {
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('email', email.trim().toLowerCase())
-        .maybeSingle();
+    const genericResponse = () => NextResponse.json({
+      success: true,
+      message: 'If an account with this email or mobile exists, you will receive an OTP code.',
+    });
 
-      if (profileError) {
-        logger.error('forgot_password.profile_lookup_failed', { error: profileError, identifier });
-        return NextResponse.json({ error: 'Service temporarily unavailable' }, { status: 500 });
-      }
+    // Resolve exactly one account from the submitted identifier. The code is
+    // only ever delivered to contact details stored on that account; contact
+    // details supplied in the request are never used as a destination.
+    const lookup = supabase.from('profiles').select('id, email, mobile, role');
+    const { data: profile, error: profileError } = email
+      ? await lookup.eq('email', String(email).trim().toLowerCase()).maybeSingle()
+      : await lookup.eq('mobile', String(mobile).trim()).maybeSingle();
 
-      if (!profile) {
-        logger.warn('forgot_password.user_missing', { identifier });
-        return NextResponse.json({ success: true, message: 'If an account with this email or mobile exists, you will receive an OTP code.' });
-      }
-
-      const { data: userData, error: getUserError } = await supabase.auth.admin.getUserById(profile.id);
-      if (getUserError || !userData?.user) {
-        logger.warn('forgot_password.user_auth_missing', { identifier, userId: profile.id, error: getUserError?.message });
-        return NextResponse.json({ success: true, message: 'If an account with this email or mobile exists, you will receive an OTP code.' });
-      }
-      logger.info('forgot_password.user_found', { identifier, userId: profile.id });
-    } else if (mobile) {
-      // Lookup by mobile in profiles
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('id,email')
-        .eq('mobile', mobile)
-        .maybeSingle();
-      if (profileError) {
-        logger.error('forgot_password.profile_lookup_failed', { error: profileError, identifier });
-        return NextResponse.json({ error: 'Service temporarily unavailable' }, { status: 500 });
-      }
-      if (!profile) {
-        logger.warn('forgot_password.user_missing', { identifier });
-        return NextResponse.json({ success: true, message: 'If an account with this email or mobile exists, you will receive an OTP code.' });
-      }
-      logger.info('forgot_password.profile_found', { identifier, userId: profile.id });
+    if (profileError) {
+      logger.error('forgot_password.profile_lookup_failed', { error: profileError, identifier });
+      return NextResponse.json({ error: 'Service temporarily unavailable' }, { status: 500 });
     }
-    const normalizedChannel: OTPChannel = requestedChannel && ['email', 'whatsapp'].includes(requestedChannel)
-      ? requestedChannel
-      : (email ? 'email' : (mobile ? 'whatsapp' : 'email'));
 
-    logger.info('forgot_password.sending_otp', { identifier, preferredChannel: normalizedChannel });
+    if (!profile) {
+      logger.warn('forgot_password.user_missing', { identifier });
+      return genericResponse();
+    }
+
+    const { data: userData, error: getUserError } = await supabase.auth.admin.getUserById(profile.id);
+    if (getUserError || !userData?.user) {
+      logger.warn('forgot_password.user_auth_missing', { identifier, userId: profile.id, error: getUserError?.message });
+      return genericResponse();
+    }
+
+    const accountEmail = typeof profile.email === 'string' && profile.email.trim() ? profile.email.trim().toLowerCase() : undefined;
+    const accountMobile = typeof profile.mobile === 'string' && profile.mobile.trim() ? profile.mobile.trim() : undefined;
+    const accountRole = normalizeRole(profile.role);
+    const isPrivileged = Boolean(accountRole && accountRole !== 'customer');
+
+    // Privileged accounts may only recover through their registered email.
+    let normalizedChannel: OTPChannel = requestedChannel === 'whatsapp' || (!requestedChannel && !email)
+      ? 'whatsapp'
+      : 'email';
+    if (isPrivileged || (normalizedChannel === 'whatsapp' && !accountMobile)) normalizedChannel = 'email';
+    if (normalizedChannel === 'email' && !accountEmail) {
+      if (isPrivileged || !accountMobile) {
+        logger.warn('forgot_password.no_deliverable_contact', { userId: profile.id });
+        return genericResponse();
+      }
+      normalizedChannel = 'whatsapp';
+    }
+
+    logger.info('forgot_password.sending_otp', { userId: profile.id, preferredChannel: normalizedChannel });
 
     const otpResult = await otpService.generateOTP({
-      email,
-      phone: mobile,
+      email: accountEmail,
+      phone: accountMobile,
+      userId: profile.id,
       preferredChannel: normalizedChannel,
       purpose: 'password_reset',
     });
