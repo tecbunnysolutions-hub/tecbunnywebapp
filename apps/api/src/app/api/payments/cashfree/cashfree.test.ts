@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { NextRequest } from 'next/server';
 const m = vi.hoisted(() => ({ user: null as any, order: null as any, transaction: null as any, insert: vi.fn(), rpc: vi.fn(), fetch: vi.fn() }));
 vi.mock('@tecbunny/core/logger', () => ({ logger: { error: vi.fn() } }));
-vi.mock('@tecbunny/core/rate-limit', () => ({ rateLimit: () => true }));
+vi.mock('@tecbunny/core/rate-limit', () => ({ rateLimit: () => true, consumeRateLimit: async () => true }));
 vi.mock('@tecbunny/database/server', () => ({ createSupabaseClient: async () => ({ auth: { getUser: async () => ({ data: { user: m.user } }) } }) }));
 vi.mock('@tecbunny/database/admin', () => ({ createSupabaseServiceClient: () => ({ rpc: m.rpc, from: (table: string) => {
   const query = { select: () => query, eq: () => query, insert: m.insert, maybeSingle: async () => ({ data: table === 'orders' ? m.order : m.transaction }) };

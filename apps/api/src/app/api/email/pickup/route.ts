@@ -1,10 +1,11 @@
 import { createSupabaseClient as createServerClient } from '@tecbunny/database/server';
 
 import { NextRequest, NextResponse } from 'next/server';
+import { authorizeEmailRequest } from "@tecbunny/core/api-email-route";
 
 import { sendWhatsAppNotification } from "@tecbunny/core/whatsapp-service";
 import { logger } from "@tecbunny/core";
-import { rateLimit } from "@tecbunny/core/rate-limit";
+import { consumeRateLimit } from "@tecbunny/core/rate-limit";
 
 
 const LIMIT = 5; // per 10 min
@@ -12,6 +13,9 @@ const WINDOW_MS = 10 * 60 * 1000;
 
 export async function POST(request: NextRequest) {
   try {
+    const denied = await authorizeEmailRequest(request, 'staff');
+    if (denied) return denied;
+
     const { phone,  orderData, pickupCode } = await request.json();
     
     if (!phone) {
@@ -32,7 +36,7 @@ export async function POST(request: NextRequest) {
 
     const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
     const rateKey = userId ? `user:${userId}` : `ip:${ip}`;
-    if (!rateLimit(rateKey, 'whatsapp_pickup', { limit: LIMIT, windowMs: WINDOW_MS })) {
+    if (!await consumeRateLimit(rateKey, 'whatsapp_pickup', { limit: LIMIT, windowMs: WINDOW_MS })) {
       return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 });
     }
 

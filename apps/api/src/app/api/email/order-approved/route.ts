@@ -1,14 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { authorizeEmailRequest } from "@tecbunny/core/api-email-route";
 
 import { sendWhatsAppNotification } from "@tecbunny/core/whatsapp-service";
 import { logger } from "@tecbunny/core";
-import { rateLimit } from "@tecbunny/core/rate-limit";
+import { consumeRateLimit } from "@tecbunny/core/rate-limit";
 
 const LIMIT = 5;
 const WINDOW_MS = 10 * 60 * 1000;
 
 export async function POST(request: NextRequest) {
   try {
+    const denied = await authorizeEmailRequest(request, 'staff');
+    if (denied) return denied;
+
     const { orderId, orderTotal, orderType, customerName } = await request.json();
     
     // Send to TEAM numbers defined in ENV
@@ -27,7 +31,7 @@ export async function POST(request: NextRequest) {
 
     const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
     const rateKey = `order-approved:${ip}`;
-    if (!rateLimit(rateKey, 'whatsapp_order_approved', { limit: LIMIT, windowMs: WINDOW_MS })) {
+    if (!await consumeRateLimit(rateKey, 'whatsapp_order_approved', { limit: LIMIT, windowMs: WINDOW_MS })) {
       return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 });
     }
 

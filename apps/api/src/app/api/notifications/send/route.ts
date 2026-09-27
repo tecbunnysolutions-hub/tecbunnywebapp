@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAdminDb, logger } from '@tecbunny/core/server';
 import { z } from 'zod';
+import { hasValidInternalApiKey } from '@tecbunny/core/api-email-route';
 
 /**
  * POST /api/notifications/send
@@ -20,9 +21,7 @@ const PayloadSchema = z.object({
 });
 
 export async function POST(request: NextRequest) {
-  const internalKey = process.env.INTERNAL_API_KEY;
-  const provided = request.headers.get('x-internal-api-key');
-  if (!internalKey || provided !== internalKey) {
+  if (!hasValidInternalApiKey(request)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 

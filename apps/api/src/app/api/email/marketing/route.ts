@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 import { emailHelpers } from "@tecbunny/core/email";
-import { rateLimit } from "@tecbunny/core/rate-limit";
+import { consumeRateLimit } from "@tecbunny/core/rate-limit";
 import { requireApiRole } from "@tecbunny/core/server-role-guard";
 
 // Marketing emails: stricter (2 per 30m) due to bulk nature
@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
     }
     const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
     const rateKey = access.session?.user.id ? `user:${access.session.user.id}` : `ip:${ip}`;
-    if (!rateLimit(rateKey, 'email_marketing', { limit: LIMIT, windowMs: WINDOW_MS })) {
+    if (!await consumeRateLimit(rateKey, 'email_marketing', { limit: LIMIT, windowMs: WINDOW_MS })) {
       return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 });
     }
     const success = await emailHelpers.sendMarketingCampaign(recipients, {

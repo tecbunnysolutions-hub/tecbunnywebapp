@@ -8,6 +8,7 @@ import { getProductDisplayImage } from "@tecbunny/core/image-utils";
 import { getRedis } from "@tecbunny/core/redis";
 import { getSystemPrompt } from "@tecbunny/core/ai/prompts";
 import { rateLimit } from "@tecbunny/core/rate-limit";
+import { getTrustedClientIp } from "@tecbunny/core/request-ip";
 import { logger } from "@tecbunny/core";
 
 const MAX_SOURCES = 3;
@@ -45,12 +46,9 @@ function cleanSearchText(value: string, maxLength = 80) {
 }
 
 function requesterKey(request: NextRequest) {
-  const ip = request.headers.get('cf-connecting-ip')?.trim()
-    || request.headers.get('x-real-ip')?.trim()
-    || request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
-    || 'unknown';
-  const ua = request.headers.get('user-agent')?.trim() || 'unknown';
-  return `${ip}|${ua}`.slice(0, 240);
+  // Client IP only: request headers such as User-Agent are caller-controlled
+  // and would let each request start a fresh rate-limit bucket.
+  return getTrustedClientIp(request);
 }
 
 async function fetchWithTimeout(url: string, init: RequestInit = {}, timeoutMs = 5000) {

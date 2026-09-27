@@ -2,12 +2,18 @@ import { createSupabaseServiceClient } from "@tecbunny/core/server";
 import { NextRequest, NextResponse } from 'next/server';
 
 import { logger } from "@tecbunny/core";
+import { hasValidInternalApiKey } from "@tecbunny/core/api-email-route";
 
 /**
  * Background query rule to trigger creator milestones
  * POST /api/blueprints/attribution/conversion
  */
 export async function POST(request: NextRequest) {
+  // Milestones are awarded by server-side order processing only.
+  if (!hasValidInternalApiKey(request)) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
+
   try {
     const { parentBlueprintId, newOrderId } = await request.json();
 

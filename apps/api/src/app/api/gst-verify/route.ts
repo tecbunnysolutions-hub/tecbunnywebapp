@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { resolveIndianStateInfo } from "@tecbunny/core/indian-tax";
-import { rateLimit } from "@tecbunny/core/rate-limit";
+import { consumeRateLimit } from "@tecbunny/core/rate-limit";
 import { logger } from "@tecbunny/core";
 
 const GST_VERIFY_RATE_LIMIT = { limit: 20, windowMs: 15 * 60 * 1000 };
@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
     request.headers.get('x-real-ip')?.trim() ||
     'anonymous';
 
-  if (!rateLimit(ip, 'gst_verify', GST_VERIFY_RATE_LIMIT)) {
+  if (!await consumeRateLimit(ip, 'gst_verify', GST_VERIFY_RATE_LIMIT)) {
     return NextResponse.json({ success: false, error: 'Too many requests. Please try again later.' }, { status: 429 });
   }
 

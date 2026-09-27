@@ -1,16 +1,20 @@
 import { NextResponse } from 'next/server';
 import { createSupabaseServiceClient } from '@tecbunny/database/admin';
 import { logger } from '@tecbunny/core';
+import { requireSuperadminApi } from '@/lib/superadmin-api';
 
 /**
  * POST /api/superadmin/leads/[leadId]/engagement
  * Log lead engagement interaction (site visit, form submission, etc.)
- * This endpoint can be called from public sites or authenticated API
+ * Superadmin-only: engagement feeds lead scoring, so it cannot be anonymous.
  */
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ leadId: string }> }
 ) {
+  const auth = await requireSuperadminApi('superadmin_lead_engagement');
+  if (!auth.authorized) return auth.response;
+
   try {
     const { leadId } = await params;
     const { interactionType, durationSeconds, sourceUrl, metadata } = await request.json();

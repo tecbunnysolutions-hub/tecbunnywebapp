@@ -17,8 +17,8 @@ export async function POST(request: NextRequest) {
     // Guest-only syncs (guestId without userId) are intentionally allowed without auth.
     if (userId) {
       const supabase = await createClient();
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.user || session.user.id !== userId) {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user || user.id !== userId) {
         logger.warn('cart_sync.unauthorized_user_id_claim', { claimed: userId });
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
       }

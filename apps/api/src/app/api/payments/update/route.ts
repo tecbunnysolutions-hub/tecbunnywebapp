@@ -2,7 +2,7 @@ import { createSupabaseClient as createClient } from '@tecbunny/database/server'
 import { NextRequest, NextResponse } from 'next/server';
 import { logger } from "@tecbunny/core";
 import { apiError, apiSuccess } from "@tecbunny/core";
-import { rateLimit } from "@tecbunny/core/rate-limit";
+import { consumeRateLimit } from "@tecbunny/core/rate-limit";
 import { PaymentService } from "@tecbunny/core/server";
 import { AdminAuthError, requireAdminContext } from "@tecbunny/core/auth/admin-guard";
 
@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
 
     // Rate limiting
     const clientIP = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
-    if (!rateLimit(clientIP, 'payment_updates', { limit: 10, windowMs: 60000 })) {
+    if (!await consumeRateLimit(clientIP, 'payment_updates', { limit: 10, windowMs: 60000 })) {
       return apiError('RATE_LIMITED', { correlationId });
     }
 

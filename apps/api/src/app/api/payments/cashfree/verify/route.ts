@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { logger } from '@tecbunny/core/logger';
-import { rateLimit } from '@tecbunny/core/rate-limit';
+import { consumeRateLimit } from '@tecbunny/core/rate-limit';
 import { cashfreeConfig, minorUnits, ownedOrder, PaymentError } from '../shared';
 
 export async function GET(request: NextRequest) {
   const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
-  if (!rateLimit(ip, 'cashfree_verify', { limit: 20, windowMs: 60_000 })) return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 });
+  if (!await consumeRateLimit(ip, 'cashfree_verify', { limit: 20, windowMs: 60_000 })) return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 });
   try {
     const params = request.nextUrl.searchParams;
     const transactionId = params.get('cf_order_id');

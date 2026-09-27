@@ -1,9 +1,10 @@
 import { createSupabaseClient as createServerClient } from '@tecbunny/database/server';
 
 import { NextRequest, NextResponse } from 'next/server';
+import { authorizeEmailRequest } from "@tecbunny/core/api-email-route";
 
 import { emailHelpers } from "@tecbunny/core/email";
-import { rateLimit } from "@tecbunny/core/rate-limit";
+import { consumeRateLimit } from "@tecbunny/core/rate-limit";
 
 
 // Email verification OTP: 5 per 30 minutes
@@ -12,6 +13,9 @@ const WINDOW_MS = 30 * 60 * 1000;
 
 export async function POST(request: NextRequest) {
   try {
+    const denied = await authorizeEmailRequest(request, 'staff');
+    if (denied) return denied;
+
     const { to, userName, otp } = await request.json();
     if (typeof to !== 'string' || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(to)) {
       return NextResponse.json({ error: 'Invalid recipient email' }, { status: 400 });
@@ -37,7 +41,7 @@ export async function POST(request: NextRequest) {
     }
     const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
     const rateKey = userId ? `user:${userId}` : `ip:${ip}`;
-    if (!rateLimit(rateKey, 'email_verification', { limit: LIMIT, windowMs: WINDOW_MS })) {
+    if (!await consumeRateLimit(rateKey, 'email_verification', { limit: LIMIT, windowMs: WINDOW_MS })) {
       return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 });
     }
     const success = await emailHelpers.sendEmailVerification(to, userName, otp);

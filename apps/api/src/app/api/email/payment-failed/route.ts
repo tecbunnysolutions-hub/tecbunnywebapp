@@ -1,9 +1,10 @@
 import { createSupabaseClient as createServerClient } from '@tecbunny/database/server';
 
 import { NextRequest, NextResponse } from 'next/server';
+import { authorizeEmailRequest } from "@tecbunny/core/api-email-route";
 
 import { emailHelpers } from "@tecbunny/core/email";
-import { rateLimit } from "@tecbunny/core/rate-limit";
+import { consumeRateLimit } from "@tecbunny/core/rate-limit";
 
 
 // Limit: 3 payment-failed emails per 5 minutes per user/IP
@@ -12,6 +13,9 @@ const WINDOW_MS = 5 * 60 * 1000;
 
 export async function POST(request: NextRequest) {
   try {
+    const denied = await authorizeEmailRequest(request, 'staff');
+    if (denied) return denied;
+
     const body = await request.json();
     const { to, orderData, paymentData } = body || {};
 
@@ -31,7 +35,7 @@ export async function POST(request: NextRequest) {
     } catch(_ignoreErr) {}
     const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
     const rateKey = userId ? `user:${userId}` : `ip:${ip}`;
-    if (!rateLimit(rateKey, 'email_payment_failed', { limit: LIMIT, windowMs: WINDOW_MS })) {
+    if (!await consumeRateLimit(rateKey, 'email_payment_failed', { limit: LIMIT, windowMs: WINDOW_MS })) {
       return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 });
     }
 

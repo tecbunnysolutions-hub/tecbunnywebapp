@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
           // We will send directly using improvedEmailService since we are backend
           await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || 'https://www.tecbunny.com'}/api/email/abandoned-cart`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json', 'x-internal-api-key': process.env.INTERNAL_API_KEY || '' },
             body: JSON.stringify({
               to: user.email,
               userName: user.user_metadata?.full_name || 'there',

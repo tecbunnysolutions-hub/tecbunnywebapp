@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { isAtLeast, normalizeRole } from '@tecbunny/core/roles';
 import { logger } from "@tecbunny/core/logger";
 import { sendWhatsAppNotification } from "@tecbunny/core/whatsapp-service";
 import {  getAdminClient  } from '@tecbunny/database/admin';
@@ -45,8 +46,9 @@ export async function POST(req: Request) {
       .eq('id', user.id)
       .single();
 
-    const userRole = userData?.role || user.user_metadata?.role;
-    if (!['admin', 'superadmin', 'manager'].includes(userRole)) {
+    // Never fall back to user_metadata: users can edit it themselves.
+    const userRole = normalizeRole(userData?.role) ?? normalizeRole(user.app_metadata?.role);
+    if (!userRole || !isAtLeast(userRole, 'manager')) {
       return NextResponse.json(
         { success: false, error: 'Insufficient permissions' },
         { status: 403 }

@@ -5,7 +5,7 @@ import { NextRequest, NextResponse, after } from 'next/server';
 import crypto from 'crypto';
 import { z } from 'zod';
 
-import { rateLimit } from "@tecbunny/core/rate-limit";
+import { consumeRateLimit } from "@tecbunny/core/rate-limit";
 import { logger, LeadEngineService } from "@tecbunny/core";
 import { verifySuperadminSessionToken } from "@tecbunny/core/server";
 import { AdminAuthError, requireAdminContext } from "@tecbunny/core/auth/admin-guard";
@@ -139,7 +139,7 @@ export async function POST(request: NextRequest) {
     }
 
     const submissionIp = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'anonymous';
-    if (!rateLimit(submissionIp, 'contact_messages_post', CONTACT_RATE_LIMIT)) {
+    if (!await consumeRateLimit(submissionIp, 'contact_messages_post', CONTACT_RATE_LIMIT)) {
       return NextResponse.json({ error: 'Too many requests. Please try again later.' }, { status: 429 });
     }
 

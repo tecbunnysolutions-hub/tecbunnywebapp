@@ -31,21 +31,25 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       return NextResponse.json({ error: 'Secure quote action link is missing or expired' }, { status: 403 });
     }
 
-    // Update quote status to 'rejected' (customer rejected counter-offer)
+    // Only a pending counter-offer can be declined; accepted or paid quotes are final.
     const { data, error } = await supabase
       .from('quotes')
       .update({ status: 'declined' })
       .eq('id', realId)
+      .in('status', ['countered', 'counter_offered'])
       .select()
-      .single();
+      .maybeSingle();
 
     if (error) throw error;
+    if (!data) {
+      return NextResponse.json({ error: 'Quote is no longer awaiting a response' }, { status: 409 });
+    }
 
     return NextResponse.json({ success: true, quote: data });
   } catch (error: any) {
     console.error(error);
     return NextResponse.json(
-      { error: error?.message || 'Failed to decline counter-offer' },
+      { error: 'Failed to decline counter-offer' },
       { status: 400 }
     );
   }

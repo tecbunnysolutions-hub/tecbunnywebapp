@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createSupabaseClient as createClient } from '@tecbunny/database/server';
 import { ExtensionAuthError, assertExtensionOrigin, extensionJson, extensionOptionsResponse, getExtensionCorsHeaders } from '../../extension-security';
 import { logger } from '@tecbunny/core/logger';
-import { verifySuperadminPassword } from '@tecbunny/core/server';
+import { getTrustedClientIp, verifySuperadminLogin } from '@tecbunny/core/server';
 
 export const dynamic = 'force-dynamic';
 
@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
     assertExtensionOrigin(request);
 
     const body = await request.json();
-    const { email, password } = body;
+    const { email, password, otp } = body;
 
     if (!email || !password) {
       return extensionJson(
@@ -42,42 +42,29 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check for superadmin (Root Console) credentials first, validated against env only.
+    // Root (superadmin) identifiers go through the shared root verifier:
+    // attempt limits, password hash and, when configured, an authenticator code.
     const submittedInput = (email || '').trim();
-    const submittedPassword = String(password ?? '').trim();
-    const configuredUserId = (process.env.SUPERADMIN_USER_ID || '').trim();
-    const configuredEmail = (process.env.SUPERADMIN_EMAIL || '').trim();
-    const configuredPasswordHash = process.env.SUPERADMIN_PASSWORD_HASH || '';
-    const developmentPassword = process.env.SUPERADMIN_PASSWORD || '';
-
-    const allowedUserIds = [configuredUserId, configuredEmail].filter(Boolean);
+    const allowedUserIds = [process.env.SUPERADMIN_USER_ID, process.env.SUPERADMIN_EMAIL]
+      .map((value) => (value || '').trim())
+      .filter(Boolean);
     const superadminIdMatches = allowedUserIds.some(
       (candidate) => constantTimeStringEquals(submittedInput.toLowerCase(), candidate.toLowerCase())
     );
 
-    logger.info('auth_extension.root_check', {
-      superadminIdMatches,
-    });
-
-    // If the submitted ID/email matches a configured superadmin identifier, validate password immediately.
     if (superadminIdMatches) {
-      const passwordMatches = configuredPasswordHash
-        ? await verifySuperadminPassword(submittedPassword, configuredPasswordHash)
-        : process.env.NODE_ENV !== 'production'
-          && Boolean(developmentPassword)
-          && constantTimeStringEquals(submittedPassword, developmentPassword);
-
-      if (!passwordMatches) {
-        logger.warn('auth_extension.root_check.password_mismatch');
-        return extensionJson(
-          request,
-          { error: 'Invalid credentials' },
-          { status: 401 }
-        );
+      const login = await verifySuperadminLogin({
+        identifier: submittedInput,
+        password: String(password),
+        otp: typeof otp === 'string' ? otp : null,
+        clientKey: getTrustedClientIp(request),
+      });
+      if (!login.ok) {
+        return extensionJson(request, { error: login.error }, { status: login.status });
       }
 
       const { createSuperadminSessionToken } = await import('@tecbunny/core/auth/superadmin-session');
-      const token = await createSuperadminSessionToken(submittedInput, request);
+      const token = await createSuperadminSessionToken(login.email, request);
 
       return extensionJson(
         request,
@@ -86,7 +73,7 @@ export async function POST(request: NextRequest) {
           access_token: token,
           user: {
             id: 'superadmin-root-id',
-            email: email.trim(),
+            email: login.email,
             role: 'superadmin'
           }
         },
@@ -102,10 +89,12 @@ export async function POST(request: NextRequest) {
       const isPhone = /^\+?[0-9]+$/.test(loginEmail.replace(/[-\s()]/g, ''));
       if (!isPhone) {
         try {
+          // Exact username match only; request text never enters filter syntax.
           const { data: profileData } = await supabase
             .from('profiles')
             .select('email')
-            .or(`email.ilike.${loginEmail}@%,full_name.ilike.${loginEmail}`)
+            .eq('full_name', loginEmail)
+            .limit(1)
             .maybeSingle();
 
           if (profileData?.email) {
@@ -149,8 +138,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Verify they are an admin or superadmin
-    const role = data.user.app_metadata?.role || data.user.user_metadata?.role;
+    // Verify they are an admin. user_metadata is user-editable and never grants a role.
+    const role = data.user.app_metadata?.role;
     if (role !== 'admin' && role !== 'superadmin') {
       // Sign out since they don't have privileges
       await supabase.auth.signOut();

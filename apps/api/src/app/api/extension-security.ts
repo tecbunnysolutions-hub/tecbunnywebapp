@@ -222,8 +222,16 @@ export async function requireExtensionAdmin(request: NextRequest) {
   }
 
   const role = profile?.role || data.user.app_metadata?.role;
-  if (!isExtensionRole(role)) {
+  // Only the dedicated root session is superadmin; database roles cannot claim it.
+  if (!isExtensionRole(role) || role === 'superadmin') {
     throw new ExtensionAuthError(403, 'Forbidden: Requires admin privileges');
+  }
+
+  // Admin tokens must carry a completed second factor, as on every other
+  // privileged surface.
+  const { data: assurance, error: assuranceError } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel(token);
+  if (assuranceError || assurance?.currentLevel !== 'aal2') {
+    throw new ExtensionAuthError(403, 'MFA Required');
   }
 
   return { user: data.user, role };

@@ -1,10 +1,11 @@
 import { createSupabaseClient as createServerClient } from '@tecbunny/database/server';
 
 import { NextRequest, NextResponse } from 'next/server';
+import { authorizeEmailRequest } from "@tecbunny/core/api-email-route";
 
 import { sendWhatsAppNotification } from "@tecbunny/core/whatsapp-service";
 import { logger } from "@tecbunny/core";
-import { rateLimit } from "@tecbunny/core/rate-limit";
+import { consumeRateLimit } from "@tecbunny/core/rate-limit";
 
 
 // Abandoned cart reminders: 3 per 12h per user/IP
@@ -15,6 +16,10 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const { to, phone, userName, cartItems, restoreCartUrl, discountCode, minutesSinceAbandoned } = body || {};
+
+    // Browser callers may only remind themselves; server jobs use the internal key.
+    const denied = await authorizeEmailRequest(request, 'self', to);
+    if (denied) return denied;
     
     // Prioritize phone for WhatsApp
     const targetPhone = phone || (to && /^\d+$/.test(to.replace(/[^\d]/g, '')) ? to : null);
@@ -40,7 +45,7 @@ export async function POST(request: NextRequest) {
     const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
     const rateKey = userId ? `user:${userId}` : `ip:${ip}`;
 
-    if (!rateLimit(rateKey, 'whatsapp_abandoned_cart', { limit: LIMIT, windowMs: WINDOW_MS })) {
+    if (!await consumeRateLimit(rateKey, 'whatsapp_abandoned_cart', { limit: LIMIT, windowMs: WINDOW_MS })) {
       return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 });
     }
 

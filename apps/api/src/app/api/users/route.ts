@@ -57,7 +57,8 @@ async function getEffectiveUserRole(user: any) {
     logger.warn('users.resolve_role_from_profile_failed', { userId: user.id, error });
   }
 
-  return user?.app_metadata?.role || user?.user_metadata?.role || 'customer';
+  // user_metadata is user-editable and never grants a role.
+  return user?.app_metadata?.role || 'customer';
 }
 
 async function createAuthenticatedClient(request: NextRequest) {

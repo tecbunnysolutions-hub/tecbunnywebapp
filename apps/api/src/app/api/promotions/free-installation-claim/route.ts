@@ -4,7 +4,7 @@ import { z } from 'zod';
 
 import { OTPManager } from "@tecbunny/core/otp-manager";
 
-import { rateLimit } from "@tecbunny/core/rate-limit";
+import { consumeRateLimit } from "@tecbunny/core/rate-limit";
 import { logger } from "@tecbunny/core";
 
 const CLAIM_RATE_LIMIT = { limit: 5, windowMs: 15 * 60 * 1000 };
@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
       request.headers.get('x-real-ip')?.trim() ||
       'anonymous';
 
-    if (!rateLimit(ip, 'free_installation_claim', CLAIM_RATE_LIMIT)) {
+    if (!await consumeRateLimit(ip, 'free_installation_claim', CLAIM_RATE_LIMIT)) {
       return NextResponse.json({ error: 'Too many requests. Please try again later.' }, { status: 429 });
     }
 
@@ -37,6 +37,22 @@ export async function POST(request: NextRequest) {
     }
 
     const mobile = normalizeMobile(parsed.data.mobile);
+    if (!isSupabaseServiceConfigured) {
+      return NextResponse.json({ error: 'Service unavailable. Please try again later.' }, { status: 503 });
+    }
+
+    // The code must have been issued to this mobile number for customer
+    // verification; a code proving a different number or flow is not accepted.
+    const { data: otpRecord } = await createSupabaseServiceClient()
+      .from('otp_verifications')
+      .select('phone, purpose')
+      .eq('id', parsed.data.otpId)
+      .maybeSingle();
+    const otpPhone = typeof otpRecord?.phone === 'string' ? otpRecord.phone.replace(/\D/g, '').slice(-10) : '';
+    if (!otpRecord || otpRecord.purpose !== 'registration' || otpPhone.length !== 10 || otpPhone !== mobile.slice(-10)) {
+      return NextResponse.json({ error: 'Invalid or expired OTP.' }, { status: 400 });
+    }
+
     const otpManager = new OTPManager();
     const verification = await otpManager.verifyOTP({
       otpId: parsed.data.otpId,

@@ -32,7 +32,7 @@ export default function AdvancePaymentPage() {
     if (!quoteId) return;
     
     Promise.all([
-      fetch(`/api/quotes/${quoteId}`).then(r => r.ok ? r.json() : Promise.reject('Quote not found')),
+      fetch(`/api/quotes/${quoteId}${actionToken ? `?token=${encodeURIComponent(actionToken)}` : ''}`).then(r => r.ok ? r.json() : Promise.reject('Quote not found')),
       fetch(`/api/admin/quotes/advance-payment?quote_id=${quoteId}&token=${encodeURIComponent(actionToken)}`).then(r => r.ok ? r.json() : { data: null })
     ])
       .then(([quoteData, advanceData]) => {

@@ -30,23 +30,24 @@ export async function POST(req: Request) {
   try {
     logger.info('admin_marketing_broadcast.audit.requested');
     const supabase = await createClient();
-    const { data: { session } } = await supabase.auth.getSession();
+    // getUser() verifies the session server-side; getSession() data is not trusted.
+    const { data: { user } } = await supabase.auth.getUser();
     
-    if (!session?.user) {
+    if (!user) {
       return NextResponse.json({ error: 'Execution Context Unauthorized. Missing session token.' }, { status: 401 });
     }
 
     const { data: userData } = await supabase
       .from('profiles')
       .select('role')
-      .eq('id', session.user.id)
+      .eq('id', user.id)
       .single();
       
     if (userData?.role !== 'admin' && userData?.role !== 'superadmin') {
       return NextResponse.json({ error: 'Execution Context Unauthorized. Insufficient privilege escalation.' }, { status: 403 });
     }
 
-    const adminId = session.user.id;
+    const adminId = user.id;
     const body = await req.json();
     const parsedData = BroadcastPayloadSchema.safeParse(body);
     

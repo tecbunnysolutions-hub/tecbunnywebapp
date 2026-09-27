@@ -1,12 +1,12 @@
 import { randomUUID } from 'node:crypto';
 import { NextRequest, NextResponse } from 'next/server';
 import { logger } from '@tecbunny/core/logger';
-import { rateLimit } from '@tecbunny/core/rate-limit';
+import { consumeRateLimit } from '@tecbunny/core/rate-limit';
 import { cashfreeConfig, minorUnits, ownedOrder, PaymentError } from '../shared';
 
 export async function POST(request: NextRequest) {
   const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
-  if (!rateLimit(ip, 'cashfree_create_order', { limit: 10, windowMs: 60_000 })) return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 });
+  if (!await consumeRateLimit(ip, 'cashfree_create_order', { limit: 10, windowMs: 60_000 })) return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 });
   try {
     const { order_id } = await request.json();
     if (typeof order_id !== 'string' || !order_id.trim()) throw new PaymentError('order_id is required', 400);

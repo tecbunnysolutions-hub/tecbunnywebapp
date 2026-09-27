@@ -1,3 +1,4 @@
+import { randomInt } from 'crypto';
 import {  createSupabaseClient as createClient  } from '@tecbunny/database/server';
 import { createSupabaseServiceClient } from "@tecbunny/core/server";
 import { NextRequest, NextResponse } from 'next/server';
@@ -47,6 +48,10 @@ async function sendEmailWithAttachment(to: string, subject: string, html: string
     disableUrlAccess: true,
   });
   return { success: true };
+}
+
+function boundedText(value: unknown, max = 200): string | null {
+  return typeof value === 'string' && value.trim() ? value.trim().slice(0, max) : null;
 }
 
 export async function POST(req: NextRequest) {
@@ -248,14 +253,17 @@ export async function POST(req: NextRequest) {
         items,
         totals: totals.overall,
         breakdown: totals.system.breakdown,
+        // Customer-entered context is stored with the lead; keep it small and typed.
         requirementContext: {
-          selectedNeeds: Array.isArray(selectedNeeds) ? selectedNeeds : [],
-          cctvNeed: typeof cctvNeed === 'string' ? cctvNeed : null,
-          businessName: typeof businessName === 'string' ? businessName : null,
-          location: typeof location === 'string' ? location : null,
-          propertySize: typeof propertySize === 'string' ? propertySize : null,
-          budget: typeof budget === 'string' ? budget : null,
-          premiseType: typeof premiseType === 'string' ? premiseType : null,
+          selectedNeeds: Array.isArray(selectedNeeds)
+            ? selectedNeeds.filter((need: unknown): need is string => typeof need === 'string').slice(0, 20).map((need: string) => need.slice(0, 80))
+            : [],
+          cctvNeed: boundedText(cctvNeed),
+          businessName: boundedText(businessName),
+          location: boundedText(location),
+          propertySize: boundedText(propertySize),
+          budget: boundedText(budget),
+          premiseType: boundedText(premiseType),
         },
       };
     }
@@ -268,7 +276,7 @@ export async function POST(req: NextRequest) {
       logger.error('quotes.load_company_info_failed', { error, userId: user?.id });
     }
 
-    const quoteNumber = `${new Date().getFullYear()}${String(new Date().getMonth() + 1).padStart(2, '0')}${String(Math.floor(10000 + Math.random() * 90000))}`;
+    const quoteNumber = `${new Date().getFullYear()}${String(new Date().getMonth() + 1).padStart(2, '0')}${randomInt(10000, 100000)}`;
     const statusVal = 'created';
     
     // Sanitize user inputs to prevent SSRF/HTML Injection in PDF
@@ -323,7 +331,7 @@ export async function POST(req: NextRequest) {
           last_name: customerName.split(/\s+/).slice(1).join(' ') || undefined,
           email: customerEmail,
           phone: customerPhone || undefined,
-          company_name: typeof customSetupConfig?.businessName === 'string' ? customSetupConfig.businessName : undefined,
+          company_name: boundedText(customSetupConfig?.businessName) ?? undefined,
           source_name: 'quote',
           form_identifier: 'custom_setup_quote',
           origin_path: '/custom-setup',

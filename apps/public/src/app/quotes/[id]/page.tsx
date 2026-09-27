@@ -23,6 +23,7 @@ export default function QuoteDetailPage() {
   const searchParams = useSearchParams();
   const quoteId = params.id as string;
   const actionToken = searchParams.get('token') || '';
+  const tokenQuery = actionToken ? `?token=${encodeURIComponent(actionToken)}` : '';
   const { toast } = useToast();
   const { user, supabase } = useAuth();
   
@@ -38,7 +39,7 @@ export default function QuoteDetailPage() {
     email: '',
     mobile: '',
     address: '',
-    password: 'TecBunny@2026!'
+    password: ''
   });
   const [otpCode, setOtpCode] = useState('');
   const [otpId, setOtpId] = useState('');
@@ -49,7 +50,7 @@ export default function QuoteDetailPage() {
   useEffect(() => {
     if (!quoteId) return;
     
-    fetch(`/api/quotes/${quoteId}`)
+    fetch(`/api/quotes/${quoteId}${tokenQuery}`)
       .then(res => {
         if (!res.ok) throw new Error('Quote not found');
         return res.json();
@@ -61,7 +62,7 @@ export default function QuoteDetailPage() {
           email: data.customer_email || '',
           mobile: data.customer_phone || '',
           address: data.customer_address || '',
-          password: 'TecBunny@2026!'
+          password: ''
         });
         setLoading(false);
       })
@@ -74,7 +75,7 @@ export default function QuoteDetailPage() {
         });
         setLoading(false);
       });
-  }, [quoteId, toast]);
+  }, [quoteId, tokenQuery, toast]);
 
   const handleAcceptCounter = async () => {
     if (!user) {
@@ -241,7 +242,7 @@ export default function QuoteDetailPage() {
       });
 
       // Refresh quote
-      const updated = await fetch(`/api/quotes/${quoteId}`).then(r => r.json());
+      const updated = await fetch(`/api/quotes/${quoteId}${tokenQuery}`).then(r => r.json());
       setQuote(updated);
     } catch (error) {
       console.error(error);
@@ -296,7 +297,7 @@ export default function QuoteDetailPage() {
           <Button
             onClick={async () => {
               try {
-                const res = await fetch(`/api/quotes/${quote.quote_number || quote.id}?format=pdf`);
+                const res = await fetch(`/api/quotes/${quote.quote_number || quote.id}?format=pdf${actionToken ? `&token=${encodeURIComponent(actionToken)}` : ''}`);
                 if (!res.ok) throw new Error('Download failed');
                 const blob = await res.blob();
                 const url = window.URL.createObjectURL(blob);

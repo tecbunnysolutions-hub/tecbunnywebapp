@@ -4,6 +4,8 @@ import { requireSupabaseServiceEnv } from "@tecbunny/database";
 import { verifyQuoteActionToken } from "@tecbunny/core/quotes/action-token";
 import { logger } from "@tecbunny/core/logger";
 
+const COUNTER_OFFER_STATUSES = ['countered', 'counter_offered'];
+
 function createSupabaseAdmin() {
   const { url, serviceKey } = requireSupabaseServiceEnv();
   return createClient(url, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } });
@@ -26,14 +28,15 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       return NextResponse.json({ error: 'Secure quote action link is missing or expired' }, { status: 403 });
     }
 
-    // Guard: only accept if currently in counter_offered state (prevents replays)
+    // Guard: only accept a pending counter-offer (prevents replays). MGMT
+    // records counter-offers as 'countered'; 'counter_offered' is legacy.
     const { data, error } = await supabase
       .from('quotes')
       .update({ status: 'accepted' })
       .eq('id', realId)
-      .eq('status', 'counter_offered')
+      .in('status', COUNTER_OFFER_STATUSES)
       .select()
-      .single();
+      .maybeSingle();
 
     if (error) throw error;
 

@@ -3,7 +3,7 @@ import { z } from 'zod';
 
 import { LeadEngineService, logger, validateLeadSource } from '@tecbunny/core';
 import { createSupabaseServiceClient } from '@tecbunny/core/server';
-import { rateLimit } from '@tecbunny/core/rate-limit';
+import { consumeRateLimit } from '@tecbunny/core/rate-limit';
 
 // Security limits
 const MAX_PAYLOAD_SIZE = 1024 * 1024; // 1MB
@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
   try {
     // Rate limiting
     const submissionIp = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'anonymous';
-    if (!rateLimit(submissionIp, 'lead_intake_post', RATE_LIMIT_CONFIG)) {
+    if (!await consumeRateLimit(submissionIp, 'lead_intake_post', RATE_LIMIT_CONFIG)) {
       logger.warn('lead_intake.rate_limit_exceeded', { correlationId, ip: submissionIp });
       return NextResponse.json(
         { success: false, error: 'Too many requests. Please try again later.' },

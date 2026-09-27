@@ -1,4 +1,5 @@
 import { createSupabaseClient as createClient } from '@tecbunny/database/server';
+import { getSessionWithRole } from '@tecbunny/core/auth/server-role';
 import { NextRequest } from 'next/server';
 
 
@@ -73,10 +74,13 @@ export async function PUT(
     const correlationId = request.headers.get('x-correlation-id') || null;
     const supabase = await createClient();
 
-    // Verify authentication
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
+    // Service catalogue changes are superadmin-only, like service creation.
+    const { session, role } = await getSessionWithRole(request);
+    if (!session) {
       return apiError('UNAUTHORIZED', { correlationId });
+    }
+    if (role !== 'superadmin') {
+      return apiError('FORBIDDEN', { correlationId });
     }
 
     const { id } = await params;
@@ -102,7 +106,7 @@ export async function PUT(
         description,
         category,
         price: price ? parseFloat(price) : undefined,
-        duration_hours: duration_hours ? parseInt(duration_hours) : null,
+        duration_hours: duration_hours !== undefined && duration_hours !== null && duration_hours !== '' ? parseInt(duration_hours) : undefined,
         features: Array.isArray(features) ? features : undefined,
         requirements: Array.isArray(requirements) ? requirements : undefined,
         icon,
@@ -148,10 +152,13 @@ export async function DELETE(
     const correlationId = request.headers.get('x-correlation-id') || null;
     const supabase = await createClient();
 
-    // Verify authentication
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
+    // Service catalogue changes are superadmin-only, like service creation.
+    const { session, role } = await getSessionWithRole(request);
+    if (!session) {
       return apiError('UNAUTHORIZED', { correlationId });
+    }
+    if (role !== 'superadmin') {
+      return apiError('FORBIDDEN', { correlationId });
     }
 
     const { id } = await params;

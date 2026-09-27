@@ -123,7 +123,33 @@ const EMAIL_STYLES = `
 </style>
 `;
 
+const HTML_ESCAPES: Record<string, string> = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+
+function escapeTemplateValue(value: unknown): unknown {
+  if (typeof value === 'string') return value.replace(/[&<>"']/g, (char) => HTML_ESCAPES[char]);
+  if (Array.isArray(value)) return value.map(escapeTemplateValue);
+  if (value && typeof value === 'object' && !(value instanceof Date)) {
+    return Object.fromEntries(Object.entries(value).map(([key, entry]) => [key, escapeTemplateValue(entry)]));
+  }
+  return value;
+}
+
+/**
+ * Template data can originate from customers, forms and gateway payloads.
+ * HTML bodies are rendered from an HTML-escaped copy; subjects and plain-text
+ * bodies from the raw values (without line breaks, which are header-unsafe).
+ */
 export function generateEmailTemplate(templateType: string, data: EmailTemplateData): EmailTemplate {
+  const safeHtml = renderEmailTemplate(templateType, escapeTemplateValue(data) as EmailTemplateData);
+  const plain = renderEmailTemplate(templateType, data);
+  return {
+    subject: plain.subject.replace(/[\r\n]+/g, ' '),
+    html: safeHtml.html,
+    text: plain.text,
+  };
+}
+
+function renderEmailTemplate(templateType: string, data: EmailTemplateData): EmailTemplate {
   const companyData = { ...DEFAULT_COMPANY_DATA, ...data };
   
   switch (templateType) {

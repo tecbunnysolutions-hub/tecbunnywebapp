@@ -1,5 +1,9 @@
 import { createServiceClient } from '@tecbunny/database/admin';
 import { NextRequest, NextResponse } from 'next/server';
+import { requireApiRole } from '@tecbunny/core/server-role-guard';
+import { ALL_ROLES } from '@tecbunny/core/roles';
+
+const STAFF_ROLES = ALL_ROLES.filter((role) => role !== 'customer');
 
 export const runtime = 'nodejs';
 
@@ -29,6 +33,10 @@ interface ScoringBreakdown {
 
 export async function GET(request: NextRequest) {
   try {
+    // Lead records contain customer PII; only staff may read scoring details.
+    const auth = await requireApiRole({ allowedRoles: STAFF_ROLES });
+    if (auth.error) return auth.error;
+
     const searchParams = request.nextUrl.searchParams;
     const leadId = searchParams.get('leadId');
     const email = searchParams.get('email');

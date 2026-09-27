@@ -4,6 +4,10 @@ import { NextResponse } from 'next/server';
 
 import { logger } from "@tecbunny/core/logger";
 import { sendWhatsAppNotification } from "@tecbunny/core/whatsapp-service";
+import { createQuoteActionToken, verifyQuoteActionToken } from "@tecbunny/core/quotes/action-token";
+import { rateLimit } from "@tecbunny/core/rate-limit";
+import { getTrustedClientIp } from "@tecbunny/core/request-ip";
+import { randomInt } from 'crypto';
 
 import { z } from 'zod';
 
@@ -15,29 +19,34 @@ const bidSchema = z.object({
   address: z.string().optional().nullable(),
   biddedPrice: z.number().positive('Bid must be strictly greater than 0'),
   summary: z.string().max(1000).optional().nullable(),
-  customSetupConfig: z.any().optional().nullable()
+  customSetupConfig: z.any().optional().nullable(),
+  actionToken: z.string().max(2048).optional().nullable(),
 });
+
+function quoteTotal(value: any): number {
+  const total = Number(value?.totals?.overall?.sale ?? value?.totals?.sale ?? value?.totals?.overall ?? 0);
+  return Number.isFinite(total) ? total : 0;
+}
 
 export async function POST(req: Request) {
   try {
+    // Bids notify staff over WhatsApp; bound anonymous submissions.
+    const limit = await rateLimit(`quote_bid:${getTrustedClientIp(req)}`, 5, 15 * 60 * 1000);
+    if (!limit.allowed) {
+      return NextResponse.json({ error: 'Too many bids. Please try again later.' }, { status: 429 });
+    }
+
     const supabase = await createServerClient();
-    const { data: { session } } = await supabase.auth.getSession();
+    // getUser() validates the session with Supabase; getSession() data is not trusted.
+    const { data: { user } } = await supabase.auth.getUser();
     const serviceClient = createSupabaseServiceClient();
     
     const json = await req.json();
     const validatedData = bidSchema.parse(json);
-    const { quoteId, name, email, phone, address, biddedPrice, summary, customSetupConfig } = validatedData;
-
+    const { quoteId, name, email, phone, address, biddedPrice, summary, customSetupConfig, actionToken } = validatedData;
 
     // Validate: bid price must be at least 70% of quoted price
-    // Calculate original price from customSetupConfig
-    let originalPrice = 0;
-    if (customSetupConfig?.totals?.overall?.sale) {
-      originalPrice = customSetupConfig.totals.overall.sale;
-    } else if (customSetupConfig?.totals?.sale) {
-      originalPrice = customSetupConfig.totals.sale;
-    }
-
+    const originalPrice = quoteTotal(customSetupConfig);
     const minBidPrice = originalPrice * 0.7; // 70% minimum
 
     if (originalPrice > 0 && biddedPrice < minBidPrice) {
@@ -57,10 +66,10 @@ export async function POST(req: Request) {
         totals: customSetupConfig?.totals?.overall || customSetupConfig?.totals || {}
       };
 
-      const quoteNumber = `${new Date().getFullYear()}${String(new Date().getMonth() + 1).padStart(2, '0')}${String(Math.floor(10000 + Math.random() * 90000))}`;
+      const quoteNumber = `${new Date().getFullYear()}${String(new Date().getMonth() + 1).padStart(2, '0')}${randomInt(10000, 100000)}`;
 
       const { data, error } = await serviceClient.from('quotes').insert({
-        user_id: session?.user?.id || null,
+        user_id: user?.id || null,
         customer_name: name,
         customer_email: email || 'anonymous@tecbunny.com',
         customer_phone: phone,
@@ -80,11 +89,25 @@ export async function POST(req: Request) {
       // OCC / State-Machine validation
       const { data: existingQuote, error: checkError } = await serviceClient
         .from('quotes')
-        .select('status')
+        .select('status, user_id, selections')
         .eq('id', finalQuoteId)
         .single();
       
       if (checkError) throw checkError;
+
+      // Only the quote's owner or a holder of its customer link may revise it.
+      const ownsQuote = Boolean(user && existingQuote.user_id && existingQuote.user_id === user.id);
+      if (!ownsQuote && !verifyQuoteActionToken(actionToken, finalQuoteId, ['quote_customer'])) {
+        return NextResponse.json({ error: 'Secure quote link is missing or expired' }, { status: 403 });
+      }
+
+      // Enforce the floor against the stored quote, not client-supplied totals.
+      const storedTotal = quoteTotal(existingQuote.selections);
+      if (storedTotal > 0 && biddedPrice < storedTotal * 0.7) {
+        return NextResponse.json({
+          error: `Bid price must be at least ₹${Math.round(storedTotal * 0.7).toLocaleString()} (70% of quoted price)`
+        }, { status: 400 });
+      }
       
       // Explicit state lock to prevent stale updates or bypassing accepted contracts
       if (!['created', 'bidded'].includes(existingQuote.status)) {
@@ -118,7 +141,13 @@ export async function POST(req: Request) {
       // Ignore whatsapp failure
     }
 
-    return NextResponse.json({ success: true, quoteId: finalQuoteId, quoteNumber: finalQuoteNumber || finalQuoteId });
+    return NextResponse.json({
+      success: true,
+      quoteId: finalQuoteId,
+      quoteNumber: finalQuoteNumber || finalQuoteId,
+      // Lets an anonymous bidder open and act on their own quote.
+      actionToken: createQuoteActionToken(finalQuoteId as string, 'quote_customer'),
+    });
   } catch (error) {
     logger.error('Bid submission failed', { error });
     return NextResponse.json({ 

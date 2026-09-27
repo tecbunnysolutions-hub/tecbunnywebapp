@@ -113,6 +113,7 @@ export async function proxy(request: NextRequest, event: EnterpriseProxyEvent) {
         'POST /api/customer/notifications',
         'GET /api/cron/*',
         'POST /api/indexnow',
+        'POST /api/email/abandoned-cart',
         // The tRPC catch-all (/api/trpc/[trpc]) hosts a mix of public and
         // protected procedures, and httpBatchLink can batch several procedure
         // names into one comma-joined path, so this gateway cannot tell them

@@ -879,7 +879,8 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
       
       // Redirect to quote view page
       setTimeout(() => {
-        router.push(`/quotes/${quoteId}`);
+        const tokenQuery = typeof data.actionToken === 'string' ? `?token=${encodeURIComponent(data.actionToken)}` : '';
+        router.push(`/quotes/${quoteId}${tokenQuery}`);
       }, 1500);
     } catch (e: any) {
       toast({ variant: 'destructive', title: 'Error', description: 'Failed to submit bid.' });

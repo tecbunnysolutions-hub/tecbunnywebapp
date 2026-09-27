@@ -1,19 +1,20 @@
-import { createSupabaseClient as createClient } from '@tecbunny/database/server';
+import { createSupabaseServiceClient } from '@tecbunny/database/admin';
 import { NextRequest, NextResponse } from 'next/server';
 
 
 import { sendOrderNotification, sendOrderStatusUpdate, sendPaymentReminder } from "@tecbunny/core/whatsapp-service";
 import { logger } from "@tecbunny/core";
+import { hasValidInternalApiKey } from "@tecbunny/core/api-email-route";
 
 // Customer signup integration with phone contact and WhatsApp notifications
 export async function POST(request: NextRequest) {
   try {
-    const internalKey = process.env.INTERNAL_API_KEY;
-    if (!internalKey || request.headers.get('x-internal-api-key') !== internalKey) {
+    if (!hasValidInternalApiKey(request)) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const supabase = createClient();
+    // Internal (server-to-server) route: no user session, so use the service role.
+    const supabase = createSupabaseServiceClient();
     const { action, customerData, orderData } = await request.json();
 
     switch (action) {

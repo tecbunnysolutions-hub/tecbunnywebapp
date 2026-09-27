@@ -6,9 +6,9 @@ import { logger } from "@tecbunny/core";
 export async function POST(req: Request) {
   try {
     const supabase = await createClient();
-    const { data: { session } } = await supabase.auth.getSession();
+    const { data: { user } } = await supabase.auth.getUser();
     
-    if (!session?.user) {
+    if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -18,7 +18,7 @@ export async function POST(req: Request) {
     // Here we would typically merge the items into the database.
     // For now, returning success as requested by the architectural improvement.
     logger.info('Merged guest state for user', { 
-        userId: session.user.id, 
+        userId: user.id, 
         cartCount: cartItems.length,
         wishlistCount: wishlistItems.length 
     });

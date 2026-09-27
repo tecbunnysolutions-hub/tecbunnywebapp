@@ -4,7 +4,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { sendWelcomeNotification, sendWhatsAppNotification } from "@tecbunny/core/whatsapp-service";
 import { logger } from "@tecbunny/core";
 import { apiError, apiSuccess } from "@tecbunny/core";
-import { rateLimit } from "@tecbunny/core/rate-limit";
+import { consumeRateLimit } from "@tecbunny/core/rate-limit";
+import { requireApiRole } from '@tecbunny/core/server-role-guard';
+import { ALL_ROLES } from '@tecbunny/core/roles';
+
+const STAFF_ROLES = ALL_ROLES.filter((role) => role !== 'customer');
 
 interface CustomerRegistrationData {
   name: string;
@@ -24,7 +28,7 @@ export async function POST(request: NextRequest) {
 
     // Rate limiting
     const clientIP = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
-    if (!rateLimit(clientIP, 'customer_registration', { limit: 3, windowMs: 60000 })) {
+    if (!await consumeRateLimit(clientIP, 'customer_registration', { limit: 3, windowMs: 60000 })) {
       return apiError('RATE_LIMITED', { correlationId });
     }
 
@@ -183,6 +187,10 @@ export async function POST(request: NextRequest) {
 // Get customer by phone
 export async function GET(request: NextRequest) {
   try {
+    // Phone lookups return customer PII; restrict to staff.
+    const auth = await requireApiRole({ allowedRoles: STAFF_ROLES });
+    if (auth.error) return auth.error;
+
     const correlationId = request.headers.get('x-correlation-id') || null;
     logger.info('customers_register.audit.lookup_requested', { correlationId });
     const { searchParams } = new URL(request.url);

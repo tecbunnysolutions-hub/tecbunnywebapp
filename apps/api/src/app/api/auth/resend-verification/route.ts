@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 
-import { rateLimit } from "@tecbunny/core/rate-limit";
+import { consumeRateLimit } from "@tecbunny/core/rate-limit";
 import { apiError, apiSuccess } from "@tecbunny/core";
 import { logger } from "@tecbunny/core";
 import { OTPManager, type OTPChannel } from "@tecbunny/core/otp-manager";
@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
     }
 
     const key = `auth_resend:${otpId}|ip:${ip}`;
-    if (!rateLimit(key, 'auth_resend_verification', { limit: LIMIT, windowMs: WINDOW_MS })) {
+    if (!await consumeRateLimit(key, 'auth_resend_verification', { limit: LIMIT, windowMs: WINDOW_MS })) {
       logger.warn('auth_resend_rate_limited', { otpId, ip, correlationId });
       return apiError('RATE_LIMITED', { overrideMessage: 'Too many resend attempts. Please wait 5 minutes before trying again.', correlationId, details: { retryAfterMs: WINDOW_MS } });
     }

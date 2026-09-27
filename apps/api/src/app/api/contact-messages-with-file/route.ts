@@ -2,6 +2,8 @@ import { createSupabaseServiceClient } from "@tecbunny/core/server";
 import { NextRequest, NextResponse } from 'next/server';
 import { uploadToSupabase } from '@tecbunny/database/storage';
 import { logger, LeadEngineService } from "@tecbunny/core";
+import { rateLimit } from "@tecbunny/core/rate-limit";
+import { getTrustedClientIp } from "@tecbunny/core/request-ip";
 import { scoreLeadPriority, type AssessmentData } from "@tecbunny/core/lead-scoring";
 import { notifySalesAboutLead, type LeadNotificationPayload } from "@tecbunny/core/leads/notify-sales";
 import { sendAssessmentConfirmationEmail } from "@tecbunny/core/email/send-assessment-confirmation";
@@ -180,6 +182,12 @@ export async function POST(request: NextRequest) {
   const correlationId = `contact-upload-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
   try {
+    // Anonymous uploads (up to 10MB each) and staff notifications: bound per client.
+    const limit = await rateLimit(`contact_upload:${getTrustedClientIp(request)}`, 5, 15 * 60 * 1000);
+    if (!limit.allowed) {
+      return NextResponse.json({ error: 'Too many submissions. Please try again later.' }, { status: 429 });
+    }
+
     const formData = await request.formData();
     const file = formData.get('file') as File | null;
 

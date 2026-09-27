@@ -162,6 +162,16 @@ export function rateLimit(
   throw new Error('Invalid rateLimit arguments')
 }
 
+/**
+ * Shared (Redis-backed when configured) limiter with the synchronous
+ * variant's call shape. Prefer this in request handlers: the synchronous
+ * variant only counts within one serverless instance.
+ */
+export async function consumeRateLimit(key: string, bucketName: string, opts: RateLimitOptions): Promise<boolean> {
+  const result = await rateLimit(`${bucketName}:${key}`, opts.limit, opts.windowMs)
+  return result.allowed
+}
+
 // Optional helpers for sync variant state
 export function remaining(key: string, bucketName: string, opts: RateLimitOptions): number | undefined {
   const store = stores[bucketName]
