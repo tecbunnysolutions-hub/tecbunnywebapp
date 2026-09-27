@@ -9,6 +9,7 @@ import {
 import { logger } from "@tecbunny/core";
 import { apiError, apiSuccess } from "@tecbunny/core";
 import { rateLimit } from "@tecbunny/core/rate-limit";
+import { requireApiRole } from "@tecbunny/core/server-role-guard";
 
 interface ShippingUpdateData {
   order_id: string;
@@ -24,6 +25,11 @@ interface ShippingUpdateData {
 export async function POST(request: NextRequest) {
   try {
     const correlationId = request.headers.get('x-correlation-id') || null;
+
+    // Shipping status is operational data maintained by staff.
+    const auth = await requireApiRole({ minimumRole: 'manager' });
+    if (auth.error) return auth.error;
+
     const supabase = await createClient();
 
     // Rate limiting
@@ -109,7 +115,8 @@ export async function POST(request: NextRequest) {
       }
     };
 
-    orderUpdate.items = JSON.stringify(updatedOrderItems);
+    // Preserve the column's original representation (JSON value vs. string).
+    orderUpdate.items = typeof order.items === 'string' ? JSON.stringify(updatedOrderItems) : updatedOrderItems;
 
     const { data: updatedOrder, error: updateError } = await supabase
       .from('orders')

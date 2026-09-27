@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { router, publicProcedure, protectedProcedure } from '../trpc';
+import { router, publicProcedure, adminProcedure } from '../trpc';
 import { createSupabaseServiceClient, isSupabaseServiceConfigured } from '@tecbunny/core/server';
 import { logger } from '@tecbunny/core';
 import { TRPCError } from '@trpc/server';
@@ -93,6 +93,7 @@ export const couponsRouter = router({
         .from('coupons')
         .select('*')
         .eq('id', input.id)
+        .eq('status', 'active')
         .single();
 
       if (error) {
@@ -106,7 +107,7 @@ export const couponsRouter = router({
       return data;
     }),
 
-  create: protectedProcedure
+  create: adminProcedure
     .input(
       z.object({
         code: z.string(),
@@ -172,7 +173,7 @@ export const couponsRouter = router({
       return { coupon: data, message: 'Coupon created successfully' };
     }),
 
-  update: protectedProcedure
+  update: adminProcedure
     .input(
       z.object({
         id: z.string(),
@@ -239,7 +240,7 @@ export const couponsRouter = router({
       return { coupon: data, message: 'Coupon updated successfully' };
     }),
 
-  delete: protectedProcedure
+  delete: adminProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ input }: { input: any }) => {
       logger.info('rpc_coupons.audit.delete_requested', { id: input.id });

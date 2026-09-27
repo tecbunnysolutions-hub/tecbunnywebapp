@@ -54,6 +54,7 @@ const SERVICE_ORDER_STATUS_SET = new Set<OrderStatus>([
 ]);
 
 const SERVICE_TYPE_SET = new Set(['service', 'repair', 'installation', 'setup']);
+const INITIAL_PAYMENT_STATUSES = new Set(['Awaiting Payment', 'Payment Confirmation Pending', 'Payment Due on Delivery', 'Pending']);
 const PICKUP_TYPE_SET = new Set(['pickup', 'walk-in', 'walkin', 'walk in', 'walk_in']);
 const ALLOWED_MUTABLE_FIELDS = new Set(['cancellation_reason', 'payment_reference', 'notes', 'shipping_amount', 'discount_amount']);
 
@@ -187,6 +188,22 @@ export class OrderService implements IOrderService {
       orderData.delivery_pincode = availability.pincode;
     }
 
+    // Part payment is a customer-chosen deposit; it must be a real portion of
+    // the server-computed total. Settlement never treats it as full payment.
+    let partPaymentAmount: number | null = null;
+    if (orderData.part_payment_amount !== null && orderData.part_payment_amount !== undefined && orderData.part_payment_amount !== '') {
+      const requested = Math.round(Number(orderData.part_payment_amount) * 100) / 100;
+      if (!Number.isFinite(requested) || requested <= 0 || requested >= total) {
+        throw new Error('Invalid part payment amount');
+      }
+      partPaymentAmount = requested;
+    }
+
+    // Clients may only choose an unpaid initial state; payment is recorded by
+    // gateway settlement or staff, never by the order request.
+    const requestedPaymentStatus = typeof orderData.payment_status === 'string' ? orderData.payment_status.trim() : '';
+    const initialPaymentStatus = INITIAL_PAYMENT_STATUSES.has(requestedPaymentStatus) ? requestedPaymentStatus : 'Awaiting Payment';
+
     const pickupStore = orderType === 'Pickup'
       ? (orderData.pickup_store || orderData.delivery_address || null)
       : null;
@@ -211,7 +228,7 @@ export class OrderService implements IOrderService {
       customer_notes: orderData.notes,
       agent_id: orderData.agent_id || null,
       otp_required: !!orderData.agent_id,
-      part_payment_amount: orderData.part_payment_amount ? Number(orderData.part_payment_amount) : null,
+      part_payment_amount: partPaymentAmount,
       quote_id: orderData.quote_id || null
     };
 
@@ -228,7 +245,7 @@ export class OrderService implements IOrderService {
       p_total: Math.round(total * 100) / 100,
       p_discount_amount: Math.round(discount_amount * 100) / 100,
       p_shipping_amount: Math.round(shipping_amount * 100) / 100,
-      p_payment_status: orderData.payment_status || null,
+      p_payment_status: initialPaymentStatus,
       p_order_type: orderType,
       p_items: orderItemsWithCustomerInfo,
       p_agent_id: orderData.agent_id || null
@@ -578,7 +595,7 @@ export class OrderService implements IOrderService {
           try {
             fetch(`${envConfig.app.siteUrl}/api/marketing/triggers/order-delivered-followup`, {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
+              headers: { 'Content-Type': 'application/json', 'x-internal-api-key': process.env.INTERNAL_API_KEY || '' },
               body: JSON.stringify({ orderId })
             }).catch(err => logger.error('upsell_trigger_fetch_failed', { err: err instanceof Error ? err.message : String(err) }));
           } catch (e) {

@@ -1,5 +1,6 @@
 import type { FetchCreateContextFnOptions } from '@trpc/server/adapters/fetch';
 import { verifySuperadminSessionToken } from '@tecbunny/core/server';
+import { normalizeRole } from '@tecbunny/core';
 import { BaseSupabaseClient } from '@tecbunny/infra';
 
 // Simple helper to mock the authentication context natively instead of rewriting the entire core middleware inside tRPC for now
@@ -33,7 +34,9 @@ export async function createContext({ req, resHeaders }: FetchCreateContextFnOpt
           const baseClient = new BaseSupabaseClient({ url: SUPABASE_URL, key: SUPABASE_ANON_KEY });
           const { data, error } = await baseClient.rawClient.auth.getUser(token);
           if (!error && data?.user) {
-            role = data.user.app_metadata?.role || 'customer';
+            const normalizedRole = normalizeRole(data.user.app_metadata?.role) ?? 'customer';
+            // Only the dedicated root session may act as superadmin.
+            role = normalizedRole === 'superadmin' ? 'customer' : normalizedRole;
             session = { user: data.user };
             // The RPC route is public at the gateway. Verify the bearer JWT's
             // assurance claim here so privileged procedures cannot bypass MFA.

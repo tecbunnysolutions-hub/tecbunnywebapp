@@ -117,8 +117,29 @@ export class PaymentService {
     }
 
     const extras = typeof order.items === 'string' ? JSON.parse(order.items || '{}') : (order.items || {});
-    const partPaymentAmount = extras.part_payment_amount;
-    const amountNumber = partPaymentAmount ? Number(partPaymentAmount) : Number(order.total ?? 0);
+    const orderTotal = Math.round(Number(order.total ?? 0) * 100) / 100;
+
+    // Charge the outstanding balance. A recorded deposit applies only to the
+    // first payment; settlement marks the order paid only once the total is met.
+    const { data: settledRows, error: settledError } = await this.supabase
+      .from('payment_transactions')
+      .select('amount')
+      .eq('order_id', orderId)
+      .eq('status', 'success');
+    if (settledError) {
+      throw new Error('Could not read existing payments. Please retry.');
+    }
+    const paidSoFar = Math.round(((settledRows ?? []) as Array<{ amount: unknown }>)
+      .reduce((sum, row) => sum + (Number(row.amount) || 0), 0) * 100) / 100;
+    const outstanding = Math.round((orderTotal - paidSoFar) * 100) / 100;
+    if (!Number.isFinite(outstanding) || outstanding <= 0) {
+      throw new Error('This order has no outstanding balance');
+    }
+
+    const partPaymentAmount = Number(extras.part_payment_amount);
+    const amountNumber = paidSoFar === 0 && Number.isFinite(partPaymentAmount) && partPaymentAmount > 0 && partPaymentAmount < outstanding
+      ? Math.round(partPaymentAmount * 100) / 100
+      : outstanding;
     
     if (!Number.isFinite(amountNumber) || amountNumber <= 0) {
       throw new Error('Order amount is invalid for payment');

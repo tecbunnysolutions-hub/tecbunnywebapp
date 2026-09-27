@@ -24,7 +24,7 @@ try {
     CREATE POLICY old_open_read ON public."Conversation" FOR SELECT TO authenticated USING (true);
     CREATE POLICY old_open_read ON public."Message" FOR SELECT TO authenticated USING (true);
     GRANT USAGE ON SCHEMA public, auth TO authenticated, service_role;
-    INSERT INTO public.orders VALUES ('one', 100, 'Pending', NULL, 'Pending', now()), ('two', 200, 'Pending', NULL, 'Pending', now());
+    INSERT INTO public.orders VALUES ('one', 100, 'Pending', NULL, 'Pending', now()), ('two', 200, 'Pending', NULL, 'Pending', now()), ('three', 300, 'Pending', NULL, 'Pending', now());
   `);
   if (legacyLedger === true) {
     await db.exec(`CREATE TABLE public.payment_transactions (
@@ -43,11 +43,12 @@ try {
     INSERT INTO public.payment_transactions (legacy_payload) VALUES ('{"reference":"old-one"}'), ('{"reference":"old-two"}')`);
   }
   const settlementMigration = await readFile(new URL('../supabase/migrations/20260925000000_atomic_gateway_settlement.sql', import.meta.url), 'utf8');
-  for (const name of ['20260925000000_atomic_gateway_settlement.sql', '20260925000001_waba_conversation_ownership.sql']) {
+  for (const name of ['20260925000000_atomic_gateway_settlement.sql', '20260925000001_waba_conversation_ownership.sql', '20260927000000_settlement_partial_payments.sql']) {
     await db.exec(await readFile(new URL(`../supabase/migrations/${name}`, import.meta.url), 'utf8'));
   }
   // A failed SQL-editor attempt may be rerun after applying the correction.
   await db.exec(settlementMigration);
+  await db.exec(await readFile(new URL('../supabase/migrations/20260927000000_settlement_partial_payments.sql', import.meta.url), 'utf8'));
   if (legacyLedger === true) {
     assert.deepEqual((await db.query("SELECT amount, payment_method, status FROM public.payment_transactions WHERE transaction_id='legacy-unknown-gateway'")).rows[0], {
       amount: '100.00', payment_method: null, status: 'initiated',
@@ -81,6 +82,15 @@ try {
   await settle('two', 'payu-two', 'payu', 'success', 200);
   assert.equal((await settle('two', 'payu-two', 'payu', 'failed', 200)).rows[0].result.status, 'success');
   assert.equal((await db.query("SELECT payment_status FROM public.orders WHERE id='two'")).rows[0].payment_status, 'Payment Confirmed');
+  await db.exec(`INSERT INTO public.payment_transactions (order_id, transaction_id, payment_method, amount) VALUES ('three', 'payu-three-deposit', 'payu', 1), ('three', 'payu-three-balance', 'payu', 299)`);
+  await settle('three', 'payu-three-deposit', 'payu', 'success', 1);
+  assert.deepEqual((await db.query("SELECT payment_status, status FROM public.orders WHERE id='three'")).rows[0], { payment_status: 'Partially Paid', status: 'Pending' });
+  await settle('three', 'payu-three-balance', 'payu', 'failed', 299);
+  assert.equal((await db.query("SELECT payment_status FROM public.orders WHERE id='three'")).rows[0].payment_status, 'Partially Paid');
+  await db.exec(`UPDATE public.payment_transactions SET status='initiated' WHERE transaction_id='payu-three-balance'`);
+  await settle('three', 'payu-three-balance', 'payu', 'success', 299);
+  assert.equal((await db.query("SELECT payment_status FROM public.orders WHERE id='three'")).rows[0].payment_status, 'Payment Confirmed');
+  console.log('PASS: deposits leave orders partially paid until settled payments cover the total');
   await db.exec(`SET ROLE authenticated`);
   await assert.rejects(settle('one', 'cf-one', 'cashfree', 'success', 100, paid), /permission denied/);
   await db.exec('RESET ROLE');

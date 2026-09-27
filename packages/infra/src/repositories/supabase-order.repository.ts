@@ -5,15 +5,23 @@ export class SupabaseOrderRepository implements IOrderRepository {
   constructor(private readonly baseClient: BaseSupabaseClient) {}
 
   async getCustomerOrders(userId: string, userEmail?: string, userPhone?: string): Promise<any[]> {
-    const conditions = [`customer_id.eq.${userId}`];
-    if (userEmail) conditions.push(`customer_email.eq.${userEmail}`);
-    if (userPhone) conditions.push(`customer_phone.eq.${userPhone}`);
+    // Callers must pass only verified contact details. Each identifier is a
+    // separate equality filter so values never enter PostgREST filter syntax.
+    const orders = () => this.baseClient.rawClient.from('orders').select('*');
+    const queries = [orders().eq('customer_id', userId)];
+    if (userEmail) queries.push(orders().eq('customer_email', userEmail));
+    if (userPhone) {
+      const digits = userPhone.replace(/\D/g, '');
+      const variants = Array.from(new Set([userPhone, digits, `+${digits}`, digits.slice(-10)].filter((value) => value.length >= 10)));
+      if (variants.length) queries.push(orders().in('customer_phone', variants));
+    }
 
-    const { data } = await this.baseClient.executeQuery(
-      this.baseClient.rawClient.from('orders').select('*').or(conditions.join(',')).order('created_at', { ascending: false }),
-      'get_customer_orders'
-    );
-    return data || [];
+    const results = await Promise.all(queries.map((query) => this.baseClient.executeQuery(query, 'get_customer_orders')));
+    const byId = new Map<string, any>();
+    for (const { data } of results) {
+      for (const order of (data as any[] | null) ?? []) byId.set(String(order.id), order);
+    }
+    return Array.from(byId.values()).sort((a, b) => String(b.created_at ?? '').localeCompare(String(a.created_at ?? '')));
   }
 
   async reserveOrderIdempotency(key: string, customerId: string | null): Promise<{ isNew: boolean; orderId: string | null }> {

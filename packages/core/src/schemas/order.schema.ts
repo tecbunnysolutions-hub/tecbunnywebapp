@@ -3,7 +3,7 @@ import { z } from 'zod';
 export const orderItemSchema = z.object({
   id: z.union([z.string(), z.number()]).nullable().optional(),
   productId: z.union([z.string(), z.number()]).nullable().optional(),
-  quantity: z.number().positive(),
+  quantity: z.number().int().positive().max(1000),
   price: z.number().min(0),
   name: z.string().nullable().optional(),
   gstRate: z.number().nullable().optional(),

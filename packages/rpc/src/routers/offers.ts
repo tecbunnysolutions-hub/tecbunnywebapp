@@ -1,8 +1,34 @@
 import { z } from 'zod';
-import { router, publicProcedure, protectedProcedure } from '../trpc';
+import { router, publicProcedure, adminProcedure } from '../trpc';
 import { createSupabaseServiceClient, isSupabaseServiceConfigured } from '@tecbunny/core/server';
 import { logger } from '@tecbunny/core';
 import { TRPCError } from '@trpc/server';
+
+const nullableNumber = z.number().finite().nullable().optional();
+const offerFieldsSchema = z.object({
+  title: z.string().trim().min(1).max(200),
+  description: z.string().max(5000).nullable().optional(),
+  discount_type: z.string().trim().min(1).max(40),
+  discount_value: nullableNumber,
+  minimum_purchase_amount: nullableNumber,
+  maximum_discount_amount: nullableNumber,
+  offer_code: z.string().trim().max(64).nullable().optional(),
+  start_date: z.string().min(1),
+  end_date: z.string().min(1),
+  is_active: z.boolean().optional(),
+  is_featured: z.boolean().optional(),
+  display_on_homepage: z.boolean().optional(),
+  customer_eligibility: z.string().max(64).optional(),
+  banner_text: z.string().max(500).nullable().optional(),
+  banner_color: z.string().max(32).nullable().optional(),
+  terms_and_conditions: z.string().max(10000).nullable().optional(),
+  priority: z.number().int().optional(),
+  usage_limit: z.number().int().nonnegative().nullable().optional(),
+  usage_limit_per_customer: z.number().int().nonnegative().nullable().optional(),
+});
+// Unknown keys are stripped so clients cannot write arbitrary columns.
+const offerCreateSchema = offerFieldsSchema;
+const offerUpdateSchema = offerFieldsSchema.partial().extend({ id: z.string().min(1) });
 
 interface OfferFilters {
   activeOnly: boolean;
@@ -315,8 +341,8 @@ export const offersRouter = router({
       };
     }),
 
-  create: protectedProcedure
-    .input(z.any()) // Using z.any() for simplicity, can type strictly later
+  create: adminProcedure
+    .input(offerCreateSchema)
     .mutation(async ({ input, ctx }: { input: any, ctx: any }) => {
       if (!isSupabaseServiceConfigured) {
         throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Supabase config missing' });
@@ -371,8 +397,8 @@ export const offersRouter = router({
       return { offer: newOffer, message: 'Offer created successfully' };
     }),
 
-  update: protectedProcedure
-    .input(z.any())
+  update: adminProcedure
+    .input(offerUpdateSchema)
     .mutation(async ({ input, ctx }: { input: any, ctx: any }) => {
       if (!isSupabaseServiceConfigured) {
         throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Supabase config missing' });
@@ -444,7 +470,7 @@ export const offersRouter = router({
       return { offer: updatedOffer, message: 'Offer updated successfully' };
     }),
 
-  delete: protectedProcedure
+  delete: adminProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ input, ctx }: { input: any, ctx: any }) => {
       if (!isSupabaseServiceConfigured) {

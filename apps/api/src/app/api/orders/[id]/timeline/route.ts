@@ -1,6 +1,7 @@
 import { createSupabaseClient as createClient } from '@tecbunny/database/server';
 import { NextRequest, NextResponse } from 'next/server';
 import { logger } from '@tecbunny/core/logger';
+import { normalizeRole } from '@tecbunny/core';
 
 /**
  * GET /api/orders/[id]/timeline
@@ -16,9 +17,13 @@ export async function GET(
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
+    if (!user) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+    }
+
     const { data: order, error: orderErr } = await supabase
       .from('orders')
-      .select('id, status, payment_status, customer_name, customer_phone, created_at, user_id')
+      .select('id, status, payment_status, customer_name, customer_phone, created_at, customer_id, user_id')
       .eq('id', id)
       .maybeSingle();
 
@@ -26,11 +31,11 @@ export async function GET(
       return NextResponse.json({ error: 'Order not found' }, { status: 404 });
     }
 
-    // Only allow the order owner or staff
-    if (user?.id && order.user_id && user.id !== order.user_id) {
-      const appMeta = (user as any).app_metadata ?? {};
-      const isStaff = ['admin', 'manager', 'sales_executive', 'service_engineer', 'accounts'].includes(appMeta.role ?? '');
-      if (!isStaff) {
+    // Only the order owner or staff may read the timeline.
+    const ownerId = order.customer_id ?? order.user_id ?? null;
+    if (user.id !== ownerId) {
+      const role = normalizeRole((user as any).app_metadata?.role);
+      if (!role || role === 'customer') {
         return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
       }
     }

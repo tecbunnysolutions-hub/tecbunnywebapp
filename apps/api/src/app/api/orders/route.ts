@@ -37,7 +37,19 @@ export async function GET(request: NextRequest) {
     const notificationService = new NotificationServiceImpl();
     const orderService = new OrderService(orderRepo, notificationService);
 
-    const orders = await orderService.getCustomerOrders(user.id, user.email, user.user_metadata?.mobile);
+    // Match guest orders only through contact details this account verified.
+    // user_metadata is user-editable and must never select other customers' data.
+    const verifiedChannels = Array.isArray(user.app_metadata?.verified_channels)
+      ? user.app_metadata.verified_channels as string[]
+      : null;
+    const verifiedEmail = user.email && user.email_confirmed_at && (!verifiedChannels || verifiedChannels.includes('email'))
+      ? user.email
+      : undefined;
+    const verifiedPhone = user.phone && user.phone_confirmed_at && (!verifiedChannels || verifiedChannels.includes('whatsapp'))
+      ? user.phone
+      : undefined;
+
+    const orders = await orderService.getCustomerOrders(user.id, verifiedEmail, verifiedPhone);
     return NextResponse.json({ success: true, orders });
   } catch (error: any) {
     logger.error('uncaught_error_in_customer_orders_api', { error: error.message });

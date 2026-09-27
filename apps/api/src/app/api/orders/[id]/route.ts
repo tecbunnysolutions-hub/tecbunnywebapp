@@ -3,7 +3,7 @@ import { createSupabaseClient as createServerClient } from '@tecbunny/database/s
 import { createSupabaseServiceClient, isSupabaseServiceConfigured } from "@tecbunny/core/server";;
 import { NextRequest, NextResponse } from 'next/server';
 import { deserializeOrder } from "@tecbunny/core/orders/normalizers";
-import { logger } from "@tecbunny/core";
+import { logger, normalizeRole } from "@tecbunny/core";
 
 export async function GET(
   request: NextRequest,
@@ -37,11 +37,13 @@ export async function GET(
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-    const userRole = user.app_metadata?.role || 'customer';
+    const userRole = normalizeRole(user.app_metadata?.role) ?? 'customer';
     
     // Lazy import of requireOwnership to avoid edge/node circular dependency issues if any
     const { requireOwnership } = await import('@tecbunny/core/auth/ownership-guard');
-    const isOwner = await requireOwnership(user.id, userRole, order.user_id, 'order');
+    // Orders record their owner in customer_id; user_id is a legacy column.
+    const ownerId = String(order.customer_id ?? order.user_id ?? '');
+    const isOwner = await requireOwnership(user.id, userRole, ownerId, 'order');
     if (!isOwner) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }

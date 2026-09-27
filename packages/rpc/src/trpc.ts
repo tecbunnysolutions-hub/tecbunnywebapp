@@ -28,3 +28,12 @@ const isAuthed = t.middleware(({ ctx, next }) => {
 });
 
 export const protectedProcedure = t.procedure.use(isAuthed);
+
+// Catalogue, pricing and content mutations are staff administration, not
+// customer actions; isAuthed above has already required AAL2 for these roles.
+export const adminProcedure = protectedProcedure.use(({ ctx, next }) => {
+  if (ctx.role !== 'admin' && ctx.role !== 'superadmin') {
+    throw new TRPCError({ code: 'FORBIDDEN', message: 'Admin access required' });
+  }
+  return next();
+});

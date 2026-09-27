@@ -6,6 +6,7 @@ import { z } from 'zod';
 
 import { rateLimit } from '@tecbunny/core/rate-limit';
 import { logger } from '@tecbunny/core/logger';
+import { checkoutEngine } from '@tecbunny/core/checkout-engine';
 
 
 
@@ -65,21 +66,6 @@ function requesterKey(request: Request) {
   const ua = request.headers.get('user-agent')?.trim() || 'unknown';
   return `${ip}|${ua}`.slice(0, 240);
 }
-
-function computeTotals(items: OrderItem[]) {
-  let subtotal = 0
-  let total = 0
-  for (const it of items) {
-    total += it.price * it.quantity
-    const rate = it.gstRate ?? 0
-    const base = it.price / (1 + rate / 100)
-    subtotal += base * it.quantity
-  }
-  const gst_amount = Math.max(0, total - subtotal)
-  return { subtotal: round2(subtotal), total: round2(total), gst_amount: round2(gst_amount) }
-}
-
-function round2(n: number) { return Math.round(n * 100) / 100 }
 
 function createSupabaseServiceClient() {
   const { url, serviceKey } = requireSupabaseServiceEnv();
@@ -170,6 +156,12 @@ export async function POST(request: Request) {
     }
   }
 
+  if (!isWidgetLead && referralCode) {
+    // Referral links attribute configuration leads only; priced orders must be
+    // placed by the approved agent's own authenticated session.
+    return NextResponse.json({ error: 'Referral links can only submit configuration leads' }, { status: 403 })
+  }
+
   if (!isWidgetLead && ((!customer.email && !customer.mobile) || items.length === 0)) {
     return NextResponse.json({ error: 'Provide customer email or mobile and at least one item' }, { status: 400 })
   }
@@ -234,8 +226,22 @@ export async function POST(request: Request) {
     const customerId = await ensureCustomerUser(svc, customer)
     if (!customerId) return NextResponse.json({ error: 'Failed to resolve customer' }, { status: 500 })
 
-    const totals = computeTotals(items)
-    const atomicItems = items.map((item) => ({ ...item, id: item.productId }))
+    // Price from the catalogue, never from the request.
+    let checkout;
+    try {
+      checkout = await checkoutEngine.calculate({
+        items: items.map((item) => ({ id: item.productId, quantity: item.quantity, price: 0 })) as any,
+        userId: customerId,
+        salesAgentId: agentId || undefined,
+      });
+    } catch (pricingError) {
+      return NextResponse.json({ error: pricingError instanceof Error ? pricingError.message : 'Unable to price order' }, { status: 400 })
+    }
+    const pricedItems = new Map(checkout.itemPrices.map((line: any) => [String(line.product_id), line]));
+    const atomicItems = items.map((item) => {
+      const line: any = pricedItems.get(item.productId);
+      return { ...item, id: item.productId, price: line?.unit_price ?? 0, total_price: line?.total_price ?? 0 };
+    })
 
     const { data: atomicOrder, error: atomicOrderError } = await svc.rpc('allocate_order_inventory_atomic', {
       p_customer_name: customer.name || customer.email || customer.mobile || 'Customer',
@@ -245,10 +251,10 @@ export async function POST(request: Request) {
       p_delivery_address: null,
       p_notes: notes || null,
       p_payment_method: null,
-      p_subtotal: totals.subtotal,
-      p_gst_amount: totals.gst_amount,
-      p_total: totals.total,
-      p_discount_amount: 0,
+      p_subtotal: checkout.subtotal,
+      p_gst_amount: checkout.gstAmount,
+      p_total: checkout.finalTotal,
+      p_discount_amount: checkout.totalDiscount,
       p_shipping_amount: 0,
       p_payment_status: 'pending',
       p_order_type: type,
@@ -258,14 +264,7 @@ export async function POST(request: Request) {
 
     if (atomicOrderError) return NextResponse.json({ error: atomicOrderError.message }, { status: 400 })
     result = atomicOrder;
-
-    // 3. Award Commission for Full Orders
-    const atomicOrderId = (result as any)?.order?.id
-    if (atomicOrderId && agentId) {
-      await awardCommissionForAgent(svc, agentId, atomicOrderId, totals.total).catch((err: unknown) => {
-        logger.error('commission_award_failed', { err, agentId, orderId: atomicOrderId });
-      })
-    }
+    // Commission is awarded by /api/orders/commission once the order completes.
   }
 
   const response = NextResponse.json({ 
@@ -298,69 +297,35 @@ async function ensureCustomerUser(svc: ReturnType<typeof createSupabaseServiceCl
     phone: mobileWithPrefix || undefined,
     email_confirm: true,
     phone_confirm: !!mobileWithPrefix,
-    user_metadata: { name: c.name, mobile: mobileWithPrefix }
+    user_metadata: { name: c.name, mobile: mobileWithPrefix },
+    app_metadata: { role: 'customer' }
   };
   
   const { data: created, error } = await svc.auth.admin.createUser(createReq);
 
-  let userId: string | null = created?.user?.id || null;
+  const userId: string | null = created?.user?.id || null;
 
-  // 2) If the user already exists, find their ID with a single targeted query
+  // 2) Existing account: reuse it as-is. Its profile (role, contact details)
+  //    belongs to that user and is never modified by an agent order.
   if (!userId && error) {
-    const query = svc.from('profiles').select('id');
-    if (email && mobileWithPrefix) {
-      query.or(`email.eq.${email},mobile.eq.${mobileWithPrefix}`);
-    } else if (email) {
-      query.eq('email', email);
-    } else if (mobileWithPrefix) {
-      query.eq('mobile', mobileWithPrefix);
-    }
-    const { data } = await query.limit(1).maybeSingle();
-    if (data?.id) userId = data.id;
+    const byEmail = email
+      ? await svc.from('profiles').select('id').eq('email', email).limit(1).maybeSingle()
+      : { data: null };
+    const byMobile = !byEmail.data && mobileWithPrefix
+      ? await svc.from('profiles').select('id').eq('mobile', mobileWithPrefix).limit(1).maybeSingle()
+      : { data: null };
+    return (byEmail.data?.id ?? byMobile.data?.id ?? null) as string | null;
   }
 
   if (!userId) return null;
 
-  // 3) Atomic UPSERT on profiles
+  // 3) New account: create its customer profile.
   await svc
     .from('profiles')
     .upsert(
       { id: userId, name: c.name || '', email: email || null, mobile: mobileWithPrefix, role: 'customer' },
-      { onConflict: 'id', ignoreDuplicates: false }
+      { onConflict: 'id', ignoreDuplicates: true }
     );
 
   return userId;
 }
-
-async function awardCommissionForAgent(
-  svc: ReturnType<typeof createSupabaseServiceClient>,
-  agentId: string,
-  orderId: string,
-  orderTotal: number
-) {
-  // Read commission config
-  const { data: settings } = await svc
-    .from('settings')
-    .select('value')
-    .eq('key', 'sales_agent_commission')
-    .maybeSingle()
-
-  const cfg = (settings?.value || { type: 'fixed_per_rupee', value: 1.0 }) as { type: string; value: number }
-  let points = 0
-  if (cfg.type === 'fixed_per_rupee') points = orderTotal * cfg.value
-  else if (cfg.type === 'percentage') points = (orderTotal * cfg.value) / 100
-  points = Math.round(points * 100) / 100
-
-  // Insert commission record
-  await svc.from('sales_agent_commissions').insert({
-    agent_id: agentId,
-    order_id: orderId,
-    order_total: orderTotal,
-    commission_rate_snapshot: cfg,
-    points_awarded: points,
-  })
-
-  // Increment agent balance
-  await svc.rpc('increment_agent_points', { agent_id: agentId, points_to_add: points })
-}
-

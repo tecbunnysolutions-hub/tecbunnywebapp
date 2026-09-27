@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { router, protectedProcedure, publicProcedure } from './trpc';
+import { router, adminProcedure, protectedProcedure, publicProcedure } from './trpc';
 import type { Context } from './context';
 
-const testRouter = router({ privileged: protectedProcedure.query(() => 'allowed'), publicRead: publicProcedure.query(() => 'public') });
+const testRouter = router({ privileged: protectedProcedure.query(() => 'allowed'), adminOnly: adminProcedure.query(() => 'admin'), publicRead: publicProcedure.query(() => 'public') });
 const context = (role: string, mfaLevel: string | null): Context => ({
   req: new Request('https://api.test/api/trpc'), resHeaders: new Headers(),
   session: { user: { id: 'user-1', email: 'test@example.com' } }, role, mfaLevel,
@@ -20,5 +20,15 @@ describe('RPC MFA boundary', () => {
   it('preserves customer access and public reads', async () => {
     await expect(testRouter.createCaller(context('customer', 'aal1')).privileged()).resolves.toBe('allowed');
     await expect(testRouter.createCaller({ ...context('customer', null), session: null }).publicRead()).resolves.toBe('public');
+  });
+});
+
+describe('RPC admin boundary', () => {
+  it.each(['customer', 'sales_executive'])('rejects %s sessions on admin procedures', async (role) => {
+    await expect(testRouter.createCaller(context(role, 'aal2')).adminOnly()).rejects.toMatchObject({ code: 'FORBIDDEN' });
+  });
+
+  it('allows an admin with MFA', async () => {
+    await expect(testRouter.createCaller(context('admin', 'aal2')).adminOnly()).resolves.toBe('admin');
   });
 });
