@@ -2,7 +2,7 @@ type PublicSupabaseEnv = {
   url: string;
   publicKey: string;
   keySource: 'publishable' | 'anon';
-  runtimeEnv: 'production' | 'development';
+  runtimeEnv: 'production' | 'development' | 'test';
 };
 
 type ServiceSupabaseEnv = {
@@ -78,7 +78,10 @@ const assertValidSupabaseUrl = (url: string): void => {
   }
 };
 
-export function getSupabaseRuntimeEnv(): 'production' | 'development' {
+export function getSupabaseRuntimeEnv(): 'production' | 'development' | 'test' {
+  if (process.env.NODE_ENV === 'test') {
+    return 'test';
+  }
   if (process.env.VERCEL_ENV) {
     return process.env.VERCEL_ENV === 'production' ? 'production' : 'development';
   }
@@ -114,7 +117,7 @@ export function resolveSupabasePublicEnv(): PublicSupabaseEnv {
     throw new Error(`[supabase] Production public key must be ${PUBLISHABLE_KEY_ENV} or legacy ${LEGACY_ANON_KEY_ENV}.`);
   }
 
-  if (runtimeEnv !== 'production' && !isPublishableKey(publicKey) && !isLegacyAnonKey(publicKey)) {
+  if (runtimeEnv === 'development' && !isPublishableKey(publicKey) && !isLegacyAnonKey(publicKey)) {
     console.warn(
       `[supabase] Development public key is not an sb_publishable_ key or a legacy anon JWT. Verify ${PUBLISHABLE_KEY_ENV}/${LEGACY_ANON_KEY_ENV}.`
     );

@@ -24,11 +24,15 @@ export async function GET(request: NextRequest) {
     if (includeRaw === 'true') {
       const template = await fetchCustomSetupTemplateBySlug(slug);
       logger.info('custom_setups.audit.success', { slug, mode: 'raw' });
-      return APIResponseBuilder.success({ template, summary });
+      const response = APIResponseBuilder.success({ template, summary });
+      response.headers.set('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=900');
+      return response;
     }
 
     logger.info('custom_setups.audit.success', { slug, mode: 'summary' });
-    return APIResponseBuilder.success({ summary });
+    const response = APIResponseBuilder.success({ summary });
+    response.headers.set('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=900');
+    return response;
   } catch (error) {
     logger.error('custom_setups.audit.failed', {
       slug,

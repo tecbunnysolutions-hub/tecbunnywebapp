@@ -352,7 +352,7 @@ export default async function RootLayout({
       }}
     >
       <head>
-        <link rel="preconnect" href="https://fbcsagupcxheyiusjfak.supabase.co" />
+        <link rel="preconnect" href="https://fbcsagupcxheyiusjfak.supabase.co" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://fbcsagupcxheyiusjfak.supabase.co" />
         <link rel="dns-prefetch" href="https://cdn.grofers.com" />
         <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
@@ -360,6 +360,7 @@ export default async function RootLayout({
         <link rel="dns-prefetch" href="https://www.facebook.com" />
         <link rel="dns-prefetch" href="https://www.instagram.com" />
         <link rel="dns-prefetch" href="https://maps.googleapis.com" />
+        <link rel="preload" as="image" href={BRAND_LOGO_URL} fetchPriority="high" />
         <script
             type="application/ld+json"
             dangerouslySetInnerHTML={{ __html: serializeJsonLd(structuredData) }}

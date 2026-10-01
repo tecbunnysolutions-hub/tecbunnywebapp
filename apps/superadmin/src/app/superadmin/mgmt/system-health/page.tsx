@@ -64,6 +64,12 @@ export default function SystemHealthPage() {
 
   React.useEffect(() => {
     void loadHealth();
+    const interval = setInterval(() => {
+      if (typeof document !== 'undefined' && !document.hidden) {
+        void loadHealth();
+      }
+    }, 30000);
+    return () => clearInterval(interval);
   }, [loadHealth]);
 
   const checks = health?.checks ?? [];

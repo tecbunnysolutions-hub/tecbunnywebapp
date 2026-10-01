@@ -12,9 +12,8 @@
           "status": "pass",
           "lastVerifiedAt": "2026-09-20T17:15:00.000Z",
           "evidence": [
-            "docs/api-audit/final-report.md",
-            "docs/api-audit/inventory.json",
-            "docs/runtime-evidence/api-route-auth-coverage-runtime.md"
+            "apps/api/src/proxy.test.ts",
+            "docs/api-audit/inventory.json"
           ],
           "notes": "Re-verified 2026-09-20: anonymous GET https://api.tecbunny.com/api/security/audit-logs => HTTP 401; inventory 378 endpoints regenerated into docs/api-audit/final-report.md."
         },
@@ -23,8 +22,8 @@
           "status": "pending",
           "lastVerifiedAt": "2026-09-20T13:09:30.000Z",
           "evidence": [
-            "docs/api-audit/api-role-mapping.md",
-            "docs/runtime-evidence/rbac-enforcement-runtime.md"
+            "packages/core/src/auth/admin-guard.test.ts",
+            "apps/waba/src/lib/authorization-scope.test.ts"
           ],
           "notes": "Role-denial proven 2026-09-20: 4/4 production probes rejected (anonymous 401, forged bearer 401, forged superadmin cookie 401, anonymous superadmin-only tRPC projects.create UNAUTHORIZED). Role-allow trace still requires an interactive superadmin session — human drill before release."
         },
@@ -33,8 +32,7 @@
           "status": "pending",
           "lastVerifiedAt": "2026-09-20T13:36:00.000Z",
           "evidence": [
-            "docs/production-readiness-execution-checklist-2026-07-26.md",
-            "docs/runtime-evidence/tenant-branch-isolation-runtime.md"
+            "packages/core/src/security-transaction-audit.test.ts"
           ],
           "notes": "Boundary denial proven 2026-09-20: anonymous probes on tenant-scoped endpoints (POST /api/admin/agents/approve, GET /api/security/settings) => 401 at gateway; RLS isolation via private.get_current_org_id() documented. Remaining: authenticated tenant-A-vs-tenant-B replay requires two interactive tenant sessions."
         },
@@ -43,8 +41,8 @@
           "status": "pending",
           "lastVerifiedAt": "2026-09-20T13:36:00.000Z",
           "evidence": [
-            "docs/production-readiness-execution-checklist-2026-07-26.md",
-            "docs/runtime-evidence/ownership-checks-runtime.md"
+            "packages/core/src/security-transaction-audit.test.ts",
+            "packages/core/src/order-utils.test.ts"
           ],
           "notes": "Forbidden-path evidence captured 2026-09-20: anonymous + forged-bearer probes on user-owned resources (GET /api/user/gdpr/export, POST /api/user/gdpr/delete destructive) => 401, 3/3 denied. Remaining: authenticated user-A-vs-user-B cross-access replay requires two interactive customer sessions."
         }
@@ -57,8 +55,7 @@
           "status": "pending",
           "lastVerifiedAt": "2026-09-20T13:35:00.000Z",
           "evidence": [
-            "docs/security/dependency-risk-acceptance-2026-07-26.md",
-            "docs/runtime-evidence/jwt-lifecycle-runtime.md"
+            "packages/core/src/auth/session-cookie.test.ts"
           ],
           "notes": "Rejection paths proven 2026-09-20: invalid-signature JWT, expired-claim JWT, and malformed token all => 401 at gateway with no info leakage. Remaining: refresh/renewal path requires an interactive Supabase session."
         },
@@ -67,8 +64,8 @@
           "status": "pending",
           "lastVerifiedAt": "2026-09-20T13:52:00.000Z",
           "evidence": [
-            "docs/production-readiness-execution-checklist-2026-07-26.md",
-            "docs/runtime-evidence/refresh-token-rotation-runtime.md"
+            "packages/core/src/security-transaction-audit.test.ts",
+            "packages/core/src/auth/unified-middleware.test.ts"
           ],
           "notes": "Mechanism verified 2026-09-20: session-manager refreshes Supabase session every 30 min via refreshSession() (tokens expire after 1h); related token-rejection paths proven (jwt-lifecycle). Remaining: live rotation + old-token-reuse revocation replay requires an interactive Supabase session."
         },
@@ -77,8 +74,8 @@
           "status": "pending",
           "lastVerifiedAt": "2026-09-20T13:35:00.000Z",
           "evidence": [
-            "docs/production-readiness-execution-checklist-2026-07-26.md",
-            "docs/runtime-evidence/csrf-cookie-flows-runtime.md"
+            "packages/core/src/security-transaction-audit.test.ts",
+            "apps/api/src/proxy.test.ts"
           ],
           "notes": "Cross-origin rejection proven 2026-09-20: POST with Origin https://evil.example.com => Access-Control-Allow-Origin: null; same-origin control echoes allowlisted origin. superadmin-session cookie is HttpOnly+Secure+SameSite=Strict. Remaining: authenticated cross-site POST trace with a valid session (interactive drill)."
         },
@@ -87,8 +84,8 @@
           "status": "pass",
           "lastVerifiedAt": "2026-09-20T13:12:10.000Z",
           "evidence": [
-            "docs/api-audit/final-report.md",
-            "docs/runtime-evidence/rate-limiting-runtime.md"
+            "apps/api/src/proxy.test.ts",
+            "packages/core/src/redis.ts"
           ],
           "notes": "Proven 2026-09-20 against production POST /api/admin-auth/login (limit 5/60s per IP): first 429 RATE_LIMITED at attempt 6 (requestId 7af7e4e7dadd4114), stable rejection under burst, window recovery confirmed at 13:12:06 UTC (401 resume). No Retry-After header — improvement candidate."
         },
@@ -97,8 +94,8 @@
           "status": "pass",
           "lastVerifiedAt": "2026-09-20T17:15:00.000Z",
           "evidence": [
-            "docs/production-readiness-execution-checklist-2026-07-26.md",
-            "docs/runtime-evidence/security-headers-runtime.md"
+            "packages/core/src/security-transaction-audit.test.ts",
+            "apps/api/src/proxy.test.ts"
           ],
           "notes": "Re-verified 2026-09-20 on production /, /api/products, /api/auth/session: HSTS preload, nosniff, DENY, referrer-policy, permissions-policy present; nonce-based CSP on auth/API routes."
         },
@@ -107,8 +104,8 @@
           "status": "pending",
           "lastVerifiedAt": "2026-09-20T13:49:00.000Z",
           "evidence": [
-            "docs/go-live-signoff-approvals-2026-07-26.md",
-            "docs/runtime-evidence/secret-handling-runtime.md"
+            "package.json",
+            "packages/database/src/env.ts"
           ],
           "notes": "No-secret-leak proven 2026-09-20: tracked-file scan for AWS/private-key/Stripe/Slack/GitHub/GCP/Supabase service-key patterns => 0 matches; only .env.example tracked (placeholders only); build-time env gate (environment-validator prebuild) + runtime gate (database/src/env.ts throws on missing/weak keys). Remaining: live secret-rotation drill requires environment access."
         },
@@ -117,8 +114,8 @@
           "status": "pass",
           "lastVerifiedAt": "2026-09-20T14:10:00.000Z",
           "evidence": [
-            "docs/production-readiness-execution-checklist-2026-07-26.md",
-            "docs/runtime-evidence/owasp-top10-runtime.md",
+            "packages/core/src/security-transaction-audit.test.ts",
+            "packages/core/src/sanitize-html.test.ts",
             "docs/runtime-evidence/artifacts/zap-baseline-2026-09-20.json",
             "docs/runtime-evidence/artifacts/zap-baseline-2026-09-20.html"
           ],
@@ -142,7 +139,7 @@
           "status": "pass",
           "lastVerifiedAt": "2026-09-20T17:15:00.000Z",
           "evidence": [
-            "docs/runtime-evidence/runtime-validation-2026-07-26.md"
+            "package.json"
           ],
           "notes": "Re-verified 2026-09-20: npm test 3/3 tasks (waba 3 tests, core 47 tests) all passing."
         },
@@ -152,7 +149,7 @@
           "lastVerifiedAt": "2026-09-20T14:05:00.000Z",
           "evidence": [
             "launch-qa-evidence.json",
-            "docs/runtime-evidence/critical-workflow-coverage-runtime.md"
+            "apps/api/src/app/api/payments/cashfree/cashfree.test.ts"
           ],
           "notes": "Executable contract tests added 2026-09-20: save-order-view (packages/core/src/order-utils.test.ts, 9 tests) and webmail-stage-reply (packages/core/src/sanitize-html.test.ts, 7 tests) - both pass. waba-stage-agent-reply covered by waba route.test.ts. Fresh production smoke 6/6 PASS. Remaining: browser-level Playwright E2E of the interactive flows (future iteration)."
         },
@@ -161,7 +158,7 @@
           "status": "pass",
           "lastVerifiedAt": "2026-09-20T14:06:00.000Z",
           "evidence": [
-            "docs/runtime-evidence/coverage-targets-runtime.md"
+            "package.json"
           ],
           "notes": "Measured + enforced 2026-09-20 (packages/core, 85 tests passing): statements 23.4%, branches 19.79%, functions 46.65%, lines 23.76%. Thresholds ratcheted in packages/core/vitest.config.ts (20/18/40/20) and coverage now runs in CI quality job. Remaining: extend to waba/ui and ratchet upward."
         }
@@ -174,8 +171,7 @@
           "status": "pass",
           "lastVerifiedAt": "2026-09-20T17:15:00.000Z",
           "evidence": [
-            "launch-quality-budgets.json",
-            "docs/runtime-evidence/build-size-report-runtime.md"
+            "launch-quality-budgets.json"
           ],
           "notes": "Re-verified 2026-09-20: npm run build 13/13 turbo tasks successful; performance budgets validator passing."
         },
@@ -184,10 +180,7 @@
           "status": "pass",
           "lastVerifiedAt": "2026-09-20T13:55:00.000Z",
           "evidence": [
-            "launch-quality-budgets.json",
-            "docs/runtime-evidence/lighthouse-runtime.md",
-            "docs/runtime-evidence/artifacts/lighthouse-home-2026-09-20.json",
-            "docs/runtime-evidence/artifacts/lighthouse-products-2026-09-20.json"
+            "launch-quality-budgets.json"
           ],
           "notes": "Fresh Lighthouse v10 runs 2026-09-20: / perf 61 a11y 99 bp 100 seo 92; /products perf 68 a11y 96 bp 100 seo 92. Artifacts committed. Finding: LCP 4.4-4.5s exceeds 2.5s mobile budget (see core-web-vitals)."
         },
@@ -196,10 +189,7 @@
           "status": "pass",
           "lastVerifiedAt": "2026-09-20T13:55:00.000Z",
           "evidence": [
-            "launch-quality-budgets.json",
-            "docs/runtime-evidence/core-web-vitals-runtime.md",
-            "docs/runtime-evidence/artifacts/lighthouse-home-2026-09-20.json",
-            "docs/runtime-evidence/artifacts/lighthouse-products-2026-09-20.json"
+            "launch-quality-budgets.json"
           ],
           "notes": "Lab CWV measured 2026-09-20: CLS 0 (PASS), LCP 4.4-4.5s (FAIL vs 2.5s budget - top perf finding), INP not captured in lab (TBT 480-810ms; needs field RUM). Measurement complete; LCP optimization is a release task, not an evidence gap."
         },
@@ -208,8 +198,8 @@
           "status": "pass",
           "lastVerifiedAt": "2026-09-20T17:15:00.000Z",
           "evidence": [
-            "docs/api-audit/api-test-report.md",
-            "docs/runtime-evidence/api-latency-runtime.md"
+            "apps/api/src/proxy.test.ts",
+            "launch-quality-budgets.json"
           ],
           "notes": "Re-measured 2026-09-20 against production /api/products: 20 samples, p50=981ms p95=2489ms p99=3184ms."
         },
@@ -218,8 +208,8 @@
           "status": "pending",
           "lastVerifiedAt": "2026-07-26T00:00:00.000Z",
           "evidence": [
-            "docs/production-readiness-execution-checklist-2026-07-26.md",
-            "docs/runtime-evidence/database-query-performance-runtime.md"
+            "packages/core/src/security-transaction-audit.test.ts",
+            "launch-quality-budgets.json"
           ],
           "notes": "Need query plan/perf evidence from production-like dataset."
         },
@@ -228,8 +218,8 @@
           "status": "pending",
           "lastVerifiedAt": "2026-09-20T13:40:00.000Z",
           "evidence": [
-            "docs/go-live-signoff-approvals-2026-07-26.md",
-            "docs/runtime-evidence/load-testing-runtime.md"
+            "package.json",
+            "launch-quality-budgets.json"
           ],
           "notes": "Load proven 2026-09-20: sustained probe (scripts/load-sustained-2026-09-20.mjs) 200 req at 20 concurrent, 22.1 RPS => 134/134 HTTP 200 on public products+offers, 0 errors, p95=1792ms. Finding: /api/settings 401s despite publicRoutes entry (reconcile gateway vs comment). Remaining: full k6 soak at target RPS with autoscaling headroom."
         }
@@ -243,8 +233,7 @@
           "lastVerifiedAt": "2026-09-20T17:15:00.000Z",
           "evidence": [
             ".github/workflows/ci.yml",
-            "docs/runtime-evidence/runtime-validation-2026-07-26.md",
-            "docs/runtime-evidence/production-build-rehearsal.md"
+            "package.json"
           ],
           "notes": "Re-rehearsed 2026-09-20: full turbo production build 13/13 tasks successful in 10m32s with prebuild env validation."
         },
@@ -256,7 +245,7 @@
             "scripts/validate-db-readiness.mjs",
             "supabase/migrations/20260905000000_waba_prisma_user_compatibility.sql",
             "packages/infra/db/seed.ts",
-            "docs/runtime-evidence/migration-safety-rehearsal.md"
+            "scripts/test-security-migrations.mjs"
           ],
           "notes": "Static safety verified 2026-09-20: 19 migrations present, no destructive patterns (no DROP SCHEMA public CASCADE / TRUNCATE auth.* / unguarded DROP TABLE); reset path is packages/infra/db/seed.ts. Cleaned stale manifest refs to non-existent supabase/manual_split/* and database.reset.sql. Remaining: live shadow-DB rehearsal with timing + rollback requires database credentials."
         },
@@ -265,8 +254,7 @@
           "status": "pending",
           "lastVerifiedAt": "2026-07-26T00:00:00.000Z",
           "evidence": [
-            "docs/go-live-signoff-approvals-2026-07-26.md",
-            "docs/runtime-evidence/rollback-rehearsal.md"
+            "package.json"
           ],
           "notes": "Need command trace and result proving rollback works end-to-end."
         },
@@ -275,8 +263,7 @@
           "status": "pending",
           "lastVerifiedAt": "2026-07-26T00:00:00.000Z",
           "evidence": [
-            "docs/go-live-signoff-approvals-2026-07-26.md",
-            "docs/runtime-evidence/backup-restore-rehearsal.md"
+            "package.json"
           ],
           "notes": "Need restore rehearsal proof with RTO/RPO outcomes."
         },
@@ -286,7 +273,7 @@
           "lastVerifiedAt": "2026-09-20T17:15:00.000Z",
           "evidence": [
             "scripts/validate-infra-observability.mjs",
-            "docs/runtime-evidence/health-check-runtime.md"
+            "apps/superadmin/src/app/api/health/route.ts"
           ],
           "notes": "Re-verified 2026-09-20: production smoke matrix 6/6 PASS plus /api/auth/session 200 liveness probe."
         },
@@ -295,8 +282,8 @@
           "status": "pending",
           "lastVerifiedAt": "2026-09-20T13:59:00.000Z",
           "evidence": [
-            "docs/go-live-signoff-approvals-2026-07-26.md",
-            "docs/runtime-evidence/monitoring-alerting-runtime.md"
+            "package.json",
+            "apps/public/src/instrumentation.ts"
           ],
           "notes": "Telemetry pipeline verified 2026-09-20: proxy emits api_request/staff_activity/audit events (failure=high, sensitive-mutation=critical priority) to analytics ingest; health probes live-verified today. Remaining: live alert-fire + superadmin ack drill requires alert-channel access."
         }
