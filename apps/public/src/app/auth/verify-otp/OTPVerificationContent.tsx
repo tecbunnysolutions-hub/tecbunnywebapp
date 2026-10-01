@@ -504,7 +504,7 @@ export function OTPVerificationContent() {
             <span className="text-sm font-medium text-muted-foreground">Verification method</span>
             <div className="grid gap-2">
               {channelOptions.map(option => (
-                <div
+                <button type="button" disabled={!option.enabled}
                   key={option.id}
                   onClick={() => !option.enabled ? undefined : handleChannelSelection(option.id)}
                   className={`flex w-full flex-col rounded-lg border p-3 text-left transition-all ${
@@ -515,7 +515,7 @@ export function OTPVerificationContent() {
                 >
                   <span className="text-sm font-medium">{option.label}</span>
                   <span className="text-xs text-muted-foreground">{option.helper}</span>
-                </div>
+                </button>
               ))}
             </div>
           </div>

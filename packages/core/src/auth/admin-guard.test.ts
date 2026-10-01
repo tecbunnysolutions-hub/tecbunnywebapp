@@ -13,7 +13,7 @@ vi.mock('@tecbunny/database/server', () => ({
 }));
 import { requireAdminContext } from './admin-guard';
 
-describe('Admin MFA guard', () => {
+describe('Admin guard', () => {
   beforeEach(() => {
     vi.resetAllMocks();
     mocks.verifyRoot.mockResolvedValue(null);
@@ -21,24 +21,23 @@ describe('Admin MFA guard', () => {
     mocks.profile.mockResolvedValue({ data: { role: 'admin' }, error: null });
   });
 
-  it.each(['aal1', null])('rejects admin assurance %s', async (currentLevel) => {
-    mocks.assurance.mockResolvedValue({ data: { currentLevel }, error: null });
-    await expect(requireAdminContext()).rejects.toMatchObject({ status: 403, message: 'MFA Required' });
+  it('rejects unauthenticated requests', async () => {
+    mocks.getUser.mockResolvedValue({ data: { user: null }, error: null });
+    await expect(requireAdminContext()).rejects.toMatchObject({ status: 401, message: 'Authentication required' });
   });
 
-  it('fails closed on assurance lookup failure', async () => {
-    mocks.assurance.mockResolvedValue({ data: { currentLevel: 'aal2' }, error: new Error('Unavailable') });
-    await expect(requireAdminContext()).rejects.toMatchObject({ status: 403 });
-  });
-
-  it('allows an admin with a verified second factor', async () => {
-    mocks.assurance.mockResolvedValue({ data: { currentLevel: 'aal2' }, error: null });
+  it('allows an admin with verified admin role', async () => {
     await expect(requireAdminContext()).resolves.toMatchObject({ role: 'admin', user: { id: 'admin-1' } });
   });
 
-  it('does not grant admin access to an MFA-authenticated customer', async () => {
+  it('does not grant admin access to a customer', async () => {
     mocks.getUser.mockResolvedValue({ data: { user: { id: 'customer-1', app_metadata: { role: 'customer' } } }, error: null });
-    mocks.assurance.mockResolvedValue({ data: { currentLevel: 'aal2' }, error: null });
-    await expect(requireAdminContext()).rejects.toMatchObject({ status: 403 });
+    mocks.profile.mockResolvedValue({ data: { role: 'customer' }, error: null });
+    await expect(requireAdminContext()).rejects.toMatchObject({ status: 403, message: 'Insufficient permissions' });
+  });
+
+  it('allows superadmin when valid superadmin session exists', async () => {
+    mocks.verifyRoot.mockResolvedValue({ email: 'super@tecbunny.com', role: 'superadmin' });
+    await expect(requireAdminContext()).resolves.toMatchObject({ role: 'superadmin', user: { email: 'super@tecbunny.com' } });
   });
 });

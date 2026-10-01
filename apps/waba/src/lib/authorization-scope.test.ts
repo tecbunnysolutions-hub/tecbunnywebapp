@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-const m = vi.hoisted(() => ({ record: null as any, from: vi.fn() }));
+const m = vi.hoisted(() => ({ record: null as Record<string, unknown> | null, from: vi.fn() }));
 vi.mock('./supabase', () => ({ supabase: { from: m.from } }));
 import { canAccessConversationSender, resolveActorScope } from './authorization-scope';
 const scope = { isGlobal: false, organizationId: 'org-a', branchId: 'branch-a' };

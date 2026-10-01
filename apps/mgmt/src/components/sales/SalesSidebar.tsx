@@ -2,7 +2,7 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 
 import {
   LayoutDashboard,
@@ -45,6 +45,7 @@ const navItems = [
 
 export function SalesSidebar() {
   const pathname = usePathname();
+  const router = useRouter();
   const { user, logout } = useAuth();
 
   const handleLogout = async () => {
@@ -54,7 +55,7 @@ export function SalesSidebar() {
     } catch (error) {
       logger.error('Logout error', { error });
       // Emergency fallback: force redirect even if logout failed
-      window.location.href = '/staff/login';
+      router.push('/staff/login');
     }
   };
 

@@ -6,7 +6,7 @@ import { ROLE_DISPLAY_NAME, type UserRole } from "@tecbunny/core";
 
 import * as React from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import {
   Bell,
   ChevronRight,
@@ -68,6 +68,7 @@ function SidebarContent({
   onLogout?: () => Promise<void> | void;
   logoutHref?: string;
 }) {
+  const router = useRouter();
   const [isSigningOut, setIsSigningOut] = React.useState(false);
 
   const handleLogoutHref = async () => {
@@ -80,7 +81,7 @@ function SidebarContent({
         credentials: 'include',
       });
     } finally {
-      window.location.assign('/superadmin/login?status=signed_out');
+      router.push('/superadmin/login?status=signed_out');
     }
   };
 

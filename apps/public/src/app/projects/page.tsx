@@ -254,7 +254,15 @@ export default function UpcomingProjectsPage() {
             {projects.map((project) => (
               <div 
                 key={project.id}
+                role="button"
+                tabIndex={0}
                 onClick={() => handleOpenDetail(project)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    handleOpenDetail(project);
+                  }
+                }}
                 className="bento-card p-6 flex flex-col justify-between group cursor-pointer hover:border-blue-500/30 transition-all duration-300 relative"
               >
                 {/* Superadmin Quick Overlay Actions */}

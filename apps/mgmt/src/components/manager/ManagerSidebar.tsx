@@ -49,7 +49,7 @@ export function ManagerSidebar() {
       await logout();
     } catch (error) {
       logger.error('Logout error', { error });
-      window.location.href = '/staff/login';
+      router.push('/staff/login');
     }
   };
 

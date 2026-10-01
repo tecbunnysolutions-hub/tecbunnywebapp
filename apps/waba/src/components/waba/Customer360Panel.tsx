@@ -80,13 +80,14 @@ export function Customer360Panel({
 
   useEffect(() => {
     if (!senderNumber) {
-      setCustomerData({ leads: [], tickets: [] });
       return;
     }
 
     const controller = new AbortController();
-    setIsLoadingCustomerData(true);
-    setCustomerDataError('');
+    queueMicrotask(() => {
+      setIsLoadingCustomerData(true);
+      setCustomerDataError('');
+    });
     fetch(`/api/customer-360?phone=${encodeURIComponent(senderNumber)}`, { signal: controller.signal })
       .then(async (response) => {
         const result = await response.json();
@@ -100,7 +101,10 @@ export function Customer360Panel({
       })
       .finally(() => setIsLoadingCustomerData(false));
 
-    return () => controller.abort();
+    return () => {
+      controller.abort();
+      setCustomerData({ leads: [], tickets: [] });
+    };
   }, [senderNumber]);
 
   const statusOptions = ['NEW', 'PROCESSING', 'LEAD', 'HIGH_INTENT', 'PENDING_HUMAN_AGENT', 'ASSIGNED', 'RESOLVED', 'CLOSED', 'URGENT'];

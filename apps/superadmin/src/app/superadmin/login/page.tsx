@@ -1,11 +1,12 @@
 'use client';
 
 import { useState, useEffect, Suspense, useMemo } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { User, Lock, Eye, EyeOff, AlertCircle, ShieldAlert, Terminal } from 'lucide-react';
 import { Input, Label, useToast, Turnstile } from "@tecbunny/ui";
 
 function SuperadminSignInForm() {
+  const router = useRouter();
   const [userId, setUserId] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -71,7 +72,7 @@ function SuperadminSignInForm() {
 
       // Clear Turnstile and redirect
       setCaptchaToken(null);
-      window.location.href = '/superadmin/mgmt/dashboard';
+      router.push('/superadmin/mgmt/dashboard');
     } catch (err) {
       console.error('Superadmin sign-in error:', err);
       setError('An unexpected error occurred. Please try again.');

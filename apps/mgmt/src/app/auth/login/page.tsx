@@ -4,6 +4,7 @@ import { createClient } from '@tecbunny/database';
 
 
 
+import Link from 'next/link';
 import { useState, useEffect, Suspense, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 
@@ -360,13 +361,12 @@ function StaffSignInForm() {
 
               {/* Forgot password */}
               <div className="flex justify-end">
-                <a
+                <Link
                   href="/auth/forgot-password"
-                  onClick={e => { e.preventDefault(); window.location.href = '/auth/forgot-password'; }}
                   className="text-xs text-indigo-300 hover:text-white transition-colors"
                 >
                   Forgot password?
-                </a>
+                </Link>
               </div>
 
               {/* Error */}

@@ -1,9 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { createClient } from '@tecbunny/database';
 
 export default function LoginPage() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -26,7 +28,7 @@ export default function LoginPage() {
       });
 
       if (superadminResponse.ok) {
-        window.location.href = "/";
+        router.push("/");
         return;
       }
 
@@ -58,7 +60,7 @@ export default function LoginPage() {
       }
 
       if (data.user) {
-        window.location.href = "/";
+        router.push("/");
       }
     } catch (err: unknown) {
       console.error(err);

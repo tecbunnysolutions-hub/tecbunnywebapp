@@ -777,7 +777,7 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
             </div>
           </div>
           {/* Click outside to close */}
-          <div className="flex-1" onClick={() => setIsMobileFilterOpen(false)} />
+          <button type="button" aria-label="Close mobile filters" className="flex-1 cursor-default border-none bg-transparent" onClick={() => setIsMobileFilterOpen(false)} />
         </div>
       )}
 

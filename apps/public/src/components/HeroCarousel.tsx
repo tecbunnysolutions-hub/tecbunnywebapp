@@ -150,6 +150,7 @@ export default function HeroCarousel({ pageKey, intervalMs = 6000, className, in
       aria-label={PAGE_LABEL[pageKey]}
     >
       <div className="container mx-auto px-4">
+        {/* eslint-disable-next-line tecbunny-jsx-a11y/no-static-element-interactions */}
         <div
           className="relative min-h-[340px] sm:min-h-[420px] overflow-hidden rounded-3xl bg-gray-900 text-white shadow-xl"
           onMouseEnter={() => setPaused(true)}

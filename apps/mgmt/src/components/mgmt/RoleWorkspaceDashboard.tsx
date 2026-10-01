@@ -373,7 +373,7 @@ export function RoleWorkspaceDashboard({ kind }: RoleWorkspaceDashboardProps) {
         </div>
       </section>
 
-      <section aria-label="Today at a glance" className="grid gap-3 lg:grid-cols-3">
+      <section aria-label="Decision brief" className="grid gap-3 lg:grid-cols-3">
         {decisionBriefItems.map((item) => {
           const Icon = item.icon;
           return (
@@ -393,7 +393,7 @@ export function RoleWorkspaceDashboard({ kind }: RoleWorkspaceDashboardProps) {
         })}
       </section>
 
-      <section aria-label="My work" className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 sm:p-6">
+      <section aria-label="Workflow inbox" className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 sm:p-6">
         <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-zinc-500">My work</p>

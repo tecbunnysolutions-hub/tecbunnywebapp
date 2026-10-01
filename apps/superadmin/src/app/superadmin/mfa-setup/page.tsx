@@ -1,10 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { createBrowserClient } from '@supabase/ssr';
 import { QRCodeSVG } from 'qrcode.react';
 
 export default function MFASetupPage() {
+  const router = useRouter();
   const [qr, setQr] = useState<string | null>(null);
   const [factorId, setFactorId] = useState<string | null>(null);
   const [code, setCode] = useState('');
@@ -56,7 +58,7 @@ export default function MFASetupPage() {
       setSuccess(true);
       // Wait a moment and redirect to dashboard
       setTimeout(() => {
-        window.location.href = '/superadmin';
+        router.push('/superadmin');
       }, 2000);
     } catch (err: any) {
       setError(err.message || 'Verification failed. Please try again.');
