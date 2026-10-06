@@ -1,4 +1,4 @@
-import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, relative, resolve } from 'node:path';
 import ts from 'typescript';
 
@@ -44,3 +44,33 @@ if (localRouteHandlers.length || directMutations.length || browserClientsInHandl
 }
 
 console.log('API boundary validation passed: public mutations use the API; server handlers do not import browser database factories.');
+
+// Ratchet: apps other than apps/api may not gain new direct database-client imports.
+// Existing offenders are listed in quality/db-boundary-baseline.json and shrink as features migrate.
+const dbImportPattern = /(?:from|import)\s*\(?\s*['"](?:@supabase\/supabase-js|@prisma\/client|@tecbunny\/db|@tecbunny\/database(?:\/[\w-]+)?)['"]/;
+const baselinePath = join(root, 'quality', 'db-boundary-baseline.json');
+const appsRoot = join(root, 'apps');
+const dbImporters = readdirSync(appsRoot, { withFileTypes: true })
+  .filter((entry) => entry.isDirectory() && entry.name !== 'api')
+  .flatMap((entry) => filesIn(join(appsRoot, entry.name)))
+  .filter((path) => /\.(?:ts|tsx|js|jsx|mjs)$/.test(path) && !/\.(?:test|spec)\./.test(path))
+  .filter((path) => dbImportPattern.test(readFileSync(path, 'utf8')))
+  .map((path) => relative(root, path).replaceAll('\\', '/'))
+  .sort();
+
+if (process.argv.includes('--update-baseline')) {
+  writeFileSync(baselinePath, `${JSON.stringify({ files: dbImporters }, null, 2)}\n`);
+  console.log(`Wrote ${dbImporters.length} entries to ${relative(root, baselinePath)}`);
+  process.exit(0);
+}
+
+const baseline = new Set(existsSync(baselinePath) ? JSON.parse(readFileSync(baselinePath, 'utf8')).files : []);
+const newOffenders = dbImporters.filter((path) => !baseline.has(path));
+const migrated = [...baseline].filter((path) => !dbImporters.includes(path));
+if (newOffenders.length) {
+  console.error('New direct database imports outside apps/api (use @tecbunny/api-client instead):');
+  for (const path of newOffenders) console.error(`  ${path}`);
+  process.exit(1);
+}
+if (migrated.length) console.log(`Note: ${migrated.length} baseline entries no longer import a DB client; run with --update-baseline to shrink it.`);
+console.log(`DB boundary ratchet passed: ${dbImporters.length} legacy importers remain (baseline ${baseline.size}).`);
