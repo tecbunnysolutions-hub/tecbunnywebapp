@@ -1,0 +1,11 @@
+{
+  "name": "@tecbunny/extension",
+  "version": "2.0.0",
+  "private": true,
+  "description": "TecBunny Product Scraper browser extension (Manifest V3, plain JavaScript)",
+  "scripts": {
+    "build": "node scripts/verify.mjs --bundle",
+    "lint": "node scripts/verify.mjs --syntax",
+    "typecheck": "node scripts/verify.mjs --manifest"
+  }
+}
