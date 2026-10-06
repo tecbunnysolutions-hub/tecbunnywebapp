@@ -16,14 +16,14 @@ export const BlogPostSummarySchema = z.object({
   cover_image: z.string().nullable(),
   tags: z.array(z.string()).nullable(),
   published_at: z.string().nullable(),
+  seo_description: z.string().nullish(),
+  updated_at: z.string().nullish(),
   profiles: BlogAuthorSchema.nullable(),
 });
 
 export const BlogPostDetailSchema = BlogPostSummarySchema.extend({
   content: z.string(),
   seo_title: z.string().nullish(),
-  seo_description: z.string().nullish(),
-  updated_at: z.string().nullish(),
 });
 
 export const BlogListQuerySchema = paginationQuery({ pageSize: 20, maxPageSize: 50 });

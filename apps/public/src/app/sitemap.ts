@@ -1,4 +1,5 @@
 import type { MetadataRoute } from 'next';
+import { getApi } from '@/lib/api';
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import { filterPubliclyVisibleProducts } from "@tecbunny/core/product-visibility";
 import { isSupabasePublicConfigured, requireSupabasePublicEnv } from "@tecbunny/database";
@@ -304,23 +305,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // Blog routes
   let blogRoutes: Array<{ url: string; lastModified: Date; changeFrequency: 'weekly'; priority: number }> = [];
-  if (isSupabasePublicConfigured()) {
-    try {
-      const { url, publicKey } = requireSupabasePublicEnv();
-      const supabase = createSupabaseClient(url, publicKey, { auth: { persistSession: false, autoRefreshToken: false } });
-      const { data: posts } = await supabase
-        .from('blog_posts')
-        .select('slug, updated_at')
-        .eq('status', 'published')
-        .order('published_at', { ascending: false });
-      blogRoutes = (posts ?? []).map((p: any) => ({
-        url: `${baseUrl}/blog/${p.slug}`,
-        lastModified: p.updated_at ? new Date(p.updated_at) : now,
-        changeFrequency: 'weekly' as const,
-        priority: 0.7,
-      }));
-    } catch { /* non-fatal */ }
-  }
+  try {
+    const api = getApi();
+    for (let page = 1; page <= 20; page += 1) {
+      const { posts, total, pageSize } = await api.blog.list({ page, pageSize: 50 });
+      blogRoutes.push(
+        ...posts.map((p) => ({
+          url: `${baseUrl}/blog/${p.slug}`,
+          lastModified: p.updated_at ? new Date(p.updated_at) : now,
+          changeFrequency: 'weekly' as const,
+          priority: 0.7,
+        })),
+      );
+      if (posts.length === 0 || page * pageSize >= total) break;
+    }
+  } catch { /* non-fatal */ }
 
   return [
     ...staticRoutes,

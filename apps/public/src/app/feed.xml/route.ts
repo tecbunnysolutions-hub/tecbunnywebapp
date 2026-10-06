@@ -1,5 +1,4 @@
-import { createClient } from '@supabase/supabase-js';
-import { requireSupabasePublicEnv } from '@tecbunny/database';
+import { getApi } from '@/lib/api';
 
 export const revalidate = 3600;
 
@@ -15,17 +14,10 @@ function escapeXml(value: string): string {
 }
 
 export async function GET() {
-  const { url, publicKey } = requireSupabasePublicEnv();
-  const supabase = createClient(url, publicKey, { auth: { persistSession: false, autoRefreshToken: false } });
-  const { data: posts } = await supabase
-    .from('blog_posts')
-    .select('title, slug, excerpt, seo_description, published_at, updated_at')
-    .eq('status', 'published')
-    .order('published_at', { ascending: false })
-    .limit(50);
+  const { posts } = await getApi().blog.list({ page: 1, pageSize: 50 }, { next: { revalidate: 3600, tags: ['blog'] } });
 
-  const items = (posts ?? [])
-    .map((post: { title: string; slug: string; excerpt: string | null; seo_description: string | null; published_at: string | null }) => {
+  const items = posts
+    .map((post) => {
       const url = `${SITE_URL}/blog/${post.slug}`;
       const description = post.seo_description || post.excerpt || '';
       const pubDate = post.published_at ? new Date(post.published_at).toUTCString() : '';

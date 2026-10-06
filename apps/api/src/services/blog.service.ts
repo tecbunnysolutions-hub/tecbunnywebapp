@@ -4,8 +4,8 @@ import type { SupabaseClient } from '@tecbunny/database';
 import { ServiceError } from './errors';
 
 const AUTHOR_COLUMNS = 'profiles(first_name, last_name, avatar_url)';
-const SUMMARY_COLUMNS = `id, title, slug, excerpt, cover_image, tags, published_at, ${AUTHOR_COLUMNS}`;
-const DETAIL_COLUMNS = `${SUMMARY_COLUMNS}, content, seo_title, seo_description, updated_at`;
+const SUMMARY_COLUMNS = `id, title, slug, excerpt, cover_image, tags, published_at, seo_description, updated_at, ${AUTHOR_COLUMNS}`;
+const DETAIL_COLUMNS = `${SUMMARY_COLUMNS}, content, seo_title`;
 
 type RawPost = Record<string, unknown> & { profiles?: unknown };
 
