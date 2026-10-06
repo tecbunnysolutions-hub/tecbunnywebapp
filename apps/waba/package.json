@@ -18,6 +18,7 @@
     "@supabase/supabase-js": "^2.110.7",
     "@tecbunny/core": "*",
     "@tecbunny/database": "*",
+    "@tecbunny/db": "*",
     "@tecbunny/types": "*",
     "bullmq": "^5.80.8",
     "html2canvas": "^1.4.1",

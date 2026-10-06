@@ -1,4 +1,4 @@
-import { PrismaClient } from '@tecbunny/types';
+import { PrismaClient } from '@tecbunny/db';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { logger } from '../logger';
 import { AsyncLocalStorage } from 'node:async_hooks';

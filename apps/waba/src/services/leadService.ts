@@ -5,7 +5,7 @@ import { prisma } from '@/lib/prisma';
 import { createSupabaseServiceClient } from '@tecbunny/core/server';
 import { LeadEngineService } from '@tecbunny/core';
 import { logger } from '@tecbunny/core/logger';
-import type { Lead } from '@tecbunny/types';
+import type { Lead } from '@tecbunny/db';
 
 export class LeadService {
   /**

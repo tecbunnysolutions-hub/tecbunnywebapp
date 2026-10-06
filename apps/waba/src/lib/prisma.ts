@@ -3,7 +3,7 @@
  *
  * Reconstructed module — mirrors the connection pattern used by
  * packages/core/src/db/prisma.ts: the generated client is re-exported from
- * `@tecbunny/types` (Prisma schema lives in packages/types/prisma/schema.prisma)
+ * `@tecbunny/db` (Prisma schema lives in packages/db/prisma/schema.prisma)
  * and connections go through the `@prisma/adapter-pg` driver adapter using
  * DATABASE_URL.
  *
@@ -11,7 +11,7 @@
  * exhausting the database connection limit during Next.js hot reloads.
  * Learn more: https://pris.ly/d/help/next-js-best-practices
  */
-import { PrismaClient } from '@tecbunny/types';
+import { PrismaClient } from '@tecbunny/db';
 import { PrismaPg } from '@prisma/adapter-pg';
 
 const globalForPrisma = globalThis as unknown as { prisma: PrismaClient | undefined };

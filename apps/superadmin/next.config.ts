@@ -4,7 +4,7 @@ import path from 'node:path';
 const nextConfig: NextConfig = {
   outputFileTracingRoot: path.resolve(__dirname, '../..'),
   output: process.env.DOCKER_BUILD === 'true' ? 'standalone' : undefined,
-  transpilePackages: ["@tecbunny/core", "@tecbunny/ui", "@tecbunny/admin-ui", "@tecbunny/database", "@tecbunny/config"],
+  transpilePackages: ["@tecbunny/core", "@tecbunny/ui", "@tecbunny/admin-ui", "@tecbunny/database", "@tecbunny/db", "@tecbunny/config"],
   serverExternalPackages: ['pdfkit', 'pdf-lib', 'fontkit', 'sharp', '@img/sharp-win32-x64', 'bullmq', 'ioredis', 'pino', 'pino-pretty', 'thread-stream', 'nodemailer'],
   generateBuildId: async () => `superadmin-${Date.now()}`,
   async headers() {

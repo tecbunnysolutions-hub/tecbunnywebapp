@@ -1,13 +1,19 @@
 {
-  "name": "@tecbunny/types",
+  "name": "@tecbunny/db",
   "version": "1.0.0",
   "private": true,
   "main": "./src/index.ts",
   "types": "./src/index.ts",
   "scripts": {
+    "postinstall": "prisma generate",
+    "generate": "prisma generate",
     "typecheck": "tsc --noEmit"
   },
+  "dependencies": {
+    "@prisma/client": "^7.8.0"
+  },
   "devDependencies": {
+    "prisma": "^7.8.0",
     "typescript": "5.9.3"
   }
 }
