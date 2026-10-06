@@ -1,15 +1,24 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { requireSupabaseServiceEnv } from '@tecbunny/database';
 
 type JsonRecord = Record<string, unknown>;
 
 const SENSITIVE_KEY_PATTERN = /password|passcode|token|secret|api[_-]?key|authorization|cookie|otp|pin|card|cvv|pan|aadhaar/i;
 
+// Cached across invocations within the same warm Fluid/serverless isolate.
+// The service-role client carries no per-request state (unlike the cookie-bound
+// SSR client), so re-creating it on every call just burns CPU re-parsing the
+// URL and rebuilding the internal HTTP client for no benefit.
+let enterpriseServiceClient: SupabaseClient | null = null;
+
 export function getEnterpriseServiceClient() {
-  const { url, serviceKey } = requireSupabaseServiceEnv();
-  return createClient(url, serviceKey, {
-    auth: { persistSession: false, autoRefreshToken: false },
-  });
+  if (!enterpriseServiceClient) {
+    const { url, serviceKey } = requireSupabaseServiceEnv();
+    enterpriseServiceClient = createClient(url, serviceKey, {
+      auth: { persistSession: false, autoRefreshToken: false },
+    });
+  }
+  return enterpriseServiceClient;
 }
 
 export function maskSensitive(value: unknown): unknown {
