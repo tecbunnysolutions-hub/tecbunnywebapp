@@ -2,6 +2,7 @@ import { createServerClient } from '@supabase/ssr';
 import { requireSupabasePublicEnv } from './env';
 export * from './env';
 export * from './types';
+export { createPublicClient } from './public';
 
 const isLocal = process.env.NODE_ENV === 'development';
 
