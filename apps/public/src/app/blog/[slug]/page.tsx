@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { createClient } from '@tecbunny/database';
+import { getApi } from '@/lib/api';
 import { sanitizeHtml } from '@tecbunny/core/sanitize-html';
 
 export const revalidate = 300;
@@ -15,13 +15,7 @@ interface Props { params: Promise<{ slug: string }> }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const supabase = await createClient();
-  const { data: post } = await supabase
-    .from('blog_posts')
-    .select('title, seo_title, excerpt, seo_description, cover_image, published_at, updated_at, tags')
-    .eq('slug', slug)
-    .eq('status', 'published')
-    .maybeSingle();
+  const post = await getApi().blog.get(slug);
 
   if (!post) return { title: 'Post Not Found' };
 
@@ -55,13 +49,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function BlogPostPage({ params }: Props) {
   const { slug } = await params;
-  const supabase = await createClient();
-  const { data: post } = await supabase
-    .from('blog_posts')
-    .select('*, profiles(first_name, last_name, avatar_url)')
-    .eq('slug', slug)
-    .eq('status', 'published')
-    .maybeSingle();
+  const post = await getApi().blog.get(slug);
 
   if (!post) notFound();
 
@@ -135,7 +123,7 @@ export default async function BlogPostPage({ params }: Props) {
         </Link>
 
         {/* Tags */}
-        {post.tags?.length > 0 && (
+        {post.tags && post.tags.length > 0 && (
           <div className="mt-6 flex flex-wrap gap-1">
             {post.tags.map((tag: string) => (
               <span key={tag} className="text-[10px] font-semibold uppercase tracking-widest px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">

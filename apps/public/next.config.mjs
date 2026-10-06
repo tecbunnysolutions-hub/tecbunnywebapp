@@ -34,7 +34,7 @@ const nextConfig = {
   outputFileTracingRoot: path.resolve(__dirname, '../..'),
   ...(isStaticExport ? { output: 'export' } : process.env.DOCKER_BUILD === 'true' ? { output: 'standalone' } : {}),
   compress: true,
-  transpilePackages: ["@tecbunny/core", "@tecbunny/ui", "@tecbunny/database", "@tecbunny/config"],
+  transpilePackages: ["@tecbunny/core", "@tecbunny/ui", "@tecbunny/database", "@tecbunny/config", "@tecbunny/api-client", "@tecbunny/contracts"],
   experimental: {
     optimizeCss: true,
     optimizePackageImports: ['lucide-react', '@radix-ui/react-icons', 'date-fns']

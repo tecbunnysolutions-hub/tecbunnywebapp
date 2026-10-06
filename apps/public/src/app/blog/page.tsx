@@ -1,20 +1,20 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import Image from 'next/image';
-import { createClient } from '@tecbunny/database';
+import { getApi } from '@/lib/api';
 
 import { BreadcrumbJsonLd } from '@/components/BreadcrumbJsonLd';
 
 export const revalidate = 300;
 
 export const metadata: Metadata = {
-  title: 'Blog — CCTV, IT & Smart Security Insights | TecBunny',
+  title: 'Blog â€” CCTV, IT & Smart Security Insights | TecBunny',
   description: 'Insights on CCTV, IT infrastructure, smart security, and tech tips from the TecBunny team in Goa, India.',
   alternates: { canonical: 'https://www.tecbunny.com/blog' },
   openGraph: {
     type: 'website',
     url: 'https://www.tecbunny.com/blog',
-    title: 'TecBunny Blog — CCTV, IT & Smart Security Insights',
+    title: 'TecBunny Blog â€” CCTV, IT & Smart Security Insights',
     description: 'Insights on CCTV, IT infrastructure, smart security, and tech tips from the TecBunny team in Goa, India.',
     siteName: 'TecBunny Solutions',
   },
@@ -23,15 +23,9 @@ export const metadata: Metadata = {
 const serializeJsonLd = (data: unknown) => JSON.stringify(data).replace(/</g, '\\u003c');
 
 export default async function BlogPage() {
-  const supabase = await createClient();
-  const { data: posts } = await supabase
-    .from('blog_posts')
-    .select('id, title, slug, excerpt, cover_image, tags, published_at, profiles(first_name, last_name)')
-    .eq('status', 'published')
-    .order('published_at', { ascending: false })
-    .range(0, 19);
+  const { posts } = await getApi().blog.list({ page: 1, pageSize: 20 });
 
-  const items = posts ?? [];
+  const items = posts;
 
   const blogJsonLd = {
     '@context': 'https://schema.org',
@@ -72,7 +66,7 @@ export default async function BlogPage() {
         </p>
 
         {items.length === 0 ? (
-          <p className="mt-20 text-center text-zinc-500">No posts yet — check back soon.</p>
+          <p className="mt-20 text-center text-zinc-500">No posts yet â€” check back soon.</p>
         ) : (
           <div className="mt-14 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
             {items.map((post: any) => {
@@ -100,7 +94,7 @@ export default async function BlogPage() {
                     </div>
                   )}
                   <div className="flex flex-col flex-1 p-5">
-                    {post.tags?.length > 0 && (
+                    {post.tags && post.tags.length > 0 && (
                       <div className="flex flex-wrap gap-1 mb-3">
                         {post.tags.slice(0, 3).map((tag: string) => (
                           <span key={tag} className="text-[10px] font-semibold uppercase tracking-widest px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
