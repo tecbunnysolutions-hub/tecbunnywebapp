@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 const root = process.cwd();
-const baselinePath = join(root, 'visual-regression-baselines.json');
+const baselinePath = join(root, 'quality/visual-regression-baselines.json');
 const baselines = JSON.parse(readFileSync(baselinePath, 'utf8'));
 
 const requiredViewports = ['mobile', 'tablet', 'desktop'];

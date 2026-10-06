@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 const root = process.cwd();
-const budgetPath = join(root, 'launch-quality-budgets.json');
+const budgetPath = join(root, 'quality/launch-quality-budgets.json');
 const packagePath = join(root, 'package.json');
 const budgetConfig = JSON.parse(readFileSync(budgetPath, 'utf8'));
 const packageJson = JSON.parse(readFileSync(packagePath, 'utf8'));

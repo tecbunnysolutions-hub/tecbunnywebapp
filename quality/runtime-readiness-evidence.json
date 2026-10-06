@@ -148,7 +148,7 @@
           "status": "pending",
           "lastVerifiedAt": "2026-09-20T14:05:00.000Z",
           "evidence": [
-            "launch-qa-evidence.json",
+            "quality/launch-qa-evidence.json",
             "apps/api/src/app/api/payments/cashfree/cashfree.test.ts"
           ],
           "notes": "Executable contract tests added 2026-09-20: save-order-view (packages/core/src/order-utils.test.ts, 9 tests) and webmail-stage-reply (packages/core/src/sanitize-html.test.ts, 7 tests) - both pass. waba-stage-agent-reply covered by waba route.test.ts. Fresh production smoke 6/6 PASS. Remaining: browser-level Playwright E2E of the interactive flows (future iteration)."
@@ -171,7 +171,7 @@
           "status": "pass",
           "lastVerifiedAt": "2026-09-20T17:15:00.000Z",
           "evidence": [
-            "launch-quality-budgets.json"
+            "quality/launch-quality-budgets.json"
           ],
           "notes": "Re-verified 2026-09-20: npm run build 13/13 turbo tasks successful; performance budgets validator passing."
         },
@@ -180,7 +180,7 @@
           "status": "pass",
           "lastVerifiedAt": "2026-09-20T13:55:00.000Z",
           "evidence": [
-            "launch-quality-budgets.json"
+            "quality/launch-quality-budgets.json"
           ],
           "notes": "Fresh Lighthouse v10 runs 2026-09-20: / perf 61 a11y 99 bp 100 seo 92; /products perf 68 a11y 96 bp 100 seo 92. Artifacts committed. Finding: LCP 4.4-4.5s exceeds 2.5s mobile budget (see core-web-vitals)."
         },
@@ -189,7 +189,7 @@
           "status": "pass",
           "lastVerifiedAt": "2026-09-20T13:55:00.000Z",
           "evidence": [
-            "launch-quality-budgets.json"
+            "quality/launch-quality-budgets.json"
           ],
           "notes": "Lab CWV measured 2026-09-20: CLS 0 (PASS), LCP 4.4-4.5s (FAIL vs 2.5s budget - top perf finding), INP not captured in lab (TBT 480-810ms; needs field RUM). Measurement complete; LCP optimization is a release task, not an evidence gap."
         },
@@ -199,7 +199,7 @@
           "lastVerifiedAt": "2026-09-20T17:15:00.000Z",
           "evidence": [
             "apps/api/src/proxy.test.ts",
-            "launch-quality-budgets.json"
+            "quality/launch-quality-budgets.json"
           ],
           "notes": "Re-measured 2026-09-20 against production /api/products: 20 samples, p50=981ms p95=2489ms p99=3184ms."
         },
@@ -209,7 +209,7 @@
           "lastVerifiedAt": "2026-07-26T00:00:00.000Z",
           "evidence": [
             "packages/core/src/security-transaction-audit.test.ts",
-            "launch-quality-budgets.json"
+            "quality/launch-quality-budgets.json"
           ],
           "notes": "Need query plan/perf evidence from production-like dataset."
         },
@@ -219,7 +219,7 @@
           "lastVerifiedAt": "2026-09-20T13:40:00.000Z",
           "evidence": [
             "package.json",
-            "launch-quality-budgets.json"
+            "quality/launch-quality-budgets.json"
           ],
           "notes": "Load proven 2026-09-20: sustained probe (scripts/load-sustained-2026-09-20.mjs) 200 req at 20 concurrent, 22.1 RPS => 134/134 HTTP 200 on public products+offers, 0 errors, p95=1792ms. Finding: /api/settings 401s despite publicRoutes entry (reconcile gateway vs comment). Remaining: full k6 soak at target RPS with autoscaling headroom."
         }

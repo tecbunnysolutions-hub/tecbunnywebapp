@@ -2,7 +2,7 @@ import { existsSync, readFileSync, statSync } from 'node:fs';
 import path from 'node:path';
 
 const root = process.cwd();
-const manifestPath = path.resolve(root, process.argv[2] ?? 'runtime-readiness-evidence.json');
+const manifestPath = path.resolve(root, process.argv[2] ?? 'quality/runtime-readiness-evidence.json');
 
 if (!existsSync(manifestPath)) {
   console.error(`Runtime readiness manifest not found: ${manifestPath}`);

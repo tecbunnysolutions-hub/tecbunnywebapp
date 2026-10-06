@@ -4,7 +4,7 @@ import { sanitizeHtml } from './sanitize-html';
 
 /**
  * Coverage for the "webmail-stage-reply" launch-qa workflow
- * (launch-qa-evidence.json): a staged reply draft must be sanitised before it
+ * (quality/launch-qa-evidence.json): a staged reply draft must be sanitised before it
  * is persisted or rendered, so a stored-XSS payload in a draft cannot execute
  * when the mailbox provider later syncs it. These tests pin the sanitiser
  * contract the reply-staging flow depends on.

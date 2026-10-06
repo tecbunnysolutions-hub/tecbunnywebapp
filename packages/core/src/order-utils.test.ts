@@ -11,7 +11,7 @@ import {
 
 /**
  * Coverage for the "find-and-open-order" and "save-order-view" launch-qa
- * workflows (launch-qa-evidence.json): an operator must be able to locate an
+ * workflows (quality/launch-qa-evidence.json): an operator must be able to locate an
  * order by its human-readable identifier and rely on stable display formatting
  * across the order list, saved views, and exports. These tests pin the display
  * contract those views depend on.
