@@ -12,6 +12,19 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const appsDir = path.resolve(__dirname, './apps');
 const apps = fs.existsSync(appsDir) ? fs.readdirSync(appsDir).filter(f => fs.statSync(path.resolve(appsDir, f)).isDirectory()) : [];
 
+const baselinePath = path.resolve(__dirname, './quality/db-boundary-baseline.json');
+const grandfathered = fs.existsSync(baselinePath) ? JSON.parse(fs.readFileSync(baselinePath, 'utf8')).files ?? [] : [];
+
+const dbBoundaryRule = (level) => [level, {
+  paths: [
+    { name: '@prisma/client', message: 'Only apps/api may talk to the database. Call the API via @tecbunny/api-client.' },
+    { name: '@tecbunny/db', message: 'Only apps/api may talk to the database. Call the API via @tecbunny/api-client.' },
+    { name: '@supabase/supabase-js', allowTypeImports: true, message: 'Only apps/api may use the Supabase data client. Call the API via @tecbunny/api-client.' },
+    { name: '@tecbunny/database/admin', message: 'The service-role client is API-only.' },
+    { name: '@tecbunny/database/server', message: 'Server data clients are API-only.' },
+  ],
+}];
+
 const zones = apps.map(app => ({
   target: `apps/${app}/**/*`,
   from: apps.filter(a => a !== app).map(a => `apps/${a}/**/*`),
@@ -82,4 +95,13 @@ export default [{
     "react-hooks/set-state-in-effect": "off",
     "react-hooks/exhaustive-deps": "off"
   }
-}, ...storybook.configs["flat/recommended"]];
+}, {
+  // Boundary: every app except apps/api is UI-only. Existing violations are grandfathered as warnings
+  // via quality/db-boundary-baseline.json (see scripts/validate-api-boundary.mjs).
+  files: ['apps/**/*.{ts,tsx,js,jsx,mjs}'],
+  ignores: ['apps/api/**'],
+  rules: { 'no-restricted-imports': dbBoundaryRule('error') },
+}, ...(grandfathered.length ? [{
+  files: grandfathered,
+  rules: { 'no-restricted-imports': dbBoundaryRule('warn') },
+}] : []), ...storybook.configs["flat/recommended"]];
