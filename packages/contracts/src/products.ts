@@ -21,6 +21,9 @@ export const ProductListDataSchema = z.object({
   pageSize: z.number().int().positive(),
 });
 
+export const ProductDataSchema = z.object({ product: ProductSchema });
+export const ProductResponseSchema = apiEnvelope(ProductDataSchema);
+
 export const ProductListResponseSchema = apiEnvelope(ProductListDataSchema);
 
 export type Product = z.infer<typeof ProductSchema>;

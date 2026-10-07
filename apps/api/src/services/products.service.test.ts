@@ -2,12 +2,13 @@ import type { SupabaseClient } from '@tecbunny/database';
 import { describe, expect, it, vi } from 'vitest';
 
 import { ServiceError } from './errors';
-import { listPublicProducts } from './products.service';
+import { getPublicProductById, listPublicProducts } from './products.service';
 
 vi.mock('@tecbunny/core/product-visibility', () => ({
   ensureProductColumns: vi.fn(async () => null),
   applyPublicProductVisibilityFilters: (q: unknown) => q,
   applyPublicProductOrdering: (q: unknown) => q,
+  isPubliclyVisibleProduct: (p: { status?: string }) => p.status === 'active',
 }));
 
 type Result = { data: unknown; error: unknown; count?: number | null };
@@ -16,6 +17,7 @@ function fakeDb(tables: Record<string, Result>) {
   const from = vi.fn((table: string) => {
     const result = tables[table];
     const builder: Record<string, unknown> = {};
+    builder.maybeSingle = async () => result;
     for (const method of ['select', 'eq', 'order']) builder[method] = () => builder;
     builder.range = vi.fn(() => builder);
     builder.then = (resolve: (value: Result) => unknown) => resolve(result);
@@ -52,5 +54,24 @@ describe('listPublicProducts', () => {
       code: 'UPSTREAM_ERROR',
     });
     await expect(listPublicProducts(db, { page: 1, pageSize: 10 })).rejects.toBeInstanceOf(ServiceError);
+  });
+});
+
+describe('getPublicProductById', () => {
+  it('returns a visible product', async () => {
+    const db = fakeDb({ products: { data: { id: 1, status: 'active' }, error: null } });
+    await expect(getPublicProductById(db, '1')).resolves.toMatchObject({ id: 1 });
+  });
+
+  it('404s for hidden and missing products', async () => {
+    const hidden = fakeDb({ products: { data: { id: 1, status: 'draft' }, error: null } });
+    await expect(getPublicProductById(hidden, '1')).rejects.toMatchObject({ status: 404 });
+    const missing = fakeDb({ products: { data: null, error: null } });
+    await expect(getPublicProductById(missing, '9')).rejects.toMatchObject({ status: 404 });
+  });
+
+  it('502s on upstream errors', async () => {
+    const db = fakeDb({ products: { data: null, error: { message: 'x' } } });
+    await expect(getPublicProductById(db, '1')).rejects.toMatchObject({ status: 502 });
   });
 });

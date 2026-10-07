@@ -1,27 +1,18 @@
-import { isSupabaseServiceConfigured, createServiceClient } from "@tecbunny/database/admin";
+import { getApi } from '@/lib/api';
 import { ProductDetailPage } from '@/components/products/ProductDetailPage';
 import { Metadata } from 'next';
-import { cookies } from 'next/headers';
 import { cleanMetadataDescription, cleanMetadataTitle, createPageMetadata } from "@tecbunny/core/metadata";
 import { Suspense } from 'react';
-import {  createSupabaseClient as createPublicSupabaseClient  } from '@tecbunny/database/server';
 import { BRAND_LOGO_URL } from "@tecbunny/ui";
 import { stripHtmlToPlainText } from "@tecbunny/core/strings";
 import { isPubliclyVisibleProduct, resolvePublicProductPrice } from "@tecbunny/core/product-visibility";
 import { notFound } from 'next/navigation';
 
-// Product publication and pricing changes must be visible immediately.
-export const revalidate = 0;
-export const fetchCache = 'force-no-store';
-// Using dynamic rendering to support cookie-based source-aware pricing without hydration flashes
-export const dynamic = 'force-dynamic';
+// Product data is cached at the API (60s); the page is ISR on the same cadence.
+export const revalidate = 60;
 
 interface ProductPageProps {
   params: Promise<{ id: string }>;
-}
-
-async function getCatalogClient() {
-  return isSupabaseServiceConfigured ? createServiceClient() : createPublicSupabaseClient();
 }
 
 function serializeJsonLd(value: unknown) {
@@ -30,8 +21,7 @@ function serializeJsonLd(value: unknown) {
 
 export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
   const { id } = await params;
-  const supabase = await getCatalogClient();
-  const { data: product } = await supabase.from('products').select('*').eq('id', id).single();
+  const product = (await getApi().products.get(id)) as Record<string, any> | null;
 
   if (!product || !isPubliclyVisibleProduct(product)) {
     return createPageMetadata({
@@ -131,20 +121,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
 }
 
 async function ProductDataLoader({ id }: { id: string }) {
-  const cookieStore = await cookies();
-  const sourceCookie = cookieStore.get('tb_source_context')?.value;
-
-  let sourceContext = null;
-  if (sourceCookie) {
-    try {
-      sourceContext = JSON.parse(Buffer.from(sourceCookie, 'base64').toString());
-    } catch (e) {
-      console.error('Failed to parse source context', e);
-    }
-  }
-
-  const supabase = await getCatalogClient();
-  const { data: product } = await supabase.from('products').select('*').eq('id', id).single();
+  const product = (await getApi().products.get(id)) as Record<string, any> | null;
 
   if (!product || !isPubliclyVisibleProduct(product)) {
     notFound();
@@ -273,7 +250,6 @@ async function ProductDataLoader({ id }: { id: string }) {
       <ProductDetailPage 
         productId={id} 
         initialProduct={product} 
-        sourceContext={sourceContext}
       />
     </>
   );

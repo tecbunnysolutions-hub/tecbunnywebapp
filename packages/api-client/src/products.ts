@@ -1,5 +1,7 @@
 import {
+  ProductDataSchema,
   ProductListDataSchema,
+  type Product,
   type ProductListData,
   type ProductListQuery,
 } from '@tecbunny/contracts';
@@ -21,5 +23,15 @@ export function productsApi(client: ApiClient) {
       });
       return data ?? { products: [], offers: [], total: 0, page: 1, pageSize: query.pageSize ?? 200 };
     },
+    async get(id: string | number, opts: ReadOptions = {}): Promise<Product | null> {
+      const data = await client.request(`/api/v1/products/${encodeURIComponent(String(id))}`, {
+        schema: ProductDataSchema,
+        signal: opts.signal,
+        nullOnStatus: [404],
+        next: opts.next ?? { revalidate: 60, tags: [PRODUCTS_CACHE_TAG, `${PRODUCTS_CACHE_TAG}:${id}`] },
+      });
+      return data?.product ?? null;
+    },
   };
 }
+

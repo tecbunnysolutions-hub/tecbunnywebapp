@@ -1,5 +1,6 @@
 import type { ProductListData, ProductListQuery } from '@tecbunny/contracts';
 import {
+  isPubliclyVisibleProduct,
   applyPublicProductOrdering,
   applyPublicProductVisibilityFilters,
   ensureProductColumns,
@@ -34,4 +35,12 @@ export async function listPublicProducts(db: SupabaseClient, query: ProductListQ
     page: query.page,
     pageSize: query.pageSize,
   };
+}
+
+/** A single publicly visible product; hidden, deleted or unknown ids are all 404. */
+export async function getPublicProductById(db: SupabaseClient, id: string): Promise<ProductListData['products'][number]> {
+  const { data, error } = await db.from('products').select('*').eq('id', id).maybeSingle();
+  if (error) throw new ServiceError(502, 'UPSTREAM_ERROR', 'Failed to load product.');
+  if (!data || !isPubliclyVisibleProduct(data)) throw new ServiceError(404, 'NOT_FOUND', 'Product not found.');
+  return data as ProductListData['products'][number];
 }
