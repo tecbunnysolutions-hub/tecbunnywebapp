@@ -1,3 +1,4 @@
+import { withPublicRevalidation } from '../../../../../lib/revalidate-public';
 import { createSupabaseClient as createClient } from '@tecbunny/database/server';
 import { createServiceClient, isSupabaseServiceConfigured } from "@tecbunny/database/admin";
 /**
@@ -70,7 +71,7 @@ async function getAdminClient(request: NextRequest) {
 // Body: { id: UUID, reason?: string }
 // ─────────────────────────────────────────────────────────────────────────────
 
-export async function POST(request: NextRequest) {
+async function POSTHandler(request: NextRequest) {
   const correlationId = request.headers.get('x-correlation-id') || crypto.randomUUID();
 
   try {
@@ -177,7 +178,7 @@ export async function POST(request: NextRequest) {
 // Query param: ?id=<product-uuid>
 // ─────────────────────────────────────────────────────────────────────────────
 
-export async function DELETE(request: NextRequest) {
+async function DELETEHandler(request: NextRequest) {
   const correlationId = request.headers.get('x-correlation-id') || crypto.randomUUID();
 
   try {
@@ -244,7 +245,7 @@ export async function DELETE(request: NextRequest) {
 // Body: { id: UUID }
 // ─────────────────────────────────────────────────────────────────────────────
 
-export async function PUT(request: NextRequest) {
+async function PUTHandler(request: NextRequest) {
   const correlationId = request.headers.get('x-correlation-id') || crypto.randomUUID();
 
   try {
@@ -363,3 +364,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Internal server error', correlationId }, { status: 500 });
   }
 }
+
+export const POST = withPublicRevalidation(['products'], POSTHandler);
+export const DELETE = withPublicRevalidation(['products'], DELETEHandler);
+export const PUT = withPublicRevalidation(['products'], PUTHandler);

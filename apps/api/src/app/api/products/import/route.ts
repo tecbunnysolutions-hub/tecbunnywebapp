@@ -1,3 +1,4 @@
+import { withPublicRevalidation } from '../../../../lib/revalidate-public';
 import { createSupabaseClient as createClient } from '@tecbunny/database/server';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -230,7 +231,7 @@ del123,Mouse M16 White,Gaming mouse with RGB lighting,Dell,Electronics,"gaming,m
 }
 
 // Import products from CSV
-export async function POST(request: NextRequest) {
+async function POSTHandler(request: NextRequest) {
   try {
     const { serviceSupabase: supabase, user } = await requireAdminContext();
     const formData = await request.formData();
@@ -881,3 +882,5 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
+
+export const POST = withPublicRevalidation(['products'], POSTHandler);

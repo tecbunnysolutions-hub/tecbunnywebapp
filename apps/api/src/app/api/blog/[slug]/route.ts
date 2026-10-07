@@ -1,3 +1,4 @@
+import { withPublicRevalidation } from '../../../../lib/revalidate-public';
 import { NextRequest, NextResponse } from 'next/server';
 import { createSupabaseClient as createClient } from '@tecbunny/database/server';
 import { getSessionWithRole } from '@tecbunny/core/auth/server-role';
@@ -44,7 +45,7 @@ export async function GET(_request: NextRequest, { params }: BlogRouteContext) {
 }
 
 /** PATCH /api/blog/[slug] — update a blog post */
-export async function PATCH(request: NextRequest, { params }: BlogRouteContext) {
+async function PATCHHandler(request: NextRequest, { params }: BlogRouteContext) {
   try {
     const { slug } = await params;
     const { session, role } = await getSessionWithRole(request as any);
@@ -85,7 +86,7 @@ export async function PATCH(request: NextRequest, { params }: BlogRouteContext) 
 }
 
 /** DELETE /api/blog/[slug] — delete a post (admin+) */
-export async function DELETE(request: NextRequest, { params }: BlogRouteContext) {
+async function DELETEHandler(request: NextRequest, { params }: BlogRouteContext) {
   try {
     const { slug } = await params;
     const { session, role } = await getSessionWithRole(request as any);
@@ -101,3 +102,6 @@ export async function DELETE(request: NextRequest, { params }: BlogRouteContext)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
+
+export const PATCH = withPublicRevalidation(['blog'], PATCHHandler);
+export const DELETE = withPublicRevalidation(['blog'], DELETEHandler);

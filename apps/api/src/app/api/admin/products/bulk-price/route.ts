@@ -1,3 +1,4 @@
+import { withPublicRevalidation } from '../../../../../lib/revalidate-public';
 import { createSupabaseClient as createClient } from '@tecbunny/database/server';
 import { createServiceClient, isSupabaseServiceConfigured } from "@tecbunny/database/admin";
 /**
@@ -128,7 +129,7 @@ async function adminSupabase(request: NextRequest) {
 // Body: { id, title?, category?, price?, mrp?, dealer_price? }
 // ─────────────────────────────────────────────────────────────────────────────
 
-export async function PATCH(request: NextRequest) {
+async function PATCHHandler(request: NextRequest) {
   const correlationId = request.headers.get('x-correlation-id') || crypto.randomUUID();
 
   try {
@@ -202,7 +203,7 @@ export async function PATCH(request: NextRequest) {
 //                  optional: { filter_status: 'active', filter_category: 'Networking' }
 // ─────────────────────────────────────────────────────────────────────────────
 
-export async function POST(request: NextRequest) {
+async function POSTHandler(request: NextRequest) {
   const correlationId = request.headers.get('x-correlation-id') || crypto.randomUUID();
 
   try {
@@ -324,3 +325,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Internal server error', correlationId }, { status: 500 });
   }
 }
+
+export const PATCH = withPublicRevalidation(['products'], PATCHHandler);
+export const POST = withPublicRevalidation(['products'], POSTHandler);

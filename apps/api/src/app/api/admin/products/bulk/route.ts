@@ -1,3 +1,4 @@
+import { withPublicRevalidation } from '../../../../../lib/revalidate-public';
 import { createSupabaseClient as createClient } from '@tecbunny/database/server';
 import { createServiceClient, isSupabaseServiceConfigured } from "@tecbunny/database/admin";
 import { NextRequest, NextResponse } from 'next/server';
@@ -56,7 +57,7 @@ async function adminSupabase(request: NextRequest) {
   return { supabase, session };
 }
 
-export async function POST(request: NextRequest) {
+async function POSTHandler(request: NextRequest) {
   const correlationId = request.headers.get('x-correlation-id') || crypto.randomUUID();
 
   try {
@@ -118,3 +119,5 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
+
+export const POST = withPublicRevalidation(['products'], POSTHandler);

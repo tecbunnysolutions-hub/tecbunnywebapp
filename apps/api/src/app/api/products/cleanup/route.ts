@@ -1,9 +1,10 @@
+import { withPublicRevalidation } from '../../../../lib/revalidate-public';
 import { NextRequest, NextResponse } from 'next/server';
 
 import { AdminAuthError, requireAdminContext } from "@tecbunny/core/auth/admin-guard";
 import { logger } from "@tecbunny/core";
 
-export async function DELETE(_request: NextRequest) {
+async function DELETEHandler(_request: NextRequest) {
   try {
     const { serviceSupabase, user, role } = await requireAdminContext();
 
@@ -72,3 +73,5 @@ export async function DELETE(_request: NextRequest) {
 }
 
 export const runtime = 'nodejs';
+
+export const DELETE = withPublicRevalidation(['products'], DELETEHandler);

@@ -1,3 +1,4 @@
+import { withPublicRevalidation } from '../../../../lib/revalidate-public';
 import { createSupabaseServiceClient } from "@tecbunny/core/server";
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -277,7 +278,7 @@ export async function GET(request: NextRequest) {
 }
 
 // Import products from CSV (bulk edit without duplicates)
-export async function POST(request: NextRequest) {
+async function POSTHandler(request: NextRequest) {
   try {
     const { serviceSupabase: supabase } = await requireAdminContext();
     const formData = await request.formData();
@@ -426,3 +427,5 @@ export async function POST(request: NextRequest) {
     }, { status: 500 });
   }
 }
+
+export const POST = withPublicRevalidation(['products'], POSTHandler);

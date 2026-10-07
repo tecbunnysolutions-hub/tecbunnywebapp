@@ -1,10 +1,11 @@
+import { withPublicRevalidation } from '../../../../lib/revalidate-public';
 import { createSupabaseServiceClient, isSupabaseServiceConfigured } from "@tecbunny/core/server";;
 import { NextRequest, NextResponse } from 'next/server';
 import { logger } from "@tecbunny/core";
 import { AdminAuthError, requireAdminContext } from "@tecbunny/core/auth/admin-guard";
 import { slugify } from '@tecbunny/core/utils';
 
-export async function POST(request: NextRequest) {
+async function POSTHandler(request: NextRequest) {
   try {
     await requireAdminContext();
     if (!isSupabaseServiceConfigured) {
@@ -236,3 +237,5 @@ function parseCSVLine(line: string): string[] {
   result.push(current.trim().replace(/^"|"$/g, ''));
   return result;
 }
+
+export const POST = withPublicRevalidation(['products'], POSTHandler);

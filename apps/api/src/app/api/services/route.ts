@@ -1,3 +1,4 @@
+import { withPublicRevalidation } from '../../../lib/revalidate-public';
 import { createSupabaseClient as createClient } from '@tecbunny/database/server';
 import { createSupabaseServiceClient, isSupabaseServiceConfigured } from "@tecbunny/core/server";;
 import { NextRequest } from 'next/server';
@@ -72,7 +73,7 @@ export async function GET(request: NextRequest) {
  * POST /api/services
  * Create a new service
  */
-export async function POST(request: NextRequest) {
+async function POSTHandler(request: NextRequest) {
   try {
     const correlationId = request.headers.get('x-correlation-id') || null;
     const { supabase: authClient, session, role } = await getSessionWithRole(request as any);
@@ -149,3 +150,5 @@ export async function POST(request: NextRequest) {
     return apiError('INTERNAL_ERROR', { correlationId });
   }
 }
+
+export const POST = withPublicRevalidation(['services'], POSTHandler);

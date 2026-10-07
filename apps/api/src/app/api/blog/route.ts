@@ -1,3 +1,4 @@
+import { withPublicRevalidation } from '../../../lib/revalidate-public';
 import { NextRequest, NextResponse } from 'next/server';
 import { createSupabaseClient as createClient } from '@tecbunny/database/server';
 import { getSessionWithRole } from '@tecbunny/core/auth/server-role';
@@ -56,7 +57,7 @@ export async function GET(request: NextRequest) {
 }
 
 /** POST /api/blog — create a new blog post (marketing_executive+) */
-export async function POST(request: NextRequest) {
+async function POSTHandler(request: NextRequest) {
   try {
     const { session, role } = await getSessionWithRole(request as any);
     if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -94,3 +95,5 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
+
+export const POST = withPublicRevalidation(['blog'], POSTHandler);
