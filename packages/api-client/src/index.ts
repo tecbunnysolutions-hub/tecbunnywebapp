@@ -1,6 +1,7 @@
 import { blogApi } from './blog';
 import { blueprintsApi } from './blueprints';
 import { contentApi } from './content';
+import { meApi } from './me';
 import { productsApi } from './products';
 import { createApiClient, type ApiClientOptions } from './client';
 
@@ -12,5 +13,5 @@ export { CONTENT_CACHE_TAG, contentApi } from './content';
 
 export function createTecbunnyApi(options: ApiClientOptions = {}) {
   const client = createApiClient(options);
-  return { client, blog: blogApi(client), products: productsApi(client), content: contentApi(client), blueprints: blueprintsApi(client) };
+  return { client, blog: blogApi(client), products: productsApi(client), content: contentApi(client), blueprints: blueprintsApi(client), me: meApi(client) };
 }

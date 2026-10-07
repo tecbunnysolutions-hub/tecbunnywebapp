@@ -2,11 +2,11 @@
 
 import React from 'react';
 import { useRouter } from 'next/navigation';
-import type { User as SupabaseUser } from '@supabase/supabase-js';
 
 import UserProfile from '@/components/profile/UserProfile';
 import { useAuth } from "@tecbunny/core/hooks";
 import { logger } from '@tecbunny/core';
+import { createAuthedApi } from '@/lib/api';
 
 export default function ProfilePage() {
   const { supabase, loading: authLoading, user: authUser } = useAuth();
@@ -33,19 +33,16 @@ export default function ProfilePage() {
         if (cancelled) return;
         setUser(authUser);
 
-        const [
-          { data: profileData },
-          { data: salesAgent },
-          { data: recentOrders },
-          { data: recentTickets },
-          { data: quoteData }
-        ] = await Promise.all([
-          supabase.from('profiles').select('*').eq('id', authUser.id).maybeSingle(),
-          supabase.from('sales_agents').select('*').eq('user_id', authUser.id).maybeSingle(),
-          supabase.from('orders').select('id, status, total, total_amount, created_at, type').eq('customer_id', authUser.id).order('created_at', { ascending: false }).limit(3),
-          supabase.from('service_tickets').select('id, issue_description, status, priority, created_at').eq('customer_id', authUser.id).order('created_at', { ascending: false }).limit(5),
-          supabase.from('quotes').select('*').eq('user_id', authUser.id).order('created_at', { ascending: false })
-        ]);
+        const api = createAuthedApi(async () => (await supabase.auth.getSession()).data.session?.access_token);
+        const overview = await api.me.overview().catch((error) => {
+          logger.error('profile.overview_failed', { error });
+          return { profile: null, salesAgent: null, orders: [], serviceTickets: [], quotes: [] };
+        });
+        const profileData = overview.profile;
+        const salesAgent = overview.salesAgent;
+        const recentOrders = overview.orders;
+        const recentTickets = overview.serviceTickets;
+        const quoteData = overview.quotes;
 
         const fallbackProfile = profileData ?? {
           id: authUser.id,

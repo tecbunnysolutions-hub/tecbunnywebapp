@@ -7,3 +7,8 @@ export function getApi() {
   api ??= createTecbunnyApi();
   return api;
 }
+
+/** Browser client that sends the caller's Supabase access token as a Bearer header. */
+export function createAuthedApi(getToken: () => Promise<string | null | undefined>) {
+  return createTecbunnyApi({ getToken });
+}

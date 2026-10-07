@@ -48,5 +48,5 @@ The API verifies the Supabase access token in `apps/api/src/proxy.ts`. Routes in
 
 ## Migration status
 
-Migrated: blog (list, detail, RSS, sitemap) and the product list (/products page, catalog.xml, sitemap products; product detail page via /v1/products/:id), home content, FAQs and services (/v1/content/*, /v1/services) and blueprints (/v1/blueprints).
+Migrated: blog (list, detail, RSS, sitemap) and the product list (/products page, catalog.xml, sitemap products; product detail page via /v1/products/:id), home content, FAQs and services (/v1/content/*, /v1/services) and blueprints (/v1/blueprints). Authenticated: /v1/me/overview (profile page). Authenticated routes use `requireCaller(request, 'customer'|'staff'|'superadmin')` from `apps/api/src/lib/v1-auth.ts` (Bearer token or session cookie), respond `private, no-store`, and consumers build a client with `createAuthedApi` (sends the Supabase access token).
 Remaining direct-DB files (see the baseline): public 11, mgmt 59, superadmin 20, waba 7.

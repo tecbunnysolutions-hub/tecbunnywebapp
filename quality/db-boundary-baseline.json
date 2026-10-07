@@ -66,7 +66,6 @@
     "apps/public/src/app/payment/[method]/[orderId]/PaymentClientPage.tsx",
     "apps/public/src/app/payment/payu/[orderId]/PayuClientPage.tsx",
     "apps/public/src/app/payment/upi/[orderId]/UPIClientPage.tsx",
-    "apps/public/src/app/profile/page.tsx",
     "apps/public/src/components/BehavioralCouponPopup.tsx",
     "apps/public/src/components/products/ProductDetailPage.tsx",
     "apps/public/src/components/profile/UserProfile.tsx",
