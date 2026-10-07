@@ -1021,8 +1021,12 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
                           ? { label: 'Pre-order', className: 'text-blue-400' }
                           : { label: 'In stock', className: 'text-emerald-500' };
                     const isOutOfStock = stockStatus === 'out_of_stock';
-                    const discountPercent = offerPrice && basePrice > offerPrice
-                      ? Math.round(((basePrice - offerPrice) / basePrice) * 100)
+                    const salePrice = offerPrice ?? basePrice;
+                    const listedMrp = Number((product as any).mrp);
+                    // MRP is the stored list price; never below the sale price, so a discount shows only when real
+                    const mrpPrice = Math.max(Number.isFinite(listedMrp) ? listedMrp : 0, basePrice);
+                    const discountPercent = mrpPrice > salePrice
+                      ? Math.round(((mrpPrice - salePrice) / mrpPrice) * 100)
                       : 0;
 
                     return (
@@ -1040,9 +1044,9 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
                                 priority={index < 8}
                               />
                               {/* Discount Badge */}
-                              {(product.discount_percentage || discountPercent) > 0 ? (
+                              {discountPercent > 0 ? (
                                 <div className="absolute left-2 top-2 sm:left-3 sm:top-3 rounded-full bg-primary/15 border border-primary/30 px-2 py-0.5 sm:px-3 sm:py-1 text-[9px] sm:text-xs font-mono font-bold text-primary tracking-wider uppercase shadow-sm">
-                                  -{product.discount_percentage || discountPercent}%
+                                  {discountPercent}% OFF
                                 </div>
                               ) : null}
                             </div>
@@ -1075,12 +1079,12 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
                           <div className="mt-4 sm:mt-6 flex items-center justify-between pt-3 sm:pt-4 border-t border-border/60">
                             <div className="flex flex-col">
                               <span className="text-sm sm:text-xl font-black tracking-tight text-foreground font-tech flex items-baseline gap-1 sm:gap-1.5">
-                                ₹{(offerPrice ?? basePrice).toLocaleString('en-IN')}
+                                ₹{salePrice.toLocaleString('en-IN')}
                                 <span className="text-[9px] sm:text-xs font-normal text-muted-foreground uppercase tracking-wide hidden xs:inline">Inc. GST</span>
                               </span>
-                              {offerPrice && (
+                              {discountPercent > 0 && (
                                 <span className="text-xs sm:text-sm text-muted-foreground line-through font-light mt-0.5">
-                                  MRP ₹{basePrice.toLocaleString('en-IN')}
+                                  MRP ₹{mrpPrice.toLocaleString('en-IN')}
                                 </span>
                               )}
                               <span className={`mt-1 text-[10px] font-semibold uppercase tracking-wide ${availability.className}`}>{availability.label}</span>
