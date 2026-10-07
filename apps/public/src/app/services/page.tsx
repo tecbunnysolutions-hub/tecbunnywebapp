@@ -1,4 +1,4 @@
-import { isSupabaseServiceConfigured, createServiceClient } from "@tecbunny/database/admin";
+import { getApi } from '@/lib/api';
 import { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 
@@ -6,7 +6,6 @@ import ServicesPage from '@/components/services-page';
 import { BreadcrumbJsonLd } from '@/components/BreadcrumbJsonLd';
 import { logger } from '@tecbunny/core';
 
-import {  createSupabaseClient as createPublicSupabaseClient  } from '@tecbunny/database/server';
 import { createPageMetadata } from "@tecbunny/core/metadata";
 import { BRAND_LOGO_URL } from "@tecbunny/ui";
 import { stripHtmlToPlainText } from "@tecbunny/core/strings";
@@ -76,10 +75,6 @@ function isServiceRow(value: unknown): value is ServiceRow {
   return !!value && typeof value === 'object' && 'id' in value;
 }
 
-function isMissingTableError(error: unknown) {
-  return (error as { code?: string } | null)?.code === 'PGRST205';
-}
-
 function normalizeService(row: ServiceRow): Service {
   const statusValue = row.status;
   const isActive = typeof row.is_active === 'boolean'
@@ -128,35 +123,12 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ q
   let hasServiceLoadError = false;
 
   try {
-    const supabase = isSupabaseServiceConfigured
-      ? await createServiceClient()
-      : await createPublicSupabaseClient();
-
-    // Select the row shape Supabase exposes and normalize defensively below.
-    const { data, error } = await supabase
-      .from('services')
-      .select('*');
-
-    if (error) {
-      if (isMissingTableError(error)) {
-        return <ServicesPage services={[]} hasServiceLoadError={false} />;
-      }
-
-      logger.error('Error fetching services', {
-        message: error.message,
-        details: error.details,
-        hint: error.hint,
-        code: error.code,
-      });
-      services = [];
-      hasServiceLoadError = true;
-    } else {
-      const serviceRows = (Array.isArray(data) ? (data as unknown[]) : []).filter(isServiceRow);
-      services = serviceRows
-        .map(normalizeService)
-        .filter((service) => service.is_active !== false)
-        .filter((service) => !EXCLUDED_NON_TECBUNNY_SERVICES.test(`${service.title} ${service.description} ${service.category} ${service.features.join(' ')}`));
-    }
+    const { services: rows } = await getApi().content.services();
+    const serviceRows = rows.filter(isServiceRow);
+    services = serviceRows
+      .map(normalizeService)
+      .filter((service) => service.is_active !== false)
+      .filter((service) => !EXCLUDED_NON_TECBUNNY_SERVICES.test(`${service.title} ${service.description} ${service.category} ${service.features.join(' ')}`));
   } catch (error) {
     logger.error('Error in services page', { error });
     services = [];

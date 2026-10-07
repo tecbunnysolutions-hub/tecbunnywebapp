@@ -4,7 +4,7 @@ import type { Metadata } from 'next';
 
 import HomePage from '@/components/home-page';
 import { createPageMetadata } from "@tecbunny/core/metadata";
-import { createClient as createSupabaseClient } from '@supabase/supabase-js';
+import { getApi } from '@/lib/api';
 
 // Revalidate homepage every 60 seconds (ISR) to fix 2.8s Document Request Latency
 export const revalidate = 60;
@@ -162,23 +162,9 @@ async function HomePageDataLoader() {
   let initialHeroCarousel: HomePageProps['initialHeroCarousel'] = {};
 
   try {
-    const supabase = createSupabaseClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
-    );
-
-    const [brandsResult, heroResult] = await Promise.allSettled([
-      supabase.from('settings').select('value').eq('key', 'partnerBrands').maybeSingle(),
-      supabase.from('page_content').select('data').eq('key', 'hero-carousels').maybeSingle(),
-    ]);
-
-    if (brandsResult.status === 'fulfilled' && brandsResult.value.data && !brandsResult.value.error) {
-      initialPartnerBrands = parsePartnerBrands(brandsResult.value.data.value);
-    }
-
-    if (heroResult.status === 'fulfilled' && heroResult.value.data && !heroResult.value.error) {
-      initialHeroCarousel = heroResult.value.data.data ?? {};
-    }
+    const content = await getApi().content.home();
+    initialPartnerBrands = parsePartnerBrands(content.partnerBrands);
+    initialHeroCarousel = (content.heroCarousel ?? {}) as HomePageProps['initialHeroCarousel'];
   } catch (error) {
     console.error('Error prefetching data for homepage:', error);
   }

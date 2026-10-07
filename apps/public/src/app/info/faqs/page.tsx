@@ -1,5 +1,4 @@
-import { createClient } from '@tecbunny/database';
-import { createServiceClient, isSupabaseServiceConfigured } from '@tecbunny/database/admin';
+import { getApi } from '@/lib/api';
 import { Suspense } from 'react';
 import type { Metadata } from 'next';
 
@@ -29,34 +28,13 @@ type FaqRow = {
 };
 
 async function fetchFaqs() {
-  const supabase = isSupabaseServiceConfigured
-    ? await createServiceClient()
-    : await createClient();
-
-  const { data: faqs, error } = await supabase
-    .from('cms_faqs')
-    .select('id, category, question, answer, display_order')
-    .eq('is_active', true)
-    .is('deleted_at', null)
-    .order('category', { ascending: true })
-    .order('display_order', { ascending: true });
-
-  if (error) {
-    if (error.code === 'PGRST205') {
-      return [];
-    }
-
-    console.error('Error loading FAQs from DB:', error);
+  try {
+    return (await getApi().content.faqs()).faqs;
+  } catch (error) {
+    console.error('Error loading FAQs from API:', error);
     return [];
   }
-
-  return ((faqs || []) as FaqRow[]).map((faq) => ({
-    ...faq,
-    category: faq.category ?? 'General',
-    display_order: faq.display_order ?? 0,
-  }));
 }
-
 export default async function FaqsPage() {
   return (
     <div className="container mx-auto px-4 pt-24 pb-16 max-w-4xl min-h-screen">
