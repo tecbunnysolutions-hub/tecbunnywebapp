@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { OrderProvider } from '@tecbunny/core/context/OrderProvider';
 
 // Checkout is a private transactional surface — never index it.
 export const metadata: Metadata = {
@@ -11,5 +12,5 @@ export const metadata: Metadata = {
 export const dynamic = 'force-dynamic';
 
 export default function CheckoutLayout({ children }: { children: React.ReactNode }) {
-  return children;
+  return <OrderProvider>{children}</OrderProvider>;
 }

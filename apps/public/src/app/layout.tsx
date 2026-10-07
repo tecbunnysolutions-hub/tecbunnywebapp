@@ -8,7 +8,6 @@ import {Header} from '@/components/layout/Header';
 import {Footer} from '@/components/layout/Footer';
 import {TechShell} from '@/components/layout/TechShell';
 import {AppProvider} from "@tecbunny/core/context/AppProvider";
-import {OrderProvider} from "@tecbunny/core/context/OrderProvider";
 import {EnterpriseAnalyticsAutoTracker} from '@tecbunny/core/components/EnterpriseAnalyticsAutoTracker';
 import {ThemeProvider} from '@/components/providers/ThemeProvider';
 import {DeferredFloatingAIAssistant} from '@/components/layout/DeferredFloatingAIAssistant';
@@ -371,7 +370,6 @@ export default async function RootLayout({
           <TRPCProvider>
             <FeatureFlagProviderLoader>
               <AppProvider>
-                <OrderProvider>
                   <EnterpriseAnalyticsAutoTracker application="public" defaultModule="website" dashboardPaths={['/account', '/orders', '/dashboard']} />
                   <TechShell>
                     <div className="site-shell flex min-h-[100dvh] flex-col bg-background text-foreground w-full">
@@ -386,7 +384,6 @@ export default async function RootLayout({
 
                   <DeferredRuntimeServices gaId={gaId} metaPixelId={metaPixelId} />
                   <Analytics />
-                </OrderProvider>
               </AppProvider>
             </FeatureFlagProviderLoader>
           </TRPCProvider>

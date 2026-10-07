@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { OrderProvider } from '@tecbunny/core/context/OrderProvider';
 
 // Order pages are private account surfaces — never index them.
 export const metadata: Metadata = {
@@ -10,5 +11,5 @@ export const metadata: Metadata = {
 export const dynamic = 'force-dynamic';
 
 export default function OrdersLayout({ children }: { children: React.ReactNode }) {
-  return children;
+  return <OrderProvider>{children}</OrderProvider>;
 }
