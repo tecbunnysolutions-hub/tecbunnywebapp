@@ -1,5 +1,6 @@
 'use client';
 import { createClient } from '@tecbunny/database';
+import { createAuthedApi } from '@/lib/api';
 
 
 
@@ -120,13 +121,9 @@ export default function PaymentMethodPage() {
   const fetchOrder = useCallback(async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('orders')
-        .select('id, total, status, payment_method, payment_status, created_at, customer_name, items')
-        .eq('id', orderId)
-        .single();
-
-      if (error) throw error;
+      const result = await createAuthedApi(async () => (await supabase.auth.getSession()).data.session?.access_token).me.order(String(orderId));
+      if (!result) throw new Error('Order not found');
+      const data = result.order;
 
       const row = data as Record<string, unknown>;
       const normalizedOrder: Order = {

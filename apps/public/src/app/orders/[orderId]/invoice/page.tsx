@@ -1,4 +1,3 @@
-import { createServiceClient } from "@tecbunny/database/admin";
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
 
@@ -10,6 +9,7 @@ import type { Order } from '@tecbunny/core';
 
 import { deserializeOrder } from "@tecbunny/core/orders/normalizers";
 import { logger } from '@tecbunny/core';
+import { getApi } from '@/lib/api';
 
 // export const dynamic = 'force-dynamic';
 
@@ -32,60 +32,15 @@ const FALLBACK_COMPANY_SETTINGS: CompanySettings = {
 };
 
 async function loadOrder(orderId: string): Promise<Order | null> {
-  const supabase = createServiceClient();
   try {
-    const { data, error } = await supabase
-      .from('orders')
-      .select('*')
-      .eq('id', orderId)
-      .single();
-
-    if (error || !data) {
-      if (error) {
-        logger.warn('Invoice page failed to load order', { orderId, error: error.message });
-      }
+    const invoice = await getApi().invoices.get(orderId);
+    if (!invoice) {
+      logger.warn('Invoice page could not find order', { orderId });
       return null;
     }
 
-    const order = deserializeOrder(data);
-
-    const itemsNeedingLookup = order.items.filter(item => {
-      const missingHsn = !item.hsnCode || item.hsnCode === '9999';
-      const missingGst = typeof item.gstRate !== 'number' || !Number.isFinite(item.gstRate);
-      return missingHsn || missingGst;
-    });
-
-    if (itemsNeedingLookup.length === 0) {
-      return order;
-    }
-
-    const ids = Array.from(
-      new Set(
-        itemsNeedingLookup
-          .map(item => item.productId || (item as any).product_id || null)
-          .filter((value): value is string => typeof value === 'string' && value.length > 0)
-      )
-    );
-
-    if (ids.length === 0) {
-      return order;
-    }
-
-    const { data: products, error: productError } = await supabase
-      .from('products')
-      .select('id, hsn_code, hsn, hsn_sac, gst_rate, gst_percentage')
-      .in('id', ids);
-
-    if (productError || !products) {
-      if (productError) {
-        logger.warn('Invoice page failed to hydrate HSN/GST for items', {
-          orderId,
-          error: productError.message,
-          ids,
-        });
-      }
-      return order;
-    }
+    const order = deserializeOrder(invoice.order);
+    const products = invoice.products as Array<{ id?: string }>;
 
     const productLookup = new Map<string, any>();
     products.forEach(record => {

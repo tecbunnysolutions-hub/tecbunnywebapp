@@ -8,6 +8,7 @@ import { useState, useEffect, Suspense, useMemo } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Lock, Eye, EyeOff, CheckCircle, AlertCircle, Mail } from 'lucide-react';
 import { Input, Label, useToast, Turnstile } from "@tecbunny/ui";
+import { createAuthedApi } from '@/lib/api';
 import { TwoFactorVerification } from '@/components/auth/TwoFactorVerification';
 
 function SignInForm() {
@@ -30,6 +31,14 @@ function SignInForm() {
   const router = useRouter();
   const { toast } = useToast();
   const supabase = createClient();
+  const loadOwnProfile = async () => {
+    try {
+      const api = createAuthedApi(async () => (await supabase.auth.getSession()).data.session?.access_token);
+      return (await api.me.profile()).profile as { role?: unknown } | null;
+    } catch {
+      return null;
+    }
+  };
 
   const verified = searchParams.get('verified');
   const emailParam = searchParams.get('email');
@@ -86,11 +95,7 @@ function SignInForm() {
       });
 
       // Fetch user profile to determine role-based redirect
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', twoFactorUser.id)
-        .single();
+      const profile = await loadOwnProfile();
 
       // Redirect based on user role
       const userRole = normalizeRole(profile?.role) ?? 'customer';
@@ -161,11 +166,7 @@ function SignInForm() {
     });
 
     // Fetch user profile to determine role-based redirect
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .maybeSingle();
+    const profile = await loadOwnProfile();
 
     const userRole = normalizeRole(profile?.role) ?? 'customer';
     let redirectUrl: string;

@@ -1,16 +1,13 @@
 'use client';
-import { createClient } from '@tecbunny/database';
-
-
-
 import React, { useEffect, useState } from 'react';
 import { Sparkles, Tag, X, ArrowRight } from 'lucide-react';
 import { useAuth } from "@tecbunny/core/hooks";
 
 import { Button } from "@tecbunny/ui";
+import { createAuthedApi } from '@/lib/api';
 
 export function BehavioralCouponPopup() {
-  const { user } = useAuth();
+  const { user, supabase } = useAuth();
   const [coupon, setCoupon] = useState<{ code: string; reason: string } | null>(null);
   const [isVisible, setIsVisible] = useState(false);
   const [isDismissed, setIsDismissed] = useState(false);
@@ -21,12 +18,14 @@ export function BehavioralCouponPopup() {
     let timer: NodeJS.Timeout;
 
     const fetchMarketingMeta = async () => {
-      const supabase = createClient();
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .maybeSingle();
+      let data: Record<string, unknown> | null = null;
+      let error: unknown = null;
+      try {
+        const api = createAuthedApi(async () => (await supabase.auth.getSession()).data.session?.access_token);
+        data = (await api.me.profile()).profile;
+      } catch (e) {
+        error = e;
+      }
 
       const metadata = (data as Record<string, unknown> | null)?.['marketing_metadata'];
       const suggested =
@@ -52,7 +51,7 @@ export function BehavioralCouponPopup() {
     return () => {
       if (timer) clearTimeout(timer);
     };
-  }, [user, isDismissed]);
+  }, [user, supabase, isDismissed]);
 
   const handleDismiss = () => {
     setIsVisible(false);

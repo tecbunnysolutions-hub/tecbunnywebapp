@@ -1,5 +1,6 @@
 'use client';
 import { createClient } from '@tecbunny/database';
+import { createAuthedApi } from '@/lib/api';
 
 
 
@@ -109,13 +110,9 @@ function PayuPaymentContent() {
 
     try {
       setLoading(true);
-      const { data, error: orderError } = await supabase
-        .from('orders')
-        .select('id, total, customer_name, customer_email, customer_phone, status, items')
-        .eq('id', orderId)
-        .single();
+      const data = await createAuthedApi(async () => (await supabase.auth.getSession()).data.session?.access_token).me.order(orderId).then((r) => (r?.order as any) ?? null).catch(() => null);
 
-      if (orderError || !data) {
+      if (!data) {
         setError('Unable to load order details.');
         return;
       }

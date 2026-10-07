@@ -39,3 +39,26 @@ export async function getMeOverview(db: SupabaseClient, userId: string) {
     quotes: rows(quotes as Result<Record<string, unknown>[]>, 'quotes'),
   };
 }
+
+/** The caller's own profile row (null when none exists yet). */
+export async function getMeProfile(db: SupabaseClient, userId: string) {
+  const { data, error } = await db.from('profiles').select('*').eq('id', userId).maybeSingle();
+  if (error) throw new ServiceError(500, 'QUERY_FAILED', 'Failed to load profile.');
+  return { profile: (data as Record<string, unknown> | null) ?? null };
+}
+
+const PAYMENT_ORDER_COLUMNS =
+  'id, total, status, payment_method, payment_status, created_at, customer_name, customer_email, customer_phone, items';
+
+/** One order, only if it belongs to `userId`; otherwise 404 (never reveals other users' orders). */
+export async function getMyOrder(db: SupabaseClient, userId: string, orderId: string) {
+  const { data, error } = await db
+    .from('orders')
+    .select(PAYMENT_ORDER_COLUMNS)
+    .eq('id', orderId)
+    .eq('customer_id', userId)
+    .maybeSingle();
+  if (error) throw new ServiceError(500, 'QUERY_FAILED', 'Failed to load order.');
+  if (!data) throw new ServiceError(404, 'NOT_FOUND', 'Order not found.');
+  return { order: data as unknown as Record<string, unknown> };
+}
