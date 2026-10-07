@@ -1,7 +1,5 @@
 import type { MetadataRoute } from 'next';
 import { getApi } from '@/lib/api';
-import { createClient as createSupabaseClient } from '@supabase/supabase-js';
-import { isSupabasePublicConfigured, requireSupabasePublicEnv } from "@tecbunny/database";
 
 export const revalidate = 3600;
 
@@ -25,33 +23,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       if (products.length === 0 || page * pageSize >= total) break;
     }
   } catch { /* non-fatal */ }
-  if (isSupabasePublicConfigured()) {
-    try {
-      const { url, publicKey } = requireSupabasePublicEnv();
-      const supabase = createSupabaseClient(url, publicKey, {
-        auth: {
-          persistSession: false,
-          autoRefreshToken: false,
-        }
-      });
-      
-      const { data: blueprints } = await supabase
-        .from('published_blueprints')
-        .select('id, updated_at');
-
-      if (blueprints) {
-        blueprintRoutes = blueprints.map((blueprint) => ({
-          url: `${baseUrl}/blueprints/${blueprint.id}`,
-          lastModified: blueprint.updated_at ? new Date(blueprint.updated_at) : now,
-          changeFrequency: 'weekly' as const,
-          priority: 0.6,
-        }));
-      }
-    } catch (error) {
-      console.warn('Failed to fetch sitemap database routes', error);
-    }
+  try {
+    const { blueprints } = await getApi().blueprints.list();
+    blueprintRoutes = blueprints.map((blueprint) => ({
+      url: `${baseUrl}/blueprints/${blueprint.id}`,
+      lastModified: blueprint.updated_at ? new Date(blueprint.updated_at) : now,
+      changeFrequency: 'weekly' as const,
+      priority: 0.6,
+    }));
+  } catch (error) {
+    console.warn('Failed to fetch sitemap blueprint routes', error);
   }
-
   const staticRoutes = [
     {
       url: `${baseUrl}/`,
