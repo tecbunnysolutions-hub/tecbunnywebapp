@@ -13,6 +13,8 @@
     "@opentelemetry/api-logs": "^0.220.0",
     "@tanstack/react-query": "^5.101.2",
     "@tecbunny/admin-ui": "*",
+    "@tecbunny/api-client": "*",
+    "@tecbunny/contracts": "*",
     "@tecbunny/core": "*",
     "@tecbunny/database": "*",
     "@tecbunny/rpc": "*",

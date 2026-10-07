@@ -1,5 +1,5 @@
 'use client';
-import { createClient } from '@tecbunny/database';
+import { createStaffApi } from '@/lib/api';
 
 
 import * as React from 'react';
@@ -21,18 +21,20 @@ export default function OnlineOrdersPage({ orderType = 'Delivery' }: { orderType
   const { toast } = useToast();
   const [loading, setLoading] = React.useState(true);
   const { user } = useAuth();
-  const supabase = createClient();
+  const api = React.useMemo(() => createStaffApi(), []);
 
   const canManageOrders = isManagerClient(user);
 
   const fetchOrders = React.useCallback(async () => {
     setLoading(true);
-    const { data, error } = await supabase
-        .from('orders')
-        .select('*')
-        .eq('type', orderType)
-        .order('created_at', { ascending: false });
-    
+    let data: Order[] = [];
+    let error: unknown = null;
+    try {
+      data = (await api.admin.orders({ type: orderType })).orders as unknown as Order[];
+    } catch (err) {
+      error = err;
+    }
+
     if (error) {
         console.error('Error fetching online orders:', error);
         toast({
@@ -41,10 +43,10 @@ export default function OnlineOrdersPage({ orderType = 'Delivery' }: { orderType
           description: 'Failed to fetch orders. Please try again.'
         });
     } else {
-        setOrders(data as Order[]);
+        setOrders(data);
     }
     setLoading(false);
-  }, [supabase, toast, orderType]);
+  }, [api, toast, orderType]);
 
   React.useEffect(() => {
     setTimeout(() => { fetchOrders(); }, 0);

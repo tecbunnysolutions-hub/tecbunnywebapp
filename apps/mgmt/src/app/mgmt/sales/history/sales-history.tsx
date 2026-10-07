@@ -1,5 +1,5 @@
 'use client';
-import { createClient } from '@tecbunny/database';
+import { createStaffApi } from '@/lib/api';
 
 
 import * as React from 'react';
@@ -17,7 +17,7 @@ import { Skeleton } from "@tecbunny/ui";
 
 export default function BillingHistoryPage() {
   const { user } = useAuth();
-  const supabase = createClient();
+  const api = React.useMemo(() => createStaffApi(), []);
   const [userHistory, setUserHistory] = React.useState<Order[]>([]);
   const [loading, setLoading] = React.useState(true);
 
@@ -25,22 +25,24 @@ export default function BillingHistoryPage() {
     if (user) {
       const fetchHistory = async () => {
         setLoading(true);
-        const { data, error } = await supabase
-            .from('orders')
-            .select('*')
-            .eq('processed_by', user.id)
-            .eq('status', 'Completed');
+        let data: Order[] = [];
+        let error: unknown = null;
+        try {
+          data = (await api.admin.orders({ processedBy: 'me', status: 'Completed' })).orders as unknown as Order[];
+        } catch (err) {
+          error = err;
+        }
         
         if (error) {
             console.error('Error fetching billing history:', error);
         } else {
-            setUserHistory(data as Order[]);
+            setUserHistory(data);
         }
         setLoading(false);
       }
       fetchHistory();
     }
-  }, [user, supabase]);
+  }, [user, api]);
 
 
   return (

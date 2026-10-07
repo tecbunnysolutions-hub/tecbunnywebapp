@@ -63,14 +63,22 @@ All mgmt `/api/admin/**` handlers and the superadmin handlers (`/api/superadmin/
 
 ## Not yet done
 
-- 25 mgmt UI files with direct browser table CRUD (billing/stock RPCs, orders, products, leads, tasks) need bespoke `/v1/admin/*` endpoints.
-- waba (7 files): workers need a separate deployment decision; the app is kept.
-- superadmin `api/health`, plus local `roles`, `users`, `auth/extension` routes that overlap API routes.
-- Payment and WhatsApp webhooks with signature verification in the API.
-- Tag revalidation wired to admin writes (public content may be up to 60s stale).
-- `packages/ui` still depends on `@tecbunny/database`.
-- Performance pass (proxy matcher, provider scoping, prefetch, dynamic imports) and before/after `next build` tables.
+- mgmt UI: 21 files still do direct browser table CRUD (billing/stock RPCs, products, purchases, expenses, leads, tasks, calendar, AMC, tickets). `/v1/admin/orders` (staff, `createStaffApi` in `apps/mgmt/src/lib/api.ts`) replaced the order reads in history, online orders, invoice lookup and staff reports; the rest each need their own endpoint.
+- waba (7 files): the app is kept; its workers need a deployment decision. The API already hosts the WhatsApp and payment/order webhooks with signature verification (`/api/webhook/whatsapp`, `/api/webhooks/*`); waba keeps a duplicate WhatsApp webhook.
+- superadmin `api/health`, `roles`, `users`, `auth/extension` shadow API routes with different implementations at the same URLs, and `inquiries` re-exports superadmin-local handlers; merging them would change behaviour, so they stay until reconciled.
+- `packages/ui` (`LoginDialog`, `InstantIdentity`) uses the browser Supabase auth client. Auth-only by design; removing it means proxying sign-in through the API, which is an auth-flow change.
+- `next build` before/after route tables were not captured.
 
+## Cache revalidation
+
+Public reads are cached with tags (`products`, `blog`, `services`, `content`, `blueprints`). Mutating API handlers for products, blog, services and page-content are wrapped with `withPublicRevalidation` (`apps/api/src/lib/revalidate-public.ts`), which POSTs the tags to `apps/public` `/api/revalidate` after a successful write. Set `PUBLIC_SITE_URL` and `REVALIDATE_SECRET` on the API project and `REVALIDATE_SECRET` on the public project; without them pages fall back to time-based revalidation (60-300s). Other admin handlers that change these tables (for example bulk imports under other routes) are not wrapped yet.
+
+## Performance changes
+
+- `apps/public` proxy matcher now covers only protected routes.
+- `OrderProvider` moved from the root layout to the `checkout` and `orders` layouts.
+- `prefetch={false}` on blog, search, policy, footer, service-location and header dropdown link lists.
+- Floating assistant and runtime services were already lazy-loaded.
 ## Vercel env vars
 
 `SUPABASE_SERVICE_ROLE_KEY` and `DATABASE_URL` are required by the API. Likely removable from the public project (verify on a preview deploy). Keep on mgmt, superadmin and waba until the `@tecbunny/core` auth guards and remaining UI reads move. Manual steps: regions close to the database, firewall/rate-limit rules, CORS origins.

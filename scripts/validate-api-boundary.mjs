@@ -15,7 +15,11 @@ function filesIn(directory) {
   });
 }
 
-const localRouteHandlers = filesIn(publicApi).filter((path) => /[\\/]route\.(?:ts|tsx|js|jsx)$/.test(path));
+// Cache invalidation must run inside the public app (it owns the fetch cache) and touches no database.
+const allowedLocalRoutes = new Set([join(publicApi, 'revalidate', 'route.ts')]);
+const localRouteHandlers = filesIn(publicApi)
+  .filter((path) => /[\\/]route\.(?:ts|tsx|js|jsx)$/.test(path))
+  .filter((path) => !allowedLocalRoutes.has(path));
 const mutationPattern = /\.from\([^)]*\)[\s\S]{0,240}\.(?:insert|update|upsert|delete)\s*\(/;
 const directMutations = filesIn(publicSource)
   .filter((path) => /\.(?:ts|tsx|js|jsx)$/.test(path))
