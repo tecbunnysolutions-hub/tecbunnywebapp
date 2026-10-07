@@ -102,7 +102,7 @@ export default function PoliciesPage() {
             {policies.map((policy) => {
                const IconComponent = policy.icon;
                return (
-                <Link key={policy.href} href={policy.href} className="group relative">
+                <Link prefetch={false} key={policy.href} href={policy.href} className="group relative">
                   {/* Neon Glow Hover Effect */}
                   <div className="absolute -inset-0.5 rounded-2xl bg-gradient-to-r from-primary to-blue-500 opacity-0 blur-md transition duration-500 group-hover:opacity-10" />
                   

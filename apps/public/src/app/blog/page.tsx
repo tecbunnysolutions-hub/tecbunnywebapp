@@ -77,7 +77,7 @@ export default async function BlogPage() {
                 ? new Date(post.published_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
                 : '';
               return (
-                <Link
+                <Link prefetch={false}
                   key={post.id}
                   href={`/blog/${post.slug}`}
                   className="group flex flex-col rounded-2xl border border-zinc-800 bg-zinc-900/60 overflow-hidden hover:border-indigo-500/50 transition-all"
