@@ -6,6 +6,8 @@ export type NextFetchOptions = { revalidate?: number | false; tags?: string[] };
 export type ApiClientOptions = {
   baseUrl?: string;
   getToken?: () => string | null | undefined | Promise<string | null | undefined>;
+  /** Extra headers per request (e.g. forwarding the caller's cookie from a server component). */
+  getHeaders?: () => Record<string, string> | Promise<Record<string, string>>;
   timeoutMs?: number;
   fetch?: typeof fetch;
 };
@@ -80,6 +82,7 @@ export function createApiClient(options: ApiClientOptions = {}) {
     const isIdempotent = method === 'GET';
     const headers: Record<string, string> = { Accept: 'application/json' };
     const token = await options.getToken?.();
+    Object.assign(headers, await options.getHeaders?.());
     if (token) headers.Authorization = `Bearer ${token}`;
     if (opts.body !== undefined) headers['Content-Type'] = 'application/json';
 

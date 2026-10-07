@@ -1,0 +1,43 @@
+import { NextRequest, NextResponse } from 'next/server';
+
+import { generateGeminiText } from '@tecbunny/core/ai/gemini-service';
+import { logger } from '@tecbunny/core/logger';
+import { requireSuperadminApi } from '../../../../../lib/superadmin-api';
+
+function buildPrompt(name: string, field: string) {
+  if (field === 'terms_and_conditions') {
+    return `Write concise, professional terms and conditions for a TecBunny service named "${name}". Use 5 short bullet points. Cover scope, scheduling, customer prerequisites, exclusions, and warranty/support boundaries. Do not include markdown headings.`;
+  }
+
+  return `Write a concise, polished service description for a TecBunny service named "${name}". Keep it under 90 words, operational and customer-facing, with no markdown heading.`;
+}
+
+export async function POST(request: NextRequest) {
+  const auth = await requireSuperadminApi('superadmin_service_ai');
+  if (!auth.authorized) return auth.response;
+  logger.info('superadmin_service_ai.audit.generate_requested', { userId: auth.user?.id ?? null });
+
+  try {
+    const body = await request.json().catch(() => ({}));
+    const name = typeof body.name === 'string' ? body.name.trim() : '';
+    const field = body.field === 'terms_and_conditions' ? 'terms_and_conditions' : 'description';
+
+    if (name.length < 3) {
+      logger.warn('superadmin_service_ai.audit.generate_invalid_name');
+      return NextResponse.json({ error: 'Service name must be at least 3 characters' }, { status: 400 });
+    }
+
+    const text = await generateGeminiText({
+      prompt: buildPrompt(name, field),
+      temperature: 0.35,
+      maxOutputTokens: field === 'terms_and_conditions' ? 420 : 180,
+    });
+
+    logger.info('superadmin_service_ai.audit.generate_success', { field, nameLength: name.length });
+    return NextResponse.json({ text });
+  } catch (error) {
+    logger.error('superadmin_service_ai.audit.generate_failed', { error });
+    logger.error('superadmin_service_ai.generate_failed', { error });
+    return NextResponse.json({ error: 'Failed to generate service copy' }, { status: 500 });
+  }
+}
