@@ -50,7 +50,13 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
+  // Only protected routes run auth; every other path returned NextResponse.next() anyway.
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/dashboard/:path*',
+    '/profile/:path*',
+    '/orders/:path*',
+    '/admin/:path*',
+    '/payment/:path*',
+    '/checkout/:path*',
   ],
 };
