@@ -48,5 +48,5 @@ The API verifies the Supabase access token in `apps/api/src/proxy.ts`. Routes in
 
 ## Migration status
 
-Migrated: blog list, detail, RSS feed and the blog part of the sitemap.
-Remaining direct-DB files (see the baseline): public 19, mgmt 59, superadmin 20, waba 7.
+Migrated: blog (list, detail, RSS, sitemap) and the product list (/products page, catalog.xml, sitemap products; product detail is still direct).
+Remaining direct-DB files (see the baseline): public 17, mgmt 59, superadmin 20, waba 7.

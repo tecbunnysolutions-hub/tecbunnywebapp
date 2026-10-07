@@ -87,6 +87,7 @@ export async function proxy(request: NextRequest, event: EnterpriseProxyEvent) {
         'GET /api/docs/openapi',
         'GET /api/v2/status',
         'GET /api/v1/blog',
+    'GET /api/v1/products',
         'POST /api/promotions/claim-viral',
         'POST /api/promotions/free-installation-claim',
         'POST /api/ai/research',

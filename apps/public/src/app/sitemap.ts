@@ -1,7 +1,6 @@
 import type { MetadataRoute } from 'next';
 import { getApi } from '@/lib/api';
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
-import { filterPubliclyVisibleProducts } from "@tecbunny/core/product-visibility";
 import { isSupabasePublicConfigured, requireSupabasePublicEnv } from "@tecbunny/database";
 
 export const revalidate = 3600;
@@ -12,6 +11,20 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   let productRoutes: Array<{ url: string; lastModified: Date; changeFrequency: 'weekly'; priority: number }> = [];
   let blueprintRoutes: Array<{ url: string; lastModified: Date; changeFrequency: 'weekly'; priority: number }> = [];
 
+  try {
+    for (let page = 1; page <= 20; page += 1) {
+      const { products, total, pageSize } = await getApi().products.list({ page, pageSize: 500 });
+      productRoutes.push(
+        ...products.map((product) => ({
+          url: `${baseUrl}/products/${product.id}`,
+          lastModified: typeof product.updated_at === 'string' ? new Date(product.updated_at) : now,
+          changeFrequency: 'weekly' as const,
+          priority: 0.8,
+        })),
+      );
+      if (products.length === 0 || page * pageSize >= total) break;
+    }
+  } catch { /* non-fatal */ }
   if (isSupabasePublicConfigured()) {
     try {
       const { url, publicKey } = requireSupabasePublicEnv();
@@ -22,21 +35,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         }
       });
       
-      const { data: products } = await supabase
-        .from('products')
-        .select('id, updated_at, status, is_deleted, deleted_at, offer_price, selling_price, mrp, dealer_price, visibility, sales_channel, available_online, is_service_only')
-        .eq('status', 'active')
-        .eq('is_deleted', false);
-
-      if (products) {
-        productRoutes = filterPubliclyVisibleProducts(products).map((product) => ({
-          url: `${baseUrl}/products/${product.id}`,
-          lastModified: product.updated_at ? new Date(product.updated_at) : now,
-          changeFrequency: 'weekly' as const,
-          priority: 0.8,
-        }));
-      }
-
       const { data: blueprints } = await supabase
         .from('published_blueprints')
         .select('id, updated_at');

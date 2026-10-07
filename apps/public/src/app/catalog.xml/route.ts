@@ -1,12 +1,8 @@
-import { createClient } from '@supabase/supabase-js';
-import { requireSupabasePublicEnv } from '@tecbunny/database';
+import { getApi } from '@/lib/api';
 import { logger } from '@tecbunny/core/logger';
 import { getProductDisplayImage } from '@tecbunny/core/image-utils';
 import { stripHtmlToPlainText } from '@tecbunny/core/strings';
 import {
-  applyPublicProductOrdering,
-  applyPublicProductVisibilityFilters,
-  ensureProductColumns,
   isPubliclyVisibleProduct,
   resolvePublicProductPrice,
 } from '@tecbunny/core/product-visibility';
@@ -24,7 +20,7 @@ import { BRAND_LOGO_URL } from '@tecbunny/ui';
  * g:description, g:availability, g:condition, g:price, link, g:image_link,
  * g:brand.
  *
- * No env vars required — reuses the public Supabase client configuration.
+ * Products come from the central API (/api/v1/products).
  */
 
 export const revalidate = 3600;
@@ -94,23 +90,18 @@ export async function GET() {
 
   let itemsXml = '';
   try {
-    const { url, publicKey } = requireSupabasePublicEnv();
-    const supabase = createClient(url, publicKey, { auth: { persistSession: false, autoRefreshToken: false } });
-    const productColumns = await ensureProductColumns(supabase);
-    const { data, error } = await applyPublicProductOrdering(
-      applyPublicProductVisibilityFilters(supabase.from('products').select('*'), productColumns),
-      productColumns,
-    ).range(0, FEED_ITEM_LIMIT - 1);
-
-    if (error) {
-      logger.error('catalog_feed.query_failed', { error: error.message });
-    } else {
-      itemsXml = (Array.isArray(data) ? data : [])
-        .map((product) => buildItem(product as CatalogProduct))
-        .filter((item): item is string => Boolean(item))
-        .join('\n');
+    const pageSize = 500;
+    const products: Array<Record<string, unknown>> = [];
+    for (let page = 1; products.length < FEED_ITEM_LIMIT; page += 1) {
+      const result = await getApi().products.list({ page, pageSize }, { next: { revalidate: 3600, tags: ['products'] } });
+      products.push(...result.products);
+      if (result.products.length < pageSize || page * pageSize >= result.total) break;
     }
-  } catch (error) {
+    itemsXml = products
+      .slice(0, FEED_ITEM_LIMIT)
+      .map((product) => buildItem(product as CatalogProduct))
+      .filter((item): item is string => Boolean(item))
+      .join('\n');  } catch (error) {
     // Never hard-fail the public feed — Meta retries on schedule and keeps the
     // last good snapshot; an empty channel is safer than a 5xx loop.
     logger.error('catalog_feed.exception', { error: error instanceof Error ? error.message : String(error) });
