@@ -57,20 +57,11 @@ const serializeJsonLd = (data: unknown) => JSON.stringify(data).replace(/</g, '\
 // Homepage metadata for SEO
 export async function generateMetadata(): Promise<Metadata> {
   return createPageMetadata({
-  title: 'Technology, Repair, CCTV & Digital Services in Goa | TecBunny',
+  title: 'Computer Repair, CCTV Installation & Wi-Fi in Goa | TecBunny',
   description:
     'Computer repair, CCTV installation, Wi-Fi and networking, access control, technology products and IT support in Goa — by TecBunny Solutions.',
-  keywords: [
-    'enterprise IT infrastructure Goa',
-    'CCTV physical security Goa',
-    'smart access control',
-    'smart building automation Goa',
-    'IT lifecycle management',
-    'managed IT services Goa',
-    'TecBunny',
-  ],
   path: '/',
-  image: '/brand.png',
+  image: '/opengraph-image',
 });
 }
 

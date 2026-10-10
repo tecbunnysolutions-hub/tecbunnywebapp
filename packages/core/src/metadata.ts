@@ -36,7 +36,9 @@ export async function cleanMetadataTitle(value: string | null | undefined): Prom
     title = (title + padding).slice(0, 60);
   }
   if (title.length > 60) {
-    title = title.slice(0, 60);
+    const cut = title.slice(0, 60);
+    const lastBreak = cut.lastIndexOf(' ');
+    title = lastBreak > 40 ? cut.slice(0, lastBreak) : cut;
   }
   return title;
 }
