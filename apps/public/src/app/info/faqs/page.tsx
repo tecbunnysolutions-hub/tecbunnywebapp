@@ -27,6 +27,22 @@ type FaqRow = {
   display_order: number | null;
 };
 
+type DisplayFaq = {
+  id: string;
+  category: string;
+  question: string;
+  answer: string;
+  display_order: number;
+};
+
+function normalizeFaqs(faqs: FaqRow[]): DisplayFaq[] {
+  return faqs.map((faq) => ({
+    ...faq,
+    category: faq.category?.trim() || 'General',
+    display_order: faq.display_order ?? 0,
+  }));
+}
+
 async function fetchFaqs() {
   try {
     return (await getApi().content.faqs()).faqs;
@@ -72,7 +88,7 @@ const FALLBACK_FAQS: FaqRow[] = [
 
 async function FaqsLoader() {
   const fetched = await fetchFaqs();
-  const faqs = fetched.length > 0 ? fetched : FALLBACK_FAQS;
+  const faqs = normalizeFaqs(fetched.length > 0 ? fetched : FALLBACK_FAQS);
 
   // AEO: FAQPage structured data mirroring the visible FAQ list.
   const faqJsonLd = faqs.length > 0 ? {
