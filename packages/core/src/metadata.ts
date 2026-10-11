@@ -20,7 +20,7 @@ export async function cleanMetadataTitle(value: string | null | undefined): Prom
   if (!title || title.toLowerCase() === 'null' || title.toLowerCase() === 'undefined') {
     title = fallback;
   }
-  if (title.length < 50) {
+  if (title.length < 50 && !title.toLowerCase().includes('tecbunny')) {
     const suffix = ' | TecBunny Solutions';
     if (title.length + suffix.length <= 60) {
       title = title + suffix;
@@ -30,10 +30,6 @@ export async function cleanMetadataTitle(value: string | null | undefined): Prom
         title = title + shortSuffix;
       }
     }
-  }
-  if (title.length < 50) {
-    const padding = ' - Premium IT & Security Services';
-    title = (title + padding).slice(0, 60);
   }
   if (title.length > 60) {
     const cut = title.slice(0, 60);
@@ -53,12 +49,10 @@ export async function cleanMetadataDescription(
   if (!description || description.toLowerCase() === 'null' || description.toLowerCase() === 'undefined') {
     description = fallback;
   }
-  if (description.length < 140) {
-    const padding = ' We deliver elite technology setups, structured network cabling, and robust commercial hardware maintenance services for businesses.';
-    description = (description + padding).slice(0, 155);
-  }
   if (description.length > 155) {
-    description = description.slice(0, 155);
+    const cut = description.slice(0, 155);
+    const lastBreak = cut.lastIndexOf(' ');
+    description = lastBreak > 100 ? cut.slice(0, lastBreak) : cut;
   }
   return description;
 }

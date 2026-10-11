@@ -18,7 +18,7 @@ const CONTACT_RATE_LIMIT = {
 
 const createMessageSchema = z.object({
   name: z.string().min(2).max(120),
-  email: z.string().email().min(5).max(160),
+  email: z.string().email().min(5).max(160).optional().or(z.literal('').transform(() => undefined)),
   phone: z.string().min(6).max(32).optional().or(z.literal('').transform(() => undefined)),
   subject: z.string().min(2).max(160).optional().or(z.literal('').transform(() => undefined)),
   message: z.string().min(10).max(5000),
@@ -29,6 +29,12 @@ const createMessageSchema = z.object({
   utm_source: z.string().max(160).optional(),
   utm_medium: z.string().max(160).optional(),
   utm_campaign: z.string().max(160).optional(),
+  // Honeypot: must stay empty; bots that fill it are silently dropped
+  website: z.string().max(200).optional().or(z.literal('').transform(() => undefined)),
+  consent: z.boolean().optional(),
+}).refine(data => Boolean(data.email) || Boolean(data.phone), {
+  message: 'Email or phone is required',
+  path: ['email'],
 });
 
 const statusFilterSchema = z.object({
@@ -121,6 +127,14 @@ function classifyInquiry(input: {
     };
   }
 
+  if (formIdentifier === 'quick_enquiry_widget') {
+    return {
+      category: 'Sales' as const,
+      originKey: 'quick_enquiry_widget',
+      originPath: originPath || '/',
+    };
+  }
+
   return {
     category: 'Sales' as const,
     originKey: 'general_contact',
@@ -149,6 +163,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid input', details: parsed.error.flatten() }, { status: 400 });
     }
 
+    if (parsed.data.website) {
+      logger.warn('contact_message_honeypot_blocked', { ip: submissionIp });
+      return NextResponse.json({ success: true }, { status: 201 });
+    }
+
     const serviceSupabase = isSupabaseServiceConfigured ? createSupabaseServiceClient() : await createServerClient();
     const referrerUrl = request.headers.get('referer');
     const classification = classifyInquiry({
@@ -158,7 +177,7 @@ export async function POST(request: NextRequest) {
     });
     const payload = {
       name: parsed.data.name.trim(),
-      email: parsed.data.email.trim().toLowerCase(),
+      email: parsed.data.email?.trim().toLowerCase() || null,
       phone: parsed.data.phone?.trim() || null,
       subject: parsed.data.subject?.trim() || null,
       message: parsed.data.message.trim(),
@@ -186,7 +205,7 @@ export async function POST(request: NextRequest) {
       leadResult = await LeadEngineService.createLeadFromIntake(serviceSupabase, {
         first_name: parsed.data.name.trim().split(/\s+/)[0] || parsed.data.name.trim(),
         last_name: parsed.data.name.trim().split(/\s+/).slice(1).join(' ') || undefined,
-        email: parsed.data.email.trim().toLowerCase(),
+        email: parsed.data.email?.trim().toLowerCase() || undefined,
         phone: parsed.data.phone?.trim() || undefined,
         company_name: parsed.data.company_name?.trim() || undefined,
         requirement: parsed.data.message.trim(),
@@ -205,6 +224,8 @@ export async function POST(request: NextRequest) {
           source_key: classification.originKey,
           request_host: request.headers.get('host'),
           user_agent: request.headers.get('user-agent'),
+          consent_given: parsed.data.consent === true,
+          consent_recorded_at: parsed.data.consent === true ? new Date().toISOString() : null,
         },
       });
     } catch (error) {

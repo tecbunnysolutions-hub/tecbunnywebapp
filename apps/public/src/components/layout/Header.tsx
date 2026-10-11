@@ -57,6 +57,7 @@ const navLinks = [
       { name: 'CCTV & Security', href: '/services/cctv-security' },
       { name: 'IT Infrastructure', href: '/services/network-infrastructure' },
       { name: 'IT Support & AMC', href: '/services/lifecycle-hardware' },
+      { name: 'Software & System Admin', href: '/services/software-system-admin' },
       { name: 'Hotel & Resort Technology', href: '/services/smart-infrastructure' },
     ]
   },

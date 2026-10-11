@@ -22,7 +22,7 @@ const COMPANY_INFO_PATH = path.join(process.cwd(), 'public', 'company-info.json'
 
 const FALLBACK_COMPANY_SETTINGS: CompanySettings = {
   name: 'TecBunny Solutions',
-  address: 'H. No. 11, Nhayginwada, Parse, Parxem, Pernem, North Goa, Goa - 403512',
+  address: 'H. No. 11, Nhayginwada, Parcem, Pernem, North Goa, Goa - 403512',
   gstin: '30AAMCT1608G1ZO',
   pan: 'AAMCT1608G',
   tan: 'BLRT25863F',

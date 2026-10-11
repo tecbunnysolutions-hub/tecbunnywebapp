@@ -25,7 +25,6 @@ import { createPageMetadata } from "@tecbunny/core/metadata";
 import { TechnologyAssessmentFunnel } from '@/components/TechnologyAssessmentFunnel';
 import { HowItWorksSection } from '@/components/HowItWorksSection';
 import { TrustSection } from '@/components/TrustSection';
-import { WhatsAppFloatingButton } from '@/components/WhatsAppFloatingButton';
 import { BreadcrumbJsonLd } from '@/components/BreadcrumbJsonLd';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -168,8 +167,6 @@ export default function SmartInfrastructurePage() {
         <div className="absolute -left-40 top-0 h-[42rem] w-[42rem] rounded-full bg-blue-500/5 blur-[160px]" />
         <div className="absolute -right-40 top-1/3 h-[46rem] w-[46rem] rounded-full bg-indigo-500/5 blur-[180px]" />
       </div>
-
-      <WhatsAppFloatingButton defaultService="Smart Infrastructure" />
 
       {/* Hero Section */}
       <section className="relative pt-24 pb-16 md:pt-32 md:pb-24 border-b border-zinc-900">

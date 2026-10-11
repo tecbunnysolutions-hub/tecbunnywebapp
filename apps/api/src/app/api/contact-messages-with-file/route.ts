@@ -200,6 +200,17 @@ export async function POST(request: NextRequest) {
     const utm_medium = formData.get('utm_medium') as string | null;
     const utm_campaign = formData.get('utm_campaign') as string | null;
 
+    // Honeypot: bots that fill the hidden "website" field are silently dropped
+    const website = (formData.get('website') as string | null)?.trim();
+    if (website) {
+      logger.warn('contact_upload.honeypot_blocked', { correlationId });
+      return NextResponse.json(
+        { success: true, message: 'Your assessment request has been received' },
+        { status: 200 }
+      );
+    }
+    const consentGiven = formData.get('consent') === 'true';
+
     // Validate required fields
     if (!name || !email || !message) {
       logger.warn('contact_upload.missing_fields', { correlationId });
@@ -356,6 +367,8 @@ export async function POST(request: NextRequest) {
             source_context: form_identifier,
             document_filename: documentFilename || null,
             request_host: process.env.NEXT_PUBLIC_SITE_URL || null,
+            consent_given: consentGiven,
+            consent_recorded_at: consentGiven ? new Date().toISOString() : null,
           },
         });
 

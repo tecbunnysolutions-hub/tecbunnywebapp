@@ -19,14 +19,13 @@ import { createPageMetadata } from "@tecbunny/core/metadata";
 import { TechnologyAssessmentFunnel } from '@/components/TechnologyAssessmentFunnel';
 import { HowItWorksSection } from '@/components/HowItWorksSection';
 import { TrustSection } from '@/components/TrustSection';
-import { WhatsAppFloatingButton } from '@/components/WhatsAppFloatingButton';
 import { BreadcrumbJsonLd } from '@/components/BreadcrumbJsonLd';
 import { ServiceLocations } from '@/components/ServiceLocations';
 
 export async function generateMetadata(): Promise<Metadata> {
   return createPageMetadata({
     title: 'Commercial CCTV & Physical Security Solutions Goa | TecBunny',
-    description: 'Enterprise-grade IP CCTV camera networks, secure NVR arrays, AI video analytics, perimeter intrusion alarms, and low-light ColorVu security in Goa.',
+    description: 'IP CCTV camera networks, secure NVR recording, AI video analytics, perimeter intrusion alarms, and low-light ColorVu security in Goa.',
     keywords: [
       'IP CCTV cameras Goa',
       'commercial surveillance Goa',
@@ -84,14 +83,14 @@ export default function PhysicalSecurityPage() {
       ]
     },
     {
-      title: "High-Capacity NVR & Local RAID Archiving",
-      subtitle: "Enterprise-grade storage systems ensuring secure recording preservation and instant forensic playback.",
+      title: "Right-Sized NVR Storage",
+      subtitle: "Storage sized to your retention needs, with reliable playback when you need it.",
       icon: Video,
       gradient: "from-purple-500/20 via-pink-500/10 to-transparent",
       border: "hover:border-purple-500/35",
       points: [
         {
-          label: "RAID Redundancy Configurations",
+          label: "RAID Redundancy Options",
           desc: "Local server storage arrays protecting video files from single or dual hard drive hardware failures."
         },
         {
@@ -100,7 +99,7 @@ export default function PhysicalSecurityPage() {
         },
         {
           label: "End-to-End Stream Encryption",
-          desc: "AES-256 video stream encryption preventing unauthorized network intercept or credential compromise."
+          desc: "Encrypted video streams and hardened device credentials where supported by the camera and recorder platform."
         }
       ]
     },
@@ -163,8 +162,6 @@ export default function PhysicalSecurityPage() {
         <div className="absolute -right-40 top-1/3 h-[46rem] w-[46rem] rounded-full bg-indigo-500/5 blur-[180px]" />
       </div>
 
-      <WhatsAppFloatingButton defaultService="Physical Security & CCTV" />
-
       {/* Hero Section */}
       <section className="relative pt-24 pb-16 md:pt-32 md:pb-24 border-b border-zinc-900">
         <div className="container mx-auto px-6 max-w-screen-2xl">
@@ -182,7 +179,7 @@ export default function PhysicalSecurityPage() {
             </h1>
 
             <p className="text-zinc-400 text-lg md:text-xl font-light leading-relaxed max-w-3xl">
-              Protect your business premises, staff, and assets with enterprise-grade IP CCTV camera networks, local RAID storage arrays, AI perimeter analytics, and low-light ColorVu imaging across Goa.
+              Protect your business premises, staff, and assets with professional IP CCTV camera networks, local NVR storage, AI perimeter analytics, and low-light ColorVu imaging across Goa.
             </p>
 
             <div className="flex flex-wrap gap-4 pt-4 justify-center">
@@ -224,7 +221,7 @@ export default function PhysicalSecurityPage() {
               <div className="text-blue-400 font-mono font-bold text-sm">02 / Reliability</div>
               <h3 className="text-lg font-bold text-white font-tech">Drive Crashes &amp; Overwritten Footage</h3>
               <p className="text-xs text-zinc-400 font-light leading-relaxed">
-                Single-drive DVRs fail silently, losing critical footage. We engineer RAID-configured NVRs with surveillance-grade drives that alert staff before disks fail.
+                Single-drive DVRs fail silently, losing critical footage. We offer RAID-configured NVRs with surveillance-grade drives for sites that need extra storage resilience.
               </p>
             </div>
             <div className="rounded-2xl border border-zinc-850 bg-zinc-900/30 p-6 space-y-3">

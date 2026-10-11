@@ -81,6 +81,16 @@ export default function Page() {
       <Suspense fallback={<div className="min-h-screen bg-background" />}>
         <ContactPage />
       </Suspense>
+      <section aria-label="Contact details" className="container mx-auto max-w-4xl px-4 pb-16 text-sm text-muted-foreground">
+        <h2 className="mb-3 text-xl font-bold text-foreground">Contact details</h2>
+        <address className="not-italic leading-relaxed">
+          TECBUNNY SOLUTIONS PRIVATE LIMITED<br />
+          H. No. 11, Nhayginwada, Parcem, Pernem, North Goa, Goa - 403512<br />
+          Phone / WhatsApp: <a href="tel:+919604136010" className="text-primary">+91 96041 36010</a><br />
+          Email: <a href="mailto:support@tecbunny.com" className="text-primary">support@tecbunny.com</a><br />
+          Hours: Monday to Saturday, 9:30 AM - 6:30 PM
+        </address>
+      </section>
     </>
   );
 }

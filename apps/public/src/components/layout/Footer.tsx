@@ -8,7 +8,7 @@ import { Logo } from '@tecbunny/ui';
 import { logger, useAnalytics } from '@tecbunny/core';
 import { ENTITY } from '@/lib/entity';
 
-const DEFAULT_COMPANY_INFO = { supportEmail: 'support@tecbunny.com', supportPhone: '+91 96041 36010', registeredAddress: 'H. No. 11, Nhayginwada, Parse, Parxem, Pernem, North Goa, Goa - 403512', gstin: '30AAMCT1608G1ZO' };
+const DEFAULT_COMPANY_INFO = { supportEmail: 'support@tecbunny.com', supportPhone: '+91 96041 36010', registeredAddress: 'H. No. 11, Nhayginwada, Parcem, Pernem, North Goa, Goa - 403512', gstin: '30AAMCT1608G1ZO' };
 const FALLBACK_SOCIAL_LINKS = { facebookUrl: 'https://www.facebook.com/profile.php?id=61578165368064', instagramUrl: 'https://www.instagram.com/tecbunny_solutions/', twitterUrl: process.env.NEXT_PUBLIC_X_URL || '' };
 type FooterLink = { label: string; href: string };
 
@@ -17,7 +17,7 @@ const linkGroups: { title: string; links: FooterLink[] }[] = [
   { title: 'Products', links: [{ label: 'Browse all products', href: '/products' }, { label: 'Computers & laptops', href: '/products?q=laptop' }, { label: 'CCTV & security equipment', href: '/products?q=cctv' }, { label: 'Networking equipment', href: '/products?q=network' }, { label: 'Accessories & storage', href: '/products?q=accessories' }] },
   { title: 'Industries', links: [{ label: 'Hotels & resorts', href: '/industries/hospitality' }, { label: 'Offices & co-working', href: '/industries/offices' }, { label: 'Retail & commercial', href: '/industries/retail' }, { label: 'Education & campuses', href: '/industries/education' }, { label: 'Healthcare', href: '/industries/healthcare' }] },
   { title: 'Help', links: [{ label: 'Get help choosing', href: '/contact?intent=help_me_choose&source=footer' }, { label: 'Request a quote', href: '/contact?intent=quote_request&source=footer' }, { label: 'Book a site survey', href: '/assessment' }, { label: 'Repair & support', href: '/contact?intent=service_request&source=footer' }, { label: 'FAQs', href: '/info/faqs' }] },
-  { title: 'Company', links: [{ label: 'About TecBunny', href: '/about' }, { label: 'Projects', href: '/projects' }, { label: 'Industries', href: '/industries' }, { label: 'Contact', href: '/contact' }, { label: 'Careers', href: '/agents/recruit' }] },
+  { title: 'Company', links: [{ label: 'About TecBunny', href: '/about' }, { label: 'Portfolio', href: '/portfolio' }, { label: 'Industries', href: '/industries' }, { label: 'Contact', href: '/contact' }, { label: 'Partner Program', href: '/agents/recruit' }] },
 ];
 
 function FacebookIcon(props: React.SVGProps<SVGSVGElement>) { return <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" {...props}><path d="M13.5 22v-8h2.7l.4-3.1h-3.1V8.9c0-.9.3-1.5 1.6-1.5h1.7V4.6c-.3 0-1.3-.1-2.5-.1-2.5 0-4.2 1.5-4.2 4.3v2.4H7.3V14h2.8v8h3.4Z" /></svg>; }

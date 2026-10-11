@@ -18,8 +18,8 @@
 --                law. They are a solid starting baseline but SHOULD BE REVIEWED
 --                BY A QUALIFIED INDIAN LAWYER before you rely on them in
 --                production. Update the bracketed placeholders
---                ([REGISTERED OFFICE ADDRESS], [GSTIN], [CIN], [PHONE],
---                [GRIEVANCE OFFICER NAME]) with your real details.
+--                (H. No. 11, Nhayginwada, Parcem, Pernem, North Goa, Goa - 403512, 30AAMCT1608G1ZO, U80200GA2025PTC017488, +91 96041 36010,
+--                Shubham Sakharam Bhisaji (Director)) with your real details.
 -- =============================================================================
 
 BEGIN;
@@ -39,6 +39,7 @@ VALUES (
       jsonb_build_object('title', 'How We Use Your Information'),
       jsonb_build_object('title', 'Legal Basis for Processing'),
       jsonb_build_object('title', 'Cookies and Tracking'),
+      jsonb_build_object('title', 'AI Tools'),
       jsonb_build_object('title', 'Sharing and Disclosure'),
       jsonb_build_object('title', 'Payment Data Security'),
       jsonb_build_object('title', 'Data Retention'),
@@ -46,14 +47,15 @@ VALUES (
       jsonb_build_object('title', 'Children''s Privacy'),
       jsonb_build_object('title', 'Data Security'),
       jsonb_build_object('title', 'Changes to This Policy'),
+      jsonb_build_object('title', 'CCTV and Site Data'),
       jsonb_build_object('title', 'Grievance Officer and Contact')
     ),
     'description', $policy$
-<p><em>Last updated: 4 August 2026</em></p>
+<p><em>Last updated: 10 October 2026</em></p>
 <p>TECBUNNY SOLUTIONS PRIVATE LIMITED ("TecBunny", "we", "us" or "our") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your personal data when you visit or make a purchase on <strong>www.tecbunny.com</strong> (the "Platform") and describes your rights under the Digital Personal Data Protection Act, 2023 (DPDP Act) and the Information Technology Act, 2000 and rules thereunder.</p>
 
 <h2>Who We Are</h2>
-<p>The Platform is owned and operated by TECBUNNY SOLUTIONS PRIVATE LIMITED, a company incorporated under the Companies Act, 2013, having its registered office at [REGISTERED OFFICE ADDRESS], India (CIN: [CIN]; GSTIN: [GSTIN]). For the purposes of the DPDP Act, TecBunny is the "Data Fiduciary" that determines the purpose and means of processing your personal data.</p>
+<p>The Platform is owned and operated by TECBUNNY SOLUTIONS PRIVATE LIMITED, a company incorporated under the Companies Act, 2013, having its registered office at H. No. 11, Nhayginwada, Parcem, Pernem, North Goa, Goa - 403512, India (CIN: U80200GA2025PTC017488; GSTIN: 30AAMCT1608G1ZO). For the purposes of the DPDP Act, TecBunny is the "Data Fiduciary" that determines the purpose and means of processing your personal data.</p>
 
 <h2>Information We Collect</h2>
 <p>We collect the following categories of information:</p>
@@ -83,6 +85,9 @@ VALUES (
 
 <h2>Cookies and Tracking</h2>
 <p>We use cookies and similar technologies to operate the Platform, remember your preferences, analyse traffic and, with your consent, deliver relevant advertising. You can manage your preferences through our cookie consent banner and your browser settings. Please refer to our <a href="/info/policies/cookie">Cookie Policy</a> for full details.</p>
+
+<h2>AI Tools</h2>
+<p>If you use our AI-assisted research or recommendation tools, the text you enter is processed by a third-party AI provider (Google Gemini) to generate a response. Please do not enter passwords, financial details or other sensitive personal information into these tools.</p>
 
 <h2>Sharing and Disclosure</h2>
 <p>We do not sell your personal data. We share it only with:</p>
@@ -119,14 +124,16 @@ VALUES (
 <h2>Changes to This Policy</h2>
 <p>We may update this Privacy Policy from time to time. Material changes will be notified on this page with a revised "Last updated" date. Your continued use of the Platform after changes take effect constitutes acceptance of the revised Policy.</p>
 
-<h2>Grievance Officer and Contact</h2>
+<h2>CCTV and Site Data</h2>
+<p>When we install or service CCTV, access control or networking equipment at your premises, our engineers may have temporary access to camera footage, device configurations and network layouts. We treat this information as confidential: we do not view, copy or retain your camera footage except as strictly needed to complete the work you requested; any remote access we configure is documented and handed over to you at completion; and we recommend you change default passwords after handover. Footage recorded by your own systems remains your property and under your control.</p>
+
 <p>In accordance with the Information Technology Act, 2000 and the DPDP Act, 2023, our Grievance Officer can be reached at:</p>
 <p>
-  <strong>Grievance Officer:</strong> [GRIEVANCE OFFICER NAME]<br />
+  <strong>Grievance Officer:</strong> Shubham Sakharam Bhisaji (Director)<br />
   <strong>TECBUNNY SOLUTIONS PRIVATE LIMITED</strong><br />
-  [REGISTERED OFFICE ADDRESS]<br />
+  H. No. 11, Nhayginwada, Parcem, Pernem, North Goa, Goa - 403512<br />
   <strong>Email:</strong> <a href="mailto:support@tecbunny.com">support@tecbunny.com</a><br />
-  <strong>Phone:</strong> [PHONE]
+  <strong>Phone:</strong> +91 96041 36010
 </p>
 <p>We will acknowledge grievances within a reasonable time and endeavour to resolve them in accordance with applicable law.</p>
 $policy$
@@ -164,12 +171,13 @@ VALUES (
       jsonb_build_object('title', 'Limitation of Liability'),
       jsonb_build_object('title', 'Indemnification'),
       jsonb_build_object('title', 'Termination'),
+      jsonb_build_object('title', 'Quotes, Installation and AMC Services'),
       jsonb_build_object('title', 'Governing Law and Dispute Resolution'),
       jsonb_build_object('title', 'Changes to These Terms'),
       jsonb_build_object('title', 'Contact Us')
     ),
     'description', $policy$
-<p><em>Last updated: 4 August 2026</em></p>
+<p><em>Last updated: 10 October 2026</em></p>
 <p>These Terms of Service ("Terms") govern your access to and use of <strong>www.tecbunny.com</strong> (the "Platform") operated by TECBUNNY SOLUTIONS PRIVATE LIMITED ("TecBunny", "we", "us" or "our"). Please read them carefully. These Terms constitute an electronic record under the Information Technology Act, 2000 and do not require any physical or digital signature.</p>
 
 <h2>Acceptance of Terms</h2>
@@ -221,8 +229,17 @@ VALUES (
 <h2>Termination</h2>
 <p>We may suspend or terminate your access to the Platform at any time, without notice, for conduct that we believe violates these Terms or is harmful to other users, us or third parties. Provisions that by their nature should survive termination will survive.</p>
 
-<h2>Governing Law and Dispute Resolution</h2>
-<p>These Terms are governed by and construed in accordance with the laws of India. Subject to the rights available to consumers under the Consumer Protection Act, 2019, the courts at [CITY/JURISDICTION], India shall have exclusive jurisdiction over any disputes arising out of or relating to these Terms.</p>
+<h2>Quotes, Installation and AMC Services</h2>
+<p>In addition to online sales, TecBunny provides on-site services including site surveys, CCTV and networking installation, Annual Maintenance Contracts (AMC) and IT support. For these services:</p>
+<ul>
+  <li><strong>Quotes and advance payments:</strong> Service work begins only after you approve a written quote. Advance payments collected against an approved quote are applied to the final invoice. If you cancel after a site survey but before materials are ordered, we refund the advance less the survey charge stated in your quote. Once materials have been ordered or work has started, advances are refundable only to the extent materials have not been procured and work has not been performed.</li>
+  <li><strong>Installation and site work:</strong> We take reasonable care during installation. Our liability for accidental damage to your property caused directly by our team is limited to the reasonable cost of repair of the affected area. Pre-existing defects, structural weaknesses, and concealed wiring or plumbing not disclosed or visible to our team are excluded.</li>
+  <li><strong>Customer obligations:</strong> You agree to provide safe site access, necessary permissions (including from housing societies or landlords), power points and accurate information about the site.</li>
+  <li><strong>AMC:</strong> The scope, response targets and exclusions of maintenance are defined in your AMC plan document. Hardware replacement costs are separate unless expressly included in the plan.</li>
+  <li><strong>Equipment warranty:</strong> Manufacturer warranties on installed equipment are provided by the respective manufacturers; for equipment supplied by us, we assist with lodging and tracking warranty claims.</li>
+</ul>
+
+<p>These Terms are governed by and construed in accordance with the laws of India. Subject to the rights available to consumers under the Consumer Protection Act, 2019, the courts at Mapusa, Goa, India shall have exclusive jurisdiction over any disputes arising out of or relating to these Terms.</p>
 
 <h2>Changes to These Terms</h2>
 <p>We may revise these Terms from time to time. The updated version will be posted on this page with a revised "Last updated" date. Your continued use of the Platform after changes take effect constitutes acceptance of the revised Terms.</p>
@@ -230,7 +247,7 @@ VALUES (
 <h2>Contact Us</h2>
 <p>
   <strong>TECBUNNY SOLUTIONS PRIVATE LIMITED</strong><br />
-  [REGISTERED OFFICE ADDRESS]<br />
+  H. No. 11, Nhayginwada, Parcem, Pernem, North Goa, Goa - 403512<br />
   <strong>Email:</strong> <a href="mailto:support@tecbunny.com">support@tecbunny.com</a><br />
   <strong>Website:</strong> <a href="https://www.tecbunny.com">www.tecbunny.com</a>
 </p>
@@ -266,7 +283,7 @@ VALUES (
       jsonb_build_object('title', 'Contact Us')
     ),
     'description', $policy$
-<p><em>Last updated: 4 August 2026</em></p>
+<p><em>Last updated: 10 October 2026</em></p>
 <p>This Shipping Policy explains how TECBUNNY SOLUTIONS PRIVATE LIMITED ("TecBunny", "we", "us" or "our") processes and delivers orders placed on <strong>www.tecbunny.com</strong>.</p>
 
 <h2>Order Processing</h2>
@@ -294,7 +311,7 @@ VALUES (
 <p>Our courier partners will typically make up to three delivery attempts. Please ensure the delivery address and contact number are accurate and that someone is available to receive the shipment. If delivery fails due to an incorrect address, refusal to accept, or unavailability of the recipient, the order may be returned to us and additional charges may apply for re-shipment.</p>
 
 <h2>Damaged or Incorrect Items</h2>
-<p>If your package arrives damaged, tampered with, or contains an incorrect item, please refuse delivery where possible and contact us within 48 hours of delivery with photographs of the packaging and product. We will investigate and arrange a replacement or refund in line with our <a href="/info/policies/return">Return &amp; Exchange Policy</a>.</p>
+<p>If your package arrives damaged, tampered with, or contains an incorrect item, please refuse delivery where possible and contact us within 7 days of delivery with photographs of the packaging and product. We will investigate and arrange a replacement or refund in line with our <a href="/info/policies/return">Return &amp; Exchange Policy</a>.</p>
 
 <h2>Risk and Title</h2>
 <p>Risk of loss and title for products pass to you upon delivery to the address provided at checkout.</p>
@@ -333,7 +350,7 @@ VALUES (
       jsonb_build_object('title', 'Contact Us')
     ),
     'description', $policy$
-<p><em>Last updated: 4 August 2026</em></p>
+<p><em>Last updated: 10 October 2026</em></p>
 <p>At TECBUNNY SOLUTIONS PRIVATE LIMITED ("TecBunny"), your satisfaction matters. This Return &amp; Exchange Policy explains when and how you can return or exchange products purchased on <strong>www.tecbunny.com</strong>, consistent with your rights under the Consumer Protection Act, 2019.</p>
 
 <h2>Return Eligibility</h2>
@@ -344,10 +361,14 @@ VALUES (
   <li>accompanied by the original invoice or proof of purchase.</li>
 </ul>
 
-<h2>Return Window</h2>
+<p>Products that have been installed, configured or commissioned on-site (for example CCTV cameras or networking equipment set up by our team) are treated as used and are not eligible for change-of-mind returns. Defects in such products are handled under the manufacturer warranty or your service plan.</p>
+
+
 <p>You may request a return within <strong>7 days</strong> of delivery, unless a different period is specified on the product page. Requests made after this window may not be accepted, except where the product is defective or covered by a manufacturer warranty.</p>
 
-<h2>Non-Returnable Items</h2>
+<p>Manufacturer warranty claims are serviced by the respective brand network. For equipment supplied by us, we will help you lodge and track the claim.</p>
+
+
 <p>The following are generally not eligible for return or exchange unless they arrive damaged or defective:</p>
 <ul>
   <li>items marked "non-returnable" or "final sale" on the product page;</li>
@@ -369,7 +390,7 @@ VALUES (
 <p>Approved refunds are governed by our <a href="/info/policies/refund-cancellation">Refund &amp; Cancellation Policy</a>, including timelines and the method of refund.</p>
 
 <h2>Damaged, Defective or Wrong Items</h2>
-<p>If you receive a damaged, defective or incorrect product, notify us within 48 hours of delivery with supporting photographs. In such cases, we will arrange a free pickup and provide a replacement or full refund, including any shipping charges paid.</p>
+<p>If you receive a damaged, defective or incorrect product, notify us within 7 days of delivery with supporting photographs. In such cases, we will arrange a free pickup and provide a replacement or full refund, including any shipping charges paid.</p>
 
 <h2>Contact Us</h2>
 <p>For any return or exchange assistance, contact us at <a href="mailto:support@tecbunny.com">support@tecbunny.com</a>.</p>
@@ -401,11 +422,12 @@ VALUES (
       jsonb_build_object('title', 'Refund Timelines'),
       jsonb_build_object('title', 'Partial Refunds and Deductions'),
       jsonb_build_object('title', 'Failed and Duplicate Payments'),
-      jsonb_build_object('title', 'Non-Refundable Charges'),
+      jsonb_build_object('title', 'Non-Refundable Charges'),
+      jsonb_build_object('title', 'Services, Quotes and Advance Payments'),
       jsonb_build_object('title', 'Contact Us')
     ),
     'description', $policy$
-<p><em>Last updated: 4 August 2026</em></p>
+<p><em>Last updated: 10 October 2026</em></p>
 <p>This Refund &amp; Cancellation Policy explains how TECBUNNY SOLUTIONS PRIVATE LIMITED ("TecBunny") handles order cancellations and refunds for purchases made on <strong>www.tecbunny.com</strong>.</p>
 
 <h2>Order Cancellation by You</h2>
@@ -438,8 +460,9 @@ VALUES (
 <h2>Non-Refundable Charges</h2>
 <p>Unless the return is due to our error or a defective product, shipping charges and certain convenience or handling fees may be non-refundable. Any such non-refundable charges will be disclosed to you where applicable.</p>
 
-<h2>Contact Us</h2>
-<p>For refund and cancellation queries, contact us at <a href="mailto:support@tecbunny.com">support@tecbunny.com</a>.</p>
+<h2>Services, Quotes and Advance Payments</h2>
+<p>For on-site services (site surveys, installation, AMC and IT support), advance payments collected against an approved quote are refundable as follows: before a site survey, in full; after a site survey but before materials are ordered, less the survey charge stated in your quote; after materials are ordered or work has started, only to the extent materials have not been procured and work has not been performed. Refunds of service advances are processed within the timelines stated in this policy.</p>
+, contact us at <a href="mailto:support@tecbunny.com">support@tecbunny.com</a>.</p>
 $policy$
   ),
   true,

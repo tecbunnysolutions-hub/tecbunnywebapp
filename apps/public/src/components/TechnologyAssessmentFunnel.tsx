@@ -158,6 +158,8 @@ export function TechnologyAssessmentFunnel({
     phone: '',
     additionalNotes: '',
     privacyConsent: true,
+    // Honeypot: hidden from humans, must stay empty
+    website: '',
   });
 
   // Load form progress from localStorage
@@ -316,7 +318,7 @@ export function TechnologyAssessmentFunnel({
         toast({
           variant: 'destructive',
           title: 'Email Required',
-          description: 'Please provide your work email so we can send the assessment proposal.',
+          description: 'Please provide your email so we can send the assessment proposal. Prefer WhatsApp? Share your number and we will coordinate there.',
         });
         return;
       }
@@ -383,7 +385,7 @@ export function TechnologyAssessmentFunnel({
       toast({
         variant: 'destructive',
         title: 'Missing Contact Fields',
-        description: 'Please enter your full name, company name, work email, and phone number.',
+        description: 'Please enter your full name, email, and phone number. WhatsApp numbers work fine.',
       });
       return;
     }
@@ -436,6 +438,8 @@ ${formData.additionalNotes.trim() || 'None'}
       submitFormData.append('project_size', formData.projectSize);
       submitFormData.append('origin_path', typeof window !== 'undefined' ? window.location.pathname : '/assessment');
       submitFormData.append('form_identifier', 'technology_assessment_funnel');
+      submitFormData.append('website', formData.website);
+      submitFormData.append('consent', String(formData.privacyConsent));
       
       // Append file if present
       if (attachedFile) {
@@ -798,10 +802,10 @@ ${formData.additionalNotes.trim() || 'None'}
               />
             </div>
 
-            {/* Work Email Address */}
+            {/* Email Address */}
             <div className="space-y-2">
               <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider" htmlFor="step1-email">
-                Work Email Address *
+                Email Address *
               </label>
               <Input
                 id="step1-email"
@@ -1004,7 +1008,7 @@ ${formData.additionalNotes.trim() || 'None'}
 
               <div className="space-y-2">
                 <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider" htmlFor="work-email">
-                  Work Email Address *
+                  Email Address *
                 </label>
                 <Input
                   id="work-email"
@@ -1075,6 +1079,20 @@ ${formData.additionalNotes.trim() || 'None'}
                 rows={3}
                 disabled={isSubmitting}
                 className="bg-[#09090B] border-zinc-850 focus-visible:ring-blue-500/40 text-white placeholder:text-zinc-600 text-sm rounded-xl"
+              />
+            </div>
+
+            {/* Honeypot: visually hidden, bots fill it, humans never see it */}
+            <div className="absolute -left-[9999px] -top-[9999px] h-0 w-0 overflow-hidden opacity-0" aria-hidden="true">
+              <label htmlFor="assessment-website">Website</label>
+              <input
+                id="assessment-website"
+                name="website"
+                type="text"
+                value={formData.website}
+                onChange={handleChange}
+                tabIndex={-1}
+                autoComplete="off"
               />
             </div>
 

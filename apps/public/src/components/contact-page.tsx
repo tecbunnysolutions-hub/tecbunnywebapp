@@ -74,6 +74,8 @@ const contactSchema = z.object({
   subject: z.enum(SUBJECT_OPTIONS, { message: 'Please select a subject.' }),
   message: z.string().min(10, { message: 'Message must be at least 10 characters.' }),
   privacyConsent: z.boolean().refine((val) => val === true, { message: 'Please accept the Privacy Policy to proceed.' }),
+  // Honeypot: hidden from humans, must stay empty
+  website: z.string().max(200).optional(),
 });
 
 type ContactFormValues = z.infer<typeof contactSchema>;
@@ -123,6 +125,7 @@ export default function ContactPage() {
       subject: defaultSubject,
       message: '',
       privacyConsent: false,
+      website: '',
     },
   });
 
@@ -179,6 +182,8 @@ export default function ContactPage() {
         utm_source: searchParams.get('utm_source') ?? undefined,
         utm_medium: searchParams.get('utm_medium') ?? undefined,
         utm_campaign: searchParams.get('utm_campaign') ?? undefined,
+        website: values.website || undefined,
+        consent: values.privacyConsent,
       };
 
       await submitContactMessage(payload);
@@ -434,6 +439,18 @@ export default function ContactPage() {
                 <p className="mt-2 text-sm text-muted-foreground">Drop your details below. We will review your requirements and respond within one business day.</p>
                 <Form {...form}>
                   <form onSubmit={form.handleSubmit(onSubmit)} className="mt-6 space-y-6">
+                    {/* Honeypot: visually hidden, bots fill it, humans never see it */}
+                    <div className="absolute -left-[9999px] -top-[9999px] h-0 w-0 overflow-hidden opacity-0" aria-hidden="true">
+                      <label htmlFor="contact-website">Website</label>
+                      <input
+                        id="contact-website"
+                        type="text"
+                        tabIndex={-1}
+                        autoComplete="off"
+                        {...form.register('website')}
+                      />
+                    </div>
+
                     <div className="grid gap-4 md:grid-cols-2">
                       <FormField
                         control={form.control}

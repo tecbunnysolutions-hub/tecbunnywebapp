@@ -19,7 +19,6 @@ import { createPageMetadata } from "@tecbunny/core/metadata";
 import { TechnologyAssessmentFunnel } from '@/components/TechnologyAssessmentFunnel';
 import { HowItWorksSection } from '@/components/HowItWorksSection';
 import { TrustSection } from '@/components/TrustSection';
-import { WhatsAppFloatingButton } from '@/components/WhatsAppFloatingButton';
 import { BreadcrumbJsonLd } from '@/components/BreadcrumbJsonLd';
 import { ServiceLocations } from '@/components/ServiceLocations';
 
@@ -49,7 +48,7 @@ const FAQS = [
   },
   {
     question: "What brand hardware do you supply and configure?",
-    answer: "We supply and configure Tier-1 OEM enterprise equipment including Ubiquiti UniFi, Cisco, Fortinet, Digisol, and HFCL IO, sourced through established national distribution channels with full warranty support."
+    answer: "We supply and configure genuine OEM networking equipment, including the Digisol and TP-Link systems shown in our portfolio, sourced through established national distribution channels with full warranty support."
   },
   {
     question: "How does dual-ISP automatic failover work?",
@@ -163,8 +162,6 @@ export default function NetworkInfrastructurePage() {
         <div className="absolute -left-40 top-0 h-[42rem] w-[42rem] rounded-full bg-blue-500/5 blur-[160px]" />
         <div className="absolute -right-40 top-1/3 h-[46rem] w-[46rem] rounded-full bg-indigo-500/5 blur-[180px]" />
       </div>
-
-      <WhatsAppFloatingButton defaultService="Network Infrastructure" />
 
       {/* Hero Section */}
       <section className="relative pt-24 pb-16 md:pt-32 md:pb-24 border-b border-zinc-900">

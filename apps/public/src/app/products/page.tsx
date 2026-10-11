@@ -19,7 +19,7 @@ export async function generateMetadata(): Promise<Metadata> {
   description: 'Shop premium CCTV systems, surveillance cameras, computer hardware, and accessories curated by TecBunny. Best pricing in Goa.',
   keywords: ['shop', 'products', 'CCTV', 'computers', 'accessories', 'TecBunny'],
   path: '/products',
-  image: '/brand.png',
+  image: '/opengraph-image',
 });
 }
 

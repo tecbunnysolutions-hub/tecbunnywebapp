@@ -9,7 +9,7 @@ import {
   Activity
 } from '@/components/industry-icons';
 import { createPageMetadata } from '@tecbunny/core/metadata';
-import { BRAND_LOGO_URL } from '@tecbunny/ui';
+import { BRAND_LOGO_URL } from "@tecbunny/core/brand";
 import { IndustryLandingPage } from '@/components/IndustryLandingPage';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -36,7 +36,7 @@ export default function HealthcareIndustryPage() {
       badge="Healthcare & Hospitals"
       title="Technology Infrastructure for"
       subtitle="Hospitals, Clinics & Diagnostic Centers in Goa"
-      heroLede="Guarantee 24/7 digital uptime and data privacy with isolated medical VLANs, restricted pharmacy access control, continuous CCTV security, and zero-downtime server setups."
+      heroLede="Support dependable daily operations and data privacy with isolated medical VLANs, restricted pharmacy access control, continuous CCTV security, and UPS-backed server setups."
       primaryCtaText="Request Healthcare IT Assessment"
       problemsTitle="Critical Technology Risks in Healthcare Facilities"
       problemsSubtitle="Healthcare operations cannot tolerate network downtime or data leaks. Substandard equipment puts patient care and regulatory compliance at risk."
@@ -62,9 +62,9 @@ export default function HealthcareIndustryPage() {
       solutions={[
         {
           title: "Isolated Medical VLANs & Gigabit Backbone",
-          desc: "Strictly segregated logical networks isolating patient diagnostic machines (X-Ray, MRI, Ultrasound), staff EMR portals, and guest Wi-Fi.",
+          desc: "Strictly segregated logical networks isolating patient record systems, diagnostic workstations, staff portals, and guest Wi-Fi.",
           points: [
-            "Prioritized QoS bandwidth for critical life-support and monitoring feeds",
+            "Prioritized QoS bandwidth for critical clinical applications",
             "10G fiber backbone between diagnostic wings and server rooms",
             "Next-gen firewalls preventing unauthorized external network probes"
           ],

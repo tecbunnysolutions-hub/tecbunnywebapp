@@ -3,7 +3,7 @@ import { ProductDetailPage } from '@/components/products/ProductDetailPage';
 import { Metadata } from 'next';
 import { cleanMetadataDescription, cleanMetadataTitle, createPageMetadata } from "@tecbunny/core/metadata";
 import { Suspense } from 'react';
-import { BRAND_LOGO_URL } from "@tecbunny/ui";
+import { BRAND_LOGO_URL } from "@tecbunny/core/brand";
 import { stripHtmlToPlainText } from "@tecbunny/core/strings";
 import { isPubliclyVisibleProduct, resolvePublicProductPrice } from "@tecbunny/core/product-visibility";
 import { notFound } from 'next/navigation';

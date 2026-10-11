@@ -11,7 +11,7 @@ import {
   Activity
 } from '@/components/industry-icons';
 import { createPageMetadata } from '@tecbunny/core/metadata';
-import { BRAND_LOGO_URL } from '@tecbunny/ui';
+import { BRAND_LOGO_URL } from "@tecbunny/core/brand";
 import { IndustryLandingPage } from '@/components/IndustryLandingPage';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -97,7 +97,7 @@ export default function HospitalityIndustryPage() {
           title: "Guest Room Management & Energy Automation (GRMS)",
           desc: "Intelligent welcome lighting scenes, keycard power saver switches, and automated climate shutoffs when patio doors are opened.",
           points: [
-            "Reduces HVAC electricity consumption by up to 25-30%",
+            "Helps reduce HVAC electricity waste in unoccupied rooms",
             "Custom touch switch panels with 'Do Not Disturb' & 'Make Up Room' indicators",
             "Central front-desk dashboard tracking room occupancy and status"
           ],
@@ -132,11 +132,11 @@ export default function HospitalityIndustryPage() {
         }
       ]}
       caseStudy={{
-        title: "6-Node Enterprise Mesh Network for Anjuna Heritage Estate",
+        title: "6-Node Mesh Network for a Villa in Anjuna",
         location: "Anjuna, North Goa",
         challenge: "18-inch thick heritage stone walls and expansive 12,000 sq ft footprint causing severe Wi-Fi dropouts for international guests.",
         solution: "Fitted shielded Cat6 outdoor lines, discrete PoE ceiling access points, and multi-VLAN guest isolation.",
-        outcome: "Sub-50ms roaming across the entire estate with sustained 450+ Mbps throughput and zero guest Wi-Fi complaints."
+        outcome: "On-site tests at handover measured sub-50ms roaming and sustained throughput above 450 Mbps across the property."
       }}
       faqs={[
         {

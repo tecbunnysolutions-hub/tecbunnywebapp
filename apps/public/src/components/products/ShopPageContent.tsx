@@ -1012,8 +1012,10 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
                     }
 
                     const simpleDesc = getSimplifiedDescription(product.description);
-                    const stockStatus = product.stock_status || 'in_stock';
-                    const availability = stockStatus === 'out_of_stock'
+                    const stockStatus = product.stock_status || '';
+                    const availability = !stockStatus
+                      ? null
+                      : stockStatus === 'out_of_stock'
                       ? { label: 'Out of stock', className: 'text-zinc-500' }
                       : stockStatus === 'low_stock'
                         ? { label: 'Low stock', className: 'text-amber-500' }
@@ -1087,7 +1089,7 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
                                   MRP ₹{mrpPrice.toLocaleString('en-IN')}
                                 </span>
                               )}
-                              <span className={`mt-1 text-[10px] font-semibold uppercase tracking-wide ${availability.className}`}>{availability.label}</span>
+                              {availability && (<span className={`mt-1 text-[10px] font-semibold uppercase tracking-wide ${availability.className}`}>{availability.label}</span>)}
                             </div>
                             <button
                               type="button"

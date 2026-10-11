@@ -30,17 +30,6 @@ export const SERVICE_LOCATIONS: ServiceLocationGroup[] = [
       },
     ],
   },
-  {
-    serviceName: 'Physical Security & Home Theater',
-    serviceUrl: '/services/physical-security',
-    locations: [
-      {
-        name: 'Pernem (Home Theater & Automation)',
-        url: '/services/physical-security/pernem-home-theater',
-        areas: ['Pernem', 'Parcem', 'Mandrem', 'Arambol', 'Morjim', 'Siolim'],
-      },
-    ],
-  },
 ];
 
 export function getLocationsForService(serviceUrl: string): ServiceLocation[] {

@@ -62,8 +62,17 @@ export default async function FaqsPage() {
   );
 }
 
+const FALLBACK_FAQS: FaqRow[] = [
+  { id: 'wifi-goa', category: 'Services', question: 'Do you set up Wi-Fi networks in Goa?', answer: 'Yes. We set up Wi-Fi, LAN networks, and cable runs for offices, hotels, and commercial properties across Goa. Every network job comes with a 90-day free support period and a full handover report.', display_order: 1 },
+  { id: 'amc-cover', category: 'Services', question: 'What does an AMC plan cover?', answer: 'An AMC (Annual Maintenance Contract) covers your CCTV or IT kit for the full year. It can include planned check-ups, remote support, on-site fixes, and audit reports, with response targets defined in your plan.', display_order: 2 },
+  { id: 'outside-goa', category: 'Coverage', question: 'Do you serve areas outside Goa?', answer: 'Yes. We serve clients in Mumbai, Pune, and Nashik for large IT and CCTV jobs, and we run remote IT support for firms across India. For jobs outside Goa, call us to get a fast quote.', display_order: 3 },
+  { id: 'cctv-cost', category: 'Pricing', question: 'How much does CCTV installation cost in Goa?', answer: 'It depends on camera count, cable runs, recorder capacity, and site conditions. We quote per site after a survey, with an itemized estimate so you can see hardware, cabling, and labour separately. Request a free assessment to get an exact figure.', display_order: 4 },
+  { id: 'get-started', category: 'Getting Started', question: 'How do I get started with TecBunny?', answer: 'Three steps: book a free technology assessment, let our engineers survey your site and review your existing systems, then receive an itemized proposal with a clear scope and support plan. There is no obligation to proceed.', display_order: 5 },
+];
+
 async function FaqsLoader() {
-  const faqs = await fetchFaqs();
+  const fetched = await fetchFaqs();
+  const faqs = fetched.length > 0 ? fetched : FALLBACK_FAQS;
 
   // AEO: FAQPage structured data mirroring the visible FAQ list.
   const faqJsonLd = faqs.length > 0 ? {

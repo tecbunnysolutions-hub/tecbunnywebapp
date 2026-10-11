@@ -34,7 +34,7 @@ export default function WebDevPage() {
     },
     {
       title: "Unique Design",
-      description: "Custom-crafted designs tailored to your brand. We don't use common templates.",
+      description: "Custom-crafted designs tailored to your brand and business goals.",
       icon: Palette,
     },
     {
@@ -101,7 +101,7 @@ export default function WebDevPage() {
                 Web Engineering Services
               </h2>
               <p className="text-zinc-400 text-sm font-light leading-relaxed">
-                We create robust, scalable, and secure websites that drive growth. From landing pages to complex web applications, we handle it all. In fact, this web platform you are viewing right now is engineered by us—a live example of our capabilities.
+                We create robust, scalable, and secure websites that drive growth. From landing pages to complex web applications, we handle it all. This website is one example of our work.
               </p>
               <ul className="grid gap-4 mt-6">
                 {[

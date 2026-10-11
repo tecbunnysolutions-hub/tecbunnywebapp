@@ -61,7 +61,7 @@ export default function AgentRecruitPage() {
             <p className="text-muted-foreground text-lg">Designed for the modern tech professional.</p>
           </div>
 
-          <div className="grid gap-8 md:grid-cols-3">
+          <div className="grid gap-8 md:grid-cols-2">
             {[
               {
                 title: "Published Commission Rules",
@@ -143,10 +143,10 @@ export default function AgentRecruitPage() {
       </section>
 
       <section className="border-y border-border bg-muted/20 py-16">
-        <div className="container mx-auto grid gap-6 px-4 md:grid-cols-3">
-          <div><h2 className="text-xl font-bold">Optional Platinum</h2><p className="mt-2 text-sm text-muted-foreground">A refundable security deposit equal to 50% of the tier limit activates a 12-month Platinum term. Platinum adds two times the base commission to the base commission.</p></div>
+        <div className="container mx-auto grid gap-6 px-4 md:grid-cols-2">
+          
           <div><h2 className="text-xl font-bold">Approved price uplift</h2><p className="mt-2 text-sm text-muted-foreground">With written approval, quotes may be up to 20% above the eligible base price. Affiliates receive 50% of that approved difference after final settlement.</p></div>
-          <div><h2 className="text-xl font-bold">Payout milestones</h2><p className="mt-2 text-sm text-muted-foreground">40% of base commission is scheduled after booking. The remaining base, uplift share, and Platinum bonus are scheduled after installation and final customer settlement.</p></div>
+          <div><h2 className="text-xl font-bold">Payout milestones</h2><p className="mt-2 text-sm text-muted-foreground">40% of base commission is scheduled after booking. The remaining base and uplift share are scheduled after installation and final customer settlement.</p></div>
         </div>
       </section>
 
@@ -157,7 +157,7 @@ export default function AgentRecruitPage() {
             <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_25%,rgba(255,255,255,0.1)_50%,transparent_75%)] bg-[length:200%_200%] animate-shimmer" />
             <h2 className="relative mb-6 text-3xl font-extrabold md:text-4xl text-primary-foreground">Ready to Start Your TecBunny Journey?</h2>
             <p className="relative mx-auto mb-10 max-w-2xl text-primary-foreground/90">
-              Applications are reviewed within 24 hours. Start earning immediately after approval.
+              Applications are reviewed within 24 hours. You can start referring customers as soon as you are approved.
             </p>
             <div className="relative flex justify-center">
               <Button size="lg" className="h-14 bg-primary-foreground px-10 text-primary hover:bg-primary-foreground/90" asChild>

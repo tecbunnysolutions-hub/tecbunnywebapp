@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import Link from 'next/link';
 import { Send, CheckCircle2 } from 'lucide-react';
 import { Button, Input, useToast } from '@tecbunny/ui';
 
@@ -18,6 +19,9 @@ export function LeadCaptureForm() {
     email: '',
     phone: '',
     service: 'CCTV' as ServiceOption,
+    // Honeypot: hidden from humans, must stay empty
+    website: '',
+    consent: false,
   });
 
   const handleChange = (
@@ -37,6 +41,15 @@ export function LeadCaptureForm() {
       return;
     }
 
+    if (!form.consent) {
+      toast({
+        variant: 'destructive',
+        title: 'Consent required',
+        description: 'Please agree to be contacted regarding your enquiry.',
+      });
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       const response = await fetch('/api/contact-messages', {
@@ -52,6 +65,8 @@ export function LeadCaptureForm() {
           service_interest: form.service,
           origin_path: '/lead-capture',
           form_identifier: 'lead_capture_webhook',
+          website: form.website,
+          consent: form.consent,
         }),
       });
 
@@ -64,7 +79,7 @@ export function LeadCaptureForm() {
         title: 'Request received!',
         description: 'Your technical guide is on its way to your inbox.',
       });
-      setForm({ name: '', company: '', email: '', phone: '', service: 'CCTV' });
+      setForm({ name: '', company: '', email: '', phone: '', service: 'CCTV', website: '', consent: false });
     } catch (error) {
       toast({
         variant: 'destructive',
@@ -188,6 +203,39 @@ export function LeadCaptureForm() {
             </option>
           ))}
         </select>
+      </div>
+
+      {/* Honeypot: visually hidden, bots fill it, humans never see it */}
+      <div className="absolute -left-[9999px] -top-[9999px] h-0 w-0 overflow-hidden opacity-0" aria-hidden="true">
+        <label htmlFor="lc-website">Website</label>
+        <input
+          id="lc-website"
+          name="website"
+          type="text"
+          value={form.website}
+          onChange={handleChange}
+          tabIndex={-1}
+          autoComplete="off"
+        />
+      </div>
+
+      <div className="rounded-xl border border-zinc-850 bg-zinc-900/30 p-4">
+        <label className="flex items-start gap-3 cursor-pointer select-none">
+          <input
+            type="checkbox"
+            checked={form.consent}
+            onChange={(e) => setForm(prev => ({ ...prev, consent: e.target.checked }))}
+            disabled={isSubmitting}
+            className="mt-1 h-4 w-4 rounded border-zinc-700 bg-zinc-900 text-blue-600 focus:ring-blue-500/40 accent-blue-600"
+          />
+          <span className="text-xs text-zinc-400 leading-relaxed">
+            I agree that TecBunny Solutions may contact me via Phone, WhatsApp, or Email regarding this enquiry, as described in the{' '}
+            <Link href="/info/policies/privacy" target="_blank" className="text-blue-400 hover:underline">
+              Privacy Policy
+            </Link>
+            .
+          </span>
+        </label>
       </div>
 
       <Button

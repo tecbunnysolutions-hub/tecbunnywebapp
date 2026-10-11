@@ -10,7 +10,7 @@ export const revalidate = 300;
 export async function generateMetadata(): Promise<Metadata> {
   return createPageMetadata({
     title: 'Return & Exchange Policy',
-    description: 'Read TecBunny Solutions return and exchange terms for eligible products and service scenarios.',
+    description: 'Read TecBunny Solutions return and exchange terms for products bought online, including eligibility, windows and warranty routing.',
     path: '/info/policies/return',
   });
 }

@@ -7,7 +7,7 @@ import { BreadcrumbJsonLd } from '@/components/BreadcrumbJsonLd';
 import { logger } from '@tecbunny/core';
 
 import { createPageMetadata } from "@tecbunny/core/metadata";
-import { BRAND_LOGO_URL } from "@tecbunny/ui";
+import { BRAND_LOGO_URL } from "@tecbunny/core/brand";
 import { stripHtmlToPlainText } from "@tecbunny/core/strings";
 import type { Service } from '@tecbunny/core';
 

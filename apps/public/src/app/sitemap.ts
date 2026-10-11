@@ -22,7 +22,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       );
       if (products.length === 0 || page * pageSize >= total) break;
     }
-  } catch { /* non-fatal */ }
+  } catch (error) {
+    console.warn('Failed to fetch sitemap product routes', error);
+  }
   try {
     const { blueprints } = await getApi().blueprints.list();
     blueprintRoutes = blueprints.map((blueprint) => ({
@@ -233,12 +235,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: 'weekly' as const,
       priority: 0.7,
     },
-    {
-      url: `${baseUrl}/ai-research`,
-      lastModified: now,
-      changeFrequency: 'monthly' as const,
-      priority: 0.7,
-    },
+
     {
       url: `${baseUrl}/info/faqs`,
       lastModified: now,
@@ -253,6 +250,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
     {
       url: `${baseUrl}/info/policies/privacy`,
+      lastModified: now,
+      changeFrequency: 'monthly' as const,
+      priority: 0.5,
+    },
+    {
+      url: `${baseUrl}/info/policies/cookie`,
       lastModified: now,
       changeFrequency: 'monthly' as const,
       priority: 0.5,
@@ -299,12 +302,32 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       );
       if (posts.length === 0 || page * pageSize >= total) break;
     }
-  } catch { /* non-fatal */ }
+  } catch (error) {
+    console.warn('Failed to fetch sitemap blog routes', error);
+  }
+
+  // Static pages have no real modified date; omit it rather than report "now" on every request.
+  type StaticEntry = {
+    url: string;
+    lastModified?: Date | string;
+    changeFrequency?: 'always' | 'hourly' | 'daily' | 'weekly' | 'monthly' | 'yearly' | 'never';
+    priority?: number;
+  };
+
+  const extraStaticRoutes: StaticEntry[] = [
+    { url: `${baseUrl}/about/business-info`, changeFrequency: 'monthly', priority: 0.5 },
+    { url: `${baseUrl}/agents/recruit`, changeFrequency: 'monthly', priority: 0.4 },
+  ];
+
+  const staticEntries: StaticEntry[] = [
+    ...staticRoutes.map(({ url, changeFrequency, priority }): StaticEntry => ({ url, changeFrequency, priority })),
+    ...extraStaticRoutes,
+  ];
 
   return [
-    ...staticRoutes,
+    ...staticEntries,
     ...productRoutes,
     ...blueprintRoutes,
     ...blogRoutes,
-  ];
+  ] as MetadataRoute.Sitemap;
 }

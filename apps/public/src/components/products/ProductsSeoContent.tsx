@@ -30,7 +30,7 @@ const PRODUCT_FAQS = [
   {
     question: 'Do you deliver and install outside Goa?',
     answer:
-      'Installation and AMC support cover Goa and Maharashtra. Equipment-only orders to other states can be arranged on request \u2014 contact our team with your location and order list for a delivery quote.',
+      'We ship equipment across India. Installation and AMC support cover Goa and Maharashtra \u2014 contact our team with your location and order list for a delivery quote.',
   },
   {
     question: 'How do I get a quote for a bulk or office order?',

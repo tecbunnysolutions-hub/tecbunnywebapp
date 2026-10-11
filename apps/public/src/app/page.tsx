@@ -15,7 +15,7 @@ const homeFaqs: Array<{ question: string; answer: string }> = [
   {
     question: 'Do you set up Wi-Fi networks in Goa?',
     answer:
-      'Yes. We set up Wi-Fi, LAN networks, and cable runs for offices, hotels, and commercial properties across Goa. We use Ubiquiti, Cisco, and Fortinet gear. Every network job comes with a 90-day free support period and a full handover report.',
+      'Yes. We set up Wi-Fi, LAN networks, and cable runs for offices, hotels, and commercial properties across Goa. We deploy genuine networking gear from established OEM brands. Every network job comes with a 90-day free support period and a full handover report.',
   },
   {
     question: 'What does an AMC plan cover?',

@@ -11,6 +11,7 @@ import {AppProvider} from "@tecbunny/core/context/AppProvider";
 import {EnterpriseAnalyticsAutoTracker} from '@tecbunny/core/components/EnterpriseAnalyticsAutoTracker';
 import {ThemeProvider} from '@/components/providers/ThemeProvider';
 import {DeferredFloatingAIAssistant} from '@/components/layout/DeferredFloatingAIAssistant';
+import {QuickContactWidget} from '@/components/layout/QuickContactWidget';
 import {DeferredRuntimeServices} from '@/components/layout/DeferredRuntimeServices';
 import {TRPCProvider} from '@/components/providers/TRPCProvider';
 import {FeatureFlagProviderLoader} from '@/components/providers/FeatureFlagProviderLoader';
@@ -141,7 +142,7 @@ const structuredData = {
       'url': 'https://www.tecbunny.com',
       'address': {
         '@type': 'PostalAddress',
-        'streetAddress': 'H. No. 11, Nhayginwada, Parse, Parxem',
+        'streetAddress': 'H. No. 11, Nhayginwada, Parcem',
         'addressLocality': 'Pernem, North Goa',
         'addressRegion': 'Goa',
         'postalCode': '403512',
@@ -242,7 +243,7 @@ const structuredData = {
       iso6523Code: '0199:U80200GA2025PTC017488',
       address: {
         '@type': 'PostalAddress',
-        streetAddress: 'H. No. 11, Nhayginwada, Parse, Parxem',
+        streetAddress: 'H. No. 11, Nhayginwada, Parcem',
         addressLocality: 'Pernem',
         addressRegion: 'Goa',
         postalCode: '403512',
@@ -381,6 +382,7 @@ export default async function RootLayout({
                     </div>
                   </TechShell>
                   <DeferredFloatingAIAssistant />
+                  <QuickContactWidget />
 
                   <DeferredRuntimeServices gaId={gaId} metaPixelId={metaPixelId} />
                   <Analytics />

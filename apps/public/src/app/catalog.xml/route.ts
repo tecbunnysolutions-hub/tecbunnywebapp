@@ -6,7 +6,7 @@ import {
   isPubliclyVisibleProduct,
   resolvePublicProductPrice,
 } from '@tecbunny/core/product-visibility';
-import { BRAND_LOGO_URL } from '@tecbunny/ui';
+import { BRAND_LOGO_URL } from "@tecbunny/core/brand";
 
 /**
  * Module 3 — Meta Commerce Manager / Google Merchant product catalog feed.

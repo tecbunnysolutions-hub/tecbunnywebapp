@@ -579,11 +579,11 @@ export function ProductDetailPage({ productId, initialProduct, sourceContext }: 
                     <span className="bg-muted text-muted-foreground border border-border text-[10px] font-semibold tracking-wider px-3 py-1.5 rounded-full shadow-lg">
                       PRE-ORDER
                     </span>
-                  ) : (
+                  ) : product.stock_status === 'in_stock' ? (
                     <span className="bg-primary/15 text-primary border border-primary/30 text-[10px] font-semibold tracking-wider px-3 py-1.5 rounded-full shadow-lg shadow-primary/5">
                       IN STOCK
                     </span>
-                  )}
+                  ) : null}
                 </div>
               </div>
 
@@ -747,7 +747,7 @@ export function ProductDetailPage({ productId, initialProduct, sourceContext }: 
                           <p className="font-semibold text-zinc-400">Currently unavailable — delivery estimate will appear when this product is back in stock</p>
                         ) : deliveryInfo.isGoa ? (
                           <p className="font-semibold text-emerald-400">
-                            {deliveryInfo.hasEstimated ? 'Expected delivery: next working day, subject to checkout confirmation' : 'Goa fulfillment hub stock — enter a PIN for a delivery estimate'}
+                            {deliveryInfo.hasEstimated ? 'Expected delivery: next working day, subject to checkout confirmation' : 'Stock at our Goa store — enter a PIN for a delivery estimate'}
                           </p>
                         ) : (
                           <p className="font-semibold text-zinc-400">
