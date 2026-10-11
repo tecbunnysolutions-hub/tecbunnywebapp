@@ -66,12 +66,12 @@ export default function PortfolioPage() {
         "Monsoon humidity protection for outdoor pool access points."
       ],
       blueprint: [
-        { item: "Digisol Wi-Fi 6 Access Points", qty: "6 units" },
-        { item: "Digisol Cloud-Managed Gateway", qty: "1 unit" },
-        { item: "Digisol Lite 8-Port PoE Switch", qty: "1 unit" },
-        { item: "Finolex Cat6 FTP Shielded Weatherproof Cable", qty: "150 meters" }
+        { item: "Wi-Fi 6 Access Points", qty: "6 units" },
+        { item: "Cloud-Managed Gateway", qty: "1 unit" },
+        { item: "8-Port PoE Switch", qty: "1 unit" },
+        { item: "Cat6 FTP Shielded Weatherproof Cable", qty: "150 meters" }
       ],
-      results: "Implemented a fully managed Digisol subnet. On-site tests at handover measured sub-50ms roaming handoff and sustained download speeds above 450 Mbps across all indoor areas and the poolside garden."
+      results: "Implemented a fully managed wireless subnet. On-site tests at handover measured sub-50ms roaming handoff and sustained download speeds above 450 Mbps across all indoor areas and the poolside garden."
     },
     {
       title: "8-Camera Enterprise IP CCTV Surveillance Setup",

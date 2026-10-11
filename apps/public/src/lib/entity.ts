@@ -18,23 +18,22 @@ export const ENTITY = {
   phone: '+91-9604136010',
   email: 'support@tecbunny.com',
   headquarters: 'Pernem, North Goa, India',
-  serviceAreas: ['Goa', 'Maharashtra'] as const,
+  serviceAreas: ['North Goa', 'Sawantwadi area of Sindhudurg district'] as const,
 
   /** One canonical sentence describing what TecBunny is — reuse verbatim. */
   description:
-    'TecBunny Solutions Private Limited is a technology services company headquartered in Pernem, North Goa, India, providing CCTV installation, IT services, managed IT support (AMC), network infrastructure, home automation, RFID and access-control systems, and web development across Goa and Maharashtra.',
+    'TecBunny Solutions Private Limited is a technology services company headquartered in Pernem, North Goa, India, providing CCTV, IT support, RFID locks, networking and website development in North Goa and the Sawantwadi area of Sindhudurg district.',
 
   /** Short variant for meta descriptions and schema nodes. */
   shortDescription:
-    'Enterprise IT infrastructure, CCTV and physical security, AMC support, networking, smart building automation, and RFID access control in Goa and Maharashtra.',
+    'CCTV, IT support, RFID locks, networking and website development in North Goa and the Sawantwadi area.',
 
   services: [
-    { name: 'Network Infrastructure', navLabel: 'Network & IT Infrastructure', url: '/services/network-infrastructure' },
-    { name: 'CCTV & Physical Security', navLabel: 'Physical Security & CCTV', url: '/services/physical-security' },
-    { name: 'Smart Access Control', navLabel: 'Smart Access Control', url: '/services/smart-access-control' },
-    { name: 'Smart Infrastructure', navLabel: 'Hotel Smart Infrastructure', url: '/services/smart-infrastructure' },
-    { name: 'Lifecycle Hardware', navLabel: 'Lifecycle Hardware & AMC', url: '/services/lifecycle-hardware' },
-    { name: 'Software & System Administration', navLabel: 'Software & System Admin', url: '/services/software-system-admin' },
+    { name: 'CCTV', navLabel: 'CCTV', url: '/services/cctv-security' },
+    { name: 'IT Support', navLabel: 'IT Support', url: '/services/it-support' },
+    { name: 'RFID Locks', navLabel: 'RFID Locks', url: '/services/rfid-locks' },
+    { name: 'Networking', navLabel: 'Networking', url: '/services/networking' },
+    { name: 'Website Development', navLabel: 'Website Development', url: '/webdev' },
   ] as const,
 
   industries: [

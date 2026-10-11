@@ -68,67 +68,25 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.9,
     },
     {
-      url: `${baseUrl}/services/computers-mobiles`,
-      lastModified: now,
-      changeFrequency: 'monthly' as const,
-      priority: 0.9,
-    },
-    {
-      url: `${baseUrl}/services/networking-internet`,
-      lastModified: now,
-      changeFrequency: 'monthly' as const,
-      priority: 0.9,
-    },
-    {
       url: `${baseUrl}/services/cctv-security`,
       lastModified: now,
       changeFrequency: 'monthly' as const,
       priority: 0.9,
     },
     {
-      url: `${baseUrl}/services/network-infrastructure`,
+      url: `${baseUrl}/services/it-support`,
       lastModified: now,
       changeFrequency: 'monthly' as const,
-      priority: 0.8,
+      priority: 0.9,
     },
     {
-      url: `${baseUrl}/services/network-infrastructure/north-goa`,
-      lastModified: now,
-      changeFrequency: 'weekly' as const,
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/services/physical-security`,
+      url: `${baseUrl}/services/rfid-locks`,
       lastModified: now,
       changeFrequency: 'monthly' as const,
-      priority: 0.8,
+      priority: 0.9,
     },
     {
-      url: `${baseUrl}/services/physical-security/pernem-home-theater`,
-      lastModified: now,
-      changeFrequency: 'weekly' as const,
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/services/smart-access-control`,
-      lastModified: now,
-      changeFrequency: 'monthly' as const,
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/services/lifecycle-hardware`,
-      lastModified: now,
-      changeFrequency: 'monthly' as const,
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/services/software-system-admin`,
-      lastModified: now,
-      changeFrequency: 'monthly' as const,
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/services/smart-infrastructure`,
+      url: `${baseUrl}/services/networking`,
       lastModified: now,
       changeFrequency: 'monthly' as const,
       priority: 0.9,
@@ -144,48 +102,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: now,
       changeFrequency: 'weekly' as const,
       priority: 1.0,
-    },
-    {
-      url: `${baseUrl}/industries`,
-      lastModified: now,
-      changeFrequency: 'weekly' as const,
-      priority: 0.9,
-    },
-    {
-      url: `${baseUrl}/industries/hospitality`,
-      lastModified: now,
-      changeFrequency: 'monthly' as const,
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/industries/offices`,
-      lastModified: now,
-      changeFrequency: 'monthly' as const,
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/industries/education`,
-      lastModified: now,
-      changeFrequency: 'monthly' as const,
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/industries/healthcare`,
-      lastModified: now,
-      changeFrequency: 'monthly' as const,
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/industries/retail`,
-      lastModified: now,
-      changeFrequency: 'monthly' as const,
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/industries/builders`,
-      lastModified: now,
-      changeFrequency: 'monthly' as const,
-      priority: 0.8,
     },
     {
       url: `${baseUrl}/resources`,
@@ -320,7 +236,32 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ];
 
   const staticEntries: StaticEntry[] = [
-    ...staticRoutes.map(({ url, changeFrequency, priority }): StaticEntry => ({ url, changeFrequency, priority })),
+    ...staticRoutes
+      .filter(({ url }) => ![
+        '/services/computers-mobiles',
+        '/services/networking-internet',
+        '/services/network-infrastructure',
+        '/services/network-infrastructure/north-goa',
+        '/services/physical-security',
+        '/services/physical-security/pernem-home-theater',
+        '/services/smart-access-control',
+        '/services/lifecycle-hardware',
+        '/services/software-system-admin',
+        '/services/smart-infrastructure',
+        '/industries',
+        '/industries/hospitality',
+        '/industries/offices',
+        '/industries/education',
+        '/industries/healthcare',
+        '/industries/retail',
+        '/industries/builders',
+      ].some((path) => url === `${baseUrl}${path}`))
+      .map(({ url, changeFrequency, priority }): StaticEntry => ({ url, changeFrequency, priority })),
+    ...['/services/cctv-security', '/services/it-support', '/services/rfid-locks', '/services/networking'].map((path): StaticEntry => ({
+      url: `${baseUrl}${path}`,
+      changeFrequency: 'monthly',
+      priority: 0.9,
+    })),
     ...extraStaticRoutes,
   ];
 

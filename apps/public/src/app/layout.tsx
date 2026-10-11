@@ -33,23 +33,12 @@ export const metadata: Metadata = {
   manifest: '/manifest.webmanifest',
   metadataBase: new URL('https://www.tecbunny.com'),
   title: {
-    default: 'Enterprise IT & Security Solutions in Goa | TecBunny',
-    template: '%s | TecBunny',
+    default: 'CCTV, IT Support & Web Development in Goa | TecBunny',
+    template: '%s',
   },
   description:
-    'Enterprise IT infrastructure, CCTV & physical security, networking, smart buildings, and managed AMC services across Goa and Maharashtra — by TecBunny Solutions.',
+    'CCTV, IT support, RFID locks, networking and website development for homes and small businesses in North Goa and the Sawantwadi area.',
   applicationName: 'TecBunny Solutions',
-  keywords: [
-    'enterprise IT infrastructure Goa',
-    'CCTV installation Goa',
-    'IT services Goa',
-    'AMC services Goa',
-    'smart building automation Goa',
-    'RFID access control Goa',
-    'computer networking Goa',
-    'managed IT services Maharashtra',
-    'TecBunny',
-  ],
   authors: [{ name: 'TecBunny Solutions' }],
   publisher: 'TecBunny Solutions',
   alternates: {
@@ -61,9 +50,9 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     url: 'https://www.tecbunny.com',
-    title: 'TecBunny | Enterprise IT, Security & Smart Infrastructure in Goa',
+    title: 'CCTV, IT Support & Web Development in Goa | TecBunny',
     description:
-      'Enterprise IT infrastructure, CCTV & physical security, networking, smart buildings, and managed AMC services across Goa and Maharashtra — by TecBunny Solutions.',
+      'CCTV, IT support, RFID locks, networking and website development for homes and small businesses in North Goa and the Sawantwadi area.',
     siteName: 'TecBunny Solutions',
     images: [
       {
@@ -76,9 +65,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'TecBunny | Enterprise IT, Security & Smart Infrastructure in Goa',
+    title: 'CCTV, IT Support & Web Development in Goa | TecBunny',
     description:
-      'Enterprise IT infrastructure, CCTV & physical security, networking, smart buildings, and managed AMC services across Goa and Maharashtra — by TecBunny Solutions.',
+      'CCTV, IT support, RFID locks, networking and website development for homes and small businesses in North Goa and the Sawantwadi area.',
     images: [BRAND_LOGO_URL],
     site: xHandle,
     creator: xHandle,
@@ -160,7 +149,7 @@ const structuredData = {
       url: 'https://www.tecbunny.com',
       name: 'TecBunny Solutions',
       description:
-        'TecBunny Solutions delivers enterprise IT infrastructure, CCTV and physical security, networking, smart building automation, and RFID access control in Goa and Maharashtra.',
+        'CCTV, IT support, RFID locks, networking and website development for homes and small businesses in North Goa and the Sawantwadi area.',
       publisher: { '@id': 'https://www.tecbunny.com/#organization' },
       author: { '@id': 'https://www.tecbunny.com/#organization' },
       potentialAction: {
@@ -176,7 +165,7 @@ const structuredData = {
       '@type': 'WebPage',
       '@id': 'https://www.tecbunny.com/#webpage',
       url: 'https://www.tecbunny.com',
-      name: 'TecBunny Solutions | Enterprise IT, Security & Smart Infrastructure in Goa',
+      name: 'CCTV, IT Support & Web Development in Goa | TecBunny',
       isPartOf: { '@id': 'https://www.tecbunny.com/#website' },
       about: { '@id': 'https://www.tecbunny.com/#localbusiness' },
       primaryImageOfPage: { '@id': 'https://www.tecbunny.com/#logo' },
@@ -200,20 +189,6 @@ const structuredData = {
       logo: BRAND_LOGO_URL,
       description: ENTITY.description,
       sameAs: sameAsLinks,
-      founder: [
-        {
-          '@type': 'Person',
-          '@id': 'https://www.tecbunny.com/#shubham',
-          name: 'Shubham Sakharam Bhisaji',
-          jobTitle: 'Director & Co-Founder',
-        },
-        {
-          '@type': 'Person',
-          '@id': 'https://www.tecbunny.com/#kamana',
-          name: 'Kamana Ashok Bandekar',
-          jobTitle: 'Director & Co-Founder',
-        },
-      ],
       contactPoint: [
         {
           '@type': 'ContactPoint',
@@ -236,9 +211,6 @@ const structuredData = {
       description: ENTITY.shortDescription,
       telephone: '+91-9604136010',
       email: 'support@tecbunny.com',
-      priceRange: '\u20b9\u20b9',
-      currenciesAccepted: 'INR',
-      paymentAccepted: 'Cash, UPI, Bank Transfer, Credit Card',
       taxID: '30AAMCT1608G1ZO',
       iso6523Code: '0199:U80200GA2025PTC017488',
       address: {
@@ -249,76 +221,25 @@ const structuredData = {
         postalCode: '403512',
         addressCountry: 'IN',
       },
-      geo: {
-        '@type': 'GeoCoordinates',
-        latitude: 15.6730616,
-        longitude: 73.7855133,
-      },
       openingHoursSpecification: [{
         '@type': 'OpeningHoursSpecification',
         dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
-        opens: '09:00',
-        closes: '19:00',
+        opens: '09:30',
+        closes: '19:30',
       }],
       areaServed: [
-        { '@type': 'City', name: 'Pernem', sameAs: 'https://www.wikidata.org/wiki/Q1011550' },
-        { '@type': 'City', name: 'Mapusa', sameAs: 'https://www.wikidata.org/wiki/Q1015694' },
-        { '@type': 'City', name: 'Siolim', sameAs: 'https://www.wikidata.org/wiki/Q2783854' },
-        { '@type': 'City', name: 'Arambol', sameAs: 'https://www.wikidata.org/wiki/Q625595' },
-        { '@type': 'City', name: 'Anjuna', sameAs: 'https://www.wikidata.org/wiki/Q551528' },
-        { '@type': 'City', name: 'Parra', sameAs: 'https://www.wikidata.org/wiki/Q7139686' },
-        { '@type': 'City', name: 'Panaji', sameAs: 'https://www.wikidata.org/wiki/Q1352' },
-        { '@type': 'City', name: 'Margao', sameAs: 'https://www.wikidata.org/wiki/Q1006277' },
-        { '@type': 'City', name: 'Vasco da Gama', sameAs: 'https://www.wikidata.org/wiki/Q1006271' },
-        { '@type': 'City', name: 'Mumbai', sameAs: 'https://www.wikidata.org/wiki/Q1156' },
-        { '@type': 'City', name: 'Pune', sameAs: 'https://www.wikidata.org/wiki/Q1538' },
-        { '@type': 'State', name: 'Goa', sameAs: 'https://www.wikidata.org/wiki/Q1177' },
-        { '@type': 'State', name: 'Maharashtra', sameAs: 'https://www.wikidata.org/wiki/Q1191' },
-      ],
-      knowsAbout: [
-        {
-          '@type': 'Thing',
-          name: 'Closed-circuit television',
-          sameAs: [
-            'https://en.wikipedia.org/wiki/Closed-circuit_television',
-            'https://www.wikidata.org/wiki/Q240126',
-          ],
-        },
-        {
-          '@type': 'Thing',
-          name: 'Information technology consulting',
-          sameAs: [
-            'https://en.wikipedia.org/wiki/Information_technology_consulting',
-            'https://www.wikidata.org/wiki/Q1994646',
-          ],
-        },
-        {
-          '@type': 'Thing',
-          name: 'Home automation',
-          sameAs: [
-            'https://en.wikipedia.org/wiki/Home_automation',
-            'https://www.wikidata.org/wiki/Q848375',
-          ],
-        },
-        {
-          '@type': 'Thing',
-          name: 'Security alarm',
-          sameAs: [
-            'https://en.wikipedia.org/wiki/Security_alarm',
-            'https://www.wikidata.org/wiki/Q1413809',
-          ],
-        },
+        { '@type': 'AdministrativeArea', name: 'North Goa' },
+        { '@type': 'AdministrativeArea', name: 'Sawantwadi area, Sindhudurg district' },
       ],
       hasOfferCatalog: {
         '@type': 'OfferCatalog',
         name: 'Services',
         itemListElement: [
-          { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'CCTV Installation & AMC' } },
-          { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Computer Repair & Upgrade' } },
-          { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Home Automation' } },
-          { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'RFID & Access Control' } },
-          { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Networking & Structured Cabling' } },
-          { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Web Development' } },
+          { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'CCTV' } },
+          { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'IT Support' } },
+          { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'RFID Locks' } },
+          { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Networking' } },
+          { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Website Development' } },
         ],
       },
       sameAs: sameAsLinks,

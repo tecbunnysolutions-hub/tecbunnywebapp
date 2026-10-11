@@ -9,57 +9,12 @@ import { getApi } from '@/lib/api';
 // Revalidate homepage every 60 seconds (ISR) to fix 2.8s Document Request Latency
 export const revalidate = 60;
 
-// AEO: FAQPage structured data mirroring the visible FAQ section in home-page.tsx
-// Keep in sync with the <dl> in components/home-page.tsx (validator enforces parity).
-const homeFaqs: Array<{ question: string; answer: string }> = [
-  {
-    question: 'Do you set up Wi-Fi networks in Goa?',
-    answer:
-      'Yes. We set up Wi-Fi, LAN networks, and cable runs for offices, hotels, and commercial properties across Goa. We deploy genuine networking gear from established OEM brands. Every network job comes with a 90-day free support period and a full handover report.',
-  },
-  {
-    question: 'What does an AMC plan cover?',
-    answer:
-      'An AMC (Annual Maintenance Contract) covers your CCTV or IT kit for the full year. It can include planned check-ups, remote support, on-site fixes, and audit reports, with response targets defined in your plan. It helps reduce ad hoc repairs and keeps your gear maintained.',
-  },
-  {
-    question: 'Do you serve areas outside Goa?',
-    answer:
-      'Yes. We serve clients in Mumbai, Pune, and Nashik for large IT and CCTV jobs. We also run remote IT support for firms across India. For jobs outside Goa, we can send a team or work with a local vendor under our watch. Call us to get a fast quote.',
-  },
-  {
-    question: 'How much does CCTV installation cost in Goa?',
-    answer:
-      'It depends on camera count, cable runs, recorder capacity, and site conditions. We quote per site after a survey, with an itemized estimate so you can see hardware, cabling, and labour separately. Request a free assessment to get an exact figure for your property.',
-  },
-  {
-    question: 'How do I get started with TecBunny?',
-    answer:
-      'Three steps: book a free technology assessment, let our engineers survey your site and review your existing systems, then receive an itemized proposal with a clear scope and support plan. There is no obligation to proceed.',
-  },
-];
-
-const homeFaqJsonLd = {
-  '@context': 'https://schema.org',
-  '@type': 'FAQPage',
-  '@id': 'https://www.tecbunny.com/#faq',
-  isPartOf: { '@id': 'https://www.tecbunny.com/#webpage' },
-  mainEntity: homeFaqs.map((faq) => ({
-    '@type': 'Question',
-    name: faq.question,
-    acceptedAnswer: { '@type': 'Answer', text: faq.answer },
-  })),
-};
-
-const serializeJsonLd = (data: unknown) => JSON.stringify(data).replace(/</g, '\\u003c');
-
-
 // Homepage metadata for SEO
 export async function generateMetadata(): Promise<Metadata> {
   return createPageMetadata({
-  title: 'Computer Repair, CCTV Installation & Wi-Fi in Goa | TecBunny',
+  title: 'CCTV, IT Support & Websites in Goa | TecBunny',
   description:
-    'Computer repair, CCTV installation, Wi-Fi and networking, access control, technology products and IT support in Goa — by TecBunny Solutions.',
+    'CCTV, IT support, RFID locks, networking and website development for homes and small businesses in North Goa and the Sawantwadi area.',
   path: '/',
   image: '/opengraph-image',
 });
@@ -135,15 +90,9 @@ function parsePartnerBrands(value: unknown): PartnerBrand[] {
 
 export default function Page() {
   return (
-    <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: serializeJsonLd(homeFaqJsonLd) }}
-      />
-      <Suspense fallback={<HomePageSkeleton />}>
-        <HomePageDataLoader />
-      </Suspense>
-    </>
+    <Suspense fallback={<HomePageSkeleton />}>
+      <HomePageDataLoader />
+    </Suspense>
   );
 }
 

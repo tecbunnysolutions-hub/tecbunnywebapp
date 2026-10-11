@@ -46,24 +46,19 @@ function WhatsAppIcon(props: React.SVGProps<SVGSVGElement>) {
   );
 }
 
-const navLinks = [
-  {
-    name: 'Services',
-    href: '/services',
-    children: [
-      { name: 'All Services', href: '/services' },
-      { name: 'Computers & Devices', href: '/services/computers-mobiles' },
-      { name: 'Networking & Internet', href: '/services/networking-internet' },
-      { name: 'CCTV & Security', href: '/services/cctv-security' },
-      { name: 'IT Infrastructure', href: '/services/network-infrastructure' },
-      { name: 'IT Support & AMC', href: '/services/lifecycle-hardware' },
-      { name: 'Software & System Admin', href: '/services/software-system-admin' },
-      { name: 'Hotel & Resort Technology', href: '/services/smart-infrastructure' },
-    ]
-  },
-  { name: 'Products', href: '/products' },
-  { name: 'Industries', href: '/industries' },
-  { name: 'About', href: '/about' },
+type NavLink = {
+  name: string;
+  href: string;
+  children?: Array<{ name: string; href: string }>;
+};
+
+const navLinks: NavLink[] = [
+  { name: 'CCTV', href: '/services/cctv-security' },
+  { name: 'IT Support', href: '/services/it-support' },
+  { name: 'RFID Locks', href: '/services/rfid-locks' },
+  { name: 'Networking', href: '/services/networking' },
+  { name: 'Website Development', href: '/webdev' },
+  { name: 'Shop', href: '/products' },
   { name: 'Contact', href: '/contact' },
 ];
 

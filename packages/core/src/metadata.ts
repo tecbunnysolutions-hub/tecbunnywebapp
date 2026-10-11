@@ -7,9 +7,14 @@ interface PageMetaInput {
   description: string;
   path: string;
   image?: string;
+  /** Retained for backwards-compatible callers; keyword metadata is intentionally not emitted. */
   keywords?: string[];
   openGraph?: Metadata['openGraph'];
   twitter?: Metadata['twitter'];
+}
+
+function isUsableMetadataImage(value: string): boolean {
+  return value.startsWith('/') || /^https?:\/\//i.test(value);
 }
 
 export async function cleanMetadataTitle(value: string | null | undefined): Promise<string> {
@@ -62,19 +67,21 @@ export async function createPageMetadata({
   description,
   path,
   image,
-  keywords = [],
   openGraph,
   twitter,
 }: PageMetaInput): Promise<Metadata> {
   const settings = await getAppSettings();
   const siteUrl = settings.siteUrl || 'https://www.tecbunny.com';
-  const defaultOgImage = settings.defaultOgImage || 'https://fbcsagupcxheyiusjfak.supabase.co/storage/v1/object/public/TecBunny%20Solution/TECBUNNY_SOLUTIONS_PVT_LTD-removebg-preview.png';
+  const defaultOgImage = typeof settings.defaultOgImage === 'string' && isUsableMetadataImage(settings.defaultOgImage.trim())
+    ? settings.defaultOgImage.trim()
+    : '/opengraph-image';
   const xHandle = process.env.NEXT_PUBLIC_X_HANDLE;
 
-  const actualImage = image || defaultOgImage;
-  const actualImageStr = typeof actualImage === 'string' ? actualImage : String(actualImage);
-  const activeImage = (actualImageStr === '/brand.png' || actualImageStr.endsWith('/brand.png')) ? defaultOgImage : actualImageStr;
-  const resolvedImage = activeImage.startsWith('http') ? activeImage : `${siteUrl}${activeImage}`;
+  const configuredImage = image && isUsableMetadataImage(image) ? image : defaultOgImage;
+  const activeImage = configuredImage === '/brand.png' || configuredImage.endsWith('/brand.png')
+    ? '/opengraph-image'
+    : configuredImage;
+  const resolvedImage = activeImage.startsWith('http') ? activeImage : new URL(activeImage, siteUrl).toString();
   
   const rawCanonical = path.startsWith('http') ? path : `${siteUrl}${path}`;
   const urlObj = new URL(rawCanonical);
@@ -90,7 +97,6 @@ export async function createPageMetadata({
   return {
     title: safeTitle,
     description: safeDescription,
-    keywords,
     alternates: {
       canonical,
     },

@@ -109,8 +109,42 @@ const nextConfig = {
   },
   async redirects() {
     if (isStaticExport) return [];
-    // Consolidate non-www → www into a single 308 hop to avoid redirect chains
     return [
+      {
+        source: '/services/physical-security',
+        destination: '/services/cctv-security',
+        permanent: true,
+      },
+      {
+        source: '/services/computers-mobiles',
+        destination: '/services/it-support',
+        permanent: true,
+      },
+      {
+        source: '/services/lifecycle-hardware',
+        destination: '/services/it-support',
+        permanent: true,
+      },
+      {
+        source: '/services/software-system-admin',
+        destination: '/services/it-support',
+        permanent: true,
+      },
+      {
+        source: '/services/smart-access-control',
+        destination: '/services/rfid-locks',
+        permanent: true,
+      },
+      {
+        source: '/services/networking-internet',
+        destination: '/services/networking',
+        permanent: true,
+      },
+      {
+        source: '/services/network-infrastructure',
+        destination: '/services/networking',
+        permanent: true,
+      },
       {
         source: '/:path*',
         has: [{ type: 'host', value: 'tecbunny.com' }],

@@ -13,11 +13,10 @@ const FALLBACK_SOCIAL_LINKS = { facebookUrl: 'https://www.facebook.com/profile.p
 type FooterLink = { label: string; href: string };
 
 const linkGroups: { title: string; links: FooterLink[] }[] = [
-  { title: 'Solutions', links: [{ label: 'Network & IT Infrastructure', href: '/services/network-infrastructure' }, { label: 'CCTV & Security', href: '/services/cctv-security' }, { label: 'Access Control', href: '/services/smart-access-control' }, { label: 'IT Support & AMC', href: '/services/lifecycle-hardware' }, { label: 'Custom Setups', href: '/customised-setups' }] },
+  { title: 'Services', links: [{ label: 'CCTV', href: '/services/cctv-security' }, { label: 'IT Support', href: '/services/it-support' }, { label: 'RFID Locks', href: '/services/rfid-locks' }, { label: 'Networking', href: '/services/networking' }, { label: 'Website Development', href: '/webdev' }] },
   { title: 'Products', links: [{ label: 'Browse all products', href: '/products' }, { label: 'Computers & laptops', href: '/products?q=laptop' }, { label: 'CCTV & security equipment', href: '/products?q=cctv' }, { label: 'Networking equipment', href: '/products?q=network' }, { label: 'Accessories & storage', href: '/products?q=accessories' }] },
-  { title: 'Industries', links: [{ label: 'Hotels & resorts', href: '/industries/hospitality' }, { label: 'Offices & co-working', href: '/industries/offices' }, { label: 'Retail & commercial', href: '/industries/retail' }, { label: 'Education & campuses', href: '/industries/education' }, { label: 'Healthcare', href: '/industries/healthcare' }] },
   { title: 'Help', links: [{ label: 'Get help choosing', href: '/contact?intent=help_me_choose&source=footer' }, { label: 'Request a quote', href: '/contact?intent=quote_request&source=footer' }, { label: 'Book a site survey', href: '/assessment' }, { label: 'Repair & support', href: '/contact?intent=service_request&source=footer' }, { label: 'FAQs', href: '/info/faqs' }] },
-  { title: 'Company', links: [{ label: 'About TecBunny', href: '/about' }, { label: 'Portfolio', href: '/portfolio' }, { label: 'Industries', href: '/industries' }, { label: 'Contact', href: '/contact' }, { label: 'Partner Program', href: '/agents/recruit' }] },
+  { title: 'Company', links: [{ label: 'About TecBunny', href: '/about' }, { label: 'Portfolio', href: '/portfolio' }, { label: 'Contact', href: '/contact' }, { label: 'Partner program', href: '/agents/recruit' }] },
 ];
 
 function FacebookIcon(props: React.SVGProps<SVGSVGElement>) { return <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" {...props}><path d="M13.5 22v-8h2.7l.4-3.1h-3.1V8.9c0-.9.3-1.5 1.6-1.5h1.7V4.6c-.3 0-1.3-.1-2.5-.1-2.5 0-4.2 1.5-4.2 4.3v2.4H7.3V14h2.8v8h3.4Z" /></svg>; }
