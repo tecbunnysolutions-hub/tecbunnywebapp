@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import Image from 'next/image';
 import { getApi } from '@/lib/api';
+import { logger } from '@tecbunny/core';
 
 import { BreadcrumbJsonLd } from '@/components/BreadcrumbJsonLd';
 
@@ -22,10 +23,26 @@ export const metadata: Metadata = {
 
 const serializeJsonLd = (data: unknown) => JSON.stringify(data).replace(/</g, '\\u003c');
 
-export default async function BlogPage() {
-  const { posts } = await getApi().blog.list({ page: 1, pageSize: 20 });
+function isUnauthorizedApiError(error: unknown): error is { status: number } {
+  return typeof error === 'object'
+    && error !== null
+    && 'status' in error
+    && (error as { status?: unknown }).status === 401;
+}
 
-  const items = posts;
+async function fetchBlogPosts() {
+  try {
+    return { posts: (await getApi().blog.list({ page: 1, pageSize: 20 })).posts, unavailable: false };
+  } catch (error) {
+    if (!isUnauthorizedApiError(error)) throw error;
+
+    logger.error('blog_list_unauthorized', { status: error.status });
+    return { posts: [], unavailable: true };
+  }
+}
+
+export default async function BlogPage() {
+  const { posts: items, unavailable } = await fetchBlogPosts();
 
   const blogJsonLd = {
     '@context': 'https://schema.org',
@@ -66,7 +83,9 @@ export default async function BlogPage() {
         </p>
 
         {items.length === 0 ? (
-          <p className="mt-20 text-center text-zinc-500">No posts yet â€” check back soon.</p>
+          <p className="mt-20 text-center text-zinc-500">
+            {unavailable ? 'Blog posts are temporarily unavailable. Please check back soon.' : 'No posts yet â€” check back soon.'}
+          </p>
         ) : (
           <div className="mt-14 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
             {items.map((post: any) => {

@@ -1,4 +1,5 @@
 import { getApi } from '@/lib/api';
+import { logger } from '@tecbunny/core';
 
 export const revalidate = 3600;
 
@@ -13,8 +14,29 @@ function escapeXml(value: string): string {
     .replace(/'/g, '&apos;');
 }
 
+function isUnauthorizedApiError(error: unknown): error is { status: number } {
+  return typeof error === 'object'
+    && error !== null
+    && 'status' in error
+    && (error as { status?: unknown }).status === 401;
+}
+
+async function fetchFeedPosts() {
+  try {
+    return (await getApi().blog.list(
+      { page: 1, pageSize: 50 },
+      { next: { revalidate: 3600, tags: ['blog'] } },
+    )).posts;
+  } catch (error) {
+    if (!isUnauthorizedApiError(error)) throw error;
+
+    logger.error('blog_feed_unauthorized', { status: error.status });
+    return [];
+  }
+}
+
 export async function GET() {
-  const { posts } = await getApi().blog.list({ page: 1, pageSize: 50 }, { next: { revalidate: 3600, tags: ['blog'] } });
+  const posts = await fetchFeedPosts();
 
   const items = posts
     .map((post) => {
