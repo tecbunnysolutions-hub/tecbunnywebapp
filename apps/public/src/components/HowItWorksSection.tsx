@@ -23,7 +23,7 @@ export const DEPLOYMENT_STEPS = [
   {
     step: '02',
     title: 'Site Assessment',
-    desc: 'Our field engineers conduct on-site physical surveys across Goa to map cabling paths, RF interference, and mounting zones.',
+    desc: 'Our field engineers conduct on-site surveys in North Goa and the Sawantwadi area of Sindhudurg district, Maharashtra, to map cable paths, RF interference, and equipment locations.',
     icon: MapPin,
     badge: 'On-Site Survey'
   },

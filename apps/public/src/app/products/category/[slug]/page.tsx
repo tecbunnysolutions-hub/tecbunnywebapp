@@ -28,10 +28,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!category) {
     return createPageMetadata({ title: 'Category Not Found', description: 'The requested category could not be found.', path: `/products/category/${slug}` });
   }
-  const leaf = category.name.split(' > ').pop() ?? category.name;
+  const categoryLabel = category.name.split(' > ').join(' / ');
   return createPageMetadata({
-    title: `${leaf} in Goa | TecBunny`,
-    description: `Buy ${leaf} from TecBunny. Genuine products with installation and support across North Goa and the Sawantwadi area.`,
+    title: `${categoryLabel} in Goa | TecBunny`,
+    description: `Buy ${categoryLabel} from TecBunny. Genuine products with installation and support in North Goa and the Sawantwadi area of Sindhudurg district, Maharashtra.`,
     path: `/products/category/${slug}`,
     image: '/opengraph-image',
   });
@@ -44,6 +44,7 @@ export default async function ProductCategoryPage({ params }: Props) {
 
   const products = catalog.productsInCategory(category.name);
   const leaf = category.name.split(' > ').pop() ?? category.name;
+  const categoryLabel = category.name.split(' > ').join(' / ');
   const pageUrl = `${SITE}/products/category/${slug}`;
   const related = catalog.categories.filter((item) => item.slug !== slug);
 
@@ -52,7 +53,7 @@ export default async function ProductCategoryPage({ params }: Props) {
     '@type': 'CollectionPage',
     '@id': `${pageUrl}#collection`,
     url: pageUrl,
-    name: leaf,
+    name: categoryLabel,
     isPartOf: { '@id': `${SITE}/#website` },
     mainEntity: {
       '@type': 'ItemList',
@@ -79,9 +80,9 @@ export default async function ProductCategoryPage({ params }: Props) {
 
       <section className="tb-container py-12 sm:py-16">
         <Link href="/products" className="text-sm font-semibold text-blue-300 hover:text-white">&larr; All products</Link>
-        <h1 className="mt-5 text-4xl font-bold sm:text-5xl">{leaf}</h1>
+        <h1 className="mt-5 text-4xl font-bold sm:text-5xl">{categoryLabel}</h1>
         <p className="mt-4 max-w-3xl text-lg leading-8 text-zinc-300">
-          {products.length} {products.length === 1 ? 'product' : 'products'} from TecBunny. We can supply and install them across North Goa and the Sawantwadi area; the final price for installation work is confirmed in a written quote.
+          {products.length} {products.length === 1 ? 'product' : 'products'} from TecBunny. We can supply and install them in North Goa and the Sawantwadi area of Sindhudurg district, Maharashtra; the final price for installation work is confirmed in a written quote.
         </p>
 
         <ul className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

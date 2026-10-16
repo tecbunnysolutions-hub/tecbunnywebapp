@@ -6,7 +6,7 @@ export const webdevService: ServiceContent = {
   name: 'Website Development',
   title: 'Website Development in Goa | TecBunny',
   metaDescription:
-    'Mobile-first website development for small businesses in North Goa, including source-code handover and free hosting.',
+    'Mobile-first website development for homes and small businesses in North Goa and the Sawantwadi area of Sindhudurg district, Maharashtra, including source-code handover and free hosting.',
   promise:
     'We build a practical website around your business, hand over the source code, and explain the costs that continue after launch.',
   audience: [

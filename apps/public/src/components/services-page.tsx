@@ -347,7 +347,7 @@ export default function ServicesPage({ services, hasServiceLoadError = false }: 
                 Site Visit Booking Fee — ₹499
               </h2>
               <p className="text-sm text-zinc-300 font-light max-w-2xl leading-relaxed">
-                Covers on-site engineering assessment across Goa. The ₹499 booking fee is <strong className="text-white font-medium">fully adjusted against the final service or installation invoice</strong> upon project execution.
+                Covers on-site engineering assessment in North Goa and the Sawantwadi area of Sindhudurg district, Maharashtra. The ₹499 booking fee is <strong className="text-white font-medium">fully adjusted against the final service or installation invoice</strong> upon project execution.
               </p>
             </div>
             <Link

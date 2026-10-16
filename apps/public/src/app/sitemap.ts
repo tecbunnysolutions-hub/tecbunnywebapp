@@ -1,6 +1,8 @@
 import type { MetadataRoute } from 'next';
+import { filterPubliclyVisibleProducts } from '@tecbunny/core/product-visibility';
 import { getApi } from '@/lib/api';
 import { getCatalogByCategory } from '@/lib/product-categories';
+import { deduplicateCatalogProducts } from '@/lib/product-catalog';
 
 export const revalidate = 3600;
 
@@ -13,8 +15,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   try {
     for (let page = 1; page <= 20; page += 1) {
       const { products, total, pageSize } = await getApi().products.list({ page, pageSize: 500 });
+      const visibleProducts = deduplicateCatalogProducts(
+        filterPubliclyVisibleProducts(products as Array<Record<string, unknown> & { id: string | number }>),
+      );
       productRoutes.push(
-        ...products.map((product) => ({
+        ...visibleProducts.map((product) => ({
           url: `${baseUrl}/products/${product.id}`,
           lastModified: typeof product.updated_at === 'string' ? new Date(product.updated_at) : now,
           changeFrequency: 'weekly' as const,
@@ -236,7 +241,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     console.warn('Failed to fetch sitemap blog routes', error);
   }
 
-  // Static pages have no real modified date; omit it rather than report "now" on every request.
+  // Static pages do not expose a reliable modified time, so use sitemap generation time.
   type StaticEntry = {
     url: string;
     lastModified?: Date | string;
@@ -245,8 +250,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   };
 
   const extraStaticRoutes: StaticEntry[] = [
-    { url: `${baseUrl}/about/business-info`, changeFrequency: 'monthly', priority: 0.5 },
-    { url: `${baseUrl}/agents/recruit`, changeFrequency: 'monthly', priority: 0.4 },
+    { url: `${baseUrl}/about/business-info`, lastModified: now, changeFrequency: 'monthly', priority: 0.5 },
+    { url: `${baseUrl}/agents/recruit`, lastModified: now, changeFrequency: 'monthly', priority: 0.4 },
   ];
 
   const staticEntries: StaticEntry[] = [
@@ -270,12 +275,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         '/industries/retail',
         '/industries/builders',
       ].some((path) => url === `${baseUrl}${path}`))
-      .map(({ url, changeFrequency, priority }): StaticEntry => ({ url, changeFrequency, priority })),
-    ...['/services/cctv-security', '/services/it-support', '/services/rfid-locks', '/services/networking'].map((path): StaticEntry => ({
-      url: `${baseUrl}${path}`,
-      changeFrequency: 'monthly',
-      priority: 0.9,
-    })),
+      .map(({ url, lastModified, changeFrequency, priority }): StaticEntry => ({ url, lastModified: lastModified ?? now, changeFrequency, priority })),
     ...extraStaticRoutes,
   ];
 
@@ -284,5 +284,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...productRoutes,
     ...blueprintRoutes,
     ...blogRoutes,
-  ] as MetadataRoute.Sitemap;
+  ].filter((entry, index, entries) => entries.findIndex((candidate) => candidate.url === entry.url) === index) as MetadataRoute.Sitemap;
 }

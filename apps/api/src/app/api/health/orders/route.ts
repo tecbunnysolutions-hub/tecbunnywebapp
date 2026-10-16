@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { requireSupabaseServiceEnv } from "@tecbunny/database";
 import { logger } from '@tecbunny/core/logger';
-import { requireInternalAccess } from '@/lib/internal-auth';
+import { requireInternalAccess } from '../../../../lib/internal-auth';
 
 let supabaseAdmin: any = null;
 

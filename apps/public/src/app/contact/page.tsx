@@ -9,7 +9,7 @@ import { createPageMetadata } from "@tecbunny/core/metadata";
 export async function generateMetadata(): Promise<Metadata> {
   return createPageMetadata({
   title: 'Contact TecBunny in Goa',
-  description: 'Contact TecBunny for CCTV, IT support, RFID locks, networking and website development in North Goa and the Sawantwadi area.',
+  description: 'Contact TecBunny for CCTV, IT support, RFID locks, networking and website development in North Goa and the Sawantwadi area of Sindhudurg district, Maharashtra.',
   path: '/contact',
   image: '/brand.png',
 });

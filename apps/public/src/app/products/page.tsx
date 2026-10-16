@@ -9,6 +9,7 @@ import { ProductsSeoContent } from '@/components/products/ProductsSeoContent';
 import { BreadcrumbJsonLd } from '@/components/BreadcrumbJsonLd';
 import { createPageMetadata } from "@tecbunny/core/metadata";
 import { getCatalogByCategory } from '@/lib/product-categories';
+import { deduplicateCatalogProducts, getCatalogProductDisplayName } from '@/lib/product-catalog';
 
 // Catalogue data is cached at the API (60s, tag "products"); the page revalidates on the same cadence.
 export const revalidate = 60;
@@ -17,8 +18,8 @@ const PRODUCTS_PAGE_SIZE = 200;
 
 export async function generateMetadata(): Promise<Metadata> {
   return createPageMetadata({
-  title: 'Buy CCTV, IT Hardware & Security Systems | TecBunny',
-  description: 'Shop premium CCTV systems, surveillance cameras, computer hardware, and accessories curated by TecBunny. Best pricing in Goa.',
+  title: 'CCTV, Computers & IT Products in Goa | TecBunny',
+  description: 'Shop CCTV cameras, computers, networking gear and accessories for homes and small businesses. Browse live prices and request installation in North Goa and the Sawantwadi area of Sindhudurg district, Maharashtra.',
   keywords: ['shop', 'products', 'CCTV', 'computers', 'accessories', 'TecBunny'],
   path: '/products',
   image: '/opengraph-image',
@@ -84,6 +85,7 @@ async function ShopPageDataLoader({ searchParams }: { searchParams?: Promise<Rec
     page,
     pageSize: PRODUCTS_PAGE_SIZE,
   });
+  const uniqueProducts = deduplicateCatalogProducts(rawProducts as Array<Record<string, unknown> & { id: string | number }>);
   // SEO/AEO: CollectionPage + ItemList structured data for the product catalogue
   const itemListJsonLd = {
     '@context': 'https://schema.org',
@@ -91,16 +93,16 @@ async function ShopPageDataLoader({ searchParams }: { searchParams?: Promise<Rec
     '@id': 'https://www.tecbunny.com/products#collection',
     url: 'https://www.tecbunny.com/products',
     name: 'TecBunny Product Catalogue',
-    description: 'Shop premium CCTV systems, surveillance cameras, computer hardware, and accessories curated by TecBunny.',
+    description: 'CCTV cameras, computers, networking gear and accessories for homes and small businesses in North Goa and the Sawantwadi area of Sindhudurg district, Maharashtra.',
     isPartOf: { '@id': 'https://www.tecbunny.com/#website' },
     mainEntity: {
       '@type': 'ItemList',
-      numberOfItems: total,
-      itemListElement: rawProducts.slice(0, 20).map((product, index) => ({
+      numberOfItems: uniqueProducts.length,
+      itemListElement: uniqueProducts.slice(0, 20).map((product, index) => ({
         '@type': 'ListItem',
         position: from + index + 1,
         url: `https://www.tecbunny.com/products/${product.id}`,
-        name: product.name,
+        name: getCatalogProductDisplayName(product),
       })),
     },
   };
@@ -117,7 +119,7 @@ async function ShopPageDataLoader({ searchParams }: { searchParams?: Promise<Rec
           { name: 'Products', url: 'https://www.tecbunny.com/products' },
         ]}
       />
-      <ShopPageContent initialRawProducts={rawProducts} initialRawAutoOffers={rawOffers} />
+      <ShopPageContent initialRawProducts={uniqueProducts as typeof rawProducts} initialRawAutoOffers={rawOffers} />
       {categories.length > 0 && (
         <nav aria-label="Browse by category" className="mx-auto max-w-7xl px-6 pb-12 sm:px-8">
           <h2 className="text-xl font-bold text-white">Browse by category</h2>

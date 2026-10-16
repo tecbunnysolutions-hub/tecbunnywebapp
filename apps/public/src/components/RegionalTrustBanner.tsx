@@ -58,7 +58,7 @@ export const RegionalTrustBanner = ({ className, partnerBrands }: RegionalTrustB
             <ShieldCheck className="h-5 w-5" />
           </div>
           <p className="text-sm font-medium text-slate-300">
-            Genuine {brandList} systems installed and supported across Goa and Maharashtra.
+            Genuine {brandList} systems installed and supported in North Goa and the Sawantwadi area of Sindhudurg district.
           </p>
         </div>
         

@@ -234,7 +234,7 @@ export default function ContactPage() {
     {
       question: 'Do you offer site visits?',
       answer:
-        'We provide service coverage across Goa and selected Maharashtra locations. Site consultation visits are available in North Goa, South Goa, and selected Maharashtra locations; availability depends on the project.',
+        'We provide on-site service in North Goa and the Sawantwadi area of Sindhudurg district, Maharashtra. Visit availability depends on the project and location.',
     },
     {
       question: 'How fast is installation?',

@@ -6,7 +6,7 @@ export const rfidLocksService: ServiceContent = {
   name: 'RFID Locks',
   title: 'RFID Locks in Goa | TecBunny',
   metaDescription:
-    'RFID lock planning, installation and access-control setup for homes and small businesses in North Goa and the Sawantwadi area.',
+    'RFID lock planning, installation and access-control setup for homes and small businesses in North Goa and the Sawantwadi area of Sindhudurg district, Maharashtra.',
   promise:
     'We help you replace unmanaged keys with practical access control while keeping emergency exit and day-to-day use in view.',
   audience: [

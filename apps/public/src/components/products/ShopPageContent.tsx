@@ -20,6 +20,7 @@ import { Skeleton } from "@tecbunny/ui";
 import { Input } from "@tecbunny/ui";
 import { useCart } from "@tecbunny/core/hooks";
 import { useRevealSections } from '../../hooks/use-reveal-sections';
+import { deduplicateCatalogProducts, getCatalogProductDisplayName } from '@/lib/product-catalog';
 
 const DEFAULT_CUSTOMER_CATEGORY = 'Normal';
 
@@ -353,7 +354,7 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
   const initialEnrichedProducts = React.useMemo(() => {
     if (initialRawProducts && initialRawProducts.length > 0) {
       const normalized = initialRawProducts.map(normalizeRawProduct);
-      return applyAutoOffersToProducts(normalized, initialRawAutoOffers || []);
+      return deduplicateCatalogProducts(applyAutoOffersToProducts(normalized, initialRawAutoOffers || []));
     }
     return [];
   }, [initialRawProducts, initialRawAutoOffers]);
@@ -465,7 +466,7 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
         logger.info('ShopPage: Products normalized', { count: normalized.length });
 
         const activeOffers = normalized.length > 0 ? await fetchActiveAutoOffers() : [];
-        const enrichedProducts = applyAutoOffersToProducts(normalized, activeOffers);
+        const enrichedProducts = deduplicateCatalogProducts(applyAutoOffersToProducts(normalized, activeOffers));
 
         setProducts(enrichedProducts);
         
@@ -586,8 +587,6 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
     categoryFilter ? { label: categoryFilter, clear: () => updateUrlParams({ category: '' }) } : null,
     hasActivePriceFilter ? { label: `₹${priceRange[0].toLocaleString('en-IN')}–₹${priceRange[1].toLocaleString('en-IN')}`, clear: () => setPriceRange([catalogueMinPrice, maxPrice]) } : null,
   ].filter((filter): filter is { label: string; clear: () => void } => Boolean(filter));
-  const resolvedResultsLabel = loading ? 'Loading...' : `${filteredProducts.length} items`;
-
   // Helper to parse hierarchical category paths and build a tree
   const categoryTree = React.useMemo(() => {
     const tree: Record<string, { name: string; count: number; fullName: string; children: Record<string, any> }> = {};
@@ -799,7 +798,7 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
               <p className="max-w-xl text-base leading-relaxed text-zinc-300 font-light">
                 {searchQuery 
                   ? `Found results matching "${searchQuery}"` 
-                  : 'Genuine CCTV cameras, recorders, computers, and IT accessories at live prices — with professional installation and support across Goa and Maharashtra.'
+                  : 'Genuine CCTV cameras, computers, networking gear and accessories for homes and small businesses, with installation and support in North Goa and the Sawantwadi area of Sindhudurg district, Maharashtra.'
                 }
               </p>
             </div>
@@ -819,7 +818,7 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
                   <span>⏎</span>
                 </div>
               </div>
-              <p className="mt-2.5 text-xs font-mono text-muted-foreground/60 tracking-wider uppercase">{resolvedResultsLabel}</p>
+              {!loading && <p className="mt-2.5 text-xs font-mono text-muted-foreground/60 tracking-wider uppercase">{filteredProducts.length} items</p>}
             </form>
           </div>
         </div>
@@ -926,9 +925,7 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
                 >
                   Filters
                 </button>
-                <p className="text-xs sm:text-sm font-mono text-muted-foreground">
-                  Showing {resolvedResultsLabel}
-                </p>
+                {!loading && <p className="text-xs sm:text-sm font-mono text-muted-foreground">Showing {filteredProducts.length} items</p>}
               </div>
               <div className="flex items-center gap-3 justify-end">
                 <span className="text-[10px] sm:text-xs font-mono text-muted-foreground uppercase tracking-wider">Sort by</span>
@@ -993,7 +990,7 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
               ) : filteredProducts.length > 0 ? (
                 <div className="grid gap-4 sm:gap-6 grid-cols-2 sm:grid-cols-3 lg:grid-cols-3">
                   {filteredProducts.map((product, index) => {
-                    const displayName = product.title || product.name || 'Product';
+                    const displayName = getCatalogProductDisplayName(product);
                     const imageUrl = getProductDisplayImage(product, {
                       fallbackText: displayName,
                       fallbackSize: '400x400',

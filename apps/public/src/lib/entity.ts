@@ -18,15 +18,15 @@ export const ENTITY = {
   phone: '+91-9604136010',
   email: 'support@tecbunny.com',
   headquarters: 'Pernem, North Goa, India',
-  serviceAreas: ['North Goa', 'Sawantwadi area of Sindhudurg district'] as const,
+  serviceAreas: ['North Goa', 'Sawantwadi area of Sindhudurg district, Maharashtra'] as const,
 
   /** One canonical sentence describing what TecBunny is — reuse verbatim. */
   description:
-    'TecBunny Solutions Private Limited is a technology services company headquartered in Pernem, North Goa, India, providing CCTV, IT support, RFID locks, networking and website development in North Goa and the Sawantwadi area of Sindhudurg district.',
+    'TecBunny Solutions Private Limited is a technology services company headquartered in Pernem, North Goa, India, providing CCTV, IT support, RFID locks, networking and website development in North Goa and the Sawantwadi area of Sindhudurg district, Maharashtra.',
 
   /** Short variant for meta descriptions and schema nodes. */
   shortDescription:
-    'CCTV, IT support, RFID locks, networking and website development in North Goa and the Sawantwadi area.',
+    'CCTV, IT support, RFID locks, networking and website development in North Goa and the Sawantwadi area of Sindhudurg district, Maharashtra.',
 
   services: [
     { name: 'CCTV', navLabel: 'CCTV', url: '/services/cctv-security' },

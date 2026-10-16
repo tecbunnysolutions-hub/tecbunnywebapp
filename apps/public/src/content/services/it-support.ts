@@ -6,7 +6,7 @@ export const itSupportService: ServiceContent = {
   name: 'IT Support',
   title: 'IT Support in Goa | TecBunny',
   metaDescription:
-    'Computer setup, repair, upgrades and practical IT support for homes and small businesses in North Goa and the Sawantwadi area.',
+    'Computer setup, repair, upgrades and practical IT support for homes and small businesses in North Goa and the Sawantwadi area of Sindhudurg district, Maharashtra.',
   promise:
     'We help you decide whether to repair, upgrade or replace a device, then explain the work clearly before it starts.',
   audience: [

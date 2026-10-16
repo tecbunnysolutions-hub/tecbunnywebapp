@@ -573,7 +573,7 @@ ${formData.additionalNotes.trim() || 'None'}
             </div>
             <div className="space-y-1.5 border-l-2 border-emerald-500 pl-3">
               <span className="font-bold text-white block">3. Site Survey Booking</span>
-              <p className="text-zinc-400 font-light leading-relaxed">We coordinate an on-site physical inspection across Goa to finalize cable paths.</p>
+              <p className="text-zinc-400 font-light leading-relaxed">We coordinate on-site inspections in North Goa and the Sawantwadi area of Sindhudurg district, Maharashtra, to finalize cable paths.</p>
             </div>
           </div>
         </div>

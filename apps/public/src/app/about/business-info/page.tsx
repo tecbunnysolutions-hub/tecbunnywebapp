@@ -212,7 +212,7 @@ export default function BusinessInfoPage() {
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">Service Areas</h3>
                 <p className="text-gray-700">
-                  We ship products across India. On-site installation and support services currently cover Goa and Maharashtra.
+                  We ship products across India. On-site installation and support services cover North Goa and the Sawantwadi area of Sindhudurg district, Maharashtra.
                 </p>
               </div>
             </div>

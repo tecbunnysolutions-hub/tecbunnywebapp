@@ -281,10 +281,10 @@ ${form.details.trim()}
             <span>Corporate Solutions Division</span>
           </div>
           <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl md:text-5xl font-tech leading-tight text-white">
-            Enterprise IT & Physical <span className="bg-gradient-to-r from-blue-400 via-indigo-200 to-white bg-clip-text text-transparent">Infrastructure</span>
+            Technology & Security <span className="bg-gradient-to-r from-blue-400 via-indigo-200 to-white bg-clip-text text-transparent">Solutions</span>
           </h1>
           <p className="text-base sm:text-lg font-light leading-relaxed text-zinc-400 max-w-2xl mx-auto">
-            Secure, scalable, and SLA-backed infrastructure engineering for resorts, hotels, and office spaces across Goa and Maharashtra.
+            Practical CCTV, networking, access control and automation for small businesses, hospitality sites and homes in North Goa and the Sawantwadi area of Sindhudurg district, Maharashtra.
           </p>
         </section>
 

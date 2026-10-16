@@ -109,47 +109,43 @@ const nextConfig = {
   },
   async redirects() {
     if (isStaticExport) return [];
+    const legacyRoutes = [
+      ['/services/physical-security', '/services/cctv-security'],
+      ['/services/physical-security/pernem-home-theater', '/solutions'],
+      ['/services/physical-security/:path*', '/services/cctv-security'],
+      ['/physical-security', '/services/cctv-security'],
+      ['/cctv', '/services/cctv-security'],
+      ['/cctv-installation', '/services/cctv-security'],
+      ['/cctv-security', '/services/cctv-security'],
+      ['/services/cctv', '/services/cctv-security'],
+      ['/services/cctv-installation', '/services/cctv-security'],
+      ['/services/cctv-installation-goa', '/services/cctv-security'],
+      ['/services/surveillance', '/services/cctv-security'],
+      ['/services/computers-mobiles', '/services/it-support'],
+      ['/computers-mobiles', '/services/it-support'],
+      ['/services/lifecycle-hardware', '/services/it-support'],
+      ['/lifecycle-hardware', '/services/it-support'],
+      ['/services/software-system-admin', '/services/it-support'],
+      ['/software-system-admin', '/services/it-support'],
+      ['/services/smart-access-control', '/services/rfid-locks'],
+      ['/smart-access-control', '/services/rfid-locks'],
+      ['/services/networking-internet', '/services/networking'],
+      ['/networking-internet', '/services/networking'],
+      ['/services/network-infrastructure', '/services/networking'],
+      ['/services/network-infrastructure/:path*', '/services/networking'],
+      ['/network-infrastructure', '/services/networking'],
+      ['/services/smart-infrastructure', '/solutions'],
+      ['/smart-infrastructure', '/solutions'],
+      ['/industries/:path*', '/solutions'],
+      ['/projects', '/portfolio'],
+      ['/shop', '/products'],
+    ];
     return [
-      {
-        source: '/services/physical-security',
-        destination: '/services/cctv-security',
-        permanent: true,
-      },
-      ...['/cctv', '/cctv-installation', '/cctv-security', '/services/cctv', '/services/cctv-installation', '/services/cctv-installation-goa', '/services/surveillance'].map((source) => ({
+      ...legacyRoutes.map(([source, destination]) => ({
         source,
-        destination: '/services/cctv-security',
+        destination: `https://www.tecbunny.com${destination}`,
         permanent: true,
       })),
-      {
-        source: '/services/computers-mobiles',
-        destination: '/services/it-support',
-        permanent: true,
-      },
-      {
-        source: '/services/lifecycle-hardware',
-        destination: '/services/it-support',
-        permanent: true,
-      },
-      {
-        source: '/services/software-system-admin',
-        destination: '/services/it-support',
-        permanent: true,
-      },
-      {
-        source: '/services/smart-access-control',
-        destination: '/services/rfid-locks',
-        permanent: true,
-      },
-      {
-        source: '/services/networking-internet',
-        destination: '/services/networking',
-        permanent: true,
-      },
-      {
-        source: '/services/network-infrastructure',
-        destination: '/services/networking',
-        permanent: true,
-      },
       {
         source: '/:path*',
         has: [{ type: 'host', value: 'tecbunny.com' }],

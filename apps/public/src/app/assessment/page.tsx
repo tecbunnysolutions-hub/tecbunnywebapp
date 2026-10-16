@@ -121,7 +121,7 @@ export default async function AssessmentPage({
             </li>
             <li className="flex items-center gap-2">
               <CheckCircle2 size={14} className="text-blue-400" />
-              Experienced field engineers across Goa
+              Local field engineers serving North Goa and the Sawantwadi area of Sindhudurg district, Maharashtra
             </li>
             <li className="flex items-center gap-2">
               <Building2 size={14} className="text-blue-400" />

@@ -143,7 +143,7 @@ export default function PortfolioPage() {
             Our Deployment <span className="bg-gradient-to-r from-blue-400 via-indigo-200 to-white bg-clip-text text-transparent">Portfolio</span>
           </h1>
           <p className="text-base font-light leading-relaxed text-zinc-400">
-            We don't expect you to take our word for it. Here are documented examples of IT and security work we have designed and built across Goa.
+            We don't expect you to take our word for it. Here are documented examples of IT and security work we have designed and built in North Goa and the Sawantwadi area.
           </p>
         </section>
 

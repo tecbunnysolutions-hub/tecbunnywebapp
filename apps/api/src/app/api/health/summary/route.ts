@@ -2,7 +2,7 @@ import { createSupabaseClient as createServerClient } from '@tecbunny/database/s
 
 import { NextRequest, NextResponse } from 'next/server';
 import { logger } from '@tecbunny/core/logger';
-import { requireInternalAccess } from '@/lib/internal-auth';
+import { requireInternalAccess } from '../../../../lib/internal-auth';
 
 
 

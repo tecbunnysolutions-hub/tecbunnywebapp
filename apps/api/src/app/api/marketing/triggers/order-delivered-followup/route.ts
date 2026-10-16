@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import { WhatsAppService } from "@tecbunny/core/whatsapp-service";
 import { logger } from "@tecbunny/core";
-import { requireInternalAccess } from '@/lib/internal-auth';
+import { requireInternalAccess } from '../../../../../lib/internal-auth';
 
 /**
  * Triggered after order delivery to send localized upsell offers
