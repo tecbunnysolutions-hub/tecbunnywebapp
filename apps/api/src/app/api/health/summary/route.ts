@@ -1,13 +1,17 @@
 import { createSupabaseClient as createServerClient } from '@tecbunny/database/server';
 
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { logger } from '@tecbunny/core/logger';
+import { requireInternalAccess } from '@/lib/internal-auth';
 
 
 
 export const runtime = 'nodejs';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const accessDenied = requireInternalAccess(request);
+  if (accessDenied) return accessDenied;
+
   logger.info('health_summary.audit.requested');
   const started = Date.now();
   const supabase = await createServerClient();

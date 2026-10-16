@@ -215,7 +215,10 @@ async function processOrderDelivered(supabase: any, data: any, source: string) {
       const baseUrl = envConfig.app.siteUrl;
       fetch(`${baseUrl}/api/marketing/triggers/order-delivered-followup`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'x-internal-api-key': process.env.INTERNAL_API_KEY || process.env.INTERNAL_API_TOKEN || process.env.CRON_SECRET || '',
+        },
         body: JSON.stringify({ orderId })
       }).catch(err => logger.error('upsell_trigger_fetch_failed', { err }));
     } catch (e) {

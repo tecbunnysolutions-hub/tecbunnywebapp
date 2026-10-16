@@ -9,6 +9,7 @@ import { getRedis } from "@tecbunny/core/redis";
 import { getSystemPrompt } from "@tecbunny/core/ai/prompts";
 import { rateLimit } from "@tecbunny/core/rate-limit";
 import { logger } from "@tecbunny/core";
+import { getTrustedClientIp } from '@tecbunny/core/server';
 
 const MAX_SOURCES = 3;
 const MAX_SOURCE_CHARS = 3500;
@@ -45,12 +46,7 @@ function cleanSearchText(value: string, maxLength = 80) {
 }
 
 function requesterKey(request: NextRequest) {
-  const ip = request.headers.get('cf-connecting-ip')?.trim()
-    || request.headers.get('x-real-ip')?.trim()
-    || request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
-    || 'unknown';
-  const ua = request.headers.get('user-agent')?.trim() || 'unknown';
-  return `${ip}|${ua}`.slice(0, 240);
+  return getTrustedClientIp(request).slice(0, 120);
 }
 
 async function fetchWithTimeout(url: string, init: RequestInit = {}, timeoutMs = 5000) {

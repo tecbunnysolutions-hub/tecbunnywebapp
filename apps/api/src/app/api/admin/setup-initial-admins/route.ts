@@ -2,16 +2,14 @@ import { NextRequest, NextResponse } from 'next/server';
 import { rateLimit } from "@tecbunny/core/rate-limit";
 import { logger } from '@tecbunny/core/logger';
 import {  getAdminClient  } from '@tecbunny/database/admin';
+import { getTrustedClientIp } from '@tecbunny/core/server';
 
 const getSupabaseAdmin = (): any => {
   return getAdminClient();
 };
 
 function getClientIp(request: NextRequest) {
-  return request.headers.get('cf-connecting-ip')?.trim()
-    || request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
-    || request.headers.get('x-real-ip')?.trim()
-    || 'unknown';
+  return getTrustedClientIp(request);
 }
 
 export async function POST(request: NextRequest) {

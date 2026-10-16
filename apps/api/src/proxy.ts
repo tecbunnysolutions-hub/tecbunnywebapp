@@ -56,6 +56,8 @@ export async function proxy(request: NextRequest, event: EnterpriseProxyEvent) {
         'POST /api/webhooks/orders/outfordelivery',
         'POST /api/webhooks/orders/notconfirmed',
         'POST /api/webhooks/orders/delivered',
+        // The trigger route enforces INTERNAL_API_KEY itself.
+        'POST /api/marketing/triggers/order-delivered-followup',
         'POST /api/webhooks/orders/delayed',
         'POST /api/webhooks/orders/cancelled',
         'POST /api/webhooks/payment/received',
