@@ -30,7 +30,7 @@ const PRODUCT_FAQS = [
   {
     question: 'Do you deliver and install outside Goa?',
     answer:
-      'Installation and AMC support cover Goa and Maharashtra. Equipment-only orders to other states can be arranged on request \u2014 contact our team with your location and order list for a delivery quote.',
+      'We ship equipment across India. Installation and AMC support cover Goa and Maharashtra \u2014 contact our team with your location and order list for a delivery quote.',
   },
   {
     question: 'How do I get a quote for a bulk or office order?',
@@ -241,7 +241,7 @@ export function ProductsSeoContent() {
           <p className="text-sm leading-relaxed max-w-3xl text-zinc-400">
             From our field work across Goa: coastal humidity corrodes outdoor connectors quickly, so we fit
             weather-rated housings and surge protection on exposed runs as standard. See{' '}
-            <Link href="/services/physical-security" className="text-primary hover:underline">
+            <Link href="/services/cctv-security" className="text-primary hover:underline">
               our physical security and CCTV service
             </Link>{' '}
             for what an installation includes.

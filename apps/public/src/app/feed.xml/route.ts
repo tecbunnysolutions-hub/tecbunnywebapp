@@ -1,5 +1,5 @@
-import { createClient } from '@supabase/supabase-js';
-import { requireSupabasePublicEnv } from '@tecbunny/database';
+import { getApi } from '@/lib/api';
+import { logger } from '@tecbunny/core';
 
 export const revalidate = 3600;
 
@@ -14,18 +14,32 @@ function escapeXml(value: string): string {
     .replace(/'/g, '&apos;');
 }
 
-export async function GET() {
-  const { url, publicKey } = requireSupabasePublicEnv();
-  const supabase = createClient(url, publicKey, { auth: { persistSession: false, autoRefreshToken: false } });
-  const { data: posts } = await supabase
-    .from('blog_posts')
-    .select('title, slug, excerpt, seo_description, published_at, updated_at')
-    .eq('status', 'published')
-    .order('published_at', { ascending: false })
-    .limit(50);
+function isUnauthorizedApiError(error: unknown): error is { status: number } {
+  return typeof error === 'object'
+    && error !== null
+    && 'status' in error
+    && (error as { status?: unknown }).status === 401;
+}
 
-  const items = (posts ?? [])
-    .map((post: { title: string; slug: string; excerpt: string | null; seo_description: string | null; published_at: string | null }) => {
+async function fetchFeedPosts() {
+  try {
+    return (await getApi().blog.list(
+      { page: 1, pageSize: 50 },
+      { next: { revalidate: 3600, tags: ['blog'] } },
+    )).posts;
+  } catch (error) {
+    if (!isUnauthorizedApiError(error)) throw error;
+
+    logger.error('blog_feed_unauthorized', { status: error.status });
+    return [];
+  }
+}
+
+export async function GET() {
+  const posts = await fetchFeedPosts();
+
+  const items = posts
+    .map((post) => {
       const url = `${SITE_URL}/blog/${post.slug}`;
       const description = post.seo_description || post.excerpt || '';
       const pubDate = post.published_at ? new Date(post.published_at).toUTCString() : '';

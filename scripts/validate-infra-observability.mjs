@@ -2,7 +2,7 @@ import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 
 const root = process.cwd();
-const evidencePath = join(root, 'runtime-readiness-evidence.json');
+const evidencePath = join(root, 'quality/runtime-readiness-evidence.json');
 
 if (!existsSync(evidencePath)) {
   console.error('Infrastructure observability validation failed. Missing runtime readiness evidence artifact.');

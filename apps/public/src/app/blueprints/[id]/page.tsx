@@ -1,4 +1,4 @@
-import { createServiceClient } from "@tecbunny/database/admin";
+import { getApi } from '@/lib/api';
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
@@ -14,17 +14,11 @@ interface BlueprintPageProps {
  */
 export async function generateMetadata({ params }: BlueprintPageProps): Promise<Metadata> {
   const { id } = await params;
-  const supabase = createServiceClient();
-  
-  const { data: blueprint } = await supabase
-    .from('published_blueprints')
-    .select('*, profiles:creator_id(name)')
-    .eq('id', id)
-    .single();
+  const blueprint = await getApi().blueprints.get(id);
 
   if (!blueprint) return { title: 'Blueprint Not Found | TecBunny' };
 
-  const config = blueprint.config_payload;
+  const config = blueprint.config_payload as Record<string, any>;
   const creator = blueprint.profiles?.name || 'Expert User';
   const title = `${config.cameraCount}x Node ${config.systemType} Security Blueprint by ${creator}`;
   const description = `Visualizing a high-fidelity ${config.premiseType} security setup with ${config.resolution} resolution and ${config.storage} storage. Compliance Grade: Tier-1 Verified.`;
@@ -64,17 +58,11 @@ export async function generateMetadata({ params }: BlueprintPageProps): Promise<
 
 export default async function BlueprintPage({ params }: BlueprintPageProps) {
   const { id } = await params;
-  const supabase = createServiceClient();
-
-  const { data: blueprint } = await supabase
-    .from('published_blueprints')
-    .select('*, profiles:creator_id(name, avatar_url)')
-    .eq('id', id)
-    .single();
+  const blueprint = await getApi().blueprints.get(id);
 
   if (!blueprint) notFound();
 
-  const config = blueprint.config_payload;
+  const config = blueprint.config_payload as Record<string, any>;
   const blueprintName = `${config.cameraCount}x Node ${config.systemType} Security Blueprint`;
 
   return (

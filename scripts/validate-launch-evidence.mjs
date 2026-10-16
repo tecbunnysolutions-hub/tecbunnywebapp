@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 const root = process.cwd();
-const evidence = JSON.parse(readFileSync(join(root, 'launch-qa-evidence.json'), 'utf8'));
+const evidence = JSON.parse(readFileSync(join(root, 'quality/launch-qa-evidence.json'), 'utf8'));
 
 const requiredAccessibilityMethods = ['keyboard-navigation', 'screen-reader-labels', 'focus-management', 'status-announcements', 'color-contrast'];
 const requiredSurfaces = ['public-checkout', 'mgmt-orders', 'waba-chat', 'webmail-inbox', 'superadmin-system-health'];

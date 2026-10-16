@@ -74,15 +74,15 @@ export function FloatingAIAssistant() {
   return (
     <div className="floating-ai-anchor fixed bottom-6 right-4 z-50 sm:right-6 flex flex-col gap-4 items-end">
       {open && (
-        <div className="mb-1 w-[290px] rounded-2xl border border-border bg-card/95 p-4 text-card-foreground shadow-2xl backdrop-blur">
+        <div className="mb-1 w-[290px] rounded-2xl border border-zinc-700 bg-zinc-900 p-4 text-zinc-100 shadow-2xl">
           <div className="flex items-start justify-between gap-2">
             <div className="flex items-center gap-2">
               <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/15 text-primary">
                 <Bot className="h-5 w-5" />
               </span>
               <div>
-                <p className="text-sm font-semibold text-foreground">Get help</p>
-                <p className="text-xs text-muted-foreground">Tell TecBunny what you need.</p>
+                <p className="text-sm font-semibold text-white">Get help</p>
+                <p className="text-xs text-zinc-300">Tell TecBunny what you need.</p>
               </div>
             </div>
             <button
@@ -97,7 +97,7 @@ export function FloatingAIAssistant() {
 
           <div className="mt-4 grid grid-cols-2 gap-2">
             {helpOptions.map(([label, intent]) => (
-              <Link key={intent} href={`/contact?subject=${intent === 'network_support' || intent === 'repair_request' ? 'support' : 'sales'}&intent=${intent}&source=floating_help`} onClick={() => setOpen(false)} className="rounded-xl border border-border bg-muted/20 px-3 py-2.5 text-xs font-semibold text-foreground transition hover:border-primary/50 hover:bg-primary/10">
+              <Link key={intent} href={`/contact?subject=${intent === 'network_support' || intent === 'repair_request' ? 'support' : 'sales'}&intent=${intent}&source=floating_help`} onClick={() => setOpen(false)} className="rounded-xl border border-zinc-700 bg-zinc-800 px-3 py-2.5 text-xs font-semibold text-zinc-100 transition hover:border-primary/50 hover:bg-zinc-700">
                 {label}
               </Link>
             ))}

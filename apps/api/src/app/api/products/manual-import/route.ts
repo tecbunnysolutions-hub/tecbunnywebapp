@@ -1,3 +1,4 @@
+import { withPublicRevalidation } from '../../../../lib/revalidate-public';
 import fs from 'fs';
 
 import path from 'path';
@@ -35,7 +36,7 @@ function parseCSVLine(line: string): string[] {
   return result;
 }
 
-export async function POST(_request: NextRequest) {
+async function POSTHandler(_request: NextRequest) {
   try {
     const { serviceSupabase: supabase } = await requireAdminContext();
     
@@ -176,3 +177,5 @@ export async function POST(_request: NextRequest) {
     );
   }
 }
+
+export const POST = withPublicRevalidation(['products'], POSTHandler);

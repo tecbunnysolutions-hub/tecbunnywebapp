@@ -35,6 +35,13 @@ export interface VerifiedCredential {
  */
 export const VERIFIED_CREDENTIALS: readonly VerifiedCredential[] = [
   {
+    key: 'cpplus-hikvision-system-integration',
+    label: 'CP PLUS & Hikvision System Integrator',
+    category: 'partnership',
+    status: 'verified',
+    evidence: 'Declared by company director (Oct 2026); authorization documents on file',
+  },
+  {
     key: 'engineering-team-certifications',
     label: 'Certified Engineering Team',
     category: 'certification',

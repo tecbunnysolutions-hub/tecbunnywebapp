@@ -69,7 +69,7 @@ export function WhatsAppFloatingButton({
   const whatsappUrl = getWhatsAppConsultationUrl(defaultContext, defaultService);
 
   return (
-    <div className="fixed bottom-6 right-6 z-40 flex flex-col items-end gap-2 group">
+    <div className="fixed bottom-24 right-4 sm:right-6 z-40 flex flex-col items-end gap-2 group">
       {/* Subtle floating prompt */}
       {!isDismissed && !isOpen && (
         <div className="hidden sm:flex items-center gap-2 rounded-2xl border border-emerald-500/30 bg-zinc-950/90 px-4 py-2.5 shadow-2xl backdrop-blur-md text-xs text-zinc-200 animate-fade-in">

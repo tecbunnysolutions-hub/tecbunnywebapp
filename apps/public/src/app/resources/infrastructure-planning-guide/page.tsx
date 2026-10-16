@@ -13,9 +13,8 @@ import {
 } from 'lucide-react';
 import { Button } from '@tecbunny/ui';
 import { createPageMetadata } from '@tecbunny/core/metadata';
-import { BRAND_LOGO_URL } from '@tecbunny/ui';
+import { BRAND_LOGO_URL } from "@tecbunny/core/brand";
 import { TechnologyAssessmentFunnel } from '@/components/TechnologyAssessmentFunnel';
-import { WhatsAppFloatingButton } from '@/components/WhatsAppFloatingButton';
 import { CommercialInfrastructureCalculator } from '@/components/CommercialInfrastructureCalculator';
 import { BreadcrumbJsonLd } from '@/components/BreadcrumbJsonLd';
 
@@ -50,8 +49,6 @@ export default function InfrastructurePlanningGuidePage() {
         <div className="absolute -left-40 top-0 h-[48rem] w-[48rem] rounded-full bg-blue-500/5 blur-[160px]" />
         <div className="absolute -right-40 top-1/4 h-[50rem] w-[50rem] rounded-full bg-indigo-500/5 blur-[180px]" />
       </div>
-
-      <WhatsAppFloatingButton defaultContext="Infrastructure Planning Guide" />
 
       {/* Header */}
       <section className="relative pt-24 pb-12 sm:pt-32 sm:pb-16 border-b border-zinc-900">

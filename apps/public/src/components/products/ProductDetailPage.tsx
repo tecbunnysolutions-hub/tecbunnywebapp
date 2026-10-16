@@ -1,5 +1,5 @@
 'use client';
-import { createClient } from '@tecbunny/database';
+import { getApi } from '@/lib/api';
 
 
 
@@ -208,7 +208,6 @@ export function ProductDetailPage({ productId, initialProduct, sourceContext }: 
   const [loading, setLoading] = useState(!initialProduct);
   const [selectedImage, setSelectedImage] = useState(0);
   const [activeTab, setActiveTab] = useState<'specs' | 'description' | 'warranty'>('specs');
-  const supabase = createClient();
   const displayName = product?.title || product?.name || 'Product';
 
   // Meta ViewContent — fired once per product view, deduplicated with CAPI via event_id.
@@ -342,11 +341,14 @@ export function ProductDetailPage({ productId, initialProduct, sourceContext }: 
       if (isMountedRef.current) {
         setLoading(true);
       }
-      const { data, error } = await supabase
-        .from('products')
-        .select('*')
-        .eq('id', productId)
-        .single();
+      let data: any = null;
+      let error: unknown = null;
+      try {
+        data = await getApi().products.get(productId);
+        if (!data) error = new Error('Product not found');
+      } catch (e) {
+        error = e;
+      }
 
       if (!isMountedRef.current) {
         return;
@@ -428,7 +430,7 @@ export function ProductDetailPage({ productId, initialProduct, sourceContext }: 
     };
 
     fetchProduct();
-  }, [productId, supabase, initialProduct]);
+  }, [productId, initialProduct]);
 
   const handleShare = async () => {
     if (!product) return;
@@ -577,11 +579,11 @@ export function ProductDetailPage({ productId, initialProduct, sourceContext }: 
                     <span className="bg-muted text-muted-foreground border border-border text-[10px] font-semibold tracking-wider px-3 py-1.5 rounded-full shadow-lg">
                       PRE-ORDER
                     </span>
-                  ) : (
+                  ) : product.stock_status === 'in_stock' ? (
                     <span className="bg-primary/15 text-primary border border-primary/30 text-[10px] font-semibold tracking-wider px-3 py-1.5 rounded-full shadow-lg shadow-primary/5">
                       IN STOCK
                     </span>
-                  )}
+                  ) : null}
                 </div>
               </div>
 
@@ -745,7 +747,7 @@ export function ProductDetailPage({ productId, initialProduct, sourceContext }: 
                           <p className="font-semibold text-zinc-400">Currently unavailable — delivery estimate will appear when this product is back in stock</p>
                         ) : deliveryInfo.isGoa ? (
                           <p className="font-semibold text-emerald-400">
-                            {deliveryInfo.hasEstimated ? 'Expected delivery: next working day, subject to checkout confirmation' : 'Goa fulfillment hub stock — enter a PIN for a delivery estimate'}
+                            {deliveryInfo.hasEstimated ? 'Expected delivery: next working day, subject to checkout confirmation' : 'Stock at our Goa store — enter a PIN for a delivery estimate'}
                           </p>
                         ) : (
                           <p className="font-semibold text-zinc-400">

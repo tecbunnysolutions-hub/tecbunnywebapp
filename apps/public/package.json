@@ -6,7 +6,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev -p 9003",
-    "build": "next build --webpack",
+    "build": "next build --webpack && node ../../scripts/validate-content-placeholders.mjs",
     "build:prod": "npm run typecheck && npm run lint && npm run build",
     "build:prod-full": "npm run build:prod",
     "build:analyze": "cross-env ANALYZE=true next build --webpack",
@@ -48,7 +48,9 @@
     "@supabase/ssr": "0.12.3",
     "@supabase/supabase-js": "^2.110.7",
     "@tanstack/react-query": "^5.101.2",
+    "@tecbunny/api-client": "*",
     "@tecbunny/config": "*",
+    "@tecbunny/contracts": "*",
     "@tecbunny/core": "*",
     "@tecbunny/database": "*",
     "@tecbunny/rpc": "*",

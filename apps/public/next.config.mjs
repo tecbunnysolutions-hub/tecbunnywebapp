@@ -34,7 +34,7 @@ const nextConfig = {
   outputFileTracingRoot: path.resolve(__dirname, '../..'),
   ...(isStaticExport ? { output: 'export' } : process.env.DOCKER_BUILD === 'true' ? { output: 'standalone' } : {}),
   compress: true,
-  transpilePackages: ["@tecbunny/core", "@tecbunny/ui", "@tecbunny/database", "@tecbunny/config"],
+  transpilePackages: ["@tecbunny/core", "@tecbunny/ui", "@tecbunny/database", "@tecbunny/config", "@tecbunny/api-client", "@tecbunny/contracts"],
   experimental: {
     optimizeCss: true,
     optimizePackageImports: ['lucide-react', '@radix-ui/react-icons', 'date-fns']
@@ -109,8 +109,47 @@ const nextConfig = {
   },
   async redirects() {
     if (isStaticExport) return [];
-    // Consolidate non-www → www into a single 308 hop to avoid redirect chains
     return [
+      {
+        source: '/services/physical-security',
+        destination: '/services/cctv-security',
+        permanent: true,
+      },
+      ...['/cctv', '/cctv-installation', '/cctv-security', '/services/cctv', '/services/cctv-installation', '/services/cctv-installation-goa', '/services/surveillance'].map((source) => ({
+        source,
+        destination: '/services/cctv-security',
+        permanent: true,
+      })),
+      {
+        source: '/services/computers-mobiles',
+        destination: '/services/it-support',
+        permanent: true,
+      },
+      {
+        source: '/services/lifecycle-hardware',
+        destination: '/services/it-support',
+        permanent: true,
+      },
+      {
+        source: '/services/software-system-admin',
+        destination: '/services/it-support',
+        permanent: true,
+      },
+      {
+        source: '/services/smart-access-control',
+        destination: '/services/rfid-locks',
+        permanent: true,
+      },
+      {
+        source: '/services/networking-internet',
+        destination: '/services/networking',
+        permanent: true,
+      },
+      {
+        source: '/services/network-infrastructure',
+        destination: '/services/networking',
+        permanent: true,
+      },
       {
         source: '/:path*',
         has: [{ type: 'host', value: 'tecbunny.com' }],

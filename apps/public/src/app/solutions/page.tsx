@@ -122,11 +122,11 @@ We require an infrastructure redundancy proposal with direct SLAs to prevent thi
 
   const caseStudies: CaseStudy[] = [
     {
-      title: "6-Node Mesh Network for Heritage Estate",
+      title: "6-Node Mesh Network for a Villa in Anjuna",
       category: "Networking & IT Infrastructure",
       location: "Anjuna, North Goa",
       scope: "Fitted shielded Cat6 outdoor lines and managed Digisol access points through 18-inch Portuguese-style stone walls.",
-      results: "Sub-50ms seamless roaming handoffs with sustained 450+ Mbps download coverage over a 12,000 sq ft footprint.",
+      results: "On-site tests at handover measured sub-50ms roaming handoffs and sustained download speeds above 450 Mbps across the 12,000 sq ft property.",
       icon: Wifi
     },
     {

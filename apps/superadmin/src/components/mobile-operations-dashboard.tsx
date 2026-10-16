@@ -4,14 +4,8 @@ import * as React from 'react';
 import { Phone, MessageCircle, Clock, TrendingUp, AlertCircle, User, ChevronRight } from 'lucide-react';
 import { Card, Badge, Skeleton, Button, Dialog, DialogContent, DialogHeader, DialogTitle } from '@tecbunny/ui';
 import { logger } from '@tecbunny/core';
-import { 
-  getLeadMetrics, 
-  getHotLeadsPriorityQueue, 
-  getRevenueMetrics,
-  type LeadMetrics, 
-  type HotLead,
-  type RevenueMetrics 
-} from '@/lib/lead-command-center-data';
+import type { LeadMetrics, HotLead, RevenueMetrics } from '@tecbunny/contracts';
+import { createBrowserApi } from '@/lib/api';
 
 export function MobileOperationsDashboard() {
   const [leadMetrics, setLeadMetrics] = React.useState<LeadMetrics | null>(null);
@@ -29,11 +23,8 @@ export function MobileOperationsDashboard() {
       try {
         setIsLoading(true);
         setFetchError(null);
-        const [metrics, revenue, leads] = await Promise.all([
-          getLeadMetrics(),
-          getRevenueMetrics(),
-          getHotLeadsPriorityQueue(),
-        ]);
+        const data = await createBrowserApi().superadmin.leadCommandCenter();
+        const { leadMetrics: metrics, revenueMetrics: revenue, hotLeads: leads } = data;
 
         if (cancelled) return;
         setLeadMetrics(metrics);

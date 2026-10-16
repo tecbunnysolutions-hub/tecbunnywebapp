@@ -22,7 +22,7 @@ import { BreadcrumbJsonLd } from '@/components/BreadcrumbJsonLd';
 export async function generateMetadata(): Promise<Metadata> {
   return createPageMetadata({
     title: 'Client Case Studies & Project Portfolio | TecBunny Solutions',
-    description: 'Explore our uncopyable proof of competence: verified tech portfolios detailing enterprise network setups, CCTV perimeters, and smart automation across Goa.',
+    description: 'Real projects from TecBunny in Goa: a villa Wi-Fi mesh in Anjuna, an 8-camera estate CCTV setup in Parra, and biometric access control for a Panaji co-working space.',
     keywords: [
       'TecBunny portfolio',
       'Goa IT case studies',
@@ -32,7 +32,7 @@ export async function generateMetadata(): Promise<Metadata> {
       'smart home setups Pernem'
     ],
     path: '/portfolio',
-    image: '/brand.png',
+    image: '/opengraph-image',
   });
 }
 
@@ -66,12 +66,12 @@ export default function PortfolioPage() {
         "Monsoon humidity protection for outdoor pool access points."
       ],
       blueprint: [
-        { item: "Digisol Wi-Fi 6 Access Points", qty: "6 units" },
-        { item: "Digisol Cloud-Managed Gateway", qty: "1 unit" },
-        { item: "Digisol Lite 8-Port PoE Switch", qty: "1 unit" },
-        { item: "Finolex Cat6 FTP Shielded Weatherproof Cable", qty: "150 meters" }
+        { item: "Wi-Fi 6 Access Points", qty: "6 units" },
+        { item: "Cloud-Managed Gateway", qty: "1 unit" },
+        { item: "8-Port PoE Switch", qty: "1 unit" },
+        { item: "Cat6 FTP Shielded Weatherproof Cable", qty: "150 meters" }
       ],
-      results: "Implemented a fully managed Digisol subnet. Handoff latency is verified at sub-50ms (seamless roaming), with a steady 450+ Mbps download speed sustained across all indoor areas and the poolside garden."
+      results: "Implemented a fully managed wireless subnet. On-site tests at handover measured sub-50ms roaming handoff and sustained download speeds above 450 Mbps across all indoor areas and the poolside garden."
     },
     {
       title: "8-Camera Enterprise IP CCTV Surveillance Setup",
@@ -92,7 +92,7 @@ export default function PortfolioPage() {
         { item: "APC 1KVA Line-Interactive Online UPS", qty: "1 unit" },
         { item: "Surge Protection Devices (SPD) on all lines", qty: "8 units" }
       ],
-      results: "Full 24/7 color coverage is archived locally and backed up dynamically to cloud storage. Surges are mitigated by SPDs and online UPS, keeping cameras 100% active during utility blackouts."
+      results: "Full 24/7 color coverage is archived locally and backed up dynamically to cloud storage. Surges are mitigated by SPDs and an online UPS, keeping cameras and the recorder running through short utility blackouts; runtime depends on UPS load."
     },
     {
       title: "Smart Biometric Access Control for Coworking Hub",
@@ -143,7 +143,7 @@ export default function PortfolioPage() {
             Our Deployment <span className="bg-gradient-to-r from-blue-400 via-indigo-200 to-white bg-clip-text text-transparent">Portfolio</span>
           </h1>
           <p className="text-base font-light leading-relaxed text-zinc-400">
-            We don't expect you to take our word for it. Here is the uncopyable, documented evidence of custom IT and physical infrastructures we have designed and built across Goa.
+            We don't expect you to take our word for it. Here are documented examples of IT and security work we have designed and built across Goa.
           </p>
         </section>
 
@@ -224,7 +224,7 @@ export default function PortfolioPage() {
                   <div className="bg-blue-500/5 border border-blue-500/10 rounded-2xl p-5 mt-auto">
                     <h4 className="text-[10px] uppercase font-bold text-blue-400 tracking-widest mb-1.5 flex items-center gap-1.5">
                       <ShieldCheck className="h-3.5 w-3.5 text-emerald-500" />
-                      Verified Results
+                      Results
                     </h4>
                     <p className="text-xs text-zinc-300 leading-relaxed font-light">
                       {project.results}

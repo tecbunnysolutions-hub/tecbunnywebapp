@@ -7,9 +7,14 @@ interface PageMetaInput {
   description: string;
   path: string;
   image?: string;
+  /** Retained for backwards-compatible callers; keyword metadata is intentionally not emitted. */
   keywords?: string[];
   openGraph?: Metadata['openGraph'];
   twitter?: Metadata['twitter'];
+}
+
+function isUsableMetadataImage(value: string): boolean {
+  return value.startsWith('/') || /^https?:\/\//i.test(value);
 }
 
 export async function cleanMetadataTitle(value: string | null | undefined): Promise<string> {
@@ -20,7 +25,7 @@ export async function cleanMetadataTitle(value: string | null | undefined): Prom
   if (!title || title.toLowerCase() === 'null' || title.toLowerCase() === 'undefined') {
     title = fallback;
   }
-  if (title.length < 50) {
+  if (title.length < 50 && !title.toLowerCase().includes('tecbunny')) {
     const suffix = ' | TecBunny Solutions';
     if (title.length + suffix.length <= 60) {
       title = title + suffix;
@@ -31,12 +36,10 @@ export async function cleanMetadataTitle(value: string | null | undefined): Prom
       }
     }
   }
-  if (title.length < 50) {
-    const padding = ' - Premium IT & Security Services';
-    title = (title + padding).slice(0, 60);
-  }
   if (title.length > 60) {
-    title = title.slice(0, 60);
+    const cut = title.slice(0, 60);
+    const lastBreak = cut.lastIndexOf(' ');
+    title = lastBreak > 40 ? cut.slice(0, lastBreak) : cut;
   }
   return title;
 }
@@ -51,12 +54,10 @@ export async function cleanMetadataDescription(
   if (!description || description.toLowerCase() === 'null' || description.toLowerCase() === 'undefined') {
     description = fallback;
   }
-  if (description.length < 140) {
-    const padding = ' We deliver elite technology setups, structured network cabling, and robust commercial hardware maintenance services for businesses.';
-    description = (description + padding).slice(0, 155);
-  }
   if (description.length > 155) {
-    description = description.slice(0, 155);
+    const cut = description.slice(0, 155);
+    const lastBreak = cut.lastIndexOf(' ');
+    description = lastBreak > 100 ? cut.slice(0, lastBreak) : cut;
   }
   return description;
 }
@@ -66,19 +67,21 @@ export async function createPageMetadata({
   description,
   path,
   image,
-  keywords = [],
   openGraph,
   twitter,
 }: PageMetaInput): Promise<Metadata> {
   const settings = await getAppSettings();
   const siteUrl = settings.siteUrl || 'https://www.tecbunny.com';
-  const defaultOgImage = settings.defaultOgImage || 'https://fbcsagupcxheyiusjfak.supabase.co/storage/v1/object/public/TecBunny%20Solution/TECBUNNY_SOLUTIONS_PVT_LTD-removebg-preview.png';
+  const defaultOgImage = typeof settings.defaultOgImage === 'string' && isUsableMetadataImage(settings.defaultOgImage.trim())
+    ? settings.defaultOgImage.trim()
+    : '/opengraph-image';
   const xHandle = process.env.NEXT_PUBLIC_X_HANDLE;
 
-  const actualImage = image || defaultOgImage;
-  const actualImageStr = typeof actualImage === 'string' ? actualImage : String(actualImage);
-  const activeImage = (actualImageStr === '/brand.png' || actualImageStr.endsWith('/brand.png')) ? defaultOgImage : actualImageStr;
-  const resolvedImage = activeImage.startsWith('http') ? activeImage : `${siteUrl}${activeImage}`;
+  const configuredImage = image && isUsableMetadataImage(image) ? image : defaultOgImage;
+  const activeImage = configuredImage === '/brand.png' || configuredImage.endsWith('/brand.png')
+    ? '/opengraph-image'
+    : configuredImage;
+  const resolvedImage = activeImage.startsWith('http') ? activeImage : new URL(activeImage, siteUrl).toString();
   
   const rawCanonical = path.startsWith('http') ? path : `${siteUrl}${path}`;
   const urlObj = new URL(rawCanonical);
@@ -94,7 +97,6 @@ export async function createPageMetadata({
   return {
     title: safeTitle,
     description: safeDescription,
-    keywords,
     alternates: {
       canonical,
     },

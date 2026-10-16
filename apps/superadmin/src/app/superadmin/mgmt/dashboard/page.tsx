@@ -2,7 +2,7 @@ import { cookies, headers } from 'next/headers';
 
 import { verifySuperadminSessionToken } from "@tecbunny/core/server";
 import { SuperadminCommandCenter } from '@/components/superadmin/SuperadminCommandCenter';
-import { getSuperadminCommandCenterData } from '@/lib/superadmin-dashboard-data';
+import { createForwardedApi } from '@/lib/api';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,7 +18,8 @@ export default async function SuperadminDashboard() {
     return null;
   }
 
-  const dashboardData = await getSuperadminCommandCenterData();
+  const api = createForwardedApi({ cookie: headerStore.get('cookie'), ip: headerStore.get('x-forwarded-for'), userAgent: headerStore.get('user-agent') });
+  const dashboardData = await api.superadmin.commandCenter();
 
   return <SuperadminCommandCenter initialData={dashboardData} />;
 }

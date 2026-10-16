@@ -1,5 +1,5 @@
 'use client';
-import { createClient } from '@tecbunny/database';
+import { createStaffApi } from '@/lib/api';
 
 
 import * as React from 'react';
@@ -30,16 +30,19 @@ export default function InvoiceLookupPage() {
     notFound: false,
   });
   const { toast } = useToast();
-  const supabase = createClient();
+  const api = React.useMemo(() => createStaffApi(), []);
 
   const handleSearch = async () => {
     if (!invoiceId) return;
 
-    const { data: order, error } = await supabase
-        .from('orders')
-        .select('*')
-        .ilike('id', `%${invoiceId}%`)
-        .single();
+    let order: Order | null = null;
+    let error: unknown = null;
+    try {
+      const result = await api.admin.orders({ search: invoiceId, limit: 2 });
+      order = result.orders.length === 1 ? (result.orders[0] as unknown as Order) : null;
+    } catch (err) {
+      error = err;
+    }
     
     if (error || !order) {
         setSearchResult({ order: null, notFound: true });

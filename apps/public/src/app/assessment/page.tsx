@@ -11,10 +11,9 @@ import {
   ArrowLeft
 } from 'lucide-react';
 import { createPageMetadata } from '@tecbunny/core/metadata';
-import { BRAND_LOGO_URL } from '@tecbunny/ui';
+import { BRAND_LOGO_URL } from "@tecbunny/core/brand";
 import { TechnologyAssessmentFunnel } from '@/components/TechnologyAssessmentFunnel';
 import { HowItWorksSection } from '@/components/HowItWorksSection';
-import { WhatsAppFloatingButton } from '@/components/WhatsAppFloatingButton';
 import { BreadcrumbJsonLd } from '@/components/BreadcrumbJsonLd';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -55,8 +54,6 @@ export default async function AssessmentPage({
         <div className="absolute -left-40 top-0 h-[48rem] w-[48rem] rounded-full bg-blue-500/10 blur-[170px]" />
         <div className="absolute -right-40 top-1/4 h-[50rem] w-[50rem] rounded-full bg-indigo-500/10 blur-[190px]" />
       </div>
-
-      <WhatsAppFloatingButton defaultContext="Free Technology Assessment" />
 
       {/* Hero Header */}
       <section className="relative pt-24 pb-12 sm:pt-32 sm:pb-16 border-b border-zinc-900">
@@ -148,7 +145,7 @@ export default async function AssessmentPage({
             <div className="rounded-xl border border-zinc-800 bg-zinc-950/60 p-5">
               <dt className="text-sm font-semibold text-white">How quickly will I hear back?</dt>
               <dd className="mt-1 text-sm text-zinc-400 font-light leading-relaxed">
-                Our engineering team responds the same business day and schedules the on-site survey within 48 hours across Goa.
+                Our engineering team responds the same business day. On-site surveys are scheduled the same day within about 15 km of Parcem when you contact us in the first half of the day, the next business day up to about 35 km, and later for sites beyond that.
               </dd>
             </div>
             <div className="rounded-xl border border-zinc-800 bg-zinc-950/60 p-5">

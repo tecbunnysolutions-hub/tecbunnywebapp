@@ -11,7 +11,7 @@ import {
   Cpu
 } from '@/components/industry-icons';
 import { createPageMetadata } from '@tecbunny/core/metadata';
-import { BRAND_LOGO_URL } from '@tecbunny/ui';
+import { BRAND_LOGO_URL } from "@tecbunny/core/brand";
 import { IndustryLandingPage } from '@/components/IndustryLandingPage';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -111,7 +111,7 @@ export default function BuildersIndustryPage() {
         {
           title: "Physical Security",
           desc: "4K ColorVu perimeter IP camera systems and security control rooms.",
-          href: "/services/physical-security",
+          href: "/services/cctv-security",
           icon: Shield
         },
         {

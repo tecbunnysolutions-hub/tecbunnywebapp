@@ -1,3 +1,4 @@
+import { withPublicRevalidation } from '../../../lib/revalidate-public';
 import { createSupabaseClient as createClient } from '@tecbunny/database/server';
 import {  createSupabaseServiceClient, isSupabaseServiceConfigured  } from '@tecbunny/database/admin';
 import crypto from 'crypto';
@@ -614,7 +615,7 @@ export async function GET(request: NextRequest) {
 }
 
 // Create or update product
-export async function POST(request: NextRequest) {
+async function POSTHandler(request: NextRequest) {
   try {
     const body = await request.json();
     // Debug mode is restricted to non-production to avoid leaking internal error details.
@@ -1029,7 +1030,7 @@ export async function POST(request: NextRequest) {
 }
 
 // Update product
-export async function PUT(request: NextRequest) {
+async function PUTHandler(request: NextRequest) {
   const correlationId = request.headers.get('x-correlation-id') || crypto.randomUUID();
   try {
     const body = await request.json();
@@ -1294,7 +1295,7 @@ export async function PUT(request: NextRequest) {
 }
 
 // Delete product
-export async function DELETE(request: NextRequest) {
+async function DELETEHandler(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
@@ -1335,3 +1336,7 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
+
+export const POST = withPublicRevalidation(['products'], POSTHandler);
+export const PUT = withPublicRevalidation(['products'], PUTHandler);
+export const DELETE = withPublicRevalidation(['products'], DELETEHandler);

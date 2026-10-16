@@ -140,8 +140,8 @@ export default function BusinessInfoPage() {
             <div className="p-4 bg-white/5 border border-white/10 rounded-lg">
               <address className="text-lg text-gray-700 not-italic leading-relaxed">
                 TECBUNNY SOLUTIONS PRIVATE LIMITED<br />
-                H NO 11 NHAYGINWADA, PARSE<br />
-                Parxem, Pernem<br />
+                H NO 11 NHAYGINWADA, PARCEM<br />
+                Parcem, Pernem<br />
                 North Goa - 403512<br />
                 Goa, India
               </address>
@@ -212,8 +212,7 @@ export default function BusinessInfoPage() {
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">Service Areas</h3>
                 <p className="text-gray-700">
-                  We serve customers across India with online sales and delivery services. 
-                  Our primary service areas include Goa, Maharashtra, Karnataka, and other major states.
+                  We ship products across India. On-site installation and support services currently cover Goa and Maharashtra.
                 </p>
               </div>
             </div>
@@ -350,7 +349,7 @@ export default function BusinessInfoPage() {
         {/* Footer Note */}
         <div className="mt-12 text-center">
           <p className="text-sm text-gray-500">
-            This information is accurate as of October 2025. For any business inquiries or verification, 
+            This information is accurate as of October 2026. For any business inquiries or verification, 
             please contact us at support@tecbunny.com or +91 96041 36010.
           </p>
         </div>

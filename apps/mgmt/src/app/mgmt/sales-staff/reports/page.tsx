@@ -1,5 +1,5 @@
 'use client';
-import { createClient } from '@tecbunny/database';
+import { createStaffApi } from '@/lib/api';
 
 
 
@@ -15,7 +15,7 @@ import type { Order } from "@tecbunny/core/types";
 
 export default function SalesStaffReportsPage() {
   const { user } = useAuth();
-  const supabase = React.useMemo(() => createClient(), []);
+  const api = React.useMemo(() => createStaffApi(), []);
   const [invoices, setInvoices] = React.useState<Order[]>([]);
   const [stats, setStats] = React.useState({ count: 0, volume: 0 });
   const [loading, setLoading] = React.useState(true);
@@ -26,14 +26,7 @@ export default function SalesStaffReportsPage() {
     const loadSelfReports = async () => {
       setLoading(true);
       try {
-        const { data: orders, error } = await supabase
-          .from('orders')
-          .select('*')
-          .eq('processed_by', user.id)
-          .eq('status', 'Completed')
-          .order('created_at', { ascending: false });
-
-        if (error) throw error;
+        const orders = (await api.admin.orders({ processedBy: 'me', status: 'Completed' })).orders as unknown as Order[];
 
         const vol = (orders || []).reduce((acc: number, o: any) => acc + Number(o.total || 0), 0);
         setStats({
@@ -49,7 +42,7 @@ export default function SalesStaffReportsPage() {
     };
 
     loadSelfReports();
-  }, [user, supabase]);
+  }, [user, api]);
 
   return (
     <div className="space-y-8 bg-background min-h-screen text-foreground p-1">

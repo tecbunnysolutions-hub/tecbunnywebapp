@@ -2,7 +2,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 
 const root = process.cwd();
-const manifestPath = path.resolve(root, process.argv[2] ?? 'runtime-readiness-evidence.json');
+const manifestPath = path.resolve(root, process.argv[2] ?? 'quality/runtime-readiness-evidence.json');
 const findings = [];
 
 if (!existsSync(manifestPath)) {

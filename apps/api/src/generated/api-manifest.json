@@ -1,0 +1,3599 @@
+{
+  "routeCount": 287,
+  "endpointCount": 396,
+  "routes": [
+    {
+      "path": "/api/abandoned-assessments",
+      "group": "abandoned-assessments",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/admin-auth/login",
+      "group": "admin-auth",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "public"
+        }
+      ]
+    },
+    {
+      "path": "/api/admin-auth/logout",
+      "group": "admin-auth",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/admin/ai-query",
+      "group": "admin",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/admin/ai/product-description",
+      "group": "admin",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/admin/ai/related-products",
+      "group": "admin",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/admin/crm/leads",
+      "group": "admin",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/admin/custom-setups",
+      "group": "admin",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        },
+        {
+          "method": "POST",
+          "access": "protected"
+        },
+        {
+          "method": "PATCH",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/admin/dashboard",
+      "group": "admin",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/admin/homepage/auto-fill",
+      "group": "admin",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/admin/homepage/auto-fill/run",
+      "group": "admin",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/admin/jobs/[id]",
+      "group": "admin",
+      "dynamic": true,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/admin/leads/health",
+      "group": "admin",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        },
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/admin/manage-role",
+      "group": "admin",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/admin/marketing/broadcast",
+      "group": "admin",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/admin/marketing/source-analytics",
+      "group": "admin",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/admin/mgmt/overview",
+      "group": "admin",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/admin/orders",
+      "group": "admin",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/admin/orders/[id]/pending-actions",
+      "group": "admin",
+      "dynamic": true,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/admin/payment-settings/dedupe",
+      "group": "admin",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/admin/pricing",
+      "group": "admin",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        },
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/admin/pricing/[id]",
+      "group": "admin",
+      "dynamic": true,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        },
+        {
+          "method": "PUT",
+          "access": "protected"
+        },
+        {
+          "method": "DELETE",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/admin/products",
+      "group": "admin",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/admin/products/ai-add",
+      "group": "admin",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/admin/products/archive",
+      "group": "admin",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        },
+        {
+          "method": "POST",
+          "access": "protected"
+        },
+        {
+          "method": "PUT",
+          "access": "protected"
+        },
+        {
+          "method": "DELETE",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/admin/products/bulk",
+      "group": "admin",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/admin/products/bulk-price",
+      "group": "admin",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "protected"
+        },
+        {
+          "method": "PATCH",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/admin/profile",
+      "group": "admin",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        },
+        {
+          "method": "POST",
+          "access": "protected"
+        },
+        {
+          "method": "PATCH",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/admin/quotes",
+      "group": "admin",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/admin/quotes/[id]/download",
+      "group": "admin",
+      "dynamic": true,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/admin/quotes/[id]/respond",
+      "group": "admin",
+      "dynamic": true,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/admin/quotes/advance-payment",
+      "group": "admin",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        },
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/admin/redemptions/list",
+      "group": "admin",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/admin/roles/set",
+      "group": "admin",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/admin/sales-agents",
+      "group": "admin",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/admin/sales-agents/[id]",
+      "group": "admin",
+      "dynamic": true,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        },
+        {
+          "method": "PATCH",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/admin/sales/funnel-analytics",
+      "group": "admin",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/admin/setup-initial-admins",
+      "group": "admin",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/admin/users/[id]/history",
+      "group": "admin",
+      "dynamic": true,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/agents/apply",
+      "group": "agents",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/agents/commissions",
+      "group": "agents",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/agents/me",
+      "group": "agents",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/agents/orders/create",
+      "group": "agents",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/agents/redemptions",
+      "group": "agents",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        },
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/ai/generate-description",
+      "group": "ai",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/ai/price-request",
+      "group": "ai",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/ai/product-details",
+      "group": "ai",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/ai/research",
+      "group": "ai",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "public"
+        }
+      ]
+    },
+    {
+      "path": "/api/analytics/dashboard",
+      "group": "analytics",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/analytics/reports",
+      "group": "analytics",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/analytics/track",
+      "group": "analytics",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "public"
+        }
+      ]
+    },
+    {
+      "path": "/api/auth/2fa/disable",
+      "group": "auth",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/auth/2fa/setup",
+      "group": "auth",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "protected"
+        },
+        {
+          "method": "PUT",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/auth/2fa/status",
+      "group": "auth",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "public"
+        }
+      ]
+    },
+    {
+      "path": "/api/auth/2fa/verify",
+      "group": "auth",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/auth/callback",
+      "group": "auth",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "public"
+        }
+      ]
+    },
+    {
+      "path": "/api/auth/complete-signup",
+      "group": "auth",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "public"
+        }
+      ]
+    },
+    {
+      "path": "/api/auth/extension",
+      "group": "auth",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "public"
+        },
+        {
+          "method": "OPTIONS",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/auth/first-login-whatsapp",
+      "group": "auth",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "public"
+        }
+      ]
+    },
+    {
+      "path": "/api/auth/forgot-password",
+      "group": "auth",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "public"
+        }
+      ]
+    },
+    {
+      "path": "/api/auth/quick-login",
+      "group": "auth",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "public"
+        }
+      ]
+    },
+    {
+      "path": "/api/auth/resend-verification",
+      "group": "auth",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "public"
+        }
+      ]
+    },
+    {
+      "path": "/api/auth/reset-password",
+      "group": "auth",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "public"
+        }
+      ]
+    },
+    {
+      "path": "/api/auth/resolve-phone",
+      "group": "auth",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "public"
+        }
+      ]
+    },
+    {
+      "path": "/api/auth/send-otp",
+      "group": "auth",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "public"
+        }
+      ]
+    },
+    {
+      "path": "/api/auth/session",
+      "group": "auth",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "public"
+        },
+        {
+          "method": "POST",
+          "access": "protected"
+        },
+        {
+          "method": "DELETE",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/auth/signout",
+      "group": "auth",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/auth/signup",
+      "group": "auth",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "public"
+        }
+      ]
+    },
+    {
+      "path": "/api/auth/verify-otp",
+      "group": "auth",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "public"
+        }
+      ]
+    },
+    {
+      "path": "/api/auto-offers",
+      "group": "auto-offers",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "public"
+        },
+        {
+          "method": "POST",
+          "access": "protected"
+        },
+        {
+          "method": "PUT",
+          "access": "protected"
+        },
+        {
+          "method": "DELETE",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/blog",
+      "group": "blog",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        },
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/blog/[slug]",
+      "group": "blog",
+      "dynamic": true,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        },
+        {
+          "method": "PATCH",
+          "access": "protected"
+        },
+        {
+          "method": "DELETE",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/blueprints/attribution/conversion",
+      "group": "blueprints",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/branches",
+      "group": "branches",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        },
+        {
+          "method": "POST",
+          "access": "protected"
+        },
+        {
+          "method": "DELETE",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/captcha/config",
+      "group": "captcha",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "public"
+        }
+      ]
+    },
+    {
+      "path": "/api/captcha/verify",
+      "group": "captcha",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "public"
+        }
+      ]
+    },
+    {
+      "path": "/api/cart/abandoned",
+      "group": "cart",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/cart/merge",
+      "group": "cart",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/cart/sync",
+      "group": "cart",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "public"
+        }
+      ]
+    },
+    {
+      "path": "/api/checkout/calculate",
+      "group": "checkout",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "public"
+        }
+      ]
+    },
+    {
+      "path": "/api/commissions/calculate",
+      "group": "commissions",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "protected"
+        },
+        {
+          "method": "PUT",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/commissions/payments",
+      "group": "commissions",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/commissions/rules",
+      "group": "commissions",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        },
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/contact-messages",
+      "group": "contact-messages",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        },
+        {
+          "method": "POST",
+          "access": "public"
+        }
+      ]
+    },
+    {
+      "path": "/api/contact-messages-with-file",
+      "group": "contact-messages-with-file",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "public"
+        }
+      ]
+    },
+    {
+      "path": "/api/contact-messages/[id]",
+      "group": "contact-messages",
+      "dynamic": true,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        },
+        {
+          "method": "PATCH",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/coupons",
+      "group": "coupons",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "public"
+        },
+        {
+          "method": "POST",
+          "access": "protected"
+        },
+        {
+          "method": "PUT",
+          "access": "protected"
+        },
+        {
+          "method": "DELETE",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/cron/abandoned-carts",
+      "group": "cron",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/cron/recover-abandoned-registrations",
+      "group": "cron",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/cron/service-retention",
+      "group": "cron",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/custom-setup-offers",
+      "group": "custom-setup-offers",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "public"
+        }
+      ]
+    },
+    {
+      "path": "/api/custom-setups",
+      "group": "custom-setups",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/customer-promotions",
+      "group": "customer-promotions",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        },
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/customer/notifications",
+      "group": "customer",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/customers/register",
+      "group": "customers",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        },
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/customised-setup/pdf",
+      "group": "customised-setup",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/deployment/production",
+      "group": "deployment",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/deployment/rollback",
+      "group": "deployment",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/deployment/staging",
+      "group": "deployment",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/deployment/status",
+      "group": "deployment",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/discounts",
+      "group": "discounts",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        },
+        {
+          "method": "POST",
+          "access": "protected"
+        },
+        {
+          "method": "PUT",
+          "access": "protected"
+        },
+        {
+          "method": "DELETE",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/discounts/calculate",
+      "group": "discounts",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/docs",
+      "group": "docs",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "public"
+        }
+      ]
+    },
+    {
+      "path": "/api/docs/openapi",
+      "group": "docs",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "public"
+        }
+      ]
+    },
+    {
+      "path": "/api/email/abandoned-cart",
+      "group": "email",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/email/email-change",
+      "group": "email",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/email/marketing",
+      "group": "email",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/email/notify-manager",
+      "group": "email",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/email/notify-sales-pickup",
+      "group": "email",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/email/order-approved",
+      "group": "email",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/email/order-completion",
+      "group": "email",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/email/order-confirmation",
+      "group": "email",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/email/order-delivered",
+      "group": "email",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/email/password-reset",
+      "group": "email",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/email/payment-confirmation",
+      "group": "email",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/email/payment-failed",
+      "group": "email",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/email/payment-pending",
+      "group": "email",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/email/pickup",
+      "group": "email",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/email/shipping",
+      "group": "email",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/email/verification",
+      "group": "email",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/email/welcome",
+      "group": "email",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/enterprise-analytics/audit-logs",
+      "group": "enterprise-analytics",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        },
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/enterprise-analytics/dashboard",
+      "group": "enterprise-analytics",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/enterprise-analytics/exports",
+      "group": "enterprise-analytics",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/enterprise-analytics/filters",
+      "group": "enterprise-analytics",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        },
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/enterprise-analytics/reports",
+      "group": "enterprise-analytics",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/enterprise-analytics/search",
+      "group": "enterprise-analytics",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/enterprise-analytics/staff-logs",
+      "group": "enterprise-analytics",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        },
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/faqs",
+      "group": "faqs",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/free-installation-slots",
+      "group": "free-installation-slots",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "public"
+        },
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/funnel-events",
+      "group": "funnel-events",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/gst-verify",
+      "group": "gst-verify",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/health",
+      "group": "health",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "public"
+        }
+      ]
+    },
+    {
+      "path": "/api/health/email",
+      "group": "health",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "public"
+        }
+      ]
+    },
+    {
+      "path": "/api/health/orders",
+      "group": "health",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "public"
+        }
+      ]
+    },
+    {
+      "path": "/api/health/otp",
+      "group": "health",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "public"
+        }
+      ]
+    },
+    {
+      "path": "/api/health/summary",
+      "group": "health",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "public"
+        }
+      ]
+    },
+    {
+      "path": "/api/hello",
+      "group": "hello",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/indexnow",
+      "group": "indexnow",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/inquiries",
+      "group": "inquiries",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/inventory",
+      "group": "inventory",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        },
+        {
+          "method": "POST",
+          "access": "protected"
+        },
+        {
+          "method": "PUT",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/inventory/transactions",
+      "group": "inventory",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        },
+        {
+          "method": "POST",
+          "access": "protected"
+        },
+        {
+          "method": "PUT",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/leads/intake",
+      "group": "leads",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/marketing/triggers/order-delivered-followup",
+      "group": "marketing",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/meta/conversions",
+      "group": "meta",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/metadata",
+      "group": "metadata",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "public"
+        }
+      ]
+    },
+    {
+      "path": "/api/monitoring/health",
+      "group": "monitoring",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/notifications/send",
+      "group": "notifications",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/offers",
+      "group": "offers",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "public"
+        },
+        {
+          "method": "POST",
+          "access": "protected"
+        },
+        {
+          "method": "PUT",
+          "access": "protected"
+        },
+        {
+          "method": "DELETE",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/orders",
+      "group": "orders",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "public"
+        },
+        {
+          "method": "POST",
+          "access": "public"
+        }
+      ]
+    },
+    {
+      "path": "/api/orders/[id]",
+      "group": "orders",
+      "dynamic": true,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "public"
+        }
+      ]
+    },
+    {
+      "path": "/api/orders/[id]/timeline",
+      "group": "orders",
+      "dynamic": true,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "public"
+        }
+      ]
+    },
+    {
+      "path": "/api/orders/auto-cancel",
+      "group": "orders",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "public"
+        }
+      ]
+    },
+    {
+      "path": "/api/orders/commission",
+      "group": "orders",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "public"
+        }
+      ]
+    },
+    {
+      "path": "/api/orders/update-status",
+      "group": "orders",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "public"
+        }
+      ]
+    },
+    {
+      "path": "/api/organizations",
+      "group": "organizations",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        },
+        {
+          "method": "POST",
+          "access": "protected"
+        },
+        {
+          "method": "DELETE",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/otp/generate",
+      "group": "otp",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        },
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/otp/resend",
+      "group": "otp",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        },
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/otp/verify",
+      "group": "otp",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        },
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/page-content",
+      "group": "page-content",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "public"
+        },
+        {
+          "method": "POST",
+          "access": "protected"
+        },
+        {
+          "method": "PUT",
+          "access": "protected"
+        },
+        {
+          "method": "DELETE",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/payment/payu/callback",
+      "group": "payment",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "public"
+        }
+      ]
+    },
+    {
+      "path": "/api/payment/payu/initiate",
+      "group": "payment",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "public"
+        }
+      ]
+    },
+    {
+      "path": "/api/payments/cashfree/config",
+      "group": "payments",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        },
+        {
+          "method": "PATCH",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/payments/cashfree/create-order",
+      "group": "payments",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/payments/cashfree/verify",
+      "group": "payments",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/payments/update",
+      "group": "payments",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        },
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/permissions",
+      "group": "permissions",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/pricing/calculate",
+      "group": "pricing",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        },
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/pricing/customer-type",
+      "group": "pricing",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        },
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/products",
+      "group": "products",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "public"
+        },
+        {
+          "method": "POST",
+          "access": "protected"
+        },
+        {
+          "method": "PUT",
+          "access": "protected"
+        },
+        {
+          "method": "DELETE",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/products/[id]",
+      "group": "products",
+      "dynamic": true,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "public"
+        },
+        {
+          "method": "PATCH",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/products/bulk-edit",
+      "group": "products",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "public"
+        },
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/products/cleanup",
+      "group": "products",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "DELETE",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/products/cleanup-images",
+      "group": "products",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/products/export",
+      "group": "products",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "public"
+        }
+      ]
+    },
+    {
+      "path": "/api/products/fix-images",
+      "group": "products",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/products/image-diagnostics",
+      "group": "products",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "public"
+        }
+      ]
+    },
+    {
+      "path": "/api/products/import",
+      "group": "products",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "public"
+        },
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/products/manual-import",
+      "group": "products",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/products/recommendations",
+      "group": "products",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "public"
+        }
+      ]
+    },
+    {
+      "path": "/api/products/scrape-url",
+      "group": "products",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/products/scraper",
+      "group": "products",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "protected"
+        },
+        {
+          "method": "OPTIONS",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/products/scraper/ai",
+      "group": "products",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "protected"
+        },
+        {
+          "method": "OPTIONS",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/products/simple-import",
+      "group": "products",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/products/template",
+      "group": "products",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "public"
+        }
+      ]
+    },
+    {
+      "path": "/api/projects",
+      "group": "projects",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "public"
+        },
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/projects/[id]",
+      "group": "projects",
+      "dynamic": true,
+      "methods": [
+        {
+          "method": "PUT",
+          "access": "protected"
+        },
+        {
+          "method": "DELETE",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/projects/[id]/pdf",
+      "group": "projects",
+      "dynamic": true,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "public"
+        }
+      ]
+    },
+    {
+      "path": "/api/promotions/claim-viral",
+      "group": "promotions",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "public"
+        }
+      ]
+    },
+    {
+      "path": "/api/promotions/free-installation-claim",
+      "group": "promotions",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "public"
+        }
+      ]
+    },
+    {
+      "path": "/api/quotes",
+      "group": "quotes",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "public"
+        }
+      ]
+    },
+    {
+      "path": "/api/quotes/[id]",
+      "group": "quotes",
+      "dynamic": true,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/quotes/[id]/accept-counter",
+      "group": "quotes",
+      "dynamic": true,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "public"
+        }
+      ]
+    },
+    {
+      "path": "/api/quotes/[id]/advance-payment/confirm",
+      "group": "quotes",
+      "dynamic": true,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        },
+        {
+          "method": "POST",
+          "access": "public"
+        }
+      ]
+    },
+    {
+      "path": "/api/quotes/[id]/advance-payment/generate-link",
+      "group": "quotes",
+      "dynamic": true,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "public"
+        }
+      ]
+    },
+    {
+      "path": "/api/quotes/[id]/reject-counter",
+      "group": "quotes",
+      "dynamic": true,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "public"
+        }
+      ]
+    },
+    {
+      "path": "/api/quotes/bid",
+      "group": "quotes",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "public"
+        }
+      ]
+    },
+    {
+      "path": "/api/referral",
+      "group": "referral",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/referral/claim",
+      "group": "referral",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/release-notes",
+      "group": "release-notes",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        },
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/roles",
+      "group": "roles",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        },
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/roles-public",
+      "group": "roles-public",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/sales-agents/apply",
+      "group": "sales-agents",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/scoring-breakdown",
+      "group": "scoring-breakdown",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/security/audit-logs",
+      "group": "security",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        },
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/security/mfa-status",
+      "group": "security",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        },
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/security/settings",
+      "group": "security",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        },
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/security/validate-password",
+      "group": "security",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/seller/auth",
+      "group": "seller",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/seller/kyc",
+      "group": "seller",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/seller/login",
+      "group": "seller",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/seller/products",
+      "group": "seller",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/seller/settlements",
+      "group": "seller",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/service-availability",
+      "group": "service-availability",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/services",
+      "group": "services",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        },
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/services/[id]",
+      "group": "services",
+      "dynamic": true,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        },
+        {
+          "method": "PUT",
+          "access": "protected"
+        },
+        {
+          "method": "DELETE",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/services/engineers",
+      "group": "services",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        },
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/services/tickets",
+      "group": "services",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        },
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/services/tickets/[id]",
+      "group": "services",
+      "dynamic": true,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        },
+        {
+          "method": "PUT",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/settings",
+      "group": "settings",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "public"
+        },
+        {
+          "method": "POST",
+          "access": "protected"
+        },
+        {
+          "method": "PUT",
+          "access": "protected"
+        },
+        {
+          "method": "DELETE",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/shipping",
+      "group": "shipping",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        },
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/shipping/update",
+      "group": "shipping",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        },
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/superadmin/areas",
+      "group": "superadmin",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        },
+        {
+          "method": "POST",
+          "access": "protected"
+        },
+        {
+          "method": "DELETE",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/superadmin/catalogue/generate",
+      "group": "superadmin",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/superadmin/custom-setup-offers",
+      "group": "superadmin",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        },
+        {
+          "method": "POST",
+          "access": "protected"
+        },
+        {
+          "method": "PUT",
+          "access": "protected"
+        },
+        {
+          "method": "DELETE",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/superadmin/dashboard/alerts",
+      "group": "superadmin",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        },
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/superadmin/dashboard/ask",
+      "group": "superadmin",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/superadmin/dashboard/command-center",
+      "group": "superadmin",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/superadmin/dashboard/export",
+      "group": "superadmin",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/superadmin/dashboard/platform-health",
+      "group": "superadmin",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/superadmin/followup-tasks",
+      "group": "superadmin",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        },
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/superadmin/followup-tasks/[taskId]/complete",
+      "group": "superadmin",
+      "dynamic": true,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/superadmin/followup-tasks/[taskId]/snooze",
+      "group": "superadmin",
+      "dynamic": true,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/superadmin/leads/[leadId]/engagement",
+      "group": "superadmin",
+      "dynamic": true,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/superadmin/leads/assign",
+      "group": "superadmin",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/superadmin/leads/followup",
+      "group": "superadmin",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/superadmin/leads/recalculate-scores",
+      "group": "superadmin",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/superadmin/leads/rescore",
+      "group": "superadmin",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/superadmin/services/ai-generate",
+      "group": "superadmin",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/trpc/[trpc]",
+      "group": "trpc",
+      "dynamic": true,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "public"
+        },
+        {
+          "method": "POST",
+          "access": "public"
+        }
+      ]
+    },
+    {
+      "path": "/api/upload",
+      "group": "upload",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/upload-from-url",
+      "group": "upload-from-url",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/uploads/quote-documents",
+      "group": "uploads",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "public"
+        }
+      ]
+    },
+    {
+      "path": "/api/user/communication-preferences",
+      "group": "user",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        },
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/user/gdpr/delete",
+      "group": "user",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/user/gdpr/export",
+      "group": "user",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/user/notifications",
+      "group": "user",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        },
+        {
+          "method": "PUT",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/user/profile",
+      "group": "user",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "PATCH",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/user/wishlist",
+      "group": "user",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        },
+        {
+          "method": "POST",
+          "access": "protected"
+        },
+        {
+          "method": "DELETE",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/users",
+      "group": "users",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        },
+        {
+          "method": "POST",
+          "access": "protected"
+        },
+        {
+          "method": "PUT",
+          "access": "protected"
+        },
+        {
+          "method": "DELETE",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/users-admin",
+      "group": "users-admin",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        },
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/v1/admin-auth/login",
+      "group": "v1/admin-auth",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "public"
+        }
+      ]
+    },
+    {
+      "path": "/api/v1/admin/orders",
+      "group": "v1/admin",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/v1/auth/send-otp",
+      "group": "v1/auth",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "public"
+        }
+      ]
+    },
+    {
+      "path": "/api/v1/auth/verify-otp",
+      "group": "v1/auth",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "public"
+        }
+      ]
+    },
+    {
+      "path": "/api/v1/blog",
+      "group": "v1/blog",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "public"
+        }
+      ]
+    },
+    {
+      "path": "/api/v1/blog/[slug]",
+      "group": "v1/blog",
+      "dynamic": true,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "public"
+        }
+      ]
+    },
+    {
+      "path": "/api/v1/blueprints",
+      "group": "v1/blueprints",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "public"
+        }
+      ]
+    },
+    {
+      "path": "/api/v1/blueprints/[id]",
+      "group": "v1/blueprints",
+      "dynamic": true,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "public"
+        }
+      ]
+    },
+    {
+      "path": "/api/v1/content/faqs",
+      "group": "v1/content",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "public"
+        }
+      ]
+    },
+    {
+      "path": "/api/v1/content/home",
+      "group": "v1/content",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "public"
+        }
+      ]
+    },
+    {
+      "path": "/api/v1/embed/configurator",
+      "group": "v1/embed",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/v1/invoices/[orderId]",
+      "group": "v1/invoices",
+      "dynamic": true,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "public"
+        }
+      ]
+    },
+    {
+      "path": "/api/v1/me/orders/[orderId]",
+      "group": "v1/me",
+      "dynamic": true,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/v1/me/overview",
+      "group": "v1/me",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/v1/me/profile",
+      "group": "v1/me",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/v1/products",
+      "group": "v1/products",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "public"
+        }
+      ]
+    },
+    {
+      "path": "/api/v1/products/[id]",
+      "group": "v1/products",
+      "dynamic": true,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "public"
+        }
+      ]
+    },
+    {
+      "path": "/api/v1/services",
+      "group": "v1/services",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "public"
+        }
+      ]
+    },
+    {
+      "path": "/api/v1/superadmin/command-center",
+      "group": "v1/superadmin",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/v1/superadmin/lead-command-center",
+      "group": "v1/superadmin",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/v2/status",
+      "group": "v2/status",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "public"
+        }
+      ]
+    },
+    {
+      "path": "/api/walk-in-orders",
+      "group": "walk-in-orders",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        },
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/warranty/activate",
+      "group": "warranty",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/webhook/whatsapp",
+      "group": "webhook",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "public"
+        },
+        {
+          "method": "POST",
+          "access": "public"
+        }
+      ]
+    },
+    {
+      "path": "/api/webhooks/custom-tunnel/[[...path]]",
+      "group": "webhooks",
+      "dynamic": true,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    },
+    {
+      "path": "/api/webhooks/customer/signup",
+      "group": "webhooks",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "public"
+        }
+      ]
+    },
+    {
+      "path": "/api/webhooks/orders/cancelled",
+      "group": "webhooks",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "public"
+        }
+      ]
+    },
+    {
+      "path": "/api/webhooks/orders/delayed",
+      "group": "webhooks",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "public"
+        }
+      ]
+    },
+    {
+      "path": "/api/webhooks/orders/delivered",
+      "group": "webhooks",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "public"
+        }
+      ]
+    },
+    {
+      "path": "/api/webhooks/orders/notconfirmed",
+      "group": "webhooks",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "public"
+        }
+      ]
+    },
+    {
+      "path": "/api/webhooks/orders/outfordelivery",
+      "group": "webhooks",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "public"
+        }
+      ]
+    },
+    {
+      "path": "/api/webhooks/orders/placed",
+      "group": "webhooks",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "public"
+        }
+      ]
+    },
+    {
+      "path": "/api/webhooks/orders/shipped",
+      "group": "webhooks",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "public"
+        }
+      ]
+    },
+    {
+      "path": "/api/webhooks/payment/failed",
+      "group": "webhooks",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "public"
+        }
+      ]
+    },
+    {
+      "path": "/api/webhooks/payment/received",
+      "group": "webhooks",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "public"
+        }
+      ]
+    },
+    {
+      "path": "/api/webhooks/stats",
+      "group": "webhooks",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        },
+        {
+          "method": "POST",
+          "access": "protected"
+        }
+      ]
+    }
+  ]
+}

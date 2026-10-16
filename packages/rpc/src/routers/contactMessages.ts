@@ -16,6 +16,9 @@ const createMessageSchema = z.object({
   utm_source: z.string().max(160).optional(),
   utm_medium: z.string().max(160).optional(),
   utm_campaign: z.string().max(160).optional(),
+  // Honeypot: must stay empty; bots that fill it are silently dropped
+  website: z.string().max(200).optional().or(z.literal('').transform(() => undefined)),
+  consent: z.boolean().optional(),
 });
 
 function classifyInquiry(input: {
@@ -69,7 +72,16 @@ export const contactMessagesRouter = router({
         logger.info('rpc_contact_messages.audit.submit_requested', {
           formIdentifier: input.form_identifier ?? null,
           originPath: input.origin_path ?? null,
+          consent: input.consent === true,
         });
+
+        if (input.website) {
+          logger.warn('rpc_contact_messages.audit.honeypot_blocked', {
+            formIdentifier: input.form_identifier ?? null,
+          });
+          return { success: true, id: null };
+        }
+
         const db = getAdminDb();
         const classification = classifyInquiry({
           originPath: input.origin_path,

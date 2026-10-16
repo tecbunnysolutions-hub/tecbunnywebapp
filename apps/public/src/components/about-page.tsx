@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import { COMPANY_STATS } from '@tecbunny/core/company-stats';
 
 export default function AboutPage() {
   return (
@@ -40,16 +39,6 @@ export default function AboutPage() {
                   <li><strong className="text-foreground">Local Support You Can Count On:</strong> A Goa-based engineering team with defined response targets.</li>
                 </ul>
               </div>
-              <div className="mt-6 flex gap-4">
-                <div className="rounded-lg border border-border bg-muted/40 px-4 py-3 text-center">
-                  <span className="block text-xl font-semibold text-foreground">{COMPANY_STATS.projectsDelivered}+</span>
-                  <span className="text-xs uppercase tracking-widest text-muted-foreground">Projects delivered</span>
-                </div>
-                <div className="rounded-lg border border-border bg-muted/40 px-4 py-3 text-center">
-                  <span className="block text-xl font-semibold text-foreground">{COMPANY_STATS.targetUptime}</span>
-                  <span className="text-xs uppercase tracking-widest text-muted-foreground">Target uptime for eligible plans</span>
-                </div>
-              </div>
             </div>
           </div>
 
@@ -84,7 +73,7 @@ export default function AboutPage() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <span className="text-xs font-semibold uppercase tracking-[0.3em] text-primary">Leadership</span>
-            <h2 className="mt-3 text-3xl font-semibold sm:text-4xl tech-heading">The Architects Behind the Code</h2>
+            <h2 className="mt-3 text-3xl font-semibold sm:text-4xl tech-heading">Meet the Directors</h2>
           </div>
           <div className="mt-12 grid gap-6 md:grid-cols-2">
             <div className="bento-card p-6">
@@ -141,12 +130,12 @@ export default function AboutPage() {
 
           <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             <div className="bento-card p-6 text-center space-y-2">
-              <span className="inline-block rounded-full bg-blue-500/10 px-3 py-1 text-xs font-bold uppercase text-blue-400">Professional Installer</span>
+              <span className="inline-block rounded-full bg-blue-500/10 px-3 py-1 text-xs font-bold uppercase text-blue-400">System Integrator</span>
               <h3 className="text-base font-bold font-tech text-foreground">CP PLUS &amp; Hikvision</h3>
               <p className="text-xs text-muted-foreground font-light">Direct sourcing, firmware security patching, and OEM-backed warranty servicing for surveillance systems.</p>
             </div>
             <div className="bento-card p-6 text-center space-y-2">
-              <span className="inline-block rounded-full bg-purple-500/10 px-3 py-1 text-xs font-bold uppercase text-purple-400">Systems Integrator</span>
+              <span className="inline-block rounded-full bg-purple-500/10 px-3 py-1 text-xs font-bold uppercase text-purple-400">Supply &amp; Configure</span>
               <h3 className="text-base font-bold font-tech text-foreground">TP-Link &amp; Ubiquiti</h3>
               <p className="text-xs text-muted-foreground font-light">Enterprise Wi-Fi 6/7, managed switches, multi-gigabit gateways, and fiber distribution network deployment.</p>
             </div>
@@ -156,7 +145,7 @@ export default function AboutPage() {
               <p className="text-xs text-muted-foreground font-light">RFID hotel lock management, biometric access controllers, and IP intercom solutions for modern properties.</p>
             </div>
             <div className="bento-card p-6 text-center space-y-2">
-              <span className="inline-block rounded-full bg-amber-500/10 px-3 py-1 text-xs font-bold uppercase text-amber-400">Managed Partner</span>
+              <span className="inline-block rounded-full bg-amber-500/10 px-3 py-1 text-xs font-bold uppercase text-amber-400">Genuine Hardware</span>
               <h3 className="text-base font-bold font-tech text-foreground">Tier-1 OEM Hardware</h3>
               <p className="text-xs text-muted-foreground font-light">Seagate SkyHawk / WD Purple surveillance storage, Dell/Lenovo workstation rollouts, and custom server racks.</p>
             </div>
@@ -180,14 +169,14 @@ export default function AboutPage() {
               <span className="text-xs font-mono font-bold text-primary">2025 · INCEPTION</span>
               <h3 className="text-base font-bold font-tech text-foreground mt-2">Founded in Goa</h3>
               <p className="text-xs text-muted-foreground font-light mt-2 leading-relaxed">
-                Incorporated as Tecbunny Solutions Private Limited in Parse, Pernem to bring transparent tech pricing and reliable local IT support to Goa.
+                Incorporated as Tecbunny Solutions Private Limited in Parcem, Pernem to bring transparent tech pricing and reliable local IT support to Goa.
               </p>
             </div>
             <div className="bento-card p-6 relative">
               <span className="text-xs font-mono font-bold text-primary">2025 · SECURITY EXPANSION</span>
               <h3 className="text-base font-bold font-tech text-foreground mt-2">CCTV &amp; Access Control</h3>
               <p className="text-xs text-muted-foreground font-light mt-2 leading-relaxed">
-                Delivered {COMPANY_STATS.sitesSecured}+ commercial and residential surveillance installations across North and South Goa with instant quotation calculators.
+                Began commercial and residential CCTV installations across North and South Goa, with instant quotation calculators.
               </p>
             </div>
             <div className="bento-card p-6 relative">

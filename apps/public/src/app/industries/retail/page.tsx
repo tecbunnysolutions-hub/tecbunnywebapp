@@ -10,7 +10,7 @@ import {
   Activity
 } from '@/components/industry-icons';
 import { createPageMetadata } from '@tecbunny/core/metadata';
-import { BRAND_LOGO_URL } from '@tecbunny/ui';
+import { BRAND_LOGO_URL } from "@tecbunny/core/brand";
 import { IndustryLandingPage } from '@/components/IndustryLandingPage';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -113,7 +113,7 @@ export default function RetailIndustryPage() {
         {
           title: "Physical Security",
           desc: "Cash-counter cameras and multi-store NVR.",
-          href: "/services/physical-security",
+          href: "/services/cctv-security",
           icon: Shield
         },
         {

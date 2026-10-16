@@ -1194,7 +1194,7 @@ export default function CheckoutPage() {
                     <div>
                       <span className="block text-xs uppercase font-bold text-muted-foreground/75 tracking-wider">Corporate Headquarters</span>
                       <address className="not-italic leading-relaxed font-light text-xs">
-                        H. No. 11, Nhayginwada, Parse, Parxem, Pernem, North Goa, Goa - 403512
+                        H. No. 11, Nhayginwada, Parcem, Pernem, North Goa, Goa - 403512
                       </address>
                     </div>
                   </div>

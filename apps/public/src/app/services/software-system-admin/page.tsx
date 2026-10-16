@@ -20,7 +20,6 @@ import { createPageMetadata } from "@tecbunny/core/metadata";
 import { TechnologyAssessmentFunnel } from '@/components/TechnologyAssessmentFunnel';
 import { HowItWorksSection } from '@/components/HowItWorksSection';
 import { TrustSection } from '@/components/TrustSection';
-import { WhatsAppFloatingButton } from '@/components/WhatsAppFloatingButton';
 import { BreadcrumbJsonLd } from '@/components/BreadcrumbJsonLd';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -43,7 +42,7 @@ export async function generateMetadata(): Promise<Metadata> {
 const FAQS = [
   {
     question: "Can TecBunny manage our Microsoft 365 or Google Workspace migrations?",
-    answer: "Yes, our engineers handle complete email and cloud workspace migrations with zero email loss, seamless MX record cutovers, and two-factor authentication enforcement across all staff devices."
+    answer: "Yes, our engineers handle complete email and cloud workspace migrations with careful mailbox migration and verification, planned MX record cutovers, and two-factor authentication enforcement across staff devices."
   },
   {
     question: "How do you protect our corporate databases from ransomware?",
@@ -162,8 +161,6 @@ export default function SoftwareSystemAdminPage() {
         <div className="absolute -right-40 top-1/3 h-[46rem] w-[46rem] rounded-full bg-indigo-500/5 blur-[180px]" />
       </div>
 
-      <WhatsAppFloatingButton defaultService="Software & Systems Administration" />
-
       {/* Hero Section */}
       <section className="relative pt-24 pb-16 md:pt-32 md:pb-24 border-b border-zinc-900">
         <div className="container mx-auto px-6 max-w-screen-2xl">
@@ -216,7 +213,7 @@ export default function SoftwareSystemAdminPage() {
               <div className="text-blue-400 font-mono font-bold text-sm">01 / Security</div>
               <h3 className="text-lg font-bold text-white font-tech">Ransomware &amp; Unverified Backups</h3>
               <p className="text-xs text-zinc-400 font-light leading-relaxed">
-                Backups stored on local shared folders get encrypted during ransomware attacks. We deploy immutable, air-gapped cloud vaults that guarantee data recovery.
+                Backups stored on local shared folders get encrypted during ransomware attacks. We deploy immutable, air-gapped cloud backups designed to make recovery possible even after a ransomware attack.
               </p>
             </div>
             <div className="rounded-2xl border border-zinc-850 bg-zinc-900/30 p-6 space-y-3">

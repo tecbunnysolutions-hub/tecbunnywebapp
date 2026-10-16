@@ -20,7 +20,7 @@ export function ServiceLocations({ serviceUrl }: ServiceLocationsProps) {
       <h2 className="mb-6 text-2xl font-bold text-zinc-100">Service Locations</h2>
       <div className="grid gap-4 sm:grid-cols-2">
         {locations.map((location) => (
-          <Link
+          <Link prefetch={false}
             key={location.url}
             href={location.url}
             className="group rounded-xl border border-white/10 bg-white/5 p-5 transition-colors hover:border-blue-500/40 hover:bg-white/10"

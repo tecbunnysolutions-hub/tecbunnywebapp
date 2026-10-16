@@ -1,3 +1,4 @@
+import { withPublicRevalidation } from '../../../../lib/revalidate-public';
 import { createSupabaseClient as createClient } from '@tecbunny/database/server';
 import { createSupabaseServiceClient, isSupabaseServiceConfigured } from "@tecbunny/core/server";;
 import { NextRequest, NextResponse } from 'next/server';
@@ -42,7 +43,7 @@ function getUuidAuditUserId(userId: string | undefined): string | null {
 }
 
 // Update individual product (PATCH)
-export async function PATCH(
+async function PATCHHandler(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -309,4 +310,4 @@ export async function GET(
   }
 }
 
-
+export const PATCH = withPublicRevalidation(['products'], PATCHHandler);

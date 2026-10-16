@@ -3,7 +3,8 @@
 import * as React from 'react';
 import { TrendingUp, AlertCircle, Activity, Zap, Clock, Target, Users, ArrowRight } from 'lucide-react';
 import { Card, Badge, Skeleton, useToast, Button, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@tecbunny/ui';
-import { getLeadMetrics, getLeadSourcePerformance, getLeadAssignmentStatus, getHotLeadsPriorityQueue, type LeadMetrics, type HotLead, type LeadAssignmentStatus } from '@/lib/lead-command-center-data';
+import type { LeadMetrics, HotLead, LeadAssignmentStatus } from '@tecbunny/contracts';
+import { createBrowserApi } from '@/lib/api';
 
 export function LeadCommandCenter() {
   const [leadMetrics, setLeadMetrics] = React.useState<LeadMetrics | null>(null);
@@ -18,12 +19,8 @@ export function LeadCommandCenter() {
     const fetchData = async () => {
       try {
         setIsLoading(true);
-        const [metrics, leads, sources, assignments] = await Promise.all([
-          getLeadMetrics(),
-          getHotLeadsPriorityQueue(),
-          getLeadSourcePerformance(),
-          getLeadAssignmentStatus(),
-        ]);
+        const data = await createBrowserApi().superadmin.leadCommandCenter();
+        const { leadMetrics: metrics, hotLeads: leads, sourcePerformance: sources, assignmentStatus: assignments } = data;
 
         setLeadMetrics(metrics);
         setHotLeads(leads || []);

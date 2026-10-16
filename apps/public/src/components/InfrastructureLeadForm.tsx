@@ -18,7 +18,10 @@ export function InfrastructureLeadForm() {
     phone: '',
     company: '',
     service: 'All-in-One Integration',
-    message: ''
+    message: '',
+    // Honeypot: hidden from humans, must stay empty
+    website: '',
+    consent: false,
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -35,6 +38,15 @@ export function InfrastructureLeadForm() {
         variant: 'destructive',
         title: 'Missing fields',
         description: 'Please fill in name, email, phone, and project details.',
+      });
+      return;
+    }
+
+    if (!form.consent) {
+      toast({
+        variant: 'destructive',
+        title: 'Consent required',
+        description: 'Please agree to be contacted regarding your project enquiry.',
       });
       return;
     }
@@ -63,6 +75,8 @@ ${form.message}
           message: formattedMessage,
           origin_path: '/services/smart-infrastructure',
           form_identifier: 'smart_infrastructure_proposal',
+          website: form.website,
+          consent: form.consent,
         }),
       });
 
@@ -82,7 +96,9 @@ ${form.message}
         phone: '',
         company: '',
         service: 'All-in-One Integration',
-        message: ''
+        message: '',
+        website: '',
+        consent: false,
       });
     } catch (error) {
       toast({
@@ -155,7 +171,7 @@ ${form.message}
         {/* Email Column */}
         <div className="space-y-2">
           <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider" htmlFor="lead-email">
-            Business Email *
+            Email Address *
           </label>
           <Input
             id="lead-email"
@@ -228,12 +244,37 @@ ${form.message}
         />
       </div>
 
-      <p className="text-xs text-zinc-400 leading-relaxed">
-        By submitting this form, you agree that TecBunny may contact you via WhatsApp / Phone or Email regarding your enterprise project enquiry. See our{' '}
-        <a href="/info/policies/privacy" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">
-          Privacy Policy
-        </a>.
-      </p>
+      {/* Honeypot: visually hidden, bots fill it, humans never see it */}
+      <div className="absolute -left-[9999px] -top-[9999px] h-0 w-0 overflow-hidden opacity-0" aria-hidden="true">
+        <label htmlFor="lead-website">Website</label>
+        <input
+          id="lead-website"
+          name="website"
+          type="text"
+          value={form.website}
+          onChange={handleChange}
+          tabIndex={-1}
+          autoComplete="off"
+        />
+      </div>
+
+      <div className="rounded-xl border border-zinc-850 bg-zinc-900/30 p-4">
+        <label className="flex items-start gap-3 cursor-pointer select-none">
+          <input
+            type="checkbox"
+            checked={form.consent}
+            onChange={(e) => setForm(prev => ({ ...prev, consent: e.target.checked }))}
+            disabled={isSubmitting}
+            className="mt-1 h-4 w-4 rounded border-zinc-700 bg-zinc-900 text-blue-600 focus:ring-blue-500/40 accent-blue-600"
+          />
+          <span className="text-xs text-zinc-400 leading-relaxed">
+            I agree that TecBunny Solutions may contact me via WhatsApp / Phone or Email regarding my enterprise project enquiry, as described in the{' '}
+            <a href="/info/policies/privacy" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">
+              Privacy Policy
+            </a>.
+          </span>
+        </label>
+      </div>
 
       {/* Submit */}
       <Button
@@ -241,7 +282,7 @@ ${form.message}
         disabled={isSubmitting}
         className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl transition duration-200 flex items-center justify-center gap-2 shadow-lg shadow-blue-500/10"
       >
-        {isSubmitting ? 'Submitting Details...' : <><span className="font-tech font-bold uppercase tracking-wider">Request Enterprise Proposal</span><Send size={16} /></>}
+        {isSubmitting ? 'Submitting Details...' : <><span className="font-tech font-bold uppercase tracking-wider">Request Proposal</span><Send size={16} /></>}
       </Button>
     </form>
   );

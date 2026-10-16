@@ -1,5 +1,4 @@
-import { createClient } from '@tecbunny/database';
-import { createServiceClient, isSupabaseServiceConfigured } from '@tecbunny/database/admin';
+import { getApi } from '@/lib/api';
 import { Suspense } from 'react';
 import type { Metadata } from 'next';
 
@@ -28,35 +27,30 @@ type FaqRow = {
   display_order: number | null;
 };
 
-async function fetchFaqs() {
-  const supabase = isSupabaseServiceConfigured
-    ? await createServiceClient()
-    : await createClient();
+type DisplayFaq = {
+  id: string;
+  category: string;
+  question: string;
+  answer: string;
+  display_order: number;
+};
 
-  const { data: faqs, error } = await supabase
-    .from('cms_faqs')
-    .select('id, category, question, answer, display_order')
-    .eq('is_active', true)
-    .is('deleted_at', null)
-    .order('category', { ascending: true })
-    .order('display_order', { ascending: true });
-
-  if (error) {
-    if (error.code === 'PGRST205') {
-      return [];
-    }
-
-    console.error('Error loading FAQs from DB:', error);
-    return [];
-  }
-
-  return ((faqs || []) as FaqRow[]).map((faq) => ({
+function normalizeFaqs(faqs: FaqRow[]): DisplayFaq[] {
+  return faqs.map((faq) => ({
     ...faq,
-    category: faq.category ?? 'General',
+    category: faq.category?.trim() || 'General',
     display_order: faq.display_order ?? 0,
   }));
 }
 
+async function fetchFaqs() {
+  try {
+    return (await getApi().content.faqs()).faqs;
+  } catch (error) {
+    console.error('Error loading FAQs from API:', error);
+    return [];
+  }
+}
 export default async function FaqsPage() {
   return (
     <div className="container mx-auto px-4 pt-24 pb-16 max-w-4xl min-h-screen">
@@ -84,8 +78,17 @@ export default async function FaqsPage() {
   );
 }
 
+const FALLBACK_FAQS: FaqRow[] = [
+  { id: 'wifi-goa', category: 'Services', question: 'Do you set up Wi-Fi networks in Goa?', answer: 'Yes. We set up Wi-Fi, LAN networks, and cable runs for offices, hotels, and commercial properties across Goa. Every network job comes with a 90-day free support period and a full handover report.', display_order: 1 },
+  { id: 'amc-cover', category: 'Services', question: 'What does an AMC plan cover?', answer: 'An AMC (Annual Maintenance Contract) covers your CCTV or IT kit for the full year. It can include planned check-ups, remote support, on-site fixes, and audit reports, with response targets defined in your plan.', display_order: 2 },
+  { id: 'outside-goa', category: 'Coverage', question: 'Do you serve areas outside Goa?', answer: 'Yes. We serve clients in Mumbai, Pune, and Nashik for large IT and CCTV jobs, and we run remote IT support for firms across India. For jobs outside Goa, call us to get a fast quote.', display_order: 3 },
+  { id: 'cctv-cost', category: 'Pricing', question: 'How much does CCTV installation cost in Goa?', answer: 'It depends on camera count, cable runs, recorder capacity, and site conditions. We quote per site after a survey, with an itemized estimate so you can see hardware, cabling, and labour separately. Request a free assessment to get an exact figure.', display_order: 4 },
+  { id: 'get-started', category: 'Getting Started', question: 'How do I get started with TecBunny?', answer: 'Three steps: book a free technology assessment, let our engineers survey your site and review your existing systems, then receive an itemized proposal with a clear scope and support plan. There is no obligation to proceed.', display_order: 5 },
+];
+
 async function FaqsLoader() {
-  const faqs = await fetchFaqs();
+  const fetched = await fetchFaqs();
+  const faqs = normalizeFaqs(fetched.length > 0 ? fetched : FALLBACK_FAQS);
 
   // AEO: FAQPage structured data mirroring the visible FAQ list.
   const faqJsonLd = faqs.length > 0 ? {

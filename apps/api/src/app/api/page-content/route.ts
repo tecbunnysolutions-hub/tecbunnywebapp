@@ -1,3 +1,4 @@
+import { withPublicRevalidation } from '../../../lib/revalidate-public';
 import { NextRequest, NextResponse } from 'next/server';
 
 import { AdminAuthError, requireAdminContext } from "@tecbunny/core/auth/admin-guard";
@@ -169,7 +170,7 @@ export async function GET(request: NextRequest) {
 }
 
 // Update page content (admin only)
-export async function PUT(request: NextRequest) {
+async function PUTHandler(request: NextRequest) {
   try {
     await requireAdminContext();
 
@@ -206,7 +207,7 @@ export async function PUT(request: NextRequest) {
 }
 
 // Get all page contents (admin only)
-export async function POST(request: NextRequest) {
+async function POSTHandler(request: NextRequest) {
   try {
     await requireAdminContext();
     const body = await request.json();
@@ -258,7 +259,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function DELETE(request: NextRequest) {
+async function DELETEHandler(request: NextRequest) {
   try {
     await requireAdminContext();
 
@@ -302,3 +303,7 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
+
+export const PUT = withPublicRevalidation(['content'], PUTHandler);
+export const POST = withPublicRevalidation(['content'], POSTHandler);
+export const DELETE = withPublicRevalidation(['content'], DELETEHandler);

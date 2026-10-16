@@ -1,4 +1,5 @@
-import { createClient } from '@tecbunny/database';
+import { getApi } from '@/lib/api';
+import Link from 'next/link';
 import { Suspense } from 'react';
 
 import type { Metadata } from 'next';
@@ -7,12 +8,10 @@ import { ShopPageContent } from '@/components/products/ShopPageContent';
 import { ProductsSeoContent } from '@/components/products/ProductsSeoContent';
 import { BreadcrumbJsonLd } from '@/components/BreadcrumbJsonLd';
 import { createPageMetadata } from "@tecbunny/core/metadata";
-import { applyPublicProductOrdering, applyPublicProductVisibilityFilters, ensureProductColumns } from "@tecbunny/core/product-visibility";
+import { getCatalogByCategory } from '@/lib/product-categories';
 
-// Product publication and pricing changes must be visible immediately.
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
-export const fetchCache = 'force-no-store';
+// Catalogue data is cached at the API (60s, tag "products"); the page revalidates on the same cadence.
+export const revalidate = 60;
 
 const PRODUCTS_PAGE_SIZE = 200;
 
@@ -22,7 +21,7 @@ export async function generateMetadata(): Promise<Metadata> {
   description: 'Shop premium CCTV systems, surveillance cameras, computer hardware, and accessories curated by TecBunny. Best pricing in Goa.',
   keywords: ['shop', 'products', 'CCTV', 'computers', 'accessories', 'TecBunny'],
   path: '/products',
-  image: '/brand.png',
+  image: '/opengraph-image',
 });
 }
 
@@ -76,32 +75,15 @@ export default function Page({
 }
 
 async function ShopPageDataLoader({ searchParams }: { searchParams?: Promise<Record<string, string>> | Record<string, string> }) {
-  const supabase = await createClient();
   const resolvedParams = searchParams instanceof Promise ? await searchParams : (searchParams ?? {});
-  const page = Math.max(1, Number(resolvedParams?.page ?? '1'));
+  const page = Math.max(1, Number(resolvedParams?.page ?? '1') || 1);
   const from = (page - 1) * PRODUCTS_PAGE_SIZE;
-  const to = from + PRODUCTS_PAGE_SIZE - 1;
+  const { categories } = await getCatalogByCategory();
 
-  const productColumns = await ensureProductColumns(supabase);
-
-  const productQuery = applyPublicProductOrdering(
-    applyPublicProductVisibilityFilters(
-      supabase
-        .from('products')
-        .select('*', { count: 'exact' }),
-      productColumns
-    ),
-    productColumns
-  ).range(from, to);
-
-  const [productsRes, offersRes] = await Promise.all([
-    productQuery,
-    supabase.from('auto_offers').select('*').eq('is_active', true)
-  ]);
-
-  const rawProducts = productsRes.data || [];
-  const rawOffers = offersRes.data || [];
-
+  const { products: rawProducts, offers: rawOffers, total } = await getApi().products.list({
+    page,
+    pageSize: PRODUCTS_PAGE_SIZE,
+  });
   // SEO/AEO: CollectionPage + ItemList structured data for the product catalogue
   const itemListJsonLd = {
     '@context': 'https://schema.org',
@@ -113,8 +95,8 @@ async function ShopPageDataLoader({ searchParams }: { searchParams?: Promise<Rec
     isPartOf: { '@id': 'https://www.tecbunny.com/#website' },
     mainEntity: {
       '@type': 'ItemList',
-      numberOfItems: productsRes.count ?? rawProducts.length,
-      itemListElement: rawProducts.slice(0, 20).map((product: { id?: string | number; name?: string }, index: number) => ({
+      numberOfItems: total,
+      itemListElement: rawProducts.slice(0, 20).map((product, index) => ({
         '@type': 'ListItem',
         position: from + index + 1,
         url: `https://www.tecbunny.com/products/${product.id}`,
@@ -136,6 +118,20 @@ async function ShopPageDataLoader({ searchParams }: { searchParams?: Promise<Rec
         ]}
       />
       <ShopPageContent initialRawProducts={rawProducts} initialRawAutoOffers={rawOffers} />
+      {categories.length > 0 && (
+        <nav aria-label="Browse by category" className="mx-auto max-w-7xl px-6 pb-12 sm:px-8">
+          <h2 className="text-xl font-bold text-white">Browse by category</h2>
+          <ul className="mt-4 flex flex-wrap gap-3">
+            {categories.map((category) => (
+              <li key={category.slug}>
+                <Link href={`/products/category/${category.slug}`} className="inline-flex rounded-full border border-zinc-700 px-4 py-2 text-sm font-semibold text-zinc-300 hover:border-blue-400">
+                  {category.name.split(' > ').join(' / ')} ({category.count})
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      )}
       <ProductsSeoContent />
     </>
   );

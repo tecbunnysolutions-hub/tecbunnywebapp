@@ -3,12 +3,13 @@ import { createPageMetadata } from '@tecbunny/core/metadata';
 import { BreadcrumbJsonLd } from '@/components/BreadcrumbJsonLd';
 
 export async function generateMetadata(): Promise<Metadata> {
-  return createPageMetadata({
+  // noindex: internal AI tool; keep it out of search until it is useful to customers.
+  const meta = await createPageMetadata({
     title: 'AI Research Assistant | TecBunny Solutions',
     description: 'Run AI-assisted research and get product recommendations tailored to your requirements.',
-    keywords: ['AI research', 'product recommendations', 'TecBunny', 'solutions', 'technology'],
     path: '/ai-research',
   });
+  return { ...meta, robots: { index: false, follow: false } };
 }
 
 export default function AiResearchLayout({

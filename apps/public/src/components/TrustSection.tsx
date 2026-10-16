@@ -26,19 +26,19 @@ export const TRUST_POINTS = [
   },
   {
     title: 'Tier-1 OEM Hardware',
-    desc: `We deploy genuine enterprise equipment from Cisco, Ubiquiti, Hikvision, Dahua, and Honeywell — ${UNVERIFIED_WORDING.oemSourcing}.`,
+    desc: 'We deploy genuine, GST-invoiced equipment from brands such as CP PLUS and Hikvision, sourced through established distribution channels.',
     icon: Cpu,
     badge: '100% Genuine'
   },
   {
     title: 'Structured Engineering Blueprints',
-    desc: 'Every project receives formal CAD/topology diagrams, patch panel port mappings, and cable certification reports upon handover.',
+    desc: 'Structured-cabling projects include labeled cabling, patch panel port mappings, and documented handover notes.',
     icon: Layers,
     badge: 'Clear Documentation'
   },
   {
     title: 'Local Spares & Fast Response',
-    desc: 'We maintain on-shelf spare inventory in North Goa fulfillment hubs to minimize downtime during unexpected component failures.',
+    desc: 'We stock commonly needed spares at our North Goa store to minimize downtime during unexpected component failures.',
     icon: Clock,
     badge: 'Local Inventory'
   },

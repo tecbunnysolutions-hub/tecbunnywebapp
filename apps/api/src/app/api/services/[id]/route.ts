@@ -1,3 +1,4 @@
+import { withPublicRevalidation } from '../../../../lib/revalidate-public';
 import { createSupabaseClient as createClient } from '@tecbunny/database/server';
 import { NextRequest } from 'next/server';
 
@@ -65,7 +66,7 @@ export async function GET(
  * PUT /api/services/[id]
  * Update a service
  */
-export async function PUT(
+async function PUTHandler(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -140,7 +141,7 @@ export async function PUT(
  * DELETE /api/services/[id]
  * Delete a service
  */
-export async function DELETE(
+async function DELETEHandler(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -198,4 +199,5 @@ export async function DELETE(
   }
 }
 
-
+export const PUT = withPublicRevalidation(['services'], PUTHandler);
+export const DELETE = withPublicRevalidation(['services'], DELETEHandler);

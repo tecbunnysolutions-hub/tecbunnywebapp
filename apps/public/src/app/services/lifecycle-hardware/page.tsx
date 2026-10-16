@@ -18,7 +18,6 @@ import { Button } from "@tecbunny/ui";
 import { createPageMetadata } from "@tecbunny/core/metadata";
 import { HowItWorksSection } from '@/components/HowItWorksSection';
 import { TrustSection } from '@/components/TrustSection';
-import { WhatsAppFloatingButton } from '@/components/WhatsAppFloatingButton';
 import { BreadcrumbJsonLd } from '@/components/BreadcrumbJsonLd';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -41,11 +40,11 @@ export async function generateMetadata(): Promise<Metadata> {
 const FAQS = [
   {
     question: "What hardware brands can TecBunny procure for our company?",
-    answer: "We procure genuine Tier-1 business workstations, laptops, monitors, and servers through established enterprise channels including Dell, HP, Lenovo, Asus, and Intel, with valid OEM warranty coverage."
+    answer: "We procure genuine business workstations, laptops, monitors, and servers through established distribution channels, with GST invoices and valid manufacturer warranty coverage."
   },
   {
     question: "What is included in an Annual Maintenance Contract (AMC)?",
-    answer: "Our AMCs include scheduled monthly preventive hardware cleaning and thermal testing, operating system patch audits, unlimited remote helpdesk support, and guaranteed on-site emergency dispatch in Goa."
+    answer: "Our AMCs include scheduled preventive hardware cleaning and thermal testing, operating system patch audits, remote helpdesk support during business hours, and priority on-site dispatch in Goa as defined in your plan."
   },
   {
     question: "Do you keep local replacement parts in stock?",
@@ -68,7 +67,7 @@ export default function LifecycleHardwarePage() {
       points: [
         {
           label: "Genuine OEM Channels",
-          desc: "Procure systems through established Tier-1 manufacturer channels (Dell, HP, Lenovo) ensuring 100% genuine hardware and valid warranty coverage."
+          desc: "Procure systems through established distribution channels, with GST invoices and valid manufacturer warranty coverage."
         },
         {
           label: "Standardized Fleet Blueprints",
@@ -160,8 +159,6 @@ export default function LifecycleHardwarePage() {
         <div className="absolute -right-40 top-1/3 h-[46rem] w-[46rem] rounded-full bg-indigo-500/5 blur-[180px]" />
       </div>
 
-      <WhatsAppFloatingButton defaultService="IT Hardware & Workstations" />
-
       {/* Hero Section */}
       <section className="relative pt-24 pb-16 md:pt-32 md:pb-24 border-b border-zinc-900">
         <div className="container mx-auto px-6 max-w-screen-2xl">
@@ -221,7 +218,7 @@ export default function LifecycleHardwarePage() {
               <div className="text-blue-400 font-mono font-bold text-sm">02 / Downtime</div>
               <h3 className="text-lg font-bold text-white font-tech">Slow 2-Week Service Center Delays</h3>
               <p className="text-xs text-zinc-400 font-light leading-relaxed">
-                Standard retail service centers keep laptops for weeks. Our AMC agreements provide same-day loaner systems and local spare swaps in Goa.
+                Standard retail service centers keep laptops for weeks. Our AMC agreements can include loaner systems and local spare swaps in Goa, subject to availability.
               </p>
             </div>
             <div className="rounded-2xl border border-zinc-850 bg-zinc-900/30 p-6 space-y-3">

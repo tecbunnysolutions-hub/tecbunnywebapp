@@ -84,7 +84,7 @@ export function HowItWorksSection({
 }) {
   // compact/summary surface the four milestone steps; full shows all eight.
   const steps = (variant === 'compact' || variant === 'summary')
-    ? DEPLOYMENT_STEPS.filter((s) => ['01', '03', '05', '08'].includes(s.step))
+    ? DEPLOYMENT_STEPS.filter((s) => ['01', '03', '05', '08'].includes(s.step)).map((s, i) => ({ ...s, step: String(i + 1).padStart(2, '0') }))
     : DEPLOYMENT_STEPS;
 
   // canonical-link: a short contextual pointer to the canonical process page.

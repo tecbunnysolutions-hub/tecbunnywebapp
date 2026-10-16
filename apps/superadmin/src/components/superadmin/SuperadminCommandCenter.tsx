@@ -41,7 +41,7 @@ import type {
   DashboardSeriesPoint,
   DashboardSeverity,
   SuperadminCommandCenterData,
-} from '@/lib/superadmin-dashboard-data';
+} from '@tecbunny/contracts';
 
 const severityStyles: Record<DashboardSeverity, string> = {
   critical: 'border-red-500/40 bg-red-500/10 text-red-200',

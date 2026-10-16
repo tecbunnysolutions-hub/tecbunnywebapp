@@ -100,6 +100,8 @@ export default function OffersPage() {
     [offers]
   );
 
+  const noOffers = !loading && featuredOffers.length === 0 && couponOffers.length === 0 && regularOffers.length === 0;
+
   const handleCopyCode = async (code?: string) => {
     if (!code) return;
     try {
@@ -125,17 +127,28 @@ export default function OffersPage() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-primary">
-              Limited time deals
+              {noOffers ? 'Current offers' : 'Limited time deals'}
             </div>
-            <h1 className="mt-6 text-4xl font-semibold text-foreground sm:text-5xl lg:text-6xl">
-              Big Savings on{' '}
-              <span className="bg-gradient-to-r from-primary via-blue-500 to-indigo-600 bg-clip-text text-transparent">
-                Complete Security.
-              </span>
-            </h1>
-            <p className="mx-auto mt-4 max-w-2xl text-base text-muted-foreground sm:text-lg">
-              Get exclusive deals on top-rated camera kits and smart home setups. Fast, professional installation included!
-            </p>
+            {noOffers ? (
+              <>
+                <h1 className="mt-6 text-4xl font-semibold text-foreground sm:text-5xl lg:text-6xl">Offers &amp; Deals</h1>
+                <p className="mx-auto mt-4 max-w-2xl text-base text-muted-foreground sm:text-lg">
+                  There are no active offers right now. New deals with clear dates will appear here when they go live.
+                </p>
+              </>
+            ) : (
+              <>
+                <h1 className="mt-6 text-4xl font-semibold text-foreground sm:text-5xl lg:text-6xl">
+                  Big Savings on{' '}
+                  <span className="bg-gradient-to-r from-primary via-blue-500 to-indigo-600 bg-clip-text text-transparent">
+                    Complete Security.
+                  </span>
+                </h1>
+                <p className="mx-auto mt-4 max-w-2xl text-base text-muted-foreground sm:text-lg">
+                  Get exclusive deals on top-rated camera kits and smart home setups. Fast, professional installation included!
+                </p>
+              </>
+            )}
           </div>
         </div>
       </section>

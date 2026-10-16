@@ -41,7 +41,7 @@ export default function NorthGoaNetworkingPage() {
     { name: "Panaji (Capital)", desc: "High-density fiber optic backbone cabling, secure server racks, and VPN setups for head offices and financial hubs." },
     { name: "Mapusa & Bardez", desc: "Local corporate network designs, managed network switch migrations, and reliable multi-room office Wi-Fi." },
     { name: "Calangute & Candolim", desc: "Seamless hospitality Wi-Fi networks with custom captive portals for resorts, guest houses, and cafes." },
-    { name: "Pernem & Parse", desc: "Corporate networking infrastructure, backup WAN failover, and onsite engineering deployment at our home turf." }
+    { name: "Pernem & Parcem", desc: "Corporate networking infrastructure, backup WAN failover, and onsite engineering deployment at our home turf." }
   ];
 
   const subServices = [
@@ -92,7 +92,7 @@ export default function NorthGoaNetworkingPage() {
   const benefits = [
     {
       title: "On-Site Support Desk in Pernem",
-      desc: "Our engineering operations are run from Parse, Pernem. We provide fast response times for physical audits and emergency on-site assistance in North Goa."
+      desc: "Our engineering operations are run from Parcem, Pernem. We provide fast response times for physical audits and emergency on-site assistance in North Goa."
     },
     {
       title: "Compliant Indian Tax Invoicing",
@@ -243,7 +243,7 @@ export default function NorthGoaNetworkingPage() {
                 &ldquo;Reliability starts with proper design. We construct clean, scalable layouts for businesses that want network operations to be invisible.&rdquo;
               </blockquote>
               <p className="text-zinc-300 text-sm font-light leading-relaxed">
-                As a registered Private Limited business based in Parse, we provide full GST compatibility and responsive local support that offshore consultants simply cannot match.
+                As a registered Private Limited business based in Parcem, we provide full GST compatibility and responsive local support that offshore consultants simply cannot match.
               </p>
             </div>
 

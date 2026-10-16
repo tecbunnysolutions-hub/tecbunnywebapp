@@ -414,7 +414,7 @@ export default function ServicesPage({ services, hasServiceLoadError = false }: 
               </div>
               <div className="mt-6 pt-4 border-t border-zinc-900/60">
                 <Link
-                  href="/services/physical-security"
+                  href="/services/cctv-security"
                   className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-400 hover:text-blue-300 transition-colors"
                 >
                   Explore Details <ArrowRight size={14} />

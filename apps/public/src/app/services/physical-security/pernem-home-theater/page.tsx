@@ -94,7 +94,7 @@ export default function PernemHomeTheaterPage() {
   const benefits = [
     {
       title: "Direct Local Support & Surveying",
-      desc: "Our headquarters are based in Parse, Pernem. We offer fast physical surveys and hands-on calibration/maintenance calls for local residences."
+      desc: "Our headquarters are based in Parcem, Pernem. We offer fast physical surveys and hands-on calibration/maintenance calls for local residences."
     },
     {
       title: "High-Trust Corporate Backing",
