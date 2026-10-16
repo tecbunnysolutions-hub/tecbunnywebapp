@@ -3,6 +3,8 @@ import { CheckCircle2, MessageCircle, Phone } from 'lucide-react';
 
 import { BreadcrumbJsonLd } from '@/components/BreadcrumbJsonLd';
 import type { ServiceContent } from '@/content/services';
+import { formatInr } from '@/content/pricing';
+import { getStartingPrices } from '@/lib/starting-prices';
 
 const siteUrl = 'https://www.tecbunny.com';
 const whatsappHref = 'https://wa.me/919604136010';
@@ -15,27 +17,10 @@ function RecentWork() {
   return null;
 }
 
-export function ServicePage({ content }: { content: ServiceContent }) {
+export async function ServicePage({ content }: { content: ServiceContent }) {
+  const prices = (await getStartingPrices()).filter((price) => content.priceIds?.includes(price.id));
   const pageUrl = `${siteUrl}${content.path}`;
   const jsonLd = [
-    {
-      '@context': 'https://schema.org',
-      '@type': 'LocalBusiness',
-      '@id': `${siteUrl}/#business`,
-      name: 'TecBunny Solutions Pvt. Ltd.',
-      url: siteUrl,
-      telephone: '+919604136010',
-      email: 'support@tecbunny.com',
-      address: {
-        '@type': 'PostalAddress',
-        streetAddress: 'H. No. 11, Nhayginwada, Parcem',
-        addressLocality: 'Pernem',
-        addressRegion: 'North Goa',
-        postalCode: '403512',
-        addressCountry: 'IN',
-      },
-      areaServed: ['North Goa', 'Sawantwadi area, Sindhudurg district'],
-    },
     {
       '@context': 'https://schema.org',
       '@type': 'Service',
@@ -43,8 +28,21 @@ export function ServicePage({ content }: { content: ServiceContent }) {
       name: `${content.name} services`,
       description: content.serviceDescription,
       url: pageUrl,
-      provider: { '@id': `${siteUrl}/#business` },
+      provider: { '@id': `${siteUrl}/#localbusiness` },
       areaServed: ['North Goa', 'Sawantwadi area, Sindhudurg district'],
+      ...(prices.length > 0 && {
+        offers: prices.map((price) => ({
+          '@type': 'Offer',
+          name: price.label,
+          priceCurrency: 'INR',
+          priceSpecification: {
+            '@type': 'PriceSpecification',
+            minPrice: price.amount,
+            priceCurrency: 'INR',
+          },
+          url: pageUrl,
+        })),
+      }),
     },
     {
       '@context': 'https://schema.org',
@@ -131,6 +129,11 @@ export function ServicePage({ content }: { content: ServiceContent }) {
         <h2 className="text-3xl font-bold">Packages and pricing</h2>
         <div className="mt-7 max-w-3xl rounded-2xl border border-blue-500/40 bg-blue-950/30 p-6">
           <h3 className="text-xl font-bold">{content.pricing.title}</h3>
+          {prices.map((price) => (
+            <p key={price.id} className="mt-3 leading-7 text-zinc-300">
+              <strong className="text-white">{price.label}: from {formatInr(price.amount)}.</strong> {price.summary}
+            </p>
+          ))}
           {content.pricing.paragraphs.map((paragraph) => (
             <p key={paragraph} className="mt-3 leading-7 text-zinc-300">{paragraph}</p>
           ))}

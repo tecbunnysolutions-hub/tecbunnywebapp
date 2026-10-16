@@ -4,6 +4,7 @@ import { getAdminDb, DatabaseError } from "@tecbunny/core/server";
 import { NextRequest, NextResponse } from 'next/server';
 
 import { getSessionWithRole } from "@tecbunny/core/auth/server-role";
+import { isAtLeast } from "@tecbunny/core/roles";
 import { verifySuperadminSessionToken } from "@tecbunny/core/server";
 
 import { logger } from "@tecbunny/core";
@@ -78,9 +79,22 @@ function isAllowedPublicKey(key: string) {
     'facebook_pixel_id',
     'default_gst_rate',
     'custom_setup_accessory_pricing',
+    'starting_prices',
     'payment_methods_config',
   ];
   return allowList.includes(key);
+}
+
+function isValidStartingPrices(value: unknown) {
+  if (!Array.isArray(value) || value.length === 0 || value.length > 20) return false;
+  return value.every((item) => {
+    if (!item || typeof item !== 'object') return false;
+    const price = item as Record<string, unknown>;
+    const text = (field: string, max: number) => typeof price[field] === 'string' && (price[field] as string).trim().length > 0 && (price[field] as string).length <= max;
+    return text('id', 60) && text('service', 60) && text('label', 120) && text('summary', 400)
+      && typeof price.href === 'string' && /^\/[A-Za-z0-9\-/_]*$/.test(price.href)
+      && typeof price.amount === 'number' && Number.isFinite(price.amount) && price.amount > 0 && price.amount <= 10_000_000;
+  });
 }
 
 function jsonWithCache(body: unknown, cacheControl: string, init?: ResponseInit) {
@@ -231,17 +245,23 @@ export async function POST(request: NextRequest) {
 
     const db = getAdminDb();
     const { role } = await getSessionAndRole(request)
-    if (!role || role !== 'superadmin') {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-    }
     const body = await request.json()
     const { key, value, description } = body
+    // Admins may edit only the public starting prices; every other key stays superadmin-only.
+    const isAdminPriceEdit = key === 'starting_prices' && isAtLeast(role as any, 'admin')
+    if (!role || (role !== 'superadmin' && !isAdminPriceEdit)) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
 
     if (!key || value === undefined) {
       return NextResponse.json(
         { error: 'Key and value are required' },
         { status: 400 }
       )
+    }
+
+    if (key === 'starting_prices' && !isValidStartingPrices(value)) {
+      return NextResponse.json({ error: 'Invalid starting prices' }, { status: 400 })
     }
 
     try {

@@ -241,7 +241,7 @@ export function ProductsSeoContent() {
           <p className="text-sm leading-relaxed max-w-3xl text-zinc-400">
             From our field work across Goa: coastal humidity corrodes outdoor connectors quickly, so we fit
             weather-rated housings and surge protection on exposed runs as standard. See{' '}
-            <Link href="/services/physical-security" className="text-primary hover:underline">
+            <Link href="/services/cctv-security" className="text-primary hover:underline">
               our physical security and CCTV service
             </Link>{' '}
             for what an installation includes.

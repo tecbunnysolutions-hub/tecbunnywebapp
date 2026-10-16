@@ -16,18 +16,37 @@ import {DeferredRuntimeServices} from '@/components/layout/DeferredRuntimeServic
 import {TRPCProvider} from '@/components/providers/TRPCProvider';
 import {FeatureFlagProviderLoader} from '@/components/providers/FeatureFlagProviderLoader';
 import {ENTITY} from '@/lib/entity';
+import {getStartingPrices} from '@/lib/starting-prices';
+import type {StartingPrice} from '@/content/pricing';
 
 import { Analytics } from '@vercel/analytics/react';
 
 const googleSiteVerification = process.env.GOOGLE_SITE_VERIFICATION;
 const xHandle = process.env.NEXT_PUBLIC_X_HANDLE;
 const xUrl = process.env.NEXT_PUBLIC_X_URL;
+const googleBusinessUrl = process.env.NEXT_PUBLIC_GOOGLE_BUSINESS_URL;
 
 const sameAsLinks = [
   'https://www.facebook.com/profile.php?id=61578165368064',
   'https://www.instagram.com/tecbunny_solutions/',
   xUrl,
+  googleBusinessUrl,
 ].filter((value): value is string => Boolean(value));
+
+const serviceOffer = (name: string, path: string, minPrice?: number) => ({
+  '@type': 'Offer',
+  url: `https://www.tecbunny.com${path}`,
+  ...(minPrice && {
+    priceCurrency: 'INR',
+    priceSpecification: { '@type': 'PriceSpecification', minPrice, priceCurrency: 'INR' },
+  }),
+  itemOffered: {
+    '@type': 'Service',
+    name,
+    url: `https://www.tecbunny.com${path}`,
+    provider: { '@id': 'https://www.tecbunny.com/#localbusiness' },
+  },
+});
 
 export const metadata: Metadata = {
   manifest: '/manifest.webmanifest',
@@ -119,7 +138,12 @@ export const viewport: Viewport = {
   userScalable: true,
 };
 
-const structuredData = {
+const buildStructuredData = (prices: readonly StartingPrice[]) => {
+  const minPrice = (service: string) => {
+    const amounts = prices.filter((price) => price.service === service).map((price) => price.amount);
+    return amounts.length > 0 ? Math.min(...amounts) : undefined;
+  };
+  return {
   '@context': 'https://schema.org',
   '@graph': [
     {
@@ -235,16 +259,18 @@ const structuredData = {
         '@type': 'OfferCatalog',
         name: 'Services',
         itemListElement: [
-          { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'CCTV' } },
-          { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'IT Support' } },
-          { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'RFID Locks' } },
-          { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Networking' } },
-          { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Website Development' } },
+          serviceOffer('CCTV', '/services/cctv-security', minPrice('CCTV')),
+          serviceOffer('IT Support', '/services/it-support', minPrice('Repairs')),
+          serviceOffer('RFID Locks', '/services/rfid-locks'),
+          serviceOffer('Networking', '/services/networking'),
+          serviceOffer('Website Development', '/webdev'),
         ],
       },
+      ...(googleBusinessUrl && { hasMap: googleBusinessUrl }),
       sameAs: sameAsLinks,
     },
   ],
+  };
 };
 
 const serializeJsonLd = (data: unknown) => JSON.stringify(data).replace(/</g, '\\u003c');
@@ -284,7 +310,7 @@ export default async function RootLayout({
         <link rel="preload" as="image" href={BRAND_LOGO_URL} fetchPriority="high" />
         <script
             type="application/ld+json"
-            dangerouslySetInnerHTML={{ __html: serializeJsonLd(structuredData) }}
+            dangerouslySetInnerHTML={{ __html: serializeJsonLd(buildStructuredData(await getStartingPrices())) }}
           />
       </head>
       <body className="font-body antialiased overflow-x-hidden w-full" suppressHydrationWarning>

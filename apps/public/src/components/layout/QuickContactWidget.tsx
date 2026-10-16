@@ -39,6 +39,7 @@ export function resolvePageContext(pathname: string): PageContext {
   const path = pathname.split('?')[0] || '/';
 
   const serviceMap: Record<string, string> = {
+    '/services/cctv-security': 'Physical Security & CCTV',
     '/services/physical-security': 'Physical Security & CCTV',
     '/services/network-infrastructure': 'Network Infrastructure',
     '/services/smart-access-control': 'Smart Access Control',

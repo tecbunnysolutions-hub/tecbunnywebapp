@@ -115,7 +115,7 @@ export default function HospitalityIndustryPage() {
         {
           title: "Physical Security",
           desc: "ColorVu cameras and NVR arrays.",
-          href: "/services/physical-security",
+          href: "/services/cctv-security",
           icon: Shield
         },
         {

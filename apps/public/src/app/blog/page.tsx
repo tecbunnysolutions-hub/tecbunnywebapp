@@ -9,13 +9,13 @@ import { BreadcrumbJsonLd } from '@/components/BreadcrumbJsonLd';
 export const revalidate = 300;
 
 export const metadata: Metadata = {
-  title: 'Blog â€” CCTV, IT & Smart Security Insights | TecBunny',
+  title: 'Blog: CCTV, IT & Smart Security Insights | TecBunny',
   description: 'Insights on CCTV, IT infrastructure, smart security, and tech tips from the TecBunny team in Goa, India.',
   alternates: { canonical: 'https://www.tecbunny.com/blog' },
   openGraph: {
     type: 'website',
     url: 'https://www.tecbunny.com/blog',
-    title: 'TecBunny Blog â€” CCTV, IT & Smart Security Insights',
+    title: 'TecBunny Blog: CCTV, IT & Smart Security Insights',
     description: 'Insights on CCTV, IT infrastructure, smart security, and tech tips from the TecBunny team in Goa, India.',
     siteName: 'TecBunny Solutions',
   },
@@ -84,7 +84,7 @@ export default async function BlogPage() {
 
         {items.length === 0 ? (
           <p className="mt-20 text-center text-zinc-500">
-            {unavailable ? 'Blog posts are temporarily unavailable. Please check back soon.' : 'No posts yet â€” check back soon.'}
+            {unavailable ? 'Blog posts are temporarily unavailable. Please check back soon.' : 'No posts yet. Check back soon.'}
           </p>
         ) : (
           <div className="mt-14 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">

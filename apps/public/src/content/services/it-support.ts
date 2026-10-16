@@ -89,10 +89,7 @@ export const itSupportService: ServiceContent = {
   pricing: {
     title: 'IT Support pricing',
     paragraphs: [
-      'From Rs 14,999 for computer setup.',
       'Final price depends on your requirements and is confirmed in a written quote before work starts.',
-      'First visit Rs 599 to assess the device and explain the problem. The solution is charged separately based on the work required.',
-      'The Rs 599 visit charge is waived when you go ahead and the total hardware and service charge is more than Rs 1,499. Final price in a written quote.',
     ],
   },
   process: [
@@ -187,4 +184,5 @@ export const itSupportService: ServiceContent = {
     'We serve all of North Goa and the Sawantwadi area of Sindhudurg district, Maharashtra, near the Goa border.',
   serviceDescription:
     'Computer setup, repair, upgrades, backup planning and practical IT support for homes and small businesses.',
+  priceIds: ['repair-visit', 'custom-computer', 'laptop'],
 };

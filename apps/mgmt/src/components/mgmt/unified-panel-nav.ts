@@ -120,6 +120,7 @@ export const unifiedPanelNavSections: UnifiedPanelNavSection[] = [
       { href: '/mgmt/manager/invoice-lookup', label: 'Invoice Lookup', icon: FileSearch, roles: SALES_MANAGER_ROLES },
       { href: '/mgmt/sales-external/commission-report', label: 'My Commission', icon: BarChart2, roles: AGENT_ROLES },
       { href: '/mgmt/admin/quotes', label: 'Contract Quotes', icon: FileText, roles: ['admin'] },
+      { href: '/mgmt/admin/starting-prices', label: 'Starting Prices', icon: Receipt, roles: ['admin'] },
       { href: '/superadmin/mgmt/catalogue', label: 'Catalogue', icon: Settings, roles: ['superadmin'] },
       { href: '/superadmin/mgmt/services', label: 'Services', icon: Wrench, roles: ['superadmin'] },
       { href: '/superadmin/mgmt/payment-settings', label: 'Payment Settings', icon: CreditCard, roles: ['superadmin'] },

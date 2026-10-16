@@ -1,4 +1,5 @@
 import { getApi } from '@/lib/api';
+import Link from 'next/link';
 import { Suspense } from 'react';
 
 import type { Metadata } from 'next';
@@ -7,6 +8,7 @@ import { ShopPageContent } from '@/components/products/ShopPageContent';
 import { ProductsSeoContent } from '@/components/products/ProductsSeoContent';
 import { BreadcrumbJsonLd } from '@/components/BreadcrumbJsonLd';
 import { createPageMetadata } from "@tecbunny/core/metadata";
+import { getCatalogByCategory } from '@/lib/product-categories';
 
 // Catalogue data is cached at the API (60s, tag "products"); the page revalidates on the same cadence.
 export const revalidate = 60;
@@ -76,6 +78,7 @@ async function ShopPageDataLoader({ searchParams }: { searchParams?: Promise<Rec
   const resolvedParams = searchParams instanceof Promise ? await searchParams : (searchParams ?? {});
   const page = Math.max(1, Number(resolvedParams?.page ?? '1') || 1);
   const from = (page - 1) * PRODUCTS_PAGE_SIZE;
+  const { categories } = await getCatalogByCategory();
 
   const { products: rawProducts, offers: rawOffers, total } = await getApi().products.list({
     page,
@@ -115,6 +118,20 @@ async function ShopPageDataLoader({ searchParams }: { searchParams?: Promise<Rec
         ]}
       />
       <ShopPageContent initialRawProducts={rawProducts} initialRawAutoOffers={rawOffers} />
+      {categories.length > 0 && (
+        <nav aria-label="Browse by category" className="mx-auto max-w-7xl px-6 pb-12 sm:px-8">
+          <h2 className="text-xl font-bold text-white">Browse by category</h2>
+          <ul className="mt-4 flex flex-wrap gap-3">
+            {categories.map((category) => (
+              <li key={category.slug}>
+                <Link href={`/products/category/${category.slug}`} className="inline-flex rounded-full border border-zinc-700 px-4 py-2 text-sm font-semibold text-zinc-300 hover:border-blue-400">
+                  {category.name.split(' > ').join(' / ')} ({category.count})
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      )}
       <ProductsSeoContent />
     </>
   );

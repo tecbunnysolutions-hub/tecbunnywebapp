@@ -111,7 +111,7 @@ export default function BuildersIndustryPage() {
         {
           title: "Physical Security",
           desc: "4K ColorVu perimeter IP camera systems and security control rooms.",
-          href: "/services/physical-security",
+          href: "/services/cctv-security",
           icon: Shield
         },
         {

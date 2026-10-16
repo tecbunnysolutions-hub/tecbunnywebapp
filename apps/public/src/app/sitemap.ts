@@ -1,5 +1,6 @@
 import type { MetadataRoute } from 'next';
 import { getApi } from '@/lib/api';
+import { getCatalogByCategory } from '@/lib/product-categories';
 
 export const revalidate = 3600;
 
@@ -24,6 +25,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }
   } catch (error) {
     console.warn('Failed to fetch sitemap product routes', error);
+  }
+  try {
+    const { categories } = await getCatalogByCategory();
+    productRoutes.push(
+      ...categories.map((category) => ({
+        url: `${baseUrl}/products/category/${category.slug}`,
+        lastModified: now,
+        changeFrequency: 'weekly' as const,
+        priority: 0.7,
+      })),
+    );
+  } catch (error) {
+    console.warn('Failed to fetch sitemap category routes', error);
   }
   try {
     const { blueprints } = await getApi().blueprints.list();

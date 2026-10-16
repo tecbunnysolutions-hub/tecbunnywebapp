@@ -5,6 +5,7 @@ import type { Metadata } from 'next';
 import HomePage from '@/components/home-page';
 import { createPageMetadata } from "@tecbunny/core/metadata";
 import { getApi } from '@/lib/api';
+import { getStartingPrices } from '@/lib/starting-prices';
 
 // Revalidate homepage every 60 seconds (ISR) to fix 2.8s Document Request Latency
 export const revalidate = 60;
@@ -113,6 +114,7 @@ async function HomePageDataLoader() {
     <HomePage
       initialPartnerBrands={initialPartnerBrands}
       initialHeroCarousel={initialHeroCarousel}
+      startingPrices={await getStartingPrices()}
     />
   );
 }

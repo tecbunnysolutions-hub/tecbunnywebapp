@@ -104,7 +104,6 @@ export const cctvService: ServiceContent = {
   pricing: {
     title: 'CCTV setup pricing',
     paragraphs: [
-      'From Rs 19,999 for CCTV setup.',
       'Final price depends on your requirements and is confirmed in a written quote before work starts.',
       'The site, cable paths, power condition, camera positions and recording needs affect the final quote.',
     ],
@@ -211,4 +210,5 @@ export const cctvService: ServiceContent = {
     'We serve all of North Goa and the Sawantwadi area of Sindhudurg district, Maharashtra, near the Goa border.',
   serviceDescription:
     'CCTV planning, installation, configuration, repair and handover for homes and small businesses.',
+  priceIds: ['cctv-4-camera'],
 };

@@ -115,6 +115,11 @@ const nextConfig = {
         destination: '/services/cctv-security',
         permanent: true,
       },
+      ...['/cctv', '/cctv-installation', '/cctv-security', '/services/cctv', '/services/cctv-installation', '/services/cctv-installation-goa', '/services/surveillance'].map((source) => ({
+        source,
+        destination: '/services/cctv-security',
+        permanent: true,
+      })),
       {
         source: '/services/computers-mobiles',
         destination: '/services/it-support',

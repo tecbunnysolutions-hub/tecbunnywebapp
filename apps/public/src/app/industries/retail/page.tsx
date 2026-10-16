@@ -113,7 +113,7 @@ export default function RetailIndustryPage() {
         {
           title: "Physical Security",
           desc: "Cash-counter cameras and multi-store NVR.",
-          href: "/services/physical-security",
+          href: "/services/cctv-security",
           icon: Shield
         },
         {

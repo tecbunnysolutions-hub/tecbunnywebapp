@@ -112,7 +112,7 @@ export default function HealthcareIndustryPage() {
         {
           title: "Physical Security",
           desc: "24/7 CCTV and entrance surveillance.",
-          href: "/services/physical-security",
+          href: "/services/cctv-security",
           icon: Shield
         },
         {

@@ -113,7 +113,7 @@ export default function EducationIndustryPage() {
         {
           title: "Physical Security",
           desc: "Perimeter cameras and central NVRs.",
-          href: "/services/physical-security",
+          href: "/services/cctv-security",
           icon: Shield
         },
         {

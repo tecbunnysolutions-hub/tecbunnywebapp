@@ -28,4 +28,5 @@ export type ServiceContent = {
   faqs: ServiceFaq[];
   areas: string;
   serviceDescription: string;
+  priceIds?: string[];
 };
