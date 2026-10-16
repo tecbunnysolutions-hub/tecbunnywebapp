@@ -23,20 +23,13 @@ export const metadata: Metadata = {
 
 const serializeJsonLd = (data: unknown) => JSON.stringify(data).replace(/</g, '\\u003c');
 
-function isUnauthorizedApiError(error: unknown): error is { status: number } {
-  return typeof error === 'object'
-    && error !== null
-    && 'status' in error
-    && (error as { status?: unknown }).status === 401;
-}
-
 async function fetchBlogPosts() {
   try {
     return { posts: (await getApi().blog.list({ page: 1, pageSize: 20 })).posts, unavailable: false };
   } catch (error) {
-    if (!isUnauthorizedApiError(error)) throw error;
-
-    logger.error('blog_list_unauthorized', { status: error.status });
+    logger.warn('blog_list_unavailable', {
+      error: error instanceof Error ? error.message : String(error),
+    });
     return { posts: [], unavailable: true };
   }
 }

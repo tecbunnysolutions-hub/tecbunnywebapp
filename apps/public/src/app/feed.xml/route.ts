@@ -14,13 +14,6 @@ function escapeXml(value: string): string {
     .replace(/'/g, '&apos;');
 }
 
-function isUnauthorizedApiError(error: unknown): error is { status: number } {
-  return typeof error === 'object'
-    && error !== null
-    && 'status' in error
-    && (error as { status?: unknown }).status === 401;
-}
-
 async function fetchFeedPosts() {
   try {
     return (await getApi().blog.list(
@@ -28,9 +21,9 @@ async function fetchFeedPosts() {
       { next: { revalidate: 3600, tags: ['blog'] } },
     )).posts;
   } catch (error) {
-    if (!isUnauthorizedApiError(error)) throw error;
-
-    logger.error('blog_feed_unauthorized', { status: error.status });
+    logger.warn('blog_feed_unavailable', {
+      error: error instanceof Error ? error.message : String(error),
+    });
     return [];
   }
 }
