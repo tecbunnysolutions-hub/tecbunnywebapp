@@ -1078,12 +1078,16 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
                           <div className="mt-4 sm:mt-6 flex items-center justify-between pt-3 sm:pt-4 border-t border-border/60">
                             <div className="flex flex-col">
                               <span className="text-sm sm:text-xl font-black tracking-tight text-foreground font-tech flex items-baseline gap-1 sm:gap-1.5">
+                                <span className="text-[9px] sm:text-xs font-normal text-muted-foreground uppercase tracking-wide">Sale</span>
                                 ₹{salePrice.toLocaleString('en-IN')}
                                 <span className="text-[9px] sm:text-xs font-normal text-muted-foreground uppercase tracking-wide hidden xs:inline">Inc. GST</span>
                               </span>
-                              {discountPercent > 0 && (
-                                <span className="text-xs sm:text-sm text-muted-foreground line-through font-light mt-0.5">
-                                  MRP ₹{mrpPrice.toLocaleString('en-IN')}
+                              <span className={`text-xs sm:text-sm font-light mt-0.5 ${discountPercent > 0 ? 'text-muted-foreground line-through' : 'text-muted-foreground'}`}>
+                                MRP ₹{mrpPrice.toLocaleString('en-IN')}
+                              </span>
+                              {mrpPrice > salePrice && (
+                                <span className="text-[10px] sm:text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+                                  You save ₹{(mrpPrice - salePrice).toLocaleString('en-IN')}
                                 </span>
                               )}
                               {availability && (<span className={`mt-1 text-[10px] font-semibold uppercase tracking-wide ${availability.className}`}>{availability.label}</span>)}

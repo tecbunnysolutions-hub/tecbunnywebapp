@@ -219,7 +219,7 @@ export function Header() {
             </div>
           </Link>
 
-          <nav className="hidden min-w-0 flex-[1_1_auto] items-center justify-center whitespace-nowrap gap-[clamp(0.25rem,0.55vw,0.75rem)] rounded-full border border-zinc-800 bg-zinc-900 p-1 min-[1100px]:flex">
+          <nav className="hidden min-w-0 flex-[1_1_auto] items-center justify-center whitespace-nowrap gap-[clamp(0.25rem,0.55vw,0.75rem)] rounded-full border border-zinc-800 bg-zinc-900 p-1 min-[1440px]:flex">
               {navLinks.map((item) => (
                 item.children ? (
                   <div
@@ -274,7 +274,7 @@ export function Header() {
               ))}
           </nav>
 
-          <div className="hidden shrink-0 items-center gap-2 min-[1100px]:flex">
+          <div className="hidden shrink-0 items-center gap-2 min-[1440px]:flex">
             {loading ? (
               <div className="flex items-center gap-2 animate-pulse">
                 <div className="h-8 w-14 rounded-full bg-zinc-100" />
@@ -384,7 +384,7 @@ export function Header() {
           </div>
 
           {/* Mobile: cart icon + hamburger */}
-          <div className="flex shrink-0 items-center gap-2 min-[1100px]:hidden">
+          <div className="flex shrink-0 items-center gap-2 min-[1440px]:hidden">
             {!isB2BPath && (
               <CartSheet>
                 <button
@@ -424,7 +424,7 @@ export function Header() {
 
       <div
         id="mobile-menu"
-        className={`absolute left-0 top-full w-full border-t border-zinc-800 bg-zinc-950 min-[1100px]:hidden transition-all duration-300
+        className={`absolute left-0 top-full w-full border-t border-zinc-800 bg-zinc-950 min-[1440px]:hidden transition-all duration-300
           ${mobileMenuOpen ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2 pointer-events-none'}
         `}
       >

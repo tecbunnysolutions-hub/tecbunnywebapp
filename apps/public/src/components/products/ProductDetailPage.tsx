@@ -641,17 +641,24 @@ export function ProductDetailPage({ productId, initialProduct, sourceContext }: 
               <div className="bg-card/45 border border-border/80 rounded-2xl p-8 mb-8 backdrop-blur-md shadow-2xl relative overflow-hidden group">
                 <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
                 {pricing && (
-                  <div className="flex flex-wrap items-baseline gap-4 mb-3 relative z-10">
-                    <span className="text-3xl sm:text-4xl font-bold text-foreground font-tech tracking-tight">₹{pricing.salePrice.toLocaleString('en-IN')}</span>
+                  <div className="mb-3 relative z-10">
+                    <div className="flex flex-wrap items-baseline gap-4">
+                      <span className="text-3xl sm:text-4xl font-bold text-foreground font-tech tracking-tight">
+                        Sale price ₹{pricing.salePrice.toLocaleString('en-IN')}
+                      </span>
+                      <span className={`text-xl font-light ${pricing.hasDiscount ? 'text-muted-foreground line-through' : 'text-muted-foreground'}`}>
+                        MRP ₹{pricing.mrp.toLocaleString('en-IN')}
+                      </span>
+                      {pricing.hasDiscount && pricing.percentageOff > 0 && (
+                        <span className="text-xs font-bold text-primary bg-primary/10 border border-primary/20 px-3 py-1 rounded-full uppercase tracking-wider">
+                          {pricing.percentageOff}% OFF
+                        </span>
+                      )}
+                    </div>
                     {pricing.hasDiscount && (
-                      <>
-                        <span className="text-xl text-muted-foreground line-through font-light">MRP ₹{pricing.mrp.toLocaleString('en-IN')}</span>
-                        {pricing.percentageOff > 0 && (
-                          <span className="text-xs font-bold text-primary bg-primary/10 border border-primary/20 px-3 py-1 rounded-full uppercase tracking-wider">
-                            {pricing.percentageOff}% OFF
-                          </span>
-                        )}
-                      </>
+                      <p className="mt-2 text-sm font-semibold text-emerald-600 dark:text-emerald-400">
+                        You save ₹{pricing.savingsAmount.toLocaleString('en-IN')}
+                      </p>
                     )}
                   </div>
                 )}

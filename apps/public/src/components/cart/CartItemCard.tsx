@@ -92,12 +92,17 @@ export function CartItemCard({ item }: CartItemCardProps) {
           {item.category || 'Tecbunny Essentials'}
         </p>
         {!isServiceItem && typeof item.mrp === 'number' && item.mrp > unitPrice ? (
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-slate-500 line-through">{formatCurrency(item.mrp)}</span>
-            <span className="text-primary font-semibold text-sm">{formatCurrency(unitPrice)}</span>
+          <div className="space-y-0.5">
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
+              <span className="text-xs text-slate-500 line-through">MRP {formatCurrency(item.mrp)}</span>
+              <span className="text-primary font-semibold text-sm">Sale {formatCurrency(unitPrice)}</span>
+            </div>
+            <span className="block text-[10px] font-medium text-emerald-400">
+              You save {formatCurrency(item.mrp - unitPrice)} per item
+            </span>
           </div>
         ) : (
-          <span className="block text-primary font-semibold text-sm">{formatCurrency(unitPrice)}</span>
+          <span className="block text-primary font-semibold text-sm">Sale {formatCurrency(unitPrice)}</span>
         )}
         {isServiceItem && (
           <span className="mt-0.5 inline-flex text-[9px] uppercase font-bold text-slate-200 bg-primary/15 px-1.5 py-[3px] rounded">
