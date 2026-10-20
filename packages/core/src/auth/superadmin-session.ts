@@ -118,7 +118,7 @@ async function resolveFingerprintContext(requestOrIp?: Request | string | null, 
 export async function createSuperadminSessionToken(email: string, requestOrIp: Request | string, ua?: string) {
   const secret = getSessionSecret();
   if (!secret) {
-    throw new Error('SUPERADMIN_SESSION_SECRET or SUPERADMIN_PASSWORD is required');
+    throw new Error('SUPERADMIN_SESSION_SECRET or SESSION_SECRET is required');
   }
 
   const now = Math.floor(Date.now() / 1000);

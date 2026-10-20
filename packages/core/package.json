@@ -29,6 +29,7 @@
     "./auth/server-role": "./src/auth/server-role.ts",
     "./auth/session-server": "./src/auth/server-role.ts",
     "./auth/superadmin": "./src/auth/superadmin-session.ts",
+    "./auth/superadmin-login": "./src/auth/superadmin-login.ts",
     "./auth/superadmin-password": "./src/auth/superadmin-password.ts",
     "./auth/superadmin-session": "./src/auth/superadmin-session.ts",
     "./auth/unified-middleware": "./src/auth/unified-middleware.ts",

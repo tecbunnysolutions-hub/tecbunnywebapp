@@ -1,23 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { logger } from '@tecbunny/core';
-import { createSuperadminSessionToken, verifySuperadminPassword } from '@tecbunny/core/server';
+import { createSuperadminSessionToken } from '@tecbunny/core/server';
+import { verifySuperadminLogin, getSuperadminLoginConfig } from '@tecbunny/core/auth/superadmin-login';
 
 export const dynamic = 'force-dynamic';
-
-const textEncoder = new TextEncoder();
-
-function constantTimeStringEquals(left: string, right: string) {
-  const leftBytes = textEncoder.encode(left);
-  const rightBytes = textEncoder.encode(right);
-  const maxLength = Math.max(leftBytes.length, rightBytes.length);
-  let diff = leftBytes.length ^ rightBytes.length;
-
-  for (let index = 0; index < maxLength; index += 1) {
-    diff |= (leftBytes[index] ?? 0) ^ (rightBytes[index] ?? 0);
-  }
-
-  return diff === 0;
-}
 
 // CORS headers for chrome extension
 function getCorsHeaders(request: NextRequest) {
@@ -61,55 +47,31 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const configuredUserId = (process.env.SUPERADMIN_USER_ID || '').trim();
-    const configuredEmail = (process.env.SUPERADMIN_EMAIL || '').trim();
-    const configuredPasswordHash = process.env.SUPERADMIN_PASSWORD_HASH || '';
-    const configuredPasswordPlain = process.env.SUPERADMIN_PASSWORD || '';
-
-    if (!configuredUserId && !configuredEmail) {
+    const config = getSuperadminLoginConfig();
+    if (!config.configured) {
       logger.error('superadmin_extension_auth.configuration_missing');
       return NextResponse.json(
         { error: 'Superadmin credentials are not configured on the server.' },
         { status: 503, headers: corsHeaders }
       );
     }
-    if (!configuredPasswordHash && (process.env.NODE_ENV === 'production' || !configuredPasswordPlain)) {
-      logger.error('superadmin_extension_auth.password_not_configured');
-      return NextResponse.json(
-        { error: 'Superadmin credentials are not configured on the server.' },
-        { status: 503, headers: corsHeaders }
-      );
-    }
-
-    if (!configuredPasswordHash && process.env.NODE_ENV !== 'production') {
-      logger.warn('superadmin_extension_auth.using_plaintext_password', { env: process.env.NODE_ENV });
-    }
 
     const submittedInput = (email || '').trim();
     const submittedPassword = String(password ?? '').trim();
-    const allowedUserIds = [configuredUserId, configuredEmail].filter(Boolean);
-    const superadminIdMatches = allowedUserIds.some(
-      (candidate) => constantTimeStringEquals(submittedInput.toLowerCase(), candidate.toLowerCase())
-    );
+    const ip = request.headers.get('cf-connecting-ip')?.trim()
+      || request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+      || request.headers.get('x-real-ip')?.trim()
+      || 'unknown';
 
-    logger.info('superadmin_extension_auth.root_check', {
-      superadminIdMatches,
+    const rootLogin = await verifySuperadminLogin({
+      identifier: submittedInput,
+      password: submittedPassword,
+      ip,
+      identity: 'any',
+      rateLimit: { scope: 'superadmin_extension', limit: 5, windowMs: 15 * 60 * 1000 },
     });
 
-    if (superadminIdMatches) {
-      const passwordMatches = configuredPasswordHash
-        ? await verifySuperadminPassword(submittedPassword, configuredPasswordHash)
-        : process.env.NODE_ENV !== 'production'
-          && constantTimeStringEquals(submittedPassword, configuredPasswordPlain);
-
-      if (!passwordMatches) {
-        logger.warn('superadmin_extension_auth.password_mismatch');
-        return NextResponse.json(
-          { error: 'Invalid login credentials' },
-          { status: 401, headers: corsHeaders }
-        );
-      }
-
+    if (rootLogin.ok) {
       const token = await createSuperadminSessionToken(submittedInput, request);
 
       logger.info('superadmin_extension_auth.success', { userId: submittedInput });
@@ -125,6 +87,13 @@ export async function POST(request: NextRequest) {
           },
         },
         { status: 200, headers: corsHeaders }
+      );
+    }
+
+    if (rootLogin.reason === 'rate_limited') {
+      return NextResponse.json(
+        { error: 'Too many attempts. Please try again later.' },
+        { status: 429, headers: corsHeaders }
       );
     }
 
