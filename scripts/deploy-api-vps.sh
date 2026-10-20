@@ -47,6 +47,6 @@ echo "==> Health check"
 sleep 5
 curl -fsS http://localhost:3001/api/health && echo && echo "API is UP on :3001"
 API_DOMAIN_VALUE="$(grep -E '^API_DOMAIN=' .env.local | tail -n1 | cut -d= -f2- || true)"
-API_DOMAIN_VALUE="${API_DOMAIN_VALUE:-api.tecbunny.store}"
+API_DOMAIN_VALUE="${API_DOMAIN_VALUE:-api.tecbunny.com}"
 echo "Once DNS $API_DOMAIN_VALUE -> this server's IP resolves, Caddy will auto-issue TLS."
 echo "Verify: curl https://$API_DOMAIN_VALUE/api/health"

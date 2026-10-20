@@ -1,9 +1,9 @@
 # Production reverse proxy for the API-only deployment.
 # Caddy automatically provisions and renews a Let's Encrypt certificate
 # as soon as the DNS A record for $API_DOMAIN points to this server.
-# API_DOMAIN is set in .env.local / compose (defaults to api.tecbunny.store).
+# API_DOMAIN is set in .env.local / compose (defaults to api.tecbunny.com).
 
-{$API_DOMAIN:api.tecbunny.store} {
+{$API_DOMAIN:api.tecbunny.com} {
 	reverse_proxy api:3001
 
 	encode zstd gzip

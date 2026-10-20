@@ -1,4 +1,4 @@
-const API_BASE_URL_CANDIDATES = ['https://api.tecbunny.store', 'https://superadmin.tecbunny.com'];
+const API_BASE_URL_CANDIDATES = ['https://api.tecbunny.com', 'https://superadmin.tecbunny.com'];
 const REQUEST_TIMEOUT_MS = 15000;
 const MAX_RAW_TEXT_LENGTH = 30000;
 

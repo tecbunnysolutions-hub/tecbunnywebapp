@@ -14,7 +14,7 @@ describe('isAllowedApiOrigin', () => {
     expect(allowed('https://evil.tecbunny.com')).toBe(false);
     expect(allowed('http://www.tecbunny.com')).toBe(false);
     expect(allowed('https://tecbunny.com.evil.io')).toBe(false);
-    expect(allowed('https://api.tecbunny.store')).toBe(false);
+    expect(allowed('https://api.tecbunny.com')).toBe(false);
   });
 
   it('allows localhost only outside production', () => {

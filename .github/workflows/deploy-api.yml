@@ -112,7 +112,7 @@ jobs:
       - name: Health check
         run: |
           for i in $(seq 1 12); do
-            if curl -fsS "https://api.tecbunny.store/api/health"; then
+            if curl -fsS "https://api.tecbunny.com/api/health"; then
               echo "API healthy"
               exit 0
             fi

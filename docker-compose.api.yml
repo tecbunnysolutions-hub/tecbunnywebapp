@@ -1,10 +1,11 @@
 # ─── Production API-only deployment ──────────────────────────────────────────
 # Deploys ONLY the /api app (plus Redis + MailHog + Caddy) on a single VPS.
 # Usage:
-#   cp .env.example .env.local   # fill in production values
+#   Copy-Item .env.api.example .env.local   # fill in production values (PowerShell)
+#   cp .env.api.example .env.local          # fill in production values (bash)
 #   docker compose --env-file .env.local -f docker-compose.api.yml up -d --build
 #
-# Caddy terminates HTTPS for $API_DOMAIN (default api.tecbunny.store) and proxies to the api container.
+# Caddy terminates HTTPS for $API_DOMAIN (default api.tecbunny.com) and proxies to the api container.
 # Ports 3001/6379/1025 are internal-only; only 80/443 are exposed publicly.
 
 x-public-build-args: &public-build-args
@@ -88,7 +89,7 @@ services:
       - "443:443"
       - "443:443/udp"   # HTTP/3
     environment:
-      - API_DOMAIN=${API_DOMAIN:-api.tecbunny.store}
+      - API_DOMAIN=${API_DOMAIN:-api.tecbunny.com}
     volumes:
       - ./Caddyfile.api:/etc/caddy/Caddyfile:ro
       - caddy_data:/data

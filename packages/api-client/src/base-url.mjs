@@ -1,5 +1,5 @@
 // Plain ESM (no TypeScript) so Node-loaded next.config files can import it too.
-export const PRODUCTION_API_URL = 'https://api.tecbunny.store';
+export const PRODUCTION_API_URL = 'https://api.tecbunny.com';
 export const STAGING_API_URL = 'https://api-staging.tecbunny.store';
 export const LOCAL_API_URL = 'http://localhost:3001';
 /** Service-name URL for the local docker-compose network (API_TARGET=docker). */

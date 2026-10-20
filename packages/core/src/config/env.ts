@@ -34,7 +34,7 @@ export const EnvSchema = z.object({
     appName: z.string().default('TecBunny Solutions'),
     nodeEnv: z.string().default('development'),
     baseDomain: z.string().min(1, 'Base Domain is required'),
-    apiUrl: z.string().url('API URL must be a valid URL').default('https://api.tecbunny.store'),
+    apiUrl: z.string().url('API URL must be a valid URL').default('https://api.tecbunny.com'),
     mgmtUrl: z.string().url('Management URL must be a valid URL'),
     superadminUrl: z.string().url('Superadmin URL must be a valid URL'),
     wabaUrl: z.string().url('WABA URL must be a valid URL'),
