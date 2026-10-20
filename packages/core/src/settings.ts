@@ -92,11 +92,6 @@ export async function getFacebookPixelId(): Promise<string> {
  * Get default GST rate percentage (e.g. 18)
  */
 export async function getDefaultGstPercentage(): Promise<number> {
-  const envVal = process.env.NEXT_PUBLIC_GST_RATE;
-  if (envVal) {
-    const parsed = parseFloat(envVal);
-    if (!isNaN(parsed)) return parsed * 100; // e.g. 0.18 -> 18
-  }
   const dbVal = await getSettingValue('default_gst_rate', String(DEFAULT_GST_RATE));
   const parsed = parseFloat(dbVal);
   return isNaN(parsed) ? DEFAULT_GST_RATE : parsed;

@@ -332,7 +332,6 @@ export default function PaymentApiPage() {
               <li>CASHFREE_PROD_APP_ID</li>
               <li>CASHFREE_PROD_SECRET_KEY</li>
               <li className="mt-2">CASHFREE_ENV — <span className="text-yellow-600">sandbox</span> | <span className="text-emerald-600">production</span></li>
-              <li>NEXT_PUBLIC_CASHFREE_ENV — same value (public app)</li>
             </ul>
           </div>
           <Button onClick={handleSaveCashfree} disabled={savingStates.cashfree}>

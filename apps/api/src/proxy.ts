@@ -108,6 +108,7 @@ export async function proxy(request: NextRequest, event: EnterpriseProxyEvent) {
         'GET /api/v1/blog',
     'GET /api/v1/products',
     'GET /api/v1/content',
+    'GET /api/v1/config/public',
     'GET /api/v1/services',
     'GET /api/v1/blueprints',
     'GET /api/v1/invoices',

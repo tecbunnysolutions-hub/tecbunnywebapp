@@ -25,10 +25,6 @@ export async function GET(request: NextRequest) {
   // Minimal SMTP readiness indicator (env presence)
   const smtpConfigured = !!(process.env.SMTP_USER && process.env.SMTP_PASS);
 
-  // Payment config presence (does not reveal secrets)
-  const phonePeConfigured = !!process.env.PHONEPE_MERCHANT_ID;
-  const razorpayConfigured = !!process.env.RAZORPAY_KEY_ID;
-
   logger.info('health_summary.audit.success', { dbOk, dbLatency });
   return NextResponse.json({
     status: 'ok',
@@ -36,7 +32,6 @@ export async function GET(request: NextRequest) {
     version: process.env.VERCEL_GIT_COMMIT_SHA?.substring(0,7) || 'local',
     db: { ok: dbOk, latencyMs: dbLatency },
     email: { configured: smtpConfigured },
-    payments: { phonePeConfigured, razorpayConfigured },
     elapsedMs: Date.now() - started
   });
 }
