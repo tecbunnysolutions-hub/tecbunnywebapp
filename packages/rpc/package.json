@@ -23,6 +23,7 @@
     "zod": "^4.4.3",
     "superjson": "^2.2.6",
     "react": "19.2.7",
+    "@tecbunny/api-client": "*",
     "@tecbunny/core": "*",
     "@tecbunny/config": "*"
   },

@@ -1,6 +1,7 @@
 import { cpus } from 'os';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { resolveApiBaseUrl } from '../../packages/api-client/src/base-url.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -157,7 +158,7 @@ const nextConfig = {
   async rewrites() {
     if (isStaticExport) return [];
     
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.tecbunny.com';
+    const apiUrl = resolveApiBaseUrl();
     return [
       {
         source: '/api/:path*',

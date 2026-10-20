@@ -150,6 +150,7 @@
     "@prisma/adapter-pg": "^7.8.0",
     "@supabase/ssr": "0.12.3",
     "@supabase/supabase-js": "^2.110.7",
+    "@tecbunny/api-client": "*",
     "@tecbunny/database": "*",
     "@tecbunny/db": "*",
     "@tecbunny/shared": "*",

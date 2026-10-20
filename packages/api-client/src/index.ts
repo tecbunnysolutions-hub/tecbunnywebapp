@@ -9,6 +9,7 @@ import { productsApi } from './products';
 import { createApiClient, type ApiClientOptions } from './client';
 
 export * from './client';
+export { LOCAL_API_URL, PRODUCTION_API_URL, STAGING_API_URL, resolveApiBaseUrl } from './base-url.mjs';
 export { BLOG_CACHE_TAG, blogApi } from './blog';
 export { PRODUCTS_CACHE_TAG, productsApi } from './products';
 export { BLUEPRINTS_CACHE_TAG, blueprintsApi } from './blueprints';

@@ -1,3 +1,4 @@
+import { resolveApiBaseUrl } from '@tecbunny/api-client';
 import { STARTING_PRICES, type StartingPrice } from '@/content/pricing';
 
 export const STARTING_PRICES_KEY = 'starting_prices';
@@ -15,7 +16,7 @@ const isValidPrice = (value: unknown): value is StartingPrice => {
 
 /** Admin-edited prices from the settings API, falling back to the defaults in content/pricing.ts. */
 export async function getStartingPrices(): Promise<readonly StartingPrice[]> {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.tecbunny.com';
+  const apiUrl = resolveApiBaseUrl();
   try {
     const response = await fetch(`${apiUrl}/api/settings?key=${STARTING_PRICES_KEY}`, {
       next: { revalidate: 60, tags: ['content', 'content:starting-prices'] },
