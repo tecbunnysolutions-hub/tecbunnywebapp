@@ -45,7 +45,6 @@ export async function proxy(request: NextRequest, event: EnterpriseProxyEvent) {
         'GET /api/auth/2fa/status',
         'POST /api/auth/resend-verification',
         'POST /api/auth/resolve-phone',
-        'POST /api/auth/quick-login',
         'POST /api/auth/extension',
         'POST /api/admin-auth/login',
         'POST /api/v1/admin-auth/login',

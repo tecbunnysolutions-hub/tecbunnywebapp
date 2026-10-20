@@ -1,5 +1,6 @@
 import { createSupabaseClient as createServerClient } from '@tecbunny/database/server';
 import { isAtLeast } from '@tecbunny/core';
+import { verifyCronSecret } from '@tecbunny/core/cron-guard';
 import { NextRequest, NextResponse } from 'next/server';
 
 
@@ -16,10 +17,8 @@ export async function POST(request: NextRequest) {
     const supabase = await createServerClient();
     const { data: { user } } = await supabase.auth.getUser();
 
-    // Allow invocation by the site manager OR by a scheduled cron using a secret header
-    const secretHeader = request.headers.get('x-auto-fill-secret');
-    const cronSecret = process.env.AUTO_FILL_SECRET || '';
-    const isCronRequest = typeof secretHeader === 'string' && secretHeader.trim().length > 0 && secretHeader === cronSecret;
+    // Allow invocation by the site manager OR by a scheduled cron using CRON_SECRET (Bearer)
+    const isCronRequest = verifyCronSecret(request) === null && Boolean(process.env.CRON_SECRET) && Boolean(request.headers.get('authorization'));
 
     // If not a cron request, require authenticated manager
     let role: UserRole = 'customer';

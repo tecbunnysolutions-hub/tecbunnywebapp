@@ -70,9 +70,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const bypassRateLimit = process.env.NODE_ENV !== 'production' && process.env.OTP_RATE_LIMIT_BYPASS === 'true';
-
-    if (!bypassRateLimit) {
+    {
       // Rate limiting check
       const rateLimitKey = otpRecord.phone || otpRecord.email || otpRecord.user_id;
       const rateLimitType = otpRecord.phone ? 'phone' : otpRecord.email ? 'email' : 'user';

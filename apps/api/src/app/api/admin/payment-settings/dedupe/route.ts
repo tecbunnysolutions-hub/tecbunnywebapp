@@ -1,26 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
-import crypto from 'crypto';
 
 import {  createSupabaseServiceClient  } from '@tecbunny/database/admin';
+import { requireRole } from '@tecbunny/core/auth/guard';
 import { logger } from "@tecbunny/core/logger";
 
-// Simple admin guard via header token (set in Vercel env)
-function isAuthorized(req: NextRequest) {
-  const token = req.headers.get('x-admin-token');
-  const expected = process.env.ADMIN_MAINT_TOKEN;
-  if (!token || !expected || expected.length < 32) {
-    return false;
-  }
-
-  const tokenBuffer = Buffer.from(token);
-  const expectedBuffer = Buffer.from(expected);
-  return tokenBuffer.length === expectedBuffer.length && crypto.timingSafeEqual(tokenBuffer, expectedBuffer);
-}
-
-export async function POST(request: NextRequest) {
+export async function POST(_request: NextRequest) {
   logger.info('admin_payment_settings_dedupe.audit.requested');
-  if (!isAuthorized(request)) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const ctx = await requireRole('admin');
+  if ('error' in ctx) {
+    return NextResponse.json({ error: ctx.error }, { status: ctx.status });
   }
 
   try {

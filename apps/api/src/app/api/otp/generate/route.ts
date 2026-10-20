@@ -140,9 +140,7 @@ export async function POST(request: NextRequest) {
       finalUserId = access.session.user.id;
     }
 
-    const bypassRateLimit = process.env.NODE_ENV !== 'production' && process.env.OTP_RATE_LIMIT_BYPASS === 'true';
-
-    if (!bypassRateLimit) {
+    {
       // Rate limiting check
       const clientIp = request.headers.get('x-forwarded-for') || 
                       request.headers.get('x-real-ip') || 

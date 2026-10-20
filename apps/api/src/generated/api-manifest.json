@@ -1,6 +1,6 @@
 {
-  "routeCount": 287,
-  "endpointCount": 396,
+  "routeCount": 284,
+  "endpointCount": 393,
   "routes": [
     {
       "path": "/api/abandoned-assessments",
@@ -466,17 +466,6 @@
       ]
     },
     {
-      "path": "/api/admin/setup-initial-admins",
-      "group": "admin",
-      "dynamic": false,
-      "methods": [
-        {
-          "method": "POST",
-          "access": "protected"
-        }
-      ]
-    },
-    {
       "path": "/api/admin/users/[id]/history",
       "group": "admin",
       "dynamic": true,
@@ -721,17 +710,6 @@
     },
     {
       "path": "/api/auth/forgot-password",
-      "group": "auth",
-      "dynamic": false,
-      "methods": [
-        {
-          "method": "POST",
-          "access": "public"
-        }
-      ]
-    },
-    {
-      "path": "/api/auth/quick-login",
       "group": "auth",
       "dynamic": false,
       "methods": [
@@ -1770,7 +1748,7 @@
       "methods": [
         {
           "method": "POST",
-          "access": "protected"
+          "access": "public"
         }
       ]
     },
@@ -3456,17 +3434,6 @@
         {
           "method": "POST",
           "access": "public"
-        }
-      ]
-    },
-    {
-      "path": "/api/webhooks/custom-tunnel/[[...path]]",
-      "group": "webhooks",
-      "dynamic": true,
-      "methods": [
-        {
-          "method": "POST",
-          "access": "protected"
         }
       ]
     },
