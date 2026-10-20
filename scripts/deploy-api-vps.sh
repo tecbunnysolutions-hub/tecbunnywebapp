@@ -40,11 +40,13 @@ if [ ! -f .env.local ]; then
 fi
 
 echo "==> 5/5 Build & start API stack"
-docker compose -f docker-compose.api.yml up -d --build
-docker compose -f docker-compose.api.yml ps
+docker compose --env-file .env.local -f docker-compose.api.yml up -d --build
+docker compose --env-file .env.local -f docker-compose.api.yml ps
 
 echo "==> Health check"
 sleep 5
 curl -fsS http://localhost:3001/api/health && echo && echo "API is UP on :3001"
-echo "Once DNS api.tecbunny.com -> 203.57.85.100 resolves, Caddy will auto-issue TLS."
-echo "Verify: curl https://api.tecbunny.com/api/health"
+API_DOMAIN_VALUE="$(grep -E '^API_DOMAIN=' .env.local | tail -n1 | cut -d= -f2- || true)"
+API_DOMAIN_VALUE="${API_DOMAIN_VALUE:-api.tecbunny.com}"
+echo "Once DNS $API_DOMAIN_VALUE -> this server's IP resolves, Caddy will auto-issue TLS."
+echo "Verify: curl https://$API_DOMAIN_VALUE/api/health"

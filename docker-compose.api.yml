@@ -2,9 +2,9 @@
 # Deploys ONLY the /api app (plus Redis + MailHog + Caddy) on a single VPS.
 # Usage:
 #   cp .env.example .env.local   # fill in production values
-#   docker compose -f docker-compose.api.yml up -d --build
+#   docker compose --env-file .env.local -f docker-compose.api.yml up -d --build
 #
-# Caddy terminates HTTPS for api.tecbunny.com and proxies to the api container.
+# Caddy terminates HTTPS for $API_DOMAIN (default api.tecbunny.com) and proxies to the api container.
 # Ports 3001/6379/1025 are internal-only; only 80/443 are exposed publicly.
 
 x-public-build-args: &public-build-args
@@ -64,9 +64,9 @@ services:
       - PORT=3001
       - REDIS_URL=redis://redis:6379
       - REQUIRE_REDIS_RATE_LIMIT=true
-      - SMTP_HOST=mailhog
-      - SMTP_PORT=1025
-      - SMTP_SECURE=false
+      - SMTP_HOST=${SMTP_HOST:-mailhog}
+      - SMTP_PORT=${SMTP_PORT:-1025}
+      - SMTP_SECURE=${SMTP_SECURE:-false}
       # Caddy rewrites X-Forwarded-For, so trusting proxy headers is required
       # for correct client-IP rate limiting and audit logs.
       - TRUST_PROXY_HEADERS=true
@@ -88,6 +88,8 @@ services:
       - "80:80"
       - "443:443"
       - "443:443/udp"   # HTTP/3
+    environment:
+      - API_DOMAIN=${API_DOMAIN:-api.tecbunny.com}
     volumes:
       - ./Caddyfile.api:/etc/caddy/Caddyfile:ro
       - caddy_data:/data

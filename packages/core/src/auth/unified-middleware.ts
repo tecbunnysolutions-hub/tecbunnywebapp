@@ -99,7 +99,7 @@ export async function executeUnifiedPolicyMiddleware(
         const url = new URL(origin);
         if (
           url.hostname === 'localhost' || 
-          url.hostname === 'tecbunny.com' || 
+          url.hostname === 'tecbunny.com' ||
           url.hostname.endsWith('.tecbunny.com') ||
           (url.protocol === 'chrome-extension:' && /^[a-p]{32}$/i.test(url.hostname))
         ) {
