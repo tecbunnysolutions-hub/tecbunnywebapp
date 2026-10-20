@@ -24,6 +24,10 @@ COPY . .
 
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV DOCKER_BUILD=true
+# Runtime secrets (Supabase service key, SMTP, PayU, ...) are not present inside
+# the image build; env validation must not fail hard while Next.js collects
+# page data. The runner stage omits this, so production still validates at boot.
+ENV TECBUNNY_VALIDATE_ENV=off
 
 # Allows tuning Node heap on small build hosts (e.g. a 1 GB VPS with swap):
 #   docker build --build-arg NODE_OPTIONS=--max-old-space-size=1792 ...
