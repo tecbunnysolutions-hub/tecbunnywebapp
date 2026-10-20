@@ -1,7 +1,8 @@
 import Link from 'next/link';
-import { CheckCircle2, MessageCircle, Phone } from 'lucide-react';
+import { CheckCircle2, MessageCircle } from 'lucide-react';
 
 import { BreadcrumbJsonLd } from '@/components/BreadcrumbJsonLd';
+import { SiteVisitButton } from '@/components/services/SiteVisitButton';
 import type { ServiceContent } from '@/content/services';
 import { formatInr } from '@/content/pricing';
 import { getStartingPrices } from '@/lib/starting-prices';
@@ -86,12 +87,10 @@ export async function ServicePage({ content }: { content: ServiceContent }) {
             >
               <MessageCircle size={18} /> WhatsApp us
             </a>
-            <Link
-              href={`/contact?intent=service_request&service=${content.slug}&source=service_page`}
+            <SiteVisitButton
+              service={content.name}
               className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-zinc-700 px-5 font-bold hover:border-blue-400"
-            >
-              <Phone size={17} /> Book a site visit
-            </Link>
+            />
           </div>
           <p className="mt-4 text-sm text-zinc-400">Message us on WhatsApp or book a site visit. We confirm the visit time when you book.</p>
         </div>
@@ -199,9 +198,10 @@ export async function ServicePage({ content }: { content: ServiceContent }) {
             <a href={whatsappHref} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-emerald-500 px-5 font-bold hover:bg-emerald-400">
               <MessageCircle size={18} /> WhatsApp us
             </a>
-            <Link href={`/contact?intent=service_request&service=${content.slug}&source=service_page_cta`} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-zinc-600 px-5 font-bold hover:border-blue-400">
-              <Phone size={17} /> Book a site visit
-            </Link>
+            <SiteVisitButton
+              service={content.name}
+              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-zinc-600 px-5 font-bold hover:border-blue-400"
+            />
           </div>
           <p className="mt-4 text-sm text-zinc-400">Message us on WhatsApp or book a site visit. We confirm the visit time when you book.</p>
         </div>
