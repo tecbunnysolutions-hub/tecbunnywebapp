@@ -2,6 +2,8 @@
 export const PRODUCTION_API_URL = 'https://api.tecbunny.store';
 export const STAGING_API_URL = 'https://api-staging.tecbunny.store';
 export const LOCAL_API_URL = 'http://localhost:3001';
+/** Service-name URL for the local docker-compose network (API_TARGET=docker). */
+export const DOCKER_API_URL = 'http://api:3001';
 
 const LOCAL_HOSTS = new Set(['localhost', '127.0.0.1', '[::1]', '::1']);
 
@@ -22,6 +24,7 @@ export function resolveApiBaseUrl(options = {}) {
   const target = options.target ?? (typeof process !== 'undefined' ? process.env.API_TARGET : undefined);
   if (target === 'staging') return STAGING_API_URL;
   if (target === 'local') return LOCAL_API_URL;
+  if (target === 'docker') return DOCKER_API_URL;
   if (!target && typeof process !== 'undefined' && process.env.NODE_ENV === 'development') return LOCAL_API_URL;
   return PRODUCTION_API_URL;
 }

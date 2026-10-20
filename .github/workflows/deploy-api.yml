@@ -68,7 +68,6 @@ jobs:
             NEXT_PUBLIC_SUPABASE_ANON_KEY=${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
             NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=${{ secrets.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY }}
             NEXT_PUBLIC_SITE_URL=${{ secrets.NEXT_PUBLIC_SITE_URL }}
-            NEXT_PUBLIC_API_URL=${{ secrets.NEXT_PUBLIC_API_URL }}
             NEXT_PUBLIC_MGMT_URL=${{ secrets.NEXT_PUBLIC_MGMT_URL }}
             NEXT_PUBLIC_SUPERADMIN_URL=${{ secrets.NEXT_PUBLIC_SUPERADMIN_URL }}
             NEXT_PUBLIC_WABA_URL=${{ secrets.NEXT_PUBLIC_WABA_URL }}
@@ -113,7 +112,7 @@ jobs:
       - name: Health check
         run: |
           for i in $(seq 1 12); do
-            if curl -fsS "https://api.tecbunny.com/api/health"; then
+            if curl -fsS "https://api.tecbunny.store/api/health"; then
               echo "API healthy"
               exit 0
             fi

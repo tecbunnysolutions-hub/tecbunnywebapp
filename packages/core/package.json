@@ -132,6 +132,7 @@
     "./telemetry": "./src/telemetry/index.ts",
     "./types/products": "./src/types/products.ts",
     "./whatsapp-cloud-api": "./src/whatsapp-cloud-api.ts",
+    "./whatsapp-webhook-token": "./src/whatsapp-webhook-token.ts",
     "./types": "./src/types.ts",
     "./utils": "./src/utils.ts",
     "./validation": "./src/validation/index.ts",

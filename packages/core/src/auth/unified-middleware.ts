@@ -27,6 +27,15 @@ function generateNonce(): string {
   return randomBase64(16);
 }
 
+const ALLOWED_API_HOSTS = new Set(['tecbunny.com', 'www.tecbunny.com', 'staff.tecbunny.com', 'admin.tecbunny.com']);
+
+/** CORS allowlist for apps/api: the four production frontends over HTTPS, localhost for development, and Chrome extensions. */
+export function isAllowedApiOrigin(url: URL, nodeEnv: string | undefined = process.env.NODE_ENV): boolean {
+  if (url.protocol === 'https:' && ALLOWED_API_HOSTS.has(url.hostname)) return true;
+  if (url.protocol === 'chrome-extension:') return /^[a-p]{32}$/i.test(url.hostname);
+  return nodeEnv !== 'production' && url.hostname === 'localhost';
+}
+
 function generateCSP(nonce: string, allowInlineScripts = false) {
   // Scripts stay strictly nonce-based (the primary XSS defence). Styles allow
   // 'unsafe-inline' because runtime CSS-in-JS libraries (e.g. goober via
@@ -49,7 +58,7 @@ function generateCSP(nonce: string, allowInlineScripts = false) {
     "style-src-attr 'unsafe-inline'",
     "font-src 'self' data: https://fonts.gstatic.com",
     "img-src 'self' data: blob: https:",
-    "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://www.google-analytics.com https://region1.analytics.google.com https://analytics.google.com https://www.google.com https://pagead2.googlesyndication.com https://api.postalpincode.in https://cloudflareinsights.com https://static.cloudflareinsights.com https://challenges.cloudflare.com https://vitals.vercel-insights.com https://api.tecbunny.store https://api.tecbunny.com https://api.cashfree.com https://sandbox.cashfree.com",
+    "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://www.google-analytics.com https://region1.analytics.google.com https://analytics.google.com https://www.google.com https://pagead2.googlesyndication.com https://api.postalpincode.in https://cloudflareinsights.com https://static.cloudflareinsights.com https://challenges.cloudflare.com https://vitals.vercel-insights.com https://api.tecbunny.store https://api.cashfree.com https://sandbox.cashfree.com",
     "frame-src 'self' https://challenges.cloudflare.com https://www.google.com https://sdk.cashfree.com https://api.cashfree.com https://sandbox.cashfree.com https://payments.cashfree.com https://payments-test.cashfree.com",
     "worker-src 'self' blob:",
     "object-src 'none'",
@@ -97,12 +106,7 @@ export async function executeUnifiedPolicyMiddleware(
     if (origin) {
       try {
         const url = new URL(origin);
-        if (
-          url.hostname === 'localhost' || 
-          url.hostname === 'tecbunny.com' ||
-          url.hostname.endsWith('.tecbunny.com') ||
-          (url.protocol === 'chrome-extension:' && /^[a-p]{32}$/i.test(url.hostname))
-        ) {
+        if (isAllowedApiOrigin(url)) {
           allowedOrigin = origin;
         }
       } catch (e) {

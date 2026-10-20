@@ -1,5 +1,7 @@
 import { registerTelemetry } from '@tecbunny/core/telemetry';
 
+import { assertEnvOnStartup } from './config/env';
+
 type SanitizableSentryEvent = {
   request?: {
     cookies?: unknown;
@@ -11,6 +13,7 @@ type SanitizableSentryEvent = {
 };
 
 export async function register() {
+  assertEnvOnStartup();
   registerTelemetry('api');
 
   // Sentry — only initialises when NEXT_PUBLIC_SENTRY_DSN is set
