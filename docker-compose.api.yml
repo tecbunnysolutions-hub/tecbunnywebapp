@@ -9,6 +9,9 @@
 # Ports 3001/6379/1025 are internal-only; only 80/443 are exposed publicly.
 
 x-public-build-args: &public-build-args
+  # Optional Node heap override for building on small hosts (set in shell env):
+  #   NODE_OPTIONS=--max-old-space-size=1792 docker compose ... up -d --build
+  NODE_OPTIONS: ${NODE_OPTIONS:-}
   NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL:-}
   NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY:-}
   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY:-}

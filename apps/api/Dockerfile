@@ -25,6 +25,11 @@ COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV DOCKER_BUILD=true
 
+# Allows tuning Node heap on small build hosts (e.g. a 1 GB VPS with swap):
+#   docker build --build-arg NODE_OPTIONS=--max-old-space-size=1792 ...
+ARG NODE_OPTIONS
+ENV NODE_OPTIONS=${NODE_OPTIONS}
+
 # Public configuration is embedded by Next.js during the build.
 ARG NEXT_PUBLIC_SUPABASE_URL
 ARG NEXT_PUBLIC_SUPABASE_ANON_KEY
