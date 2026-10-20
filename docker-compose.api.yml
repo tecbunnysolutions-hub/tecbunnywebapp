@@ -1,0 +1,101 @@
+# ─── Production API-only deployment ──────────────────────────────────────────
+# Deploys ONLY the /api app (plus Redis + MailHog + Caddy) on a single VPS.
+# Usage:
+#   cp .env.example .env.local   # fill in production values
+#   docker compose -f docker-compose.api.yml up -d --build
+#
+# Caddy terminates HTTPS for api.tecbunny.com and proxies to the api container.
+# Ports 3001/6379/1025 are internal-only; only 80/443 are exposed publicly.
+
+x-public-build-args: &public-build-args
+  NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL:-}
+  NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY:-}
+  NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY:-}
+  NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-}
+  NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-}
+  NEXT_PUBLIC_MGMT_URL: ${NEXT_PUBLIC_MGMT_URL:-}
+  NEXT_PUBLIC_SUPERADMIN_URL: ${NEXT_PUBLIC_SUPERADMIN_URL:-}
+  NEXT_PUBLIC_WABA_URL: ${NEXT_PUBLIC_WABA_URL:-}
+  NEXT_PUBLIC_TURNSTILE_SITE_KEY: ${NEXT_PUBLIC_TURNSTILE_SITE_KEY:-}
+
+services:
+  # ─── Redis (internal only) ─────────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: tecbunny-redis
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ─── MailHog (outbound mail capture) ───────────────────────────────────────
+  # Web UI is bound to localhost only — view it via SSH tunnel:
+  #   ssh -L 8025:localhost:8025 root@203.57.85.100   then open http://localhost:8025
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: tecbunny-mailhog
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8025:8025"   # Web UI, localhost only
+    environment:
+      MH_STORAGE: maildir
+      MH_MAILDIR_PATH: /home/mailhog/mail
+
+  # ─── API App ───────────────────────────────────────────────────────────────
+  # By default builds locally. In CI deployments, API_IMAGE is set to a
+  # pre-built GHCR image and `docker compose pull api` is used instead.
+  api:
+    image: ${API_IMAGE:-tecbunny-api:local}
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+      args: *public-build-args
+    container_name: tecbunny-api
+    restart: unless-stopped
+    env_file:
+      - .env.local
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - REDIS_URL=redis://redis:6379
+      - REQUIRE_REDIS_RATE_LIMIT=true
+      - SMTP_HOST=mailhog
+      - SMTP_PORT=1025
+      - SMTP_SECURE=false
+      # Caddy rewrites X-Forwarded-For, so trusting proxy headers is required
+      # for correct client-IP rate limiting and audit logs.
+      - TRUST_PROXY_HEADERS=true
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3001/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ─── Caddy (HTTPS reverse proxy, auto Let's Encrypt) ───────────────────────
+  caddy:
+    image: caddy:2-alpine
+    container_name: tecbunny-caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"   # HTTP/3
+    volumes:
+      - ./Caddyfile.api:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - api
+
+volumes:
+  redis_data:
+  caddy_data:
+  caddy_config:

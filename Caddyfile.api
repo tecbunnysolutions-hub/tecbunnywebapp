@@ -1,0 +1,20 @@
+# Production reverse proxy for the API-only deployment.
+# Caddy automatically provisions and renews a Let's Encrypt certificate
+# as soon as the DNS A record for api.tecbunny.com points to this server.
+
+api.tecbunny.com {
+	reverse_proxy api:3001
+
+	encode zstd gzip
+
+	header {
+		# Next.js already sets these via next.config.mjs headers(); -Server just
+		# avoids duplicating Caddy's own banner.
+		-Server
+	}
+
+	log {
+		output stdout
+		format json
+	}
+}
