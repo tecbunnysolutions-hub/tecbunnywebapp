@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAdminDb, logger } from '@tecbunny/core/server';
 import { z } from 'zod';
 
-import { hasInternalToken } from '../../../../lib/internal-auth';
+import { authorizeNotification } from '../../../../lib/notification-guard';
 
 /**
  * POST /api/notifications/send
@@ -22,9 +22,13 @@ const PayloadSchema = z.object({
 });
 
 export async function POST(request: NextRequest) {
-  if (!hasInternalToken(request)) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-  }
+  const gate = await authorizeNotification(request, {
+    bucket: 'notifications_send',
+    allow: ['internal'],
+    limit: 10,
+    windowMs: 60 * 1000,
+  });
+  if ('error' in gate) return gate.error;
 
   const body = await request.json().catch(() => null);
   const parsed = PayloadSchema.safeParse(body);

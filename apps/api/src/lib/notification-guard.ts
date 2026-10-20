@@ -39,17 +39,35 @@ export function clientIp(request: NextRequest) {
   return request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
 }
 
+const skipCounts = new Map<string, number>();
+
+/** Structured log plus a process-local counter for reminders that were skipped, keyed by reason. */
+export function recordNotificationSkip(reason: string, context: Record<string, unknown> = {}) {
+  const count = (skipCounts.get(reason) ?? 0) + 1;
+  skipCounts.set(reason, count);
+  logger.warn('notification.skipped', { reason, count, ...context });
+  return count;
+}
+
+export function getNotificationSkipCounts(): Record<string, number> {
+  return Object.fromEntries(skipCounts);
+}
+
 export interface NotifyAuthOptions {
   bucket: string;
   allow: NotifyAudience[];
   /** Per-user limit per window. Staff get 5x; the per-IP limit is also 5x. */
   limit: number;
   windowMs: number;
+  /** Narrows 'staff' to roles at or above this role (default: any operational staff role). */
+  minRole?: Role;
 }
 
 /**
  * Authenticates a notification request: internal token (constant-time), staff, or the owning user.
  * Rate limits per IP and per user. Internal callers are exempt from rate limits.
+ * TODO: the sync rateLimit overload is process-local; move to the Redis overload before running
+ * more than one API instance (docs/security/adr-notification-rate-limit-redis.md).
  */
 export async function authorizeNotification(
   request: NextRequest,
@@ -73,7 +91,9 @@ export async function authorizeNotification(
   }
 
   const userId = session.user.id;
-  const staff = options.allow.includes('staff') && isNotifyStaff(role);
+  const staff =
+    options.allow.includes('staff') &&
+    (options.minRole ? isAtLeast(role as Role, options.minRole) : isNotifyStaff(role));
   if (!staff && !options.allow.includes('owner')) return { error: jsonError(403, 'Forbidden') };
 
   const userAllowed = rateLimit(`user:${userId}`, options.bucket, {

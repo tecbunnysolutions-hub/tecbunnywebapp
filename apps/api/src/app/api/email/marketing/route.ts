@@ -1,52 +1,45 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 
-import { emailHelpers } from "@tecbunny/core/email";
-import { rateLimit } from "@tecbunny/core/rate-limit";
-import { requireApiRole } from "@tecbunny/core/server-role-guard";
+import { emailHelpers } from '@tecbunny/core/email';
+import { logger } from '@tecbunny/core/server';
 
-// Marketing emails: stricter (2 per 30m) due to bulk nature
-const LIMIT = 2;
-const WINDOW_MS = 30 * 60 * 1000;
+import { authorizeNotification, jsonError, jsonOk, readJsonObject } from '../../../../lib/notification-guard';
+
+// Marketing emails are bulk: staff (admin and above) only, 2 per 30 minutes.
+const EMAIL = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 
 export async function POST(request: NextRequest) {
   try {
-    const access = await requireApiRole({ allowedRoles: ['manager'], minimumRole: 'admin' });
-    if ('error' in access) {
-      return access.error;
+    const gate = await authorizeNotification(request, {
+      bucket: 'email_marketing',
+      allow: ['staff'],
+      minRole: 'admin',
+      limit: 2,
+      windowMs: 30 * 60 * 1000,
+    });
+    if ('error' in gate) return gate.error;
+
+    const payload = await readJsonObject(request);
+    if (!payload) return jsonError(400, 'Invalid JSON body');
+    const { to, campaignTitle, campaignBody, ctaText, ctaUrl, bannerImageUrl, discountCode } = payload as any;
+    if (!to) return jsonError(400, 'Missing required field: to');
+
+    const recipients = Array.isArray(to) ? to : [to];
+    if (recipients.some((e) => typeof e !== 'string' || !EMAIL.test(e))) {
+      return jsonError(400, 'Invalid recipient email(s)');
     }
 
-    const payload = await request.json();
-    const { to, campaignTitle, campaignBody, ctaText, ctaUrl, bannerImageUrl, discountCode } = payload || {};
-    if (!to) {
-      return NextResponse.json({ error: 'Missing required field: to' }, { status: 400 });
-    }
-    // Validate 'to': allow single email or array
-    const recipients = Array.isArray(to) ? to : [to];
-    if (recipients.some(e => typeof e !== 'string' || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e))) {
-      return NextResponse.json({ error: 'Invalid recipient email(s)' }, { status: 400 });
-    }
-    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
-    const rateKey = access.session?.user.id ? `user:${access.session.user.id}` : `ip:${ip}`;
-    if (!rateLimit(rateKey, 'email_marketing', { limit: LIMIT, windowMs: WINDOW_MS })) {
-      return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 });
-    }
     const success = await emailHelpers.sendMarketingCampaign(recipients, {
       campaignTitle,
       campaignBody,
       ctaText,
       ctaUrl,
       bannerImageUrl,
-      discountCode
+      discountCode,
     });
-    const res = success
-      ? NextResponse.json({ success: true, message: 'Marketing email(s) sent' })
-      : NextResponse.json({ error: 'Failed to send marketing email(s)' }, { status: 500 });
-    res.headers.set('Cache-Control', 'no-store');
-    res.headers.set('X-Content-Type-Options', 'nosniff');
-    res.headers.set('Referrer-Policy', 'same-origin');
-    return res;
+    return success ? jsonOk({ message: 'Marketing email(s) sent' }) : jsonError(500, 'Failed to send marketing email(s)');
   } catch (error) {
-    console.error('Marketing email API error:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    logger.error('marketing_email.route_error', { error: error instanceof Error ? error.message : String(error) });
+    return jsonError(500, 'Internal server error');
   }
 }

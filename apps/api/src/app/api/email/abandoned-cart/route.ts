@@ -9,6 +9,7 @@ import {
   jsonError,
   jsonOk,
   readJsonObject,
+  recordNotificationSkip,
   resolveTargetUser,
 } from '../../../../lib/notification-guard';
 
@@ -30,7 +31,7 @@ export async function POST(request: NextRequest) {
     const { target } = resolved;
 
     if (!target.phone) {
-      logger.warn('Abandoned cart: user has no phone, skipping per WhatsApp-only policy');
+      recordNotificationSkip('abandoned_cart.no_profile_mobile', { userId: target.userId });
       return jsonOk({ skipped: true, message: 'Skipped - No phone number' });
     }
 
@@ -44,8 +45,15 @@ export async function POST(request: NextRequest) {
       .maybeSingle();
     if (error) return jsonError(503, 'Could not load cart');
 
-    const cartItems = Array.isArray(cart?.items) ? cart.items : [];
-    if (cartItems.length === 0) return jsonOk({ skipped: true, message: 'Skipped - empty cart' });
+    if (!cart) {
+      recordNotificationSkip('abandoned_cart.cart_not_synced', { userId: target.userId });
+      return jsonOk({ skipped: true, message: 'Skipped - no synced active cart' });
+    }
+    const cartItems = Array.isArray(cart.items) ? cart.items : [];
+    if (cartItems.length === 0) {
+      recordNotificationSkip('abandoned_cart.empty_cart', { userId: target.userId });
+      return jsonOk({ skipped: true, message: 'Skipped - empty cart' });
+    }
 
     const minutesSinceAbandoned = Math.max(
       0,

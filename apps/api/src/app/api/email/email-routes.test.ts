@@ -17,6 +17,9 @@ const state = vi.hoisted(() => ({
     sendWelcomeEmail: vi.fn(async () => true),
     sendEmailChangeOTP: vi.fn(async () => true),
     sendPasswordResetOTP: vi.fn(async () => true),
+    notifyManagerNewOrder: vi.fn(async () => true),
+    sendMarketingCampaign: vi.fn(async () => true),
+    sendEmailVerification: vi.fn(async () => true),
   },
   whatsapp: vi.fn(async () => undefined),
 }));
@@ -37,6 +40,8 @@ vi.mock('@tecbunny/core/server', () => {
       eq: () => node,
       order: () => node,
       limit: () => node,
+      in: () => node,
+      then: (resolve: (v: unknown) => unknown) => resolve({ data: state.tables[`${table}_list`] ?? [], error: null }),
       maybeSingle: async () => ({ data: state.tables[table] ?? null, error: null }),
     };
     return node;
@@ -61,6 +66,10 @@ import { POST as welcome } from './welcome/route';
 import { POST as passwordReset } from './password-reset/route';
 import { POST as emailChange } from './email-change/route';
 import { POST as abandonedCart } from './abandoned-cart/route';
+import { POST as notifyManager } from './notify-manager/route';
+import { POST as marketing } from './marketing/route';
+import { POST as verification } from './verification/route';
+import { getNotificationSkipCounts } from '../../../lib/notification-guard';
 
 const OWNER = '11111111-1111-4111-8111-111111111111';
 const OTHER = '22222222-2222-4222-8222-222222222222';
@@ -306,6 +315,12 @@ describe('user-scoped routes', () => {
     expect(res.status).toBe(400);
   });
 
+  it('email-change flow: an internal caller sends the OTP to the new address with the name from the user record', async () => {
+    const res = await emailChange(post({ to: 'new@example.com', otp: '654321', userId: OWNER }, { 'x-internal-api-token': INTERNAL }));
+    expect(res.status).toBe(200);
+    expect(state.email.sendEmailChangeOTP).toHaveBeenCalledWith('new@example.com', 'Pat', '654321');
+  });
+
   it('abandoned-cart: reads phone and cart from the database', async () => {
     expect((await abandonedCart(post({}))).status).toBe(401);
 
@@ -316,5 +331,62 @@ describe('user-scoped routes', () => {
     expect(phone).toBe('+918888888888');
     expect(message).toContain('Camera');
     expect(message).not.toContain('Spoof');
+  });
+
+  it('abandoned-cart: records a counted skip when the profile has no mobile or no cart is synced', async () => {
+    signIn(OWNER, 'customer', 'owner@example.com');
+    const before = getNotificationSkipCounts();
+
+    state.tables.profiles = { email: 'profile@example.com', mobile: null, first_name: 'Pat' };
+    const noMobile = await abandonedCart(post({}));
+    expect((await noMobile.json()).skipped).toBe(true);
+
+    state.tables.profiles = { email: 'profile@example.com', mobile: '+918888888888', first_name: 'Pat' };
+    state.tables.carts = null;
+    const noCart = await abandonedCart(post({}));
+    expect((await noCart.json()).skipped).toBe(true);
+
+    const after = getNotificationSkipCounts();
+    expect(after['abandoned_cart.no_profile_mobile']).toBe((before['abandoned_cart.no_profile_mobile'] ?? 0) + 1);
+    expect(after['abandoned_cart.cart_not_synced']).toBe((before['abandoned_cart.cart_not_synced'] ?? 0) + 1);
+    expect(state.whatsapp).not.toHaveBeenCalled();
+  });
+});
+
+describe('notify-manager, marketing and verification', () => {
+  it('notify-manager ignores a caller-supplied `to` and uses the configured allowlist', async () => {
+    vi.stubEnv('MANAGER_EMAILS', 'boss@example.com, not-an-email');
+    signIn(OTHER, 'manager');
+    const res = await notifyManager(post({ orderId: 'o1', to: 'attacker@evil.test' }));
+    expect(res.status).toBe(200);
+    expect(state.email.notifyManagerNewOrder).toHaveBeenCalledWith(['boss@example.com'], expect.objectContaining({ orderId: 'o1' }));
+  });
+
+  it('notify-manager rejects anonymous and customer callers, and accepts the internal token', async () => {
+    vi.stubEnv('MANAGER_EMAILS', 'boss@example.com');
+    expect((await notifyManager(post({ orderId: 'o2' }))).status).toBe(401);
+    signIn(OWNER, 'customer');
+    expect((await notifyManager(post({ orderId: 'o2' }))).status).toBe(403);
+    state.auth = { session: null, role: 'customer', mfaLevel: null };
+    expect((await notifyManager(post({ orderId: 'o3' }, { 'x-internal-api-token': INTERNAL }))).status).toBe(200);
+  });
+
+  it('marketing needs an admin; sales staff and customers get 403', async () => {
+    expect((await marketing(post({ to: 'a@b.co' }))).status).toBe(401);
+    signIn(OWNER, 'customer');
+    expect((await marketing(post({ to: 'a@b.co' }))).status).toBe(403);
+    signIn(OWNER, 'sales_executive');
+    expect((await marketing(post({ to: 'a@b.co' }))).status).toBe(403);
+    signIn(OWNER, 'admin');
+    state.auth.mfaLevel = 'aal2';
+    expect((await marketing(post({ to: 'a@b.co', campaignTitle: 'x' }))).status).toBe(200);
+  });
+
+  it('verification only sends to the signed-in user\'s own address', async () => {
+    expect((await verification(post({ to: 'a@b.co', userName: 'A', otp: '123456' }))).status).toBe(401);
+    signIn(OWNER, 'customer', 'me@example.com');
+    expect((await verification(post({ to: 'other@example.com', userName: 'A', otp: '123456' }))).status).toBe(403);
+    expect((await verification(post({ to: 'ME@example.com', userName: 'A', otp: '123456' }))).status).toBe(200);
+    expect(state.email.sendEmailVerification).toHaveBeenCalledTimes(1);
   });
 });

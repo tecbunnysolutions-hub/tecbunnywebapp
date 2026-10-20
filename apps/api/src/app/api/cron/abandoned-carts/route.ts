@@ -3,6 +3,7 @@ import { getAdminDb, logger, improvedEmailService } from '@tecbunny/core/server'
 import { verifyCronSecret } from '@tecbunny/core/cron-guard';
 
 import { getInternalToken } from '../../../../lib/internal-auth';
+import { recordNotificationSkip } from '../../../../lib/notification-guard';
 
 export async function GET(request: NextRequest) {
   const deny = verifyCronSecret(request);
@@ -39,23 +40,28 @@ export async function GET(request: NextRequest) {
         const { data: { user }, error: userError } = await db.auth.admin.getUserById(cart.user_id);
         
         if (userError || !user || !user.email) {
-          logger.warn(`Could not find user for cart ${cart.id}`, { error: userError });
+          recordNotificationSkip('abandoned_cart.cron_user_not_found', { cartId: cart.id });
           continue;
         }
 
-        // Send email
         const cartItems = cart.items || [];
-        if (cartItems.length > 0) {
+        if (cartItems.length === 0) {
+          recordNotificationSkip('abandoned_cart.cron_empty_cart', { cartId: cart.id });
+        } else {
           // The route reads the phone, name and cart from the database; only the user id is sent.
           const internalToken = getInternalToken();
           if (!internalToken) {
-            logger.warn('Abandoned carts: INTERNAL_API_TOKEN is not set, reminder skipped');
-          } else {
-            await fetch(new URL('/api/email/abandoned-cart', request.url), {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json', 'x-internal-api-token': internalToken },
-              body: JSON.stringify({ userId: cart.user_id }),
-            });
+            recordNotificationSkip('abandoned_cart.cron_no_internal_token', { cartId: cart.id });
+            continue;
+          }
+          const response = await fetch(new URL('/api/email/abandoned-cart', request.url), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'x-internal-api-token': internalToken },
+            body: JSON.stringify({ userId: cart.user_id }),
+          });
+          if (!response.ok) {
+            recordNotificationSkip('abandoned_cart.cron_route_rejected', { cartId: cart.id, status: response.status });
+            continue;
           }
         }
 
