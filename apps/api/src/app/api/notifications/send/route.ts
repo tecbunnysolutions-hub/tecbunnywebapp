@@ -2,12 +2,14 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAdminDb, logger } from '@tecbunny/core/server';
 import { z } from 'zod';
 
+import { hasInternalToken } from '../../../../lib/internal-auth';
+
 /**
  * POST /api/notifications/send
  * Internal endpoint — sends a notification to a user respecting their preferences.
  * Called by order status updates, cron jobs, etc.
  *
- * Protected by INTERNAL_API_KEY header.
+ * Protected by the INTERNAL_API_TOKEN header (x-internal-api-token), compared in constant time.
  */
 
 const PayloadSchema = z.object({
@@ -20,9 +22,7 @@ const PayloadSchema = z.object({
 });
 
 export async function POST(request: NextRequest) {
-  const internalKey = process.env.INTERNAL_API_KEY;
-  const provided = request.headers.get('x-internal-api-key');
-  if (!internalKey || provided !== internalKey) {
+  if (!hasInternalToken(request)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 

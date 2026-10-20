@@ -409,22 +409,10 @@ export const useCartStore = create<CartState>((set, get) => ({
         fetch('/api/email/abandoned-cart', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            to: user.email,
-            userName: user.name,
-            cartItems: state.cartItems.map(item => ({
-              id: item.id,
-              name: item.name,
-              price: item.price,
-              quantity: item.quantity,
-              image: item.image,
-            })),
-            restoreCartUrl: `${process.env.NEXT_PUBLIC_SITE_URL || ''}/cart`,
-            minutesSinceAbandoned: Math.floor(minutesSinceUpdate),
-            phone: user.mobile
-          }),
-        }).then(() => {
-          localStorage.setItem(abandonedEmailKey, 'true');
+          // The server reads the user's phone and synced cart from the database.
+          body: JSON.stringify({}),
+        }).then((response) => {
+          if (response.ok) localStorage.setItem(abandonedEmailKey, 'true');
         }).catch((error) => {
           logger.error('Failed to send abandoned cart email', { error });
         });

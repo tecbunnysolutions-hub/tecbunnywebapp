@@ -1,51 +1,38 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 
-import { sendWhatsAppNotification } from "@tecbunny/core/whatsapp-service";
-import { logger } from "@tecbunny/core";
-import { rateLimit } from "@tecbunny/core/rate-limit";
+import { logger } from '@tecbunny/core';
+import { sendWhatsAppNotification } from '@tecbunny/core/whatsapp-service';
 
-const LIMIT = 10; // higher allowance for internal notifications
-const WINDOW_MS = 10 * 60 * 1000;
+import { handleOrderNotification } from '../../../../lib/notification-guard';
 
+// Internal team numbers (TEAM_WHATSAPP_1/2): staff or internal callers only.
 export async function POST(request: NextRequest) {
-  try {
-    const { orderId } = await request.json();
-    
-    const teamNumbers = [
-      process.env.TEAM_WHATSAPP_1,
-      process.env.TEAM_WHATSAPP_2
-    ].filter(Boolean) as string[];
+  return handleOrderNotification(request, {
+    bucket: 'whatsapp_sales_pickup',
+    allow: ['internal', 'staff'],
+    limit: 10,
+    windowMs: 10 * 60 * 1000,
+    channel: 'team',
+    successMessage: 'Sales pickup WhatsApp sent',
+    failureMessage: 'Failed to send sales pickup notification',
+    send: async ({ orderData }) => {
+      const teamNumbers = [process.env.TEAM_WHATSAPP_1, process.env.TEAM_WHATSAPP_2].filter(Boolean) as string[];
+      if (teamNumbers.length === 0) return true;
 
-    if (teamNumbers.length === 0) {
-       return NextResponse.json({ success: true, message: 'No team numbers configured' });
-    }
-
-    if (!orderId) {
-      return NextResponse.json({ error: 'Missing orderId' }, { status: 400 });
-    }
-
-    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
-    const rateKey = `notify-sales:${ip}`;
-
-    if (!rateLimit(rateKey, 'whatsapp_sales_pickup', { limit: LIMIT, windowMs: WINDOW_MS })) {
-      return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 });
-    }
-
-    const message = `
+      const message = `
 🏬 Pickup Order Alert!
 
-📦 Order: ${orderId}
+📦 Order: ${orderData.id}
 ⚠️ Action Required: Customer is arriving for pickup / Pick up initiated.
 Check dashboard for details.
-    `.trim();
-
-    for (const number of teamNumbers) {
-      await sendWhatsAppNotification(number, message);
-    }
-
-    return NextResponse.json({ success: true, message: 'Sales pickup WhatsApp sent' });
-  } catch (error: any) {
-    logger.error('Sales pickup notification WhatsApp API error:', { error: error.message });
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
-  }
+      `.trim();
+      try {
+        for (const number of teamNumbers) await sendWhatsAppNotification(number, message);
+        return true;
+      } catch (error) {
+        logger.error('Sales pickup notification WhatsApp failed', { error: error instanceof Error ? error.message : String(error) });
+        return false;
+      }
+    },
+  });
 }

@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAdminDb, logger, improvedEmailService } from '@tecbunny/core/server';
 import { verifyCronSecret } from '@tecbunny/core/cron-guard';
 
+import { getInternalToken } from '../../../../lib/internal-auth';
+
 export async function GET(request: NextRequest) {
   const deny = verifyCronSecret(request);
   if (deny) return deny;
@@ -44,26 +46,17 @@ export async function GET(request: NextRequest) {
         // Send email
         const cartItems = cart.items || [];
         if (cartItems.length > 0) {
-          // Use fetch to trigger the existing /api/email/abandoned-cart or send directly
-          // We will send directly using improvedEmailService since we are backend
-          await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || 'https://www.tecbunny.com'}/api/email/abandoned-cart`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              to: user.email,
-              userName: user.user_metadata?.full_name || 'there',
-              cartItems: cartItems.map((item: any) => ({
-                id: item.id,
-                name: item.name,
-                price: item.price,
-                quantity: item.quantity,
-                image: item.image,
-              })),
-              restoreCartUrl: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://www.tecbunny.com'}/cart`,
-              minutesSinceAbandoned: 120,
-              phone: user.phone || user.user_metadata?.phone
-            }),
-          });
+          // The route reads the phone, name and cart from the database; only the user id is sent.
+          const internalToken = getInternalToken();
+          if (!internalToken) {
+            logger.warn('Abandoned carts: INTERNAL_API_TOKEN is not set, reminder skipped');
+          } else {
+            await fetch(new URL('/api/email/abandoned-cart', request.url), {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'x-internal-api-token': internalToken },
+              body: JSON.stringify({ userId: cart.user_id }),
+            });
+          }
         }
 
         // Mark as abandoned so we don't send again

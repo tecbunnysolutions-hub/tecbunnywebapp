@@ -6,6 +6,8 @@ import * as z from 'zod';
 
 import { emailHelpers } from "@tecbunny/core/email";
 
+import { hasInternalToken } from '../../../../lib/internal-auth';
+
 
 
 // Simple in-memory dedupe to avoid duplicate sends in quick succession (best-effort only)
@@ -69,9 +71,8 @@ async function resolveManagerRecipients(): Promise<string[]> {
 }
 
 async function isAuthorized(request: NextRequest): Promise<{ ok: boolean; role: 'internal' | 'superadmin' | 'admin' | 'manager' | null }> {
-  const internalKey = request.headers.get('x-internal-api-key');
-  if (internalKey && process.env.INTERNAL_API_KEY && internalKey === process.env.INTERNAL_API_KEY) {
-  return { ok: true, role: 'internal' };
+  if (hasInternalToken(request)) {
+    return { ok: true, role: 'internal' };
   }
 
   const supabase = await createClient();

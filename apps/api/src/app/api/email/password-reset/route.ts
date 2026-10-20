@@ -1,47 +1,33 @@
-import { createSupabaseClient as createServerClient } from '@tecbunny/database/server';
+import { NextRequest } from 'next/server';
 
-import { NextRequest, NextResponse } from 'next/server';
+import { emailHelpers } from '@tecbunny/core/email';
 
-import { emailHelpers } from "@tecbunny/core/email";
-import { rateLimit } from "@tecbunny/core/rate-limit";
+import {
+  authorizeNotification,
+  jsonError,
+  jsonOk,
+  readJsonObject,
+  resolveTargetUser,
+} from '../../../../lib/notification-guard';
 
-
-// OTP emails stricter: 5 per 30 minutes
-const LIMIT = 5;
-const WINDOW_MS = 30 * 60 * 1000;
-
+// OTP relay for server-side flows: internal token only. The address comes from the user record.
 export async function POST(request: NextRequest) {
-  try {
-    const { to, userName, otp } = await request.json();
-    if (typeof to !== 'string' || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(to)) {
-      return NextResponse.json({ error: 'Invalid recipient email' }, { status: 400 });
-    }
-    if (!userName || typeof userName !== 'string' || !otp || typeof otp !== 'string') {
-      return NextResponse.json({ error: 'Invalid userName or otp' }, { status: 400 });
-    }
+  const gate = await authorizeNotification(request, {
+    bucket: 'email_password_reset',
+    allow: ['internal'],
+    limit: 5,
+    windowMs: 30 * 60 * 1000,
+  });
+  if ('error' in gate) return gate.error;
 
-    let userId: string | null = null;
-    try {
-      const supabase = await createServerClient();
-      const { data: { user } } = await supabase.auth.getUser();
-      userId = user?.id || null;
-    } catch(_ignoreErr) {}
-    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
-    const rateKey = userId ? `user:${userId}` : `ip:${ip}`;
-    if (!rateLimit(rateKey, 'email_password_reset', { limit: LIMIT, windowMs: WINDOW_MS })) {
-      return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 });
-    }
+  const body = await readJsonObject(request);
+  const otp = body?.otp;
+  if (!body || typeof otp !== 'string' || !/^\d{6}$/.test(otp)) return jsonError(400, 'Invalid OTP format');
 
-    const success = await emailHelpers.sendPasswordResetOTP(to, userName, otp);
-    const res = success
-      ? NextResponse.json({ success: true, message: 'Password reset OTP email sent successfully' })
-      : NextResponse.json({ error: 'Failed to send password reset OTP email' }, { status: 500 });
-    res.headers.set('Cache-Control', 'no-store');
-    res.headers.set('X-Content-Type-Options', 'nosniff');
-    res.headers.set('Referrer-Policy', 'same-origin');
-    return res;
-  } catch (error) {
-    console.error('Password reset OTP email API error:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
-  }
+  const resolved = await resolveTargetUser(gate.caller, body);
+  if ('error' in resolved) return resolved.error;
+  if (!resolved.target.email) return jsonError(422, 'User has no email address');
+
+  const sent = await emailHelpers.sendPasswordResetOTP(resolved.target.email, resolved.target.name || 'there', otp);
+  return sent ? jsonOk({}) : jsonError(500, 'Failed to send password reset OTP email');
 }

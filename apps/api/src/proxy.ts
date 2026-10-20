@@ -62,6 +62,10 @@ export async function proxy(request: NextRequest, event: EnterpriseProxyEvent) {
         'POST /api/webhooks/payment/received',
         'POST /api/webhooks/payment/failed',
         'POST /api/webhooks/customer/signup',
+        // These handlers authenticate themselves (internal token, staff role or order owner), so
+        // server-to-server callers carrying the internal token are not blocked by the session wall.
+        'POST /api/email',
+        'POST /api/notifications/send',
         'GET /api/webhook/whatsapp',
         'POST /api/webhook/whatsapp',
         '/api/health',

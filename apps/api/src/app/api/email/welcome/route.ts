@@ -1,29 +1,31 @@
 import { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
 
-import { emailHelpers } from "@tecbunny/core/email";
-import { handleEmailPost } from "@tecbunny/core/api-email-route";
-import { logger } from '@tecbunny/core/logger';
+import { emailHelpers } from '@tecbunny/core/email';
 
-interface WelcomePayload { to: string; userName: string }
+import {
+  authorizeNotification,
+  jsonError,
+  jsonOk,
+  readJsonObject,
+  resolveTargetUser,
+} from '../../../../lib/notification-guard';
 
+// The signed-in user (or an internal caller naming a userId) only; the address comes from the user record.
 export async function POST(request: NextRequest) {
-  try {
-    logger.info('email_welcome.audit.requested');
-    return await handleEmailPost<WelcomePayload>(request as any, {
-      rate: { bucket: 'email_welcome', limit: 5, windowMs: 60 * 60 * 1000 },
-      validate(body: any) {
-        const { to, userName } = body || {};
-        if (typeof to !== 'string' || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(to)) return { ok: false, error: 'Invalid recipient email' } as const;
-        if (!userName || typeof userName !== 'string') return { ok: false, error: 'Missing userName' } as const;
-        return { ok: true, data: { to, userName } } as const;
-      },
-      async action(data) {
-        return emailHelpers.sendWelcomeEmail(data.to, data.userName);
-      }
-    });
-  } catch (error) {
-    logger.error('email_welcome.audit.failed', { error: error instanceof Error ? error.message : String(error) });
-    return NextResponse.json({ error: 'Failed to send welcome email' }, { status: 500 });
-  }
+  const gate = await authorizeNotification(request, {
+    bucket: 'email_welcome',
+    allow: ['internal', 'owner'],
+    limit: 5,
+    windowMs: 60 * 60 * 1000,
+  });
+  if ('error' in gate) return gate.error;
+
+  const body = (await readJsonObject(request)) ?? {};
+  const resolved = await resolveTargetUser(gate.caller, body);
+  if ('error' in resolved) return resolved.error;
+  const { target } = resolved;
+  if (!target.email) return jsonError(422, 'User has no email address');
+
+  const sent = await emailHelpers.sendWelcomeEmail(target.email, target.name || 'there');
+  return sent ? jsonOk({}) : jsonError(500, 'Failed to send welcome email');
 }
