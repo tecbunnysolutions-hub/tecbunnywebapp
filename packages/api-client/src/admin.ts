@@ -1,8 +1,10 @@
 import { AdminOrdersSchema, type AdminOrders, type AdminOrdersQuery } from '@tecbunny/contracts';
 
+import { amcContractsApi } from './amc-contracts';
 import type { ApiClient } from './client';
 
 export function adminApi(client: ApiClient) {
+  const amcContracts = amcContractsApi(client);
   return {
     /** Staff: orders list. Requires `getToken`; never cached. */
     async orders(query: Partial<AdminOrdersQuery> = {}, opts: { signal?: AbortSignal } = {}): Promise<AdminOrders> {
@@ -12,5 +14,7 @@ export function adminApi(client: ApiClient) {
       const data = await client.request(`/api/v1/admin/orders${qs ? `?${qs}` : ''}`, { schema: AdminOrdersSchema, signal: opts.signal, cache: 'no-store' });
       return data ?? { orders: [], total: 0 };
     },
+
+    amcContracts: amcContracts.list,
   };
 }

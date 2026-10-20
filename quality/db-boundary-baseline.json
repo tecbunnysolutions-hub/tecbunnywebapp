@@ -16,7 +16,6 @@
     "apps/mgmt/src/app/mgmt/sales/purchase-entry/sales-purchase-entry.tsx",
     "apps/mgmt/src/app/mgmt/sales/quick-billing/sales-quick-billing.tsx",
     "apps/mgmt/src/app/mgmt/sales/sales-dashboard.tsx",
-    "apps/mgmt/src/app/mgmt/service-manager/amc/page.tsx",
     "apps/mgmt/src/components/customised-setups/CustomSetupFlow.tsx",
     "apps/mgmt/src/components/mgmt/RoleWorkspaceDashboard.tsx",
     "apps/mgmt/src/components/mgmt/ServiceTicketWorkspace.tsx",

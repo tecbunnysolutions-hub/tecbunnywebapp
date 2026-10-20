@@ -10,3 +10,4 @@ export * from './invoices';
 export * from './superadmin-dashboard';
 export * from './superadmin';
 export * from './lead-command-center';
+export * from './amc-contracts';

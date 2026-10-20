@@ -104,12 +104,6 @@
       "reason": "apps/mgmt imports @tecbunny/database directly; move the data access behind an /api/v1 endpoint and api-client method."
     },
     {
-      "file": "apps/mgmt/src/app/mgmt/service-manager/amc/page.tsx",
-      "rule": "db-import",
-      "detail": "@tecbunny/database",
-      "reason": "apps/mgmt imports @tecbunny/database directly; move the data access behind an /api/v1 endpoint and api-client method."
-    },
-    {
       "file": "apps/mgmt/src/components/customised-setups/CustomSetupFlow.tsx",
       "rule": "db-import",
       "detail": "@tecbunny/database",
