@@ -82,3 +82,5 @@ Public reads are cached with tags (`products`, `blog`, `services`, `content`, `b
 ## Vercel env vars
 
 `SUPABASE_SERVICE_ROLE_KEY` and `DATABASE_URL` are required by the API. Likely removable from the public project (verify on a preview deploy). Keep on mgmt, superadmin and waba until the `@tecbunny/core` auth guards and remaining UI reads move. Manual steps: regions close to the database, firewall/rate-limit rules, CORS origins.
+
+Set `GUEST_ORDER_TOKEN_SECRET` to a unique random value of at least 32 characters in the API environment. Guest order links are signed with this key; it must not reuse a Supabase key. Guest checkout fails before creating an order if this setting is missing.

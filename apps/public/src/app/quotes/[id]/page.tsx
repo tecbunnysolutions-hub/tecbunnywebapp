@@ -109,15 +109,9 @@ export default function QuoteDetailPage() {
 
       toast({
         title: 'Counter-offer accepted!',
-        description: 'Your booking has been confirmed. Proceeding to payment...'
+        description: 'Your acceptance is recorded. Our team will send a secure payment request.'
       });
-
-      // Redirect to checkout
-      setTimeout(() => {
-        const query = new URLSearchParams({ quoteId: quote.quote_number || quote.id });
-        if (actionToken) query.set('token', actionToken);
-        window.location.href = `/checkout?${query.toString()}`;
-      }, 1500);
+      setQuote((current: any) => current ? { ...current, status: 'accepted' } : current);
     } catch (error) {
       console.error(error);
       toast({
@@ -495,7 +489,9 @@ export default function QuoteDetailPage() {
                   </div>
                   <div>
                     <p className="text-sm font-medium text-foreground">Booking Confirmed</p>
-                    <p className="text-xs text-muted-foreground">Ready for installation scheduling</p>
+                    <p className="text-xs text-muted-foreground">
+                      Your acceptance is recorded. Our team will send a secure payment request; no payment is due on this page.
+                    </p>
                   </div>
                 </div>
               )}

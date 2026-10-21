@@ -6,12 +6,18 @@ const mocks = vi.hoisted(() => ({
   sendWhatsAppNotification: vi.fn(),
   getTrustedClientIp: vi.fn(() => '203.0.113.7'),
   loggerError: vi.fn(),
+  getUser: vi.fn(),
 }));
 
 vi.mock('@tecbunny/core/rate-limit', () => ({ rateLimit: mocks.rateLimit }));
 vi.mock('@tecbunny/core/server', () => ({ getTrustedClientIp: mocks.getTrustedClientIp }));
 vi.mock('@tecbunny/core/whatsapp-service', () => ({ sendWhatsAppNotification: mocks.sendWhatsAppNotification }));
 vi.mock('@tecbunny/core', () => ({ logger: { error: mocks.loggerError } }));
+vi.mock('@tecbunny/database/server', () => ({
+  createSupabaseClient: vi.fn(async () => ({
+    auth: { getUser: mocks.getUser },
+  })),
+}));
 
 import { POST } from './route';
 
@@ -26,6 +32,7 @@ const validRequest = {
   consent: true,
   name: 'Taylor',
   phone: '9876543210',
+  items: [{ id: 'product-1', quantity: 2 }],
   website: '',
 };
 
@@ -35,9 +42,12 @@ describe('POST /api/cart/abandoned', () => {
     mocks.sendWhatsAppNotification.mockReset().mockResolvedValue(undefined);
     mocks.getTrustedClientIp.mockReset().mockReturnValue('203.0.113.7');
     mocks.loggerError.mockReset();
+    mocks.getUser.mockReset().mockResolvedValue({
+      data: { user: { phone: '+919876543210', phone_confirmed_at: '2026-01-01T00:00:00Z' } },
+    });
   });
 
-  it('sends a consented cart link without client prices or payment instructions', async () => {
+  it('sends a consented catalog-only recovery link without prices or payment instructions', async () => {
     const response = await POST(request(validRequest));
     const body = await response.json();
 
@@ -49,9 +59,11 @@ describe('POST /api/cart/abandoned', () => {
     expect(mocks.sendWhatsAppNotification).toHaveBeenCalledOnce();
 
     const sentMessage = mocks.sendWhatsAppNotification.mock.calls[0][1];
-    expect(sentMessage).toContain('https://tecbunny.com/cart');
+    expect(sentMessage).toContain('https://tecbunny.com/cart?recover=');
     expect(sentMessage).toContain('Items are not reserved');
     expect(sentMessage).not.toMatch(/₹|upi|vpa|reserved for you/i);
+    const encodedItems = new URL(sentMessage.match(/https:\/\/tecbunny\.com\/cart\?recover=([^\s]+)/)?.[0] || 'https://tecbunny.com/cart').searchParams.get('recover');
+    expect(JSON.parse(Buffer.from(encodedItems || '', 'base64url').toString('utf8'))).toEqual(validRequest.items);
   });
 
   it('rejects requests without explicit opt-in', async () => {
@@ -65,6 +77,21 @@ describe('POST /api/cart/abandoned', () => {
   it('rejects malformed phone numbers and unexpected client-supplied fields', async () => {
     expect((await POST(request({ ...validRequest, phone: '123' }))).status).toBe(400);
     expect((await POST(request({ ...validRequest, price: 1 }))).status).toBe(400);
+    expect((await POST(request({
+      ...validRequest,
+      items: [{ id: 'product-1', quantity: 2, price: 0.01 }],
+    }))).status).toBe(400);
+    expect(mocks.sendWhatsAppNotification).not.toHaveBeenCalled();
+  });
+
+  it('requires the account phone to be verified and match the requested number', async () => {
+    mocks.getUser.mockResolvedValueOnce({ data: { user: { phone: '+919876543210' } } });
+    expect((await POST(request(validRequest))).status).toBe(401);
+
+    mocks.getUser.mockResolvedValueOnce({
+      data: { user: { phone: '+919876543211', phone_confirmed_at: '2026-01-01T00:00:00Z' } },
+    });
+    expect((await POST(request(validRequest))).status).toBe(403);
     expect(mocks.sendWhatsAppNotification).not.toHaveBeenCalled();
   });
 

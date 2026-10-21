@@ -1,6 +1,11 @@
 export const protectedPublicRoutes = ['/dashboard', '/profile', '/orders', '/admin'] as const;
 
+// A single order page loads through the API, which enforces ownership or a valid
+// guest order token, so guests who just checked out can view it.
+const guestOrderPagePattern = /^\/orders\/[^/]+\/?$/;
+
 export function isProtectedPublicRoute(pathname: string): boolean {
+  if (guestOrderPagePattern.test(pathname)) return false;
   return protectedPublicRoutes.some(
     (route) => pathname === route || pathname.startsWith(`${route}/`)
   );

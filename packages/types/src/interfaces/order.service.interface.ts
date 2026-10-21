@@ -2,6 +2,7 @@ export interface CreateOrderParams {
   effectiveUserId: string | null;
   correlationId: string | null;
   orderData: any; // Raw order data mapped from request body
+  createGuestAccessToken?: (orderId: string) => string;
 }
 
 export interface IOrderService {

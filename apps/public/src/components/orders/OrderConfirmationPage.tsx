@@ -12,6 +12,7 @@ import { Button } from "@tecbunny/ui";
 import { Badge } from "@tecbunny/ui";
 import { Separator } from "@tecbunny/ui";
 import type { Order } from '@tecbunny/core';
+import { storeGuestOrderToken } from '@/lib/guest-order-access';
 
 interface OrderConfirmationPageProps {
   orderId: string;
@@ -23,6 +24,12 @@ export default function OrderConfirmationPage({ orderId }: OrderConfirmationPage
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const guestToken = new URLSearchParams(window.location.search).get('guest_token');
+    if (guestToken) {
+      storeGuestOrderToken(orderId, guestToken);
+      window.history.replaceState(null, '', window.location.pathname);
+    }
+
     const fetchOrder = async () => {
       setLoading(true);
       const fetchedOrder = await getOrderById(orderId);

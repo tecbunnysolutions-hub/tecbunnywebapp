@@ -2,14 +2,14 @@ import { describe, expect, it } from 'vitest';
 import { getSafeLocalReturnUrl, isProtectedPublicRoute } from './public-route-policy';
 
 describe('public route policy', () => {
-  it.each(['/orders', '/orders/123', '/dashboard', '/profile', '/admin/settings'])(
+  it.each(['/orders', '/orders/123/invoice', '/dashboard', '/profile', '/admin/settings'])(
     'keeps %s protected',
     (pathname) => {
       expect(isProtectedPublicRoute(pathname)).toBe(true);
     }
   );
 
-  it.each(['/checkout', '/checkout/review', '/payment', '/payment/upi/123'])(
+  it.each(['/checkout', '/checkout/review', '/payment', '/payment/upi/123', '/orders/123', '/orders/123/'])(
     'allows guests on %s',
     (pathname) => {
       expect(isProtectedPublicRoute(pathname)).toBe(false);

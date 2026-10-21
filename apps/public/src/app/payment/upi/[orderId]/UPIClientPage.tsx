@@ -476,9 +476,21 @@ export default function UPIPaymentPage() {
                 </label>
               )}
               {paymentClaimSubmitted && (
-                <p className="text-sm text-center" role="status">
-                  Your transaction reference was submitted and is awaiting verification. Your order has not been marked paid.
-                </p>
+                <div className="space-y-2 text-center">
+                  <p className="text-sm" role="status">
+                    Your transaction reference was submitted and is awaiting verification. Your order has not been marked paid.
+                  </p>
+                  <button
+                    type="button"
+                    className="text-xs font-semibold text-primary underline"
+                    onClick={() => {
+                      setPaymentClaimSubmitted(false);
+                      setPaymentStatus('pending');
+                    }}
+                  >
+                    Entered the wrong reference? Correct it
+                  </button>
+                </div>
               )}
               <Button 
                 onClick={handlePaymentConfirmation}

@@ -7,7 +7,10 @@ import { BaseSupabaseClient, SupabaseOrderRepository, NotificationServiceImpl } 
 import { OrderService } from "@tecbunny/core/server";
 import { createSupabaseClient as createServerClient } from '@tecbunny/database/server';
 import { getTrustedClientIp } from '@tecbunny/core/server';
-import { createGuestOrderAccessToken } from '../../../lib/guest-order-access';
+import {
+  assertGuestOrderAccessConfigured,
+  createGuestOrderAccessToken,
+} from '../../../lib/guest-order-access';
 
 const RATE_LIMIT = 5; // 5 orders
 const RATE_WINDOW_MS = 60 * 1000; // per minute
@@ -54,6 +57,12 @@ export const POST = withApiHandler(
   async (request: NextRequest, validatedData: CreateOrderInput) => {
     const correlationId = request.headers.get('x-correlation-id') || null;
 
+    if (validatedData.quote_id) {
+      return APIResponseBuilder.conflict(
+        'Quote orders must be paid through the secure quote payment request. Please contact our team if no payment request is available.'
+      );
+    }
+
     // Check superadmin session cookie first to block order placements
     const superadminCookie = request.cookies.get('superadmin-session')?.value;
     if (await verifySuperadminSessionToken(superadminCookie)) {
@@ -74,6 +83,9 @@ export const POST = withApiHandler(
     }
 
     const effectiveUserId = user?.id ?? null;
+    if (!effectiveUserId) {
+      assertGuestOrderAccessConfigured();
+    }
 
     const rateLimitKey = effectiveUserId || `guest:${getTrustedClientIp(request)}`;
     const limitCheck = await rateLimit(rateLimitKey, RATE_LIMIT, RATE_WINDOW_MS);
@@ -90,7 +102,8 @@ export const POST = withApiHandler(
     const fullOrder = await orderService.createOrder({
       effectiveUserId,
       correlationId,
-      orderData: validatedData
+      orderData: validatedData,
+      createGuestAccessToken: effectiveUserId ? undefined : createGuestOrderAccessToken,
     });
 
     const orderId = typeof fullOrder?.id === 'string' ? fullOrder.id.trim() : '';
@@ -119,7 +132,7 @@ export const POST = withApiHandler(
     return APIResponseBuilder.created({
       order: fullOrder,
       orderId,
-      ...(effectiveUserId ? {} : { guestAccessToken: createGuestOrderAccessToken(orderId) }),
+      ...(effectiveUserId ? {} : { guestAccessToken: fullOrder.guestAccessToken }),
     });
   }
 );

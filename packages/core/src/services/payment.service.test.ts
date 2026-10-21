@@ -35,4 +35,31 @@ describe('PayU initiation persistence', () => {
     await expect(service.initiatePayuPayment({ ...base, guestEmail: 'guest@example.com' })).rejects.toThrow('Could not record');
     await expect(service.initiatePayuPayment({ ...base, userRole: 'admin' })).rejects.toThrow('Could not record');
   });
+
+  it('rejects a part-payment amount above the server-side order total', async () => {
+    const insert = vi.fn();
+    const client = {
+      from: (table: string) => {
+        if (table === 'settings') {
+          return { select: () => ({ in: async () => ({ data: [{ key: 'payu_merchant_key', value: 'test' }, { key: 'payu_merchant_salt', value: 'salt' }] }) }) };
+        }
+        if (table === 'orders') {
+          return { select: () => ({ eq: () => ({ single: async () => ({
+            data: {
+              id: 'order',
+              customer_id: null,
+              customer_email: 'guest@example.com',
+              total: 100,
+              items: { part_payment_amount: 101 },
+            },
+          }) }) }) };
+        }
+        return { insert };
+      },
+    };
+    const service = new PaymentService(client as any);
+    await expect(service.initiatePayuPayment({ ...base, guestEmail: 'guest@example.com' }))
+      .rejects.toThrow('Order amount is invalid for payment');
+    expect(insert).not.toHaveBeenCalled();
+  });
 });

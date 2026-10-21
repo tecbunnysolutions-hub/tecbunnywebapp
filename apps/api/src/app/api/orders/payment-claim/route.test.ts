@@ -135,11 +135,31 @@ describe('POST /api/orders/payment-claim', () => {
     expect(mocks.update).not.toHaveBeenCalled();
   });
 
-  it('does not allow a second reference to replace the first', async () => {
+  it('allows a pending reference to be corrected with a compare-and-swap on the old value', async () => {
     mocks.order.payment_reference = 'FIRST123456';
+    mocks.order.payment_status = 'Payment Confirmation Pending';
     const response = await POST(makeRequest({ orderId: mocks.order.id, utr: 'SECOND123456' }));
+
+    expect(response.status).toBe(200);
+    expect(mocks.update).toHaveBeenCalledWith({
+      payment_reference: 'SECOND123456',
+      payment_status: 'Payment Confirmation Pending',
+    });
+  });
+
+  it('rejects resubmitting the identical reference', async () => {
+    mocks.order.payment_reference = 'FIRST123456';
+    const response = await POST(makeRequest({ orderId: mocks.order.id, utr: 'FIRST123456' }));
 
     expect(response.status).toBe(409);
     expect(mocks.update).not.toHaveBeenCalled();
+  });
+
+  it('returns 409 when another request changed the order first', async () => {
+    mocks.order.payment_reference = 'FIRST123456';
+    mocks.updated = null;
+    const response = await POST(makeRequest({ orderId: mocks.order.id, utr: 'SECOND123456' }));
+
+    expect(response.status).toBe(409);
   });
 });

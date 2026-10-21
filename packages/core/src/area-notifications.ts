@@ -325,6 +325,11 @@ export async function sendOrderRoutingNotifications(
   const customerKind = isService ? 'service_order_customer_confirmation' : 'product_order_customer_confirmation';
   const internalKind = isService ? 'service_order_internal_notification' : 'product_order_internal_notification';
   const orderLink = `${resolveSiteUrl()}/orders/${encodeURIComponent(orderId)}`;
+  const customerOrderLink = `${orderLink}${
+    typeof order.guestAccessToken === 'string'
+      ? `?guest_token=${encodeURIComponent(order.guestAccessToken)}`
+      : ''
+  }`;
   const customerEmail = validEmail(order.customer_email) ? order.customer_email.trim() : null;
   const items = getOrderItems(order);
 
@@ -342,14 +347,14 @@ export async function sendOrderRoutingNotifications(
             <p><strong>Order:</strong> ${escapeHtml(order.order_number || orderId)}</p>
             <p><strong>Total:</strong> INR ${escapeHtml(order.total || 0)}</p>
             ${items.length ? `<p><strong>Items</strong></p><ul>${renderItems(items)}</ul>` : ''}
-            <p><a href="${orderLink}">View order status</a></p>
+            <p><a href="${customerOrderLink}">View order status</a></p>
             <p>Need assistance? Reply to this message and it will reach our ${teamLabel.toLowerCase()} team.</p>
           `,
           text: [
             `${isService ? 'Service order' : 'Order'} confirmation #${order.order_number || orderId}`,
             `Thank you, ${order.customer_name || 'Customer'}.`,
             `Total: INR ${order.total || 0}`,
-            `View order: ${orderLink}`,
+            `View order: ${customerOrderLink}`,
             `Reply to contact the TecBunny ${teamLabel} team.`,
           ].join('\n'),
         });

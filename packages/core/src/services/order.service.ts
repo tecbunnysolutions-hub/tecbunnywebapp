@@ -74,7 +74,7 @@ export class OrderService implements IOrderService {
 
   async createOrder(params: CreateOrderParams): Promise<any> {
     return withTelemetry('OrderService.createOrder', async () => {
-      const { effectiveUserId, orderData } = params;
+      const { effectiveUserId, orderData, createGuestAccessToken } = params;
 
       logger.info('order_create_attempt', { userId: effectiveUserId });
 
@@ -153,6 +153,14 @@ export class OrderService implements IOrderService {
     const shipping_amount = 0;
     const total = checkoutResult.finalTotal + shipping_amount;
 
+    const partPaymentAmount = orderData.part_payment_amount == null
+      ? null
+      : Number(orderData.part_payment_amount);
+    if (partPaymentAmount !== null &&
+        (!Number.isFinite(partPaymentAmount) || partPaymentAmount <= 0 || partPaymentAmount > total)) {
+      throw new Error('Part payment must be greater than zero and no more than the order total');
+    }
+
     const validatedItems = checkoutResult.itemPrices.map((item: any) => ({
       id: item.product_id,
       productId: item.product_id,
@@ -211,7 +219,7 @@ export class OrderService implements IOrderService {
       customer_notes: orderData.notes,
       agent_id: orderData.agent_id || null,
       otp_required: !!orderData.agent_id,
-      part_payment_amount: orderData.part_payment_amount ? Number(orderData.part_payment_amount) : null,
+      part_payment_amount: partPaymentAmount,
       quote_id: orderData.quote_id || null
     };
 
@@ -274,8 +282,12 @@ export class OrderService implements IOrderService {
       payment_method: createdOrder.payment_method || orderItemsData.payment_method,
       notes: createdOrder.notes || orderItemsData.customer_notes,
       items: orderItemsData.cart_items || [],
-      pickup_store: orderItemsData.pickup_store || pickupStore || null
+      pickup_store: orderItemsData.pickup_store || pickupStore || null,
+      guestAccessToken: undefined as string | undefined,
     };
+    if (!effectiveUserId && createGuestAccessToken) {
+      fullOrder.guestAccessToken = createGuestAccessToken(String(createdOrder.id));
+    }
 
     const managerRole = serviceOrderTypes.has(orderType) ? 'service_manager' : 'sales_manager';
 

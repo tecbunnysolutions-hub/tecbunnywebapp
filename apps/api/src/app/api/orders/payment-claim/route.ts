@@ -65,8 +65,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Too many attempts. Please try again later.' }, { status: 429 });
   }
 
-  if (order.payment_reference) {
-    return NextResponse.json({ error: 'A payment reference has already been submitted for this order.' }, { status: 409 });
+  // A pending reference may be corrected (the order is not paid until staff verify it).
+  if (order.payment_reference === utr) {
+    return NextResponse.json({ error: 'This payment reference was already submitted.' }, { status: 409 });
   }
 
   let updateQuery = client
@@ -75,8 +76,10 @@ export async function POST(request: NextRequest) {
     .eq('id', orderId)
     .eq('payment_method', 'upi')
     .eq('status', order.status)
-    .is('payment_reference', null)
     .select('id');
+  updateQuery = order.payment_reference === null
+    ? updateQuery.is('payment_reference', null)
+    : updateQuery.eq('payment_reference', order.payment_reference);
   updateQuery = order.payment_status === null
     ? updateQuery.is('payment_status', null)
     : updateQuery.eq('payment_status', order.payment_status);
@@ -86,7 +89,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Unable to submit payment details.' }, { status: 500 });
   }
   if (!updated) {
-    return NextResponse.json({ error: 'A payment reference has already been submitted for this order.' }, { status: 409 });
+    return NextResponse.json({ error: 'This order was updated by another request. Please refresh and try again.' }, { status: 409 });
   }
 
   return NextResponse.json({

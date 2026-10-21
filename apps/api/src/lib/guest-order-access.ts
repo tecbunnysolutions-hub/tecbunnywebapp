@@ -3,9 +3,15 @@ import { createHmac, timingSafeEqual } from 'node:crypto';
 const TOKEN_TTL_SECONDS = 7 * 24 * 60 * 60;
 
 function getSecret(): string {
-  const secret = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY;
-  if (!secret) throw new Error('Guest order access signing is not configured');
+  const secret = process.env.GUEST_ORDER_TOKEN_SECRET?.trim();
+  if (!secret || secret.length < 32) {
+    throw new Error('GUEST_ORDER_TOKEN_SECRET must be configured with at least 32 characters');
+  }
   return secret;
+}
+
+export function assertGuestOrderAccessConfigured(): void {
+  getSecret();
 }
 
 function sign(payload: string): string {

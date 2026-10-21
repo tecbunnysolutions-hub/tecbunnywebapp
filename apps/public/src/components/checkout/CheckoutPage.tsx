@@ -64,6 +64,7 @@ export default function CheckoutPage() {
     installDate: '',
     siteStatus: ''
   });
+  const pincodeLookupRef = React.useRef({ value: '', controller: null as AbortController | null });
   const [isFetchingGst, setIsFetchingGst] = useState(false);
   const [gstError, setGstError] = useState('');
 
@@ -193,10 +194,10 @@ export default function CheckoutPage() {
     if (user) {
       setCustomerInfo(prev => ({
         ...prev,
-        name: user.name || '',
-        email: user.email || '',
-        phone: user.mobile || '',
-        address: user.address || '',
+        name: prev.name || user.name || '',
+        email: prev.email || user.email || '',
+        phone: prev.phone || user.mobile || '',
+        address: prev.address || user.address || '',
         // Keep existing values for city, pincode, state, notes if user doesn't have them
       }));
     }
@@ -215,6 +216,7 @@ export default function CheckoutPage() {
           consent: true,
           name: customerInfo.name,
           phone: cleanPhone,
+          items: cartItems.map(item => ({ id: item.id, quantity: item.quantity })),
           website: recoveryWebsite,
         }),
       });
@@ -360,12 +362,20 @@ export default function CheckoutPage() {
 
   const handlePincodeChange = async (pincode: string) => {
     handleInputChange('pincode', pincode);
+    pincodeLookupRef.current.value = pincode;
+    pincodeLookupRef.current.controller?.abort();
     
     if (pincode.length === 6 && /^\d+$/.test(pincode)) {
+      const controller = new AbortController();
+      pincodeLookupRef.current.controller = controller;
+      const timeoutId = setTimeout(() => controller.abort(), 8000);
       try {
-        const res = await fetch(`https://api.postalpincode.in/pincode/${pincode}`);
+        const res = await fetch(`https://api.postalpincode.in/pincode/${pincode}`, {
+          signal: controller.signal,
+        });
+        if (!res.ok) throw new Error(`Pincode lookup failed with status ${res.status}`);
         const data = await res.json();
-        if (data?.[0]?.Status === 'Success' && data[0].PostOffice) {
+        if (pincodeLookupRef.current.value === pincode && data?.[0]?.Status === 'Success' && data[0].PostOffice) {
           const postOffice = data[0].PostOffice[0];
           setCustomerInfo(prev => ({
             ...prev,
@@ -381,6 +391,11 @@ export default function CheckoutPage() {
         }
       } catch (e) {
         logger.warn('Pincode API lookup failed', { pincode, error: e });
+      } finally {
+        clearTimeout(timeoutId);
+        if (pincodeLookupRef.current.controller === controller) {
+          pincodeLookupRef.current.controller = null;
+        }
       }
     } else if (pincode.length > 0 && !/^\d{0,6}$/.test(pincode)) {
       setFieldErrors(prev => ({
@@ -497,6 +512,14 @@ export default function CheckoutPage() {
       if (!selectedPaymentMethod) {
         setOrderError('Please select a payment method');
         return;
+      }
+
+      if (isPartPayment) {
+        const requestedAmount = Number(partPaymentAmount);
+        if (!Number.isFinite(requestedAmount) || requestedAmount <= 0 || requestedAmount > displayTotal) {
+          setOrderError('Part payment must be greater than ₹0 and no more than the order total.');
+          return;
+        }
       }
 
       if (!privacyAccepted) {
@@ -783,6 +806,9 @@ export default function CheckoutPage() {
                         />
                         <span>I agree to receive one WhatsApp message with a link to return to my cart. This does not reserve items or lock prices.</span>
                       </label>
+                      <p className="mt-2 text-xs text-muted-foreground">
+                        For your privacy, this is available only when the number matches the phone verified on your signed-in account.
+                      </p>
                       {whatsappRecoveryConsent && (
                         <button
                           type="button"

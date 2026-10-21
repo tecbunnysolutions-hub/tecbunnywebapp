@@ -130,7 +130,8 @@ export class PaymentService {
     const partPaymentAmount = extras.part_payment_amount;
     const amountNumber = partPaymentAmount ? Number(partPaymentAmount) : Number(order.total ?? 0);
     
-    if (!Number.isFinite(amountNumber) || amountNumber <= 0) {
+    const orderTotal = Number(order.total ?? 0);
+    if (!Number.isFinite(amountNumber) || amountNumber <= 0 || !Number.isFinite(orderTotal) || amountNumber > orderTotal) {
       throw new Error('Order amount is invalid for payment');
     }
 

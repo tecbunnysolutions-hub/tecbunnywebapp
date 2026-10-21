@@ -215,6 +215,8 @@ export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         notes: orderData.notes || null,
         payment_method: orderData.payment_method || null,
         payment_status: orderData.payment_status || null,
+        part_payment_amount: orderData.part_payment_amount ?? null,
+        quote_id: orderData.quote_id || null,
         discount_amount: Math.round(((orderData.discount_amount || 0) as number) * 100) / 100,
         shipping_amount: Math.round(((orderData.shipping_amount || 0) as number) * 100) / 100,
         agent_id: orderData.agent_id || null,

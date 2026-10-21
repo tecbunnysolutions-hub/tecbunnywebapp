@@ -57,7 +57,7 @@ export default function Page() {
         <h2 className="mb-3 mt-8 text-xl font-bold text-foreground">Grievance Officer</h2>
         <address className="not-italic leading-relaxed">
           Shubham Bhisaji<br />
-          Phone: <a href="tel:+917387375651" className="text-primary">7387375651</a><br />
+          Phone: <a href="tel:+917387375651" className="text-primary">+91 73873 75651</a><br />
           Email: <a href="mailto:shubham@tecbunny.com" className="text-primary">shubham@tecbunny.com</a>
         </address>
       </section>

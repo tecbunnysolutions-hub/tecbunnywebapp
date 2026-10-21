@@ -9,6 +9,10 @@ const recoveryRequestSchema = z.object({
   consent: z.literal(true),
   name: z.string().trim().max(100).optional().default(''),
   phone: z.string().trim().regex(/^\d{10,12}$/),
+  items: z.array(z.object({
+    id: z.string().trim().min(1).max(200),
+    quantity: z.number().int().min(1).max(100),
+  }).strict()).min(1).max(25),
   website: z.string().max(200).optional().default(''),
 }).strict();
 
@@ -31,12 +35,26 @@ export async function POST(request: NextRequest) {
     }
 
     const { phone } = parsed.data;
+    const { createSupabaseClient } = await import('@tecbunny/database/server');
+    const authClient = await createSupabaseClient();
+    const { data: { user } } = await authClient.auth.getUser();
+    const verifiedPhone = user?.phone?.replace(/\D/g, '') || '';
+    const requestedPhone = phone.length === 10 ? `91${phone}` : phone;
+    const normalizedVerifiedPhone = verifiedPhone.length === 10 ? `91${verifiedPhone}` : verifiedPhone;
+    if (!user || !user.phone_confirmed_at) {
+      return NextResponse.json({ success: false, error: 'Sign in with a phone-verified account to send a WhatsApp cart link.' }, { status: 401 });
+    }
+    if (!normalizedVerifiedPhone || normalizedVerifiedPhone !== requestedPhone) {
+      return NextResponse.json({ success: false, error: 'Use the phone number verified on your account.' }, { status: 403 });
+    }
+
     const phoneLimit = await rateLimit(`cart-recovery:phone:${phone}`, 1, 60 * 60 * 1000);
     if (!phoneLimit.allowed) {
       return NextResponse.json({ success: false, error: 'A WhatsApp cart link was already requested for this number recently.' }, { status: 429 });
     }
 
-    const cartUrl = 'https://tecbunny.com/cart';
+    const cartItems = Buffer.from(JSON.stringify(parsed.data.items)).toString('base64url');
+    const cartUrl = `https://tecbunny.com/cart?recover=${encodeURIComponent(cartItems)}`;
     const name = parsed.data.name.replace(/[\r\n]/g, ' ').trim() || 'there';
     const message = `Hi ${name}, you asked us to send this WhatsApp link to your TecBunny cart: ${cartUrl}\n\nItems are not reserved, and prices and availability are confirmed at checkout. No payment is due through this message.`;
 

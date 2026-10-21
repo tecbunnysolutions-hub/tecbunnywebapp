@@ -16,6 +16,8 @@ import { useToast } from "@tecbunny/ui";
 import { trpc } from "@/components/providers/TRPCProvider";
 
 import { CartItemCard } from "./CartItemCard";
+import { getApi } from '@/lib/api';
+import { isPubliclyVisibleProduct } from '@tecbunny/core/product-visibility';
 
 const formatCurrency = (value: number) =>
   value.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -32,11 +34,14 @@ export default function CartPage() {
     refreshPricing,
     isSessionExpired,
     resetGuestSession,
+    addToCart,
+    isHydrated,
   } = useCart();
   const [couponCode, setCouponCode] = React.useState("");
   const [applyingCode, setApplyingCode] = React.useState(false);
   const { toast } = useToast();
   const utils = trpc.useUtils();
+  const recoveryProcessed = React.useRef(false);
 
   const fetchCouponByCode = React.useCallback(async (code: string): Promise<Coupon | null> => {
     try {
@@ -51,6 +56,52 @@ export default function CartPage() {
   React.useEffect(() => {
     void refreshPricing();
   }, [refreshPricing]);
+
+  React.useEffect(() => {
+    if (!isHydrated || recoveryProcessed.current || typeof window === 'undefined') return;
+    const encodedItems = new URLSearchParams(window.location.search).get('recover');
+    if (!encodedItems) return;
+    recoveryProcessed.current = true;
+    window.history.replaceState(null, '', window.location.pathname);
+
+    void (async () => {
+      try {
+        const base64 = encodedItems.replace(/-/g, '+').replace(/_/g, '/');
+        const paddedBase64 = base64 + '='.repeat((4 - base64.length % 4) % 4);
+        const bytes = Uint8Array.from(atob(paddedBase64), character => character.charCodeAt(0));
+        const items = JSON.parse(new TextDecoder().decode(bytes)) as Array<{ id: string; quantity: number }>;
+        if (!Array.isArray(items) || items.length < 1 || items.length > 25 ||
+            items.some(item => !item || typeof item.id !== 'string' || !Number.isInteger(item.quantity) || item.quantity < 1 || item.quantity > 100)) {
+          throw new Error('Invalid cart recovery link');
+        }
+
+        const products = await Promise.all(items.map(item => getApi().products.get(item.id)));
+        let restored = 0;
+        products.forEach((product, index) => {
+          if (!product || !isPubliclyVisibleProduct(product)) return;
+          addToCart(product, items[index].quantity);
+          restored += 1;
+        });
+
+        toast({
+          title: restored ? 'Cart items restored' : 'Cart could not be restored',
+          description: restored
+            ? 'Current catalog items were added. Prices and availability will be checked at checkout.'
+            : 'These items are no longer available. Browse the catalog to add current products.',
+          variant: restored ? 'default' : 'destructive',
+        });
+      } catch (error) {
+        logger.warn('cart.recovery_link_invalid_or_unavailable', {
+          error: error instanceof Error ? error.message : String(error),
+        });
+        toast({
+          title: 'Cart could not be restored',
+          description: 'This recovery link is invalid or expired. Please add current products from the catalog.',
+          variant: 'destructive',
+        });
+      }
+    })();
+  }, [addToCart, isHydrated, toast]);
 
   const handleApplyCouponCode = async () => {
     const code = couponCode.trim();
@@ -162,7 +213,7 @@ export default function CartPage() {
               <Alert variant="destructive" className="border-red-500/40 bg-red-500/10 text-red-200">
                 <AlertTitle>Session expired</AlertTitle>
                 <AlertDescription className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                  Guest carts reset after a period of inactivity. Reset the cart to start again.
+                  Guest carts reset after 1 hour of inactivity. Reset the cart to start again.
                   <Button size="sm" onClick={resetGuestSession} variant="outline" className="border-red-400/40 text-red-100">
                     Reset Cart
                   </Button>
@@ -295,7 +346,7 @@ export default function CartPage() {
                     )}
 
                     <Button className="w-full py-3 bg-primary hover:bg-primary/95 text-white font-bold font-tech rounded-lg transition-colors shadow-sm font-medium" asChild>
-                      <Link href="/checkout">REQUEST FORMAL QUOTE</Link>
+                      <Link href="/checkout">PROCEED TO CHECKOUT</Link>
                     </Button>
                     <p className="text-xs text-center text-muted-foreground mt-3">
                       <Lock className="inline-block h-3.5 w-3.5 mr-1" /> Secure checkout
