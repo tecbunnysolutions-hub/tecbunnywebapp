@@ -37,6 +37,34 @@ ENV DOCKER_BUILD=true
 # page data. The runner stage omits this, so production still validates at boot.
 ENV TECBUNNY_VALIDATE_ENV=off
 
+# Dummy runtime values so module-scope code that assumes a fully-configured
+# production environment doesn't crash while Next.js imports routes to collect
+# page data (e.g. TypeError: .endsWith on undefined). Builder stage only —
+# the runner image never sees these; real values come from .env.local.
+ENV SUPABASE_ANON_KEY=build-dummy \
+    SUPABASE_SERVICE_ROLE_KEY=build-dummy \
+    SMTP_HOST=localhost \
+    SMTP_PORT=1025 \
+    SMTP_SECURE=false \
+    SMTP_USER=build-dummy \
+    SMTP_PASS=build-dummy \
+    SMTP_FROM=build@localhost \
+    INFOBIP_API_KEY=build-dummy \
+    INFOBIP_WHATSAPP_FROM=0000000000 \
+    INFOBIP_BASE_URL=https://localhost \
+    WHATSAPP_WEBHOOK_VERIFY_TOKEN=build-dummy \
+    OTP_SECRET_PEPPER=build-dummy \
+    SUPERADMIN_SESSION_SECRET=build-dummy \
+    SUPERADMIN_USER_ID=build-dummy \
+    TOTP_SECRET_ENCRYPTION_KEY=build-dummy \
+    SESSION_SECRET=build-dummy \
+    PAYU_MERCHANT_KEY=build-dummy \
+    PAYU_MERCHANT_SALT=build-dummy \
+    PAYU_CLIENT_ID=build-dummy \
+    PAYU_CLIENT_SECRET=build-dummy \
+    PAYU_ENVIRONMENT=test \
+    TURNSTILE_SECRET_KEY=build-dummy
+
 # Allows tuning Node heap on small build hosts (e.g. a 1 GB VPS with swap):
 #   docker build --build-arg NODE_OPTIONS=--max-old-space-size=1792 ...
 ARG NODE_OPTIONS
