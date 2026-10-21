@@ -6,7 +6,7 @@ export const networkingService: ServiceContent = {
   name: 'Networking',
   title: 'Networking in Goa | TecBunny',
   metaDescription:
-    'Wi-Fi, cabling, router and network setup for homes and small businesses in North Goa and the Sawantwadi area.',
+    'Wi-Fi, cabling, router and network setup for homes and small businesses in North Goa and the Sawantwadi area of Sindhudurg district, Maharashtra.',
   promise:
     'We find out why the connection feels weak before recommending Wi-Fi, cabling or network equipment for your space.',
   audience: [

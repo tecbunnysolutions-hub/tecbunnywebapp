@@ -20,7 +20,7 @@ export default function AboutPage() {
             </span>
           </h1>
           <p className="mx-auto mt-4 max-w-2xl text-base text-muted-foreground sm:text-lg">
-            We design and maintain enterprise-grade security, network, and smart-building infrastructure for businesses across Goa — from commercial sites to premium residences.
+            We plan and support CCTV, networking, access control and websites for homes and small businesses in North Goa and the Sawantwadi area of Sindhudurg district, Maharashtra.
           </p>
         </div>
       </section>
@@ -208,7 +208,7 @@ export default function AboutPage() {
           <div className="bento-card p-6">
             <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">📍</div>
             <h4 className="text-lg font-semibold tech-heading">Headquarters</h4>
-            <p className="mt-2 text-sm text-muted-foreground">Parse, Pernem<br />North Goa, 403512</p>
+            <p className="mt-2 text-sm text-muted-foreground">Parcem, Pernem<br />North Goa, 403512</p>
           </div>
           <div className="bento-card p-6">
             <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">🤝</div>

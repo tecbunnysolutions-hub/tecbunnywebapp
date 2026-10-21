@@ -6,7 +6,7 @@ export function GET() {
     name: 'TecBunny Solutions',
     short_name: 'TecBunny',
     description:
-      'CCTV installation, IT services, AMC support, home automation, and custom tech setups across Goa and Maharashtra.',
+      'CCTV installation, IT support, networking, access control, and website services in North Goa and the Sawantwadi area of Sindhudurg district, Maharashtra.',
     start_url: '/',
     scope: '/',
     display: 'standalone',

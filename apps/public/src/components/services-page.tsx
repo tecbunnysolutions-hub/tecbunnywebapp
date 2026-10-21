@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import type { ComponentType } from 'react';
 
 import Link from 'next/link';
+import { SiteVisitButton } from '@/components/services/SiteVisitButton';
 import { useRouter } from 'next/navigation';
 
 import type { LucideProps } from 'lucide-react';
@@ -347,15 +348,14 @@ export default function ServicesPage({ services, hasServiceLoadError = false }: 
                 Site Visit Booking Fee — ₹499
               </h2>
               <p className="text-sm text-zinc-300 font-light max-w-2xl leading-relaxed">
-                Covers on-site engineering assessment across Goa. The ₹499 booking fee is <strong className="text-white font-medium">fully adjusted against the final service or installation invoice</strong> upon project execution.
+                Covers on-site engineering assessment in North Goa and the Sawantwadi area of Sindhudurg district, Maharashtra. The ₹499 booking fee is <strong className="text-white font-medium">fully adjusted against the final service or installation invoice</strong> upon project execution.
               </p>
             </div>
-            <Link
-              href="/contact?subject=support&service=site_visit&intent=service_request&source=services_site_visit_banner"
-              className="whitespace-nowrap px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-lg shadow-blue-500/20"
-            >
-              Book Site Visit
-            </Link>
+            <SiteVisitButton
+              service="Site visit"
+              label="Book Site Visit"
+              className="inline-flex items-center justify-center gap-2 whitespace-nowrap px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-lg shadow-blue-500/20"
+            />
           </div>
         </section>
 

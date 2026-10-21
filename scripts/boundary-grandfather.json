@@ -1,0 +1,725 @@
+{
+  "description": "Existing violations of the apps/api-only data and env boundary. The check passes with this list and fails on any entry not listed. Remove entries as features migrate; never add entries.",
+  "violations": [
+    {
+      "file": "apps/mgmt/src/app/auth/login/page.tsx",
+      "rule": "db-import",
+      "detail": "@tecbunny/database",
+      "reason": "apps/mgmt imports @tecbunny/database directly; move the data access behind an /api/v1 endpoint and api-client method."
+    },
+    {
+      "file": "apps/mgmt/src/app/auth/login/page.tsx",
+      "rule": "env-read",
+      "detail": "NEXT_PUBLIC_TURNSTILE_SITE_KEY",
+      "reason": "apps/mgmt reads NEXT_PUBLIC_TURNSTILE_SITE_KEY; serve it via GET /api/v1/config/public, move the logic into apps/api, or delete it."
+    },
+    {
+      "file": "apps/mgmt/src/app/mgmt/accounts/accounts-dashboard.tsx",
+      "rule": "db-import",
+      "detail": "@tecbunny/database",
+      "reason": "apps/mgmt imports @tecbunny/database directly; move the data access behind an /api/v1 endpoint and api-client method."
+    },
+    {
+      "file": "apps/mgmt/src/app/mgmt/admin/calendar/page.tsx",
+      "rule": "db-import",
+      "detail": "@tecbunny/database",
+      "reason": "apps/mgmt imports @tecbunny/database directly; move the data access behind an /api/v1 endpoint and api-client method."
+    },
+    {
+      "file": "apps/mgmt/src/app/mgmt/admin/tasks/page.tsx",
+      "rule": "db-import",
+      "detail": "@tecbunny/database",
+      "reason": "apps/mgmt imports @tecbunny/database directly; move the data access behind an /api/v1 endpoint and api-client method."
+    },
+    {
+      "file": "apps/mgmt/src/app/mgmt/crm/crm-dashboard.tsx",
+      "rule": "db-import",
+      "detail": "@tecbunny/database",
+      "reason": "apps/mgmt imports @tecbunny/database directly; move the data access behind an /api/v1 endpoint and api-client method."
+    },
+    {
+      "file": "apps/mgmt/src/app/mgmt/manager/reports/page.tsx",
+      "rule": "db-import",
+      "detail": "@tecbunny/database",
+      "reason": "apps/mgmt imports @tecbunny/database directly; move the data access behind an /api/v1 endpoint and api-client method."
+    },
+    {
+      "file": "apps/mgmt/src/app/mgmt/sales-external/commission-report/page.tsx",
+      "rule": "db-import",
+      "detail": "@tecbunny/database",
+      "reason": "apps/mgmt imports @tecbunny/database directly; move the data access behind an /api/v1 endpoint and api-client method."
+    },
+    {
+      "file": "apps/mgmt/src/app/mgmt/sales/agent-order/page.tsx",
+      "rule": "db-import",
+      "detail": "@tecbunny/database",
+      "reason": "apps/mgmt imports @tecbunny/database directly; move the data access behind an /api/v1 endpoint and api-client method."
+    },
+    {
+      "file": "apps/mgmt/src/app/mgmt/sales/expenses/sales-expenses.tsx",
+      "rule": "db-import",
+      "detail": "@tecbunny/database",
+      "reason": "apps/mgmt imports @tecbunny/database directly; move the data access behind an /api/v1 endpoint and api-client method."
+    },
+    {
+      "file": "apps/mgmt/src/app/mgmt/sales/lead-center/page.tsx",
+      "rule": "db-import",
+      "detail": "@tecbunny/database",
+      "reason": "apps/mgmt imports @tecbunny/database directly; move the data access behind an /api/v1 endpoint and api-client method."
+    },
+    {
+      "file": "apps/mgmt/src/app/mgmt/sales/products/edit/[id]/sales-product-edit.tsx",
+      "rule": "db-import",
+      "detail": "@tecbunny/database",
+      "reason": "apps/mgmt imports @tecbunny/database directly; move the data access behind an /api/v1 endpoint and api-client method."
+    },
+    {
+      "file": "apps/mgmt/src/app/mgmt/sales/products/new/sales-product-new.tsx",
+      "rule": "db-import",
+      "detail": "@tecbunny/database",
+      "reason": "apps/mgmt imports @tecbunny/database directly; move the data access behind an /api/v1 endpoint and api-client method."
+    },
+    {
+      "file": "apps/mgmt/src/app/mgmt/sales/products/sales-products.tsx",
+      "rule": "db-import",
+      "detail": "@tecbunny/database",
+      "reason": "apps/mgmt imports @tecbunny/database directly; move the data access behind an /api/v1 endpoint and api-client method."
+    },
+    {
+      "file": "apps/mgmt/src/app/mgmt/sales/purchase-entry/sales-purchase-entry.tsx",
+      "rule": "db-import",
+      "detail": "@tecbunny/database",
+      "reason": "apps/mgmt imports @tecbunny/database directly; move the data access behind an /api/v1 endpoint and api-client method."
+    },
+    {
+      "file": "apps/mgmt/src/app/mgmt/sales/quick-billing/sales-quick-billing.tsx",
+      "rule": "db-import",
+      "detail": "@tecbunny/database",
+      "reason": "apps/mgmt imports @tecbunny/database directly; move the data access behind an /api/v1 endpoint and api-client method."
+    },
+    {
+      "file": "apps/mgmt/src/app/mgmt/sales/sales-dashboard.tsx",
+      "rule": "db-import",
+      "detail": "@tecbunny/database",
+      "reason": "apps/mgmt imports @tecbunny/database directly; move the data access behind an /api/v1 endpoint and api-client method."
+    },
+    {
+      "file": "apps/mgmt/src/components/customised-setups/CustomSetupFlow.tsx",
+      "rule": "db-import",
+      "detail": "@tecbunny/database",
+      "reason": "apps/mgmt imports @tecbunny/database directly; move the data access behind an /api/v1 endpoint and api-client method."
+    },
+    {
+      "file": "apps/mgmt/src/components/mgmt/RoleWorkspaceDashboard.tsx",
+      "rule": "db-import",
+      "detail": "@tecbunny/database",
+      "reason": "apps/mgmt imports @tecbunny/database directly; move the data access behind an /api/v1 endpoint and api-client method."
+    },
+    {
+      "file": "apps/mgmt/src/components/mgmt/ServiceTicketWorkspace.tsx",
+      "rule": "db-import",
+      "detail": "@tecbunny/database",
+      "reason": "apps/mgmt imports @tecbunny/database directly; move the data access behind an /api/v1 endpoint and api-client method."
+    },
+    {
+      "file": "apps/mgmt/src/components/sales/SerialNumberDialog.tsx",
+      "rule": "db-import",
+      "detail": "@tecbunny/database",
+      "reason": "apps/mgmt imports @tecbunny/database directly; move the data access behind an /api/v1 endpoint and api-client method."
+    },
+    {
+      "file": "apps/mgmt/src/instrumentation.ts",
+      "rule": "env-read",
+      "detail": "NEXT_PUBLIC_SENTRY_DSN",
+      "reason": "apps/mgmt reads NEXT_PUBLIC_SENTRY_DSN; serve it via GET /api/v1/config/public, move the logic into apps/api, or delete it."
+    },
+    {
+      "file": "apps/mgmt/src/instrumentation.ts",
+      "rule": "env-read",
+      "detail": "NEXT_RUNTIME",
+      "reason": "apps/mgmt reads NEXT_RUNTIME; serve it via GET /api/v1/config/public, move the logic into apps/api, or delete it."
+    },
+    {
+      "file": "apps/public/next.config.mjs",
+      "rule": "env-read",
+      "detail": "NEXT_IMAGE_ALLOWED_HOSTS",
+      "reason": "apps/public reads NEXT_IMAGE_ALLOWED_HOSTS; serve it via GET /api/v1/config/public, move the logic into apps/api, or delete it."
+    },
+    {
+      "file": "apps/public/next.config.mjs",
+      "rule": "env-read",
+      "detail": "NEXT_PUBLIC_SITE_URL",
+      "reason": "apps/public reads NEXT_PUBLIC_SITE_URL; serve it via GET /api/v1/config/public, move the logic into apps/api, or delete it."
+    },
+    {
+      "file": "apps/public/next.config.mjs",
+      "rule": "env-read",
+      "detail": "NEXT_PUBLIC_SUPABASE_URL",
+      "reason": "apps/public reads NEXT_PUBLIC_SUPABASE_URL; serve it via GET /api/v1/config/public, move the logic into apps/api, or delete it."
+    },
+    {
+      "file": "apps/public/next.config.mjs",
+      "rule": "env-read",
+      "detail": "UV_THREADPOOL_SIZE",
+      "reason": "apps/public reads UV_THREADPOOL_SIZE; serve it via GET /api/v1/config/public, move the logic into apps/api, or delete it."
+    },
+    {
+      "file": "apps/public/src/app/api/revalidate/route.ts",
+      "rule": "env-read",
+      "detail": "REVALIDATE_SECRET",
+      "reason": "apps/public reads REVALIDATE_SECRET; serve it via GET /api/v1/config/public, move the logic into apps/api, or delete it."
+    },
+    {
+      "file": "apps/public/src/app/auth/signin/page.tsx",
+      "rule": "db-import",
+      "detail": "@tecbunny/database",
+      "reason": "apps/public imports @tecbunny/database directly; move the data access behind an /api/v1 endpoint and api-client method."
+    },
+    {
+      "file": "apps/public/src/app/auth/signin/page.tsx",
+      "rule": "env-read",
+      "detail": "NEXT_PUBLIC_TURNSTILE_SITE_KEY",
+      "reason": "apps/public reads NEXT_PUBLIC_TURNSTILE_SITE_KEY; serve it via GET /api/v1/config/public, move the logic into apps/api, or delete it."
+    },
+    {
+      "file": "apps/public/src/app/auth/signup/page.tsx",
+      "rule": "env-read",
+      "detail": "NEXT_PUBLIC_TURNSTILE_SITE_KEY",
+      "reason": "apps/public reads NEXT_PUBLIC_TURNSTILE_SITE_KEY; serve it via GET /api/v1/config/public, move the logic into apps/api, or delete it."
+    },
+    {
+      "file": "apps/public/src/app/auth/verify-email/EmailVerificationContent.tsx",
+      "rule": "db-import",
+      "detail": "@tecbunny/database",
+      "reason": "apps/public imports @tecbunny/database directly; move the data access behind an /api/v1 endpoint and api-client method."
+    },
+    {
+      "file": "apps/public/src/app/auth/verify-otp/OTPVerificationContent.tsx",
+      "rule": "db-import",
+      "detail": "@tecbunny/database",
+      "reason": "apps/public imports @tecbunny/database directly; move the data access behind an /api/v1 endpoint and api-client method."
+    },
+    {
+      "file": "apps/public/src/app/layout.tsx",
+      "rule": "env-read",
+      "detail": "GOOGLE_SITE_VERIFICATION",
+      "reason": "apps/public reads GOOGLE_SITE_VERIFICATION; serve it via GET /api/v1/config/public, move the logic into apps/api, or delete it."
+    },
+    {
+      "file": "apps/public/src/app/layout.tsx",
+      "rule": "env-read",
+      "detail": "NEXT_PUBLIC_GA_ID",
+      "reason": "apps/public reads NEXT_PUBLIC_GA_ID; serve it via GET /api/v1/config/public, move the logic into apps/api, or delete it."
+    },
+    {
+      "file": "apps/public/src/app/layout.tsx",
+      "rule": "env-read",
+      "detail": "NEXT_PUBLIC_GOOGLE_BUSINESS_URL",
+      "reason": "apps/public reads NEXT_PUBLIC_GOOGLE_BUSINESS_URL; serve it via GET /api/v1/config/public, move the logic into apps/api, or delete it."
+    },
+    {
+      "file": "apps/public/src/app/layout.tsx",
+      "rule": "env-read",
+      "detail": "NEXT_PUBLIC_META_PIXEL_ID",
+      "reason": "apps/public reads NEXT_PUBLIC_META_PIXEL_ID; serve it via GET /api/v1/config/public, move the logic into apps/api, or delete it."
+    },
+    {
+      "file": "apps/public/src/app/layout.tsx",
+      "rule": "env-read",
+      "detail": "NEXT_PUBLIC_X_HANDLE",
+      "reason": "apps/public reads NEXT_PUBLIC_X_HANDLE; serve it via GET /api/v1/config/public, move the logic into apps/api, or delete it."
+    },
+    {
+      "file": "apps/public/src/app/layout.tsx",
+      "rule": "env-read",
+      "detail": "NEXT_PUBLIC_X_URL",
+      "reason": "apps/public reads NEXT_PUBLIC_X_URL; serve it via GET /api/v1/config/public, move the logic into apps/api, or delete it."
+    },
+    {
+      "file": "apps/public/src/app/payment/[method]/[orderId]/PaymentClientPage.tsx",
+      "rule": "db-import",
+      "detail": "@tecbunny/database",
+      "reason": "apps/public imports @tecbunny/database directly; move the data access behind an /api/v1 endpoint and api-client method."
+    },
+    {
+      "file": "apps/public/src/app/payment/payu/[orderId]/PayuClientPage.tsx",
+      "rule": "db-import",
+      "detail": "@tecbunny/database",
+      "reason": "apps/public imports @tecbunny/database directly; move the data access behind an /api/v1 endpoint and api-client method."
+    },
+    {
+      "file": "apps/public/src/app/payment/upi/[orderId]/UPIClientPage.tsx",
+      "rule": "db-import",
+      "detail": "@tecbunny/database",
+      "reason": "apps/public imports @tecbunny/database directly; move the data access behind an /api/v1 endpoint and api-client method."
+    },
+    {
+      "file": "apps/public/src/app/payment/upi/[orderId]/UPIClientPage.tsx",
+      "rule": "env-read",
+      "detail": "NEXT_PUBLIC_UPI_ID",
+      "reason": "apps/public reads NEXT_PUBLIC_UPI_ID; serve it via GET /api/v1/config/public, move the logic into apps/api, or delete it."
+    },
+    {
+      "file": "apps/public/src/components/layout/Footer.tsx",
+      "rule": "env-read",
+      "detail": "NEXT_PUBLIC_X_URL",
+      "reason": "apps/public reads NEXT_PUBLIC_X_URL; serve it via GET /api/v1/config/public, move the logic into apps/api, or delete it."
+    },
+    {
+      "file": "apps/public/src/components/layout/Header.tsx",
+      "rule": "env-read",
+      "detail": "NEXT_PUBLIC_SUPPORT_PHONE",
+      "reason": "apps/public reads NEXT_PUBLIC_SUPPORT_PHONE; serve it via GET /api/v1/config/public, move the logic into apps/api, or delete it."
+    },
+    {
+      "file": "apps/public/src/content/homepage-proof.ts",
+      "rule": "env-read",
+      "detail": "NEXT_PUBLIC_GOOGLE_REVIEWS_URL",
+      "reason": "apps/public reads NEXT_PUBLIC_GOOGLE_REVIEWS_URL; serve it via GET /api/v1/config/public, move the logic into apps/api, or delete it."
+    },
+    {
+      "file": "apps/public/src/instrumentation.ts",
+      "rule": "env-read",
+      "detail": "NEXT_PUBLIC_SENTRY_DSN",
+      "reason": "apps/public reads NEXT_PUBLIC_SENTRY_DSN; serve it via GET /api/v1/config/public, move the logic into apps/api, or delete it."
+    },
+    {
+      "file": "apps/public/src/instrumentation.ts",
+      "rule": "env-read",
+      "detail": "NEXT_RUNTIME",
+      "reason": "apps/public reads NEXT_RUNTIME; serve it via GET /api/v1/config/public, move the logic into apps/api, or delete it."
+    },
+    {
+      "file": "apps/superadmin/next.config.ts",
+      "rule": "env-read",
+      "detail": "NEXT_PUBLIC_MGMT_URL",
+      "reason": "apps/superadmin reads NEXT_PUBLIC_MGMT_URL; serve it via GET /api/v1/config/public, move the logic into apps/api, or delete it."
+    },
+    {
+      "file": "apps/superadmin/src/app/api/health/route.ts",
+      "rule": "db-import",
+      "detail": "@tecbunny/database/admin",
+      "reason": "apps/superadmin imports @tecbunny/database/admin directly; move the data access behind an /api/v1 endpoint and api-client method."
+    },
+    {
+      "file": "apps/superadmin/src/app/api/health/route.ts",
+      "rule": "env-read",
+      "detail": "<dynamic>",
+      "reason": "apps/superadmin reads <dynamic>; serve it via GET /api/v1/config/public, move the logic into apps/api, or delete it."
+    },
+    {
+      "file": "apps/superadmin/src/app/api/users/route.ts",
+      "rule": "env-read",
+      "detail": "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+      "reason": "apps/superadmin reads NEXT_PUBLIC_SUPABASE_ANON_KEY; serve it via GET /api/v1/config/public, move the logic into apps/api, or delete it."
+    },
+    {
+      "file": "apps/superadmin/src/app/api/users/route.ts",
+      "rule": "env-read",
+      "detail": "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY",
+      "reason": "apps/superadmin reads NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY; serve it via GET /api/v1/config/public, move the logic into apps/api, or delete it."
+    },
+    {
+      "file": "apps/superadmin/src/app/api/users/route.ts",
+      "rule": "env-read",
+      "detail": "NEXT_PUBLIC_SUPABASE_URL",
+      "reason": "apps/superadmin reads NEXT_PUBLIC_SUPABASE_URL; serve it via GET /api/v1/config/public, move the logic into apps/api, or delete it."
+    },
+    {
+      "file": "apps/superadmin/src/app/api/users/route.ts",
+      "rule": "env-read",
+      "detail": "SUPABASE_SECRET_KEY",
+      "reason": "apps/superadmin reads SUPABASE_SECRET_KEY; serve it via GET /api/v1/config/public, move the logic into apps/api, or delete it."
+    },
+    {
+      "file": "apps/superadmin/src/app/api/users/route.ts",
+      "rule": "env-read",
+      "detail": "SUPABASE_SERVICE_ROLE_KEY",
+      "reason": "apps/superadmin reads SUPABASE_SERVICE_ROLE_KEY; serve it via GET /api/v1/config/public, move the logic into apps/api, or delete it."
+    },
+    {
+      "file": "apps/superadmin/src/app/superadmin/login/page.tsx",
+      "rule": "env-read",
+      "detail": "NEXT_PUBLIC_TURNSTILE_SITE_KEY",
+      "reason": "apps/superadmin reads NEXT_PUBLIC_TURNSTILE_SITE_KEY; serve it via GET /api/v1/config/public, move the logic into apps/api, or delete it."
+    },
+    {
+      "file": "apps/superadmin/src/app/superadmin/mfa-setup/page.tsx",
+      "rule": "env-read",
+      "detail": "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+      "reason": "apps/superadmin reads NEXT_PUBLIC_SUPABASE_ANON_KEY; serve it via GET /api/v1/config/public, move the logic into apps/api, or delete it."
+    },
+    {
+      "file": "apps/superadmin/src/app/superadmin/mfa-setup/page.tsx",
+      "rule": "env-read",
+      "detail": "NEXT_PUBLIC_SUPABASE_URL",
+      "reason": "apps/superadmin reads NEXT_PUBLIC_SUPABASE_URL; serve it via GET /api/v1/config/public, move the logic into apps/api, or delete it."
+    },
+    {
+      "file": "apps/superadmin/src/app/superadmin/mgmt/inquiries/[id]/assignment/route.ts",
+      "rule": "env-read",
+      "detail": "SALES_TEAM_EMAIL",
+      "reason": "apps/superadmin reads SALES_TEAM_EMAIL; serve it via GET /api/v1/config/public, move the logic into apps/api, or delete it."
+    },
+    {
+      "file": "apps/superadmin/src/app/superadmin/mgmt/inquiries/[id]/assignment/route.ts",
+      "rule": "env-read",
+      "detail": "SUPPORT_TEAM_EMAIL",
+      "reason": "apps/superadmin reads SUPPORT_TEAM_EMAIL; serve it via GET /api/v1/config/public, move the logic into apps/api, or delete it."
+    },
+    {
+      "file": "apps/superadmin/src/app/superadmin/mgmt/login/route.ts",
+      "rule": "env-read",
+      "detail": "NEXT_PUBLIC_TURNSTILE_SITE_KEY",
+      "reason": "apps/superadmin reads NEXT_PUBLIC_TURNSTILE_SITE_KEY; serve it via GET /api/v1/config/public, move the logic into apps/api, or delete it."
+    },
+    {
+      "file": "apps/superadmin/src/instrumentation.ts",
+      "rule": "env-read",
+      "detail": "NEXT_PUBLIC_SENTRY_DSN",
+      "reason": "apps/superadmin reads NEXT_PUBLIC_SENTRY_DSN; serve it via GET /api/v1/config/public, move the logic into apps/api, or delete it."
+    },
+    {
+      "file": "apps/superadmin/src/instrumentation.ts",
+      "rule": "env-read",
+      "detail": "NEXT_RUNTIME",
+      "reason": "apps/superadmin reads NEXT_RUNTIME; serve it via GET /api/v1/config/public, move the logic into apps/api, or delete it."
+    },
+    {
+      "file": "apps/superadmin/src/lib/superadmin-api.ts",
+      "rule": "db-import",
+      "detail": "@tecbunny/database/server",
+      "reason": "apps/superadmin imports @tecbunny/database/server directly; move the data access behind an /api/v1 endpoint and api-client method."
+    },
+    {
+      "file": "apps/waba/src/agents/AssignmentOrchestrator.ts",
+      "rule": "env-read",
+      "detail": "ESCALATION_FALLBACK_EMAIL",
+      "reason": "apps/waba reads ESCALATION_FALLBACK_EMAIL; serve it via GET /api/v1/config/public, move the logic into apps/api, or delete it."
+    },
+    {
+      "file": "apps/waba/src/agents/AssignmentOrchestrator.ts",
+      "rule": "env-read",
+      "detail": "ESCALATION_FALLBACK_PHONE",
+      "reason": "apps/waba reads ESCALATION_FALLBACK_PHONE; serve it via GET /api/v1/config/public, move the logic into apps/api, or delete it."
+    },
+    {
+      "file": "apps/waba/src/agents/AssignmentOrchestrator.ts",
+      "rule": "env-read",
+      "detail": "SMTP_FROM",
+      "reason": "apps/waba reads SMTP_FROM; serve it via GET /api/v1/config/public, move the logic into apps/api, or delete it."
+    },
+    {
+      "file": "apps/waba/src/agents/AssignmentOrchestrator.ts",
+      "rule": "env-read",
+      "detail": "SMTP_HOST",
+      "reason": "apps/waba reads SMTP_HOST; serve it via GET /api/v1/config/public, move the logic into apps/api, or delete it."
+    },
+    {
+      "file": "apps/waba/src/agents/AssignmentOrchestrator.ts",
+      "rule": "env-read",
+      "detail": "SMTP_PASS",
+      "reason": "apps/waba reads SMTP_PASS; serve it via GET /api/v1/config/public, move the logic into apps/api, or delete it."
+    },
+    {
+      "file": "apps/waba/src/agents/AssignmentOrchestrator.ts",
+      "rule": "env-read",
+      "detail": "SMTP_PORT",
+      "reason": "apps/waba reads SMTP_PORT; serve it via GET /api/v1/config/public, move the logic into apps/api, or delete it."
+    },
+    {
+      "file": "apps/waba/src/agents/AssignmentOrchestrator.ts",
+      "rule": "env-read",
+      "detail": "SMTP_SECURE",
+      "reason": "apps/waba reads SMTP_SECURE; serve it via GET /api/v1/config/public, move the logic into apps/api, or delete it."
+    },
+    {
+      "file": "apps/waba/src/agents/AssignmentOrchestrator.ts",
+      "rule": "env-read",
+      "detail": "SMTP_USER",
+      "reason": "apps/waba reads SMTP_USER; serve it via GET /api/v1/config/public, move the logic into apps/api, or delete it."
+    },
+    {
+      "file": "apps/waba/src/agents/InboundTriageAgent.ts",
+      "rule": "db-import",
+      "detail": "@tecbunny/core/db/client#getAdminDb",
+      "reason": "apps/waba imports @tecbunny/core/db/client#getAdminDb directly; move the data access behind an /api/v1 endpoint and api-client method."
+    },
+    {
+      "file": "apps/waba/src/agents/InboundTriageAgent.ts",
+      "rule": "env-read",
+      "detail": "GEMINI_API_KEY",
+      "reason": "apps/waba reads GEMINI_API_KEY; serve it via GET /api/v1/config/public, move the logic into apps/api, or delete it."
+    },
+    {
+      "file": "apps/waba/src/app/api/auth/me/route.ts",
+      "rule": "db-import",
+      "detail": "@tecbunny/database/server",
+      "reason": "apps/waba imports @tecbunny/database/server directly; move the data access behind an /api/v1 endpoint and api-client method."
+    },
+    {
+      "file": "apps/waba/src/app/api/copilot/command/route.ts",
+      "rule": "env-read",
+      "detail": "GEMINI_API_KEY",
+      "reason": "apps/waba reads GEMINI_API_KEY; serve it via GET /api/v1/config/public, move the logic into apps/api, or delete it."
+    },
+    {
+      "file": "apps/waba/src/app/api/messages/route.ts",
+      "rule": "env-read",
+      "detail": "GEMINI_API_KEY",
+      "reason": "apps/waba reads GEMINI_API_KEY; serve it via GET /api/v1/config/public, move the logic into apps/api, or delete it."
+    },
+    {
+      "file": "apps/waba/src/app/api/waba/dead-letter-queue/[id]/replay/route.ts",
+      "rule": "db-import",
+      "detail": "@tecbunny/core/server#createSupabaseServiceClient",
+      "reason": "apps/waba imports @tecbunny/core/server#createSupabaseServiceClient directly; move the data access behind an /api/v1 endpoint and api-client method."
+    },
+    {
+      "file": "apps/waba/src/app/api/waba/dead-letter-queue/route.ts",
+      "rule": "db-import",
+      "detail": "@tecbunny/core/server#createSupabaseServiceClient",
+      "reason": "apps/waba imports @tecbunny/core/server#createSupabaseServiceClient directly; move the data access behind an /api/v1 endpoint and api-client method."
+    },
+    {
+      "file": "apps/waba/src/app/api/webhook/whatsapp/route.ts",
+      "rule": "env-read",
+      "detail": "INFOBIP_HMAC_SECRET",
+      "reason": "apps/waba reads INFOBIP_HMAC_SECRET; serve it via GET /api/v1/config/public, move the logic into apps/api, or delete it."
+    },
+    {
+      "file": "apps/waba/src/app/api/webhook/whatsapp/route.ts",
+      "rule": "env-read",
+      "detail": "META_APP_SECRET",
+      "reason": "apps/waba reads META_APP_SECRET; serve it via GET /api/v1/config/public, move the logic into apps/api, or delete it."
+    },
+    {
+      "file": "apps/waba/src/app/api/webhook/whatsapp/route.ts",
+      "rule": "env-read",
+      "detail": "META_WHATSAPP_AUTO_REPLY",
+      "reason": "apps/waba reads META_WHATSAPP_AUTO_REPLY; serve it via GET /api/v1/config/public, move the logic into apps/api, or delete it."
+    },
+    {
+      "file": "apps/waba/src/app/api/webhook/whatsapp/route.ts",
+      "rule": "env-read",
+      "detail": "META_WHATSAPP_AUTO_REPLY_TEXT",
+      "reason": "apps/waba reads META_WHATSAPP_AUTO_REPLY_TEXT; serve it via GET /api/v1/config/public, move the logic into apps/api, or delete it."
+    },
+    {
+      "file": "apps/waba/src/app/login/page.tsx",
+      "rule": "db-import",
+      "detail": "@tecbunny/database",
+      "reason": "apps/waba imports @tecbunny/database directly; move the data access behind an /api/v1 endpoint and api-client method."
+    },
+    {
+      "file": "apps/waba/src/app/page.tsx",
+      "rule": "db-import",
+      "detail": "@tecbunny/database",
+      "reason": "apps/waba imports @tecbunny/database directly; move the data access behind an /api/v1 endpoint and api-client method."
+    },
+    {
+      "file": "apps/waba/src/lib/prisma.ts",
+      "rule": "db-import",
+      "detail": "@tecbunny/db",
+      "reason": "apps/waba imports @tecbunny/db directly; move the data access behind an /api/v1 endpoint and api-client method."
+    },
+    {
+      "file": "apps/waba/src/lib/prisma.ts",
+      "rule": "env-read",
+      "detail": "DATABASE_URL",
+      "reason": "apps/waba reads DATABASE_URL; serve it via GET /api/v1/config/public, move the logic into apps/api, or delete it."
+    },
+    {
+      "file": "apps/waba/src/lib/supabase.ts",
+      "rule": "db-import",
+      "detail": "@supabase/supabase-js",
+      "reason": "apps/waba imports @supabase/supabase-js directly; move the data access behind an /api/v1 endpoint and api-client method."
+    },
+    {
+      "file": "apps/waba/src/lib/supabase.ts",
+      "rule": "env-read",
+      "detail": "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+      "reason": "apps/waba reads NEXT_PUBLIC_SUPABASE_ANON_KEY; serve it via GET /api/v1/config/public, move the logic into apps/api, or delete it."
+    },
+    {
+      "file": "apps/waba/src/lib/supabase.ts",
+      "rule": "env-read",
+      "detail": "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY",
+      "reason": "apps/waba reads NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY; serve it via GET /api/v1/config/public, move the logic into apps/api, or delete it."
+    },
+    {
+      "file": "apps/waba/src/lib/supabase.ts",
+      "rule": "env-read",
+      "detail": "NEXT_PUBLIC_SUPABASE_URL",
+      "reason": "apps/waba reads NEXT_PUBLIC_SUPABASE_URL; serve it via GET /api/v1/config/public, move the logic into apps/api, or delete it."
+    },
+    {
+      "file": "apps/waba/src/lib/supabase.ts",
+      "rule": "env-read",
+      "detail": "SUPABASE_SECRET_KEY",
+      "reason": "apps/waba reads SUPABASE_SECRET_KEY; serve it via GET /api/v1/config/public, move the logic into apps/api, or delete it."
+    },
+    {
+      "file": "apps/waba/src/lib/supabase.ts",
+      "rule": "env-read",
+      "detail": "SUPABASE_SERVICE_ROLE_KEY",
+      "reason": "apps/waba reads SUPABASE_SERVICE_ROLE_KEY; serve it via GET /api/v1/config/public, move the logic into apps/api, or delete it."
+    },
+    {
+      "file": "apps/waba/src/services/infobipService.ts",
+      "rule": "env-read",
+      "detail": "META_ACCESS_TOKEN",
+      "reason": "apps/waba reads META_ACCESS_TOKEN; serve it via GET /api/v1/config/public, move the logic into apps/api, or delete it."
+    },
+    {
+      "file": "apps/waba/src/services/infobipService.ts",
+      "rule": "env-read",
+      "detail": "META_GRAPH_API_VERSION",
+      "reason": "apps/waba reads META_GRAPH_API_VERSION; serve it via GET /api/v1/config/public, move the logic into apps/api, or delete it."
+    },
+    {
+      "file": "apps/waba/src/services/infobipService.ts",
+      "rule": "env-read",
+      "detail": "META_PHONE_NUMBER_ID",
+      "reason": "apps/waba reads META_PHONE_NUMBER_ID; serve it via GET /api/v1/config/public, move the logic into apps/api, or delete it."
+    },
+    {
+      "file": "apps/waba/src/services/infobipService.ts",
+      "rule": "env-read",
+      "detail": "META_WABA_ID",
+      "reason": "apps/waba reads META_WABA_ID; serve it via GET /api/v1/config/public, move the logic into apps/api, or delete it."
+    },
+    {
+      "file": "apps/waba/src/services/infobipService.ts",
+      "rule": "env-read",
+      "detail": "META_WHATSAPP_TEMPLATE_LANGUAGE",
+      "reason": "apps/waba reads META_WHATSAPP_TEMPLATE_LANGUAGE; serve it via GET /api/v1/config/public, move the logic into apps/api, or delete it."
+    },
+    {
+      "file": "apps/waba/src/services/infobipService.ts",
+      "rule": "env-read",
+      "detail": "META_WHATSAPP_TEMPLATE_NAME",
+      "reason": "apps/waba reads META_WHATSAPP_TEMPLATE_NAME; serve it via GET /api/v1/config/public, move the logic into apps/api, or delete it."
+    },
+    {
+      "file": "apps/waba/src/services/leadService.ts",
+      "rule": "db-import",
+      "detail": "@tecbunny/core/server#createSupabaseServiceClient",
+      "reason": "apps/waba imports @tecbunny/core/server#createSupabaseServiceClient directly; move the data access behind an /api/v1 endpoint and api-client method."
+    },
+    {
+      "file": "apps/waba/src/workers/nurture.worker.ts",
+      "rule": "db-import",
+      "detail": "@tecbunny/database/admin",
+      "reason": "apps/waba imports @tecbunny/database/admin directly; move the data access behind an /api/v1 endpoint and api-client method."
+    },
+    {
+      "file": "apps/webmail/src/app/api/health/route.ts",
+      "rule": "env-read",
+      "detail": "<dynamic>",
+      "reason": "apps/webmail reads <dynamic>; serve it via GET /api/v1/config/public, move the logic into apps/api, or delete it."
+    },
+    {
+      "file": "apps/webmail/src/app/api/health/route.ts",
+      "rule": "env-read",
+      "detail": "NEXT_PUBLIC_WEBMAIL_ENABLE_MOCK",
+      "reason": "apps/webmail reads NEXT_PUBLIC_WEBMAIL_ENABLE_MOCK; serve it via GET /api/v1/config/public, move the logic into apps/api, or delete it."
+    },
+    {
+      "file": "apps/webmail/src/app/inbox/page.tsx",
+      "rule": "env-read",
+      "detail": "NEXT_PUBLIC_WEBMAIL_ENABLE_MOCK",
+      "reason": "apps/webmail reads NEXT_PUBLIC_WEBMAIL_ENABLE_MOCK; serve it via GET /api/v1/config/public, move the logic into apps/api, or delete it."
+    },
+    {
+      "file": "packages/admin-ui/src/components/admin-coupons.tsx",
+      "rule": "db-import",
+      "detail": "@tecbunny/database",
+      "reason": "packages/admin-ui imports @tecbunny/database directly; move the data access behind an /api/v1 endpoint and api-client method."
+    },
+    {
+      "file": "packages/admin-ui/src/components/admin-homepage-settings.tsx",
+      "rule": "db-import",
+      "detail": "@tecbunny/database",
+      "reason": "packages/admin-ui imports @tecbunny/database directly; move the data access behind an /api/v1 endpoint and api-client method."
+    },
+    {
+      "file": "packages/admin-ui/src/components/admin-services.tsx",
+      "rule": "db-import",
+      "detail": "@tecbunny/database",
+      "reason": "packages/admin-ui imports @tecbunny/database directly; move the data access behind an /api/v1 endpoint and api-client method."
+    },
+    {
+      "file": "packages/admin-ui/src/components/admin-settings.tsx",
+      "rule": "db-import",
+      "detail": "@tecbunny/database",
+      "reason": "packages/admin-ui imports @tecbunny/database directly; move the data access behind an /api/v1 endpoint and api-client method."
+    },
+    {
+      "file": "packages/admin-ui/src/components/AutoOffersManagement.tsx",
+      "rule": "db-import",
+      "detail": "@tecbunny/database",
+      "reason": "packages/admin-ui imports @tecbunny/database directly; move the data access behind an /api/v1 endpoint and api-client method."
+    },
+    {
+      "file": "packages/admin-ui/src/components/CreateDiscountDialog.tsx",
+      "rule": "db-import",
+      "detail": "@tecbunny/database",
+      "reason": "packages/admin-ui imports @tecbunny/database directly; move the data access behind an /api/v1 endpoint and api-client method."
+    },
+    {
+      "file": "packages/admin-ui/src/components/CreateOfferDialog.tsx",
+      "rule": "db-import",
+      "detail": "@tecbunny/database",
+      "reason": "packages/admin-ui imports @tecbunny/database directly; move the data access behind an /api/v1 endpoint and api-client method."
+    },
+    {
+      "file": "packages/admin-ui/src/components/CreateServiceDialog.tsx",
+      "rule": "db-import",
+      "detail": "@tecbunny/database",
+      "reason": "packages/admin-ui imports @tecbunny/database directly; move the data access behind an /api/v1 endpoint and api-client method."
+    },
+    {
+      "file": "packages/admin-ui/src/components/DiscountOffersDialog.tsx",
+      "rule": "db-import",
+      "detail": "@tecbunny/database",
+      "reason": "packages/admin-ui imports @tecbunny/database directly; move the data access behind an /api/v1 endpoint and api-client method."
+    },
+    {
+      "file": "packages/admin-ui/src/components/EditServiceDialog.tsx",
+      "rule": "db-import",
+      "detail": "@tecbunny/database",
+      "reason": "packages/admin-ui imports @tecbunny/database directly; move the data access behind an /api/v1 endpoint and api-client method."
+    },
+    {
+      "file": "packages/admin-ui/src/components/SocialMediaManager.tsx",
+      "rule": "db-import",
+      "detail": "@tecbunny/database",
+      "reason": "packages/admin-ui imports @tecbunny/database directly; move the data access behind an /api/v1 endpoint and api-client method."
+    },
+    {
+      "file": "packages/admin-ui/src/shared/OrderDataTable.tsx",
+      "rule": "db-import",
+      "detail": "@tecbunny/database",
+      "reason": "packages/admin-ui imports @tecbunny/database directly; move the data access behind an /api/v1 endpoint and api-client method."
+    },
+    {
+      "file": "packages/ui/src/app/InstantIdentity.tsx",
+      "rule": "db-import",
+      "detail": "@tecbunny/database",
+      "reason": "packages/ui imports @tecbunny/database directly; move the data access behind an /api/v1 endpoint and api-client method."
+    },
+    {
+      "file": "packages/ui/src/app/LoginDialog.tsx",
+      "rule": "db-import",
+      "detail": "@tecbunny/database",
+      "reason": "packages/ui imports @tecbunny/database directly; move the data access behind an /api/v1 endpoint and api-client method."
+    },
+    {
+      "file": "packages/ui/src/app/LoginDialog.tsx",
+      "rule": "env-read",
+      "detail": "NEXT_PUBLIC_TURNSTILE_SITE_KEY",
+      "reason": "packages/ui reads NEXT_PUBLIC_TURNSTILE_SITE_KEY; serve it via GET /api/v1/config/public, move the logic into apps/api, or delete it."
+    }
+  ]
+}

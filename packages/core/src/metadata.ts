@@ -19,36 +19,29 @@ function isUsableMetadataImage(value: string): boolean {
 
 export async function cleanMetadataTitle(value: string | null | undefined): Promise<string> {
   const settings = await getAppSettings();
-  const fallback = settings.fallbackTitle || 'TecBunny | CCTV, IT Services & Home Automation in Goa';
-  
-  let title = stripHtmlToPlainText(value).trim();
+  const fallback = settings.fallbackTitle || 'CCTV and IT support for homes and small businesses in North Goa | TecBunny';
+  const normalizeTitle = (input: string | null | undefined) =>
+    stripHtmlToPlainText(input).trim().replace(/(?:\s*\|\s*TecBunny(?:\s+Solutions)?)+$/i, '').trim();
+
+  let title = normalizeTitle(value);
   if (!title || title.toLowerCase() === 'null' || title.toLowerCase() === 'undefined') {
-    title = fallback;
+    title = normalizeTitle(fallback);
   }
-  if (title.length < 50 && !title.toLowerCase().includes('tecbunny')) {
-    const suffix = ' | TecBunny Solutions';
-    if (title.length + suffix.length <= 60) {
-      title = title + suffix;
-    } else {
-      const shortSuffix = ' | TecBunny';
-      if (title.length + shortSuffix.length <= 60) {
-        title = title + shortSuffix;
-      }
-    }
-  }
-  if (title.length > 60) {
-    const cut = title.slice(0, 60);
+  const suffix = ' | TecBunny';
+  const maxTitleLength = /\btecbunny\b/i.test(title) ? 60 : 60 - suffix.length;
+  if (title.length > maxTitleLength) {
+    const cut = title.slice(0, maxTitleLength);
     const lastBreak = cut.lastIndexOf(' ');
-    title = lastBreak > 40 ? cut.slice(0, lastBreak) : cut;
+    title = lastBreak > Math.floor(maxTitleLength * 0.7) ? cut.slice(0, lastBreak) : cut;
   }
-  return title;
+  return /\btecbunny\b/i.test(title) ? title : `${title}${suffix}`;
 }
 
 export async function cleanMetadataDescription(
   value: string | null | undefined
 ): Promise<string> {
   const settings = await getAppSettings();
-  const fallback = settings.defaultDescription || 'TecBunny Solutions provides premium CCTV installation, IT services, AMC support, and home automation in Goa and Maharashtra. Secure your space now.';
+  const fallback = settings.defaultDescription || 'CCTV, IT support, networking and website services for homes and small businesses in North Goa and the Sawantwadi area.';
 
   let description = stripHtmlToPlainText(value).trim();
   if (!description || description.toLowerCase() === 'null' || description.toLowerCase() === 'undefined') {

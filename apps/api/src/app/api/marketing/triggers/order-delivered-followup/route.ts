@@ -1,14 +1,19 @@
 import { createSupabaseServiceClient } from "@tecbunny/core/server";
+import { randomBytes } from 'node:crypto';
 import { NextRequest, NextResponse } from 'next/server';
 
 import { WhatsAppService } from "@tecbunny/core/whatsapp-service";
 import { logger } from "@tecbunny/core";
+import { requireInternalAccess } from '../../../../../lib/internal-auth';
 
 /**
  * Triggered after order delivery to send localized upsell offers
  * Based on inventory metadata (surveillance/hardware)
  */
 export async function POST(request: NextRequest) {
+  const accessDenied = requireInternalAccess(request);
+  if (accessDenied) return accessDenied;
+
   try {
     const { orderId } = await request.json();
 
@@ -39,20 +44,34 @@ export async function POST(request: NextRequest) {
     }
 
     // 2. Evaluate inventory for upsell potential (Surveillance/Hardware)
-    const items = order.items as any[];
-    const hasHardware = items.some(item => 
-      item.name.toLowerCase().includes('camera') || 
-      item.name.toLowerCase().includes('dvr') || 
-      item.name.toLowerCase().includes('nvr') ||
-      item.name.toLowerCase().includes('cctv')
-    );
+    const items = Array.isArray(order.items) ? order.items : [];
+    const hasHardware = items.some((item: unknown) => {
+      if (!item || typeof item !== 'object' || !('name' in item) || typeof item.name !== 'string') return false;
+      const name = item.name.toLowerCase();
+      return name.includes('camera') || name.includes('dvr') || name.includes('nvr') || name.includes('cctv');
+    });
 
     if (!hasHardware) {
       return NextResponse.json({ success: true, message: 'No upsell conditions met' });
     }
 
-    // 3. Generate dynamic coupon (Storage/Power enhancement)
-    const couponCode = `UPGRADE-${Math.random().toString(36).substring(7).toUpperCase()}`;
+    // 3. Generate one dynamic coupon per delivered order.
+    const upsellMarker = `Post-delivery surveillance accessory upgrade [order:${orderId}]`;
+    const { data: existingCoupon, error: existingCouponError } = await supabase
+      .from('coupons')
+      .select('id')
+      .eq('description', upsellMarker)
+      .maybeSingle();
+
+    if (existingCouponError) {
+      logger.error('upsell_trigger_coupon_lookup_failed', { orderId, error: existingCouponError });
+      return NextResponse.json({ error: 'Could not check existing upsell' }, { status: 500 });
+    }
+    if (existingCoupon) {
+      return NextResponse.json({ success: true, triggered: false, message: 'Upsell already sent for this order' });
+    }
+
+    const couponCode = `UPGRADE-${randomBytes(5).toString('hex').toUpperCase()}`;
     const expiryDate = new Date();
     expiryDate.setHours(expiryDate.getHours() + 48);
 
@@ -64,13 +83,14 @@ export async function POST(request: NextRequest) {
         value: 15,
         status: 'active',
         expiry_date: expiryDate.toISOString(),
-        description: 'Post-delivery surveillance accessory upgrade',
+        description: upsellMarker,
         per_user_limit: 1,
         usage_limit: 1
       });
 
     if (couponError) {
       logger.error('upsell_trigger_coupon_generation_failed', { orderId, error: couponError });
+      return NextResponse.json({ error: 'Could not create upsell coupon' }, { status: 500 });
     }
 
     // 4. Dispatch Meta WhatsApp Payload

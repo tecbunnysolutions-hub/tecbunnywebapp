@@ -1,4 +1,5 @@
 import type { NextRequest } from 'next/server';
+import { resolveApiBaseUrl } from '@tecbunny/api-client';
 
 export type EnterpriseProxyEvent = {
   waitUntil(promise: Promise<unknown>): void;
@@ -18,7 +19,7 @@ const SENSITIVE_PATH_PATTERN = /auth|admin|superadmin|roles?|permissions?|settin
 function analyticsIngestUrl(request: NextRequest, sameOriginIngest?: boolean) {
   if (sameOriginIngest) return new URL('/api/analytics/track', request.url).toString();
 
-  const configured = process.env.NEXT_PUBLIC_ENTERPRISE_ANALYTICS_URL || process.env.NEXT_PUBLIC_API_URL;
+  const configured = process.env.NEXT_PUBLIC_ENTERPRISE_ANALYTICS_URL || resolveApiBaseUrl();
   if (!configured) return null;
 
   return new URL('/api/analytics/track', configured).toString();

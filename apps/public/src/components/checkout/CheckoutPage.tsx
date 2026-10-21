@@ -403,12 +403,22 @@ export default function CheckoutPage() {
         id: item.id || `quote-item-${idx}`,
         name: item.description || item.name,
         price: item.sale,
+        mrp: item.mrp ?? item.sale,
         quantity: item.quantity || 1,
         gstRate: item.gstRate || 18,
       }));
     }
     return cartItems;
   }, [quote, cartItems]);
+
+  const displayMrpSavings = React.useMemo(() => {
+    return displayItems.reduce((total: number, item: any) => {
+      const salePrice = typeof item.price === 'number' ? item.price : Number(item.price) || 0;
+      const mrp = typeof item.mrp === 'number' ? item.mrp : Number(item.mrp) || salePrice;
+      const quantity = typeof item.quantity === 'number' ? item.quantity : Number(item.quantity) || 1;
+      return total + Math.max(0, mrp - salePrice) * quantity;
+    }, 0);
+  }, [displayItems]);
 
   const displaySubtotal = React.useMemo(() => {
     if (quote) {
@@ -1026,14 +1036,34 @@ export default function CheckoutPage() {
 
                   <div className="space-y-4 my-2 max-h-60 overflow-y-auto pr-2 divide-y divide-border">
                     {displayItems.map((item: any) => (
-                      <div key={item.id} className="flex justify-between text-xs py-3 first:pt-0">
-                        <span className="text-muted-foreground font-medium">{item.name} × {item.quantity}</span>
-                        <span className="text-foreground font-semibold tabular-nums ml-4">₹{(item.price * item.quantity).toFixed(2)}</span>
+                      <div key={item.id} className="flex justify-between gap-3 text-xs py-3 first:pt-0">
+                        <div className="min-w-0">
+                          <span className="text-muted-foreground font-medium">{item.name} × {item.quantity}</span>
+                          <div className="mt-1 flex flex-wrap gap-x-2 gap-y-0.5 text-[10px]">
+                            <span className="text-muted-foreground line-through">
+                              MRP ₹{((item.mrp ?? item.price) * item.quantity).toFixed(2)}
+                            </span>
+                            <span className="text-foreground">
+                              Sale ₹{(item.price * item.quantity).toFixed(2)}
+                            </span>
+                            {typeof item.mrp === 'number' && item.mrp > item.price && (
+                              <span className="font-medium text-emerald-600 dark:text-emerald-400">
+                                Save ₹{((item.mrp - item.price) * item.quantity).toFixed(2)}
+                              </span>
+                            )}
+                          </div>
+                        </div>
                       </div>
                     ))}
                   </div>
 
                   <div className="border-t border-border pt-5 space-y-3">
+                    {displayMrpSavings > 0 && (
+                      <div className="flex justify-between text-xs text-emerald-600 dark:text-emerald-400">
+                        <span>Savings vs MRP</span>
+                        <span className="tabular-nums">-₹{displayMrpSavings.toFixed(2)}</span>
+                      </div>
+                    )}
                     <div className="flex justify-between text-xs">
                       <span className="text-muted-foreground">Subtotal</span>
                       <span className="text-foreground font-medium tabular-nums">₹{displaySubtotal.toFixed(2)}</span>

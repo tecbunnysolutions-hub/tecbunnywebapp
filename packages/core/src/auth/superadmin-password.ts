@@ -2,9 +2,8 @@
  * PBKDF2-SHA256 password hashing for the superadmin credential.
  *
  * Operators generate a hash once (offline) and store it as
- * SUPERADMIN_PASSWORD_HASH in the environment. The plain-text
- * SUPERADMIN_PASSWORD is still accepted in development but is
- * rejected at login time in production.
+ * SUPERADMIN_PASSWORD_HASH in the environment. A plain-text password is
+ * not supported anywhere; see superadmin-login.ts for the shared login check.
  *
  * Hash format: pbkdf2v1:{iterations}:{base64url-salt}:{base64url-derived-key}
  *

@@ -13,7 +13,7 @@ export const revalidate = 60; // Revalidate at most once every minute
 export async function generateMetadata(): Promise<Metadata> {
   return createPageMetadata({
     title: 'Frequently Asked Questions | TecBunny Solutions Goa',
-    description: 'Answers about CCTV installation, IT services, AMC support, pricing, warranties, and service coverage across Goa and Maharashtra.',
+    description: 'Answers about CCTV installation, IT services, AMC support, pricing, warranties, and service coverage in North Goa and the Sawantwadi area of Sindhudurg district, Maharashtra.',
     keywords: ['TecBunny FAQ', 'CCTV questions Goa', 'IT services FAQ', 'AMC support questions'],
     path: '/info/faqs',
   });
@@ -79,7 +79,7 @@ export default async function FaqsPage() {
 }
 
 const FALLBACK_FAQS: FaqRow[] = [
-  { id: 'wifi-goa', category: 'Services', question: 'Do you set up Wi-Fi networks in Goa?', answer: 'Yes. We set up Wi-Fi, LAN networks, and cable runs for offices, hotels, and commercial properties across Goa. Every network job comes with a 90-day free support period and a full handover report.', display_order: 1 },
+  { id: 'wifi-goa', category: 'Services', question: 'Do you set up Wi-Fi networks in Goa?', answer: 'Yes. We set up Wi-Fi, LAN networks, and cable runs for homes and small businesses in North Goa and the Sawantwadi area of Sindhudurg district, Maharashtra. Support terms and handover details are confirmed in your written quote.', display_order: 1 },
   { id: 'amc-cover', category: 'Services', question: 'What does an AMC plan cover?', answer: 'An AMC (Annual Maintenance Contract) covers your CCTV or IT kit for the full year. It can include planned check-ups, remote support, on-site fixes, and audit reports, with response targets defined in your plan.', display_order: 2 },
   { id: 'outside-goa', category: 'Coverage', question: 'Do you serve areas outside Goa?', answer: 'Yes. We serve clients in Mumbai, Pune, and Nashik for large IT and CCTV jobs, and we run remote IT support for firms across India. For jobs outside Goa, call us to get a fast quote.', display_order: 3 },
   { id: 'cctv-cost', category: 'Pricing', question: 'How much does CCTV installation cost in Goa?', answer: 'It depends on camera count, cable runs, recorder capacity, and site conditions. We quote per site after a survey, with an itemized estimate so you can see hardware, cabling, and labour separately. Request a free assessment to get an exact figure.', display_order: 4 },

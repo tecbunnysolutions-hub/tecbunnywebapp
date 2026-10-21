@@ -3,6 +3,7 @@ import crypto from 'crypto';
 import { getWabaWebhookQueue } from '@tecbunny/core/queue';
 import { logger } from '@tecbunny/core/logger';
 import { sendWhatsAppTextMessage } from '@tecbunny/core/whatsapp-cloud-api';
+import { getWebhookVerifyToken } from '@tecbunny/core/whatsapp-webhook-token';
 
 /**
  * Persistent debug trail (Hobby plan hides Vercel runtime logs). Writes each
@@ -103,8 +104,7 @@ export async function GET(req: Request) {
   const mode = url.searchParams.get('hub.mode');
   const token = url.searchParams.get('hub.verify_token');
   const challenge = url.searchParams.get('hub.challenge');
-  // WHATSAPP_VERIFY_TOKEN is accepted as an alias for the Meta dashboard token.
-  const verifyToken = process.env.META_WHATSAPP_VERIFY_TOKEN || process.env.WHATSAPP_VERIFY_TOKEN;
+  const verifyToken = getWebhookVerifyToken();
 
   if (mode === 'subscribe' && token && challenge && verifyToken && token === verifyToken) {
     return new Response(challenge, { status: 200, headers: { 'Content-Type': 'text/plain' } });
@@ -131,7 +131,7 @@ export async function POST(req: Request) {
     const token = url.searchParams.get('token');
     const infobipSecret = process.env.INFOBIP_HMAC_SECRET;
     const metaAppSecret = process.env.META_APP_SECRET;
-    const webhookVerifyToken = process.env.WHATSAPP_WEBHOOK_VERIFY_TOKEN || infobipSecret;
+    const webhookVerifyToken = getWebhookVerifyToken() || infobipSecret;
 
     // Bug #2 fix / Revert: Infobip uses the URL token for this integration.
     // If the token is present in the URL, prioritize validating it.

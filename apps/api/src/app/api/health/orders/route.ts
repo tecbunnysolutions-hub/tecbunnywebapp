@@ -1,7 +1,8 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { requireSupabaseServiceEnv } from "@tecbunny/database";
 import { logger } from '@tecbunny/core/logger';
+import { requireInternalAccess } from '../../../../lib/internal-auth';
 
 let supabaseAdmin: any = null;
 
@@ -14,7 +15,10 @@ function getSupabaseAdmin(): any {
   return supabaseAdmin;
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const accessDenied = requireInternalAccess(request);
+  if (accessDenied) return accessDenied;
+
   try {
     logger.info('health_orders.audit.requested');
     const supabase = getSupabaseAdmin();

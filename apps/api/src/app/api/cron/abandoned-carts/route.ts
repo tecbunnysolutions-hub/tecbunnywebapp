@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAdminDb, logger, improvedEmailService } from '@tecbunny/core/server';
 import { verifyCronSecret } from '@tecbunny/core/cron-guard';
 
+import { getInternalToken } from '../../../../lib/internal-auth';
+import { recordNotificationSkip } from '../../../../lib/notification-guard';
+
 export async function GET(request: NextRequest) {
   const deny = verifyCronSecret(request);
   if (deny) return deny;
@@ -37,33 +40,29 @@ export async function GET(request: NextRequest) {
         const { data: { user }, error: userError } = await db.auth.admin.getUserById(cart.user_id);
         
         if (userError || !user || !user.email) {
-          logger.warn(`Could not find user for cart ${cart.id}`, { error: userError });
+          recordNotificationSkip('abandoned_cart.cron_user_not_found', { cartId: cart.id });
           continue;
         }
 
-        // Send email
         const cartItems = cart.items || [];
-        if (cartItems.length > 0) {
-          // Use fetch to trigger the existing /api/email/abandoned-cart or send directly
-          // We will send directly using improvedEmailService since we are backend
-          await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || 'https://www.tecbunny.com'}/api/email/abandoned-cart`, {
+        if (cartItems.length === 0) {
+          recordNotificationSkip('abandoned_cart.cron_empty_cart', { cartId: cart.id });
+        } else {
+          // The route reads the phone, name and cart from the database; only the user id is sent.
+          const internalToken = getInternalToken();
+          if (!internalToken) {
+            recordNotificationSkip('abandoned_cart.cron_no_internal_token', { cartId: cart.id });
+            continue;
+          }
+          const response = await fetch(new URL('/api/email/abandoned-cart', request.url), {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              to: user.email,
-              userName: user.user_metadata?.full_name || 'there',
-              cartItems: cartItems.map((item: any) => ({
-                id: item.id,
-                name: item.name,
-                price: item.price,
-                quantity: item.quantity,
-                image: item.image,
-              })),
-              restoreCartUrl: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://www.tecbunny.com'}/cart`,
-              minutesSinceAbandoned: 120,
-              phone: user.phone || user.user_metadata?.phone
-            }),
+            headers: { 'Content-Type': 'application/json', 'x-internal-api-token': internalToken },
+            body: JSON.stringify({ userId: cart.user_id }),
           });
+          if (!response.ok) {
+            recordNotificationSkip('abandoned_cart.cron_route_rejected', { cartId: cart.id, status: response.status });
+            continue;
+          }
         }
 
         // Mark as abandoned so we don't send again

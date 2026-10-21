@@ -1,9 +1,13 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { logger } from '@tecbunny/core/logger';
 
 import { otpManager } from "@tecbunny/core/otp-manager";
+import { requireInternalAccess } from '../../../../lib/internal-auth';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const accessDenied = requireInternalAccess(request);
+  if (accessDenied) return accessDenied;
+
   try {
     logger.info('health_otp.audit.requested');
     const testEmail = 'healthcheck@example.com';

@@ -52,26 +52,26 @@ export const metadata: Metadata = {
   manifest: '/manifest.webmanifest',
   metadataBase: new URL('https://www.tecbunny.com'),
   title: {
-    default: 'CCTV, IT Support & Web Development in Goa | TecBunny',
+    default: 'CCTV & IT Support for Goa Homes | TecBunny',
     template: '%s',
   },
   description:
-    'CCTV, IT support, RFID locks, networking and website development for homes and small businesses in North Goa and the Sawantwadi area.',
+    'CCTV, computer repair, RFID locks, networking and website development for homes and small businesses in North Goa and the Sawantwadi area of Sindhudurg district, Maharashtra.',
   applicationName: 'TecBunny Solutions',
   authors: [{ name: 'TecBunny Solutions' }],
   publisher: 'TecBunny Solutions',
   alternates: {
-    canonical: 'https://www.tecbunny.com',
+    canonical: 'https://www.tecbunny.com/',
     types: {
       'application/rss+xml': 'https://www.tecbunny.com/feed.xml',
     },
   },
   openGraph: {
     type: 'website',
-    url: 'https://www.tecbunny.com',
-    title: 'CCTV, IT Support & Web Development in Goa | TecBunny',
+    url: 'https://www.tecbunny.com/',
+    title: 'CCTV & IT Support for Goa Homes | TecBunny',
     description:
-      'CCTV, IT support, RFID locks, networking and website development for homes and small businesses in North Goa and the Sawantwadi area.',
+      'CCTV, computer repair, RFID locks, networking and website development for homes and small businesses in North Goa and the Sawantwadi area of Sindhudurg district, Maharashtra.',
     siteName: 'TecBunny Solutions',
     images: [
       {
@@ -84,9 +84,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'CCTV, IT Support & Web Development in Goa | TecBunny',
+    title: 'CCTV & IT Support for Goa Homes | TecBunny',
     description:
-      'CCTV, IT support, RFID locks, networking and website development for homes and small businesses in North Goa and the Sawantwadi area.',
+      'CCTV, computer repair, RFID locks, networking and website development for homes and small businesses in North Goa and the Sawantwadi area of Sindhudurg district, Maharashtra.',
     images: [BRAND_LOGO_URL],
     site: xHandle,
     creator: xHandle,
@@ -173,7 +173,7 @@ const buildStructuredData = (prices: readonly StartingPrice[]) => {
       url: 'https://www.tecbunny.com',
       name: 'TecBunny Solutions',
       description:
-        'CCTV, IT support, RFID locks, networking and website development for homes and small businesses in North Goa and the Sawantwadi area.',
+        'CCTV, IT support, RFID locks, networking and website development for homes and small businesses in North Goa and the Sawantwadi area of Sindhudurg district, Maharashtra.',
       publisher: { '@id': 'https://www.tecbunny.com/#organization' },
       author: { '@id': 'https://www.tecbunny.com/#organization' },
       potentialAction: {

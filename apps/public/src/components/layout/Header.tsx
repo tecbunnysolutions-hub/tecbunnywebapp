@@ -58,8 +58,6 @@ const navLinks: NavLink[] = [
   { name: 'RFID Locks', href: '/services/rfid-locks' },
   { name: 'Networking', href: '/services/networking' },
   { name: 'Website Development', href: '/webdev' },
-  { name: 'Shop', href: '/products' },
-  { name: 'Contact', href: '/contact' },
 ];
 
 export function Header() {
@@ -188,7 +186,7 @@ export function Header() {
             </span>
           </div>
           <div className="flex items-center justify-between sm:justify-end gap-6 w-full sm:w-auto">
-            <span className="hidden md:inline font-light text-zinc-400">Headquarters: Nhayginwada, Parse, Pernem, Goa</span>
+            <span className="hidden md:inline font-light text-zinc-400">Headquarters: Nhayginwada, Parcem, Pernem, Goa</span>
             <a 
               href="https://wa.me/919604136010" 
               target="_blank" 
@@ -205,13 +203,13 @@ export function Header() {
       <div className="absolute top-0 left-0 h-px w-full bg-gradient-to-r from-transparent via-blue-500/20 to-transparent"></div>
 
       <div className={`mx-auto max-w-screen-2xl px-6 sm:px-8 transition-all duration-300 ${isScrolled ? 'py-2' : 'py-3.5'}`}>
-        <div className="flex items-center justify-between gap-6">
-          <Link href="/" className="relative z-20 flex min-w-0 flex-shrink items-center gap-3 group sm:w-[280px]">
+        <div className="flex items-center gap-[clamp(0.5rem,1.2vw,1.5rem)]">
+          <Link href="/" className="flex shrink-0 items-center gap-3 group">
             <span className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl border border-slate-200/50 bg-white p-1.5 transition-transform group-hover:scale-105 shadow-[0_0_15px_rgba(59,130,246,0.05)]">
               <Logo width={28} height={28} alt="TecBunny CCTV & IT Services Goa" className="sm:hidden text-white" />
               <Logo width={36} height={36} alt="TecBunny CCTV & IT Services Goa" className="hidden sm:block text-white" />
             </span>
-            <div className="flex min-w-0 flex-col">
+            <div className="flex shrink-0 flex-col">
               <span className="font-sans text-base font-black leading-none tracking-tight text-white sm:text-xl uppercase">
                 TECBUNNY
               </span>
@@ -221,8 +219,7 @@ export function Header() {
             </div>
           </Link>
 
-          <div className="hidden min-w-0 flex-1 items-center justify-center xl:flex">
-            <nav className="flex items-center gap-1 rounded-full border border-zinc-800 bg-zinc-900 p-1">
+          <nav className="hidden min-w-0 flex-[1_1_0%] items-center justify-center whitespace-nowrap gap-[clamp(0.125rem,0.35vw,0.5rem)] rounded-full border border-zinc-800 bg-zinc-900 p-1 min-[1280px]:flex">
               {navLinks.map((item) => (
                 item.children ? (
                   <div
@@ -231,7 +228,7 @@ export function Header() {
                   >
                     <Link
                       href={item.href}
-                      className={`relative rounded-full px-2.5 py-1.5 text-xs font-bold whitespace-nowrap transition-all duration-200 inline-flex items-center gap-1 lg:px-3 lg:text-xs xl:px-4.5 xl:text-sm
+                      className={`relative inline-flex items-center gap-1 whitespace-nowrap rounded-full px-1.5 py-1.5 text-[11px] font-bold transition-all duration-200 2xl:px-2.5 2xl:text-xs
                         ${isActive(item.href)
                           ? 'bg-blue-500/20 text-white border border-blue-500/30 shadow-sm'
                           : 'text-zinc-300 hover:text-white hover:bg-zinc-800/50'
@@ -261,7 +258,7 @@ export function Header() {
                   <Link
                     key={item.name}
                     href={item.href}
-                    className={`relative inline-flex items-center whitespace-nowrap rounded-full px-2.5 py-1.5 text-xs font-bold transition-all duration-200 lg:px-3 lg:text-xs xl:px-4.5 xl:text-sm
+                    className={`relative inline-flex items-center whitespace-nowrap rounded-full px-1.5 py-1.5 text-[11px] font-bold transition-all duration-200 2xl:px-2.5 2xl:text-xs
                       ${isActive(item.href)
                         ? 'bg-blue-500/20 text-white border border-blue-500/30 shadow-sm'
                         : 'text-zinc-300 hover:text-white hover:bg-zinc-800/50'
@@ -275,30 +272,34 @@ export function Header() {
                   </Link>
                 )
               ))}
-            </nav>
-          </div>
+          </nav>
 
-          <div className="relative z-20 hidden flex-shrink-0 items-center gap-2 xl:flex xl:gap-3.5">
+          <div className="hidden shrink-0 items-center gap-1.5 min-[1280px]:flex">
             {loading ? (
               <div className="flex items-center gap-2 animate-pulse">
                 <div className="h-8 w-14 rounded-full bg-zinc-100" />
                 <div className="h-8 w-14 rounded-full bg-zinc-150" />
               </div>
             ) : !user ? (
-              <div className="flex items-center gap-2">
-                <Link
-                  href="/auth/signin"
-                  className="rounded-full border border-zinc-700 bg-zinc-900 px-5 py-2.5 text-sm font-bold text-zinc-300 transition-all duration-200 hover:border-zinc-500 hover:bg-zinc-800 hover:text-white shadow-sm"
-                >
-                  Login
-                </Link>
-                <Link
-                  href="/auth/signup"
-                  className="rounded-full border border-blue-500 bg-blue-600 px-5 py-2.5 text-sm font-bold text-white transition-all duration-200 hover:bg-blue-500 shadow-sm"
-                >
-                  Signup
-                </Link>
-              </div>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    type="button"
+                    className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-zinc-700 bg-zinc-900 text-zinc-300 transition-all duration-200 hover:border-zinc-500 hover:text-white shadow-sm"
+                    aria-label="Login or sign up"
+                  >
+                    <User size={20} />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="border-zinc-200 bg-white text-zinc-700">
+                  <DropdownMenuItem asChild className="cursor-pointer focus:bg-zinc-50 focus:text-zinc-900 text-xs py-1.5">
+                    <Link href="/auth/signin">Login</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild className="cursor-pointer focus:bg-zinc-50 focus:text-zinc-900 text-xs py-1.5">
+                    <Link href="/auth/signup">Signup</Link>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             ) : (
               <>
                 <DropdownMenu>
@@ -360,12 +361,12 @@ export function Header() {
                   </button>
                 </CartSheet>
 
-                <div className="flex items-center gap-2">
+                <div className="flex shrink-0 items-center gap-2">
                   <Link
                     href="/contact?intent=service_request&source=header"
                     onMouseMove={applyMagneticEffect}
                     onMouseLeave={resetMagneticEffect}
-                    className="group relative rounded-xl border border-blue-500 bg-blue-600 px-5 py-2.5 text-sm font-bold text-white transition-all duration-200 hover:bg-blue-500 shadow-lg shadow-blue-500/20"
+                    className="group relative whitespace-nowrap rounded-xl border border-blue-500 bg-blue-600 px-3 py-2 text-xs font-bold text-white transition-all duration-200 hover:bg-blue-500 shadow-lg shadow-blue-500/20 2xl:px-5 2xl:py-2.5 2xl:text-sm"
                   >
                     Contact Us
                   </Link>
@@ -373,7 +374,7 @@ export function Header() {
                     href="/products"
                     onMouseMove={applyMagneticEffect}
                     onMouseLeave={resetMagneticEffect}
-                    className="group relative rounded-xl border border-zinc-700 bg-zinc-900 px-5 py-2.5 text-sm font-bold text-zinc-200 transition-all duration-200 hover:border-blue-500 hover:text-white shadow-sm"
+                    className="group relative whitespace-nowrap rounded-xl border border-zinc-700 bg-zinc-900 px-3 py-2 text-xs font-bold text-zinc-200 transition-all duration-200 hover:border-blue-500 hover:text-white shadow-sm 2xl:px-5 2xl:py-2.5 2xl:text-sm"
                   >
                     Shop Products
                   </Link>
@@ -383,7 +384,7 @@ export function Header() {
           </div>
 
           {/* Mobile: cart icon + hamburger */}
-          <div className="flex items-center gap-2 xl:hidden">
+          <div className="flex shrink-0 items-center gap-2 min-[1280px]:hidden">
             {!isB2BPath && (
               <CartSheet>
                 <button
@@ -412,6 +413,8 @@ export function Header() {
                 })
               }
               aria-label="Toggle menu"
+              aria-expanded={mobileMenuOpen}
+              aria-controls="mobile-menu"
             >
               {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
@@ -421,7 +424,7 @@ export function Header() {
 
       <div
         id="mobile-menu"
-        className={`absolute left-0 top-full w-full border-t border-zinc-800 bg-zinc-950 xl:hidden transition-all duration-300
+        className={`absolute left-0 top-full w-full border-t border-zinc-800 bg-zinc-950 min-[1280px]:hidden transition-all duration-300
           ${mobileMenuOpen ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2 pointer-events-none'}
         `}
       >

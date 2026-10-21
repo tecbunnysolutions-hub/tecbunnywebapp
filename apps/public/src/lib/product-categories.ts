@@ -1,6 +1,7 @@
 import { filterPubliclyVisibleProducts } from '@tecbunny/core/product-visibility';
 
 import { getApi } from '@/lib/api';
+import { deduplicateCatalogProducts } from '@/lib/product-catalog';
 
 type CatalogProduct = Record<string, unknown> & { id: string | number };
 
@@ -26,7 +27,7 @@ const categoryPaths = (category: string) => {
 
 export async function getCatalogByCategory() {
   const { products } = await getApi().products.list({ page: 1, pageSize: 500 });
-  const visible = filterPubliclyVisibleProducts(products as CatalogProduct[]);
+  const visible = deduplicateCatalogProducts(filterPubliclyVisibleProducts(products as CatalogProduct[]));
 
   const categories = new Map<string, ProductCategory>();
   for (const product of visible) {

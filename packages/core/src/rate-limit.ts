@@ -20,6 +20,13 @@ export interface RateLimitOptions {
 const stores: Record<string, Map<string, Bucket>> = {}
 const memoryBuckets = new Map<string, number[]>()
 const requireRedisRateLimit = process.env.REQUIRE_REDIS_RATE_LIMIT === 'true'
+let warnedNoRedisInProduction = false
+
+function warnIfNoRedisInProduction() {
+  if (warnedNoRedisInProduction) return
+  warnedNoRedisInProduction = true
+  logger.error('rate_limit_degraded_in_memory_only', { message: 'Redis is unavailable in production; rate limits are process-local.' })
+}
 
 // Periodic memory cleanup to prevent memory leaks in long-running processes
 if (typeof global !== 'undefined') {
@@ -77,6 +84,7 @@ export function rateLimit(
     const redis = getRedis()
 
     if (process.env.NODE_ENV === 'production' && !redis) {
+      warnIfNoRedisInProduction()
       logger.error('rate_limit_sync_no_redis_production', { key, bucketName })
       if (requireRedisRateLimit) {
         return false
@@ -143,6 +151,7 @@ export function rateLimit(
 
       // memory fallback for async variant (Warning: not shared across serverless instances)
       if (process.env.NODE_ENV === 'production' && !redis) {
+        warnIfNoRedisInProduction()
         logger.error('rate_limit_no_redis_production', { key })
         if (requireRedisRateLimit) {
           return { allowed: false, remaining: 0, reset: now + windowMs }

@@ -1,55 +1,40 @@
-import { createSupabaseClient as createServerClient } from '@tecbunny/database/server';
+import { NextRequest } from 'next/server';
 
-import { NextRequest, NextResponse } from 'next/server';
+import { emailHelpers } from '@tecbunny/core/email';
+import { logger } from '@tecbunny/core/server';
 
-import { emailHelpers } from "@tecbunny/core/email";
-import { rateLimit } from "@tecbunny/core/rate-limit";
+import { authorizeNotification, jsonError, jsonOk, readJsonObject } from '../../../../lib/notification-guard';
 
-
-// Email verification OTP: 5 per 30 minutes
-const LIMIT = 5;
-const WINDOW_MS = 30 * 60 * 1000;
+// Email verification OTP: signed-in users only, and only to their own address. 5 per 30 minutes.
+const EMAIL = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 
 export async function POST(request: NextRequest) {
   try {
-    const { to, userName, otp } = await request.json();
-    if (typeof to !== 'string' || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(to)) {
-      return NextResponse.json({ error: 'Invalid recipient email' }, { status: 400 });
+    const gate = await authorizeNotification(request, {
+      bucket: 'email_verification',
+      allow: ['owner'],
+      limit: 5,
+      windowMs: 30 * 60 * 1000,
+    });
+    if ('error' in gate) return gate.error;
+    if (gate.caller.kind !== 'user') return jsonError(403, 'Forbidden');
+
+    const body = await readJsonObject(request);
+    if (!body) return jsonError(400, 'Invalid JSON body');
+    const { to, userName, otp } = body;
+    if (typeof to !== 'string' || !EMAIL.test(to)) return jsonError(400, 'Invalid recipient email');
+    if (typeof userName !== 'string' || !userName || typeof otp !== 'string') {
+      return jsonError(400, 'Invalid userName or otp');
     }
-    if (!userName || typeof userName !== 'string' || !otp || typeof otp !== 'string') {
-      return NextResponse.json({ error: 'Invalid userName or otp' }, { status: 400 });
+    if (!gate.caller.email || gate.caller.email.trim().toLowerCase() !== to.trim().toLowerCase()) {
+      return jsonError(403, 'Forbidden');
     }
-    let userId: string | null = null;
-    try {
-      const supabase = await createServerClient();
-      const { data: { user } } = await supabase.auth.getUser();
-      userId = user?.id || null;
-      const userEmail = user?.email?.trim().toLowerCase();
-      if (!userId || !userEmail || userEmail !== to.trim().toLowerCase()) {
-        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-      }
-    } catch(_ignoreErr) {}
-    if (!userId) {
-      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
-    }
-    if (!/^\d{6}$/.test(otp)) {
-      return NextResponse.json({ error: 'Invalid OTP format' }, { status: 400 });
-    }
-    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
-    const rateKey = userId ? `user:${userId}` : `ip:${ip}`;
-    if (!rateLimit(rateKey, 'email_verification', { limit: LIMIT, windowMs: WINDOW_MS })) {
-      return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 });
-    }
+    if (!/^\d{6}$/.test(otp)) return jsonError(400, 'Invalid OTP format');
+
     const success = await emailHelpers.sendEmailVerification(to, userName, otp);
-    const res = success
-      ? NextResponse.json({ success: true, message: 'Email verification sent successfully' })
-      : NextResponse.json({ error: 'Failed to send email verification' }, { status: 500 });
-    res.headers.set('Cache-Control', 'no-store');
-    res.headers.set('X-Content-Type-Options', 'nosniff');
-    res.headers.set('Referrer-Policy', 'same-origin');
-    return res;
+    return success ? jsonOk({ message: 'Email verification sent successfully' }) : jsonError(500, 'Failed to send email verification');
   } catch (error) {
-    console.error('Email verification API error:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    logger.error('email_verification.route_error', { error: error instanceof Error ? error.message : String(error) });
+    return jsonError(500, 'Internal server error');
   }
 }

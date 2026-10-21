@@ -47,11 +47,6 @@ import type { Order, OrderStatus } from "@tecbunny/core/types";
 
 const SERVICE_TYPE_SET = new Set(['Service', 'Repair', 'Installation', 'Setup']);
 
-const ADMIN_NOTIFICATION_EMAIL = (() => {
-  const envValue = (process.env.NEXT_PUBLIC_ORDER_ADMIN_EMAIL || '').trim();
-  return envValue || 'tecbunnysolution@gmail.com';
-})();
-
 interface OrderActionsProps {
   order: Order;
   onStatusUpdate: () => Promise<void> | void;
@@ -199,25 +194,12 @@ export function OrderActions({ order, onStatusUpdate, variant = 'dropdown' }: Or
       }
 
       try {
-        const pickupCode = formatOrderNumber(order.id);
         const response = await fetch('/api/email/pickup', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({
-            // to: order.customer_email, // Deprecated in favor of phone
-            phone: order.customer_phone,
-            orderData: {
-              id: order.id,
-              customer_name: order.customer_name,
-              total: order.total,
-              type: order.type,
-              delivery_address: order.pickup_store || order.delivery_address,
-              pickup_store: order.pickup_store || order.delivery_address
-            },
-            pickupCode
-          })
+          body: JSON.stringify({ orderId: order.id })
         });
 
         if (!response.ok) {
@@ -232,21 +214,13 @@ export function OrderActions({ order, onStatusUpdate, variant = 'dropdown' }: Or
     };
 
     const notifyPickupAdmin = async () => {
-      if (!ADMIN_NOTIFICATION_EMAIL) {
-        return;
-      }
-
       try {
         const response = await fetch('/api/email/notify-sales-pickup', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({
-            to: ADMIN_NOTIFICATION_EMAIL,
-            orderId: order.id,
-            orderType: 'pickup'
-          })
+          body: JSON.stringify({ orderId: order.id })
         });
 
         if (!response.ok) {
@@ -261,23 +235,13 @@ export function OrderActions({ order, onStatusUpdate, variant = 'dropdown' }: Or
     };
 
     const notifyOrderApproved = async () => {
-      if (!ADMIN_NOTIFICATION_EMAIL) {
-        return;
-      }
-
       try {
         const response = await fetch('/api/email/order-approved', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({
-            to: ADMIN_NOTIFICATION_EMAIL,
-            orderId: order.id,
-            orderTotal: order.total,
-            orderType: order.type === 'Pickup' ? 'pickup' : order.type === 'Delivery' ? 'delivery' : undefined,
-            customerName: order.customer_name
-          })
+          body: JSON.stringify({ orderId: order.id })
         });
 
         if (!response.ok) {

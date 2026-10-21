@@ -2,6 +2,7 @@ import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, relative, resolve } from 'node:path';
 import ts from 'typescript';
 
+import { checkBoundary } from './boundary-rules.mjs';
 const root = resolve(import.meta.dirname, '..');
 const publicSource = join(root, 'apps', 'public', 'src');
 const publicApi = join(publicSource, 'app', 'api');
@@ -78,3 +79,17 @@ if (newOffenders.length) {
 }
 if (migrated.length) console.log(`Note: ${migrated.length} baseline entries no longer import a DB client; run with --update-baseline to shrink it.`);
 console.log(`DB boundary ratchet passed: ${dbImporters.length} legacy importers remain (baseline ${baseline.size}).`);
+
+// Ratchet 2: outside apps/api (and a future apps/worker) no new data-client imports or process.env reads
+// beyond the tooling allowlist. Existing violations live in scripts/boundary-grandfather.json.
+const boundary = checkBoundary();
+if (boundary.fresh.length) {
+  console.error(`Boundary violations not in scripts/boundary-grandfather.json (${boundary.fresh.length}):`);
+  for (const entry of boundary.fresh) console.error(`  ${entry.file}: ${entry.rule} ${entry.detail}`);
+  console.error('UI apps must not import database/admin clients or read process.env (except NODE_ENV, NEXT_OUTPUT_MODE, DOCKER_BUILD, ANALYZE, CI, API_TARGET, VERCEL_*). Use @tecbunny/api-client and GET /api/v1/config/public.');
+  process.exit(1);
+}
+if (boundary.stale.length) {
+  console.log(`Note: ${boundary.stale.length} grandfather entries are fixed; run "node scripts/boundary-rules.mjs --write" to drop them.`);
+}
+console.log(`Boundary grandfather check passed: ${boundary.total} known violations (list size ${boundary.grandfathered}), no new ones.`);

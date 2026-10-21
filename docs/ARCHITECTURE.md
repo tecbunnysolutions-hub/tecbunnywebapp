@@ -10,7 +10,7 @@
 | `apps/public`, `apps/mgmt`, `apps/superadmin`, `apps/waba` | UI apps (migrating off direct DB access) |
 | `apps/extension` | Browser extension (build/lint/typecheck via `scripts/verify.mjs`) |
 | `packages/contracts` | zod schemas and inferred types for every request/response (single source of truth) |
-| `packages/api-client` | Typed fetch wrapper: base URL from `NEXT_PUBLIC_API_URL`, Bearer token, timeouts, error normalization, GET-only retry |
+| `packages/api-client` | Typed fetch wrapper: base URL is a committed constant in `packages/api-client/src/base-url.mjs` (chosen by hostname; `API_TARGET=staging|local|docker` is a CI/tooling flag), Bearer token, timeouts, error normalization, GET-only retry |
 | `packages/db` | Prisma schema and client (`@tecbunny/db`), used by apps/api and WABA workers |
 | `packages/database` | Supabase client factories (`createPublicClient` for cacheable public reads) |
 | `packages/types`, `core`, `infra`, `ui`, `config`, `rpc` | Shared types, helpers, infra, UI, config |

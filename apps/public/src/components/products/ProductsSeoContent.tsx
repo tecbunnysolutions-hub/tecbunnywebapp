@@ -20,7 +20,7 @@ const PRODUCT_FAQS = [
   {
     question: 'Does TecBunny install the CCTV systems it sells?',
     answer:
-      'Yes. Every camera, recorder, and accessory in this catalogue can be installed and configured by TecBunny\u2019s physical security team across Goa and Maharashtra, including cabling, remote-viewing setup, and handover training.',
+      'Yes. TecBunny can install and configure catalogue cameras, recorders and accessories, including cabling, remote-viewing setup and handover, in North Goa and the Sawantwadi area of Sindhudurg district, Maharashtra.',
   },
   {
     question: 'Are the products in this catalogue genuine?',
@@ -30,7 +30,7 @@ const PRODUCT_FAQS = [
   {
     question: 'Do you deliver and install outside Goa?',
     answer:
-      'We ship equipment across India. Installation and AMC support cover Goa and Maharashtra \u2014 contact our team with your location and order list for a delivery quote.',
+      'We ship equipment across India. Installation and AMC support cover North Goa and the Sawantwadi area of Sindhudurg district; contact our team with your location and order list for a delivery quote.',
   },
   {
     question: 'How do I get a quote for a bulk or office order?',
@@ -239,7 +239,7 @@ export function ProductsSeoContent() {
             </div>
           </div>
           <p className="text-sm leading-relaxed max-w-3xl text-zinc-400">
-            From our field work across Goa: coastal humidity corrodes outdoor connectors quickly, so we fit
+            Coastal humidity can corrode outdoor connectors quickly, so we fit
             weather-rated housings and surge protection on exposed runs as standard. See{' '}
             <Link href="/services/cctv-security" className="text-primary hover:underline">
               our physical security and CCTV service

@@ -10,5 +10,5 @@ export async function getSupportPhone(): Promise<string> {
 export async function getGstRateFallback(): Promise<number> {
   const settings = await getAppSettings();
   if (settings.GST_RATE) return Number(settings.GST_RATE);
-  return process.env.NEXT_PUBLIC_GST_RATE ? parseFloat(process.env.NEXT_PUBLIC_GST_RATE) : 0.18;
+  return 0.18;
 }

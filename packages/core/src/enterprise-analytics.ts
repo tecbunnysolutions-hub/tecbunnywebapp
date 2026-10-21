@@ -95,7 +95,7 @@ export type AuditEvent = StaffActivityEvent & {
 
 function analyticsEndpoint(path: string) {
   const baseUrl = typeof process !== 'undefined'
-    ? process.env.NEXT_PUBLIC_ENTERPRISE_ANALYTICS_URL || process.env.NEXT_PUBLIC_API_URL || ''
+    ? process.env.NEXT_PUBLIC_ENTERPRISE_ANALYTICS_URL || ''
     : '';
   return `${baseUrl}${path}`;
 }

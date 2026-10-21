@@ -1,5 +1,6 @@
 import { apiEnvelope, type ApiEnvelope, type ApiErrorItem } from '@tecbunny/contracts';
 import type { z } from 'zod';
+import { resolveApiBaseUrl } from './base-url.mjs';
 
 export type NextFetchOptions = { revalidate?: number | false; tags?: string[] };
 
@@ -41,14 +42,10 @@ export class ApiError extends Error {
   }
 }
 
-const DEFAULT_BASE_URL = 'https://api.tecbunny.com';
 const DEFAULT_TIMEOUT_MS = 10_000;
 const RETRYABLE_STATUSES = new Set([502, 503, 504]);
 
-const resolveBaseUrl = (explicit?: string) => {
-  const fromEnv = typeof process !== 'undefined' ? process.env.NEXT_PUBLIC_API_URL : undefined;
-  return (explicit ?? fromEnv ?? DEFAULT_BASE_URL).replace(/\/+$/, '');
-};
+const resolveBaseUrl = (explicit?: string) => (explicit ?? resolveApiBaseUrl()).replace(/\/+$/, '');
 
 const buildUrl = (baseUrl: string, path: string, query?: RequestOptions<z.ZodType>['query']) => {
   const url = new URL(`${baseUrl}${path.startsWith('/') ? path : `/${path}`}`);

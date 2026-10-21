@@ -139,7 +139,7 @@ export default function HomePage({ initialPartnerBrands = [], startingPrices = S
           <h2 className="text-3xl font-bold">Why TecBunny</h2>
           <div className="mt-7 grid gap-4 sm:grid-cols-3">
             <article className="rounded-xl border border-zinc-800 bg-zinc-950 p-5"><h3 className="font-bold text-blue-300">Registered company</h3><p className="mt-2 text-zinc-400">TecBunny Solutions Pvt. Ltd. is incorporated in 2025. Our <Link href="/about/business-info" className="text-blue-300 hover:text-white">business information</Link> shows the CIN and GSTIN.</p></article>
-            <article className="rounded-xl border border-zinc-800 bg-zinc-950 p-5"><h3 className="font-bold text-blue-300">Local team</h3><p className="mt-2 text-zinc-400">We are based in Pernem and serve North Goa plus the Sawantwadi area near the Goa border, Monday to Saturday, 9:30 AM to 7:30 PM.</p></article>
+            <article className="rounded-xl border border-zinc-800 bg-zinc-950 p-5"><h3 className="font-bold text-blue-300">Local team</h3><p className="mt-2 text-zinc-400">We are based in Pernem and serve North Goa and the Sawantwadi area of Sindhudurg district, Maharashtra, Monday to Saturday, 9:30 AM to 7:30 PM.</p></article>
             <article className="rounded-xl border border-zinc-800 bg-zinc-950 p-5"><h3 className="font-bold text-blue-300">Clear paperwork</h3><p className="mt-2 text-zinc-400">You receive a written quote before work starts, a GST invoice and the relevant warranty details for the agreed work.</p></article>
           </div>
         </div>

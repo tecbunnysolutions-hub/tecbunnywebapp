@@ -20,9 +20,9 @@ import { BreadcrumbJsonLd } from '@/components/BreadcrumbJsonLd';
 export async function generateMetadata(): Promise<Metadata> {
   return createPageMetadata({
     title: 'Resources & Technology Planning Guides | TecBunny',
-    description: 'Technical checklists, planning guides, and architectural frameworks for enterprise IT infrastructure, CCTV surveillance, and access control in Goa.',
+    description: 'Practical checklists for CCTV, home and small-business networking, and access control in North Goa and the Sawantwadi area of Sindhudurg district, Maharashtra.',
     keywords: [
-      'IT infrastructure planning guide',
+      'small business IT planning guide Goa',
       'CCTV planning checklist Goa',
       'hotel Wi-Fi engineering guide',
       'office network checklist',

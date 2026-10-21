@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 import { createPageMetadata } from '@tecbunny/core/metadata';
+import { BreadcrumbJsonLd } from '@/components/BreadcrumbJsonLd';
 
 const services = [
   {
@@ -34,7 +35,7 @@ const services = [
 export async function generateMetadata(): Promise<Metadata> {
   return createPageMetadata({
     title: 'Services in Goa | TecBunny',
-    description: 'CCTV, IT support, RFID locks, networking and website development for homes and small businesses in North Goa and the Sawantwadi area.',
+    description: 'CCTV, IT support, RFID locks, networking and website development for homes and small businesses in North Goa and the Sawantwadi area of Sindhudurg district, Maharashtra.',
     path: '/services',
     image: '/opengraph-image',
   });
@@ -43,6 +44,10 @@ export async function generateMetadata(): Promise<Metadata> {
 export default function ServicesPage() {
   return (
     <main className="bg-zinc-950 text-white">
+      <BreadcrumbJsonLd items={[
+        { name: 'Home', url: 'https://www.tecbunny.com' },
+        { name: 'Services', url: 'https://www.tecbunny.com/services' },
+      ]} />
       <section className="border-b border-zinc-800 bg-zinc-900/50">
         <div className="tb-container py-16 sm:py-20">
           <h1 className="text-4xl font-bold sm:text-5xl">TecBunny services</h1>

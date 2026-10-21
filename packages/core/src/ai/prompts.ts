@@ -70,16 +70,16 @@ export async function getSystemPrompt(promptId: string): Promise<string> {
   }
 
   // 2. Global public setting env fallback (could be JSON or single prompt string for 'research')
-  if (process.env.NEXT_PUBLIC_AI_SYSTEM_PROMPT) {
+  if (process.env.AI_SYSTEM_PROMPT) {
     try {
-      const parsed = JSON.parse(process.env.NEXT_PUBLIC_AI_SYSTEM_PROMPT);
+      const parsed = JSON.parse(process.env.AI_SYSTEM_PROMPT);
       if (parsed && typeof parsed === 'object' && parsed[promptId]) {
         return String(parsed[promptId]);
       }
     } catch {
       // If it isn't a JSON, treat as default research prompt
       if (promptId === 'research') {
-        return process.env.NEXT_PUBLIC_AI_SYSTEM_PROMPT;
+        return process.env.AI_SYSTEM_PROMPT;
       }
     }
   }

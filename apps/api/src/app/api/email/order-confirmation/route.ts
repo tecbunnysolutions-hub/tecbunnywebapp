@@ -1,46 +1,19 @@
-import { createSupabaseClient as createServerClient } from '@tecbunny/database/server';
+import { NextRequest } from 'next/server';
 
-import { NextRequest, NextResponse } from 'next/server';
+import { emailHelpers } from '@tecbunny/core/email';
 
-import { emailHelpers } from "@tecbunny/core/email";
-import { rateLimit } from "@tecbunny/core/rate-limit";
+import { handleOrderNotification } from '../../../../lib/notification-guard';
 
-
-const LIMIT = 5; // 5 emails per 10 minutes
-const WINDOW_MS = 10 * 60 * 1000;
-
+// Owner, staff or internal. Recipient and order data come from the order record.
 export async function POST(request: NextRequest) {
-  try {
-    const { to, orderData } = await request.json();
-    if (typeof to !== 'string' || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(to)) {
-      return NextResponse.json({ error: 'Invalid recipient email' }, { status: 400 });
-    }
-    if (!orderData || typeof orderData !== 'object') {
-      return NextResponse.json({ error: 'Invalid orderData' }, { status: 400 });
-    }
-
-    let userId: string | null = null;
-    try {
-      const supabase = await createServerClient();
-      const { data: { user } } = await supabase.auth.getUser();
-      userId = user?.id || null;
-    } catch(_ignoreErr) {}
-    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
-    const rateKey = userId ? `user:${userId}` : `ip:${ip}`;
-    if (!rateLimit(rateKey, 'email_order_confirmation', { limit: LIMIT, windowMs: WINDOW_MS })) {
-      return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 });
-    }
-
-    const success = await emailHelpers.sendOrderConfirmation(to, orderData);
-    const res = success
-      ? NextResponse.json({ success: true, message: 'Order confirmation email sent successfully' })
-      : NextResponse.json({ error: 'Failed to send order confirmation email' }, { status: 500 });
-    res.headers.set('Cache-Control', 'no-store');
-    res.headers.set('X-Content-Type-Options', 'nosniff');
-    res.headers.set('Referrer-Policy', 'same-origin');
-    return res;
-  } catch (error) {
-    console.error('Order confirmation email API error:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
-  }
+  return handleOrderNotification(request, {
+    bucket: 'email_order_confirmation',
+    allow: ['internal', 'staff', 'owner'],
+    limit: 5,
+    windowMs: 10 * 60 * 1000,
+    channel: 'email',
+    successMessage: 'Order confirmation email sent successfully',
+    failureMessage: 'Failed to send order confirmation email',
+    send: ({ email, orderData }) => emailHelpers.sendOrderConfirmation(email as string, orderData),
+  });
 }

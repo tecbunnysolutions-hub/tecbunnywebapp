@@ -1,10 +1,8 @@
 import { NextResponse } from 'next/server';
 import { verifyCaptcha } from "@tecbunny/core/server";
 import { logger } from "@tecbunny/core";
-import { rateLimit } from "@tecbunny/core/server";
-import { createSuperadminSessionToken, SUPERADMIN_SESSION_TTL_SECONDS, verifySuperadminPassword } from "@tecbunny/core/server";
-
-const textEncoder = new TextEncoder();
+import { createSuperadminSessionToken, SUPERADMIN_SESSION_TTL_SECONDS } from "@tecbunny/core/server";
+import { verifySuperadminLogin, getSuperadminLoginConfig } from "@tecbunny/core/auth/superadmin-login";
 
 // Trusted only when Cloudflare (or another configured reverse proxy) is guaranteed
 // to overwrite/strip these headers before the request reaches the origin.
@@ -16,39 +14,12 @@ function getClientIp(request: Request) {
     || 'unknown';
 }
 
-function constantTimeStringEquals(left: string, right: string) {
-  const leftBytes = textEncoder.encode(left);
-  const rightBytes = textEncoder.encode(right);
-  const maxLength = Math.max(leftBytes.length, rightBytes.length);
-  let diff = leftBytes.length ^ rightBytes.length;
-
-  for (let index = 0; index < maxLength; index += 1) {
-    diff |= (leftBytes[index] ?? 0) ^ (rightBytes[index] ?? 0);
-  }
-
-  return diff === 0;
-}
-
 export async function POST(request: Request) {
   try {
     const { userId, email, password, captchaToken } = await request.json();
     const ip = getClientIp(request);
     const submittedUserId = String(userId ?? email ?? '').trim();
     const submittedPassword = String(password ?? '');
-
-    const ipRl = await rateLimit(`ip:${ip}`, 5, 15 * 60 * 1000);
-    if (!ipRl.allowed) {
-      logger.warn('superadmin_login.rate_limited', { ip, userId: submittedUserId });
-      return NextResponse.json({ error: 'Too many login attempts. Please try again later.' }, { status: 429 });
-    }
-
-    if (submittedUserId) {
-      const idRl = await rateLimit(`user:${submittedUserId}`, 5, 15 * 60 * 1000);
-      if (!idRl.allowed) {
-        logger.warn('superadmin_login.identifier_rate_limited', { ip, userId: submittedUserId });
-        return NextResponse.json({ error: 'Too many login attempts. Please try again later.' }, { status: 429 });
-      }
-    }
 
     // Verify Turnstile Captcha if site key is configured
     const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
@@ -60,35 +31,35 @@ export async function POST(request: Request) {
       }
     }
 
-    const correctUserId = process.env.SUPERADMIN_USER_ID || process.env.SUPERADMIN_EMAIL;
-    const correctPasswordHash = process.env.SUPERADMIN_PASSWORD_HASH;
-    const developmentPassword = process.env.SUPERADMIN_PASSWORD;
-    const isProduction = process.env.NODE_ENV === 'production';
+    const result = await verifySuperadminLogin({
+      identifier: submittedUserId,
+      password: submittedPassword,
+      ip,
+      rateLimit: { scope: 'superadmin_mgmt_login', limit: 5, windowMs: 15 * 60 * 1000 },
+    });
 
-    // SECURITY: Password hash is mandatory. Plaintext passwords are NOT supported in production.
-    if (!correctUserId || (!correctPasswordHash && (isProduction || !developmentPassword))) {
+    if (!result.ok && result.reason === 'rate_limited') {
+      logger.warn('superadmin_login.rate_limited', { ip, userId: submittedUserId });
+      return NextResponse.json({ error: 'Too many login attempts. Please try again later.' }, { status: 429 });
+    }
+
+    // SECURITY: the password hash is mandatory; plaintext passwords are not supported.
+    if (!result.ok && result.reason === 'not_configured') {
+      const config = getSuperadminLoginConfig();
       logger.error('superadmin_login.configuration_missing', {
-        hasSuperadminUserId: !!process.env.SUPERADMIN_USER_ID,
-        hasSuperadminEmail: !!process.env.SUPERADMIN_EMAIL,
-        hasSuperadminPasswordHash: !!correctPasswordHash,
+        hasSuperadminUserId: !!config.userId,
+        hasSuperadminEmail: !!config.email,
+        hasSuperadminPasswordHash: !!config.passwordHash,
       });
       return NextResponse.json({ error: 'Superadmin credentials are not properly configured on server.' }, { status: 500 });
     }
 
-    const userIdMatches = constantTimeStringEquals(
-      submittedUserId.toLowerCase(),
-      correctUserId.trim().toLowerCase()
-    );
-    const passwordMatches = correctPasswordHash
-      ? await verifySuperadminPassword(submittedPassword, correctPasswordHash)
-      : !isProduction && constantTimeStringEquals(submittedPassword, developmentPassword!);
-
-    if (!userIdMatches || !passwordMatches) {
+    if (!result.ok) {
       logger.warn('superadmin_login.failed_attempt', { userId: submittedUserId, ip });
       return NextResponse.json({ error: 'Invalid superadmin credentials.' }, { status: 401 });
     }
 
-    const token = await createSuperadminSessionToken(correctUserId.trim(), request);
+    const token = await createSuperadminSessionToken(result.userId, request);
 
     logger.info('superadmin_login.success', { userId: submittedUserId, ip });
 

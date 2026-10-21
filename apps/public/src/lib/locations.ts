@@ -18,19 +18,7 @@ export interface ServiceLocationGroup {
   locations: ServiceLocation[];
 }
 
-export const SERVICE_LOCATIONS: ServiceLocationGroup[] = [
-  {
-    serviceName: 'Network Infrastructure',
-    serviceUrl: '/services/network-infrastructure',
-    locations: [
-      {
-        name: 'North Goa',
-        url: '/services/network-infrastructure/north-goa',
-        areas: ['Panaji', 'Mapusa', 'Calangute', 'Candolim', 'Pernem'],
-      },
-    ],
-  },
-];
+export const SERVICE_LOCATIONS: ServiceLocationGroup[] = [];
 
 export function getLocationsForService(serviceUrl: string): ServiceLocation[] {
   return SERVICE_LOCATIONS.find((group) => group.serviceUrl === serviceUrl)?.locations ?? [];

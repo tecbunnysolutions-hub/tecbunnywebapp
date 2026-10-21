@@ -5,6 +5,8 @@ import { useCallback, useEffect, useMemo, useState, useDeferredValue } from 'rea
 import { RefreshCw, Save, Settings2 } from 'lucide-react';
 
 import CustomSetupFlow from '@/components/customised-setups/CustomSetupFlow';
+import { createStaffApi } from '@/lib/api';
+import { DEFAULT_PUBLIC_CONFIG } from '@tecbunny/contracts';
 import { Badge } from "@tecbunny/ui";
 import { Button } from "@tecbunny/ui";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@tecbunny/ui";
@@ -183,13 +185,6 @@ const DISCOUNT_PERCENT_METADATA_KEYS = [
 ];
 const SALE_FORMULA_METADATA_KEYS = ['sale_formula', 'saleFormula'];
 
-const DEFAULT_CUSTOM_SETUP_DISCOUNT_PERCENT = (() => {
-  const raw = Number.parseFloat(process.env.NEXT_PUBLIC_CUSTOM_SETUP_DISCOUNT_PERCENT ?? '');
-  if (Number.isFinite(raw) && raw > 0) {
-    return raw;
-  }
-  return 12;
-})();
 
 function applyDiscountPercent(amount: number, percent: number | null): number {
   if (percent === null || !Number.isFinite(percent)) {
@@ -603,6 +598,16 @@ const ACCESSORIES_META = [
 ];
 
 export default function AdminCustomSetupManager() {
+  const [defaultDiscountPercent, setDefaultDiscountPercent] = useState(DEFAULT_PUBLIC_CONFIG.pricing.customSetupDiscountPercent);
+  useEffect(() => {
+    let active = true;
+    void createStaffApi().config.getPublic().then((config) => {
+      if (active) setDefaultDiscountPercent(config.pricing.customSetupDiscountPercent);
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
   const { toast } = useToast();
   const [loadingTemplates, setLoadingTemplates] = useState(false);
   const [templates, setTemplates] = useState<TemplateListItem[]>([]);
@@ -932,7 +937,7 @@ export default function AdminCustomSetupManager() {
 
     const blueprintDiscountPercent = readNumericMetadataWithFallback(blueprint?.metadata ?? null, DISCOUNT_PERCENT_METADATA_KEYS);
     const systemDiscountPercent = readNumericMetadataWithFallback(system.metadata ?? null, DISCOUNT_PERCENT_METADATA_KEYS);
-    const fallbackDiscountPercent = (systemDiscountPercent ?? blueprintDiscountPercent ?? DEFAULT_CUSTOM_SETUP_DISCOUNT_PERCENT) || null;
+    const fallbackDiscountPercent = (systemDiscountPercent ?? blueprintDiscountPercent ?? defaultDiscountPercent) || null;
 
     let totalMrp = 0;
     let totalSale = 0;
@@ -980,7 +985,7 @@ export default function AdminCustomSetupManager() {
       discountAmount,
       discountPercent,
     };
-  }, [blueprint, parseDraftCurrency, deferredPricingDraft, deferredSalePricingDraft]);
+  }, [blueprint, parseDraftCurrency, deferredPricingDraft, deferredSalePricingDraft, defaultDiscountPercent]);
 
   const pendingOptionCount = Object.values(pendingOptionUpdates).reduce((count, change) => {
     return change.unitPrice !== undefined || change.metadata !== undefined ? count + 1 : count;

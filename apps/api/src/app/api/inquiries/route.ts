@@ -23,11 +23,26 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { name, phone, email, type, productId, message } = body;
+    const { name, phone, email, type, productId, message, service, address, preferredDate, website } = body;
 
+    if (website) {
+      return NextResponse.json({ success: true }, { status: 200 });
+    }
     if (!name || !phone || !type) {
       return NextResponse.json({ error: 'Name, phone, and type are required' }, { status: 400 });
     }
+    const isSiteVisit = type === 'site_visit';
+    if (isSiteVisit && !/^\+?[0-9\s-]{10,15}$/.test(String(phone).trim())) {
+      return NextResponse.json({ error: 'Enter a valid phone number' }, { status: 400 });
+    }
+    const visitDetails = isSiteVisit
+      ? [
+          service ? `Service: ${String(service).slice(0, 120)}` : '',
+          address ? `Address/Area: ${String(address).slice(0, 300)}` : '',
+          preferredDate ? `Preferred date/time: ${String(preferredDate).slice(0, 80)}` : '',
+        ].filter(Boolean).join('\n')
+      : '';
+    const fullMessage = [message ? String(message).slice(0, 2000) : '', visitDetails].filter(Boolean).join('\n') || null;
 
     const db = getAdminDb();
     
@@ -40,7 +55,7 @@ export async function POST(request: NextRequest) {
         email: email || null,
         type,
         product_id: productId || null,
-        message: message || null,
+        message: fullMessage,
         status: 'pending',
         created_at: new Date().toISOString()
       }).select().single();
@@ -51,10 +66,14 @@ export async function POST(request: NextRequest) {
 
     // Send Email to Admin
     try {
-      const adminEmail = process.env.SUPPORT_EMAIL || 'support@tecbunny.com';
+      const adminEmail = isSiteVisit
+        ? (process.env.SALES_EMAIL || 'sales@tecbunny.com')
+        : (process.env.SUPPORT_EMAIL || 'support@tecbunny.com');
       await improvedEmailService.sendEmail({
         to: adminEmail,
-        subject: `New ${type === 'b2b' ? 'B2B Quote' : 'Installation'} Inquiry!`,
+        subject: isSiteVisit
+          ? `New Site Visit Booking: ${String(name).slice(0, 80)}`
+          : `New ${type === 'b2b' ? 'B2B Quote' : 'Installation'} Inquiry!`,
         html: `
           <h2>New Lead Alert</h2>
           <p><strong>Name:</strong> ${escapeHtml(String(name))}</p>
@@ -62,7 +81,7 @@ export async function POST(request: NextRequest) {
           ${email ? `<p><strong>Email:</strong> ${escapeHtml(String(email))}</p>` : ''}
           <p><strong>Type:</strong> ${escapeHtml(String(type))}</p>
           ${productId ? `<p><strong>Product ID:</strong> ${escapeHtml(String(productId))}</p>` : ''}
-          ${message ? `<p><strong>Message:</strong> ${escapeHtml(String(message))}</p>` : ''}
+          ${fullMessage ? `<p><strong>Details:</strong><br/>${escapeHtml(fullMessage).replace(/\n/g, '<br/>')}</p>` : ''}
         `
       });
     } catch (emailError: any) {
@@ -73,7 +92,7 @@ export async function POST(request: NextRequest) {
     try {
       const infobipKey = process.env.INFOBIP_API_KEY;
       const infobipUrl = process.env.INFOBIP_BASE_URL || 'https://w4pz8r.api.infobip.com';
-      const adminPhone = '919604136010'; // The system admin number
+      const adminPhone = (process.env.LEAD_NOTIFY_WHATSAPP || '919604136010').replace(/\D/g, '');
 
       if (infobipKey) {
         await fetch(`${infobipUrl}/whatsapp/1/message/text`, {
@@ -88,7 +107,9 @@ export async function POST(request: NextRequest) {
             to: adminPhone,
             messageId: `inq-${Date.now()}`,
             content: {
-              text: `🚀 New Lead! \nName: ${name}\nPhone: ${phone}\nType: ${type}\nProduct: ${productId || 'N/A'}`
+              text: isSiteVisit
+                ? `📍 New Site Visit Booking\nName: ${name}\nPhone: ${phone}${email ? `\nEmail: ${email}` : ''}\n${visitDetails}`
+                : `🚀 New Lead! \nName: ${name}\nPhone: ${phone}\nType: ${type}\nProduct: ${productId || 'N/A'}`
             }
           })
         });
@@ -113,7 +134,7 @@ export async function POST(request: NextRequest) {
               email: email || '',
               phone: phone,
               hs_lead_status: 'NEW',
-              message: message || '',
+              message: fullMessage || '',
               product_id: productId || ''
             }
           })

@@ -1,5 +1,6 @@
 import type { NextConfig } from "next";
 import path from 'node:path';
+import { resolveApiBaseUrl } from '../../packages/api-client/src/base-url.mjs';
 
 const nextConfig: NextConfig = {
   outputFileTracingRoot: path.resolve(__dirname, '../..'),
@@ -22,7 +23,7 @@ const nextConfig: NextConfig = {
     ];
   },
   async rewrites() {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.tecbunny.com';
+    const apiUrl = resolveApiBaseUrl();
     const mgmtUrl = process.env.NEXT_PUBLIC_MGMT_URL || 'https://staff.tecbunny.com';
     return [
       {

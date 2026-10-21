@@ -6,7 +6,7 @@ export const cctvService: ServiceContent = {
   name: 'CCTV',
   title: 'CCTV Installation in Goa | TecBunny',
   metaDescription:
-    'CCTV planning, installation, repair and handover for homes and small businesses in North Goa and the Sawantwadi area.',
+    'CCTV planning, installation, repair and handover for homes and small businesses in North Goa and the Sawantwadi area of Sindhudurg district, Maharashtra.',
   promise:
     'We plan CCTV around the places you need to see, explain the trade-offs clearly, and hand over a system you can use.',
   audience: [

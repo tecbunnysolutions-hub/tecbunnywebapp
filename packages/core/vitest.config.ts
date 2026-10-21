@@ -4,6 +4,7 @@ export default defineConfig({
   test: {
     environment: 'node',
     globals: true,
+    testTimeout: 30000,
     coverage: {
       provider: 'v8',
       // Ratchet: enforce the baseline measured 2026-09-20 (statements 22.12 /

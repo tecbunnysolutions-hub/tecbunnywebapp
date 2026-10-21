@@ -27,6 +27,15 @@ function generateNonce(): string {
   return randomBase64(16);
 }
 
+const ALLOWED_API_HOSTS = new Set(['tecbunny.com', 'www.tecbunny.com', 'staff.tecbunny.com', 'admin.tecbunny.com']);
+
+/** CORS allowlist for apps/api: the four production frontends over HTTPS, localhost for development, and Chrome extensions. */
+export function isAllowedApiOrigin(url: URL, nodeEnv: string | undefined = process.env.NODE_ENV): boolean {
+  if (url.protocol === 'https:' && ALLOWED_API_HOSTS.has(url.hostname)) return true;
+  if (url.protocol === 'chrome-extension:') return /^[a-p]{32}$/i.test(url.hostname);
+  return nodeEnv !== 'production' && url.hostname === 'localhost';
+}
+
 function generateCSP(nonce: string, allowInlineScripts = false) {
   // Scripts stay strictly nonce-based (the primary XSS defence). Styles allow
   // 'unsafe-inline' because runtime CSS-in-JS libraries (e.g. goober via
@@ -97,12 +106,7 @@ export async function executeUnifiedPolicyMiddleware(
     if (origin) {
       try {
         const url = new URL(origin);
-        if (
-          url.hostname === 'localhost' || 
-          url.hostname === 'tecbunny.com' || 
-          url.hostname.endsWith('.tecbunny.com') ||
-          (url.protocol === 'chrome-extension:' && /^[a-p]{32}$/i.test(url.hostname))
-        ) {
+        if (isAllowedApiOrigin(url)) {
           allowedOrigin = origin;
         }
       } catch (e) {

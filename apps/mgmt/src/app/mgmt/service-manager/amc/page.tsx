@@ -1,26 +1,12 @@
 'use client';
 
 import * as React from 'react';
-import { createClient } from '@tecbunny/database';
 import { Card, Button, Badge, Input, Skeleton } from '@tecbunny/ui';
+import { AmcContractQuerySchema, type AmcContract, type AmcContractQuery } from '@tecbunny/contracts';
+import { createStaffApi } from '@/lib/api';
 import {
   FileText, RefreshCw, Plus, Search, Calendar, Phone, CheckCircle, AlertTriangle, Clock,
 } from 'lucide-react';
-
-interface AmcContract {
-  id: string;
-  customer_name?: string;
-  customer_phone?: string;
-  contract_number?: string;
-  contract_type?: string;
-  start_date?: string;
-  end_date?: string;
-  status?: string;
-  annual_value?: number;
-  site_address?: string;
-  service_items?: string[];
-  notes?: string;
-}
 
 const STATUS_COLORS: Record<string, string> = {
   ACTIVE:    'bg-emerald-100 text-emerald-700',
@@ -30,60 +16,30 @@ const STATUS_COLORS: Record<string, string> = {
   CANCELLED: 'bg-zinc-200 text-zinc-500',
 };
 
-function daysUntil(date?: string) {
-  if (!date) return null;
-  return Math.ceil((new Date(date).getTime() - Date.now()) / 86_400_000);
-}
-
-function resolveStatus(contract: AmcContract): string {
-  if (contract.status && contract.status !== 'ACTIVE') return contract.status;
-  const days = daysUntil(contract.end_date);
-  if (days === null) return contract.status || 'DRAFT';
-  if (days < 0) return 'EXPIRED';
-  if (days <= 30) return 'EXPIRING';
-  return 'ACTIVE';
-}
-
 export default function AmcPage() {
+  const api = React.useMemo(() => createStaffApi(), []);
   const [contracts, setContracts] = React.useState<AmcContract[]>([]);
+  const [statusCounts, setStatusCounts] = React.useState({ ACTIVE: 0, EXPIRING: 0, EXPIRED: 0 });
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
   const [search, setSearch] = React.useState('');
-  const [filter, setFilter] = React.useState('ALL');
+  const [filter, setFilter] = React.useState<AmcContractQuery['status']>('ALL');
 
-  const fetch = React.useCallback(async (q = '', f = 'ALL') => {
+  const fetch = React.useCallback(async (q = '', f: AmcContractQuery['status'] = 'ALL') => {
     setLoading(true);
     setError(null);
     try {
-      const supabase = createClient();
-      let query = (supabase as any)
-        .from('amc_contracts')
-        .select('*')
-        .order('end_date', { ascending: true });
-
-      if (f !== 'ALL') query = query.eq('status', f);
-      if (q.trim()) query = query.or(`customer_name.ilike.%${q.trim()}%,contract_number.ilike.%${q.trim()}%`);
-
-      const { data, error: dbErr } = await query;
-      if (dbErr) throw dbErr;
-      setContracts(data || []);
-    } catch (e: any) {
-      setError(e.message);
+      const result = await api.admin.amcContracts({ search: q.trim() || undefined, status: f });
+      setContracts(result.contracts);
+      setStatusCounts(result.counts);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Failed to load AMC contracts.');
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [api]);
 
   React.useEffect(() => { fetch(search, filter); }, [fetch, search, filter]);
-
-  const statusCounts = React.useMemo(() => {
-    const m: Record<string, number> = { ACTIVE: 0, EXPIRING: 0, EXPIRED: 0 };
-    contracts.forEach(c => {
-      const s = resolveStatus(c);
-      m[s] = (m[s] || 0) + 1;
-    });
-    return m;
-  }, [contracts]);
 
   return (
     <div className="space-y-6">
@@ -139,7 +95,7 @@ export default function AmcPage() {
         <select
           className="border border-slate-200 rounded-md px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
           value={filter}
-          onChange={e => setFilter(e.target.value)}
+          onChange={e => setFilter(AmcContractQuerySchema.shape.status.parse(e.target.value))}
         >
           {['ALL', 'ACTIVE', 'EXPIRING', 'EXPIRED', 'DRAFT', 'CANCELLED'].map(s => (
             <option key={s} value={s}>{s === 'ALL' ? 'All Statuses' : s}</option>
@@ -168,9 +124,9 @@ export default function AmcPage() {
                     </tr>
                   ))
                 : contracts.map(c => {
-                    const status = resolveStatus(c);
+                    const status = c.status;
                     const statusCls = STATUS_COLORS[status] ?? 'bg-slate-100 text-slate-600';
-                    const days = daysUntil(c.end_date);
+                    const days = c.days_remaining ?? null;
                     return (
                       <tr key={c.id} className="border-b border-slate-100 hover:bg-slate-50">
                         <td className="py-3 px-4 font-mono text-xs">{c.contract_number || '—'}</td>

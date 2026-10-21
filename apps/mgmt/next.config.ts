@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 import path from 'node:path';
 import bundleAnalyzer from '@next/bundle-analyzer';
+import { resolveApiBaseUrl } from '../../packages/api-client/src/base-url.mjs';
 
 const withBundleAnalyzer = process.env.ANALYZE === 'true'
   ? bundleAnalyzer({ enabled: true, openAnalyzer: false })
@@ -12,7 +13,7 @@ const nextConfig: NextConfig = {
   transpilePackages: ["@tecbunny/core", "@tecbunny/ui", "@tecbunny/database", "@tecbunny/config", "@tecbunny/api-client", "@tecbunny/contracts"],
   serverExternalPackages: ['pdfkit', 'pdf-lib', 'fontkit', 'sharp', '@img/sharp-win32-x64', 'bullmq', 'ioredis', 'pino', 'pino-pretty', 'thread-stream', 'nodemailer'],
   async rewrites() {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.tecbunny.com';
+    const apiUrl = resolveApiBaseUrl();
     return [
       {
         source: '/api/:path*',

@@ -5,11 +5,11 @@ import { BreadcrumbJsonLd } from '@/components/BreadcrumbJsonLd';
 export async function generateMetadata(): Promise<Metadata> {
   return createPageMetadata({
     title: 'Technology Solutions & Case Studies Goa | TecBunny Solutions',
-    description: 'Real deployments across Goa: CCTV surveillance, enterprise networking, smart automation, and IT infrastructure for hotels, offices, clinics, and residences.',
+    description: 'Practical CCTV, networking, access control and automation for small businesses and homes in North Goa and the Sawantwadi area of Sindhudurg district, Maharashtra.',
     keywords: [
       'technology case studies Goa',
       'CCTV deployment examples',
-      'enterprise network projects',
+      'small business network projects',
       'smart automation solutions',
       'TecBunny Solutions',
     ],

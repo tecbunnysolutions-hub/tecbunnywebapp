@@ -6,6 +6,7 @@ import { verifySuperadminSessionToken } from "@tecbunny/core/server";
 import { BaseSupabaseClient, SupabaseOrderRepository, NotificationServiceImpl } from "@tecbunny/infra";
 import { OrderService } from "@tecbunny/core/server";
 import { createSupabaseClient as createServerClient } from '@tecbunny/database/server';
+import { getTrustedClientIp } from '@tecbunny/core/server';
 
 const RATE_LIMIT = 5; // 5 orders
 const RATE_WINDOW_MS = 60 * 1000; // per minute
@@ -73,7 +74,7 @@ export const POST = withApiHandler(
 
     const effectiveUserId = user?.id ?? null;
 
-    const rateLimitKey = effectiveUserId || `guest:${request.headers.get('x-forwarded-for') || 'unknown'}:${request.headers.get('x-real-ip') || 'unknown'}`;
+    const rateLimitKey = effectiveUserId || `guest:${getTrustedClientIp(request)}`;
     const limitCheck = await rateLimit(rateLimitKey, RATE_LIMIT, RATE_WINDOW_MS);
     if (!limitCheck.allowed) {
       logger.warn('orders_rate_limited', { userId: effectiveUserId, rateLimitKey });

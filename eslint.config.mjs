@@ -15,6 +15,25 @@ const apps = fs.existsSync(appsDir) ? fs.readdirSync(appsDir).filter(f => fs.sta
 const baselinePath = path.resolve(__dirname, './quality/db-boundary-baseline.json');
 const grandfathered = fs.existsSync(baselinePath) ? JSON.parse(fs.readFileSync(baselinePath, 'utf8')).files ?? [] : [];
 
+const boundaryGrandfather = path.resolve(__dirname, './scripts/boundary-grandfather.json');
+const globEscape = (file) => file.replace(/[[\]()!{}*?]/g, '\\$&');
+const envGrandfathered = fs.existsSync(boundaryGrandfather)
+  ? [...new Set(JSON.parse(fs.readFileSync(boundaryGrandfather, 'utf8')).violations.filter(v => v.rule === 'env-read').map(v => globEscape(v.file)))]
+  : [];
+
+const UI_PRIMITIVE_SELECTOR = {
+  selector: 'VariableDeclarator[id.name=/^(Button|Card|Input|Badge|Dialog|Modal|Popover|Select|Switch|Tabs|Toast)$/]',
+  message: 'Do not define local UI primitives. Import them from the @tecbunny/ui Design System instead.',
+};
+const ENV_ALLOWED = '^(NODE_ENV|NEXT_OUTPUT_MODE|DOCKER_BUILD|ANALYZE|CI|API_TARGET|VERCEL_.*)$';
+const ENV_MESSAGE = 'UI code must not read process.env (tooling flags only). Use GET /api/v1/config/public via @tecbunny/api-client.';
+const envSelectors = [
+  { selector: `MemberExpression[object.type='MemberExpression'][object.object.name='process'][object.property.name='env'][computed=false][property.name!=/${ENV_ALLOWED}/]`, message: ENV_MESSAGE },
+  { selector: `MemberExpression[object.type='MemberExpression'][object.object.name='process'][object.property.name='env'][computed=true]`, message: ENV_MESSAGE },
+  { selector: `MemberExpression[object.type='MetaProperty'][property.name='env']`, message: ENV_MESSAGE },
+];
+const envRule = (level, withPrimitives) => [level, ...(withPrimitives ? [UI_PRIMITIVE_SELECTOR] : []), ...envSelectors];
+
 const dbBoundaryRule = (level) => [level, {
   paths: [
     { name: '@prisma/client', message: 'Only apps/api may talk to the database. Call the API via @tecbunny/api-client.' },
@@ -104,4 +123,16 @@ export default [{
 }, ...(grandfathered.length ? [{
   files: grandfathered,
   rules: { 'no-restricted-imports': dbBoundaryRule('warn') },
+}] : []), {
+  // process.env outside the tooling allowlist is an error in UI apps; existing reads are warnings (scripts/boundary-grandfather.json).
+  files: ['apps/**/*.{ts,js,mjs}'],
+  ignores: ['apps/api/**', 'apps/worker/**'],
+  rules: { 'no-restricted-syntax': envRule('error', false) },
+}, {
+  files: ['apps/**/*.{tsx,jsx}'],
+  ignores: ['apps/api/**', 'apps/worker/**'],
+  rules: { 'no-restricted-syntax': envRule('error', true) },
+}, ...(envGrandfathered.length ? [{
+  files: envGrandfathered,
+  rules: { 'no-restricted-syntax': envRule('warn', true) },
 }] : []), ...storybook.configs["flat/recommended"]];

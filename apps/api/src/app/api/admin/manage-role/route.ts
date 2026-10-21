@@ -1,25 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import crypto from 'crypto';
 import { z } from 'zod';
 
 import { logger } from "@tecbunny/core/logger";
+import { requireRole } from '@tecbunny/core/auth/guard';
 import {  getAdminClient  } from '@tecbunny/database/admin';
 
 const getSupabaseAdmin = (): any => {
   return getAdminClient();
 };
-
-function isAuthorized(req: NextRequest) {
-  const token = req.headers.get('x-admin-token');
-  const expected = process.env.ADMIN_MAINT_TOKEN;
-  if (!token || !expected || expected.length < 32) {
-    return false;
-  }
-
-  const tokenBuffer = Buffer.from(token);
-  const expectedBuffer = Buffer.from(expected);
-  return tokenBuffer.length === expectedBuffer.length && crypto.timingSafeEqual(tokenBuffer, expectedBuffer);
-}
 
 const roleMutationSchema = z.object({
   userId: z.string().uuid(),
@@ -27,9 +15,11 @@ const roleMutationSchema = z.object({
 }).strict();
 
 export async function POST(request: NextRequest) {
-  if (!isAuthorized(request)) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const ctx = await requireRole('superadmin');
+  if ('error' in ctx) {
+    return NextResponse.json({ error: ctx.error }, { status: ctx.status });
   }
+  const actor = ctx.user.id;
 
   try {
     const supabase = getSupabaseAdmin();
@@ -89,7 +79,7 @@ export async function POST(request: NextRequest) {
           action,
           previous_role: profile.role,
           new_role: newRole,
-          modified_by: 'maint_token_admin'
+          modified_by: actor
         },
         severity: 'high'
       });
@@ -123,7 +113,7 @@ export async function POST(request: NextRequest) {
       action,
       previousRole: profile.role,
       newRole,
-      changedBy: 'maint_token_admin',
+      changedBy: actor,
     });
 
     return NextResponse.json({ 

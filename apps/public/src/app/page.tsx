@@ -13,9 +13,9 @@ export const revalidate = 60;
 // Homepage metadata for SEO
 export async function generateMetadata(): Promise<Metadata> {
   return createPageMetadata({
-  title: 'CCTV, IT Support & Websites in Goa | TecBunny',
+  title: 'CCTV & IT Support for Goa Homes | TecBunny',
   description:
-    'CCTV, IT support, RFID locks, networking and website development for homes and small businesses in North Goa and the Sawantwadi area.',
+    'CCTV, computer repair, RFID locks, networking and website development for homes and small businesses in North Goa and the Sawantwadi area of Sindhudurg district, Maharashtra.',
   path: '/',
   image: '/opengraph-image',
 });

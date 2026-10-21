@@ -2,24 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createSupabaseClient as createClient } from '@tecbunny/database/server';
 import { ExtensionAuthError, assertExtensionOrigin, extensionJson, extensionOptionsResponse, getExtensionCorsHeaders } from '../../extension-security';
 import { logger } from '@tecbunny/core/logger';
-import { verifySuperadminPassword } from '@tecbunny/core/server';
+import { verifySuperadminLogin } from '@tecbunny/core/auth/superadmin-login';
+import { getTrustedClientIp } from '@tecbunny/core/server';
 
 export const dynamic = 'force-dynamic';
-
-const textEncoder = new TextEncoder();
-
-function constantTimeStringEquals(left: string, right: string) {
-  const leftBytes = textEncoder.encode(left);
-  const rightBytes = textEncoder.encode(right);
-  const maxLength = Math.max(leftBytes.length, rightBytes.length);
-  let diff = leftBytes.length ^ rightBytes.length;
-
-  for (let index = 0; index < maxLength; index += 1) {
-    diff |= (leftBytes[index] ?? 0) ^ (rightBytes[index] ?? 0);
-  }
-
-  return diff === 0;
-}
 
 export async function OPTIONS(request: NextRequest) {
   logger.info('auth_extension.audit.options_requested');
@@ -42,37 +28,26 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check for superadmin (Root Console) credentials first, validated against env only.
+    // Superadmin (Root Console) credentials are validated against the hashed env credential only.
     const submittedInput = (email || '').trim();
     const submittedPassword = String(password ?? '').trim();
-    const configuredUserId = (process.env.SUPERADMIN_USER_ID || '').trim();
-    const configuredEmail = (process.env.SUPERADMIN_EMAIL || '').trim();
-    const configuredPasswordHash = process.env.SUPERADMIN_PASSWORD_HASH || '';
-    const developmentPassword = process.env.SUPERADMIN_PASSWORD || '';
 
-    const allowedUserIds = [configuredUserId, configuredEmail].filter(Boolean);
-    const superadminIdMatches = allowedUserIds.some(
-      (candidate) => constantTimeStringEquals(submittedInput.toLowerCase(), candidate.toLowerCase())
-    );
-
-    logger.info('auth_extension.root_check', {
-      superadminIdMatches,
+    const rootLogin = await verifySuperadminLogin({
+      identifier: submittedInput,
+      password: submittedPassword,
+      ip: getTrustedClientIp(request),
+      identity: 'any',
+      fallThrough: true,
+      rateLimit: { scope: 'extension_superadmin', limit: 5, windowMs: 15 * 60 * 1000 },
     });
 
-    // If the submitted ID/email matches a configured superadmin identifier, validate password immediately.
-    if (superadminIdMatches) {
-      const passwordMatches = configuredPasswordHash
-        ? await verifySuperadminPassword(submittedPassword, configuredPasswordHash)
-        : process.env.NODE_ENV !== 'production'
-          && Boolean(developmentPassword)
-          && constantTimeStringEquals(submittedPassword, developmentPassword);
-
-      if (!passwordMatches) {
-        logger.warn('auth_extension.root_check.password_mismatch');
+    if (rootLogin.ok || rootLogin.reason === 'invalid_password' || rootLogin.reason === 'rate_limited') {
+      if (!rootLogin.ok) {
+        logger.warn('auth_extension.root_check.rejected', { reason: rootLogin.reason });
         return extensionJson(
           request,
-          { error: 'Invalid credentials' },
-          { status: 401 }
+          { error: rootLogin.reason === 'rate_limited' ? 'Too many attempts. Please try again later.' : 'Invalid credentials' },
+          { status: rootLogin.reason === 'rate_limited' ? 429 : 401 }
         );
       }
 

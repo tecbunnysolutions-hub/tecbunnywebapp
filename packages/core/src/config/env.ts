@@ -34,7 +34,7 @@ export const EnvSchema = z.object({
     appName: z.string().default('TecBunny Solutions'),
     nodeEnv: z.string().default('development'),
     baseDomain: z.string().min(1, 'Base Domain is required'),
-    apiUrl: z.string().url('API URL must be a valid URL'),
+    apiUrl: z.string().url('API URL must be a valid URL').default('https://api.tecbunny.com'),
     mgmtUrl: z.string().url('Management URL must be a valid URL'),
     superadminUrl: z.string().url('Superadmin URL must be a valid URL'),
     wabaUrl: z.string().url('WABA URL must be a valid URL'),
@@ -121,7 +121,7 @@ export class EnvironmentValidator {
       app: {
         siteUrl: process.env.NEXT_PUBLIC_SITE_URL,
         baseDomain: process.env.NEXT_PUBLIC_BASE_DOMAIN,
-        apiUrl: process.env.NEXT_PUBLIC_API_URL,
+        apiUrl: undefined,
         mgmtUrl: process.env.NEXT_PUBLIC_MGMT_URL,
         superadminUrl: process.env.NEXT_PUBLIC_SUPERADMIN_URL,
         wabaUrl: process.env.NEXT_PUBLIC_WABA_URL,
