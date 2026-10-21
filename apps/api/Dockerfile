@@ -12,7 +12,15 @@ COPY apps/superadmin/package.json ./apps/superadmin/package.json
 COPY apps/waba/package.json ./apps/waba/package.json
 COPY apps/webmail/package.json ./apps/webmail/package.json
 
-RUN npm ci --include=dev
+# Cache mount keeps downloaded tarballs across builds (this VPS's network chokes
+# under npm's default concurrency — fetch retry knobs + fewer sockets prevent
+# transient ETIMEDOUTs from killing a ~20 min install).
+RUN --mount=type=cache,target=/root/.npm \
+    npm ci --include=dev --no-audit --no-fund \
+      --maxsockets=4 \
+      --fetch-retries=5 \
+      --fetch-retry-maxtimeout=120000 \
+      --fetch-timeout=600000
 
 # ─── Stage 2: builder ──────────────────────────────────────────────────────────
 FROM node:22-alpine AS builder
