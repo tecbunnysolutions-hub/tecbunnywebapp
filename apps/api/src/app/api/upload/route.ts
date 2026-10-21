@@ -12,7 +12,8 @@ export const runtime = 'nodejs';
 export const maxDuration = 60;
 import {  uploadToSupabase, uploadFavicon, uploadLogo, uploadProductImage  } from '@tecbunny/database/storage';
 import { uploadHeroBanner, isS3Configured } from "@tecbunny/core/s3-storage";
-import sharp from 'sharp';
+// sharp is imported lazily inside the handler: it is a native module, and
+// loading it eagerly breaks `next build` page-data collection on musl hosts.
 
 export async function POST(request: NextRequest) {
   const correlationId = request.headers.get('x-correlation-id');
@@ -93,6 +94,7 @@ export async function POST(request: NextRequest) {
     let optimizedFile = file;
     try {
       const buffer = Buffer.from(arrayBuffer);
+      const { default: sharp } = await import('sharp');
       const optimizedBuffer = await sharp(buffer)
         .webp({ quality: 80, effort: 4 })
         .toBuffer();
