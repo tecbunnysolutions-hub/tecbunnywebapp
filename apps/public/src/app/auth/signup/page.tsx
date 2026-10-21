@@ -201,14 +201,15 @@ export default function SignUpPage() {
           email: formData.email.trim(),
           name: formData.name,
           mobile: formData.mobile,
-          password: formData.password,
           otpId: data.otpId,
           channel: resolvedChannel,
           fallbackAvailable: data.fallbackAvailable ?? false,
           timestamp: Date.now(),
         };
+        // Password is kept only in page memory (survives client-side navigation), never in storage
+        (window as unknown as { __signupPassword?: string }).__signupPassword = formData.password;
         localStorage.setItem('signup_session', JSON.stringify(signupData));
-        logger.debug('Signup session persisted', signupData);
+        logger.debug('Signup session persisted', { ...signupData });
       } catch (storageError) {
         logger.warn('Error storing signup session', {
           error: storageError instanceof Error ? storageError.message : String(storageError)

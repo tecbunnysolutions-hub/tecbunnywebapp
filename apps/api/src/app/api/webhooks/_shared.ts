@@ -20,19 +20,31 @@ export function getWebhookTimestampHeader(request: Request) {
   return request.headers.get('x-webhook-timestamp') || request.headers.get('x-payu-timestamp');
 }
 
+// In-memory fallback used when Redis is unavailable (per-instance, TTL-bound).
+const localClaims = new Map<string, number>();
+
+function claimLocally(key: string) {
+  const now = Date.now();
+  for (const [k, expiresAt] of localClaims) {
+    if (expiresAt <= now) localClaims.delete(k);
+  }
+  if (localClaims.has(key)) return false;
+  localClaims.set(key, now + DEFAULT_IDEMPOTENCY_TTL_SECONDS * 1000);
+  return true;
+}
+
 export async function claimWebhookEventId(prefix: string, eventId: string) {
+  const key = `${prefix}:${eventId}`;
   const redis = getRedis();
   if (!redis) {
-    return true;
+    return claimLocally(key);
   }
 
   try {
-    const key = `${prefix}:${eventId}`;
     const claimed = await redis.set(key, 'processing', 'EX', DEFAULT_IDEMPOTENCY_TTL_SECONDS, 'NX');
     return Boolean(claimed);
   } catch {
-    // Fail-open on Redis transport issues; DB idempotency remains a backstop.
-    return true;
+    return claimLocally(key);
   }
 }
 

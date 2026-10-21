@@ -13,6 +13,7 @@ const createRoleSchema = z.object({
 
 const deleteRoleSchema = z.object({
   id: z.string().uuid(),
+  organization_id: z.string().min(1).nullable(),
 });
 
 export async function GET(req: NextRequest) {
@@ -104,15 +105,16 @@ export async function DELETE(req: NextRequest) {
 
     const parsed = deleteRoleSchema.safeParse(await req.json().catch(() => ({})));
     if (!parsed.success) {
-      return NextResponse.json({ error: 'A valid role id is required' }, { status: 400 });
+      return NextResponse.json({ error: 'A valid role id and organization_id are required' }, { status: 400 });
     }
 
-    const role = await prisma.role.findUnique({
-      where: { id: parsed.data.id },
+    const role = await prisma.role.findFirst({
+      where: { id: parsed.data.id, organization_id: parsed.data.organization_id },
       include: {
         permissions: {
           include: { permission: true }
-        }
+        },
+        _count: { select: { users: true } },
       },
     });
 
@@ -122,6 +124,10 @@ export async function DELETE(req: NextRequest) {
 
     if (role.is_system_role) {
       return NextResponse.json({ error: 'System roles cannot be deleted' }, { status: 409 });
+    }
+
+    if (role._count.users > 0) {
+      return NextResponse.json({ error: 'Role is assigned to users and cannot be deleted' }, { status: 409 });
     }
 
     await withAuditEvent({
@@ -140,7 +146,14 @@ export async function DELETE(req: NextRequest) {
       httpMethod: 'DELETE',
       databaseTable: 'roles',
       priority: 'critical',
-    }, async () => prisma.role.delete({ where: { id: parsed.data.id } }));
+    }, async () => prisma.role.deleteMany({
+      where: {
+        id: parsed.data.id,
+        organization_id: parsed.data.organization_id,
+        is_system_role: false,
+        users: { none: {} },
+      },
+    }));
     return NextResponse.json({ success: true });
   } catch (error: any) {
     console.error('Error deleting role:', error);

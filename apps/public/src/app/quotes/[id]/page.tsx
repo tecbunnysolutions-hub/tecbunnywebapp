@@ -27,6 +27,7 @@ export default function QuoteDetailPage() {
   const { user, supabase } = useAuth();
   
   const [quote, setQuote] = useState<any>(null);
+  const [quoteLoadError, setQuoteLoadError] = useState('Quote not found.');
   const [loading, setLoading] = useState(true);
   const [responding, setResponding] = useState(false);
 
@@ -53,11 +54,21 @@ export default function QuoteDetailPage() {
       : `/api/quotes/${quoteId}`;
     fetch(quoteUrl, { credentials: 'include' })
       .then(res => {
-        if (!res.ok) throw new Error('Quote not found');
+        if (!res.ok) {
+          const message = res.status === 401
+            ? 'Sign in to view this quote, or use the secure quote link sent to your email.'
+            : res.status === 403
+              ? 'This quote belongs to a different account. Use the secure link sent to your email.'
+              : res.status === 404
+                ? 'Quote not found.'
+                : 'Unable to load this quote right now.';
+          throw new Error(message);
+        }
         return res.json();
       })
       .then(data => {
         setQuote(data);
+        setQuoteLoadError('');
         setAuthForm({
           name: data.customer_name || '',
           email: data.customer_email || '',
@@ -68,9 +79,10 @@ export default function QuoteDetailPage() {
       })
       .catch(err => {
         console.error(err);
+        setQuoteLoadError(err instanceof Error ? err.message : 'Unable to load this quote right now.');
         toast({ 
           title: 'Error', 
-          description: 'Failed to load quote.',
+          description: err instanceof Error ? err.message : 'Failed to load quote.',
           variant: 'destructive' 
         });
         setLoading(false);
@@ -102,7 +114,9 @@ export default function QuoteDetailPage() {
 
       // Redirect to checkout
       setTimeout(() => {
-        window.location.href = `/checkout?quoteId=${quote.quote_number || quote.id}`;
+        const query = new URLSearchParams({ quoteId: quote.quote_number || quote.id });
+        if (actionToken) query.set('token', actionToken);
+        window.location.href = `/checkout?${query.toString()}`;
       }, 1500);
     } catch (error) {
       console.error(error);
@@ -212,7 +226,9 @@ export default function QuoteDetailPage() {
       
       // Redirect to checkout with quote ID
       setTimeout(() => {
-        window.location.href = `/checkout?quoteId=${quote.quote_number || quote.id}`;
+        const query = new URLSearchParams({ quoteId: quote.quote_number || quote.id });
+        if (actionToken) query.set('token', actionToken);
+        window.location.href = `/checkout?${query.toString()}`;
       }, 1000);
     } catch (err: any) {
       toast({ variant: 'destructive', title: 'Error', description: err.message });
@@ -271,7 +287,7 @@ export default function QuoteDetailPage() {
         <div className="max-w-4xl mx-auto">
           <Card className="border-border bg-card">
             <CardContent className="py-12">
-              <p className="text-center text-muted-foreground">Quote not found.</p>
+              <p className="text-center text-muted-foreground">{quoteLoadError}</p>
             </CardContent>
           </Card>
         </div>
@@ -298,7 +314,9 @@ export default function QuoteDetailPage() {
           <Button
             onClick={async () => {
               try {
-                const res = await fetch(`/api/quotes/${quote.quote_number || quote.id}?format=pdf`);
+                const query = new URLSearchParams({ format: 'pdf' });
+                if (actionToken) query.set('token', actionToken);
+                const res = await fetch(`/api/quotes/${quote.quote_number || quote.id}?${query.toString()}`, { credentials: 'include' });
                 if (!res.ok) throw new Error('Download failed');
                 const blob = await res.blob();
                 const url = window.URL.createObjectURL(blob);
@@ -541,19 +559,6 @@ export default function QuoteDetailPage() {
                   value={authForm.address}
                   onChange={(e) => setAuthForm({ ...authForm, address: e.target.value })}
                 />
-              </div>
-
-              <div className="space-y-2">
-                <label htmlFor="app-quotes-id-page-account-password" className="text-sm font-medium text-muted-foreground">Account Password</label>
-                <input id="app-quotes-id-page-account-password"
-                  type="password"
-                  required
-                  placeholder="Enter password"
-                  className="w-full bg-muted/50 border border-border rounded-md p-2 text-foreground"
-                  value={authForm.password}
-                  onChange={(e) => setAuthForm({ ...authForm, password: e.target.value })}
-                />
-                <p className="text-[10px] text-muted-foreground">Min. 8 chars, 1 uppercase, 1 lowercase, 1 number, 1 special char.</p>
               </div>
 
               <div className="space-y-2">

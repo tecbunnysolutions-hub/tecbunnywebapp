@@ -40,6 +40,24 @@ export async function POST(request: NextRequest) {
     const mobile = normalizeMobile(parsed.data.mobile);
     const serialNumber = parsed.data.serialNumber.trim();
 
+    if (!isSupabaseServiceConfigured) {
+      return NextResponse.json({ error: 'Service unavailable. Please try again later.' }, { status: 503 });
+    }
+
+    const supabase = createSupabaseServiceClient();
+
+    // Bind the OTP to the submitted mobile before consuming it
+    const { data: otpRow } = await supabase
+      .from('otp_verifications')
+      .select('phone')
+      .eq('id', parsed.data.otpId)
+      .maybeSingle();
+    const otpMobile = normalizeMobile(typeof otpRow?.phone === 'string' ? otpRow.phone : '');
+    if (!otpMobile || otpMobile !== mobile) {
+      return NextResponse.json({ error: 'OTP does not match the submitted mobile number.' }, { status: 400 });
+    }
+
+    // verifyOTP atomically marks the OTP as verified, so it cannot be reused
     const otpManager = new OTPManager();
     const verification = await otpManager.verifyOTP({
       otpId: parsed.data.otpId,
@@ -49,12 +67,6 @@ export async function POST(request: NextRequest) {
     if (!verification.success) {
       return NextResponse.json({ error: verification.message || 'Invalid or expired OTP.' }, { status: 400 });
     }
-
-    if (!isSupabaseServiceConfigured) {
-      return NextResponse.json({ error: 'Service unavailable. Please try again later.' }, { status: 503 });
-    }
-
-    const supabase = createSupabaseServiceClient();
 
     let deviceType = 'DEFAULT';
     let model = 'TecBunny Device';

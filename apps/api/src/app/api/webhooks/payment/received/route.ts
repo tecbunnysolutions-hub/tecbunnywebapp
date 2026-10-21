@@ -161,10 +161,31 @@ async function processPaymentReceived(supabase: any, data: any, source: string) 
   const formattedPhone = cleanPhone ? (cleanPhone.startsWith('91') ? cleanPhone : `91${cleanPhone}`) : null;
   const parsedAmount = parseFloat(String(amount));
   const paymentAmount = isNaN(parsedAmount) ? 0 : parsedAmount;
-  const systemPaymentStatus = mapPaymentStatus(payment_status);
+  let systemPaymentStatus = mapPaymentStatus(payment_status);
+  let amountMismatch: { expected: number; received: number } | null = null;
+
+  if (orderId && systemPaymentStatus === 'approved') {
+    const { data: orderRow, error: orderLookupError } = await supabase
+      .from('orders')
+      .select('total')
+      .eq('order_id', orderId)
+      .single();
+
+    if (orderLookupError || !orderRow) {
+      throw new Error(`Order lookup failed for amount verification: ${orderLookupError?.message ?? 'not found'}`);
+    }
+
+    const expected = Number(orderRow.total);
+    if (!Number.isFinite(expected) || Math.abs(expected - paymentAmount) > 0.01) {
+      amountMismatch = { expected, received: paymentAmount };
+      // Do not confirm; record as pending so it can be reviewed manually.
+      systemPaymentStatus = 'pending';
+      logger.error('Payment webhook amount mismatch, flagged for review', { orderId, paymentId, ...amountMismatch });
+    }
+  }
 
   // Update order status based on payment outcome
-  if (orderId) {
+  if (orderId && !amountMismatch) {
     const orderStatus = systemPaymentStatus === 'approved' ? 'Payment Confirmed' : 'Payment Failed';
     const { error: orderError, data: updatedOrder } = await supabase
       .from('orders')
@@ -267,6 +288,7 @@ async function processPaymentReceived(supabase: any, data: any, source: string) 
       gateway_response,
       source,
       metadata: {
+        ...(amountMismatch ? { needs_review: true, amount_mismatch: amountMismatch } : {}),
         ...(metadata && typeof metadata === 'object' ? metadata : {}),
         ...((additionalData && Object.keys(additionalData).length <= 15) ? additionalData : { _overflow: 'Data truncated due to size limits' })
       },
@@ -308,7 +330,7 @@ async function processPaymentReceived(supabase: any, data: any, source: string) 
   }
 
   // Send payment confirmation WhatsApp
-  if (formattedPhone) {
+  if (formattedPhone && !amountMismatch) {
     await sendPaymentConfirmationWhatsApp(formattedPhone, {
       paymentId,
       orderId,

@@ -42,6 +42,7 @@ export default function CheckoutPage() {
   const { toast } = useToast();
   const searchParams = useSearchParams();
   const quoteId = searchParams.get('quoteId');
+  const quoteToken = searchParams.get('token') || '';
   const pickupStores = PICKUP_STORES;
   const { isEnabled, isLoading: flagsLoading } = useFeatureFlags();
   
@@ -109,9 +110,9 @@ export default function CheckoutPage() {
   useEffect(() => {
     if (!quoteId) return;
     setLoadingQuote(true);
-    fetch(`/api/quotes/${quoteId}`)
+    fetch(`/api/quotes/${quoteId}?token=${encodeURIComponent(quoteToken)}`, { credentials: 'include' })
       .then(res => {
-        if (!res.ok) throw new Error('Quote not found');
+        if (!res.ok) throw new Error(String(res.status));
         return res.json();
       })
       .then(data => {
@@ -127,17 +128,27 @@ export default function CheckoutPage() {
       })
       .catch(err => {
         console.error(err);
-        toast({ title: 'Error', description: 'Failed to load quote details.', variant: 'destructive' });
+        const description = err.message === '401'
+          ? 'Please open the secure quote link from your email or sign in to continue.'
+          : err.message === '403'
+            ? 'This quote is not available to your account.'
+            : err.message === '404'
+              ? 'Quote not found. Please check the quote number and try again.'
+              : 'Unable to load quote details right now. Please try again.';
+        toast({ title: 'Error', description, variant: 'destructive' });
         setLoadingQuote(false);
       });
-  }, [quoteId, toast]);
+  }, [quoteId, quoteToken, toast]);
   
   const [orderType, setOrderType] = useState<OrderType>('Delivery');
   const [selectedPickupStoreId, setSelectedPickupStoreId] = useState<string>('tecbunny-store-parcem');
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>('');
   const [orderError, setOrderError] = useState<string>('');
   const [privacyAccepted, setPrivacyAccepted] = useState(false);
-  const [recoveryPreview, setRecoveryPreview] = useState<{ phone: string; message: string; upiDeepLink: string } | null>(null);
+  const [whatsappRecoveryConsent, setWhatsappRecoveryConsent] = useState(false);
+  const [recoveryWebsite, setRecoveryWebsite] = useState('');
+  const [recoverySending, setRecoverySending] = useState(false);
+  const [recoverySent, setRecoverySent] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({
     name: '',
     email: '',
@@ -191,47 +202,44 @@ export default function CheckoutPage() {
     }
   }, [user]);
 
-  // Debounced background cart recovery trigger
-  useEffect(() => {
+  const requestCartRecoveryOnWhatsApp = async () => {
     const cleanPhone = customerInfo.phone.replace(/\D/g, '');
-    let timerId: NodeJS.Timeout | null = null;
+    if (!whatsappRecoveryConsent || cleanPhone.length < 10 || cleanPhone.length > 12 || !cartItems.length) return;
 
-    if (cleanPhone.length === 10 && cartItems.length > 0) {
-      const triggerAbandonmentLog = async () => {
-        try {
-          const itemsPayload = cartItems.map(item => ({
-            name: item.title || item.name || '',
-            quantity: item.quantity || 1
-          }));
-
-          const subtotal = pricing?.subtotal ?? cartSubtotal;
-          const gst = pricing?.gstAmount ?? cartGst;
-          const totalAmount = pricing?.finalTotal ?? (subtotal + gst);
-
-          await fetch('/api/cart/abandoned', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              name: customerInfo.name,
-              phone: cleanPhone,
-              cartItems: itemsPayload,
-              amount: totalAmount
-            })
-          });
-        } catch (e) {
-          console.error('Failed to log abandoned draft cart', e);
-        }
-      };
-
-      timerId = setTimeout(triggerAbandonmentLog, 1500);
-    }
-
-    return () => {
-      if (timerId) {
-        clearTimeout(timerId);
+    setRecoverySending(true);
+    try {
+      const response = await fetch('/api/cart/abandoned', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          consent: true,
+          name: customerInfo.name,
+          phone: cleanPhone,
+          website: recoveryWebsite,
+        }),
+      });
+      const result = await response.json().catch(() => null);
+      if (!response.ok || !result?.success) {
+        throw new Error(result?.error || 'Unable to send the WhatsApp cart link.');
       }
-    };
-  }, [customerInfo.phone, customerInfo.name, cartItems, pricing, cartSubtotal, cartGst]);
+      setRecoverySent(true);
+      toast({
+        title: 'WhatsApp link sent',
+        description: 'We sent a link to your cart. Prices and availability will be confirmed at checkout.',
+      });
+    } catch (error) {
+      logger.error('checkout.whatsapp_cart_link_failed', {
+        error: error instanceof Error ? error.message : String(error),
+      });
+      toast({
+        title: 'Could not send WhatsApp link',
+        description: error instanceof Error ? error.message : 'Please try again later.',
+        variant: 'destructive',
+      });
+    } finally {
+      setRecoverySending(false);
+    }
+  };
 
   // Auto-select first available payment method
   useEffect(() => {
@@ -736,7 +744,11 @@ export default function CheckoutPage() {
                       autoComplete="tel"
                       required
                       value={customerInfo.phone}
-                      onChange={(event) => handleInputChange('phone', event.target.value)}
+                      onChange={(event) => {
+                        handleInputChange('phone', event.target.value);
+                        setWhatsappRecoveryConsent(false);
+                        setRecoverySent(false);
+                      }}
                       onBlur={(event) => handleInputBlur('phone', event.target.value)}
                       aria-invalid={!!fieldErrors.phone}
                       aria-describedby={fieldErrors.phone ? "phone-error" : undefined}
@@ -746,6 +758,42 @@ export default function CheckoutPage() {
                     {fieldErrors.phone && (
                       <span id="phone-error" role="alert" aria-live="polite" className="text-xs text-red-400 mt-1 block pl-1">{fieldErrors.phone}</span>
                     )}
+                    <div aria-hidden="true" style={{ position: 'absolute', left: '-10000px', width: 1, height: 1, overflow: 'hidden' }}>
+                      <label htmlFor="recovery-website">Leave this field empty</label>
+                      <input
+                        type="text"
+                        id="recovery-website"
+                        name="website"
+                        value={recoveryWebsite}
+                        onChange={(event) => setRecoveryWebsite(event.target.value)}
+                        autoComplete="off"
+                        tabIndex={-1}
+                      />
+                    </div>
+                    <div className="mt-2 rounded-md border border-border bg-muted/10 p-3">
+                      <label className="flex items-start gap-2 text-xs text-muted-foreground">
+                        <input
+                          type="checkbox"
+                          checked={whatsappRecoveryConsent}
+                          onChange={(event) => {
+                            setWhatsappRecoveryConsent(event.target.checked);
+                            setRecoverySent(false);
+                          }}
+                          className="mt-0.5"
+                        />
+                        <span>I agree to receive one WhatsApp message with a link to return to my cart. This does not reserve items or lock prices.</span>
+                      </label>
+                      {whatsappRecoveryConsent && (
+                        <button
+                          type="button"
+                          onClick={requestCartRecoveryOnWhatsApp}
+                          disabled={recoverySending || recoverySent || customerInfo.phone.replace(/\D/g, '').length < 10 || customerInfo.phone.replace(/\D/g, '').length > 12}
+                          className="mt-2 text-xs font-semibold text-primary underline disabled:opacity-50"
+                        >
+                          {recoverySending ? 'Sending…' : recoverySent ? 'Link sent' : 'Send me a WhatsApp cart link'}
+                        </button>
+                      )}
+                    </div>
                   </div>
                   <div className="flex flex-col gap-1.5">
                     <label htmlFor="email" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Email Address</label>

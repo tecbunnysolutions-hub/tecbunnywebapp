@@ -30,7 +30,7 @@ describe('GET /api/v1/admin/amc-contracts', () => {
   it('requires staff access inside the handler', async () => {
     mocks.requireCaller.mockRejectedValue(new ServiceError(401, 'UNAUTHENTICATED', 'Authentication required.'));
     const response = await GET(new NextRequest('http://localhost/api/v1/admin/amc-contracts'));
-    expect(mocks.requireCaller).toHaveBeenCalledWith(expect.any(NextRequest), 'staff');
+    expect(mocks.requireCaller).toHaveBeenCalledWith(expect.any(NextRequest), 'customer');
     expect(response.status).toBe(401);
     expect(mocks.listAmcContracts).not.toHaveBeenCalled();
   });

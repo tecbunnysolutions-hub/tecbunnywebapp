@@ -4,6 +4,7 @@ import { createSupabaseServiceClient, isSupabaseServiceConfigured } from "@tecbu
 import { NextRequest, NextResponse } from 'next/server';
 import { deserializeOrder } from "@tecbunny/core/orders/normalizers";
 import { logger } from "@tecbunny/core";
+import { verifyGuestOrderAccessToken } from '../../../../lib/guest-order-access';
 
 export async function GET(
   request: NextRequest,
@@ -30,6 +31,12 @@ export async function GET(
 
     if (!order) {
       return NextResponse.json({ error: 'Order not found' }, { status: 404 });
+    }
+
+    // A guest capability is returned only when this order is created.
+    if (verifyGuestOrderAccessToken(request.headers.get('x-guest-order-token'), id)) {
+      const normalized = deserializeOrder(order);
+      return NextResponse.json({ success: true, order: normalized });
     }
 
     // IDOR Protection: Enforce ownership

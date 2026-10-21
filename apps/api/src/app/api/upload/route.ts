@@ -12,6 +12,7 @@ export const runtime = 'nodejs';
 export const maxDuration = 60;
 import {  uploadToSupabase, uploadFavicon, uploadLogo, uploadProductImage  } from '@tecbunny/database/storage';
 import { uploadHeroBanner, isS3Configured } from "@tecbunny/core/s3-storage";
+import { sanitizeUploadFolder } from '../../../lib/safe-upload-path';
 // sharp is imported lazily inside the handler: it is a native module, and
 // loading it eagerly breaks `next build` page-data collection on musl hosts.
 
@@ -53,7 +54,11 @@ export async function POST(request: NextRequest) {
     const file = formData.get('file') as File;
     const type = formData.get('type') as string;
     // Allow clients to suggest a folder/path (for hero carousel management)
-    const pathParam = formData.get('path') as string | null;
+    const pathParam = sanitizeUploadFolder(formData.get('path') as string | null);
+    if (pathParam === null) {
+      logger.warn('upload_invalid_path', { correlationId });
+      return apiError('VALIDATION_ERROR', { overrideMessage: 'Invalid upload path', correlationId });
+    }
 
     logger.debug('upload_file_received', {
       correlationId,

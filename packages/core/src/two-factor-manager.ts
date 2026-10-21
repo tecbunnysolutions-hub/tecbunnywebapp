@@ -5,6 +5,7 @@ import qrcode from 'qrcode';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 import { logger } from '@tecbunny/core';
+import { rateLimit } from './rate-limit';
 import {  createServiceClient, isSupabaseServiceConfigured  } from '@tecbunny/database/admin';
 
 export interface TwoFactorSetup {
@@ -17,7 +18,11 @@ export interface TwoFactorVerification {
   success: boolean;
   message: string;
   backupCodeUsed?: boolean;
+  rateLimited?: boolean;
 }
+
+const TWO_FACTOR_VERIFY_LIMIT = 5;
+const TWO_FACTOR_VERIFY_WINDOW_MS = 15 * 60 * 1000;
 
 const ENCRYPTED_SECRET_PREFIX = 'enc:v1:';
 const HASHED_BACKUP_CODE_PREFIX = 'hash:v1:';
@@ -314,6 +319,15 @@ class TwoFactorManager {
     }
 
     try {
+      const limit = await rateLimit(`2fa:verify:${userId}`, TWO_FACTOR_VERIFY_LIMIT, TWO_FACTOR_VERIFY_WINDOW_MS);
+      if (!limit.allowed) {
+        return {
+          success: false,
+          message: 'Too many verification attempts. Please try again later.',
+          rateLimited: true,
+        };
+      }
+
       // Get user's 2FA settings
       const { data: profile, error } = await (client as any)
         .from('profiles')
@@ -352,14 +366,26 @@ class TwoFactorManager {
         // consumed without being recorded, preventing indefinite reuse.
         const updatedUsedCodes = this.markBackupCodeUsed(backupCodes, usedCodes, token);
 
-        const { error: updateError } = await (client as any)
+        // Compare-and-swap on the previously read value so concurrent requests
+        // cannot both consume the same backup code.
+        let updateQuery = (client as any)
           .from('profiles')
           .update({ two_factor_backup_codes_used: updatedUsedCodes } as any)
           .eq('id', userId);
+        updateQuery = Array.isArray(profile.two_factor_backup_codes_used)
+          ? updateQuery.eq('two_factor_backup_codes_used', profile.two_factor_backup_codes_used)
+          : updateQuery.is('two_factor_backup_codes_used', null);
+
+        const { data: updatedRows, error: updateError } = await updateQuery.select('id');
 
         if (updateError) {
           logger.error('2FA backup code DB update failed — rejecting to prevent reuse', { error: updateError, userId });
           return { success: false, message: 'Verification failed due to a server error. Please try again.' };
+        }
+
+        if (!Array.isArray(updatedRows) || updatedRows.length === 0) {
+          logger.error('2FA backup code already consumed by a concurrent request', { userId });
+          return { success: false, message: 'Invalid 2FA code' };
         }
 
         return {

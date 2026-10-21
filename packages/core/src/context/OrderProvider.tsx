@@ -291,6 +291,14 @@ export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       }
 
       createdOrder.id = createdOrderId;
+      const guestAccessToken = result?.data?.guestAccessToken ?? result?.guestAccessToken;
+      if (!user && typeof guestAccessToken === 'string') {
+        try {
+          window.sessionStorage.setItem(`tb-guest-order-token:${createdOrderId}`, guestAccessToken);
+        } catch {
+          throw new Error('Order created, but secure guest order access could not be saved in this browser.');
+        }
+      }
       const hydratedOrder: Order = {
         ...createdOrder,
         customer_email: createdOrder.customer_email ?? customerEmail,
@@ -438,7 +446,15 @@ export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const getOrderById = useCallback(async (orderId: string): Promise<Order | null> => {
     try {
       // First try to load from secure server API to bypass client RLS for guests/COD
-      const apiRes = await fetch(`/api/orders/${orderId}`);
+      let guestToken: string | null = null;
+      try {
+        guestToken = window.sessionStorage.getItem(`tb-guest-order-token:${orderId}`);
+      } catch {
+        guestToken = null;
+      }
+      const apiRes = await fetch(`/api/orders/${orderId}`, {
+        headers: guestToken ? { 'x-guest-order-token': guestToken } : undefined,
+      });
       if (apiRes.ok) {
         const payload = await apiRes.json();
         if (payload?.success && payload?.order) {

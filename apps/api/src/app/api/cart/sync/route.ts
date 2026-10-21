@@ -1,16 +1,35 @@
 import { createSupabaseClient as createClient } from '@tecbunny/database/server';
 import { NextRequest, NextResponse } from 'next/server';
 import { getAdminDb, logger } from '@tecbunny/core/server';
+import { rateLimit } from '@tecbunny/core/rate-limit';
+import { z } from 'zod';
+
+const MAX_CART_ITEMS = 100;
+
+const cartSyncSchema = z.object({
+  userId: z.string().uuid().nullish(),
+  guestId: z.string().regex(/^[A-Za-z0-9_-]{8,64}$/).nullish(),
+  cartItems: z.array(z.record(z.string(), z.unknown())).max(MAX_CART_ITEMS),
+  pricing: z.record(z.string(), z.unknown()).nullish(),
+}).refine((v) => Boolean(v.userId || v.guestId), { message: 'Missing userId or guestId' })
+  .refine((v) => JSON.stringify(v.cartItems).length <= 100_000 && JSON.stringify(v.pricing ?? {}).length <= 10_000, {
+    message: 'Payload too large',
+  });
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const { userId, guestId, cartItems, pricing } = body;
-
-    // We need at least one identifier and some cart data
-    if (!userId && !guestId) {
-      return NextResponse.json({ error: 'Missing userId or guestId' }, { status: 400 });
+    const clientIP = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || request.headers.get('x-real-ip') || 'unknown';
+    const rl = await rateLimit(`cart-sync:${clientIP}`, 60, 60000);
+    if (!rl.allowed) {
+      return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
     }
+
+    const raw = await request.json().catch(() => null);
+    const parsed = cartSyncSchema.safeParse(raw);
+    if (!parsed.success) {
+      return NextResponse.json({ error: 'Invalid input' }, { status: 400 });
+    }
+    const { userId, guestId, cartItems, pricing } = parsed.data;
 
     // A client-supplied userId is a privileged claim: verify it matches the
     // session before writing with the admin DB client (which bypasses RLS).

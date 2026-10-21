@@ -4,7 +4,7 @@ import { createAuthedApi } from '@/lib/api';
 
 
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 
@@ -20,6 +20,7 @@ import { Separator } from "@tecbunny/ui";
 import { useToast } from "@tecbunny/ui";
 import { logger } from '@tecbunny/core';
 import { formatOrderNumber } from "@tecbunny/core/order-utils";
+import { getGuestOrderToken } from '@/lib/guest-order-access';
 
 
 interface Order {
@@ -36,7 +37,7 @@ interface Order {
   isPendingPayment?: boolean;
 }
 
-type PaymentState = 'pending' | 'paid';
+type PaymentState = 'pending' | 'verification_pending' | 'paid';
 
 interface OrderExtras {
   cart_items?: Array<Record<string, unknown>>;
@@ -59,6 +60,10 @@ export default function UPIPaymentPage() {
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
   const [paymentStatus, setPaymentStatus] = useState<PaymentState>('pending');
+  const [utr, setUtr] = useState('');
+  const [paymentClaimSubmitted, setPaymentClaimSubmitted] = useState(false);
+  const [isSubmittingClaim, setIsSubmittingClaim] = useState(false);
+  const claimSubmissionInFlight = useRef(false);
   const [qrCodeUrl, setQrCodeUrl] = useState<string>('');
   const supabase = createClient();
 
@@ -87,7 +92,6 @@ export default function UPIPaymentPage() {
     if (paymentStatusText === 'payment confirmed') {
       return 'paid';
     }
-
     if (!status) {
       return 'pending';
     }
@@ -146,12 +150,20 @@ export default function UPIPaymentPage() {
 
       setCustomerEmail(typeof extras.customer_email === 'string' ? extras.customer_email : null);
       setCustomerPhone(typeof extras.customer_phone === 'string' ? extras.customer_phone : null);
+      const hasPaymentClaim = Boolean(data.payment_claim_submitted);
+      setPaymentClaimSubmitted(hasPaymentClaim);
 
       const resolvedPaymentState = resolvePaymentState(
         normalizedOrder.status,
         normalizedOrder.payment_status
       );
-      setPaymentStatus(resolvedPaymentState);
+      setPaymentStatus(
+        resolvedPaymentState === 'paid'
+          ? 'paid'
+          : hasPaymentClaim
+            ? 'verification_pending'
+            : 'pending',
+      );
 
       const upiLink = generateUPILink(normalizedOrder);
       const qrDataUrl = await QRCode.toDataURL(upiLink, {
@@ -199,42 +211,51 @@ export default function UPIPaymentPage() {
   }, [generateUPILink]);
 
   const handlePaymentConfirmation = async () => {
+    if (claimSubmissionInFlight.current || !/^[A-Za-z0-9-]{6,35}$/.test(utr.trim())) return;
+    claimSubmissionInFlight.current = true;
+    setIsSubmittingClaim(true);
     try {
-      // In a real app, you would verify payment through UPI gateway
-      const payload = { orderId, status: 'Payment Confirmed', additionalData: { payment_status: 'Payment Confirmed' } };
-      const response = await fetch('/api/orders/update-status', {
+      const sessionToken = (await supabase.auth.getSession()).data.session?.access_token;
+      const guestToken = getGuestOrderToken(String(orderId));
+      const response = await fetch('/api/orders/payment-claim', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        headers: {
+          'Content-Type': 'application/json',
+          ...(sessionToken ? { Authorization: 'Bearer ' + sessionToken } : {}),
+          ...(guestToken ? { 'x-guest-order-token': guestToken } : {}),
+        },
+        body: JSON.stringify({ orderId, utr }),
       });
       const result = await response.json().catch(() => null);
       if (!response.ok || !result?.success) {
-        throw new Error(result?.error || 'Failed to update payment status');
+        throw new Error(result?.error || 'Failed to submit payment details');
       }
 
-  setPaymentStatus('paid');
-  setOrder(prev => prev ? { ...prev, status: 'Payment Confirmed', payment_status: 'Payment Confirmed' } : prev);
+      setPaymentClaimSubmitted(true);
+      setPaymentStatus('verification_pending');
 
       toast({
-        title: "Payment Confirmed!",
-        description: "Your payment has been received and order confirmed.",
+        title: "Payment submitted for verification",
+        description: "Your transaction reference is pending verification. This does not confirm payment.",
       });
-
-      // Redirect to order confirmation
-      router.push(`/orders/${orderId}`);
     } catch (error) {
-      logger.error('Error updating payment status after UPI confirmation', { error, orderId });
+      logger.error('Error submitting UPI payment reference', { error, orderId });
       toast({
         title: "Error",
-        description: "Failed to confirm payment",
+        description: "Failed to submit the payment reference.",
         variant: "destructive",
       });
+    } finally {
+      claimSubmissionInFlight.current = false;
+      setIsSubmittingClaim(false);
     }
   };
 
   const paymentStatusLabel = paymentStatus === 'paid'
     ? 'Payment Confirmed'
-    : 'Payment Confirmation Pending';
+    : paymentStatus === 'verification_pending'
+      ? 'Payment Confirmation Pending'
+      : 'Awaiting Payment';
 
   if (loading) {
     return (
@@ -426,10 +447,9 @@ export default function UPIPaymentPage() {
           <CardContent>
             <ol className="list-decimal list-inside space-y-2 text-sm">
               <li>Complete the payment using any of the above methods</li>
-              <li>Take a screenshot of the successful transaction</li>
-              <li>Click "I have completed the payment" below</li>
-              <li>Our team will verify the payment within 2-4 hours</li>
-              <li>You'll receive a confirmation email once verified</li>
+              <li>Keep the transaction reference from your UPI app</li>
+              <li>Submit the reference below so our team can verify the payment</li>
+              <li>Your order is not confirmed until verification is complete</li>
             </ol>
           </CardContent>
         </Card>
@@ -438,17 +458,38 @@ export default function UPIPaymentPage() {
         <Card>
           <CardContent className="pt-6">
             <div className="space-y-4">
+              {!paymentClaimSubmitted && paymentStatus !== 'paid' && (
+                <label className="block space-y-2 text-sm">
+                  <span>UPI transaction reference (UTR)</span>
+                  <input
+                    required
+                    type="text"
+                    value={utr}
+                    onChange={(event) => setUtr(event.target.value)}
+                    minLength={6}
+                    maxLength={35}
+                    autoComplete="off"
+                    autoCapitalize="characters"
+                    className="w-full rounded-md border border-border bg-background px-3 py-2"
+                    placeholder="Enter the reference shown in your UPI app"
+                  />
+                </label>
+              )}
+              {paymentClaimSubmitted && (
+                <p className="text-sm text-center" role="status">
+                  Your transaction reference was submitted and is awaiting verification. Your order has not been marked paid.
+                </p>
+              )}
               <Button 
                 onClick={handlePaymentConfirmation}
                 className="w-full"
                 size="lg"
-                disabled={paymentStatus === 'paid'}
+                disabled={paymentStatus === 'paid' || paymentClaimSubmitted || isSubmittingClaim || !/^[A-Za-z0-9-]{6,35}$/.test(utr.trim())}
               >
-                {paymentStatus === 'paid' ? 'Payment Confirmed' : 'I have completed the payment'}
+                {paymentStatus === 'paid' ? 'Payment Confirmed' : isSubmittingClaim ? 'Submitting reference…' : paymentClaimSubmitted ? 'Submitted for verification' : 'Submit payment reference'}
               </Button>
               <p className="text-xs text-slate-400 text-center">
-                By clicking above, you confirm that you have successfully completed the payment.
-                Please ensure you have a valid transaction receipt.
+                A reference submission does not confirm payment. We will verify it before updating your order.
               </p>
             </div>
           </CardContent>

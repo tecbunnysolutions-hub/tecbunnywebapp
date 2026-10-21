@@ -5,6 +5,7 @@ export * from './types';
 import { logger } from '@tecbunny/shared/logger';
 import { optimizeImage, createOptimizeImageStream } from '@tecbunny/shared/image-processor';
 import { Readable } from 'stream';
+import { randomBytes } from 'crypto';
 
 function getSupabaseClient(operation: string) {
   ensureSupabaseConfigured(operation);
@@ -44,7 +45,7 @@ export async function uploadToSupabase(
 
     // Generate unique filename
     const timestamp = Date.now();
-    const randomId = Math.random().toString(36).substring(2, 15);
+    const randomId = randomBytes(16).toString('hex');
     let fileName = options?.fileName || `${timestamp}-${randomId}`;
     
     // Add appropriate file extension if missing

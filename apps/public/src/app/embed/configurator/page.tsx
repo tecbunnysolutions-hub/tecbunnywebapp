@@ -23,13 +23,20 @@ function ConfiguratorEmbedContent() {
       
       {/* Script to communicate height changes to parent frame */}
       <script dangerouslySetInnerHTML={{ __html: `
-        const resizeObserver = new ResizeObserver((entries) => {
-          for (let entry of entries) {
-            window.parent.postMessage({
-              type: 'TECBUNNY_RESIZE',
-              height: document.body.scrollHeight
-            }, '*');
+        const allowedOrigins = ['https://tecbunny.com', 'https://www.tecbunny.com'];
+        let targetOrigin = null;
+        try {
+          const refOrigin = document.referrer ? new URL(document.referrer).origin : null;
+          if (refOrigin && (allowedOrigins.includes(refOrigin) || /^https:\\/\\/([a-z0-9-]+\\.)*tecbunny\\.com$/.test(refOrigin))) {
+            targetOrigin = refOrigin;
           }
+        } catch (e) {}
+        const resizeObserver = new ResizeObserver(() => {
+          if (!targetOrigin || window.parent === window) return;
+          window.parent.postMessage({
+            type: 'TECBUNNY_RESIZE',
+            height: document.body.scrollHeight
+          }, targetOrigin);
         });
         resizeObserver.observe(document.body);
       `}} />

@@ -1,68 +1,51 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { logger } from "@tecbunny/core";
-import { sendWhatsAppNotification } from "@tecbunny/core/whatsapp-service";
+import { z } from 'zod';
+import { logger } from '@tecbunny/core';
+import { rateLimit } from '@tecbunny/core/rate-limit';
+import { getTrustedClientIp } from '@tecbunny/core/server';
+import { sendWhatsAppNotification } from '@tecbunny/core/whatsapp-service';
+
+const recoveryRequestSchema = z.object({
+  consent: z.literal(true),
+  name: z.string().trim().max(100).optional().default(''),
+  phone: z.string().trim().regex(/^\d{10,12}$/),
+  website: z.string().max(200).optional().default(''),
+}).strict();
 
 export async function POST(request: NextRequest) {
+  const ip = getTrustedClientIp(request);
+  const ipLimit = await rateLimit(`cart-recovery:ip:${ip}`, 5, 60 * 60 * 1000);
+  if (!ipLimit.allowed) {
+    return NextResponse.json({ success: false, error: 'Too many requests. Please try again later.' }, { status: 429 });
+  }
+
   try {
-    const internalKey = process.env.INTERNAL_API_KEY;
-    if (!internalKey || request.headers.get('x-internal-api-key') !== internalKey) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    const body = await request.json().catch(() => null);
+    const parsed = recoveryRequestSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json({ success: false, error: 'Please provide valid consent and a phone number.' }, { status: 400 });
     }
 
-    const body = await request.json();
-    const { name, phone, cartItems, amount } = body;
-
-    if (!phone || !cartItems || cartItems.length === 0 || !amount) {
-      return NextResponse.json({ success: false, error: 'Missing phone, cart items, or amount.' }, { status: 400 });
+    if (parsed.data.website.length > 0) {
+      return NextResponse.json({ success: true });
     }
 
-    const formattedPhone = phone.replace(/\D/g, '');
-    const cleanName = name?.trim() || 'Valued Customer';
-    
-    // Build Indian UPI Payment Deep-Link
-    // pa: Payee VPA, pn: Payee Name, am: Amount, cu: Currency, tn: Transaction Note
-    const payeeVpa = '30AAMCT1608G1ZO@payu';
-    const payeeName = 'TecBunny Solutions Private Limited';
-    const transactionNote = 'TecBunny Checkout Recovery';
-    
-    const upiDeepLink = `upi://pay?pa=${encodeURIComponent(payeeVpa)}&pn=${encodeURIComponent(payeeName)}&am=${amount}&cu=INR&tn=${encodeURIComponent(transactionNote)}`;
-    
-    // Build premium conversational recovery template message
-    const itemLines = cartItems.map((item: any) => `• ${item.name || item.title} (x${item.quantity || 1})`).join('\n');
-    
-    const whatsappMessage = `🛒 *TecBunny Solutions: Complete Your Purchase*
-
-Hi ${cleanName}, we noticed you left items in your cart. We have reserved them for you:
-
-*Items waiting for you:*
-${itemLines}
-
-*Total Invoice Amount:* ₹${Number(amount).toLocaleString('en-IN')}
-
-*⚡ Instant UPI Checkout:*
-Click the link below to pay instantly via GooglePay, PhonePe, or PayTM:
-${upiDeepLink}
-
-_Need configuration help or custom changes? Just reply to this message! 💬_`.trim();
-
-    logger.info('b2c_cart_abandonment_logged', { phone: formattedPhone, name: cleanName, amount });
-
-    // Attempt sending real message (fails silently if WhatsApp provider is unconfigured)
-    let messageSent = false;
-    try {
-      await sendWhatsAppNotification(formattedPhone, whatsappMessage);
-      messageSent = true;
-    } catch (err) {
-      logger.warn('whatsapp_abandonment_notification_skipped', { error: (err as any).message });
+    const { phone } = parsed.data;
+    const phoneLimit = await rateLimit(`cart-recovery:phone:${phone}`, 1, 60 * 60 * 1000);
+    if (!phoneLimit.allowed) {
+      return NextResponse.json({ success: false, error: 'A WhatsApp cart link was already requested for this number recently.' }, { status: 429 });
     }
 
-    return NextResponse.json({
-      success: true,
-      messageSent,
+    const cartUrl = 'https://tecbunny.com/cart';
+    const name = parsed.data.name.replace(/[\r\n]/g, ' ').trim() || 'there';
+    const message = `Hi ${name}, you asked us to send this WhatsApp link to your TecBunny cart: ${cartUrl}\n\nItems are not reserved, and prices and availability are confirmed at checkout. No payment is due through this message.`;
+
+    await sendWhatsAppNotification(phone, message);
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    logger.error('cart_recovery_whatsapp_send_failed', {
+      error: error instanceof Error ? error.message : String(error),
     });
-
-  } catch (error: any) {
-    logger.error('uncaught_error_in_cart_abandoned_api', { error: error.message });
-    return NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ success: false, error: 'Unable to send the WhatsApp cart link right now.' }, { status: 502 });
   }
 }

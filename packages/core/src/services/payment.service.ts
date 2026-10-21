@@ -12,6 +12,7 @@ export interface InitiatePayuPaymentParams {
   host: string | undefined;
   correlationId: string;
   staffPaymentRoles: Set<string>;
+  guestEmail?: string | null;
 }
 
 export interface UpdatePaymentStatusParams {
@@ -47,7 +48,7 @@ export class PaymentService {
   }
 
   async initiatePayuPayment(params: InitiatePayuPaymentParams) {
-    const { orderId, userId, userRole, host, correlationId, staffPaymentRoles } = params;
+    const { orderId, userId, userRole, host, correlationId, staffPaymentRoles, guestEmail } = params;
 
     // Fetch settings from database first, fallback to env vars
     let dbMerchantKey = '';
@@ -112,8 +113,17 @@ export class PaymentService {
     const orderOwnerId = typeof order.customer_id === 'string' ? order.customer_id : null;
     const canManagePayments = Boolean(userRole && staffPaymentRoles.has(userRole));
     
-    if (orderOwnerId && orderOwnerId !== userId && !canManagePayments) {
-      throw new Error('You are not allowed to initiate payment for this order');
+    if (orderOwnerId) {
+      if (orderOwnerId !== userId && !canManagePayments) {
+        throw new Error('You are not allowed to initiate payment for this order');
+      }
+    } else if (!canManagePayments) {
+      // Guest order: caller must prove knowledge of the order's email
+      const orderEmail = typeof order.customer_email === 'string' ? order.customer_email.trim().toLowerCase() : '';
+      const suppliedEmail = typeof guestEmail === 'string' ? guestEmail.trim().toLowerCase() : '';
+      if (!orderEmail || !suppliedEmail || orderEmail !== suppliedEmail) {
+        throw new Error('You are not allowed to initiate payment for this order');
+      }
     }
 
     const extras = typeof order.items === 'string' ? JSON.parse(order.items || '{}') : (order.items || {});

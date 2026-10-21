@@ -193,7 +193,8 @@ export async function updateSession(
 
   // Allow auth callback or login route
   const loginRoute = options?.loginRoute || '/auth/login';
-  if (pathname.startsWith(loginRoute) || pathname.startsWith('/auth/callback')) {
+  const matchesRoute = (r: string) => pathname === r || pathname.startsWith(r + '/');
+  if (matchesRoute(loginRoute) || matchesRoute('/auth/callback')) {
     return response;
   }
 
@@ -238,7 +239,7 @@ export async function updateSession(
     // Construct a copy so its path and query can be safely changed.
     const redirectUrl = new URL(request.nextUrl.toString());
     redirectUrl.pathname = loginRoute;
-    redirectUrl.searchParams.set('redirectedFrom', pathname);
+    redirectUrl.searchParams.set('redirectedFrom', `${pathname}${request.nextUrl.search}`);
     return withRefreshedCookies(NextResponse.redirect(redirectUrl));
   }
 

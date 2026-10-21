@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { router, publicProcedure, protectedProcedure } from '../trpc';
+import { router, publicProcedure, adminProcedure } from '../trpc';
 import { logger } from '@tecbunny/core';
 
 // We mock the service call here for the proof of concept. 
@@ -32,7 +32,7 @@ export const pageContentRouter = router({
         throw error;
       }
     }),
-  update: protectedProcedure
+  update: adminProcedure
     .input(z.object({
       pageKey: z.string(),
       title: z.string().optional(),
@@ -60,7 +60,7 @@ export const pageContentRouter = router({
         throw error;
       }
     }),
-  list_all: protectedProcedure
+  list_all: adminProcedure
     .query(async ({ ctx }) => {
       try {
         logger.info('rpc_page_content.audit.list_all');

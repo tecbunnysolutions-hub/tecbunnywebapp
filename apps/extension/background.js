@@ -24,6 +24,27 @@ const PRODUCT_TEXT_FIELDS = [
   'warrantyType', 'additional1', 'additional2', 'additional3'
 ];
 
+const SENSITIVE_KEY_PATTERN = /token|authorization|password|pass|secret|api[-_]?key|cookie|session|bearer/i;
+
+function redactForLog(value, depth = 0) {
+  if (value == null) return value;
+  if (value instanceof Error) return value.message.replace(/(bearer\s+)[^\s"']+/gi, '$1[REDACTED]');
+  if (typeof value === 'string') {
+    return value
+      .replace(/(bearer\s+)[^\s"']+/gi, '$1[REDACTED]')
+      .replace(/([?&](?:key|token|access_token|api_key)=)[^&\s"']+/gi, '$1[REDACTED]')
+      .slice(0, 500);
+  }
+  if (typeof value !== 'object') return value;
+  if (depth > 3) return '[Truncated]';
+  if (Array.isArray(value)) return value.slice(0, 20).map((v) => redactForLog(v, depth + 1));
+  const out = {};
+  for (const [k, v] of Object.entries(value)) {
+    out[k] = SENSITIVE_KEY_PATTERN.test(k) ? '[REDACTED]' : redactForLog(v, depth + 1);
+  }
+  return out;
+}
+
 // Logger utility
 const ExtensionLogger = {
   log: (message, data) => {
@@ -31,7 +52,7 @@ const ExtensionLogger = {
     chrome.storage.local.get(['debugLogs'], (result) => {
       if (result.debugLogs) {
         const logs = result.debugLogs || [];
-        logs.push({ timestamp: new Date().toISOString(), message, data });
+        logs.push({ timestamp: new Date().toISOString(), message: redactForLog(message), data: redactForLog(data) });
         chrome.storage.local.set({ debugLogs: logs.slice(-100) }); // Keep last 100 logs
       }
     });
@@ -43,8 +64,8 @@ const ExtensionLogger = {
       logs.push({ 
         timestamp: new Date().toISOString(), 
         level: 'ERROR',
-        message, 
-        error: error instanceof Error ? error.message : String(error)
+        message: redactForLog(message),
+        error: redactForLog(error instanceof Error ? error.message : String(error))
       });
       chrome.storage.local.set({ debugLogs: logs.slice(-100) });
     });

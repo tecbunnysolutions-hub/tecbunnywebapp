@@ -2,6 +2,7 @@ import { createSupabaseClient as createClient } from '@tecbunny/database/server'
 import { NextRequest, NextResponse } from 'next/server';
 
 
+import { rateLimit } from '@tecbunny/core/rate-limit';
 import { twoFactorManager } from "@tecbunny/core/two-factor-manager";
 
 export async function POST(request: NextRequest) {
@@ -25,8 +26,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+    const ipLimit = await rateLimit(`2fa:verify:ip:${ip}`, 20, 15 * 60 * 1000);
+    if (!ipLimit.allowed) {
+      return NextResponse.json(
+        { error: 'Too many verification attempts. Please try again later.' },
+        { status: 429 }
+      );
+    }
+
     // Verify the 2FA code
-  const result = await twoFactorManager.verifyTwoFactor(user.id, code, supabase);
+    const result = await twoFactorManager.verifyTwoFactor(user.id, code, supabase);
+
+    if (result.rateLimited) {
+      return NextResponse.json({ error: result.message }, { status: 429 });
+    }
 
     if (!result.success) {
       return NextResponse.json(

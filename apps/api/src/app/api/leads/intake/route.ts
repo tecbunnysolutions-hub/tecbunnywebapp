@@ -175,6 +175,6 @@ export async function POST(request: NextRequest) {
       correlationId,
       error: message,
     });
-    return NextResponse.json({ success: false, error: message, correlationId }, { status: 500 });
+    return NextResponse.json({ success: false, error: 'Failed to create lead', correlationId }, { status: 500 });
   }
 }

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { router, publicProcedure, protectedProcedure } from '../trpc';
+import { router, publicProcedure, adminProcedure } from '../trpc';
 import { createSupabaseServiceClient, isSupabaseServiceConfigured } from '@tecbunny/core/server';
 import { logger } from '@tecbunny/core';
 import { TRPCError } from '@trpc/server';
@@ -315,7 +315,7 @@ export const offersRouter = router({
       };
     }),
 
-  create: protectedProcedure
+  create: adminProcedure
     .input(z.any()) // Using z.any() for simplicity, can type strictly later
     .mutation(async ({ input, ctx }: { input: any, ctx: any }) => {
       if (!isSupabaseServiceConfigured) {
@@ -371,7 +371,7 @@ export const offersRouter = router({
       return { offer: newOffer, message: 'Offer created successfully' };
     }),
 
-  update: protectedProcedure
+  update: adminProcedure
     .input(z.any())
     .mutation(async ({ input, ctx }: { input: any, ctx: any }) => {
       if (!isSupabaseServiceConfigured) {
@@ -444,7 +444,7 @@ export const offersRouter = router({
       return { offer: updatedOffer, message: 'Offer updated successfully' };
     }),
 
-  delete: protectedProcedure
+  delete: adminProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ input, ctx }: { input: any, ctx: any }) => {
       if (!isSupabaseServiceConfigured) {

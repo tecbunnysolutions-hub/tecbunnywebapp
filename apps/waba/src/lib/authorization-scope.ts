@@ -15,6 +15,15 @@ export async function resolveActorScope(userId: string, role: string): Promise<A
   return { isGlobal: false, organizationId: data.organization_id, branchId: data.branch_id ?? null };
 }
 
+// Pushes the actor's org/branch scope into a Supabase query for tables that carry
+// organization_id/branch_id. Global actors are unrestricted.
+export function applyOrgBranchScope<Q extends { eq(column: string, value: string): Q }>(query: Q, scope: ActorScope): Q {
+  if (scope.isGlobal) return query;
+  let scoped = query.eq('organization_id', scope.organizationId ?? '');
+  if (scope.branchId) scoped = scoped.eq('branch_id', scope.branchId);
+  return scoped;
+}
+
 // Ownership does not change when a conversation is assigned or unassigned.
 // Unowned legacy traffic is deliberately quarantined to global administrators.
 export async function canAccessConversationSender(scope: ActorScope, sender: string): Promise<boolean> {

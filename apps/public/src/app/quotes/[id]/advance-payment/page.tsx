@@ -32,7 +32,11 @@ export default function AdvancePaymentPage() {
     if (!quoteId) return;
     
     Promise.all([
-      fetch(`/api/quotes/${quoteId}`).then(r => r.ok ? r.json() : Promise.reject('Quote not found')),
+      fetch(`/api/quotes/${quoteId}?token=${encodeURIComponent(actionToken)}`, { credentials: 'include' })
+        .then(r => {
+          if (!r.ok) throw new Error(String(r.status));
+          return r.json();
+        }),
       fetch(`/api/admin/quotes/advance-payment?quote_id=${quoteId}&token=${encodeURIComponent(actionToken)}`).then(r => r.ok ? r.json() : { data: null })
     ])
       .then(([quoteData, advanceData]) => {
@@ -44,9 +48,17 @@ export default function AdvancePaymentPage() {
       })
       .catch(err => {
         console.error(err);
+        const status = err instanceof Error ? err.message : String(err);
+        const description = status === '401'
+          ? 'Please open the secure quote link from your email or sign in to continue.'
+          : status === '403'
+            ? 'This quote is not available to your account.'
+            : status === '404'
+              ? 'Quote not found. Please check the quote link and try again.'
+              : 'Unable to load the advance payment request right now. Please try again.';
         toast({ 
           title: 'Error', 
-          description: 'Failed to load advance payment request.',
+          description,
           variant: 'destructive' 
         });
         setLoading(false);

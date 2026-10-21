@@ -18,7 +18,11 @@
     "sidePanel"
   ],
   "host_permissions": [
-    "<all_urls>"
+    "https://*.tecbunny.com/*",
+    "https://api.openai.com/*",
+    "https://generativelanguage.googleapis.com/*",
+    "https://api.groq.com/*",
+    "https://api.anthropic.com/*"
   ],
   "content_security_policy": {
     "extension_pages": "script-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; connect-src https: wss:; img-src 'self' http: https: data:"
@@ -38,12 +42,5 @@
   "background": {
     "service_worker": "background.js"
   },
-  "options_page": "options.html",
-  "content_scripts": [
-    {
-      "matches": ["<all_urls>"],
-      "js": ["content.js"],
-      "run_at": "document_end"
-    }
-  ]
+  "options_page": "options.html"
 }

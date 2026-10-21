@@ -7,6 +7,7 @@ import { BaseSupabaseClient, SupabaseOrderRepository, NotificationServiceImpl } 
 import { OrderService } from "@tecbunny/core/server";
 import { createSupabaseClient as createServerClient } from '@tecbunny/database/server';
 import { getTrustedClientIp } from '@tecbunny/core/server';
+import { createGuestOrderAccessToken } from '../../../lib/guest-order-access';
 
 const RATE_LIMIT = 5; // 5 orders
 const RATE_WINDOW_MS = 60 * 1000; // per minute
@@ -115,6 +116,10 @@ export const POST = withApiHandler(
       logger.warn('Failed to mark cart as converted', { error: e.message });
     }
 
-    return APIResponseBuilder.created({ order: fullOrder, orderId });
+    return APIResponseBuilder.created({
+      order: fullOrder,
+      orderId,
+      ...(effectiveUserId ? {} : { guestAccessToken: createGuestOrderAccessToken(orderId) }),
+    });
   }
 );

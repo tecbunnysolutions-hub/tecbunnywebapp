@@ -1,6 +1,6 @@
 import { createSupabaseServiceClient } from "@tecbunny/core/server";
 import { NextRequest, NextResponse } from 'next/server';
-import {  uploadToSupabase  } from '@tecbunny/database/storage';
+import {  uploadToSupabase, getSupabaseSignedUrl  } from '@tecbunny/database/storage';
 import { logger } from "@tecbunny/core";
 
 import { verifyQuoteActionToken } from "@tecbunny/core/quotes/action-token";
@@ -69,19 +69,21 @@ export async function POST(request: NextRequest) {
 
     // Upload to Supabase Storage in folder 'quote-documents'
     const result = await uploadToSupabase(file, 'quote-documents');
+    const signedUrl = await getSupabaseSignedUrl(result.public_id, 24 * 60 * 60).catch(() => null);
 
     logger.info('quote_document_upload.success', {
       quoteId,
       fileName: file.name,
       fileSize: file.size,
       mimeType: file.type,
-      publicUrl: result.secure_url
+      path: result.public_id
     });
 
     return NextResponse.json({
       success: true,
       url: result.secure_url,
-      path: result.public_id
+      path: result.public_id,
+      signed_url: signedUrl
     });
   } catch (error: any) {
     logger.error('quote_document_upload.failed', { error });

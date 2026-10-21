@@ -51,47 +51,14 @@ CREATE POLICY "Agents can view their own data" ON public.sales_agents
       }, { status: 400 });
     }
 
-    // If we reach here, tables exist, so try to add missing policies
-    try {
-      // Check if we can insert a test record (this will fail if policy is missing)
-      const testUserId = user.id;
-      const testReferralCode = `TEST_${Date.now()}`;
-      
-      // This is just to test if the INSERT policy exists
-      // We'll immediately delete it if it works
-      const { error: insertError } = await supabase
-        .from('sales_agents')
-        .insert({
-          user_id: testUserId,
-          referral_code: testReferralCode,
-          status: 'pending'
-        });
-
-      if (insertError && insertError.message.includes('row-level security policy')) {
-        // Policy is missing, but we can't add it via API
-        return NextResponse.json({ 
-          error: 'RLS policies need to be added manually',
-          message: 'Tables exist but RLS policies are missing. Please add the INSERT policy in Supabase dashboard.',
-          sql: `
--- Add missing RLS policies:
-CREATE POLICY "Users can apply for sales agent" ON public.sales_agents 
-    FOR INSERT WITH CHECK (user_id = auth.uid());
-          `
-        }, { status: 400 });
-      }
-
-      // If we get here, either it worked or there's a different error
-      // Clean up the test record if it was created
-      if (!insertError) {
-        await supabase
-          .from('sales_agents')
-          .delete()
-          .eq('user_id', testUserId)
-          .eq('referral_code', testReferralCode);
-      }
-
-    } catch (error) {
-      logger.error('sales_agents_setup.policy_test_error', { error });
+    // Read-only check: never insert/delete rows in sales_agents from this setup endpoint
+    const { error: probeError } = await supabase
+      .from('sales_agents')
+      .select('id')
+      .eq('user_id', user.id)
+      .limit(1);
+    if (probeError) {
+      logger.error('sales_agents_setup.policy_test_error', { error: probeError.message });
     }
 
     logger.info('admin_setup_sales_agents.audit.success', { userId: user.id });

@@ -15,6 +15,7 @@ type Role = {
   id: string;
   name: string;
   description: string;
+  organization_id?: string | null;
   permissions: { permission: Permission }[];
 };
 
@@ -101,7 +102,10 @@ export default function RolesPage() {
       const res = await fetch('/api/roles', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id })
+        body: JSON.stringify({
+          id,
+          organization_id: roles.find(r => r.id === id)?.organization_id ?? null,
+        })
       });
       if (res.ok) {
         setPendingDeleteId(null);

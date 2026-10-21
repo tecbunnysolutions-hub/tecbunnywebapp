@@ -15,7 +15,11 @@ DEBIAN_FRONTEND=noninteractive apt-get upgrade -y
 
 echo "==> 2/5 Docker"
 if ! command -v docker >/dev/null 2>&1; then
-  curl -fsSL https://get.docker.com | sh
+  # Download the installer to a file first (no pipe-to-shell), then run it
+  DOCKER_INSTALLER=$(mktemp /root/get-docker.XXXXXX.sh)
+  curl -fsSL https://get.docker.com -o "$DOCKER_INSTALLER"
+  sh "$DOCKER_INSTALLER"
+  rm -f "$DOCKER_INSTALLER"
 fi
 docker --version
 

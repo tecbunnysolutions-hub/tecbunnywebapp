@@ -7,7 +7,7 @@ import { getRedis } from '@tecbunny/core/redis';
 import crypto from 'crypto';
 import { hasBroadcastConsent } from '@/services/consentService';
 import { dedupeCampaignRecipients, type CampaignRecipientInput } from '@/lib/campaignRecipients';
-import { resolveActorScope, getAccessibleConversationSenders } from '@/lib/authorization-scope';
+import { resolveActorScope, getAccessibleConversationSenders, applyOrgBranchScope } from '@/lib/authorization-scope';
 
 const BROADCAST_PER_RECIPIENT_TTL_SECS = 86_400; // 24 h — prevent same number twice in one day
 
@@ -46,11 +46,10 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Recipients must be an array of at most 5,000 rows.' }, { status: 400 });
     }
 
-    const { data: template, error: templateError } = await supabase
-      .from('Template')
-      .select('name, status, provider_status')
-      .eq('name', templateName)
-      .maybeSingle();
+    const { data: template, error: templateError } = await applyOrgBranchScope(
+      supabase.from('Template').select('name, status, provider_status').eq('name', templateName),
+      scope,
+    ).maybeSingle();
 
     if (templateError) throw templateError;
     if (!template || String(template.provider_status ?? '').toUpperCase() !== 'APPROVED') {
@@ -74,6 +73,7 @@ export async function POST(req: Request) {
       }));
     } else {
       let query = supabase.from('Conversation').select('sender_number, contact_name');
+      query = applyOrgBranchScope(query, scope);
       if (targetStatus !== 'ALL') query = query.eq('status', targetStatus);
       const { data, error: fetchError } = await query;
       if (fetchError) throw fetchError;

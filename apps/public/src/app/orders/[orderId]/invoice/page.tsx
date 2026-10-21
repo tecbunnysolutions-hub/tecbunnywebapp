@@ -36,7 +36,7 @@ async function loadOrder(orderId: string): Promise<Order | null> {
   try {
     const cookie = (await headers()).get('cookie') ?? '';
     const invoice = await createTecbunnyApi({
-      getHeaders: () => (cookie ? { cookie } : {}),
+      getHeaders: (): Record<string, string> => (cookie ? { cookie } : {}),
     }).invoices.get(orderId);
     if (!invoice) {
       logger.warn('Invoice page could not find order', { orderId });

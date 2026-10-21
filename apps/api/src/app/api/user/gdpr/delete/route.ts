@@ -49,8 +49,10 @@ export async function POST(request: NextRequest) {
     const now = new Date().toISOString();
     const anonymisedEmail = `deleted_${user.id.slice(0, 8)}@anonymised.invalid`;
 
+    const failures: string[] = [];
+
     // 1. Anonymise profile PII immediately
-    await serviceClient.from('profiles').update({
+    const profileRes = await serviceClient.from('profiles').update({
       first_name: '[Deleted]',
       last_name: '[Deleted]',
       phone: null,
@@ -59,39 +61,69 @@ export async function POST(request: NextRequest) {
       deleted_at: now,
       email: anonymisedEmail,
     }).eq('id', user.id);
+    if (profileRes.error) failures.push('profiles');
 
     // 2. Anonymise address book
-    await serviceClient.from('addresses').update({
+    const addressRes = await serviceClient.from('addresses').update({
       name: '[Deleted]',
       phone: null,
       address_line1: '[Deleted]',
       address_line2: null,
       deleted_at: now,
     }).eq('user_id', user.id);
+    if (addressRes.error) failures.push('addresses');
 
-    // 3. Queue deletion marker (gdpr_deletion_requests table for compliance audit)
-    await serviceClient.from('gdpr_deletion_requests').insert({
-      user_id: user.id,
-      original_email: user.email,
-      reason: parsed.data.reason ?? null,
-      requested_at: now,
-      scheduled_deletion_at: new Date(Date.now() + 30 * 24 * 3600 * 1000).toISOString(), // 30 days
-      status: 'pending',
-    }).select().maybeSingle();
+    // 3. Queue deletion marker; idempotent — reuse an existing pending request
+    const { data: existing, error: existingErr } = await serviceClient
+      .from('gdpr_deletion_requests')
+      .select('id, scheduled_deletion_at')
+      .eq('user_id', user.id)
+      .eq('status', 'pending')
+      .maybeSingle();
+    let scheduledAt = existing?.scheduled_deletion_at as string | undefined;
+    if (existingErr) {
+      failures.push('deletion_request');
+    } else if (!existing) {
+      scheduledAt = new Date(Date.now() + 30 * 24 * 3600 * 1000).toISOString(); // 30 days
+      const { error: insertErr } = await serviceClient.from('gdpr_deletion_requests').insert({
+        user_id: user.id,
+        original_email: user.email,
+        reason: parsed.data.reason ?? null,
+        requested_at: now,
+        scheduled_deletion_at: scheduledAt,
+        status: 'pending',
+      });
+      if (insertErr) failures.push('deletion_request');
+    }
+
+    if (failures.length > 0) {
+      logger.error('gdpr.delete_partial_failure', { userId: user.id, failures });
+      return NextResponse.json(
+        { success: false, error: 'Account deletion could not be fully processed. Please retry.', failures },
+        { status: 500 }
+      );
+    }
 
     // 4. Revoke all active sessions
-    await supabase.auth.signOut({ scope: 'global' });
+    const { error: signOutErr } = await supabase.auth.signOut({ scope: 'global' });
+    if (signOutErr) {
+      logger.error('gdpr.signout_failed', { userId: user.id, error: signOutErr.message });
+      return NextResponse.json(
+        { success: false, error: 'Account scheduled but sessions could not be revoked. Please retry.', failures: ['signout'] },
+        { status: 500 }
+      );
+    }
 
     logger.info('gdpr.deletion_scheduled', {
       userId: user.id,
       reason: parsed.data.reason,
-      scheduledAt: new Date(Date.now() + 30 * 24 * 3600 * 1000).toISOString(),
+      scheduledAt,
     });
 
     return NextResponse.json({
       success: true,
       message: 'Your account has been scheduled for deletion in 30 days. Your PII has been anonymised immediately. You have been signed out.',
-      scheduled_deletion_at: new Date(Date.now() + 30 * 24 * 3600 * 1000).toISOString(),
+      scheduled_deletion_at: scheduledAt,
     });
   } catch (err: any) {
     logger.error('gdpr.delete_failed', { error: err.message });

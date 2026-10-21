@@ -1,4 +1,5 @@
-import { createSupabaseServiceClient } from "@tecbunny/core/server";
+import { createSupabaseServiceClient, getTrustedClientIp } from "@tecbunny/core/server";
+import { rateLimit } from "@tecbunny/core/rate-limit";
 import { NextRequest, NextResponse } from 'next/server';
 import { uploadToSupabase } from '@tecbunny/database/storage';
 import { logger, LeadEngineService } from "@tecbunny/core";
@@ -210,6 +211,12 @@ export async function POST(request: NextRequest) {
       );
     }
     const consentGiven = formData.get('consent') === 'true';
+
+    const limitCheck = await rateLimit(`contact-upload:${getTrustedClientIp(request).slice(0, 120)}`, 5, 60 * 60 * 1000);
+    if (!limitCheck.allowed) {
+      logger.warn('contact_upload.rate_limited', { correlationId });
+      return NextResponse.json({ error: 'Too many submissions. Please try again later.' }, { status: 429 });
+    }
 
     // Validate required fields
     if (!name || !email || !message) {

@@ -621,13 +621,15 @@ export class EnhancedCommissionService {
         };
       }
 
-      const { error } = await supabase
+      const { data: updatedRows, error } = await supabase
         .from('sales_agent_commissions')
         .update({
           status: 'paid',
           paid_at: new Date().toISOString()
         })
-        .in('id', commissionIds);
+        .in('id', commissionIds)
+        .in('status', ['pending', 'approved'])
+        .select('id');
 
       if (error) {
         logger.error('Error processing commission payment', { error, commissionIds });
@@ -637,9 +639,25 @@ export class EnhancedCommissionService {
         };
       }
 
+      const processedCount = updatedRows?.length ?? 0;
+      if (processedCount === 0) {
+        return {
+          success: false,
+          processed_count: 0,
+          error: 'No payable commissions found for the given ids'
+        };
+      }
+
+      logger.info('Commission payment processed', {
+        requested: commissionIds.length,
+        processed: processedCount,
+        payment_method: _paymentDetails.payment_method,
+        transaction_id: _paymentDetails.transaction_id
+      });
+
       return {
         success: true,
-        processed_count: commissionIds.length
+        processed_count: processedCount
       };
 
     } catch (error) {

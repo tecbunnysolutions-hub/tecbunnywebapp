@@ -4,8 +4,11 @@ import { withAuditEvent } from '@tecbunny/core/enterprise-analytics';
 import { logger } from '@tecbunny/core/logger';
 import { requireApiRole } from '@tecbunny/core/server-role-guard';
 import { z } from 'zod';
+import { applyOrgBranchScope, resolveActorScope } from '@/lib/authorization-scope';
 
 export const dynamic = 'force-dynamic';
+
+const TEMPLATE_WRITE_ROLES = ['admin', 'sales_manager', 'marketing_manager', 'superadmin', 'manager'];
 
 const templateSchema = z.object({
   name: z.string().trim().regex(/^[a-z0-9_]{3,80}$/),
@@ -24,13 +27,15 @@ export async function GET() {
     const auth = await requireApiRole();
     if (auth.error) return auth.error;
     if (auth.role === 'customer') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    const scope = await resolveActorScope(auth.session.user.id, auth.role);
+    if (!scope) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     logger.info('waba_templates.audit.list_requested', { role: auth.role ?? null });
 
-    const { data: templates, error } = await supabase.from('Template').select('*').order('created_at', { ascending: false });
+    const { data: templates, error } = await applyOrgBranchScope(supabase.from('Template').select('*'), scope).order('created_at', { ascending: false });
     if (error) throw error;
     
     // Seed templates if empty for demo purposes
-    if (!templates || templates.length === 0) {
+    if (scope.isGlobal && (!templates || templates.length === 0)) {
       const demoTemplates = [
         { id: crypto.randomUUID(), name: 'welcome_message', content: 'Hello {{1}}, welcome to our service! How can we help you today?', status: 'DRAFT', provider_status: 'LOCAL_ONLY', variable_count: 1 },
         { id: crypto.randomUUID(), name: 'appointment_reminder', content: 'Hi {{1}}, this is a reminder for your appointment tomorrow at {{2}}.', status: 'DRAFT', provider_status: 'LOCAL_ONLY', variable_count: 2 },
@@ -51,9 +56,10 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
-    const auth = await requireApiRole();
+    const auth = await requireApiRole({ allowedRoles: TEMPLATE_WRITE_ROLES });
     if (auth.error) return auth.error;
-    if (auth.role === 'customer') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    const scope = await resolveActorScope(auth.session.user.id, auth.role);
+    if (!scope) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     logger.info('waba_templates.audit.create_requested', { role: auth.role ?? null });
 
     const parsed = templateSchema.safeParse(await req.json().catch(() => ({})));
@@ -73,6 +79,8 @@ export async function POST(req: Request) {
       provider_name: 'infobip',
       provider_status: 'LOCAL_ONLY',
       variable_count: countVariables(content),
+      organization_id: scope.organizationId,
+      branch_id: scope.branchId,
     };
     const { data, error } = await withAuditEvent({
       application: 'waba',

@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
   try {
     const supabase = getSupabaseAdmin();
 
-    const { orderId } = await request.json().catch(() => ({}));
+    const { orderId, customerEmail } = await request.json().catch(() => ({}));
 
     if (!orderId || typeof orderId !== 'string') {
       return apiError('VALIDATION_ERROR', {
@@ -80,7 +80,8 @@ export async function POST(request: NextRequest) {
         clientIp: ip,
         host,
         correlationId,
-        staffPaymentRoles: STAFF_PAYMENT_ROLES
+        staffPaymentRoles: STAFF_PAYMENT_ROLES,
+        guestEmail: typeof customerEmail === 'string' ? customerEmail : null
       });
 
       const response = apiSuccess(result, correlationId);

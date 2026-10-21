@@ -293,6 +293,10 @@ export function OTPVerificationContent() {
           }
 
           const signupData = JSON.parse(stored);
+          const signupPassword = (window as unknown as { __signupPassword?: string }).__signupPassword;
+          if (!signupPassword) {
+            throw new Error('Signup session expired. Please restart the signup process.');
+          }
           logger.info('Creating account with stored data:', { email: signupData.email, name: signupData.name });
 
           // Call complete-signup endpoint to create the account
@@ -301,7 +305,7 @@ export function OTPVerificationContent() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               email: signupData.email,
-              password: signupData.password,
+              password: signupPassword,
               name: signupData.name,
               mobile: signupData.mobile,
               otpId: verifyResult.otpId || otpId,

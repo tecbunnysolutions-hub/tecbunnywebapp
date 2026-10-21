@@ -103,6 +103,18 @@ describe('Manual WhatsApp replies', () => {
     expect(mocks.fetch).toHaveBeenCalledTimes(1);
   });
 
+  it('rejects out-of-range or oversized location payloads before sending', async () => {
+    for (const location of [
+      { latitude: 91, longitude: 0 },
+      { latitude: 0, longitude: -181 },
+      { latitude: '1', longitude: 0 },
+      { latitude: 0, longitude: 0, name: 'x'.repeat(201) },
+    ]) {
+      expect((await POST(request({ to: phone, location }))).status).toBe(400);
+    }
+    expect(mocks.fetch).not.toHaveBeenCalled();
+  });
+
   it('does not send when the conversation cannot be loaded', async () => {
     mocks.conversation.mockResolvedValue({ data: null, error: null });
     expect((await POST(request())).status).toBe(404);

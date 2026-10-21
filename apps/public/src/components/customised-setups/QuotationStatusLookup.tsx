@@ -19,16 +19,25 @@ export function QuotationStatusLookup() {
     
     setLookupLoading(true);
     setLookupError('');
+    const actionToken = new URLSearchParams(window.location.search).get('token') || '';
     
-    fetch(`/api/quotes/${inputVal}`)
+    const tokenQuery = actionToken ? `?token=${encodeURIComponent(actionToken)}` : '';
+    fetch(`/api/quotes/${encodeURIComponent(inputVal)}${tokenQuery}`, { credentials: 'include' })
       .then(res => {
-        if (!res.ok) {
-          throw new Error('Quote not found');
-        }
-        router.push(`/quotes/${inputVal}`);
+        if (!res.ok) throw new Error(String(res.status));
+        const quoteQuery = new URLSearchParams();
+        if (actionToken) quoteQuery.set('token', actionToken);
+        const query = quoteQuery.toString();
+        router.push(`/quotes/${encodeURIComponent(inputVal)}${query ? `?${query}` : ''}`);
       })
-      .catch(() => {
-        setLookupError('Invalid quote number or quote not found.');
+      .catch((error: Error) => {
+        setLookupError(error.message === '401'
+          ? 'Sign in to view your quote, or use the secure quote link sent to your email.'
+          : error.message === '403'
+            ? 'This quote belongs to another account. Use the secure link sent to your email.'
+            : error.message === '404'
+              ? 'Quote not found. Check the quote number and try again.'
+              : 'Unable to check this quote right now. Please try again.');
         setLookupLoading(false);
       });
   };

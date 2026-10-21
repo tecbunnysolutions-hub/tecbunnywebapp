@@ -4,9 +4,17 @@ import { sendWhatsAppMessage, sendWhatsAppLocation } from '@/services/infobipSer
 import { requireApiRole } from '@tecbunny/core/server-role-guard';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { canAccessConversationSender, getAccessibleConversationSenders, resolveActorScope } from '@/lib/authorization-scope';
+import { z } from 'zod';
 import { getMessageError } from '@/lib/message-error';
 
 export const dynamic = 'force-dynamic';
+
+const locationSchema = z.object({
+  latitude: z.number().finite().min(-90).max(90),
+  longitude: z.number().finite().min(-180).max(180),
+  name: z.string().max(200).optional(),
+  address: z.string().max(500).optional(),
+});
 
 const apiKey = process.env.GEMINI_API_KEY || "";
 const genAI = apiKey ? new GoogleGenerativeAI(apiKey) : null;
@@ -173,8 +181,13 @@ export async function POST(req: Request) {
 
     let result;
     let sentText: string | undefined;
-    if (location) {
-      result = await sendWhatsAppLocation(to, location.latitude, location.longitude, location.name, location.address);
+    if (location !== undefined && location !== null) {
+      const parsedLocation = locationSchema.safeParse(location);
+      if (!parsedLocation.success) {
+        return NextResponse.json({ error: 'Invalid location' }, { status: 400 });
+      }
+      const loc = parsedLocation.data;
+      result = await sendWhatsAppLocation(to, loc.latitude, loc.longitude, loc.name, loc.address);
     } else if (typeof text === 'string' && text.trim()) {
       // The service requires the stored inbound timestamp; omitting it silently
       // converts every manual reply into the default template message.

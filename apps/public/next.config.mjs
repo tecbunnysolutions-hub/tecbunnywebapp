@@ -93,6 +93,22 @@ const nextConfig = {
             value: 'DENY',
           },
           {
+            key: 'Content-Security-Policy',
+            value: [
+              "default-src 'self'",
+              "script-src 'self' 'unsafe-inline' https://checkout.razorpay.com https://www.googletagmanager.com https://www.google-analytics.com https://maps.googleapis.com",
+              "style-src 'self' 'unsafe-inline' https:",
+              "img-src 'self' https: data: blob:",
+              "font-src 'self' https: data:",
+              "connect-src 'self' https: wss:",
+              "frame-src 'self' https://api.razorpay.com https://checkout.razorpay.com https://www.google.com https://maps.google.com",
+              "object-src 'none'",
+              "base-uri 'self'",
+              "form-action 'self' https:",
+              "frame-ancestors 'none'",
+            ].join('; '),
+          },
+          {
             key: 'Referrer-Policy',
             value: 'strict-origin-when-cross-origin',
           },

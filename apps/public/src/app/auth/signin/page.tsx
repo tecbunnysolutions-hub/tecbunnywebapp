@@ -9,6 +9,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { Lock, Eye, EyeOff, CheckCircle, AlertCircle, Mail } from 'lucide-react';
 import { Input, Label, useToast, Turnstile } from "@tecbunny/ui";
 import { createAuthedApi } from '@/lib/api';
+import { getSafeLocalReturnUrl } from '@/lib/public-route-policy';
 import { TwoFactorVerification } from '@/components/auth/TwoFactorVerification';
 
 function SignInForm() {
@@ -42,6 +43,11 @@ function SignInForm() {
 
   const verified = searchParams.get('verified');
   const emailParam = searchParams.get('email');
+
+  const customerReturnPath = () => {
+    const requested = searchParams.get('redirectedFrom') ?? searchParams.get('next');
+    return getSafeLocalReturnUrl(requested, window.location.origin);
+  };
 
   // Check if account is locked out
   const isLockedOut = useMemo(() => {
@@ -120,6 +126,9 @@ function SignInForm() {
           redirectUrl = '/';
           break;
       }
+      if (userRole === 'customer') {
+        redirectUrl = customerReturnPath() ?? redirectUrl;
+      }
 
       setIsRedirecting(true);
       setTimeout(() => {
@@ -189,6 +198,9 @@ function SignInForm() {
       default:
         redirectUrl = '/';
         break;
+    }
+    if (userRole === 'customer') {
+      redirectUrl = customerReturnPath() ?? redirectUrl;
     }
 
     setIsRedirecting(true);

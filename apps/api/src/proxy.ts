@@ -95,6 +95,8 @@ export async function proxy(request: NextRequest, event: EnterpriseProxyEvent) {
         'POST /api/cart/sync',
         'GET /api/orders',
         'POST /api/orders',
+        'POST /api/orders/payment-claim',
+        'GET /api/v1/me/orders',
         'POST /api/analytics/track',
         'GET /api/captcha/config',
         'POST /api/captcha/verify',

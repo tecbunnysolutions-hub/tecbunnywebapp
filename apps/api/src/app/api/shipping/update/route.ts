@@ -1,4 +1,5 @@
-import { createSupabaseClient as createClient } from '@tecbunny/database/server';
+import { createSupabaseServiceClient } from '@tecbunny/database/admin';
+import { AdminAuthError, requireAdminContext } from '@tecbunny/core/auth/admin-guard';
 import { NextRequest, NextResponse } from 'next/server';
 
 
@@ -24,7 +25,23 @@ interface ShippingUpdateData {
 export async function POST(request: NextRequest) {
   try {
     const correlationId = request.headers.get('x-correlation-id') || null;
-    const supabase = await createClient();
+
+    // Require admin session or the internal API key
+    const expectedKey = process.env.INTERNAL_API_KEY;
+    const providedKey = request.headers.get('x-internal-api-key');
+    let supabase: any;
+    if (expectedKey && providedKey && providedKey === expectedKey) {
+      supabase = createSupabaseServiceClient();
+    } else {
+      try {
+        ({ serviceSupabase: supabase } = await requireAdminContext());
+      } catch (authError) {
+        if (authError instanceof AdminAuthError) {
+          return NextResponse.json({ error: authError.status === 403 ? 'Forbidden' : 'Unauthorized' }, { status: authError.status === 403 ? 403 : 401 });
+        }
+        throw authError;
+      }
+    }
 
     // Rate limiting
     const clientIP = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
@@ -301,9 +318,16 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    const supabase = await createClient();
-    
-    const { data: order, error } = await supabase
+    let supabase: any;
+    try {
+      ({ serviceSupabase: supabase } = await requireAdminContext());
+    } catch (authError) {
+      if (authError instanceof AdminAuthError) {
+        return NextResponse.json({ error: authError.status === 403 ? 'Forbidden' : 'Unauthorized' }, { status: authError.status === 403 ? 403 : 401 });
+      }
+      throw authError;
+    }
+        const { data: order, error } = await supabase
       .from('orders')
       .select('id, status, items, created_at, updated_at')
       .eq('id', order_id)

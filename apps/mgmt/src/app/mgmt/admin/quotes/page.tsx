@@ -114,7 +114,8 @@ export default function AdminQuotesPage() {
     try {
       const res = await fetch('/api/admin/quotes/advance-payment', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${await getAuthToken()}` },
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           quote_id: selectedQuote.id,
           advance_amount: advanceAmountNum,
@@ -149,12 +150,6 @@ export default function AdminQuotesPage() {
     } finally {
       setAdvanceLoading(false);
     }
-  };
-
-  const getAuthToken = async (): Promise<string> => {
-    // This should be fetched from your auth context/store
-    const token = localStorage.getItem('supabase_auth_token') || '';
-    return token;
   };
 
   return (

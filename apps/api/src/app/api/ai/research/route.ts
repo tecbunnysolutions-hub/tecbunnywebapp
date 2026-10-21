@@ -10,6 +10,7 @@ import { getSystemPrompt } from "@tecbunny/core/ai/prompts";
 import { rateLimit } from "@tecbunny/core/rate-limit";
 import { logger } from "@tecbunny/core";
 import { getTrustedClientIp } from '@tecbunny/core/server';
+import { isSafeResearchUrl } from '../../../../lib/safe-research-url';
 
 const MAX_SOURCES = 3;
 const MAX_SOURCE_CHARS = 3500;
@@ -28,7 +29,7 @@ function redactPrices(input: string) {
 function normalizeSourceUrl(url: string) {
   if (!url) return null;
   const trimmed = url.trim();
-  if (!/^https?:\/\//i.test(trimmed)) return null;
+  if (!/^https:\/\//i.test(trimmed)) return null;
   return trimmed;
 }
 
@@ -169,16 +170,22 @@ export async function POST(request: NextRequest) {
       ].filter(Boolean),
     }));
 
-    const requestedUrls = uniqueStrings(
+    const requestedUrls: string[] = [];
+    for (const candidate of uniqueStrings(
       urls
         .map((url: string) => (typeof url === 'string' ? url.trim() : ''))
         .map((url: string) => normalizeSourceUrl(url))
         .filter(Boolean) as string[]
-    );
+    )) {
+      if (requestedUrls.length >= MAX_SOURCES) break;
+      if (await isSafeResearchUrl(candidate)) requestedUrls.push(candidate);
+    }
 
     const sourceUrls = requestedUrls.length
-      ? requestedUrls.slice(0, MAX_SOURCES)
-      : await fetchSearchUrls(query);
+      ? requestedUrls
+      : urls.length
+        ? []
+        : await fetchSearchUrls(query);
 
     const sources: { url: string; content: string }[] = [];
     for (const url of sourceUrls) {

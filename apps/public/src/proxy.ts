@@ -1,12 +1,12 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { executeUnifiedPolicyMiddleware } from '@tecbunny/core/auth/unified-middleware';
+import { isProtectedPublicRoute } from './lib/public-route-policy';
 
 export async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   
   // Define strictly protected routes in the public app that REQUIRE authentication
-  const protectedRoutes = ['/dashboard', '/profile', '/orders', '/admin', '/payment', '/checkout'];
-  const isProtected = protectedRoutes.some(route => pathname === route || pathname.startsWith(`${route}/`));
+  const isProtected = isProtectedPublicRoute(pathname);
   
   const publicRoutes = [
     '/api/auth',
@@ -56,7 +56,5 @@ export const config = {
     '/profile/:path*',
     '/orders/:path*',
     '/admin/:path*',
-    '/payment/:path*',
-    '/checkout/:path*',
   ],
 };
