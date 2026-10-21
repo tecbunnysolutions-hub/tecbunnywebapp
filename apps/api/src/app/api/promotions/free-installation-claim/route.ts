@@ -53,6 +53,16 @@ export async function POST(request: NextRequest) {
 
     const supabase = createSupabaseServiceClient();
 
+    const { data: otpRow } = await supabase
+      .from('otp_verifications')
+      .select('phone')
+      .eq('id', parsed.data.otpId)
+      .maybeSingle();
+    const otpMobile = normalizeMobile(typeof otpRow?.phone === 'string' ? otpRow.phone : '');
+    if (!otpMobile || otpMobile !== mobile) {
+      return NextResponse.json({ error: 'OTP does not match the submitted mobile number.' }, { status: 400 });
+    }
+
     const { error: messageError } = await supabase.from('contact_messages').insert({
       name: 'Free Installation Claim',
       email: `claim+${mobile}@tecbunny.com`,
@@ -78,15 +88,25 @@ export async function POST(request: NextRequest) {
       .eq('month', monthStart)
       .maybeSingle();
 
-    if (existingSlot && existingSlot.remaining_slots > 0) {
-      await supabase
-        .from('free_installation_slots')
-        .update({
-          remaining_slots: existingSlot.remaining_slots - 1,
-          confirmed_count: (existingSlot.confirmed_count ?? 0) + 1,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', existingSlot.id);
+    if (!existingSlot || existingSlot.remaining_slots <= 0) {
+      return NextResponse.json({ error: 'No free installation slots remain this month.' }, { status: 409 });
+    }
+
+    const { data: reservedSlot, error: slotError } = await supabase
+      .from('free_installation_slots')
+      .update({
+        remaining_slots: existingSlot.remaining_slots - 1,
+        confirmed_count: (existingSlot.confirmed_count ?? 0) + 1,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', existingSlot.id)
+      .eq('remaining_slots', existingSlot.remaining_slots)
+      .gt('remaining_slots', 0)
+      .select('id')
+      .maybeSingle();
+
+    if (slotError || !reservedSlot) {
+      return NextResponse.json({ error: 'No free installation slots remain this month.' }, { status: 409 });
     }
 
     return NextResponse.json({ success: true, message: 'Offer claimed successfully.' });

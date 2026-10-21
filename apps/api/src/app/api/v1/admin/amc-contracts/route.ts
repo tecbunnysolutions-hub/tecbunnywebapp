@@ -1,6 +1,7 @@
 import type { NextRequest } from 'next/server';
 
 import { AmcContractQuerySchema } from '@tecbunny/contracts';
+import { isAtLeast } from '@tecbunny/core/roles';
 import { createServiceClient, isSupabaseServiceConfigured } from '@tecbunny/database/admin';
 
 import { apiSuccess, apiValidationError } from '../../../../../lib/api-contract';
@@ -13,8 +14,8 @@ import { ServiceError } from '../../../../../services/errors';
 export async function GET(request: NextRequest) {
   const requestId = getRequestId(request);
   try {
-    const caller = await requireCaller(request, 'staff');
-    if (caller.role !== 'service_manager') {
+    const caller = await requireCaller(request, 'customer');
+    if (caller.role !== 'service_manager' && !isAtLeast(caller.role, 'admin')) {
       throw new ServiceError(403, 'FORBIDDEN', 'Service manager access is required.');
     }
     const query = AmcContractQuerySchema.safeParse(Object.fromEntries(request.nextUrl.searchParams));

@@ -37,8 +37,7 @@ export default function QuoteDetailPage() {
     name: '',
     email: '',
     mobile: '',
-    address: '',
-    password: 'TecBunny@2026!'
+    address: ''
   });
   const [otpCode, setOtpCode] = useState('');
   const [otpId, setOtpId] = useState('');
@@ -49,7 +48,10 @@ export default function QuoteDetailPage() {
   useEffect(() => {
     if (!quoteId) return;
     
-    fetch(`/api/quotes/${quoteId}`)
+    const quoteUrl = actionToken
+      ? `/api/quotes/${quoteId}?token=${encodeURIComponent(actionToken)}`
+      : `/api/quotes/${quoteId}`;
+    fetch(quoteUrl, { credentials: 'include' })
       .then(res => {
         if (!res.ok) throw new Error('Quote not found');
         return res.json();
@@ -60,8 +62,7 @@ export default function QuoteDetailPage() {
           name: data.customer_name || '',
           email: data.customer_email || '',
           mobile: data.customer_phone || '',
-          address: data.customer_address || '',
-          password: 'TecBunny@2026!'
+          address: data.customer_address || ''
         });
         setLoading(false);
       })
@@ -74,7 +75,7 @@ export default function QuoteDetailPage() {
         });
         setLoading(false);
       });
-  }, [quoteId, toast]);
+  }, [quoteId, actionToken, toast]);
 
   const handleAcceptCounter = async () => {
     if (!user) {
@@ -129,7 +130,6 @@ export default function QuoteDetailPage() {
         headers: { 'Content-Type': 'application/json', 'x-bypass-captcha': '1' },
         body: JSON.stringify({
           email: resolvedEmail,
-          password: authForm.password,
           name: authForm.name,
           mobile: authForm.mobile,
           channel: otpChannel
@@ -179,7 +179,6 @@ export default function QuoteDetailPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           email: resolvedEmail,
-          password: authForm.password,
           name: authForm.name,
           mobile: authForm.mobile,
           otpId
@@ -241,7 +240,10 @@ export default function QuoteDetailPage() {
       });
 
       // Refresh quote
-      const updated = await fetch(`/api/quotes/${quoteId}`).then(r => r.json());
+      const quoteUrl = actionToken
+        ? `/api/quotes/${quoteId}?token=${encodeURIComponent(actionToken)}`
+        : `/api/quotes/${quoteId}`;
+      const updated = await fetch(quoteUrl, { credentials: 'include' }).then(r => r.json());
       setQuote(updated);
     } catch (error) {
       console.error(error);

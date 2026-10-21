@@ -25,6 +25,8 @@ export async function listAdminOrders(
       throw new ServiceError(403, 'FORBIDDEN', 'You can only view orders you processed.');
     }
     builder = builder.eq('processed_by', target);
+  } else if (!caller.canViewAll) {
+    builder = builder.eq('processed_by', caller.userId);
   }
 
   const { data, count, error } = await builder.order('created_at', { ascending: false }).limit(query.limit ?? DEFAULT_LIMIT);

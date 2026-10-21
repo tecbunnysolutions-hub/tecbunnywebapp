@@ -1,3 +1,4 @@
+import { randomBytes } from 'crypto';
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
@@ -10,6 +11,10 @@ const PASSWORD_POLICY_MESSAGE = 'Password must be at least 8 characters long and
 function isStrongPassword(value: unknown): value is string {
   if (typeof value !== 'string') return false;
   return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(value);
+}
+
+function generateStrongPassword() {
+  return `${randomBytes(18).toString('base64url')}Aa1!`;
 }
 
 let supabaseAdmin: any = null;
@@ -56,22 +61,23 @@ export async function POST(request: NextRequest) {
     }
     logger.info('complete_signup.start');
       
-    const { email, password, name, mobile, otpId } = await request.json();
+    const { email, password: submittedPassword, name, mobile, otpId } = await request.json();
 
-    // Validate required fields
-    if (!email || !password || !name || !mobile) {
+    if (!email || !name || !mobile) {
       return NextResponse.json(
-        { error: 'Email address, mobile number, password, and name are required' },
+        { error: 'Email address, mobile number, and name are required' },
         { status: 400 }
       );
     }
 
-    if (!isStrongPassword(password)) {
+    if (submittedPassword != null && submittedPassword !== '' && !isStrongPassword(submittedPassword)) {
       return NextResponse.json(
         { error: PASSWORD_POLICY_MESSAGE },
         { status: 400 }
       );
     }
+
+    const password = isStrongPassword(submittedPassword) ? submittedPassword : generateStrongPassword();
 
     const normalizedEmail = String(email).trim().toLowerCase();
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {

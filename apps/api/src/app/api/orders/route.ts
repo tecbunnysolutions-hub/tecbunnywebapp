@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
     const notificationService = new NotificationServiceImpl();
     const orderService = new OrderService(orderRepo, notificationService);
 
-    const orders = await orderService.getCustomerOrders(user.id, user.email, user.user_metadata?.mobile);
+    const orders = await orderService.getCustomerOrders(user.id);
     return NextResponse.json({ success: true, orders });
   } catch (error: any) {
     logger.error('uncaught_error_in_customer_orders_api', { error: error.message });

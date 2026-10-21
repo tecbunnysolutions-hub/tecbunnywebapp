@@ -5,9 +5,20 @@ import { verifySuperadminLogin, getSuperadminLoginConfig } from '@tecbunny/core/
 
 export const dynamic = 'force-dynamic';
 
-// CORS headers for chrome extension
+const ALLOWED_WEB_ORIGINS = new Set([
+  'https://tecbunny.com',
+  'https://www.tecbunny.com',
+  'https://superadmin.tecbunny.com',
+  'https://api.tecbunny.com',
+  'https://mgmt.tecbunny.com',
+]);
+
+function isAllowedExtensionOrigin(origin: string) {
+  return /^chrome-extension:\/\/[a-p]{32}$/i.test(origin.trim());
+}
+
 function getCorsHeaders(request: NextRequest) {
-  const origin = request.headers.get('origin') || '';
+  const origin = (request.headers.get('origin') || '').trim();
   const headers: Record<string, string> = {
     Vary: 'Origin',
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
@@ -15,13 +26,8 @@ function getCorsHeaders(request: NextRequest) {
     'Access-Control-Max-Age': '600',
   };
 
-  // Allow chrome-extension origins and tecbunny.com origins
-  if (
-    /^chrome-extension:\/\/[a-p]{32}$/i.test(origin.trim()) ||
-    origin.includes('tecbunny.com') ||
-    !origin
-  ) {
-    headers['Access-Control-Allow-Origin'] = origin || '*';
+  if (origin && (isAllowedExtensionOrigin(origin) || ALLOWED_WEB_ORIGINS.has(origin))) {
+    headers['Access-Control-Allow-Origin'] = origin;
   }
 
   return headers;

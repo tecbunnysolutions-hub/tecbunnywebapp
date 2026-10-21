@@ -64,7 +64,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   clearSessionBtn.addEventListener('click', () => {
     chrome.storage.session.remove(['accessToken'], () => {
-      chrome.storage.local.remove(['accessToken', 'superadminPass'], () => {
+      chrome.storage.local.remove(['accessToken', 'superadminToken', 'superadminPass'], () => {
         status.textContent = 'Session cleared.';
         renderSession();
       });

@@ -9,7 +9,8 @@ import type { Order } from '@tecbunny/core';
 
 import { deserializeOrder } from "@tecbunny/core/orders/normalizers";
 import { logger } from '@tecbunny/core';
-import { getApi } from '@/lib/api';
+import { createTecbunnyApi } from '@tecbunny/api-client';
+import { headers } from 'next/headers';
 
 // export const dynamic = 'force-dynamic';
 
@@ -33,7 +34,10 @@ const FALLBACK_COMPANY_SETTINGS: CompanySettings = {
 
 async function loadOrder(orderId: string): Promise<Order | null> {
   try {
-    const invoice = await getApi().invoices.get(orderId);
+    const cookie = (await headers()).get('cookie') ?? '';
+    const invoice = await createTecbunnyApi({
+      getHeaders: () => (cookie ? { cookie } : {}),
+    }).invoices.get(orderId);
     if (!invoice) {
       logger.warn('Invoice page could not find order', { orderId });
       return null;

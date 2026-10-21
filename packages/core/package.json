@@ -137,6 +137,7 @@
     "./utils": "./src/utils.ts",
     "./validation": "./src/validation/index.ts",
     "./webhook-logger": "./src/webhook-logger.ts",
+    "./quotes/action-token": "./src/quotes/action-token.ts",
     "./webhook-validator": "./src/webhook-validator.ts",
     "./whatsapp-service": "./src/whatsapp-service.ts",
     "./email": "./src/email/index.ts",

@@ -133,8 +133,14 @@ export async function POST(req: Request) {
     const metaAppSecret = process.env.META_APP_SECRET;
     const webhookVerifyToken = getWebhookVerifyToken() || infobipSecret;
 
-    // Bug #2 fix / Revert: Infobip uses the URL token for this integration.
-    // If the token is present in the URL, prioritize validating it.
+    if (!signature) {
+      console.error('Missing signature header for WhatsApp webhook.');
+      return NextResponse.json({ error: 'Missing authentication' }, { status: 401 });
+    }
+    if (!verifyAgainstAnySecret(rawBodyBuffer, signature, [metaAppSecret, infobipSecret])) {
+      return NextResponse.json({ error: 'Invalid HMAC signature' }, { status: 401 });
+    }
+
     if (token) {
       const envSecret = webhookVerifyToken?.replace(/["']/g, "");
       if (!envSecret) {
@@ -149,16 +155,6 @@ export async function POST(req: Request) {
       if (!isTokenValid) {
         console.error('Invalid URL token: timing-safe comparison failed.');
         return NextResponse.json({ error: 'Invalid URL token mismatch.' }, { status: 401 });
-      }
-    } else {
-      // Fallback to HMAC Signature Verification if token is not in URL.
-      // Accept either the Meta app secret (Meta webhooks) or the Infobip HMAC secret.
-      if (!signature) {
-        console.error('Missing signature header and no URL token provided.');
-        return NextResponse.json({ error: 'Missing authentication' }, { status: 401 });
-      }
-      if (!verifyAgainstAnySecret(rawBodyBuffer, signature, [metaAppSecret, infobipSecret])) {
-        return NextResponse.json({ error: 'Invalid HMAC signature' }, { status: 401 });
       }
     }
 

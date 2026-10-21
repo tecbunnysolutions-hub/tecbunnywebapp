@@ -1,7 +1,6 @@
 'use client';
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { resolveApiBaseUrl } from '@tecbunny/api-client';
 import { httpBatchLink } from '@trpc/client';
 import React, { useState } from 'react';
 import superjson from 'superjson';
@@ -17,8 +16,10 @@ export function TRPCProvider({ children }: { children: React.ReactNode }) {
       links: [
         httpBatchLink({
           transformer: superjson,
-          url: `${resolveApiBaseUrl()}/api/trpc`,
-          // You can pass headers here if needed (e.g., authorization token)
+          url: '/api/trpc',
+          fetch(url, options) {
+            return fetch(url, { ...options, credentials: 'include' });
+          },
         }),
       ],
     }),

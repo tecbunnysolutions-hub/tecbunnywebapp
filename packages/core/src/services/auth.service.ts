@@ -23,21 +23,23 @@ export class AuthService {
       }
     }
 
-    if (!password || !name || !normalizedEmail || !normalizedMobile) {
-      return failure(AppError.badRequest('Name, email address, mobile number, and password are required'));
+    if (!name || !normalizedEmail || !normalizedMobile) {
+      return failure(AppError.badRequest('Name, email address, and mobile number are required'));
     }
 
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
       return failure(AppError.badRequest('Please enter a valid email address'));
     }
 
-    if (password.length < 8) {
-      return failure(AppError.badRequest('Password must be at least 8 characters long'));
-    }
-    
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-    if (!passwordRegex.test(password)) {
-      return failure(AppError.badRequest('Password must contain at least one uppercase letter, one lowercase letter, one number and one special character'));
+    if (password) {
+      if (password.length < 8) {
+        return failure(AppError.badRequest('Password must be at least 8 characters long'));
+      }
+
+      const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+      if (!passwordRegex.test(password)) {
+        return failure(AppError.badRequest('Password must contain at least one uppercase letter, one lowercase letter, one number and one special character'));
+      }
     }
 
     let mobile = normalizedMobile.replace(/\D/g, '');

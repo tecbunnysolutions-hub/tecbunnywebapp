@@ -4,13 +4,13 @@ import { BaseSupabaseClient } from '../supabase/base-client';
 export class SupabaseOrderRepository implements IOrderRepository {
   constructor(private readonly baseClient: BaseSupabaseClient) {}
 
-  async getCustomerOrders(userId: string, userEmail?: string, userPhone?: string): Promise<any[]> {
-    const conditions = [`customer_id.eq.${userId}`];
-    if (userEmail) conditions.push(`customer_email.eq.${userEmail}`);
-    if (userPhone) conditions.push(`customer_phone.eq.${userPhone}`);
-
+  async getCustomerOrders(userId: string, _userEmail?: string, _userPhone?: string): Promise<any[]> {
     const { data } = await this.baseClient.executeQuery(
-      this.baseClient.rawClient.from('orders').select('*').or(conditions.join(',')).order('created_at', { ascending: false }),
+      this.baseClient.rawClient
+        .from('orders')
+        .select('*')
+        .eq('customer_id', userId)
+        .order('created_at', { ascending: false }),
       'get_customer_orders'
     );
     return data || [];

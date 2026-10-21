@@ -36,6 +36,12 @@ describe('Admin guard', () => {
     await expect(requireAdminContext()).rejects.toMatchObject({ status: 403, message: 'Insufficient permissions' });
   });
 
+  it('does not keep admin access after the profile role is demoted', async () => {
+    mocks.getUser.mockResolvedValue({ data: { user: { id: 'admin-1', app_metadata: { role: 'admin' } } }, error: null });
+    mocks.profile.mockResolvedValue({ data: { role: 'customer' }, error: null });
+    await expect(requireAdminContext()).rejects.toMatchObject({ status: 403, message: 'Insufficient permissions' });
+  });
+
   it('allows superadmin when valid superadmin session exists', async () => {
     mocks.verifyRoot.mockResolvedValue({ email: 'super@tecbunny.com', role: 'superadmin' });
     await expect(requireAdminContext()).resolves.toMatchObject({ role: 'superadmin', user: { email: 'super@tecbunny.com' } });

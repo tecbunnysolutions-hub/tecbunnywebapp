@@ -38,4 +38,10 @@ describe('listAdminOrders', () => {
     await listAdminOrders(db, { processedBy: 'u2' }, { userId: 'u1', canViewAll: true });
     expect(calls).toContainEqual(['eq', 'processed_by', 'u2']);
   });
+
+  it('scopes non-admin callers to their own orders when processedBy is omitted', async () => {
+    const { db, calls } = fakeDb();
+    await listAdminOrders(db, { type: 'online' }, { userId: 'u1', canViewAll: false });
+    expect(calls).toContainEqual(['eq', 'processed_by', 'u1']);
+  });
 });

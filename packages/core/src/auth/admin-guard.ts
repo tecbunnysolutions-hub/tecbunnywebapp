@@ -116,7 +116,10 @@ export async function requireAdminContext(): Promise<AdminContext> {
     extractRoleFromMetadata(user.app_metadata as Record<string, unknown> | undefined);
      
   const profileRole = normalizeRole(profile?.role);
-  let resolvedRole = metadataRole ?? profileRole ?? 'customer';
+  let resolvedRole = profileRole ?? 'customer';
+  if (!profileRole && !isSupabaseServiceConfigured) {
+    resolvedRole = metadataRole ?? 'customer';
+  }
 
   // Strip superadmin claim from standard database-backed accounts
   if (resolvedRole === 'superadmin') {

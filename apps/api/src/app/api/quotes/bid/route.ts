@@ -4,11 +4,13 @@ import { NextResponse } from 'next/server';
 
 import { logger } from "@tecbunny/core/logger";
 import { sendWhatsAppNotification } from "@tecbunny/core/whatsapp-service";
+import { verifyQuoteActionToken } from "@tecbunny/core/quotes/action-token";
 
 import { z } from 'zod';
 
 const bidSchema = z.object({
   quoteId: z.string().uuid().optional().nullable(),
+  actionToken: z.string().min(1).optional().nullable(),
   name: z.string().min(1, 'Name is required'),
   email: z.string().email('Invalid email').optional().nullable(),
   phone: z.string().min(10, 'Invalid phone'),
@@ -26,7 +28,7 @@ export async function POST(req: Request) {
     
     const json = await req.json();
     const validatedData = bidSchema.parse(json);
-    const { quoteId, name, email, phone, address, biddedPrice, summary, customSetupConfig } = validatedData;
+    const { quoteId, actionToken, name, email, phone, address, biddedPrice, summary, customSetupConfig } = validatedData;
 
 
     // Validate: bid price must be at least 70% of quoted price
@@ -80,11 +82,18 @@ export async function POST(req: Request) {
       // OCC / State-Machine validation
       const { data: existingQuote, error: checkError } = await serviceClient
         .from('quotes')
-        .select('status')
+        .select('id, status, user_id')
         .eq('id', finalQuoteId)
         .single();
       
       if (checkError) throw checkError;
+
+      const callerId = session?.user?.id ?? null;
+      const isOwner = Boolean(callerId && existingQuote.user_id && existingQuote.user_id === callerId);
+      const hasActionToken = verifyQuoteActionToken(actionToken, existingQuote.id, ['quote_customer']);
+      if (!isOwner && !hasActionToken) {
+        return NextResponse.json({ error: 'Secure quote action link is missing or expired' }, { status: 403 });
+      }
       
       // Explicit state lock to prevent stale updates or bypassing accepted contracts
       if (!['created', 'bidded'].includes(existingQuote.status)) {

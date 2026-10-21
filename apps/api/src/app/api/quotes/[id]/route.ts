@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAdminDb, getUserDb } from "@tecbunny/core/db";
 import { buildPdf, loadCompanyInfo } from "@tecbunny/core/pdf-generator";
 import { requireAdmin } from "@tecbunny/core/admin-auth";
+import { verifyQuoteActionToken } from "@tecbunny/core/quotes/action-token";
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -23,19 +24,23 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       return NextResponse.json({ error: 'Quote not found' }, { status: 404 });
     }
 
-    // Server-side authorization & IDOR protection: enforce admin or resource ownership
     const userDb = await getUserDb();
     const { data: { user } } = await userDb.auth.getUser();
+    const actionToken =
+      req.nextUrl.searchParams.get('token') ||
+      req.headers.get('x-quote-action-token');
+    const hasActionToken = verifyQuoteActionToken(actionToken, data.id, ['quote_customer', 'advance_payment']);
 
-    if (!user) {
+    if (!user && !hasActionToken) {
       return NextResponse.json(
         { error: 'Authentication required to view quotes' },
         { status: 401 }
       );
     }
 
-    const { isAdmin } = await requireAdmin(user, userDb.supabase);
-    if (!isAdmin && data.user_id && data.user_id !== user.id) {
+    const { isAdmin } = user ? await requireAdmin(user, userDb.supabase) : { isAdmin: false };
+    const isOwner = Boolean(user && data.user_id && data.user_id === user.id);
+    if (!isAdmin && !hasActionToken && !isOwner) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 });
     }
 

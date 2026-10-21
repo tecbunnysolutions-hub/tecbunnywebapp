@@ -89,7 +89,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     verifySuperadminAuth(message.email, message.password)
       .then(response => {
         if (response.success) {
-          chrome.storage.local.set({ superadminToken: response.token });
+          chrome.storage.session.set({ accessToken: response.token });
+          chrome.storage.local.remove(['superadminToken', 'accessToken']);
           ExtensionLogger.log('Superadmin authenticated');
         }
         sendResponse(response);
@@ -221,12 +222,12 @@ async function fetchApiWithFallback(path, options) {
 }
 
 chrome.runtime.onStartup.addListener(() => {
-  chrome.storage.local.remove(['accessToken']);
+  chrome.storage.local.remove(['accessToken', 'superadminToken']);
   chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true }).catch(() => {});
 });
 
 chrome.runtime.onInstalled.addListener(() => {
-  chrome.storage.local.remove(['accessToken']);
+  chrome.storage.local.remove(['accessToken', 'superadminToken']);
   chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true }).catch(() => {});
   // Force Groq (free) as the AI engine, migrating any legacy Gemini/website settings.
   chrome.storage.local.get(['aiSource', 'aiProvider', 'aiApiKey', 'aiModel'], (existing) => {
@@ -256,11 +257,8 @@ chrome.runtime.onInstalled.addListener(() => {
 });
 
 async function getAccessToken() {
-  // Session storage preferred; fall back to local storage (set by background auth handler)
   const sessionData = await new Promise(resolve => chrome.storage.session.get(['accessToken'], resolve));
-  if (sessionData.accessToken) return sessionData.accessToken;
-  const localData = await new Promise(resolve => chrome.storage.local.get(['superadminToken'], resolve));
-  return localData.superadminToken || '';
+  return sessionData.accessToken || '';
 }
 
 async function sendProductData(productData) {
