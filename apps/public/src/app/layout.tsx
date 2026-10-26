@@ -21,7 +21,10 @@ import type {StartingPrice} from '@/content/pricing';
 
 import { Analytics } from '@vercel/analytics/react';
 
-const googleSiteVerification = process.env.GOOGLE_SITE_VERIFICATION;
+const googleSiteVerification = Array.from(new Set([
+  'K9vfCefiTTuGQTBnrwUXh34gMmhjr_2Bi4_MaxVUUWw',
+  process.env.GOOGLE_SITE_VERIFICATION,
+].filter((value): value is string => Boolean(value))));
 const xHandle = process.env.NEXT_PUBLIC_X_HANDLE;
 const xUrl = process.env.NEXT_PUBLIC_X_URL;
 const googleBusinessUrl = process.env.NEXT_PUBLIC_GOOGLE_BUSINESS_URL;
@@ -102,11 +105,9 @@ export const metadata: Metadata = {
       'max-video-preview': -1,
     },
   },
-  verification: googleSiteVerification
-    ? {
-        google: googleSiteVerification,
-      }
-    : undefined,
+  verification: {
+    google: googleSiteVerification,
+  },
   icons: {
     icon: [
       {
