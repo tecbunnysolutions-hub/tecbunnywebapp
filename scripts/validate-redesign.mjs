@@ -67,5 +67,16 @@ for (const app of apps) {
   assert.ok(readFileSync(`apps/${app}/src/app/layout.tsx`, 'utf8').includes(app === 'public' ? 'ThemeProvider' : 'ThemeControls'));
 }
 const report = { pagesPreserved: pages.length, appsUsingSharedTokens: apps, contrast, scope: 'Source and token invariants; not a full accessibility or workflow certification.' };
+if (process.argv.includes('--build')) {
+  for (const app of apps) assert.ok(existsSync(`apps/${app}/.next/BUILD_ID`), `Missing production build for ${app}`);
+  const manifest = JSON.parse(readFileSync('apps/public/.next/routes-manifest.json', 'utf8'));
+  const csp = manifest.headers.flatMap(route => route.headers).find(header => header.key.toLowerCase() === 'content-security-policy')?.value;
+  assert.ok(csp, 'Production response policy missing');
+  assert.ok(csp.split(';').find(rule => rule.trim().startsWith('script-src '))?.includes('https://challenges.cloudflare.com'), 'Existing CAPTCHA script host is blocked');
+  assert.ok(csp.split(';').find(rule => rule.trim().startsWith('frame-src '))?.includes('https://challenges.cloudflare.com'), 'Existing CAPTCHA frame host is blocked');
+  assert.ok(!csp.includes("'unsafe-eval'"), 'Development script evaluation escaped into production');
+  report.productionBuildsPresent = apps;
+  report.productionCaptchaPolicy = 'verified';
+}
 writeFileSync('docs/redesign/source-validation.json', JSON.stringify(report, null, 2) + '\n');
 console.log(`Validated ${pages.length} preserved page entrypoints, ${apps.length} shared-theme consumers, and ${contrast.length} contrast pairs.`);

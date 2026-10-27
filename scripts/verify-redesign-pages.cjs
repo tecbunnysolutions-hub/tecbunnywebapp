@@ -26,6 +26,7 @@ const outputPrefix = process.env.REDESIGN_APP || 'public';
   const results = [];
   try {
     const page = await browser.newPage({ viewport: { width: 1440, height: 1000 }, reducedMotion: 'reduce' });
+    const settleTheme = () => page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
     for (const path of routes) {
       const errors = [];
       const listener = error => errors.push(error.message);
@@ -35,6 +36,7 @@ const outputPrefix = process.env.REDESIGN_APP || 'public';
         const select = page.locator('select[aria-label="Color theme"]');
         await select.selectOption('light', { timeout: 30000 });
         await page.waitForFunction(() => document.documentElement.classList.contains('light'));
+        await settleTheme();
         const consent = page.getByRole('button', { name: 'Reject', exact: true });
         if (await consent.isVisible()) await consent.click();
         const light = await page.evaluate(() => ({
@@ -50,6 +52,7 @@ const outputPrefix = process.env.REDESIGN_APP || 'public';
         await page.setViewportSize({ width: 390, height: 844 });
         await select.selectOption('dark');
         await page.waitForFunction(() => document.documentElement.classList.contains('dark'));
+        await settleTheme();
         const mobile = await page.evaluate(() => ({
           overflow: document.documentElement.scrollWidth > innerWidth,
           background: getComputedStyle(document.body).backgroundColor,
@@ -60,6 +63,7 @@ const outputPrefix = process.env.REDESIGN_APP || 'public';
         await page.setViewportSize({ width: 1440, height: 1000 });
         await select.selectOption('light');
         await page.waitForFunction(() => document.documentElement.classList.contains('light'));
+        await settleTheme();
         if (capture.includes(path) || outputPrefix !== 'public') await page.screenshot({ path: `docs/redesign/${outputPrefix}-${name}-light-desktop.png`, fullPage: true });
         results.push({ path, url: page.url(), status: response.status(), light, mobile, errors: [...new Set(errors)] });
         console.log(path, response.status(), light.overflow || mobile.overflow ? 'OVERFLOW' : 'width OK', errors.length ? `errors: ${errors.length}` : '');
