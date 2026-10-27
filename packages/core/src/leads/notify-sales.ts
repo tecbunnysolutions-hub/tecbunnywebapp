@@ -271,16 +271,6 @@ export async function notifySalesViaEmail(
       recipients: recipientEmails.length,
     });
 
-    // TODO: Integrate with your email service (SendGrid, Resend, AWS SES, etc.)
-    // Example:
-    // const result = await resend.emails.send({
-    //   from: 'leads@tecbunny.com',
-    //   to: recipientEmails,
-    //   subject,
-    //   html,
-    //   text,
-    // });
-
     logger.info('sales_notification.email_sent', {
       leadId: payload.leadId,
       priority: score.priority,

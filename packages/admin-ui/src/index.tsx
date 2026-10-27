@@ -54,5 +54,4 @@ export * from './shared/MicroErrorBoundary';
 export * from './shared/OrderActions';
 export * from './shared/OrderDataTable';
 export { default as OrderDataTable } from './shared/OrderDataTable';
-export * from './shared/PublicRouteError';
 export * from './shared/UniversalSearch';

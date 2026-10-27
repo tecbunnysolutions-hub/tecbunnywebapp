@@ -23,6 +23,7 @@ import { Button } from "@tecbunny/ui";
 import { Input } from "@tecbunny/ui";
 import { Textarea } from "@tecbunny/ui";
 import { useAuth } from "@tecbunny/core/hooks";
+import { formatCurrency } from "@tecbunny/core/utils";
 import { trpc } from '@/components/providers/TRPCProvider';
 import {
   Dialog,
@@ -180,14 +181,6 @@ export default function UpcomingProjectsPage() {
   const handleOpenDetail = (project: Project) => {
     setSelectedProject(project);
     setIsDetailOpen(true);
-  };
-
-  const formatCurrency = (val: number) => {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
-      maximumFractionDigits: 0
-    }).format(val);
   };
 
   return (

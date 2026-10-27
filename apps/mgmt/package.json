@@ -10,21 +10,16 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@opentelemetry/api-logs": "^0.220.0",
-    "@tanstack/react-query": "^5.101.2",
     "@tecbunny/admin-ui": "*",
     "@tecbunny/api-client": "*",
     "@tecbunny/contracts": "*",
     "@tecbunny/core": "*",
     "@tecbunny/database": "*",
     "@tecbunny/rpc": "*",
-    "@trpc/client": "^11.18.0",
-    "@trpc/react-query": "^11.18.0",
     "next": "^16.3.4",
     "react": "19.2.7",
     "react-dom": "19.2.7",
-    "lucide-react": "^0.468.0",
-    "superjson": "^2.2.6"
+    "lucide-react": "^0.468.0"
   },
   "devDependencies": {
     "@next/bundle-analyzer": "^16.3.4",

@@ -21,7 +21,7 @@ import { logger } from '@tecbunny/core';
 import type { CustomSetupBlueprintComponentSummary, CustomSetupBlueprintSummary } from "@tecbunny/core/custom-setup-service";
 import { useAuth, useCart } from "@tecbunny/core/hooks";
 import { cn } from "@tecbunny/core/utils";
-import { ROICostEfficiencyBanner } from './ROICostEfficiencyBanner';
+import { ROICostEfficiencyBanner } from '@tecbunny/ui/app';
 import { useLeadCaptureTrigger } from '@/hooks/use-lead-capture-trigger';
 import { FreeInstallationOfferBanner } from "@tecbunny/ui";
 import { Share2, Sparkles } from 'lucide-react';

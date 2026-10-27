@@ -175,15 +175,13 @@ export function calcBreakdown(cfg: CCTVQuoteConfig): CCTVBreakdown {
   };
 }
 
+import { formatCurrency } from '@tecbunny/core/utils';
+
 // ── Formatting ──────────────────────────────────────────────────────
 
 /** Format a number as Indian Rupees with en-IN digit grouping (e.g. ₹1,800). */
 export function formatINR(value: number): string {
-  return new Intl.NumberFormat('en-IN', {
-    style: 'currency',
-    currency: 'INR',
-    maximumFractionDigits: 0,
-  }).format(value);
+  return formatCurrency(value);
 }
 
 /** Generate a quote reference like `TB-CCTV-XXXXXX`. */

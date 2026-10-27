@@ -1,0 +1,37 @@
+{
+  "host": "Vercel",
+  "desktop": {
+    "routes": [
+      "/services/it-support",
+      "/webdev"
+    ],
+    "status": 200,
+    "home": true,
+    "navFont": "14px",
+    "heroPadding": "40.98px",
+    "overflow": false
+  },
+  "mobile": [
+    {
+      "route": "/",
+      "width": 390,
+      "status": 200,
+      "overflow": false
+    },
+    {
+      "route": "/services/it-support",
+      "width": 390,
+      "status": 200,
+      "overflow": false
+    },
+    {
+      "route": "/webdev",
+      "width": 390,
+      "status": 200,
+      "overflow": false
+    },
+    {
+      "mobileHomeNavigation": "passed"
+    }
+  ]
+}

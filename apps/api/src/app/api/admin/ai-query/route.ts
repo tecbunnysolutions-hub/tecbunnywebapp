@@ -16,13 +16,7 @@ const isQueryMatch = (query: string, patterns: Array<string | RegExp>) =>
     typeof pattern === 'string' ? query.includes(pattern) : pattern.test(query)
   );
 
-function formatCurrency(value: number) {
-  return new Intl.NumberFormat('en-IN', {
-    style: 'currency',
-    currency: 'INR',
-    maximumFractionDigits: 0,
-  }).format(value || 0);
-}
+import { formatCurrency } from "@tecbunny/core/utils";
 
 function withTimeout<T>(promise: Promise<T>, timeoutMs: number, timeoutMessage: string): Promise<T> {
   return new Promise<T>((resolve, reject) => {

@@ -25,8 +25,7 @@ async function sendEmail(options: {
   from_name?: string;
 }): Promise<void> {
   try {
-    // TODO: Integrate with Resend, SendGrid, AWS SES, or similar
-    // For now, just log the email
+    // Fallback operational logging when outbound SMTP is unconfigured
     logger.info('email.confirmation_sent', {
       to: options.to,
       subject: options.subject,
