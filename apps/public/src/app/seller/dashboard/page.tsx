@@ -118,7 +118,7 @@ export default function SellerDashboardPage() {
             onClick={() => setActiveTab('PRODUCTS')}
             className="px-4 py-2 bg-primary hover:bg-primary text-primary-foreground rounded-lg font-semibold text-xs transition flex items-center gap-1.5 shadow-lg shadow-primary/30"
           >
-            <PlusCircle className="w-4 h-4" /> Add Product Draft
+            <PlusCircle className="w-4 h-4" /> Preview a draft
           </button>
         </div>
       </div>
@@ -191,7 +191,7 @@ export default function SellerDashboardPage() {
                         onClick={() => markReadyForPickup(ord.id)}
                         className="px-4 py-2 bg-primary hover:bg-primary text-primary-foreground rounded-lg font-semibold text-xs transition shadow-lg shadow-primary/30"
                       >
-                        Pack & Mark "Ready for Pickup"
+                        Mark sample ready
                       </button>
                     )}
                   </div>
@@ -208,17 +208,17 @@ export default function SellerDashboardPage() {
           <div className="border-b border-border pb-4">
             <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
               <Package className="w-5 h-5 text-primary" />
-              Submit Product Draft (Wholesale Supply Model)
+              Preview a product draft
             </h2>
             <p className="text-xs text-muted-foreground mt-1">
-              Provide net <strong className="text-primary">Seller Purchase Price</strong>. TecBunny Superadmin handles Customer Selling Price and Branding.
+              Try the draft fields with example values. This preview does not submit a product for review.
             </p>
           </div>
 
           {productCreated && (
             <div className="bg-success/10 border border-success/20 text-success p-4 rounded-xl text-xs font-semibold flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4 text-success" />
-              Product Draft Submitted for Superadmin Approval & Margin Check!
+              Draft preview complete. This draft has not been saved or submitted for review.
             </div>
           )}
 
@@ -235,7 +235,7 @@ export default function SellerDashboardPage() {
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label htmlFor="app-seller-dashboard-page-sku-model-number" className="block text-xs font-semibold text-muted-foreground">SKU / Model Number</label>
                 <input id="app-seller-dashboard-page-sku-model-number"
@@ -356,3 +356,4 @@ export default function SellerDashboardPage() {
     </div>
   );
 }
+
