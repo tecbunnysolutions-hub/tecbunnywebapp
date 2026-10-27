@@ -74,6 +74,31 @@ async function accessToken() {
 }
 
 export async function main() {
+  if (process.argv.includes('--status')) {
+    const token = await accessToken();
+    const headers = { Authorization: `Bearer ${token}` };
+    const dataSource = await jsonRequest(`${api}/datasources/v1/accounts/${account}/dataSources/${source}`, { headers });
+    console.log(JSON.stringify({ dataSource }));
+    let pageToken = '';
+    let total = 0;
+    const issues = {};
+    const sourceCounts = {};
+    do {
+      const result = await jsonRequest(`${api}/products/v1/accounts/${account}/products?pageSize=250&pageToken=${encodeURIComponent(pageToken)}`, { headers });
+      for (const product of result.products || []) {
+        total++;
+        sourceCounts[product.dataSource] = (sourceCounts[product.dataSource] || 0) + 1;
+        for (const issue of product.productStatus?.itemLevelIssues || []) {
+          const key = `${issue.code}: ${issue.description}`;
+          issues[key] = (issues[key] || 0) + 1;
+        }
+        if (total <= 2) console.log(JSON.stringify({ offerId: product.offerId, title: product.productAttributes?.title, status: product.productStatus?.destinationStatuses }));
+      }
+      pageToken = result.nextPageToken || '';
+    } while (pageToken);
+    console.log(JSON.stringify({ totalProcessedProducts: total, sourceCounts, issues }));
+    return;
+  }
   if (process.argv.includes('--register')) {
     const developerEmail = process.env.GOOGLE_MERCHANT_DEVELOPER_EMAIL;
     if (!developerEmail) throw new Error('Set GOOGLE_MERCHANT_DEVELOPER_EMAIL to an existing Merchant Center user email.');

@@ -6,7 +6,7 @@ import { logger } from "@tecbunny/core";
 import { rateLimit } from "@tecbunny/core/rate-limit";
 import { insertEnterpriseEvent } from '../../../../lib/enterprise-analytics';
 
-const MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_ID || 'G-VCCMTMSVP4';
+const MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_ID || 'G-6QWJ4732Q9';
 const GA_API_SECRET = process.env.GA_API_SECRET;
 const GA_ENDPOINT = 'https://www.google-analytics.com/mp/collect';
 

@@ -281,7 +281,7 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const gaId = process.env.NEXT_PUBLIC_GA_ID || 'G-VCCMTMSVP4';
+  const gaId = process.env.NEXT_PUBLIC_GA_ID || 'G-6QWJ4732Q9';
   const metaPixelId = process.env.NEXT_PUBLIC_META_PIXEL_ID;
   // NOTE: no per-request CSP nonce is read here. Middleware only sets x-nonce
   // on protected routes (/checkout, /orders, /payment, /profile), and reading

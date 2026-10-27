@@ -31,4 +31,8 @@ describe('Registered gateway and storefront proxies', () => {
   it('keeps the public catalogue accessible', async () => {
     expect((await storefront(new NextRequest('https://test/products'))).status).toBe(200);
   });
+  it('allows expired sessions to reach the idempotent logout handler', async () => {
+    const response = await proxy(new NextRequest('https://test/api/admin-auth/logout', { method: 'POST' }), { waitUntil: vi.fn() });
+    expect(response.status).toBe(200);
+  });
 });

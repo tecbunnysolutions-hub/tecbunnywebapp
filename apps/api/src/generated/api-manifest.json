@@ -1,6 +1,6 @@
 {
-  "routeCount": 284,
-  "endpointCount": 393,
+  "routeCount": 287,
+  "endpointCount": 396,
   "routes": [
     {
       "path": "/api/abandoned-assessments",
@@ -31,7 +31,7 @@
       "methods": [
         {
           "method": "POST",
-          "access": "protected"
+          "access": "public"
         }
       ]
     },
@@ -1287,7 +1287,7 @@
       "methods": [
         {
           "method": "POST",
-          "access": "protected"
+          "access": "public"
         }
       ]
     },
@@ -1298,7 +1298,7 @@
       "methods": [
         {
           "method": "POST",
-          "access": "protected"
+          "access": "public"
         }
       ]
     },
@@ -1320,7 +1320,7 @@
       "methods": [
         {
           "method": "POST",
-          "access": "protected"
+          "access": "public"
         }
       ]
     },
@@ -1331,7 +1331,7 @@
       "methods": [
         {
           "method": "POST",
-          "access": "protected"
+          "access": "public"
         }
       ]
     },
@@ -1342,7 +1342,7 @@
       "methods": [
         {
           "method": "POST",
-          "access": "protected"
+          "access": "public"
         }
       ]
     },
@@ -1353,7 +1353,7 @@
       "methods": [
         {
           "method": "POST",
-          "access": "protected"
+          "access": "public"
         }
       ]
     },
@@ -1364,7 +1364,7 @@
       "methods": [
         {
           "method": "POST",
-          "access": "protected"
+          "access": "public"
         }
       ]
     },
@@ -1375,7 +1375,7 @@
       "methods": [
         {
           "method": "POST",
-          "access": "protected"
+          "access": "public"
         }
       ]
     },
@@ -1386,7 +1386,7 @@
       "methods": [
         {
           "method": "POST",
-          "access": "protected"
+          "access": "public"
         }
       ]
     },
@@ -1397,7 +1397,7 @@
       "methods": [
         {
           "method": "POST",
-          "access": "protected"
+          "access": "public"
         }
       ]
     },
@@ -1408,7 +1408,7 @@
       "methods": [
         {
           "method": "POST",
-          "access": "protected"
+          "access": "public"
         }
       ]
     },
@@ -1419,7 +1419,7 @@
       "methods": [
         {
           "method": "POST",
-          "access": "protected"
+          "access": "public"
         }
       ]
     },
@@ -1430,7 +1430,7 @@
       "methods": [
         {
           "method": "POST",
-          "access": "protected"
+          "access": "public"
         }
       ]
     },
@@ -1441,7 +1441,7 @@
       "methods": [
         {
           "method": "POST",
-          "access": "protected"
+          "access": "public"
         }
       ]
     },
@@ -1463,7 +1463,7 @@
       "methods": [
         {
           "method": "POST",
-          "access": "protected"
+          "access": "public"
         }
       ]
     },
@@ -1792,7 +1792,7 @@
       "methods": [
         {
           "method": "POST",
-          "access": "protected"
+          "access": "public"
         }
       ]
     },
@@ -1869,6 +1869,17 @@
     },
     {
       "path": "/api/orders/commission",
+      "group": "orders",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "POST",
+          "access": "public"
+        }
+      ]
+    },
+    {
+      "path": "/api/orders/payment-claim",
       "group": "orders",
       "dynamic": false,
       "methods": [
@@ -3177,6 +3188,17 @@
       ]
     },
     {
+      "path": "/api/v1/admin/amc-contracts",
+      "group": "v1/admin",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "protected"
+        }
+      ]
+    },
+    {
       "path": "/api/v1/admin/orders",
       "group": "v1/admin",
       "dynamic": false,
@@ -3254,6 +3276,17 @@
       ]
     },
     {
+      "path": "/api/v1/config/public",
+      "group": "v1/config",
+      "dynamic": false,
+      "methods": [
+        {
+          "method": "GET",
+          "access": "public"
+        }
+      ]
+    },
+    {
       "path": "/api/v1/content/faqs",
       "group": "v1/content",
       "dynamic": false,
@@ -3304,7 +3337,7 @@
       "methods": [
         {
           "method": "GET",
-          "access": "protected"
+          "access": "public"
         }
       ]
     },

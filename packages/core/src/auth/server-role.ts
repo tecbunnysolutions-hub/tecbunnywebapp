@@ -131,14 +131,18 @@ export const getSessionWithRole = async (request: NextRequest): Promise<{
 
     // Security: use getUser() not getSession(). getSession() reads cookies without
     // server-side JWT validation. getUser() verifies the token with Supabase auth server.
-    const { data: { user }, error } = await supabase.auth.getUser();
+    const bearerToken = request.headers.get('authorization')?.match(/^Bearer\s+([^\s]+)$/i)?.[1];
+    const { data: { user }, error } = await supabase.auth.getUser(bearerToken);
     if (error || !user) {
       return { supabase, session: null, role: null };
     }
 
-    // Also fetch session for callers that need session.access_token etc.
-    const { data: sessionData } = await supabase.auth.getSession();
-    const session = sessionData.session ?? null;
+    // Bearer callers have no cookie session. Reconstruct only after getUser()
+    // verifies the supplied token; never fall back to another cookie identity.
+    const cookieSession = bearerToken ? null : (await supabase.auth.getSession()).data.session;
+    const session: Session | null = bearerToken
+      ? { user, access_token: bearerToken, refresh_token: '', token_type: 'bearer', expires_in: 0 }
+      : cookieSession ? { ...cookieSession, user } : null;
 
     const role = await getEffectiveUserRole(user);
     return { supabase, session, role };

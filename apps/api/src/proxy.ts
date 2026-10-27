@@ -47,6 +47,7 @@ export async function proxy(request: NextRequest, event: EnterpriseProxyEvent) {
         'POST /api/auth/resolve-phone',
         'POST /api/auth/extension',
         'POST /api/admin-auth/login',
+        'POST /api/admin-auth/logout',
         'POST /api/v1/admin-auth/login',
         'POST /api/payment/payu/callback',
         'POST /api/payment/payu/initiate',
