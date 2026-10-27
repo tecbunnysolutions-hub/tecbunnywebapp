@@ -111,6 +111,32 @@
 }
 
 @layer components {
+  /* Subpage heroes own their spacing; nested containers must not double it. */
+  .tech-shell--subpage .tb-hero {
+    padding-block: var(--space-page-hero);
+  }
+
+  .tech-shell--subpage .tb-hero > .tb-container {
+    padding-block: 0;
+  }
+
+  .tech-shell--subpage .tb-section,
+  .tb-section-space {
+    padding-block: var(--space-page-section);
+  }
+
+  .tb-subpage-hero {
+    padding-block: var(--space-page-hero);
+  }
+
+  .tb-page-top { padding-top: var(--space-page-hero); }
+  .tb-page-bottom { padding-bottom: var(--space-page-section); }
+
+  .tech-shell--subpage .tech-main-content {
+    padding-block: var(--space-page-hero);
+    gap: var(--space-l);
+  }
+
   /* Enhanced button styles */
   .btn {
     display:inline-flex;

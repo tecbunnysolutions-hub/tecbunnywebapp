@@ -11,8 +11,8 @@ const LazyInvoiceBuilder = dynamic(
 
 export async function generateMetadata(): Promise<Metadata> {
   const base = await createPageMetadata({
-    title: 'Generate Invoice | TecBunny Solutions',
-    description: 'Instantly generate an invoice for your custom technology services and hardware solutions.',
+    title: 'Invoice Preview | TecBunny',
+    description: 'Try a sample invoice layout with your business name and amount. This preview does not save, download or send invoices.',
     path: '/create-invoice',
   });
   // Utility tool — keep out of the index.

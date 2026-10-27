@@ -45,7 +45,7 @@ export default function Page() {
       <Suspense fallback={<div className="min-h-screen bg-background" />}>
         <ContactPage />
       </Suspense>
-      <section aria-label="Contact details" className="container mx-auto max-w-4xl px-4 pb-16 text-sm text-muted-foreground">
+      <section aria-label="Contact details" className="container mx-auto max-w-4xl px-4 text-sm text-muted-foreground tb-page-bottom">
         <h2 className="mb-3 text-xl font-bold text-foreground">Contact details</h2>
         <address className="not-italic leading-relaxed">
           TECBUNNY SOLUTIONS PRIVATE LIMITED<br />

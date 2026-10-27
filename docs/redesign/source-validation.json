@@ -234,14 +234,5 @@
       "minimum": 3
     }
   ],
-  "scope": "Source and token invariants; not a full accessibility or workflow certification.",
-  "productionBuildsPresent": [
-    "public",
-    "mgmt",
-    "superadmin",
-    "api",
-    "waba",
-    "webmail"
-  ],
-  "productionCaptchaPolicy": "verified"
+  "scope": "Source and token invariants; not a full accessibility or workflow certification."
 }

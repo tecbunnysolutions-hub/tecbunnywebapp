@@ -97,7 +97,7 @@ const INDUSTRIES = [
 
 export default function IndustriesIndexPage() {
   return (
-    <div className="relative min-h-screen bg-card text-muted-foreground selection:bg-primary/20 selection:text-primary overflow-hidden pb-20">
+    <div className="relative min-h-screen bg-card text-muted-foreground selection:bg-primary/20 selection:text-primary overflow-hidden tb-page-bottom">
       <BreadcrumbJsonLd
         items={[
           { name: 'Home', url: 'https://www.tecbunny.com' },
@@ -111,7 +111,7 @@ export default function IndustriesIndexPage() {
       </div>
 
       {/* Header Hero */}
-      <section className="relative pt-24 pb-16 md:pt-32 md:pb-24 border-b border-border">
+      <section className="relative tb-subpage-hero border-b border-border">
         <div className="container mx-auto px-6 max-w-screen-2xl">
           <div className="text-center max-w-3xl mx-auto space-y-5">
             <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-xs font-semibold text-primary">
@@ -140,7 +140,7 @@ export default function IndustriesIndexPage() {
       </section>
 
       {/* Industry Grid */}
-      <section className="py-16 sm:py-24">
+      <section className="tb-section-space">
         <div className="container mx-auto px-6 max-w-screen-2xl">
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             {INDUSTRIES.map((ind) => {

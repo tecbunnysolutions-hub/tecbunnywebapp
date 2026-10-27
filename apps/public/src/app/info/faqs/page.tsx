@@ -53,7 +53,7 @@ async function fetchFaqs() {
 }
 export default async function FaqsPage() {
   return (
-    <div className="container mx-auto px-4 pt-24 pb-16 max-w-4xl min-h-screen">
+    <div className="container mx-auto px-4 max-w-4xl min-h-screen tb-page-top tb-page-bottom">
       <BreadcrumbJsonLd
         items={[
           { name: 'Home', url: 'https://www.tecbunny.com' },

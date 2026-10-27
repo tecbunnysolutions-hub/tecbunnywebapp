@@ -123,7 +123,7 @@ export default function OffersPage() {
       <div className="pointer-events-none absolute inset-0 bg-noise opacity-20" />
       <div className="pointer-events-none absolute right-1/4 top-0 h-[600px] w-[600px] rounded-full bg-primary/5 blur-[140px]" />
 
-      <section className="relative pt-16 sm:pt-24">
+      <section className="relative tb-page-top">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-primary">
@@ -153,7 +153,7 @@ export default function OffersPage() {
         </div>
       </section>
 
-      <section className="py-16">
+      <section className="tb-section-space">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mb-10 flex flex-col items-start justify-between gap-4 md:flex-row md:items-end">
             <div>
@@ -223,7 +223,7 @@ export default function OffersPage() {
       </section>
 
       {couponOffers.length > 0 && (
-        <section className="border-y border-border bg-card/50 py-16">
+        <section className="border-y border-border bg-card/50 tb-section-space">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <h2 className="text-center text-3xl font-semibold text-foreground">Active Coupons</h2>
             <div className="mt-10 grid gap-6 md:grid-cols-2">
@@ -262,7 +262,7 @@ export default function OffersPage() {
       )}
 
       {regularOffers.length > 0 && (
-        <section className="py-16">
+        <section className="tb-section-space">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <h2 className="text-2xl font-semibold text-foreground">More Offers</h2>
             <div className="mt-6 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -299,7 +299,7 @@ export default function OffersPage() {
       )}
 
       {!loading && offers.length === 0 && (
-        <section className="py-16">
+        <section className="tb-section-space">
           <div className="mx-auto max-w-3xl rounded-2xl border border-dashed border-border bg-card p-10 text-center text-muted-foreground">
             No active offers at the moment. Check back soon for new deals.
           </div>

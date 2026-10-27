@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import { Share2, Zap, Shield, Cpu, Network, CheckCircle2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from "@tecbunny/ui";
 import { Button } from "@tecbunny/ui";
@@ -21,12 +22,18 @@ export function BlueprintShowcase({ blueprint }: BlueprintShowcaseProps) {
     trackLanding(id);
   }, [id, trackLanding]);
 
-  const handleClonePlaceholder = () => {
-    toast({
-      title: 'Layout Customization Notice',
-      description: 'The automated catalog hardware matching system is under design development. Please contact our support to customize this setup.',
-      variant: 'default'
-    });
+  const handleShare = async () => {
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: 'TecBunny security setup', url: window.location.href });
+      } else {
+        await navigator.clipboard.writeText(window.location.href);
+        toast({ title: 'Link copied', description: 'You can paste this link into a message when you’re ready.' });
+      }
+    } catch (error) {
+      if (error instanceof DOMException && error.name === 'AbortError') return;
+      toast({ title: 'Share this saved layout', description: 'Copy the page address from your browser to share it.' });
+    }
   };
 
   return (
@@ -44,16 +51,16 @@ export function BlueprintShowcase({ blueprint }: BlueprintShowcaseProps) {
               {config.cameraCount}x Node {config.systemType} Architecture
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl">
-              Professional-grade security layout optimized for {config.premiseType} environments.
+              A saved layout for {config.premiseType} requirements. Review the proposed equipment and discuss the details for your site.
             </p>
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-12">
             {[
               { icon: Cpu, label: 'Resolution', value: config.resolution },
-              { icon: Shield, label: 'Retention', value: config.storage },
+              { icon: Shield, label: 'Storage', value: config.storage },
               { icon: Network, label: 'Topology', value: config.cameraCount > 16 ? 'Multi-Switch' : 'Single-Node' },
-              { icon: CheckCircle2, label: 'Compliance', value: 'Tier-1' }
+              { icon: CheckCircle2, label: 'Plan', value: 'Saved layout' }
             ].map((stat, i) => (
               <div key={i} className="p-4 rounded-2xl bg-muted/30 border border-border">
                 <stat.icon className="h-5 w-5 text-primary mb-2" />
@@ -73,19 +80,19 @@ export function BlueprintShowcase({ blueprint }: BlueprintShowcaseProps) {
         <Card className="border-primary/20 bg-primary/5 backdrop-blur-md sticky top-28">
           <CardHeader>
             <CardTitle className="text-foreground flex items-center gap-2">
-              <Zap className="h-5 w-5 text-warning" /> Save Design Specification
+              <Zap className="h-5 w-5 text-warning" /> Make it fit your space
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
             <p className="text-sm text-muted-foreground leading-relaxed">
-              This technical layout is currently in view-only template mode. Request customization to have our engineers compile the precise bill of hardware for your site.
+              Share your location and requirements with our team. We can discuss equipment, placement and the next step for a site-specific quote.
             </p>
 
             <div className="space-y-3">
-              <Button onClick={handleClonePlaceholder} className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold h-14 text-lg rounded-xl transition-all shadow-lg shadow-primary/20">
-                Request Layout Customization
+              <Button asChild className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold h-14 text-lg rounded-xl transition-all shadow-lg shadow-primary/20">
+                <Link href={`/contact?subject=sales&source=blueprint&message=${encodeURIComponent(`I would like to discuss saved blueprint ${id}.`)}`}>Discuss this layout</Link>
               </Button>
-              <Button variant="outline" className="w-full border-border text-muted-foreground h-12">
+              <Button onClick={handleShare} variant="outline" className="w-full border-border text-muted-foreground h-12">
                 <Share2 className="mr-2 h-4 w-4" /> Share Design Layout
               </Button>
             </div>
@@ -94,8 +101,8 @@ export function BlueprintShowcase({ blueprint }: BlueprintShowcaseProps) {
               <div className="flex items-center gap-3">
                 <div className="h-10 w-10 rounded-full bg-muted border border-border flex items-center justify-center text-xs text-foreground">PI</div>
                 <div>
-                  <p className="text-xs font-bold text-foreground">Creator: {blueprint.profiles?.name || 'Installer'}</p>
-                  <p className="text-[10px] text-muted-foreground">System Design Engineer</p>
+                  <p className="text-xs font-bold text-foreground">Creator: {blueprint.profiles?.name || 'Community member'}</p>
+                  <p className="text-[10px] text-muted-foreground">Blueprint author</p>
                 </div>
               </div>
               <p className="text-[10px] text-muted-foreground italic">

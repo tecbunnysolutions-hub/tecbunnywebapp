@@ -36,7 +36,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default function InfrastructurePlanningGuidePage() {
   return (
-    <div className="relative min-h-screen bg-card text-muted-foreground selection:bg-primary/20 selection:text-primary overflow-hidden pb-20">
+    <div className="relative min-h-screen bg-card text-muted-foreground selection:bg-primary/20 selection:text-primary overflow-hidden tb-page-bottom">
       <BreadcrumbJsonLd
         items={[
           { name: 'Home', url: 'https://www.tecbunny.com' },
@@ -51,7 +51,7 @@ export default function InfrastructurePlanningGuidePage() {
       </div>
 
       {/* Header */}
-      <section className="relative pt-24 pb-12 sm:pt-32 sm:pb-16 border-b border-border">
+      <section className="relative border-b border-border tb-page-top tb-page-bottom">
         <div className="container mx-auto px-6 max-w-4xl">
           <div className="space-y-4">
             <Link href="/resources" className="inline-flex items-center gap-1.5 text-xs text-primary hover:text-primary transition-colors font-mono">
@@ -71,7 +71,7 @@ export default function InfrastructurePlanningGuidePage() {
       </section>
 
       {/* Main Guide Content */}
-      <section className="py-12 sm:py-16">
+      <section className="tb-section-space">
         <div className="container mx-auto px-6 max-w-4xl space-y-12">
           {/* Section 1 */}
           <div className="space-y-4 rounded-3xl border border-border bg-background/60 p-8 sm:p-10">

@@ -65,7 +65,7 @@ export async function ServicePage({ content }: { content: ServiceContent }) {
       />
 
       <section className="tb-hero border-b border-border">
-        <div className="tb-container py-14 sm:py-20">
+        <div className="tb-container tb-section-space">
           <Link href="/services" className="text-sm font-semibold text-primary hover:text-foreground">
             ← All services
           </Link>
@@ -89,7 +89,7 @@ export async function ServicePage({ content }: { content: ServiceContent }) {
         </div>
       </section>
 
-      <section className="tb-container py-12 sm:py-16">
+      <section className="tb-container tb-section-space">
         <h2 className="text-3xl font-bold">Who this is for</h2>
         <ul className="mt-6 grid gap-4 md:grid-cols-3">
           {content.audience.map((item) => (
@@ -101,7 +101,7 @@ export async function ServicePage({ content }: { content: ServiceContent }) {
       </section>
 
       <section className="border-y border-border bg-card/40">
-        <div className="tb-container py-12 sm:py-16">
+        <div className="tb-container tb-section-space">
           <h2 className="text-3xl font-bold">Problems we solve</h2>
           <ul className="mt-7 grid gap-4 sm:grid-cols-2">
             {content.problems.map((problem) => (
@@ -117,7 +117,7 @@ export async function ServicePage({ content }: { content: ServiceContent }) {
       <DetailSection heading="What we do" details={content.whatWeDo} />
       <DetailSection heading="Buyer’s guide" details={content.buyersGuide} alternate />
 
-      <section className="tb-container py-12 sm:py-16">
+      <section className="tb-container tb-section-space">
         <h2 className="text-3xl font-bold">Packages and pricing</h2>
         <div className="mt-7 max-w-3xl rounded-2xl border border-primary/40 bg-primary/30 p-6">
           <h3 className="text-xl font-bold">{content.pricing.title}</h3>
@@ -133,7 +133,7 @@ export async function ServicePage({ content }: { content: ServiceContent }) {
       </section>
 
       <section className="border-y border-border bg-card/40">
-        <div className="tb-container py-12 sm:py-16">
+        <div className="tb-container tb-section-space">
           <h2 className="text-3xl font-bold">How it works</h2>
           <ol className="mt-7 grid gap-4 md:grid-cols-5">
             {content.process.map((step) => (
@@ -148,19 +148,19 @@ export async function ServicePage({ content }: { content: ServiceContent }) {
         </div>
       </section>
 
-      <section className="tb-container grid gap-6 py-12 sm:grid-cols-2 sm:py-16">
+      <section className="tb-container grid gap-6 sm:grid-cols-2 tb-section-space">
         <ListSection heading="Included" items={content.included} />
         <ListSection heading="Not included" items={content.notIncluded} />
       </section>
 
       <section className="border-y border-border bg-card/40">
-        <div className="tb-container grid gap-8 py-12 sm:grid-cols-2 sm:py-16">
+        <div className="tb-container grid gap-8 sm:grid-cols-2 tb-section-space">
           <ListSection heading="Warranty and support" items={content.warranty} />
           <ListSection heading="When we’re not the right choice" items={content.notRightFor} />
         </div>
       </section>
 
-      <section className="tb-container py-12 sm:py-16">
+      <section className="tb-container tb-section-space">
         <h2 className="text-3xl font-bold">Frequently asked questions</h2>
         <div className="mt-7 grid gap-4">
           {content.faqs.map((faq) => (
@@ -173,14 +173,14 @@ export async function ServicePage({ content }: { content: ServiceContent }) {
       </section>
 
       <section className="border-y border-border bg-card/40">
-        <div className="tb-container py-12 sm:py-16">
+        <div className="tb-container tb-section-space">
           <h2 className="text-3xl font-bold">Areas we serve</h2>
           <p className="mt-5 max-w-3xl leading-7 text-muted-foreground">{content.areas}</p>
         </div>
       </section>
 
 
-      <section className="tb-container py-12 sm:py-16">
+      <section className="tb-container tb-section-space">
         <div className="rounded-2xl border border-primary/40 bg-primary/30 p-7 sm:p-10">
           <h2 className="text-3xl font-bold">Talk through your site</h2>
           <p className="mt-3 max-w-2xl leading-7 text-muted-foreground">
@@ -213,7 +213,7 @@ function DetailSection({
 }) {
   return (
     <section className={alternate ? 'border-y border-border bg-card/40' : undefined}>
-      <div className="tb-container py-12 sm:py-16">
+      <div className="tb-container tb-section-space">
         <h2 className="text-3xl font-bold">{heading}</h2>
         <div className="mt-7 grid gap-5 md:grid-cols-2">
           {details.map((detail) => (

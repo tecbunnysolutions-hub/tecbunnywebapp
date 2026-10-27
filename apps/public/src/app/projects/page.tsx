@@ -191,7 +191,7 @@ export default function UpcomingProjectsPage() {
   };
 
   return (
-    <div className="relative min-h-screen bg-card text-muted-foreground selection:bg-primary/20 selection:text-primary overflow-hidden py-16 sm:py-24">
+    <div className="relative min-h-screen bg-card text-muted-foreground selection:bg-primary/20 selection:text-primary overflow-hidden tb-section-space">
       <Toaster position="top-right" />
 
       {/* Background Noise and Grid */}
@@ -228,7 +228,7 @@ export default function UpcomingProjectsPage() {
 
         {/* Loading / Error States */}
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-20 space-y-4">
+          <div className="flex flex-col items-center justify-center tb-section-space space-y-4">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
             <p className="text-sm text-muted-foreground font-light">Loading investor dashboard...</p>
           </div>
@@ -338,7 +338,7 @@ export default function UpcomingProjectsPage() {
 
       {/* Slide-over Detail Panel */}
       <Dialog open={isDetailOpen} onOpenChange={setIsDetailOpen}>
-        <DialogContent className="fixed right-0 top-0 h-full w-full max-w-xl border-l border-border bg-background p-8 shadow-2xl duration-300 translate-x-0 translate-y-0 left-auto top-0 !rounded-none flex flex-col overflow-y-auto">
+        <DialogContent className="fixed right-0 top-0 h-full w-full max-w-xl border-l border-border bg-background p-8 shadow-2xl duration-300 translate-x-0 translate-y-0 left-auto !rounded-none flex flex-col overflow-y-auto">
           {selectedProject && (
             <div className="flex-1 flex flex-col justify-between h-full space-y-8 pt-4">
               <div className="space-y-6">
@@ -385,9 +385,7 @@ export default function UpcomingProjectsPage() {
                 <div className="space-y-3 pt-2">
                   <h3 className="text-xs font-bold uppercase tracking-wider text-primary">Detailed Specifications</h3>
                   <div
-                    className="text-sm text-muted-foreground leading-relaxed font-light space-y-4 prose prose-invert max-w-none
-                      prose-h3:text-foreground prose-h3:font-tech prose-h3:mt-4 prose-h3:text-sm prose-h3:uppercase prose-h3:tracking-wider
-                      prose-ul:list-disc prose-ul:pl-5 prose-ul:space-y-1.5 prose-li:text-muted-foreground"
+                    className="text-sm text-muted-foreground leading-relaxed font-light space-y-4 prose prose-invert max-w-none prose-h3:text-foreground prose-h3:font-tech prose-h3:mt-4 prose-h3:text-sm prose-h3:uppercase prose-h3:tracking-wider prose-ul:list-disc prose-ul:pl-5 prose-ul:space-y-1.5 prose-li:text-muted-foreground"
                     dangerouslySetInnerHTML={{ __html: sanitizeHtml(selectedProject.detailed_information) }}
                   />
                 </div>

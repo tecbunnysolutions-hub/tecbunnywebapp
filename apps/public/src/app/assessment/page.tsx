@@ -41,7 +41,7 @@ export default async function AssessmentPage({
 }) {
   const resolvedParams = searchParams ? await searchParams : {};
   return (
-    <div className="relative min-h-screen bg-card text-muted-foreground selection:bg-primary/20 selection:text-primary overflow-hidden pb-20">
+    <div className="relative min-h-screen bg-card text-muted-foreground selection:bg-primary/20 selection:text-primary overflow-hidden tb-page-bottom">
       <BreadcrumbJsonLd
         items={[
           { name: 'Home', url: 'https://www.tecbunny.com' },
@@ -56,7 +56,7 @@ export default async function AssessmentPage({
       </div>
 
       {/* Hero Header */}
-      <section className="relative pt-24 pb-12 sm:pt-32 sm:pb-16 border-b border-border">
+      <section className="relative border-b border-border tb-page-top tb-page-bottom">
         <div className="container mx-auto px-6 max-w-screen-2xl">
           <div className="text-center max-w-3xl mx-auto space-y-5">
             <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4.5 py-1.5 text-xs font-semibold text-primary">
@@ -94,7 +94,7 @@ export default async function AssessmentPage({
       </section>
 
       {/* Main Funnel Section */}
-      <section className="py-12 sm:py-16">
+      <section className="tb-section-space">
         <div className="container mx-auto px-6 max-w-4xl">
           <TechnologyAssessmentFunnel
             defaultService={resolvedParams.service}

@@ -34,7 +34,7 @@ export function TechShell({ children }: { children: React.ReactNode }) {
   const isExcluded = React.useMemo(() => isExcludedRoute(pathname), [pathname]);
 
   return (
-    <div className={`tech-shell${isExcluded ? '' : ' tech-shell--active'}`}>
+    <div className={`tech-shell${isExcluded ? '' : ' tech-shell--active'}${pathname === '/' ? '' : ' tech-shell--subpage'}`}>
       {children}
     </div>
   );

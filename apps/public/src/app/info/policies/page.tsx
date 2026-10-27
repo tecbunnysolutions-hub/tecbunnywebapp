@@ -70,7 +70,7 @@ export default function PoliciesPage() {
       <div className="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute bottom-1/4 right-1/4 translate-x-1/2 translate-y-1/2 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[120px] pointer-events-none" />
 
-      <div className="mx-auto max-w-5xl px-4 pb-24 pt-12 sm:px-6 lg:px-8 sm:pt-16">
+      <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 tb-page-top tb-page-bottom">
         <Link
           href="/"
           className="group inline-flex items-center text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
@@ -82,7 +82,7 @@ export default function PoliciesPage() {
         <div className="mt-8 flex flex-col gap-10">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between border-b border-border pb-8">
             <div>
-              <h1 className="text-3xl font-extrabold tracking-tight      sm:text-4xl text-primary">
+              <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl text-primary">
                 Legal & Compliance
               </h1>
               <p className="mt-2 text-sm text-muted-foreground leading-relaxed max-w-2xl font-tech">

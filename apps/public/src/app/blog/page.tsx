@@ -67,7 +67,7 @@ export default async function BlogPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: serializeJsonLd(blogJsonLd) }}
       />
-      <div className="mx-auto max-w-5xl px-6 py-20 sm:py-28">
+      <div className="mx-auto max-w-5xl px-6 tb-section-space">
         <h1 className="text-4xl font-black tracking-tight sm:text-5xl">
           TecBunny <span className="text-primary">Blog</span>
         </h1>

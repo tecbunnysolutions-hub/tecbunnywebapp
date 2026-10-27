@@ -91,7 +91,7 @@ export function IndustryLandingPage({
   const { trackEvent } = useAnalytics();
 
   return (
-    <div className="relative min-h-screen bg-card text-muted-foreground selection:bg-primary/20 selection:text-primary overflow-hidden pb-20">
+    <div className="relative min-h-screen bg-card text-muted-foreground selection:bg-primary/20 selection:text-primary overflow-hidden tb-page-bottom">
       <BreadcrumbJsonLd
         items={[
           { name: 'Home', url: 'https://www.tecbunny.com' },
@@ -107,7 +107,7 @@ export function IndustryLandingPage({
       </div>
 
       {/* Hero Section */}
-      <section className="relative pt-24 pb-16 md:pt-32 md:pb-24 border-b border-border">
+      <section className="relative border-b border-border tb-page-top tb-page-bottom">
         <div className="container mx-auto px-6 max-w-screen-2xl">
           <div className="flex flex-col items-center text-center space-y-6 max-w-4xl mx-auto">
             <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-xs font-semibold text-primary">
@@ -149,7 +149,7 @@ export function IndustryLandingPage({
       </section>
 
       {/* Problem Points Section */}
-      <section className="py-16 sm:py-20 border-b border-border bg-background/40">
+      <section className="border-b border-border bg-background/40 tb-section-space">
         <div className="container mx-auto px-6 max-w-screen-2xl">
           <div className="max-w-3xl mb-12">
             <span className="text-xs font-bold uppercase tracking-[0.35em] text-destructive font-mono flex items-center gap-2">
@@ -190,7 +190,7 @@ export function IndustryLandingPage({
       </section>
 
       {/* Integrated Solutions Grid */}
-      <section id="solutions-section" className="py-16 sm:py-20">
+      <section id="solutions-section" className="tb-section-space">
         <div className="container mx-auto px-6 max-w-screen-2xl">
           <div className="max-w-3xl mb-12">
             <span className="text-xs font-bold uppercase tracking-[0.35em] text-primary font-mono">
@@ -285,7 +285,7 @@ export function IndustryLandingPage({
 
       {/* Genuine Case Study Section (if available) */}
       {caseStudy && (
-        <section className="py-16 sm:py-20 border-t border-border">
+        <section className="border-t border-border tb-section-space">
           <div className="container mx-auto px-6 max-w-screen-2xl">
             <div className="rounded-3xl border border-border bg-gradient-to-br from-background via-card/40 to-background p-8 sm:p-12">
               <div className="max-w-3xl space-y-6">
@@ -323,7 +323,7 @@ export function IndustryLandingPage({
       <TrustSection />
 
       {/* Industry FAQ Section with JSON-LD Schema */}
-      <section className="py-16 sm:py-20 border-b border-border">
+      <section className="border-b border-border tb-section-space">
         <div className="container mx-auto px-6 max-w-screen-2xl">
           <div className="max-w-3xl mb-12">
             <span className="text-xs font-bold uppercase tracking-[0.35em] text-primary font-mono flex items-center gap-2">
@@ -375,7 +375,7 @@ export function IndustryLandingPage({
       </section>
 
       {/* Assessment Funnel Section */}
-      <section id="assessment-funnel" className="py-16 sm:py-24">
+      <section id="assessment-funnel" className="tb-section-space">
         <div className="container mx-auto px-6 max-w-screen-2xl">
           <div className="text-center max-w-3xl mx-auto mb-12 space-y-3">
             <span className="text-xs font-bold uppercase tracking-[0.35em] text-primary font-mono">

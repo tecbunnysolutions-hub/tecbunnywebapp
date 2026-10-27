@@ -31,13 +31,13 @@ function ProductsPageSkeleton() {
     <div className="relative min-h-screen bg-background text-muted-foreground font-sans">
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#0f0f11_1px,transparent_1px),linear-gradient(to_bottom,#0f0f11_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,hsl(var(--overlay))_70%,transparent_100%)] pointer-events-none" />
       <div className="pointer-events-none absolute left-1/2 top-0 h-[350px] w-[600px] -translate-x-1/2 bg-secondary/5 blur-[120px]" />
-      <section className="py-24 sm:py-32">
+      <section className="tb-section-space">
         <div className="relative mx-auto max-w-7xl px-6 sm:px-8">
           <div className="flex flex-col items-center text-center gap-6">
             <div className="flex flex-col items-center gap-4">
               <div className="h-6 w-28 bg-card border border-border rounded-full animate-pulse" />
               <div className="h-14 w-80 bg-card/60 rounded-xl animate-pulse" />
-              <div className="h-4 w-72 bg-card/60 rounded-lg animate-pulse animate-pulse" />
+              <div className="h-4 w-72 bg-card/60 rounded-lg animate-pulse" />
             </div>
             <div className="w-full max-w-lg h-11 bg-card/40 border border-border rounded-xl animate-pulse" />
           </div>

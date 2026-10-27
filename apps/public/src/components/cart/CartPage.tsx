@@ -187,7 +187,7 @@ export default function CartPage() {
     <div className="min-h-screen bg-background text-foreground">
 
 
-      <section className="pt-28 pb-16 relative">
+      <section className="relative tb-page-top tb-page-bottom">
         <div className="fixed inset-0 bg-noise opacity-5 pointer-events-none"></div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
@@ -362,7 +362,7 @@ export default function CartPage() {
                 </div>
               </div>
             ) : (
-              <div className="bento-card py-16 px-6 text-center">
+              <div className="bento-card px-6 text-center tb-section-space">
                 <div className="mx-auto w-16 h-16 rounded-full bg-muted/30 flex items-center justify-center mb-4 border border-border">
                   <Gift className="h-8 w-8 text-muted-foreground" />
                 </div>

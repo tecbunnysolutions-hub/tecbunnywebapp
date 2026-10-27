@@ -25,7 +25,7 @@ export default function AgentRecruitPage() {
         ]}
       />
       {/* Hero Section */}
-      <section className="relative overflow-hidden border-b border-border py-20 lg:py-32">
+      <section className="relative overflow-hidden border-b border-border tb-section-space">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_-20%,rgba(37,99,235,0.1),transparent)]" />
         <div className="container relative mx-auto px-4 text-center">
           <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 text-primary">
@@ -54,7 +54,7 @@ export default function AgentRecruitPage() {
       </section>
 
       {/* Value Proposition */}
-      <section className="py-20">
+      <section className="tb-section-space">
         <div className="container mx-auto px-4">
           <div className="mb-16 text-center">
             <h2 className="mb-4 text-3xl font-bold text-foreground">Why TecBunny?</h2>
@@ -92,7 +92,7 @@ export default function AgentRecruitPage() {
       </section>
 
       {/* Target Audience */}
-      <section className="bg-muted/20 py-20">
+      <section className="bg-muted/20 tb-section-space">
         <div className="container mx-auto px-4">
           <div className="flex flex-col items-center gap-12 lg:flex-row">
             <div className="flex-1">
@@ -142,7 +142,7 @@ export default function AgentRecruitPage() {
         </div>
       </section>
 
-      <section className="border-y border-border bg-muted/20 py-16">
+      <section className="border-y border-border bg-muted/20 tb-section-space">
         <div className="container mx-auto grid gap-6 px-4 md:grid-cols-2">
 
           <div><h2 className="text-xl font-bold">Approved price uplift</h2><p className="mt-2 text-sm text-muted-foreground">With written approval, quotes may be up to 20% above the eligible base price. Affiliates receive 50% of that approved difference after final settlement.</p></div>
@@ -151,9 +151,9 @@ export default function AgentRecruitPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 lg:py-32">
+      <section className="tb-section-space">
         <div className="container mx-auto px-4">
-          <div className="relative overflow-hidden rounded-3xl bg-primary px-8 py-16 text-center text-primary-foreground lg:px-16">
+          <div className="relative overflow-hidden rounded-3xl bg-primary px-8 tb-section-space text-center text-primary-foreground lg:px-16">
             <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_25%,hsl(var(--foreground)/0.1)_50%,transparent_75%)] bg-[length:200%_200%] animate-shimmer" />
             <h2 className="relative mb-6 text-3xl font-extrabold md:text-4xl text-foreground">Ready to Start Your TecBunny Journey?</h2>
             <p className="relative mx-auto mb-10 max-w-2xl text-primary-foreground/90">

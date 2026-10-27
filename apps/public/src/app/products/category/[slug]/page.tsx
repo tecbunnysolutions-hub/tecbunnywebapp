@@ -78,7 +78,7 @@ export default async function ProductCategoryPage({ params }: Props) {
       />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c') }} />
 
-      <section className="tb-container py-12 sm:py-16">
+      <section className="tb-container tb-section-space">
         <Link href="/products" className="text-sm font-semibold text-primary hover:text-foreground">&larr; All products</Link>
         <h1 className="mt-5 text-4xl font-bold sm:text-5xl">{categoryLabel}</h1>
         <p className="mt-4 max-w-3xl text-lg leading-8 text-muted-foreground">

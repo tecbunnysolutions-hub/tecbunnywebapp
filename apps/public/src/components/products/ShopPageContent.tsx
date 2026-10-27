@@ -780,7 +780,7 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
         </div>
       )}
 
-      <div className="relative mx-auto max-w-7xl px-6 pb-16 pt-20 sm:px-8 sm:pt-24">
+      <div className="relative mx-auto max-w-7xl px-6 sm:px-8 tb-page-top tb-page-bottom">
         <div className="flex flex-col gap-6">
           {/* Hero Header */}
           <div className="reveal-section flex flex-col items-center text-center gap-5" data-reveal-id="products-hero">

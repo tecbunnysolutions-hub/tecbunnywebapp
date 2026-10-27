@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import { CheckCircleIcon, Download, Phone, Shield } from 'lucide-react';
+import { CheckCircleIcon } from 'lucide-react';
+import Link from 'next/link';
 import Confetti from 'react-confetti';
 import { useWindowSize } from '@/hooks/use-window-size';
 
@@ -35,8 +36,8 @@ export default function LazyInvoiceBuilder() {
           {step === 1 ? (
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
               <div>
-                <h2 className="text-2xl font-bold text-foreground mb-2">Create Your First Invoice</h2>
-                <p className="text-muted-foreground text-sm">Experience how fast billing can be. No account needed yet.</p>
+                <h1 className="text-2xl font-bold text-foreground mb-2">Preview a simple invoice</h1>
+                <p className="text-muted-foreground text-sm">Try a sample layout with your business name and amount. This preview does not save, download or send an invoice.</p>
               </div>
 
               <form onSubmit={handleGenerate} className="space-y-5">
@@ -75,9 +76,9 @@ export default function LazyInvoiceBuilder() {
 
                 <button
                   type="submit"
-                  className="w-full bg-card hover:bg-card text-foreground font-bold py-4 rounded-xl transition-transform active:scale-95 flex items-center justify-center gap-2 mt-4"
+                  className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-4 rounded-xl transition-transform active:scale-95 flex items-center justify-center gap-2 mt-4"
                 >
-                  Generate PDF & Send
+                  Preview invoice
                 </button>
               </form>
             </div>
@@ -87,26 +88,14 @@ export default function LazyInvoiceBuilder() {
               <div className="bg-success/10 text-success rounded-full p-4 mb-4">
                 <CheckCircleIcon className="w-10 h-10" />
               </div>
-              <h2 className="text-2xl font-bold text-foreground mb-2">Your Tech Service Invoice is Ready!</h2>
+              <h2 className="text-2xl font-bold text-foreground mb-2">Your invoice preview is ready</h2>
               <p className="text-muted-foreground text-center mb-8 px-4 text-sm">
-                Create a free account to download this PDF, track payment status, and save client details for next time.
+                Review the example alongside this panel. Your entries are not saved. You can go back to edit them or create a TecBunny account.
               </p>
 
-              <form className="w-full space-y-4" onSubmit={(e) => e.preventDefault()}>
-                <div className="relative">
-                  <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                  <input
-                    type="tel"
-                    placeholder="WhatsApp Number"
-                    className="w-full pl-10 p-3 border border-border rounded-xl focus:ring-2 focus:ring-primary outline-none"
-                  />
-                </div>
-                <button className="w-full bg-primary hover:bg-primary text-primary-foreground font-bold py-3.5 rounded-xl shadow-lg shadow-primary/20 transition-all transform active:scale-95 flex justify-center items-center gap-2">
-                  <Download className="w-4 h-4" /> Save & Download PDF
-                </button>
-              </form>
-              <div className="mt-6 flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
-                <Shield className="w-3 h-3" /> Takes 10 seconds. No credit card ever required.
+              <div className="w-full space-y-4 text-center">
+                <button type="button" onClick={() => setStep(1)} className="w-full border border-border text-foreground font-bold py-3.5 rounded-xl hover:bg-muted">Edit preview</button>
+                <Link href="/auth/signup" className="block w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-3.5 rounded-xl">Create your TecBunny account</Link>
               </div>
             </div>
           )}
@@ -124,14 +113,14 @@ export default function LazyInvoiceBuilder() {
           </div>
 
           <div className="flex-1 p-8 bg-card relative flex flex-col">
-            <div className="flex justify-between items-start mb-10">
+            <div className="flex flex-col gap-3 sm:flex-row sm:justify-between items-start mb-10">
               <div>
-                <h1 className="text-3xl font-serif text-foreground">INVOICE</h1>
-                <p className="text-sm text-muted-foreground mt-1">INV-2024-001</p>
+                <h2 className="text-2xl font-bold text-foreground">Invoice preview</h2>
+                <p className="text-sm text-muted-foreground mt-1">Example only</p>
               </div>
-              <div className="text-right">
+              <div className="sm:text-right break-words min-w-0">
                 <p className="font-bold text-foreground">{formData.businessName || 'Your Business Name'}</p>
-                <p className="text-sm text-muted-foreground">GSTIN: 27AAAAA0000A1Z5</p>
+                <p className="text-sm text-muted-foreground">Tax details not provided</p>
               </div>
             </div>
 
@@ -156,13 +145,13 @@ export default function LazyInvoiceBuilder() {
             </table>
 
             <div className="flex justify-end mt-auto">
-              <div className="w-1/2">
+              <div className="w-full sm:w-2/3">
                 <div className="flex justify-between py-2 text-sm text-muted-foreground">
                   <span>Subtotal</span>
                   <span>₹{formData.amount || '1000'}</span>
                 </div>
                 <div className="flex justify-between py-2 text-sm text-muted-foreground border-b border-border">
-                  <span>IGST (18%)</span>
+                  <span>Example tax (18%)</span>
                   <span>₹{Number(formData.amount || 1000) * 0.18}</span>
                 </div>
                 <div className="flex justify-between py-3 font-bold text-lg text-foreground">
@@ -175,8 +164,7 @@ export default function LazyInvoiceBuilder() {
             {/* VIRAL VECTOR: Public-Facing Artifact Badge */}
             <div className="absolute bottom-0 left-0 right-0 bg-muted border-t border-border p-3 text-center">
               <p className="text-xs text-muted-foreground font-medium flex items-center justify-center gap-1">
-                ⚡ Generated in 30 seconds via <strong className="text-foreground">Tecbunny</strong>.
-                <span className="text-primary hover:underline cursor-pointer ml-1">Create your service invoice now</span>
+                Sample layout by <strong className="text-foreground">TecBunny</strong>.
               </p>
             </div>
           </div>

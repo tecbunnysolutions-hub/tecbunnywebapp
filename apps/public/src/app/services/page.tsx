@@ -49,14 +49,14 @@ export default function ServicesPage() {
         { name: 'Services', url: 'https://www.tecbunny.com/services' },
       ]} />
       <section className="tb-hero border-b border-border">
-        <div className="tb-container py-16 sm:py-20">
+        <div className="tb-container tb-section-space">
           <h1 className="text-4xl font-bold sm:text-5xl">Find the right help for your technology.</h1>
           <p className="mt-5 max-w-3xl text-lg leading-8 text-muted-foreground">
             Five practical services for homes and small businesses. Choose the area where you need help, then we will explain the right next step before work starts.
           </p>
         </div>
       </section>
-      <section className="tb-container py-12 sm:py-16">
+      <section className="tb-container tb-section-space">
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
           {services.map((service) => (
             <Link key={service.name} href={service.href} className="flex min-h-60 flex-col rounded-2xl border border-border bg-card p-6 transition hover:border-primary">

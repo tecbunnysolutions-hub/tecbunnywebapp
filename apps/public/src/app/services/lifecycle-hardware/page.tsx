@@ -145,7 +145,7 @@ export default function LifecycleHardwarePage() {
   ];
 
   return (
-    <div className="relative min-h-screen bg-card text-muted-foreground selection:bg-primary/20 selection:text-primary overflow-hidden pb-20">
+    <div className="relative min-h-screen bg-card text-muted-foreground selection:bg-primary/20 selection:text-primary overflow-hidden tb-page-bottom">
       <BreadcrumbJsonLd
         items={[
           { name: 'Home', url: 'https://www.tecbunny.com' },
@@ -160,7 +160,7 @@ export default function LifecycleHardwarePage() {
       </div>
 
       {/* Hero Section */}
-      <section className="relative pt-24 pb-16 md:pt-32 md:pb-24 border-b border-border">
+      <section className="relative tb-subpage-hero border-b border-border">
         <div className="container mx-auto px-6 max-w-screen-2xl">
           <div className="flex flex-col items-center text-center space-y-6 max-w-4xl mx-auto">
             <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4.5 py-1.5 text-xs font-semibold text-primary">
@@ -192,7 +192,7 @@ export default function LifecycleHardwarePage() {
       </section>
 
       {/* What We Solve */}
-      <section className="py-16 sm:py-20 border-b border-border bg-background/40">
+      <section className="tb-section-space border-b border-border bg-background/40">
         <div className="container mx-auto px-6 max-w-screen-2xl">
           <div className="max-w-3xl mb-12">
             <span className="text-xs font-bold uppercase tracking-[0.35em] text-primary font-mono">
@@ -233,7 +233,7 @@ export default function LifecycleHardwarePage() {
       </section>
 
       {/* Services Grid */}
-      <section id="services-grid" className="py-16 md:py-24">
+      <section id="services-grid" className="tb-section-space">
         <div className="container mx-auto px-6 max-w-screen-2xl">
           <div className="max-w-2xl mb-16">
             <span className="text-xs uppercase tracking-[0.35em] text-primary font-bold font-mono">Offerings</span>
@@ -292,7 +292,7 @@ export default function LifecycleHardwarePage() {
       <TrustSection variant="compact" />
 
       {/* FAQ Section with JSON-LD Schema */}
-      <section className="py-16 sm:py-20 border-b border-border">
+      <section className="tb-section-space border-b border-border">
         <div className="container mx-auto px-6 max-w-screen-2xl">
           <div className="max-w-3xl mb-12">
             <span className="text-xs font-bold uppercase tracking-[0.35em] text-primary font-mono flex items-center gap-2">
@@ -333,7 +333,7 @@ export default function LifecycleHardwarePage() {
       </section>
 
       {/* Intake CTA — full assessment form lives on /assessment to avoid duplicating the funnel */}
-      <section id="assessment-funnel" className="py-16 sm:py-24 bg-background/20">
+      <section id="assessment-funnel" className="tb-section-space bg-background/20">
         <div className="container mx-auto px-6 max-w-screen-2xl">
           <div className="mx-auto max-w-3xl rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/30 via-background to-background p-8 text-center sm:p-12 space-y-4">
             <span className="text-xs uppercase tracking-[0.35em] text-primary font-bold font-mono">Proposal Intake</span>

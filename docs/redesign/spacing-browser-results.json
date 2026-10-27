@@ -1,0 +1,208 @@
+[
+  {
+    "route": "/services/it-support",
+    "width": 1366,
+    "overflow": false,
+    "heading": "IT Support in Goa",
+    "headingFromHeader": 87,
+    "heroPadding": "40.98px",
+    "navFont": "14px",
+    "navFits": true
+  },
+  {
+    "route": "/services",
+    "width": 1366,
+    "overflow": false,
+    "heading": "Find the right help for your technology.",
+    "headingFromHeader": 41,
+    "heroPadding": "40.98px",
+    "navFont": "14px",
+    "navFits": true
+  },
+  {
+    "route": "/about",
+    "width": 1366,
+    "overflow": false,
+    "heading": "Local people.Practical technology.",
+    "headingFromHeader": 93,
+    "heroPadding": "40.98px",
+    "navFont": "14px",
+    "navFits": true
+  },
+  {
+    "route": "/products",
+    "width": 1366,
+    "overflow": false,
+    "heading": "CCTV, IT Hardware & Security Systems",
+    "headingFromHeader": 83,
+    "heroPadding": null,
+    "navFont": "14px",
+    "navFits": true
+  },
+  {
+    "route": "/cart",
+    "width": 1366,
+    "overflow": false,
+    "heading": "Your cart",
+    "headingFromHeader": 41,
+    "heroPadding": null,
+    "navFont": "14px",
+    "navFits": true
+  },
+  {
+    "route": "/checkout",
+    "width": 1366,
+    "overflow": false,
+    "headingFromHeader": null,
+    "heroPadding": null,
+    "navFont": "14px",
+    "navFits": true
+  },
+  {
+    "route": "/info/faqs",
+    "width": 1366,
+    "overflow": false,
+    "heading": "Frequently Asked Questions",
+    "headingFromHeader": 41,
+    "heroPadding": null,
+    "navFont": "14px",
+    "navFits": true
+  },
+  {
+    "route": "/resources",
+    "width": 1366,
+    "overflow": false,
+    "heading": "Technology Resources & Planning Guides",
+    "headingFromHeader": 91,
+    "heroPadding": null,
+    "navFont": "14px",
+    "navFits": true
+  },
+  {
+    "route": "/customised-setups",
+    "width": 1366,
+    "overflow": false,
+    "heading": "Build your custom CCTV setup.",
+    "headingFromHeader": 93,
+    "heroPadding": null,
+    "navFont": "14px",
+    "navFits": true
+  },
+  {
+    "route": "/create-invoice",
+    "width": 1366,
+    "overflow": false,
+    "heading": "Preview a simple invoice",
+    "headingFromHeader": 81,
+    "heroPadding": null,
+    "navFont": "14px",
+    "navFits": true
+  },
+  {
+    "route": "/services/it-support",
+    "width": 390,
+    "overflow": false,
+    "heading": "IT Support in Goa",
+    "headingFromHeader": 77,
+    "heroPadding": "32px",
+    "navFont": "14px",
+    "navFits": true
+  },
+  {
+    "route": "/services",
+    "width": 390,
+    "overflow": false,
+    "heading": "Find the right help for your technology.",
+    "headingFromHeader": 32,
+    "heroPadding": "32px",
+    "navFont": "14px",
+    "navFits": true
+  },
+  {
+    "route": "/about",
+    "width": 390,
+    "overflow": false,
+    "heading": "Local people.Practical technology.",
+    "headingFromHeader": 71,
+    "heroPadding": "32px",
+    "navFont": "14px",
+    "navFits": true
+  },
+  {
+    "route": "/products",
+    "width": 390,
+    "overflow": false,
+    "heading": "CCTV, IT Hardware & Security Systems",
+    "headingFromHeader": 98,
+    "heroPadding": null,
+    "navFont": "14px",
+    "navFits": true
+  },
+  {
+    "route": "/cart",
+    "width": 390,
+    "overflow": false,
+    "heading": "Your cart",
+    "headingFromHeader": 32,
+    "heroPadding": null,
+    "navFont": "14px",
+    "navFits": true
+  },
+  {
+    "route": "/checkout",
+    "width": 390,
+    "overflow": false,
+    "headingFromHeader": null,
+    "heroPadding": null,
+    "navFont": "14px",
+    "navFits": true
+  },
+  {
+    "route": "/info/faqs",
+    "width": 390,
+    "overflow": false,
+    "heading": "Frequently Asked Questions",
+    "headingFromHeader": 32,
+    "heroPadding": null,
+    "navFont": "14px",
+    "navFits": true
+  },
+  {
+    "route": "/resources",
+    "width": 390,
+    "overflow": false,
+    "heading": "Technology Resources & Planning Guides",
+    "headingFromHeader": 82,
+    "heroPadding": null,
+    "navFont": "14px",
+    "navFits": true
+  },
+  {
+    "route": "/customised-setups",
+    "width": 390,
+    "overflow": false,
+    "heading": "Build your custom CCTV setup.",
+    "headingFromHeader": 84,
+    "heroPadding": null,
+    "navFont": "14px",
+    "navFits": true
+  },
+  {
+    "route": "/create-invoice",
+    "width": 390,
+    "overflow": false,
+    "heading": "Preview a simple invoice",
+    "headingFromHeader": 73,
+    "heroPadding": null,
+    "navFont": "14px",
+    "navFits": true
+  },
+  {
+    "check": "mobile Home navigation",
+    "passed": true
+  },
+  {
+    "check": "desktop Home navigation at 1280px",
+    "passed": true
+  }
+]

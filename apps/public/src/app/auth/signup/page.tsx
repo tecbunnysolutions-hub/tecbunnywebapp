@@ -244,7 +244,7 @@ export default function SignUpPage() {
 
   if (success) {
     return (
-      <div className="relative isolate min-h-screen overflow-hidden bg-background text-foreground flex items-center justify-center px-4 py-16">
+      <div className="relative isolate min-h-screen overflow-hidden bg-background text-foreground flex items-center justify-center px-4 tb-section-space">
         <div className="absolute inset-0 bg-noise opacity-10" />
         <div className="absolute top-1/2 right-1/2 translate-x-1/2 -translate-y-1/2 w-[520px] h-[520px] bg-primary/10 rounded-full blur-[100px] animate-pulse pointer-events-none" />
 
@@ -267,7 +267,7 @@ export default function SignUpPage() {
   }
 
   return (
-    <div className="relative isolate min-h-screen overflow-hidden bg-background text-foreground flex items-center justify-center px-4 py-16">
+    <div className="relative isolate min-h-screen overflow-hidden bg-background text-foreground flex items-center justify-center px-4 tb-section-space">
       <div className="absolute inset-0 bg-noise opacity-10" />
       <div className="absolute top-1/2 right-1/2 translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[100px] animate-pulse pointer-events-none" />
 

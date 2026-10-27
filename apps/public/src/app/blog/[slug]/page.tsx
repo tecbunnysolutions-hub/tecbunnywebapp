@@ -116,7 +116,7 @@ export default async function BlogPostPage({ params }: Props) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: serializeJsonLd(breadcrumbJsonLd) }}
       />
-      <article className="mx-auto max-w-3xl px-6 py-20 sm:py-28">
+      <article className="mx-auto max-w-3xl px-6 tb-section-space">
         {/* Back */}
         <Link href="/blog" className="text-xs text-muted-foreground hover:text-primary transition-colors">
           ← Back to Blog

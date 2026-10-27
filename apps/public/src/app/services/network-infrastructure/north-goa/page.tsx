@@ -105,7 +105,7 @@ export default function NorthGoaNetworkingPage() {
   ];
 
   return (
-    <div className="relative min-h-screen bg-card text-muted-foreground selection:bg-primary/20 selection:text-primary overflow-hidden pt-0 pb-16 sm:pt-0 sm:pb-24">
+    <div className="relative min-h-screen bg-card text-muted-foreground selection:bg-primary/20 selection:text-primary overflow-hidden pt-0 sm:pt-0 tb-page-bottom">
       <BreadcrumbJsonLd
         items={[
           { name: 'Home', url: 'https://www.tecbunny.com' },
@@ -125,7 +125,7 @@ export default function NorthGoaNetworkingPage() {
       <div className="ambient-blob ambient-blob--delayed pointer-events-none absolute right-0 top-1/2 h-96 w-96 -translate-y-1/2 rounded-full bg-primary/10 blur-[120px]" aria-hidden="true" />
 
       {/* Hero Section */}
-      <section className="relative pt-24 pb-16 md:pt-32 md:pb-24 border-b border-border">
+      <section className="relative tb-subpage-hero border-b border-border">
         <div className="container mx-auto px-6 max-w-xs sm:max-w-xl md:max-w-3xl lg:max-w-5xl xl:max-w-7xl">
           <div className="flex flex-col items-center text-center space-y-6 max-w-4xl mx-auto">
             <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4.5 py-1.5 text-sm font-semibold text-primary">
@@ -154,7 +154,7 @@ export default function NorthGoaNetworkingPage() {
       </section>
 
       {/* Local Footprint Grid */}
-      <section className="py-16 md:py-24 border-b border-border/50">
+      <section className="tb-section-space border-b border-border/50">
         <div className="container mx-auto px-6 max-w-xs sm:max-w-xl md:max-w-3xl lg:max-w-5xl xl:max-w-7xl">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <span className="text-xs uppercase tracking-[0.45em] text-primary font-bold">Regional Reach</span>
@@ -179,7 +179,7 @@ export default function NorthGoaNetworkingPage() {
       </section>
 
       {/* Services Grid */}
-      <section className="py-16 md:py-24">
+      <section className="tb-section-space">
         <div className="container mx-auto px-6 max-w-xs sm:max-w-xl md:max-w-3xl lg:max-w-5xl xl:max-w-7xl">
           <div className="max-w-2xl mb-16">
             <span className="text-sm uppercase tracking-[0.45em] text-primary font-bold">Infrastructure Offerings</span>
@@ -228,7 +228,7 @@ export default function NorthGoaNetworkingPage() {
       </section>
 
       {/* Advantages Section */}
-      <section className="py-16 md:py-24 bg-background/40 border-y border-border">
+      <section className="tb-section-space bg-background/40 border-y border-border">
         <div className="container mx-auto px-6 max-w-xs sm:max-w-xl md:max-w-3xl lg:max-w-5xl xl:max-w-7xl">
           <div className="grid gap-12 lg:grid-cols-12 lg:items-center">
             <div className="lg:col-span-5 space-y-6">
@@ -265,7 +265,7 @@ export default function NorthGoaNetworkingPage() {
       </section>
 
       {/* Intake Form */}
-      <section id="lead-form-section" className="py-16 md:py-24 border-b border-border bg-background/20">
+      <section id="lead-form-section" className="tb-section-space border-b border-border bg-background/20">
         <div className="container mx-auto px-6 max-w-xs sm:max-w-xl md:max-w-3xl lg:max-w-5xl xl:max-w-7xl">
           <div className="text-center max-w-3xl mx-auto mb-12">
             <span className="text-sm uppercase tracking-[0.45em] text-primary font-bold">Request a Proposal</span>

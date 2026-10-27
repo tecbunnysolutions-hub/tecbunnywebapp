@@ -10,14 +10,14 @@ export const metadata: Metadata = {
 
 export default function LeadCapturePage() {
   return (
-    <div className="relative min-h-screen bg-card text-muted-foreground selection:bg-primary/20 selection:text-primary overflow-hidden pt-0 pb-16 sm:pt-0 sm:pb-24">
+    <div className="relative min-h-screen bg-card text-muted-foreground selection:bg-primary/20 selection:text-primary overflow-hidden pt-0 sm:pt-0 tb-page-bottom">
       <div className="pointer-events-none absolute inset-0 -z-10">
         <div className="absolute inset-0 bg-[linear-gradient(to_right,hsl(var(--foreground)/0.03)_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--foreground)/0.03)_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,hsl(var(--overlay))_70%,transparent_100%)]" />
         <div className="absolute -left-40 top-0 h-[42rem] w-[42rem] rounded-full bg-primary/5 blur-[160px]" />
         <div className="absolute -right-40 top-1/3 h-[46rem] w-[46rem] rounded-full bg-primary/5 blur-[180px]" />
       </div>
 
-      <section className="relative pt-24 pb-16 md:pt-32 md:pb-20 border-b border-border">
+      <section className="relative tb-subpage-hero border-b border-border">
         <div className="container mx-auto px-6 max-w-screen-2xl">
           <div className="flex flex-col items-center text-center space-y-6 max-w-3xl mx-auto">
             <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4.5 py-1.5 text-sm font-semibold text-primary">
@@ -39,7 +39,7 @@ export default function LeadCapturePage() {
         </div>
       </section>
 
-      <section className="py-16 md:py-24">
+      <section className="tb-section-space">
         <div className="container mx-auto px-6 max-w-screen-2xl">
           <LeadCaptureForm />
         </div>

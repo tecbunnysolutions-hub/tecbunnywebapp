@@ -6,7 +6,7 @@ Audit date: 2026-10-27. Status: theme and rollout approved by the user; implemen
 
 Scanned all app source trees for page entrypoints, layouts, framework boundaries, route handlers, and extension HTML. Cross-checked public next.config redirects/rewrites, sitemap, Header navigation, public proxy and route policy, management navigation and role filtering, and superadmin middleware. Existing docs/route-inventory.md is an API-handler inventory, not a page inventory. Routes are scoped by app; equal paths across apps are separate surfaces. Dynamic records are represented by route patterns.
 
-This is source inspection, not a runtime or visual audit. Inline state signals below are heuristic and may also occur in imported components. All pages require a component-level state and interaction pass during implementation. No authenticated pages, live CMS records, payment providers, responsive layouts, or browser-rendered contrast have been verified. Root loading/error boundaries are inherited where applicable.
+This section records the initial source audit. Current implementation and runtime evidence are in implementation-status.md. The following limits describe what had been verified at audit time. Inline state signals below are heuristic and may also occur in imported components. All pages require a component-level state and interaction pass during implementation. No authenticated pages, live CMS records, payment providers, responsive layouts, or browser-rendered contrast have been verified. Root loading/error boundaries are inherited where applicable.
 
 ## Summary
 

@@ -643,7 +643,7 @@ export default function CheckoutPage() {
   // Show empty cart message if no items
   if (!quote && cartItems.length === 0) {
     return (
-      <div className="min-h-screen bg-background py-16 text-foreground">
+      <div className="min-h-screen bg-background text-foreground tb-section-space">
         <div className="max-w-4xl mx-auto px-4 text-center">
           <div className="mx-auto w-16 h-16 rounded-full bg-muted/30 flex items-center justify-center mb-4 border border-border">
             <ShoppingCart className="h-8 w-8 text-muted-foreground" />
@@ -661,7 +661,7 @@ export default function CheckoutPage() {
   const isCheckoutEnabled = isEnabled('checkout_enabled', true);
   if (!isCheckoutEnabled) {
     return (
-      <div className="min-h-screen bg-background py-16 text-foreground">
+      <div className="min-h-screen bg-background text-foreground tb-section-space">
         <div className="max-w-4xl mx-auto px-4 text-center">
           <div className="mx-auto w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center mb-4 border border-destructive/20">
             <Shield className="h-8 w-8 text-destructive" />
@@ -678,7 +678,7 @@ export default function CheckoutPage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground selection:bg-primary/20 selection:text-foreground" aria-busy={paymentLoading || isProcessingOrder}>
-      <section className="pt-32 pb-24 relative">
+      <section className="relative tb-page-top tb-page-bottom">
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#1f2937_1px,transparent_1px),linear-gradient(to_bottom,#1f2937_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,hsl(var(--overlay))_70%,transparent_100%)] opacity-[0.15] pointer-events-none"></div>
 
         <div className="max-w-6xl mx-auto px-6 relative z-10">

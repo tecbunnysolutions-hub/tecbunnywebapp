@@ -61,7 +61,7 @@ export default async function CustomisedSetupsPage({
           { name: 'Customised Setups', url: 'https://www.tecbunny.com/customised-setups' },
         ]}
       />
-      <section className="tb-setup-hero relative overflow-hidden border-b border-border pt-24 pb-14 sm:pt-28 sm:pb-20">
+      <section className="tb-setup-hero relative overflow-hidden border-b border-border tb-page-top tb-page-bottom">
         <div className="tb-setup-blueprint" aria-hidden="true"><Network /><span /><Building2 /><span /><ShieldCheck /><span /><FileText /></div>
         <div className="relative z-10 mx-auto max-w-5xl px-4 text-center sm:px-6 lg:px-8">
           <span className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
@@ -129,7 +129,7 @@ export default async function CustomisedSetupsPage({
         </div>
       </section>
 
-      <section className="border-t border-border bg-muted/20 py-14">
+      <section className="border-t border-border bg-muted/20 tb-section-space">
         <div className="mx-auto flex max-w-6xl flex-col gap-8 px-4 lg:flex-row lg:items-center lg:justify-between">
           <div className="max-w-2xl space-y-4">
             <h2 className="text-3xl font-semibold text-foreground">What happens after you share this estimate?</h2>

@@ -19,9 +19,9 @@ export async function generateMetadata({ params }: BlueprintPageProps): Promise<
   if (!blueprint) return { title: 'Blueprint Not Found | TecBunny' };
 
   const config = blueprint.config_payload as Record<string, any>;
-  const creator = blueprint.profiles?.name || 'Expert User';
+  const creator = blueprint.profiles?.name || 'Community member';
   const title = `${config.cameraCount}x Node ${config.systemType} Security Blueprint by ${creator}`;
-  const description = `Visualizing a high-fidelity ${config.premiseType} security setup with ${config.resolution} resolution and ${config.storage} storage. Compliance Grade: Tier-1 Verified.`;
+  const description = `Explore a saved ${config.premiseType || 'property'} security setup with ${config.resolution || 'the selected resolution'} and ${config.storage || 'the selected storage'}. Review the proposed equipment before planning an installation.`;
 
   // Dynamic OG image targeting an edge function generator
   const ogImageUrl = `https://tecbunny.com/api/og/blueprint?id=${id}&nodes=${config.cameraCount}&type=${encodeURIComponent(config.systemType)}`;
@@ -66,7 +66,7 @@ export default async function BlueprintPage({ params }: BlueprintPageProps) {
   const blueprintName = `${config.cameraCount}x Node ${config.systemType} Security Blueprint`;
 
   return (
-    <div className="min-h-screen bg-background pt-20">
+    <div className="min-h-screen bg-background tb-page-top">
       <BreadcrumbJsonLd
         items={[
           { name: 'Home', url: 'https://www.tecbunny.com' },

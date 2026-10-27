@@ -40,6 +40,7 @@ type NavLink = {
 };
 
 const navLinks: NavLink[] = [
+  { name: 'Home', href: '/' },
   { name: 'CCTV', href: '/services/cctv-security' },
   { name: 'IT Support', href: '/services/it-support' },
   { name: 'RFID Locks', href: '/services/rfid-locks' },
@@ -215,7 +216,7 @@ export function Header() {
                   >
                     <Link
                       href={item.href}
-                      className={`relative inline-flex items-center gap-1 whitespace-nowrap rounded-full px-1.5 py-1.5 text-[11px] font-bold transition-all duration-200 2xl:px-2.5 2xl:text-xs
+                      className={`relative inline-flex items-center gap-1 whitespace-nowrap rounded-full px-2 py-2 text-sm font-bold transition-all duration-200 2xl:px-2.5
                         ${isActive(item.href)
                           ? 'bg-primary/20 text-primary border border-primary/30 shadow-sm'
                           : 'text-muted-foreground hover:text-foreground hover:bg-card/50'
@@ -245,7 +246,7 @@ export function Header() {
                   <Link
                     key={item.name}
                     href={item.href}
-                    className={`relative inline-flex items-center whitespace-nowrap rounded-full px-1.5 py-1.5 text-[11px] font-bold transition-all duration-200 2xl:px-2.5 2xl:text-xs
+                    className={`relative inline-flex items-center whitespace-nowrap rounded-full px-2 py-2 text-sm font-bold transition-all duration-200 2xl:px-2.5
                       ${isActive(item.href)
                         ? 'bg-primary/20 text-primary border border-primary/30 shadow-sm'
                         : 'text-muted-foreground hover:text-foreground hover:bg-card/50'
@@ -353,7 +354,7 @@ export function Header() {
                     href="/contact?intent=service_request&source=header"
                     onMouseMove={applyMagneticEffect}
                     onMouseLeave={resetMagneticEffect}
-                    className="group relative whitespace-nowrap rounded-xl border border-primary bg-primary px-3 py-2 text-xs font-bold text-primary-foreground transition-all duration-200 hover:bg-primary shadow-lg shadow-primary/20 2xl:px-5 2xl:py-2.5 2xl:text-sm"
+                    className="group relative whitespace-nowrap rounded-xl border border-primary bg-primary px-3 py-2.5 text-sm font-bold text-primary-foreground transition-all duration-200 hover:bg-primary shadow-lg shadow-primary/20 2xl:px-5 2xl:py-2.5 2xl:text-sm"
                   >
                     Discuss your project
                   </Link>
@@ -361,7 +362,7 @@ export function Header() {
                     href="/products"
                     onMouseMove={applyMagneticEffect}
                     onMouseLeave={resetMagneticEffect}
-                    className="group relative whitespace-nowrap rounded-xl border border-border bg-card px-3 py-2 text-xs font-bold text-muted-foreground transition-all duration-200 hover:border-primary hover:text-foreground shadow-sm 2xl:px-5 2xl:py-2.5 2xl:text-sm"
+                    className="group relative whitespace-nowrap rounded-xl border border-border bg-card px-3 py-2.5 text-sm font-bold text-muted-foreground transition-all duration-200 hover:border-primary hover:text-foreground shadow-sm 2xl:px-5 2xl:py-2.5 2xl:text-sm"
                   >
                     Browse products
                   </Link>
@@ -423,7 +424,7 @@ export function Header() {
                   <button
                     type="button"
                     onClick={() => setMobileSubmenuOpen((current) => (current === item.name ? null : item.name))}
-                    className={`flex min-h-[48px] w-full items-center justify-between rounded-lg px-3 py-2 text-sm transition-colors ${
+                    className={`flex min-h-[48px] w-full items-center justify-between rounded-lg px-3 py-2 text-base transition-colors ${
                       mobileSubmenuOpen === item.name
                         ? 'text-foreground font-bold bg-card'
                         : 'text-muted-foreground hover:bg-card hover:text-foreground'
@@ -469,7 +470,7 @@ export function Header() {
                 <Link
                   href={item.href}
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`flex min-h-[48px] items-center justify-between rounded-lg px-3 py-2 text-sm transition-colors ${
+                  className={`flex min-h-[48px] items-center justify-between rounded-lg px-3 py-2 text-base transition-colors ${
                     isActive(item.href)
                       ? 'text-foreground font-bold bg-card'
                       : 'text-muted-foreground hover:bg-card hover:text-foreground'

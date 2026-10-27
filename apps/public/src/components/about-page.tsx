@@ -18,7 +18,7 @@ export default function AboutPage() {
           <aside className="tb-card p-7 sm:p-9"><MapPin className="text-primary" size={32} aria-hidden="true" /><h2 className="mt-5 text-2xl">Based in Pernem. Focused on your space.</h2><p className="mt-4 text-muted-foreground">We serve North Goa and the Sawantwadi area of Sindhudurg district, Maharashtra. Share your location and the work you have in mind so we can discuss the practical next step.</p><Link href="/about/business-info" className="mt-6 inline-flex min-h-11 items-center gap-2 font-semibold text-primary">View our business information <ArrowRight size={16} aria-hidden="true" /></Link></aside>
         </div>
       </section>
-      <section className="tb-container py-14 sm:py-20" aria-labelledby="about-approach">
+      <section className="tb-container tb-section-space" aria-labelledby="about-approach">
         <p className="tb-kicker">Our approach</p><h2 id="about-approach" className="mt-3 text-3xl">Start with the problem. Make the options clear.</h2>
         <div className="mt-8 grid gap-5 md:grid-cols-3">
           {[
@@ -29,9 +29,9 @@ export default function AboutPage() {
         </div>
       </section>
       <section className="border-y border-border bg-card">
-        <div className="tb-container py-14 sm:py-20"><p className="tb-kicker">What we help with</p><h2 className="mt-3 text-3xl">One team for connected requirements.</h2><div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{services.map(({ name, detail, href, icon: Icon }) => <article key={href} className="rounded-xl border border-border bg-background p-6"><Icon className="text-primary" size={24} aria-hidden="true" /><h3 className="mt-5 text-xl">{name}</h3><p className="mt-3 text-muted-foreground">{detail}</p><Link href={href} className="mt-5 inline-flex min-h-11 items-center gap-2 font-semibold text-primary">Explore this service <ArrowRight size={16} aria-hidden="true" /></Link></article>)}</div></div>
+        <div className="tb-container tb-section-space"><p className="tb-kicker">What we help with</p><h2 className="mt-3 text-3xl">One team for connected requirements.</h2><div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{services.map(({ name, detail, href, icon: Icon }) => <article key={href} className="rounded-xl border border-border bg-background p-6"><Icon className="text-primary" size={24} aria-hidden="true" /><h3 className="mt-5 text-xl">{name}</h3><p className="mt-3 text-muted-foreground">{detail}</p><Link href={href} className="mt-5 inline-flex min-h-11 items-center gap-2 font-semibold text-primary">Explore this service <ArrowRight size={16} aria-hidden="true" /></Link></article>)}</div></div>
       </section>
-      <section className="tb-container grid gap-6 py-14 sm:grid-cols-[1fr_auto] sm:items-center"><div><h2 className="text-3xl">What would you like to improve?</h2><p className="mt-3 text-muted-foreground">A short description of the problem is enough to start a conversation.</p></div><Link href="/contact?intent=quote_request&source=about_final" className="tb-button">Discuss your project <ArrowRight size={18} aria-hidden="true" /></Link></section>
+      <section className="tb-container grid gap-6 sm:grid-cols-[1fr_auto] sm:items-center tb-section-space"><div><h2 className="text-3xl">What would you like to improve?</h2><p className="mt-3 text-muted-foreground">A short description of the problem is enough to start a conversation.</p></div><Link href="/contact?intent=quote_request&source=about_final" className="tb-button">Discuss your project <ArrowRight size={18} aria-hidden="true" /></Link></section>
     </div>
   );
 }
