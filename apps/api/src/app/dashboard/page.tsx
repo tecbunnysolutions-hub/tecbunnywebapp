@@ -1,7 +1,6 @@
 'use client';
 
 import { useMemo, useRef, useState } from 'react';
-import { createClient } from '@supabase/supabase-js';
 import manifest from '../../generated/api-manifest.json';
 import { classify, isLiveAction, keyOf, parseConfig, preparation, reportCsv, reportRows, requestPath, responseFailed, responseShape, type ApiRow, type CheckResult, type RequestConfig } from '../../lib/dashboard-checks';
 
@@ -32,9 +31,8 @@ export default function DashboardPage() {
   const [status, setStatus] = useState('ALL');
   const [limit, setLimit] = useState(100);
   const [token, setToken] = useState('');
-  const [demoEmail, setDemoEmail] = useState('');
-  const [demoPassword, setDemoPassword] = useState('');
-  const [authMessage, setAuthMessage] = useState('Using current superadmin session');
+  const [automaticAuth, setAutomaticAuth] = useState(true);
+  const [authMessage, setAuthMessage] = useState('Demo authentication will be selected automatically when checks start');
   const [signingIn, setSigningIn] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
   const [logoutError, setLogoutError] = useState('');
@@ -56,7 +54,6 @@ export default function DashboardPage() {
     setLogoutError('');
     setToken('');
     setAuthMessage('Signing out');
-    setDemoPassword('');
     setSettings({});
     setResults({});
     try {
@@ -71,22 +68,17 @@ export default function DashboardPage() {
     }
   }
 
-  async function signInDemo() {
+  async function resolveCheckAuth(signal: AbortSignal) {
+    if (!automaticAuth) return { bearer: token.trim(), context: authMessage };
     setSigningIn(true);
     try {
-      const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-      const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-      if (!url || !key) throw new Error('Public authentication configuration is missing.');
-      const client = createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } });
-      const { data, error } = await client.auth.signInWithPassword({ email: demoEmail.trim(), password: demoPassword });
-      if (leaving.current) return;
-      if (error || !data.session) throw new Error(error?.message || 'Sign in failed');
-      setToken(data.session.access_token);
-      setAuthMessage(`Demo role: ${String(data.user.app_metadata.role ?? 'customer')}`);
-      setResults({});
-      setRunInfo(undefined);
-    } catch (error) { if (!leaving.current) { setToken(''); setResults({}); setAuthMessage(error instanceof Error ? error.message : 'Sign in failed'); } }
-    finally { setSigningIn(false); setDemoPassword(''); }
+      const response = await fetch('/dashboard/demo-session', { method: 'POST', credentials: 'same-origin', cache: 'no-store', signal: AbortSignal.any([signal, AbortSignal.timeout(15000)]) });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Automatic demo sign-in failed');
+      const context = data.configured ? 'Demo role: ' + data.role : 'Using current superadmin session (no demo account configured)';
+      setAuthMessage(context);
+      return { bearer: data.configured ? String(data.token) : '', context };
+    } finally { setSigningIn(false); }
   }
 
   const filtered = useMemo(() => rows.filter(row =>
@@ -109,11 +101,25 @@ export default function DashboardPage() {
     const pending = new Set(targets.map(keyOf));
     setResults(previous => scope === 'All APIs' ? {} : Object.fromEntries(Object.entries(previous).filter(([key]) => !pending.has(key))));
     const configs = { ...settings };
-    const bearer = token.trim();
+    let auth: { bearer: string; context: string };
+    try {
+      auth = await resolveCheckAuth(abort.signal);
+    } catch (error) {
+      const detail = abort.signal.aborted ? 'Run stopped before authentication.' : error instanceof Error ? error.message : 'Automatic authentication failed';
+      setAuthMessage(detail);
+      setResults(previous => ({ ...previous, ...Object.fromEntries(targets.map(row => [keyOf(row), { state: abort.signal.aborted ? 'cancelled' : 'auth_required', detail, checkedAt: new Date().toISOString() } as CheckResult])) }));
+      setProgress({ completed: targets.length, total: targets.length });
+      setRunInfo({ scope, startedAt, finishedAt: new Date().toISOString() });
+      setRunning(false);
+      active.current = false;
+      controller.current = null;
+      return;
+    }
+    const { bearer } = auth;
     let cursor = 0;
     const record = (row: ApiRow, result: CheckResult) => {
       const customAuth = Object.keys(configs[keyOf(row)]?.headers ?? {}).some(name => name.toLowerCase() === 'authorization');
-      setResults(previous => ({ ...previous, [keyOf(row)]: { ...result, authContext: bearer ? `${authMessage} (cookies omitted)` : customAuth ? 'Request Authorization header (cookies omitted)' : 'Current session' } }));
+      setResults(previous => ({ ...previous, [keyOf(row)]: { ...result, authContext: bearer ? `${auth.context} (cookies omitted)` : customAuth ? 'Request Authorization header (cookies omitted)' : 'Current session' } }));
       setProgress(previous => ({ ...previous, completed: previous.completed + 1 }));
     };
     async function check(row: ApiRow) {
@@ -197,15 +203,10 @@ export default function DashboardPage() {
           ))}
         </section>
         <section className="space-y-4 rounded-lg border bg-white p-4">
-          <div><h2 className="font-semibold">Run checks</h2><p className="mt-1 text-sm text-gray-600">Use the current superadmin session, or paste a demo user access token to test that user&apos;s permissions. Credentials and request settings stay in this tab&apos;s memory.</p></div>
-          <div className="flex flex-wrap items-end gap-3">
-            <label className="text-sm">Demo email<input type="email" autoComplete="off" value={demoEmail} onChange={event => setDemoEmail(event.target.value)} disabled={running || signingIn} className={`${input} mt-1 block`} /></label>
-            <label className="text-sm">Demo password<input type="password" autoComplete="off" value={demoPassword} onChange={event => setDemoPassword(event.target.value)} disabled={running || signingIn} className={`${input} mt-1 block`} /></label>
-            <button className={button} disabled={running || signingIn || !demoEmail || !demoPassword} onClick={signInDemo}>{signingIn ? 'Signing in…' : 'Use demo account'}</button>
-            <button className={button} disabled={running || signingIn} onClick={() => { setToken(''); setAuthMessage('Using current superadmin session'); setResults({}); setRunInfo(undefined); }}>Use superadmin session</button>
-          </div>
+          <div><h2 className="font-semibold">Run checks</h2><p className="mt-1 text-sm text-gray-600">Checks automatically sign in with the server-configured demo account, or reuse your current superadmin session when no demo account is configured. No password entry is needed.</p></div>
+          <label className="block text-sm">Authentication<select className={input + ' ml-2'} value={automaticAuth ? 'automatic' : 'session'} disabled={running || signingIn} onChange={event => { setAutomaticAuth(event.target.value === 'automatic'); setToken(''); setAuthMessage(event.target.value === 'automatic' ? 'Demo authentication will be selected automatically when checks start' : 'Using current superadmin session'); setResults({}); setRunInfo(undefined); }}><option value="automatic">Automatic demo account</option><option value="session">Current session / custom token</option></select></label>
           <p className="text-sm" role="status">{authMessage}</p>
-          <label className="block text-sm">Bearer token (optional)<input type="password" autoComplete="off" value={token} onChange={event => { setToken(event.target.value); setAuthMessage(event.target.value.trim() ? 'Using supplied bearer token' : 'Using current superadmin session'); setResults({}); setRunInfo(undefined); }} disabled={running || signingIn} className={`${input} mt-1 block w-full max-w-2xl`} placeholder="Leave empty to use the current session" /></label>
+          {!automaticAuth && <label className="block text-sm">Bearer token (optional)<input type="password" autoComplete="off" value={token} onChange={event => { setToken(event.target.value); setAuthMessage(event.target.value.trim() ? 'Using supplied bearer token' : 'Using current superadmin session'); setResults({}); setRunInfo(undefined); }} disabled={running || signingIn} className={`${input} mt-1 block w-full max-w-2xl`} placeholder="Leave empty to use the current session" /></label>}
           <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={includeActions} disabled={running} onChange={event => setIncludeActions(event.target.checked)} />Include configured live actions (writes, jobs, payments and messages)</label>
           <p className="text-xs text-gray-500">Every endpoint gets a report entry. Dynamic routes need demo IDs. Live actions also require allowSideEffects: true in their request settings and perform real operations. A passing response checks this request only; it does not prove every business workflow.</p>
           <div className="flex flex-wrap gap-2">
