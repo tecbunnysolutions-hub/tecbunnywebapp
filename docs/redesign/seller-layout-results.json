@@ -1,0 +1,86 @@
+[
+  {
+    "width": 390,
+    "tab": "OVERVIEW",
+    "viewport": 390,
+    "document": 390,
+    "overflow": false
+  },
+  {
+    "width": 390,
+    "tab": "PRODUCTS",
+    "viewport": 390,
+    "document": 390,
+    "overflow": false
+  },
+  {
+    "width": 390,
+    "tab": "ORDERS",
+    "viewport": 390,
+    "document": 390,
+    "overflow": false
+  },
+  {
+    "width": 390,
+    "tab": "SETTLEMENTS",
+    "viewport": 390,
+    "document": 390,
+    "overflow": false
+  },
+  {
+    "width": 768,
+    "tab": "OVERVIEW",
+    "viewport": 768,
+    "document": 768,
+    "overflow": false
+  },
+  {
+    "width": 768,
+    "tab": "PRODUCTS",
+    "viewport": 768,
+    "document": 768,
+    "overflow": false
+  },
+  {
+    "width": 768,
+    "tab": "ORDERS",
+    "viewport": 768,
+    "document": 768,
+    "overflow": false
+  },
+  {
+    "width": 768,
+    "tab": "SETTLEMENTS",
+    "viewport": 768,
+    "document": 768,
+    "overflow": false
+  },
+  {
+    "width": 1440,
+    "tab": "OVERVIEW",
+    "viewport": 1440,
+    "document": 1440,
+    "overflow": false
+  },
+  {
+    "width": 1440,
+    "tab": "PRODUCTS",
+    "viewport": 1440,
+    "document": 1440,
+    "overflow": false
+  },
+  {
+    "width": 1440,
+    "tab": "ORDERS",
+    "viewport": 1440,
+    "document": 1440,
+    "overflow": false
+  },
+  {
+    "width": 1440,
+    "tab": "SETTLEMENTS",
+    "viewport": 1440,
+    "document": 1440,
+    "overflow": false
+  }
+]

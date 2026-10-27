@@ -1,0 +1,110 @@
+[
+  {
+    "path": "/auth/signin",
+    "url": "http://localhost:9003/auth/signin",
+    "status": 200,
+    "light": {
+      "title": "Sign in | TecBunny",
+      "headings": [
+        "Welcome back."
+      ],
+      "overflow": false,
+      "background": "rgb(248, 250, 252)"
+    },
+    "mobile": {
+      "overflow": false,
+      "background": "rgb(10, 17, 30)"
+    },
+    "errors": []
+  },
+  {
+    "path": "/auth/signup",
+    "url": "http://localhost:9003/auth/signup",
+    "status": 200,
+    "light": {
+      "title": "Create your account | TecBunny",
+      "headings": [
+        "Create your TecBunny account"
+      ],
+      "overflow": false,
+      "background": "rgb(248, 250, 252)"
+    },
+    "mobile": {
+      "overflow": false,
+      "background": "rgb(10, 17, 30)"
+    },
+    "errors": []
+  },
+  {
+    "path": "/seller/dashboard",
+    "url": "http://localhost:9003/seller/dashboard",
+    "status": 200,
+    "light": {
+      "title": "Seller dashboard | TecBunny",
+      "headings": [
+        "Your seller workspace"
+      ],
+      "overflow": false,
+      "background": "rgb(248, 250, 252)"
+    },
+    "mobile": {
+      "overflow": false,
+      "background": "rgb(10, 17, 30)"
+    },
+    "errors": []
+  },
+  {
+    "path": "/profile",
+    "url": "http://localhost:9003/auth/signin",
+    "status": 200,
+    "light": {
+      "title": "Sign in | TecBunny",
+      "headings": [
+        "Welcome back."
+      ],
+      "overflow": false,
+      "background": "rgb(248, 250, 252)"
+    },
+    "mobile": {
+      "overflow": false,
+      "background": "rgb(10, 17, 30)"
+    },
+    "errors": []
+  },
+  {
+    "path": "/orders",
+    "url": "http://localhost:9003/auth/signin",
+    "status": 200,
+    "light": {
+      "title": "Sign in | TecBunny",
+      "headings": [
+        "Welcome back."
+      ],
+      "overflow": false,
+      "background": "rgb(248, 250, 252)"
+    },
+    "mobile": {
+      "overflow": false,
+      "background": "rgb(10, 17, 30)"
+    },
+    "errors": []
+  },
+  {
+    "path": "/services/cctv-security",
+    "url": "http://localhost:9003/services/cctv-security",
+    "status": 200,
+    "light": {
+      "title": "CCTV Installation in Goa | TecBunny",
+      "headings": [
+        "CCTV in Goa"
+      ],
+      "overflow": false,
+      "background": "rgb(248, 250, 252)"
+    },
+    "mobile": {
+      "overflow": false,
+      "background": "rgb(10, 17, 30)"
+    },
+    "errors": []
+  }
+]
