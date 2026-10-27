@@ -14,10 +14,10 @@ export default function LoginPage() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) return;
-    
+
     setLoading(true);
     setError("");
-    
+
     try {
       // Try the dedicated superadmin flow first. The endpoint validates the
       // identifier and password; a 401 simply means this is a staff login.
@@ -52,7 +52,7 @@ export default function LoginPage() {
         email,
         password,
       });
-      
+
       if (authError) {
         setError(authError.message);
         setLoading(false);
@@ -75,11 +75,11 @@ export default function LoginPage() {
         <div style={{ textAlign: 'center' }}>
           <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🏢</div>
           <h2 style={{ fontSize: '1.5rem', fontWeight: 600 }}>Agent Login</h2>
-          <p style={{ color: '#94a3b8', fontSize: '0.9rem', marginTop: '0.5rem' }}>Access your WABA CRM Workspace</p>
+          <p style={{ color: "hsl(var(--muted-foreground))", fontSize: '0.9rem', marginTop: '0.5rem' }}>Access your WABA CRM Workspace</p>
         </div>
 
         {error && (
-          <div style={{ padding: '1rem', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.2)', borderRadius: '8px', color: '#fca5a5', fontSize: '0.9rem' }}>
+          <div style={{ padding: '1rem', background: "hsl(var(--destructive) / 0.1)", border: "1px solid hsl(var(--destructive) / 0.2)", borderRadius: '8px', color: "hsl(var(--primary))", fontSize: '0.9rem' }}>
             {error}
           </div>
         )}
@@ -87,35 +87,35 @@ export default function LoginPage() {
         <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           <div className="crm-field">
             <label>Email Address</label>
-            <input 
-              type="text" 
-              className="crm-input" 
-              value={email} 
+            <input
+              type="text"
+              className="crm-input"
+              value={email}
               onChange={e => setEmail(e.target.value)}
               placeholder="agent@tecbunny.com"
               required
             />
           </div>
-          
+
           <div className="crm-field">
             <label>Password</label>
-            <input 
-              type="password" 
-              className="crm-input" 
-              value={password} 
+            <input
+              type="password"
+              className="crm-input"
+              value={password}
               onChange={e => setPassword(e.target.value)}
               placeholder="••••••••"
               required
             />
           </div>
 
-          <button 
+          <button
             type="submit"
             disabled={loading}
             style={{
               padding: '1rem',
-              background: loading ? 'rgba(59, 130, 246, 0.5)' : '#3b82f6',
-              color: 'white',
+              background: loading ? "hsl(var(--primary) / 0.5)" : 'hsl(var(--primary))',
+              color: "hsl(var(--foreground))",
               border: 'none',
               borderRadius: '8px',
               fontWeight: 600,

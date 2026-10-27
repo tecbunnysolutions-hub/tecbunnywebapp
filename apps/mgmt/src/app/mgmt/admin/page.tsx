@@ -67,7 +67,7 @@ export default function AdminDashboard() {
         try {
             setLoading(true);
             setError(null);
-            
+
             // Add cache-busting parameter to force fresh data
             const response = await fetch(`/api/admin/dashboard?range=${range}&t=${Date.now()}`, {
                 cache: 'no-store',
@@ -75,7 +75,7 @@ export default function AdminDashboard() {
                     'Cache-Control': 'no-cache'
                 }
             });
-            
+
             let data: DashboardResponse | null = null;
             try {
                 data = await response.json();
@@ -88,7 +88,7 @@ export default function AdminDashboard() {
                 const message = typeof rawMessage === 'string' ? rawMessage : JSON.stringify(rawMessage);
                 throw new Error(message || `HTTP error! status: ${response.status}`);
             }
-            
+
             if (data?.success && data?.stats) {
                 setStats(data.stats);
             } else {
@@ -117,7 +117,7 @@ export default function AdminDashboard() {
     }, [fetchStats]);
 
     // Calculate growth indicators
-    const orderGrowth = stats.lastMonthOrders > 0 
+    const orderGrowth = stats.lastMonthOrders > 0
         ? ((stats.monthlyOrders - stats.lastMonthOrders) / stats.lastMonthOrders * 100).toFixed(1)
         : '0';
     const isGrowthPositive = parseFloat(orderGrowth) >= 0;
@@ -187,7 +187,7 @@ export default function AdminDashboard() {
                                     <p className="text-xs text-muted-foreground font-bold uppercase tracking-wider">Total Revenue</p>
                                     <div className="mt-2 text-2xl font-bold text-foreground font-tech">₹{stats.monthlyRevenue.toLocaleString('en-IN')}</div>
                                     <div className="mt-2 flex items-center gap-2 text-xs">
-                                        <span className={isGrowthPositive ? 'text-emerald-500 font-semibold' : 'text-rose-500 font-semibold'}>
+                                        <span className={isGrowthPositive ? 'text-success font-semibold' : 'text-destructive font-semibold'}>
                                             {isGrowthPositive ? '▲' : '▼'} {orderGrowth}%
                                         </span>
                                         <span className="text-muted-foreground">vs last month</span>
@@ -197,7 +197,7 @@ export default function AdminDashboard() {
                                 <div className="rounded-xl border border-border bg-card p-4 sm:rounded-2xl sm:p-6">
                                     <p className="text-xs text-muted-foreground font-bold uppercase tracking-wider">Pending Quotes</p>
                                     <div className="mt-2 text-2xl font-bold text-foreground font-tech">{pendingCount}</div>
-                                    <div className="mt-2 text-xs text-amber-600 dark:text-amber-400 font-semibold">Action Required</div>
+                                    <div className="mt-2 text-xs text-warning dark:text-warning font-semibold">Action Required</div>
                                 </div>
 
                                 <div className="rounded-xl border border-border bg-card p-4 sm:rounded-2xl sm:p-6">
@@ -212,9 +212,9 @@ export default function AdminDashboard() {
                                     <div className="mt-2 text-xs text-muted-foreground flex items-center gap-1">
                                         {stats.monthlyOrders} this month
                                         {isGrowthPositive ? (
-                                            <TrendingUp className="h-3 w-3 text-emerald-500" />
+                                            <TrendingUp className="h-3 w-3 text-success" />
                                         ) : (
-                                            <TrendingDown className="h-3 w-3 text-rose-500" />
+                                            <TrendingDown className="h-3 w-3 text-destructive" />
                                         )}
                                     </div>
                                 </div>
@@ -233,7 +233,7 @@ export default function AdminDashboard() {
 
                                 <div className="rounded-xl border border-border bg-card p-4 sm:rounded-2xl sm:p-6">
                                     <p className="text-xs text-muted-foreground font-bold uppercase tracking-wider">System Health</p>
-                                    <div className="mt-2 text-2xl font-bold text-emerald-600 font-tech">Online</div>
+                                    <div className="mt-2 text-2xl font-bold text-success font-tech">Online</div>
                                     <div className="mt-2 text-xs text-muted-foreground">Analytics {stats.systemHealth?.analytics ?? 'enabled'}</div>
                                 </div>
                             </>
@@ -265,7 +265,7 @@ export default function AdminDashboard() {
                                 {(stats.charts?.ordersByStatus?.length ? stats.charts.ordersByStatus : [{ status: 'No data', count: 0 }]).map((point) => (
                                     <div key={point.status}>
                                         <div className="mb-1 flex justify-between text-xs"><span className="text-muted-foreground">{point.status}</span><span className="font-semibold">{point.count}</span></div>
-                                        <div className="h-2 rounded-full bg-muted"><div className="h-2 rounded-full bg-emerald-500" style={{ width: `${Math.max(4, (point.count / maxStatusPoint) * 100)}%` }} /></div>
+                                        <div className="h-2 rounded-full bg-muted"><div className="h-2 rounded-full bg-success text-success-foreground" style={{ width: `${Math.max(4, (point.count / maxStatusPoint) * 100)}%` }} /></div>
                                     </div>
                                 ))}
                             </div>
@@ -348,16 +348,16 @@ export default function AdminDashboard() {
                                             <span className="text-foreground font-semibold">{stats.totalProducts}</span>
                                         </div>
                                         <div className="w-full bg-muted rounded-full h-1.5">
-                                            <div className="bg-primary h-1.5 rounded-full" style={{ width: '40%' }}></div>
+                                            <div className="bg-primary h-1.5 rounded-full text-primary-foreground" style={{ width: '40%' }}></div>
                                         </div>
                                     </div>
                                     <div>
                                         <div className="flex justify-between text-xs mb-1">
                                             <span className="text-muted-foreground">Active Users</span>
-                                            <span className="text-amber-600 dark:text-amber-400 font-semibold">{stats.totalUsers}</span>
+                                            <span className="text-warning dark:text-warning font-semibold">{stats.totalUsers}</span>
                                         </div>
                                         <div className="w-full bg-muted rounded-full h-1.5">
-                                            <div className="bg-amber-500 h-1.5 rounded-full" style={{ width: '25%' }}></div>
+                                            <div className="bg-warning h-1.5 rounded-full text-warning-foreground" style={{ width: '25%' }}></div>
                                         </div>
                                     </div>
                                     <div>

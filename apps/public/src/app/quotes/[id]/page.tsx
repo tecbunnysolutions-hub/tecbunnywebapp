@@ -25,7 +25,7 @@ export default function QuoteDetailPage() {
   const actionToken = searchParams.get('token') || '';
   const { toast } = useToast();
   const { user, supabase } = useAuth();
-  
+
   const [quote, setQuote] = useState<any>(null);
   const [quoteLoadError, setQuoteLoadError] = useState('Quote not found.');
   const [loading, setLoading] = useState(true);
@@ -48,7 +48,7 @@ export default function QuoteDetailPage() {
 
   useEffect(() => {
     if (!quoteId) return;
-    
+
     const quoteUrl = actionToken
       ? `/api/quotes/${quoteId}?token=${encodeURIComponent(actionToken)}`
       : `/api/quotes/${quoteId}`;
@@ -80,10 +80,10 @@ export default function QuoteDetailPage() {
       .catch(err => {
         console.error(err);
         setQuoteLoadError(err instanceof Error ? err.message : 'Unable to load this quote right now.');
-        toast({ 
-          title: 'Error', 
+        toast({
+          title: 'Error',
           description: err instanceof Error ? err.message : 'Failed to load quote.',
-          variant: 'destructive' 
+          variant: 'destructive'
         });
         setLoading(false);
       });
@@ -96,7 +96,7 @@ export default function QuoteDetailPage() {
     }
 
     if (!quote?.counter_price) return;
-    
+
     setResponding(true);
     try {
       const res = await fetch(`/api/quotes/${quoteId}/accept-counter`, {
@@ -145,7 +145,7 @@ export default function QuoteDetailPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to send verification code');
-      
+
       setOtpId(data.otpId);
       setAuthStep('otp');
       toast({ title: 'OTP Sent', description: `Verification code sent via ${otpChannel}.` });
@@ -217,7 +217,7 @@ export default function QuoteDetailPage() {
       if (!acceptRes.ok) throw new Error('Failed to confirm quote acceptance');
 
       setIsAuthModalOpen(false);
-      
+
       // Redirect to checkout with quote ID
       setTimeout(() => {
         const query = new URLSearchParams({ quoteId: quote.quote_number || quote.id });
@@ -233,7 +233,7 @@ export default function QuoteDetailPage() {
 
   const handleRejectCounter = async () => {
     if (!quote?.counter_price) return;
-    
+
     setResponding(true);
     try {
       const res = await fetch(`/api/quotes/${quoteId}/reject-counter`, {
@@ -357,17 +357,17 @@ export default function QuoteDetailPage() {
 
         {/* Bid Section */}
         {bidPrice && (
-          <Card className="border-zinc-800 bg-zinc-900/40">
+          <Card className="border-border bg-card/40">
             <CardHeader>
-              <CardTitle className="text-zinc-200">Your Bid Submitted</CardTitle>
+              <CardTitle className="text-muted-foreground">Your Bid Submitted</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-end gap-4">
                 <div>
-                  <p className="text-sm text-zinc-400 mb-1">Price You Offered</p>
+                  <p className="text-sm text-muted-foreground mb-1">Price You Offered</p>
                   <p className="text-3xl font-bold text-primary">₹{Math.round(bidPrice).toLocaleString()}</p>
                 </div>
-                <div className="text-sm text-zinc-400">
+                <div className="text-sm text-muted-foreground">
                   {originalPrice > bidPrice ? (
                     <>
                       <p>You asked for {((originalPrice - bidPrice) / originalPrice * 100).toFixed(1)}% off</p>
@@ -392,7 +392,7 @@ export default function QuoteDetailPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="bg-muted/50 p-4 rounded-lg border border-border">
                   <p className="text-xs text-muted-foreground mb-1">Your Bid</p>
-                  <p className="text-2xl font-bold text-amber-500 dark:text-amber-300">₹{Math.round(bidPrice).toLocaleString()}</p>
+                  <p className="text-2xl font-bold text-warning dark:text-warning">₹{Math.round(bidPrice).toLocaleString()}</p>
                 </div>
                 <div className="bg-primary/10 p-4 rounded-lg border border-primary/20">
                   <p className="text-xs text-primary mb-1">Our Counter Offer</p>
@@ -413,13 +413,13 @@ export default function QuoteDetailPage() {
               )}
 
               {!hasSecureActionToken && (
-                <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-sm text-amber-700 dark:text-amber-200">
+                <div className="rounded-lg border border-warning/30 bg-warning/10 p-3 text-sm text-warning dark:text-warning">
                   This quote can be viewed here, but accepting or declining requires the secure customer action link sent by Tecbunny.
                 </div>
               )}
 
               <div className="flex gap-3">
-                <Button 
+                <Button
                   onClick={handleRejectCounter}
                   disabled={responding || !hasSecureActionToken}
                   variant="outline"
@@ -428,7 +428,7 @@ export default function QuoteDetailPage() {
                   {responding ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <X className="h-4 w-4 mr-2" />}
                   Decline
                 </Button>
-                <Button 
+                <Button
                   onClick={handleAcceptCounter}
                   disabled={responding || !hasSecureActionToken}
                   className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground"
@@ -450,14 +450,14 @@ export default function QuoteDetailPage() {
             <div className="space-y-3">
               <div className="flex gap-3 items-start">
                 <div className="mt-1.5">
-                  <div className="h-3 w-3 rounded-full bg-primary" />
+                  <div className="h-3 w-3 rounded-full bg-primary text-primary-foreground" />
                 </div>
                 <div>
                   <p className="text-sm font-medium text-foreground">Quote Generated</p>
                   <p className="text-xs text-muted-foreground">{format(new Date(quote.created_at), 'PPP p')}</p>
                 </div>
               </div>
-              
+
               {bidPrice && (
                 <div className="flex gap-3 items-start">
                   <div className="mt-1.5">
@@ -473,7 +473,7 @@ export default function QuoteDetailPage() {
               {counterPrice && (
                 <div className="flex gap-3 items-start">
                   <div className="mt-1.5">
-                    <div className="h-3 w-3 rounded-full bg-primary" />
+                    <div className="h-3 w-3 rounded-full bg-primary text-primary-foreground" />
                   </div>
                   <div>
                     <p className="text-sm font-medium text-foreground">Counter-Offer Sent</p>
@@ -485,7 +485,7 @@ export default function QuoteDetailPage() {
               {quote.status === 'accepted' && (
                 <div className="flex gap-3 items-start">
                   <div className="mt-1.5">
-                    <div className="h-3 w-3 rounded-full bg-primary" />
+                    <div className="h-3 w-3 rounded-full bg-primary text-primary-foreground" />
                   </div>
                   <div>
                     <p className="text-sm font-medium text-foreground">Booking Confirmed</p>

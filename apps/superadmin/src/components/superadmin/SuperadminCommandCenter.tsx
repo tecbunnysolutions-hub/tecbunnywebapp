@@ -44,11 +44,11 @@ import type {
 } from '@tecbunny/contracts';
 
 const severityStyles: Record<DashboardSeverity, string> = {
-  critical: 'border-red-500/40 bg-red-500/10 text-red-200',
-  high: 'border-orange-500/40 bg-orange-500/10 text-orange-200',
-  medium: 'border-amber-500/40 bg-amber-500/10 text-amber-100',
-  low: 'border-sky-500/35 bg-sky-500/10 text-sky-100',
-  ok: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-100',
+  critical: 'border-destructive/40 bg-destructive/10 text-destructive',
+  high: 'border-accent/40 bg-accent/10 text-accent',
+  medium: 'border-warning/40 bg-warning/10 text-warning',
+  low: 'border-primary/35 bg-primary/10 text-primary',
+  ok: 'border-success/30 bg-success/10 text-success',
 };
 
 const metricIcons = [Building2, GitBranch, Users, Activity, ShoppingCart, WalletCards, Package, Wrench, Bot, Server, Database, Gauge];
@@ -68,19 +68,19 @@ function MetricCard({ metric, index }: { metric: DashboardMetric; index: number 
   return (
     <Link
       href={metric.href ?? '#'}
-      className="group min-h-32 rounded-lg border border-zinc-800 bg-zinc-900/60 p-4 shadow-lg shadow-black/10 transition hover:border-red-500/40 hover:bg-zinc-900"
+      className="group min-h-32 rounded-lg border border-border bg-card/60 p-4 shadow-lg shadow-black/10 transition hover:border-destructive/40 hover:bg-card"
       aria-label={`${metric.label}: ${metric.displayValue}`}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="truncate text-[11px] font-bold uppercase tracking-widest text-zinc-500">{metric.label}</p>
-          <p className="mt-2 break-words text-2xl font-black tracking-tight text-white">{metric.displayValue}</p>
+          <p className="truncate text-[11px] font-bold uppercase tracking-widest text-muted-foreground">{metric.label}</p>
+          <p className="mt-2 break-words text-2xl font-black tracking-tight text-foreground">{metric.displayValue}</p>
         </div>
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-zinc-800 bg-zinc-950 text-red-400">
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-border bg-background text-destructive">
           {React.createElement(IconComponent, { className: "h-4.5 w-4.5" })}
         </span>
       </div>
-      <div className="mt-4 flex items-center justify-between gap-2 text-[11px] text-zinc-500">
+      <div className="mt-4 flex items-center justify-between gap-2 text-[11px] text-muted-foreground">
         <span className="truncate">{metric.source}</span>
         <span className={`shrink-0 rounded-full border px-2 py-0.5 uppercase ${severityStyles[metric.severity]}`}>{metric.severity}</span>
       </div>
@@ -93,8 +93,8 @@ function Section({ title, eyebrow, children, action }: { title: string; eyebrow?
     <section className="space-y-3">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          {eyebrow ? <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-red-400">{eyebrow}</p> : null}
-          <h2 className="text-base font-black text-white">{title}</h2>
+          {eyebrow ? <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-destructive">{eyebrow}</p> : null}
+          <h2 className="text-base font-black text-foreground">{title}</h2>
         </div>
         {action}
       </div>
@@ -106,17 +106,17 @@ function Section({ title, eyebrow, children, action }: { title: string; eyebrow?
 function SeriesBars({ points }: { points: DashboardSeriesPoint[] }) {
   const max = Math.max(1, ...points.map((point) => point.value));
   return (
-    <div className="grid h-36 grid-cols-7 items-end gap-2 rounded-lg border border-zinc-800 bg-zinc-900/50 p-3">
+    <div className="grid h-36 grid-cols-7 items-end gap-2 rounded-lg border border-border bg-card/50 p-3">
       {points.map((point) => (
         <div key={point.label} className="flex h-full min-w-0 flex-col justify-end gap-2">
-          <div className="flex flex-1 items-end rounded bg-zinc-950/70 p-1">
+          <div className="flex flex-1 items-end rounded bg-background/70 p-1">
             <div
-              className="w-full rounded-sm bg-gradient-to-t from-red-700 to-amber-300"
+              className="w-full rounded-sm bg-gradient-to-t from-destructive to-warning"
               style={{ height: `${Math.max(8, (point.value / max) * 100)}%` }}
               title={`${point.label}: ${point.value}`}
             />
           </div>
-          <p className="truncate text-center text-[10px] font-semibold text-zinc-500">{point.label}</p>
+          <p className="truncate text-center text-[10px] font-semibold text-muted-foreground">{point.label}</p>
         </div>
       ))}
     </div>
@@ -125,17 +125,17 @@ function SeriesBars({ points }: { points: DashboardSeriesPoint[] }) {
 
 function RankingList({ points, empty }: { points: DashboardSeriesPoint[]; empty: string }) {
   const max = Math.max(1, ...points.map((point) => point.value));
-  if (points.length === 0) return <p className="rounded-lg border border-zinc-800 bg-zinc-900/50 p-4 text-sm text-zinc-500">{empty}</p>;
+  if (points.length === 0) return <p className="rounded-lg border border-border bg-card/50 p-4 text-sm text-muted-foreground">{empty}</p>;
   return (
-    <div className="space-y-3 rounded-lg border border-zinc-800 bg-zinc-900/50 p-4">
+    <div className="space-y-3 rounded-lg border border-border bg-card/50 p-4">
       {points.map((point) => (
         <div key={point.label} className="space-y-1.5">
           <div className="flex items-center justify-between gap-3 text-xs">
-            <span className="truncate font-semibold text-zinc-200">{point.label}</span>
-            <span className="font-mono text-zinc-500">{Math.round(point.value).toLocaleString('en-IN')}</span>
+            <span className="truncate font-semibold text-muted-foreground">{point.label}</span>
+            <span className="font-mono text-muted-foreground">{Math.round(point.value).toLocaleString('en-IN')}</span>
           </div>
-          <div className="h-1.5 overflow-hidden rounded-full bg-zinc-800">
-            <div className="h-full rounded-full bg-red-500" style={{ width: `${Math.max(5, (point.value / max) * 100)}%` }} />
+          <div className="h-1.5 overflow-hidden rounded-full bg-card">
+            <div className="h-full rounded-full bg-destructive text-destructive-foreground" style={{ width: `${Math.max(5, (point.value / max) * 100)}%` }} />
           </div>
         </div>
       ))}
@@ -144,19 +144,19 @@ function RankingList({ points, empty }: { points: DashboardSeriesPoint[]; empty:
 }
 
 function ActivityList({ items, empty }: { items: DashboardActivity[]; empty: string }) {
-  if (items.length === 0) return <p className="rounded-lg border border-zinc-800 bg-zinc-900/50 p-4 text-sm text-zinc-500">{empty}</p>;
+  if (items.length === 0) return <p className="rounded-lg border border-border bg-card/50 p-4 text-sm text-muted-foreground">{empty}</p>;
   return (
-    <div className="divide-y divide-zinc-800 overflow-hidden rounded-lg border border-zinc-800 bg-zinc-900/50">
+    <div className="divide-y divide-border overflow-hidden rounded-lg border border-border bg-card/50">
       {items.map((item) => (
-        <Link key={`${item.source}-${item.id}`} href={item.href ?? '#'} className="block p-3 transition hover:bg-zinc-900">
+        <Link key={`${item.source}-${item.id}`} href={item.href ?? '#'} className="block p-3 transition hover:bg-card">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
-              <p className="truncate text-sm font-bold text-white">{item.label}</p>
-              <p className="mt-0.5 line-clamp-2 text-xs text-zinc-500">{item.detail}</p>
+              <p className="truncate text-sm font-bold text-foreground">{item.label}</p>
+              <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">{item.detail}</p>
             </div>
-            <Clock3 className="mt-0.5 h-4 w-4 shrink-0 text-zinc-600" />
+            <Clock3 className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
           </div>
-          <p className="mt-2 text-[10px] font-semibold uppercase tracking-wider text-zinc-600">{timeLabel(item.timestamp)} / {item.source}</p>
+          <p className="mt-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{timeLabel(item.timestamp)} / {item.source}</p>
         </Link>
       ))}
     </div>
@@ -212,7 +212,7 @@ function NotificationList({ issues, onRefresh }: { issues: DashboardIssue[]; onR
 
   if (issues.length === 0) {
     return (
-      <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-4 text-sm text-emerald-100">
+      <div className="rounded-lg border border-success/30 bg-success/10 p-4 text-sm text-success">
         No active command-center alerts.
       </div>
     );
@@ -225,16 +225,16 @@ function NotificationList({ issues, onRefresh }: { issues: DashboardIssue[]; onR
           <div className="flex items-start gap-3">
             <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-black text-white">{issue.module}</p>
-              <p className="mt-1 text-xs leading-5 text-zinc-300">{issue.businessImpact}</p>
-              <p className="mt-2 text-[11px] font-semibold uppercase tracking-wider text-zinc-500">{issue.recommendedSolution}</p>
+              <p className="text-sm font-black text-foreground">{issue.module}</p>
+              <p className="mt-1 text-xs leading-5 text-muted-foreground">{issue.businessImpact}</p>
+              <p className="mt-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{issue.recommendedSolution}</p>
               {issue.failingEndpoints && issue.failingEndpoints.length > 0 && (
-                <div className="mt-3 overflow-hidden rounded border border-zinc-850 bg-zinc-950/60 p-3">
-                  <h4 className="text-[10px] font-bold uppercase tracking-wider text-red-400 mb-2">API Failure Details</h4>
+                <div className="mt-3 overflow-hidden rounded border border-border bg-background/60 p-3">
+                  <h4 className="text-[10px] font-bold uppercase tracking-wider text-destructive mb-2">API Failure Details</h4>
                   <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-zinc-900 text-[10px] sm:text-[11px]">
+                    <table className="min-w-full divide-y divide-border text-[10px] sm:text-[11px]">
                       <thead>
-                        <tr className="text-left font-bold text-zinc-500">
+                        <tr className="text-left font-bold text-muted-foreground">
                           <th className="pb-1.5 pr-2 uppercase">Method</th>
                           <th className="pb-1.5 px-2 uppercase">Endpoint</th>
                           <th className="pb-1.5 px-2 text-center uppercase">Status</th>
@@ -242,20 +242,20 @@ function NotificationList({ issues, onRefresh }: { issues: DashboardIssue[]; onR
                           <th className="pb-1.5 pl-2 uppercase">Problem</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-zinc-900 text-zinc-300">
+                      <tbody className="divide-y divide-border text-muted-foreground">
                         {issue.failingEndpoints.map((ep, idx) => (
-                          <tr key={`${ep.method}-${ep.endpoint}-${ep.status}-${idx}`} className="hover:bg-zinc-900/40">
-                            <td className="py-1.5 pr-2 font-mono font-bold text-zinc-400">{ep.method}</td>
+                          <tr key={`${ep.method}-${ep.endpoint}-${ep.status}-${idx}`} className="hover:bg-card/40">
+                            <td className="py-1.5 pr-2 font-mono font-bold text-muted-foreground">{ep.method}</td>
                             <td className="py-1.5 px-2 font-mono truncate max-w-[150px] sm:max-w-[220px]" title={ep.endpoint}>{ep.endpoint}</td>
                             <td className="py-1.5 px-2 text-center">
                               <span className={`px-1.5 py-0.5 rounded font-mono font-bold ${
-                                ep.status >= 500 ? 'bg-red-500/20 text-red-300' : 'bg-amber-500/20 text-amber-300'
+                                ep.status >= 500 ? 'bg-destructive/20 text-destructive' : 'bg-warning/20 text-warning'
                               }`}>
                                 {ep.status}
                               </span>
                             </td>
-                            <td className="py-1.5 px-2 text-center font-mono font-bold text-zinc-400">{ep.count}</td>
-                            <td className="py-1.5 pl-2 text-zinc-400 leading-normal">{ep.problem}</td>
+                            <td className="py-1.5 px-2 text-center font-mono font-bold text-muted-foreground">{ep.count}</td>
+                            <td className="py-1.5 pl-2 text-muted-foreground leading-normal">{ep.problem}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -265,12 +265,12 @@ function NotificationList({ issues, onRefresh }: { issues: DashboardIssue[]; onR
               )}
               <div className="mt-2 flex flex-wrap items-center gap-2">
                 {issue.acknowledged ? (
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-400">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-success">
                     Acknowledged{issue.acknowledgedBy ? ` by ${issue.acknowledgedBy}` : ''}
                   </p>
                 ) : null}
                 {issue.assignedTo ? (
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-sky-300">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-primary">
                     Owner: {issue.assignedTo}
                   </p>
                 ) : null}
@@ -283,20 +283,20 @@ function NotificationList({ issues, onRefresh }: { issues: DashboardIssue[]; onR
                     value={ownerDraft}
                     onChange={(event) => setOwnerDraft(event.target.value)}
                     placeholder="Owner name or email"
-                    className="min-w-0 flex-1 rounded border border-zinc-700 bg-zinc-950 px-2 py-1 text-[11px] text-zinc-200 outline-none focus:border-sky-500/60"
+                    className="min-w-0 flex-1 rounded border border-border bg-background px-2 py-1 text-[11px] text-muted-foreground outline-none focus:border-primary/60"
                   />
                   <button
                     type="button"
                     onClick={() => void assignOwner(issue)}
                     disabled={pendingKey === issue.alertKey || !ownerDraft.trim()}
-                    className="shrink-0 rounded border border-zinc-700 bg-zinc-900 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-zinc-300 transition hover:border-sky-500/60 hover:text-sky-300 disabled:opacity-50"
+                    className="shrink-0 rounded border border-border bg-card px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground transition hover:border-primary/60 hover:text-primary disabled:opacity-50"
                   >
                     Save
                   </button>
                   <button
                     type="button"
                     onClick={() => { setAssigningKey(null); setOwnerDraft(''); }}
-                    className="shrink-0 rounded border border-zinc-700 bg-zinc-900 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-zinc-500 transition hover:text-zinc-300"
+                    className="shrink-0 rounded border border-border bg-card px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground transition hover:text-muted-foreground"
                   >
                     Cancel
                   </button>
@@ -311,7 +311,7 @@ function NotificationList({ issues, onRefresh }: { issues: DashboardIssue[]; onR
                       type="button"
                       onClick={() => void acknowledge(issue)}
                       disabled={pendingKey === issue.alertKey}
-                      className="rounded border border-zinc-700 bg-zinc-900 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-zinc-300 transition hover:border-emerald-500/60 hover:text-emerald-300 disabled:opacity-50"
+                      className="rounded border border-border bg-card px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground transition hover:border-success/60 hover:text-success disabled:opacity-50"
                     >
                       {pendingKey === issue.alertKey ? 'Saving…' : 'Acknowledge'}
                     </button>
@@ -319,7 +319,7 @@ function NotificationList({ issues, onRefresh }: { issues: DashboardIssue[]; onR
                       type="button"
                       onClick={() => void acknowledge(issue, 'resolved')}
                       disabled={pendingKey === issue.alertKey}
-                      className="rounded border border-zinc-700 bg-zinc-900 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-zinc-300 transition hover:border-sky-500/60 hover:text-sky-300 disabled:opacity-50"
+                      className="rounded border border-border bg-card px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground transition hover:border-primary/60 hover:text-primary disabled:opacity-50"
                     >
                       Resolve
                     </button>
@@ -330,7 +330,7 @@ function NotificationList({ issues, onRefresh }: { issues: DashboardIssue[]; onR
                     type="button"
                     onClick={() => { setAssigningKey(issue.alertKey ?? null); setOwnerDraft(issue.assignedTo ?? ''); }}
                     disabled={pendingKey === issue.alertKey}
-                    className="rounded border border-zinc-700 bg-zinc-900 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-zinc-300 transition hover:border-sky-500/60 hover:text-sky-300 disabled:opacity-50"
+                    className="rounded border border-border bg-card px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground transition hover:border-primary/60 hover:text-primary disabled:opacity-50"
                   >
                     {issue.assignedTo ? 'Reassign' : 'Assign Owner'}
                   </button>
@@ -348,16 +348,16 @@ function InsightList({ insights }: { insights: DashboardInsight[] }) {
   return (
     <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
       {insights.map((insight) => (
-        <article key={insight.title} className="rounded-lg border border-zinc-800 bg-zinc-900/60 p-4">
+        <article key={insight.title} className="rounded-lg border border-border bg-card/60 p-4">
           <div className="flex items-start gap-3">
-            <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-amber-300" />
+            <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-warning" />
             <div>
               <div className="flex flex-wrap items-center gap-2">
-                <h3 className="text-sm font-black text-white">{insight.title}</h3>
+                <h3 className="text-sm font-black text-foreground">{insight.title}</h3>
                 <span className={`rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase ${severityStyles[insight.severity]}`}>{insight.severity}</span>
               </div>
-              <p className="mt-2 text-sm leading-6 text-zinc-300">{insight.detail}</p>
-              <p className="mt-3 text-xs font-semibold text-red-300">{insight.action}</p>
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">{insight.detail}</p>
+              <p className="mt-3 text-xs font-semibold text-destructive">{insight.action}</p>
             </div>
           </div>
         </article>
@@ -396,36 +396,36 @@ function AiQueryPanel() {
   }
 
   return (
-    <div className="rounded-lg border border-zinc-800 bg-zinc-900/60 p-4">
+    <div className="rounded-lg border border-border bg-card/60 p-4">
       <div className="flex items-start gap-3">
-        <Bot className="mt-1 h-5 w-5 shrink-0 text-amber-300" />
+        <Bot className="mt-1 h-5 w-5 shrink-0 text-warning" />
         <div className="min-w-0 flex-1 space-y-3">
           <div>
-            <h3 className="text-sm font-black text-white">Natural Language Dashboard Query</h3>
-            <p className="mt-1 text-xs leading-5 text-zinc-500">Answers are grounded in the current command-center payload and fall back safely if Gemini is unavailable.</p>
+            <h3 className="text-sm font-black text-foreground">Natural Language Dashboard Query</h3>
+            <p className="mt-1 text-xs leading-5 text-muted-foreground">Answers are grounded in the current command-center payload and fall back safely if Gemini is unavailable.</p>
           </div>
           <div className="flex flex-col gap-2 sm:flex-row">
             <input
               value={question}
               onChange={(event) => setQuestion(event.target.value)}
-              className="min-h-11 flex-1 rounded-md border border-zinc-800 bg-zinc-950 px-3 text-sm text-zinc-100 outline-none transition placeholder:text-zinc-600 focus:border-red-500/50"
+              className="min-h-11 flex-1 rounded-md border border-border bg-background px-3 text-sm text-muted-foreground outline-none transition placeholder:text-muted-foreground focus:border-destructive/50"
               placeholder="Ask about revenue, risks, operations, alerts, or growth"
             />
             <button
               type="button"
               onClick={() => void askDashboard()}
               disabled={loading || question.trim().length < 3}
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-amber-500/30 bg-amber-500/10 px-4 text-sm font-bold text-amber-100 transition hover:bg-amber-500/20 disabled:opacity-60"
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-warning/30 bg-warning/10 px-4 text-sm font-bold text-warning transition hover:bg-warning/20 disabled:opacity-60"
             >
               <Sparkles className="h-4 w-4" />
               Ask
             </button>
           </div>
-          {error ? <p className="text-xs text-red-300">{error}</p> : null}
+          {error ? <p className="text-xs text-destructive">{error}</p> : null}
           {answer ? (
-            <div className="rounded-md border border-zinc-800 bg-zinc-950/70 p-3">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-600">{provider ?? 'dashboard'} answer</p>
-              <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-zinc-200">{answer}</p>
+            <div className="rounded-md border border-border bg-background/70 p-3">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{provider ?? 'dashboard'} answer</p>
+              <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-muted-foreground">{answer}</p>
             </div>
           ) : null}
         </div>
@@ -453,8 +453,8 @@ function QuickActions() {
   return (
     <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-4">
       {actions.map(([label, href, Icon]) => (
-        <Link key={label} href={href} className="flex min-h-16 items-center gap-2 rounded-lg border border-zinc-800 bg-zinc-900/60 p-3 text-xs font-bold text-zinc-200 transition hover:border-red-500/40 hover:bg-zinc-900">
-          <Icon className="h-4 w-4 shrink-0 text-red-400" />
+        <Link key={label} href={href} className="flex min-h-16 items-center gap-2 rounded-lg border border-border bg-card/60 p-3 text-xs font-bold text-muted-foreground transition hover:border-destructive/40 hover:bg-card">
+          <Icon className="h-4 w-4 shrink-0 text-destructive" />
           <span className="min-w-0 leading-4">{label}</span>
         </Link>
       ))}
@@ -490,28 +490,28 @@ export function SuperadminCommandCenter({ initialData }: { initialData: Superadm
 
   return (
     <div className="space-y-8 pb-10">
-      <header className="rounded-lg border border-zinc-800 bg-[radial-gradient(circle_at_top_left,_rgba(239,68,68,0.22),_transparent_32%),linear-gradient(135deg,_rgba(24,24,27,0.98),_rgba(9,9,11,0.98))] p-5 shadow-2xl shadow-black/20 sm:p-6">
+      <header className="rounded-lg border border-border bg-[radial-gradient(circle_at_top_left,_rgba(239,68,68,0.22),_transparent_32%),linear-gradient(135deg,_rgba(24,24,27,0.98),_rgba(9,9,11,0.98))] p-5 shadow-2xl shadow-black/20 sm:p-6">
         <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
           <div className="max-w-4xl">
-            <p className="text-[10px] font-black uppercase tracking-[0.28em] text-red-300">Executive Command Center</p>
-            <h1 className="mt-2 text-3xl font-black tracking-tight text-white sm:text-4xl">Superadmin Dashboard</h1>
-            <p className="mt-3 max-w-3xl text-sm leading-6 text-zinc-300">
+            <p className="text-[10px] font-black uppercase tracking-[0.28em] text-destructive">Executive Command Center</p>
+            <h1 className="mt-2 text-3xl font-black tracking-tight text-foreground sm:text-4xl">Superadmin Dashboard</h1>
+            <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
               Live operating view across companies, users, revenue, orders, inventory, support, WABA, audit, staff activity, security, analytics, and platform health.
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-3">
-            <div className="rounded-lg border border-zinc-800 bg-zinc-950/70 px-4 py-3">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">Production Readiness</p>
-              <p className="mt-1 text-2xl font-black text-white">{data.readinessPercent}%</p>
+            <div className="rounded-lg border border-border bg-background/70 px-4 py-3">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Production Readiness</p>
+              <p className="mt-1 text-2xl font-black text-foreground">{data.readinessPercent}%</p>
             </div>
-            <div className="rounded-lg border border-zinc-800 bg-zinc-950/70 px-4 py-3">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">System Health</p>
-              <p className="mt-1 text-2xl font-black text-white">{data.healthScore}%</p>
+            <div className="rounded-lg border border-border bg-background/70 px-4 py-3">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">System Health</p>
+              <p className="mt-1 text-2xl font-black text-foreground">{data.healthScore}%</p>
             </div>
             <button
               type="button"
               onClick={() => void refresh()}
-              className="inline-flex h-11 items-center gap-2 rounded-md border border-red-500/30 bg-red-500/10 px-4 text-sm font-bold text-red-100 transition hover:bg-red-500/20 disabled:opacity-60"
+              className="inline-flex h-11 items-center gap-2 rounded-md border border-destructive/30 bg-destructive/10 px-4 text-sm font-bold text-destructive transition hover:bg-destructive/20 disabled:opacity-60"
               disabled={loading}
             >
               <RefreshCcw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
@@ -519,10 +519,10 @@ export function SuperadminCommandCenter({ initialData }: { initialData: Superadm
             </button>
           </div>
         </div>
-        <div className="mt-5 flex flex-wrap items-center gap-3 text-xs text-zinc-500">
+        <div className="mt-5 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
           <span>Auto refresh: 30s</span>
           <span>Last generated: {timeLabel(data.generatedAt)}</span>
-          {error ? <span className="text-red-300">{error}</span> : null}
+          {error ? <span className="text-destructive">{error}</span> : null}
         </div>
       </header>
 
@@ -604,14 +604,14 @@ export function SuperadminCommandCenter({ initialData }: { initialData: Superadm
         <Section
           title="Staff Activity"
           eyebrow="Part 7"
-          action={<a href="/api/superadmin/dashboard/export?type=staff&days=30" className="rounded border border-zinc-700 bg-zinc-900 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-zinc-300 transition hover:border-red-500/60 hover:text-red-200">Export CSV</a>}
+          action={<a href="/api/superadmin/dashboard/export?type=staff&days=30" className="rounded border border-border bg-card px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground transition hover:border-destructive/60 hover:text-destructive">Export CSV</a>}
         >
           <ActivityList items={data.staffActivity} empty="No staff activity found." />
         </Section>
         <Section
           title="Audit Logs"
           eyebrow="Part 8"
-          action={<a href="/api/superadmin/dashboard/export?type=audit&days=30" className="rounded border border-zinc-700 bg-zinc-900 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-zinc-300 transition hover:border-red-500/60 hover:text-red-200">Export CSV</a>}
+          action={<a href="/api/superadmin/dashboard/export?type=audit&days=30" className="rounded border border-border bg-card px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground transition hover:border-destructive/60 hover:text-destructive">Export CSV</a>}
         >
           <ActivityList items={data.auditLogs} empty="No enterprise audit logs found." />
         </Section>
@@ -621,22 +621,22 @@ export function SuperadminCommandCenter({ initialData }: { initialData: Superadm
         title="Production Readiness Report"
         eyebrow="Final Report"
         action={
-          <Link href="/superadmin/mgmt/audit-logs" className="inline-flex items-center gap-1 text-xs font-bold uppercase tracking-wider text-red-300 hover:text-red-200">
+          <Link href="/superadmin/mgmt/audit-logs" className="inline-flex items-center gap-1 text-xs font-bold uppercase tracking-wider text-destructive hover:text-destructive">
             Open audit logs <ArrowRight className="h-3.5 w-3.5" />
           </Link>
         }
       >
         <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
           {data.productionReport.slice(0, 8).map((issue) => (
-            <article key={`${issue.module}-${issue.severity}`} className="rounded-lg border border-zinc-800 bg-zinc-900/60 p-4">
+            <article key={`${issue.module}-${issue.severity}`} className="rounded-lg border border-border bg-card/60 p-4">
               <div className="flex flex-wrap items-center gap-2">
                 <span className={`rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase ${severityStyles[issue.severity]}`}>{issue.severity}</span>
-                <h3 className="text-sm font-black text-white">{issue.module}</h3>
+                <h3 className="text-sm font-black text-foreground">{issue.module}</h3>
               </div>
-              <p className="mt-3 text-sm leading-6 text-zinc-300">{issue.businessImpact}</p>
-              <div className="mt-3 rounded-md border border-zinc-800 bg-zinc-950/70 p-3">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-600">Implementation</p>
-                <ul className="mt-2 space-y-1 text-xs text-zinc-400">
+              <p className="mt-3 text-sm leading-6 text-muted-foreground">{issue.businessImpact}</p>
+              <div className="mt-3 rounded-md border border-border bg-background/70 p-3">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Implementation</p>
+                <ul className="mt-2 space-y-1 text-xs text-muted-foreground">
                   {issue.implementationSteps.slice(0, 3).map((step) => <li key={step}>{step}</li>)}
                 </ul>
               </div>
@@ -645,12 +645,12 @@ export function SuperadminCommandCenter({ initialData }: { initialData: Superadm
         </div>
       </Section>
 
-      <div className="rounded-lg border border-zinc-800 bg-zinc-900/50 p-4">
-        <div className="flex items-center gap-2 text-sm font-black text-white">
-          <Search className="h-4 w-4 text-red-400" />
+      <div className="rounded-lg border border-border bg-card/50 p-4">
+        <div className="flex items-center gap-2 text-sm font-black text-foreground">
+          <Search className="h-4 w-4 text-destructive" />
           Permission And API Validation
         </div>
-        <p className="mt-2 text-sm leading-6 text-zinc-400">
+        <p className="mt-2 text-sm leading-6 text-muted-foreground">
           This dashboard is session-gated by the Superadmin layout, the refresh path is protected by the Superadmin API guard, and each widget reports its source table or telemetry stream. Company and branch isolation remain enforced in downstream modules; the Superadmin command center intentionally aggregates ecosystem-wide data.
         </p>
       </div>

@@ -451,20 +451,20 @@ export default function WalkInOrderManagement() {
         return 'bg-primary/10 text-primary border border-primary/20';
       case 'Processing':
       case 'Awaiting Payment':
-        return 'bg-zinc-800/80 text-zinc-300 border border-zinc-700';
+        return 'bg-card/80 text-muted-foreground border border-border';
       case 'Cancelled':
       case 'Payment Failed':
-        return 'bg-zinc-950 text-zinc-400 border border-zinc-800';
-      default: return 'bg-zinc-900 text-zinc-400 border border-zinc-800';
+        return 'bg-background text-muted-foreground border border-border';
+      default: return 'bg-card text-muted-foreground border border-border';
     }
   };
 
   const getPaymentStatusColor = (status: 'Paid' | 'Pending' | 'Failed') => {
     switch (status) {
       case 'Paid': return 'bg-primary/10 text-primary border border-primary/20';
-      case 'Pending': return 'bg-zinc-800/80 text-zinc-300 border border-zinc-700';
-      case 'Failed': return 'bg-zinc-950 text-zinc-400 border border-zinc-800';
-      default: return 'bg-zinc-900 text-zinc-400 border border-zinc-800';
+      case 'Pending': return 'bg-card/80 text-muted-foreground border border-border';
+      case 'Failed': return 'bg-background text-muted-foreground border border-border';
+      default: return 'bg-card text-muted-foreground border border-border';
     }
   };
 
@@ -521,7 +521,7 @@ export default function WalkInOrderManagement() {
               <CardHeader>
                 <CardTitle>Select Products</CardTitle>
                 <div className="relative">
-                  <Search className="absolute left-3 top-3 w-4 h-4 text-slate-400" />
+                  <Search className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
                   <Input
                     placeholder="Search products..."
                     value={searchTerm}
@@ -533,9 +533,9 @@ export default function WalkInOrderManagement() {
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-96 overflow-y-auto">
                   {filteredProducts.map((product) => (
-                    <div key={product.id} className="border border-zinc-800 bg-zinc-900/40 rounded-lg p-4">
-                      <h4 className="font-medium text-zinc-100">{product.name}</h4>
-                      <p className="text-sm text-zinc-400 mb-2">{product.category} • {product.brand}</p>
+                    <div key={product.id} className="border border-border bg-card/40 rounded-lg p-4">
+                      <h4 className="font-medium text-muted-foreground">{product.name}</h4>
+                      <p className="text-sm text-muted-foreground mb-2">{product.category} • {product.brand}</p>
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-lg font-bold text-primary">
                           ₹{(product.price * (1 - (product.discount_percentage || 0) / 100)).toFixed(2)}
@@ -545,12 +545,12 @@ export default function WalkInOrderManagement() {
                         )}
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className="text-sm text-zinc-400">Stock: {product.stock_quantity}</span>
+                        <span className="text-sm text-muted-foreground">Stock: {product.stock_quantity}</span>
                         <Button
                           size="sm"
                           onClick={() => addToCart(product)}
                           disabled={product.stock_quantity === 0}
-                          className="bg-primary hover:bg-primary/90 text-white"
+                          className="bg-primary hover:bg-primary/90 text-primary-foreground"
                         >
                           <Plus className="w-4 h-4 mr-1" />
                           Add
@@ -570,7 +570,7 @@ export default function WalkInOrderManagement() {
               <CardHeader>
                 <CardTitle>Customer Information</CardTitle>
                 <div className="relative">
-                  <Search className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
+                  <Search className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
                   <Input
                     placeholder="Search existing customers..."
                     value={customerSearchTerm}
@@ -695,14 +695,14 @@ export default function WalkInOrderManagement() {
               </CardHeader>
               <CardContent>
                 {cart.length === 0 ? (
-                  <p className="text-gray-500 text-center py-4">No items in cart</p>
+                  <p className="text-muted-foreground text-center py-4">No items in cart</p>
                 ) : (
                   <div className="space-y-3">
                     {cart.map((item) => (
                       <div key={item.productId} className="flex items-center justify-between p-3 border rounded">
                         <div className="flex-1">
                           <h5 className="font-medium">{item.productName}</h5>
-                          <p className="text-sm text-gray-500">₹{item.price} each</p>
+                          <p className="text-sm text-muted-foreground">₹{item.price} each</p>
                         </div>
                         <div className="flex items-center gap-2">
                           <Button
@@ -777,7 +777,7 @@ export default function WalkInOrderManagement() {
                     <span>₹{subtotal.toFixed(2)}</span>
                   </div>
                   {categoryDiscount > 0 && (
-                    <div className="flex justify-between text-green-600">
+                    <div className="flex justify-between text-success">
                       <span>Category Discount ({selectedCustomer?.customer_category}):</span>
                       <span>-₹{categoryDiscount.toFixed(2)}</span>
                     </div>
@@ -837,7 +837,7 @@ export default function WalkInOrderManagement() {
               {isLoadingOrders ? (
                 <div className="text-center py-8">Loading orders...</div>
               ) : orders.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">No orders found for selected date</div>
+                <div className="text-center py-8 text-muted-foreground">No orders found for selected date</div>
               ) : (
                 <Table>
                   <TableHeader>
@@ -864,7 +864,7 @@ export default function WalkInOrderManagement() {
                           <TableCell>
                             <div>
                               <div>{order.profiles.first_name} {order.profiles.last_name}</div>
-                              <div className="text-sm text-gray-500">{order.profiles.phone}</div>
+                              <div className="text-sm text-muted-foreground">{order.profiles.phone}</div>
                               <Badge variant="outline" className="text-xs">
                                 {order.profiles.customer_category}
                               </Badge>
@@ -876,7 +876,7 @@ export default function WalkInOrderManagement() {
                                 <div key={idx}>{item.product_name} x{item.quantity}</div>
                               ))}
                               {order.order_items.length > 2 && (
-                                <div className="text-gray-500">+{order.order_items.length - 2} more</div>
+                                <div className="text-muted-foreground">+{order.order_items.length - 2} more</div>
                               )}
                             </div>
                           </TableCell>
@@ -930,7 +930,7 @@ export default function WalkInOrderManagement() {
                                 <Button
                                   size="sm"
                                   variant="outline"
-                                  className="text-zinc-400 border-zinc-800 hover:text-zinc-300 hover:bg-zinc-900"
+                                  className="text-muted-foreground border-border hover:text-muted-foreground hover:bg-card"
                                   onClick={() => updateOrderStatus(order.id, 'Payment Failed')}
                                   title="Mark as Failed"
                                 >

@@ -112,12 +112,12 @@ export default function BroadcastDeskPage() {
       {/* Left Column: Workspace */}
       <div className="space-y-6">
         <div className="flex items-center gap-3 mb-4">
-          <div className="p-2 bg-blue-500/10 rounded-lg">
-            <Megaphone className="h-6 w-6 text-blue-500" />
+          <div className="p-2 bg-primary/10 rounded-lg">
+            <Megaphone className="h-6 w-6 text-primary" />
           </div>
           <div>
             <h1 className="text-2xl font-bold tracking-tight">B2B Broadcast Desk</h1>
-            <p className="text-sm text-slate-500">Secure high-velocity payload transmission workspace.</p>
+            <p className="text-sm text-muted-foreground">Secure high-velocity payload transmission workspace.</p>
           </div>
         </div>
 
@@ -181,7 +181,7 @@ export default function BroadcastDeskPage() {
               className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 font-mono"
             />
 
-            <div className="flex items-center gap-3 p-3 bg-slate-100 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800">
+            <div className="flex items-center gap-3 p-3 bg-muted dark:bg-card rounded-lg border border-border dark:border-border">
               <input type="checkbox" checked={injectCoupon} onChange={e => setInjectCoupon(e.target.checked)} className="h-4 w-4" />
               <span className="text-sm font-medium">Inject Active Coupon Code:</span>
               <input
@@ -189,14 +189,14 @@ export default function BroadcastDeskPage() {
                 value={activeCoupon}
                 onChange={e => setActiveCoupon(e.target.value)}
                 disabled={!injectCoupon}
-                className="h-8 rounded border px-2 text-sm font-mono w-32 disabled:opacity-50 bg-white dark:bg-black"
+                className="h-8 rounded border px-2 text-sm font-mono w-32 disabled:opacity-50 bg-card dark:bg-background"
               />
             </div>
 
             <Button
               onClick={handleDispatch}
               disabled={isDispatching || parsedContacts.length === 0}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold h-12"
+              className="w-full bg-primary hover:bg-primary text-primary-foreground font-bold h-12"
             >
               {isDispatching ? <RefreshCw className="mr-2 h-5 w-5 animate-spin" /> : <Send className="mr-2 h-5 w-5" />}
               {isDispatching ? 'Transmitting Payloads...' : 'Execute Batch Dispatch'}
@@ -209,16 +209,16 @@ export default function BroadcastDeskPage() {
             <CardHeader className="py-3">
               <CardTitle className="text-sm flex justify-between">
                 <span>Execution Table</span>
-                <span className="text-slate-500 font-normal">Rows: {parsedContacts.length}</span>
+                <span className="text-muted-foreground font-normal">Rows: {parsedContacts.length}</span>
               </CardTitle>
             </CardHeader>
             <div className="max-h-[300px] overflow-y-auto">
               <table className="w-full text-sm">
-                <thead className="bg-slate-50 dark:bg-slate-900 sticky top-0">
+                <thead className="bg-muted dark:bg-card sticky top-0">
                   <tr>
-                    <th className="px-4 py-2 text-left font-medium text-slate-500">Name</th>
-                    <th className="px-4 py-2 text-left font-medium text-slate-500">Routing Key</th>
-                    <th className="px-4 py-2 text-left font-medium text-slate-500">Status</th>
+                    <th className="px-4 py-2 text-left font-medium text-muted-foreground">Name</th>
+                    <th className="px-4 py-2 text-left font-medium text-muted-foreground">Routing Key</th>
+                    <th className="px-4 py-2 text-left font-medium text-muted-foreground">Status</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
@@ -227,9 +227,9 @@ export default function BroadcastDeskPage() {
                       <td className="px-4 py-2 font-medium">{contact.name}</td>
                       <td className="px-4 py-2 font-mono text-xs">{channel === 'whatsapp' ? contact.phone : contact.email}</td>
                       <td className="px-4 py-2">
-                        {contact.status === 'pending' && <span className="text-yellow-600 flex items-center gap-1 text-xs"><RefreshCw className="w-3 h-3" /> Queued</span>}
-                        {contact.status === 'success' && <span className="text-green-600 flex items-center gap-1 text-xs"><CheckCircle2 className="w-3 h-3" /> Transmitted</span>}
-                        {contact.status === 'failed' && <span className="text-red-600 flex items-center gap-1 text-xs"><XCircle className="w-3 h-3" /> Failed</span>}
+                        {contact.status === 'pending' && <span className="text-warning flex items-center gap-1 text-xs"><RefreshCw className="w-3 h-3" /> Queued</span>}
+                        {contact.status === 'success' && <span className="text-success flex items-center gap-1 text-xs"><CheckCircle2 className="w-3 h-3" /> Transmitted</span>}
+                        {contact.status === 'failed' && <span className="text-destructive flex items-center gap-1 text-xs"><XCircle className="w-3 h-3" /> Failed</span>}
                       </td>
                     </tr>
                   ))}

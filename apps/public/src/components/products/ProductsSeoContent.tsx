@@ -62,21 +62,21 @@ export function ProductsSeoContent() {
   return (
     <section
       aria-labelledby="products-buying-guide"
-      className="relative mx-auto max-w-7xl px-6 pb-24 sm:px-8 text-zinc-300"
+      className="relative mx-auto max-w-7xl px-6 pb-24 sm:px-8 text-muted-foreground"
     >
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqPageJsonLd).replace(/</g, '\\u003c') }}
       />
 
-      <div className="rounded-2xl border border-zinc-900 bg-zinc-950/40 p-8 sm:p-10 space-y-12">
+      <div className="rounded-2xl border border-border bg-background/40 p-8 sm:p-10 space-y-12">
         {/* Key takeaway — direct answer block for AI extraction */}
         <div className="space-y-4">
-          <h2 id="products-buying-guide" className="text-xl sm:text-2xl font-bold tracking-tight text-white">
+          <h2 id="products-buying-guide" className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
             What should you know before buying CCTV and IT hardware from TecBunny?
           </h2>
           <p className="text-base leading-relaxed max-w-3xl">
-            <strong className="text-white">Key takeaway:</strong> {ENTITY.name} sells genuine CCTV cameras,
+            <strong className="text-foreground">Key takeaway:</strong> {ENTITY.name} sells genuine CCTV cameras,
             recorders, computers, networking gear, and IT accessories at the live prices shown above, and
             installs and supports everything it sells across {ENTITY.serviceAreas.join(' and ')} from its
             headquarters in {ENTITY.headquarters}. If you know what you need, order directly from the
@@ -90,7 +90,7 @@ export function ProductsSeoContent() {
 
         {/* Q1: what is sold */}
         <div className="space-y-4">
-          <h2 className="text-lg sm:text-xl font-semibold tracking-tight text-white">
+          <h2 className="text-lg sm:text-xl font-semibold tracking-tight text-foreground">
             What CCTV and IT hardware does TecBunny sell?
           </h2>
           <p className="text-sm sm:text-base leading-relaxed max-w-3xl">
@@ -107,7 +107,7 @@ export function ProductsSeoContent() {
 
         {/* Q2: how to choose */}
         <div className="space-y-4">
-          <h2 className="text-lg sm:text-xl font-semibold tracking-tight text-white">
+          <h2 className="text-lg sm:text-xl font-semibold tracking-tight text-foreground">
             How do you choose the right CCTV system for your property?
           </h2>
           <p className="text-sm sm:text-base leading-relaxed max-w-3xl">
@@ -115,26 +115,26 @@ export function ProductsSeoContent() {
           </p>
           <ol className="list-decimal pl-5 space-y-2 max-w-3xl text-sm leading-relaxed">
             <li>
-              <strong className="text-white">Count coverage points.</strong> Walk the property and note every
+              <strong className="text-foreground">Count coverage points.</strong> Walk the property and note every
               entrance, corridor, cash counter, and blind spot that needs a camera.
             </li>
             <li>
-              <strong className="text-white">Pick resolution per zone.</strong> 2 MP is enough for corridors;
+              <strong className="text-foreground">Pick resolution per zone.</strong> 2 MP is enough for corridors;
               use 4 MP or higher where faces or number plates must be identifiable.
             </li>
             <li>
-              <strong className="text-white">Decide storage days.</strong> Multiply camera count by days of
+              <strong className="text-foreground">Decide storage days.</strong> Multiply camera count by days of
               retention you need; 15–30 days is typical for homes and small businesses.
             </li>
             <li>
-              <strong className="text-white">Choose wired or wireless</strong> using the comparison table below.
+              <strong className="text-foreground">Choose wired or wireless</strong> using the comparison table below.
             </li>
             <li>
-              <strong className="text-white">Plan remote viewing.</strong> Confirm the recorder supports a
+              <strong className="text-foreground">Plan remote viewing.</strong> Confirm the recorder supports a
               mobile app and that your internet upload speed can handle the streams.
             </li>
           </ol>
-          <p className="text-sm leading-relaxed max-w-3xl text-zinc-400">
+          <p className="text-sm leading-relaxed max-w-3xl text-muted-foreground">
             For multi-brand systems, prefer cameras and recorders that follow{' '}
             <a
               href="https://www.onvif.org/profiles/"
@@ -150,41 +150,41 @@ export function ProductsSeoContent() {
 
         {/* Q3: comparison table */}
         <div className="space-y-4">
-          <h2 className="text-lg sm:text-xl font-semibold tracking-tight text-white">
+          <h2 className="text-lg sm:text-xl font-semibold tracking-tight text-foreground">
             Wired vs wireless CCTV: which should you buy?
           </h2>
           <p className="text-sm sm:text-base leading-relaxed max-w-3xl">
-            <strong className="text-white">Short answer:</strong> choose wired (PoE) for permanent
+            <strong className="text-foreground">Short answer:</strong> choose wired (PoE) for permanent
             installations and businesses; choose wireless only for rented spaces or single-camera setups where
             cabling is impractical.
           </p>
           <div className="overflow-x-auto max-w-3xl">
-            <table className="w-full text-sm border border-zinc-800 rounded-xl overflow-hidden">
+            <table className="w-full text-sm border border-border rounded-xl overflow-hidden">
               <thead>
-                <tr className="bg-zinc-900/60 text-left text-white">
+                <tr className="bg-card/60 text-left text-foreground">
                   <th className="px-4 py-3 font-semibold">Factor</th>
                   <th className="px-4 py-3 font-semibold">Wired (PoE)</th>
                   <th className="px-4 py-3 font-semibold">Wireless (Wi-Fi)</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-zinc-800">
+              <tbody className="divide-y divide-border">
                 <tr>
-                  <td className="px-4 py-3 text-zinc-400">Reliability</td>
+                  <td className="px-4 py-3 text-muted-foreground">Reliability</td>
                   <td className="px-4 py-3">Stable, immune to Wi-Fi congestion</td>
                   <td className="px-4 py-3">Drops when signal or bandwidth is weak</td>
                 </tr>
                 <tr>
-                  <td className="px-4 py-3 text-zinc-400">Power</td>
+                  <td className="px-4 py-3 text-muted-foreground">Power</td>
                   <td className="px-4 py-3">Single cable carries power and data</td>
                   <td className="px-4 py-3">Needs a power point or battery per camera</td>
                 </tr>
                 <tr>
-                  <td className="px-4 py-3 text-zinc-400">Best for</td>
+                  <td className="px-4 py-3 text-muted-foreground">Best for</td>
                   <td className="px-4 py-3">Offices, shops, warehouses, new construction</td>
                   <td className="px-4 py-3">Rented homes, temporary sites, 1–2 cameras</td>
                 </tr>
                 <tr>
-                  <td className="px-4 py-3 text-zinc-400">Long-term cost</td>
+                  <td className="px-4 py-3 text-muted-foreground">Long-term cost</td>
                   <td className="px-4 py-3">Higher install effort, near-zero upkeep</td>
                   <td className="px-4 py-3">Cheap to start, battery and signal upkeep</td>
                 </tr>
@@ -195,7 +195,7 @@ export function ProductsSeoContent() {
 
         {/* Q4: cost */}
         <div className="space-y-4">
-          <h2 className="text-lg sm:text-xl font-semibold tracking-tight text-white">
+          <h2 className="text-lg sm:text-xl font-semibold tracking-tight text-foreground">
             How much does a CCTV or IT setup cost in Goa?
           </h2>
           <p className="text-sm sm:text-base leading-relaxed max-w-3xl">
@@ -217,20 +217,20 @@ export function ProductsSeoContent() {
 
         {/* Q5: buy vs install — decision support */}
         <div className="space-y-4">
-          <h2 className="text-lg sm:text-xl font-semibold tracking-tight text-white">
+          <h2 className="text-lg sm:text-xl font-semibold tracking-tight text-foreground">
             Should you buy equipment only or book professional installation?
           </h2>
           <div className="grid gap-6 sm:grid-cols-2 max-w-4xl text-sm leading-relaxed">
-            <div className="rounded-xl border border-zinc-800 p-5 space-y-2">
-              <h3 className="font-semibold text-white">Buy equipment only if you&hellip;</h3>
+            <div className="rounded-xl border border-border p-5 space-y-2">
+              <h3 className="font-semibold text-foreground">Buy equipment only if you&hellip;</h3>
               <ul className="list-disc pl-5 space-y-1">
                 <li>Are replacing a single camera or accessory on an existing system</li>
                 <li>Have in-house IT staff comfortable with cabling and recorder setup</li>
                 <li>Are a reseller or system integrator sourcing hardware</li>
               </ul>
             </div>
-            <div className="rounded-xl border border-zinc-800 p-5 space-y-2">
-              <h3 className="font-semibold text-white">Book installation if you&hellip;</h3>
+            <div className="rounded-xl border border-border p-5 space-y-2">
+              <h3 className="font-semibold text-foreground">Book installation if you&hellip;</h3>
               <ul className="list-disc pl-5 space-y-1">
                 <li>Are securing a site for the first time or adding more than two cameras</li>
                 <li>Need concealed cabling, weather sealing, or multi-floor coverage</li>
@@ -238,7 +238,7 @@ export function ProductsSeoContent() {
               </ul>
             </div>
           </div>
-          <p className="text-sm leading-relaxed max-w-3xl text-zinc-400">
+          <p className="text-sm leading-relaxed max-w-3xl text-muted-foreground">
             Coastal humidity can corrode outdoor connectors quickly, so we fit
             weather-rated housings and surge protection on exposed runs as standard. See{' '}
             <Link href="/services/cctv-security" className="text-primary hover:underline">
@@ -250,18 +250,18 @@ export function ProductsSeoContent() {
 
         {/* FAQ — mirrors PRODUCT_FAQS JSON-LD above */}
         <div className="space-y-6">
-          <h2 className="text-lg sm:text-xl font-semibold tracking-tight text-white">
+          <h2 className="text-lg sm:text-xl font-semibold tracking-tight text-foreground">
             Frequently asked questions
           </h2>
           <div className="space-y-5 max-w-3xl">
             {PRODUCT_FAQS.map((faq) => (
               <div key={faq.question} className="space-y-1.5">
-                <h3 className="text-sm sm:text-base font-semibold text-white">{faq.question}</h3>
+                <h3 className="text-sm sm:text-base font-semibold text-foreground">{faq.question}</h3>
                 <p className="text-sm leading-relaxed">{faq.answer}</p>
               </div>
             ))}
           </div>
-          <p className="text-sm leading-relaxed text-zinc-400">
+          <p className="text-sm leading-relaxed text-muted-foreground">
             More detail:{' '}
             <Link href="/info/policies/shipping" className="text-primary hover:underline">shipping policy</Link>
             {', '}

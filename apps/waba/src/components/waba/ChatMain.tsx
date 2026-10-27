@@ -186,12 +186,12 @@ export function ChatMain({
     ? Math.max(0, Math.floor((Date.now() - new Date(activeConvObj.last_interaction_timestamp).getTime()) / 60000))
     : null;
   const slaTone = lastInteractionAge == null
-    ? '#94a3b8'
+    ? "hsl(var(--muted-foreground))"
     : lastInteractionAge >= 30
-      ? '#fecaca'
+      ? 'hsl(var(--primary))'
       : lastInteractionAge >= 15
-        ? '#fde68a'
-        : '#bbf7d0';
+        ? "hsl(var(--warning))"
+        : "hsl(var(--success))";
   const slaLabel = lastInteractionAge == null
     ? 'SLA unavailable'
     : lastInteractionAge < 60
@@ -223,13 +223,13 @@ export function ChatMain({
         <div style={{ flexGrow: 1, minWidth: 0 }}>
           <h3 style={{ margin: 0 }}>{displayName}</h3>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', marginTop: '0.35rem' }} aria-label="Conversation assignment and SLA">
-            <span style={{ border: '1px solid rgba(148, 163, 184, 0.2)', borderRadius: '999px', padding: '0.2rem 0.5rem', color: '#cbd5e1', fontSize: '0.72rem' }}>
+            <span style={{ border: "1px solid hsl(var(--border) / 0.2)", borderRadius: '999px', padding: '0.2rem 0.5rem', color: "hsl(var(--foreground))", fontSize: '0.72rem' }}>
               Owner: {activeConvObj?.assigned_to || 'Unassigned'}
             </span>
-            <span style={{ border: '1px solid rgba(148, 163, 184, 0.2)', borderRadius: '999px', padding: '0.2rem 0.5rem', color: '#cbd5e1', fontSize: '0.72rem' }}>
+            <span style={{ border: "1px solid hsl(var(--border) / 0.2)", borderRadius: '999px', padding: '0.2rem 0.5rem', color: "hsl(var(--foreground))", fontSize: '0.72rem' }}>
               Dept: {activeConvObj?.department || 'General'}
             </span>
-            <span style={{ border: '1px solid rgba(148, 163, 184, 0.2)', borderRadius: '999px', padding: '0.2rem 0.5rem', color: slaTone, fontSize: '0.72rem' }}>
+            <span style={{ border: "1px solid hsl(var(--border) / 0.2)", borderRadius: '999px', padding: '0.2rem 0.5rem', color: slaTone, fontSize: '0.72rem' }}>
               {slaLabel}
             </span>
           </div>
@@ -247,8 +247,8 @@ export function ChatMain({
         {allMessages.map(msg => {
           if (msg.status === 'SYSTEM') {
             return (
-              <div key={msg.id} style={{ margin: '12px 0', padding: '16px', background: 'rgba(59, 130, 246, 0.1)', borderLeft: '4px solid #3b82f6', borderRadius: '4px', color: '#cbd5e1', fontSize: '0.9rem' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', color: '#3b82f6', fontWeight: 'bold' }}>
+              <div key={msg.id} style={{ margin: '12px 0', padding: '16px', background: "hsl(var(--primary) / 0.1)", borderLeft: "4px solid hsl(var(--primary))", borderRadius: '4px', color: "hsl(var(--foreground))", fontSize: '0.9rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', color: 'hsl(var(--primary))', fontWeight: 'bold' }}>
                   <span>✨</span> AI Copilot
                 </div>
                 <div style={{ whiteSpace: 'pre-wrap' }}>{msg.message_content}</div>
@@ -281,15 +281,15 @@ export function ChatMain({
                 <audio src={msg.media_url} controls style={{ maxWidth: '100%', marginBottom: '8px' }} />
               )}
               {msg.media_url && msg.media_type === 'DOCUMENT' && (
-                <a href={msg.media_url} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '12px', background: 'rgba(255,255,255,0.1)', borderRadius: '8px', marginBottom: '8px', color: '#fff', textDecoration: 'none', fontWeight: 500 }}>
+                <a href={msg.media_url} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '12px', background: "hsl(var(--secondary) / 0.1)", borderRadius: '8px', marginBottom: '8px', color: "hsl(var(--foreground))", textDecoration: 'none', fontWeight: 500 }}>
                   <span>📄</span> View Document
                 </a>
               )}
 
               {isLocation ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', minWidth: '200px' }}>
-                  <iframe width="100%" height="150" style={{ borderRadius: '8px', border: 0, backgroundColor: '#f0f0f0' }} src={`https://maps.google.com/maps?q=${locationCoords}&z=15&output=embed`} allowFullScreen loading="lazy" referrerPolicy="no-referrer-when-downgrade"/>
-                  <a href={locationUrl} target="_blank" rel="noopener noreferrer" style={{ color: '#007AFF', textDecoration: 'none', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <iframe width="100%" height="150" style={{ borderRadius: '8px', border: 0, backgroundColor: "hsl(var(--secondary))" }} src={`https://maps.google.com/maps?q=${locationCoords}&z=15&output=embed`} allowFullScreen loading="lazy" referrerPolicy="no-referrer-when-downgrade"/>
+                  <a href={locationUrl} target="_blank" rel="noopener noreferrer" style={{ color: 'hsl(var(--primary))', textDecoration: 'none', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '4px' }}>
                     <span>📍</span> Open in Maps {locationAddress}
                   </a>
                 </div>
@@ -299,13 +299,13 @@ export function ChatMain({
 
               <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '4px', marginTop: '4px' }}>
                 {msg.direction === 'OUTBOUND' && msg.sent_by && (
-                  <span style={{ fontSize: '0.7rem', color: msg.sent_by === 'AI' ? '#9ca3af' : '#60a5fa', marginRight: '4px' }}>
+                  <span style={{ fontSize: '0.7rem', color: msg.sent_by === 'AI' ? "hsl(var(--muted-foreground))" : 'hsl(var(--primary))', marginRight: '4px' }}>
                     Sent by {msg.sent_by === 'AI' ? 'AI Agent' : 'Admin'}
                   </span>
                 )}
                 <span className="time" style={{ margin: 0 }}>{new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                 {msg.direction === 'OUTBOUND' && (
-                  <span style={{ fontSize: '0.8rem', color: msg.status === 'READ' ? '#3b82f6' : '#94a3b8' }}>
+                  <span style={{ fontSize: '0.8rem', color: msg.status === 'READ' ? 'hsl(var(--primary))' : "hsl(var(--muted-foreground))" }}>
                     {msg.status === 'READ' ? '✓✓' : msg.status === 'DELIVERED' ? '✓✓' : msg.status === 'FAILED' ? '❌' : '✓'}
                   </span>
                 )}
@@ -317,7 +317,7 @@ export function ChatMain({
         <div ref={messagesEndRef} />
       </div>
 
-      <section aria-label="Internal conversation notes" style={{ borderTop: '1px solid rgba(148, 163, 184, 0.16)', borderBottom: '1px solid rgba(148, 163, 184, 0.16)', padding: '0.75rem 1.5rem', background: 'rgba(15, 23, 42, 0.72)' }}>
+      <section aria-label="Internal conversation notes" style={{ borderTop: "1px solid hsl(var(--border) / 0.16)", borderBottom: "1px solid hsl(var(--border) / 0.16)", padding: '0.75rem 1.5rem', background: "hsl(var(--card) / 0.72)" }}>
         <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
           <input
             type="text"
@@ -326,13 +326,13 @@ export function ChatMain({
             placeholder="Add an internal note for the next agent..."
             aria-label="Internal conversation note"
             disabled={isSavingNote}
-            style={{ flex: 1, border: '1px solid rgba(148, 163, 184, 0.22)', borderRadius: '10px', background: 'rgba(2, 6, 23, 0.55)', color: '#e2e8f0', padding: '0.65rem 0.8rem', outline: 'none' }}
+            style={{ flex: 1, border: "1px solid hsl(var(--input))", borderRadius: '10px', background: "hsl(var(--card) / 0.55)", color: "hsl(var(--foreground))", padding: '0.65rem 0.8rem', outline: 'none' }}
           />
           <button
             type="button"
             onClick={saveInternalNote}
             disabled={!noteDraft.trim() || isSavingNote}
-            style={{ border: '1px solid rgba(59, 130, 246, 0.35)', background: noteDraft.trim() && !isSavingNote ? 'rgba(59, 130, 246, 0.18)' : 'rgba(148, 163, 184, 0.12)', color: noteDraft.trim() && !isSavingNote ? '#bfdbfe' : '#94a3b8', borderRadius: '10px', padding: '0.65rem 0.9rem', fontSize: '0.8rem', fontWeight: 700, cursor: noteDraft.trim() && !isSavingNote ? 'pointer' : 'not-allowed' }}
+            style={{ border: "1px solid hsl(var(--primary) / 0.35)", background: noteDraft.trim() && !isSavingNote ? "hsl(var(--primary) / 0.18)" : "hsl(var(--muted-foreground) / 0.12)", color: noteDraft.trim() && !isSavingNote ? "hsl(var(--foreground))" : "hsl(var(--muted-foreground))", borderRadius: '10px', padding: '0.65rem 0.9rem', fontSize: '0.8rem', fontWeight: 700, cursor: noteDraft.trim() && !isSavingNote ? 'pointer' : 'not-allowed' }}
           >
             {isSavingNote ? 'Saving...' : 'Save Note'}
           </button>
@@ -340,7 +340,7 @@ export function ChatMain({
         {internalNotes.length > 0 && (
           <div style={{ marginTop: '0.65rem', display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
             {internalNotes.map((note) => (
-              <span key={note.id} style={{ maxWidth: '100%', border: '1px solid rgba(148, 163, 184, 0.18)', borderRadius: '999px', background: 'rgba(2, 6, 23, 0.45)', color: '#cbd5e1', padding: '0.35rem 0.65rem', fontSize: '0.75rem' }}>
+              <span key={note.id} style={{ maxWidth: '100%', border: "1px solid hsl(var(--border) / 0.18)", borderRadius: '999px', background: "hsl(var(--card) / 0.45)", color: "hsl(var(--foreground))", padding: '0.35rem 0.65rem', fontSize: '0.75rem' }}>
                 {new Date(note.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}{note.authorName ? ` · ${note.authorName}` : ''}: {note.text}
               </span>
             ))}
@@ -357,17 +357,17 @@ export function ChatMain({
               margin: '0 1.5rem 0.75rem',
               padding: '0.75rem 1rem',
               borderRadius: '10px',
-              border: visibleNotice.tone === 'error' ? '1px solid rgba(239, 68, 68, 0.35)' : '1px solid rgba(59, 130, 246, 0.35)',
-              background: visibleNotice.tone === 'error' ? 'rgba(239, 68, 68, 0.12)' : 'rgba(59, 130, 246, 0.12)',
-              color: visibleNotice.tone === 'error' ? '#fecaca' : '#bfdbfe',
+              border: visibleNotice.tone === 'error' ? "1px solid hsl(var(--destructive) / 0.35)" : "1px solid hsl(var(--primary) / 0.35)",
+              background: visibleNotice.tone === 'error' ? "hsl(var(--destructive) / 0.12)" : "hsl(var(--primary) / 0.12)",
+              color: visibleNotice.tone === 'error' ? 'hsl(var(--primary))' : "hsl(var(--foreground))",
               fontSize: '0.85rem'
             }}
           >
             {visibleNotice.message}
           </div>
         )}
-        {isUploading && <div role="status" aria-live="polite" style={{ position: 'absolute', top: '-30px', left: '20px', background: 'rgba(59,130,246,0.8)', padding: '4px 12px', borderRadius: '12px', fontSize: '0.8rem' }}>Uploading media...</div>}
-        {isCopilotThinking && <div role="status" aria-live="polite" style={{ position: 'absolute', top: '-30px', left: '20px', background: 'rgba(16,185,129,0.8)', padding: '4px 12px', borderRadius: '12px', fontSize: '0.8rem' }}>Copilot is thinking...</div>}
+        {isUploading && <div role="status" aria-live="polite" style={{ position: 'absolute', top: '-30px', left: '20px', background: "hsl(var(--primary) / 0.8)", padding: '4px 12px', borderRadius: '12px', fontSize: '0.8rem' }}>Uploading media...</div>}
+        {isCopilotThinking && <div role="status" aria-live="polite" style={{ position: 'absolute', top: '-30px', left: '20px', background: "hsl(var(--success) / 0.8)", padding: '4px 12px', borderRadius: '12px', fontSize: '0.8rem' }}>Copilot is thinking...</div>}
 
         {!isOutsideWindow && (
           <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', margin: '0 1.5rem 0.75rem' }} aria-label="Canned replies">
@@ -377,7 +377,7 @@ export function ChatMain({
                 type="button"
                 onClick={() => applyCannedReply(reply.text)}
                 disabled={isSending}
-                style={{ border: '1px solid rgba(148, 163, 184, 0.25)', background: 'rgba(15, 23, 42, 0.75)', color: '#cbd5e1', borderRadius: '999px', padding: '0.4rem 0.7rem', fontSize: '0.75rem', cursor: 'pointer' }}
+                style={{ border: "1px solid hsl(var(--border) / 0.25)", background: "hsl(var(--card) / 0.75)", color: "hsl(var(--foreground))", borderRadius: '999px', padding: '0.4rem 0.7rem', fontSize: '0.75rem', cursor: 'pointer' }}
               >
                 {reply.label}
               </button>
@@ -387,32 +387,32 @@ export function ChatMain({
 
         {/* SLASH COMMAND PALETTE */}
         {showCommands && (
-          <div id="waba-command-menu" style={{ position: 'absolute', bottom: '100%', left: 0, right: 0, background: '#1e293b', border: '1px solid #334155', borderRadius: '8px 8px 0 0', zIndex: 10, maxHeight: '200px', overflowY: 'auto' }}>
-            <div style={{ padding: '8px', fontSize: '0.8rem', color: '#94a3b8', borderBottom: '1px solid #334155' }}>AI Copilot Commands</div>
+          <div id="waba-command-menu" style={{ position: 'absolute', bottom: '100%', left: 0, right: 0, background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: '8px 8px 0 0', zIndex: 10, maxHeight: '200px', overflowY: 'auto' }}>
+            <div style={{ padding: '8px', fontSize: '0.8rem', color: "hsl(var(--muted-foreground))", borderBottom: "1px solid hsl(var(--border))" }}>AI Copilot Commands</div>
             {COMMANDS.filter(c => c.cmd.startsWith(inputText)).map(cmd => (
               <button
                 type="button"
                 key={cmd.cmd}
                 onClick={() => executeCommand(cmd.cmd)}
                 style={{ width: '100%', padding: '8px 12px', cursor: 'pointer', display: 'flex', gap: '12px', alignItems: 'center', background: 'transparent', border: 'none', textAlign: 'left' }}
-                onMouseEnter={(e) => (e.currentTarget.style.background = '#334155')}
+                onMouseEnter={(e) => (e.currentTarget.style.background = "hsl(var(--muted-foreground))")}
                 onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
               >
-                <span style={{ color: '#3b82f6', fontWeight: 600 }}>{cmd.cmd}</span>
-                <span style={{ color: '#cbd5e1', fontSize: '0.9rem' }}>{cmd.desc}</span>
+                <span style={{ color: 'hsl(var(--primary))', fontWeight: 600 }}>{cmd.cmd}</span>
+                <span style={{ color: "hsl(var(--foreground))", fontSize: '0.9rem' }}>{cmd.desc}</span>
               </button>
             ))}
           </div>
         )}
 
-        <form className="message-input-area" onSubmit={handleSendMessage} style={{ background: isOutsideWindow ? 'rgba(239, 68, 68, 0.1)' : 'rgba(0,0,0,0.1)' }}>
+        <form className="message-input-area" onSubmit={handleSendMessage} style={{ background: isOutsideWindow ? "hsl(var(--destructive) / 0.1)" : "hsl(var(--foreground) / 0.1)" }}>
           {isOutsideWindow ? (
             <div style={{ flexGrow: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>
-              <span style={{ color: '#ef4444', fontSize: '0.8rem', fontWeight: 600 }}>⚠️ Outside 24-Hour Window (Template Required)</span>
+              <span style={{ color: "hsl(var(--destructive))", fontSize: '0.8rem', fontWeight: 600 }}>⚠️ Outside 24-Hour Window (Template Required)</span>
               <select
                 className="crm-select"
                 aria-label="Approved message template"
-                style={{ border: '1px solid #ef4444', background: 'rgba(255,255,255,0.05)' }}
+                style={{ border: "1px solid hsl(var(--destructive))", background: "hsl(var(--secondary) / 0.05)" }}
                 value={selectedTemplate}
                 disabled={isSending}
                 onChange={(e) => {

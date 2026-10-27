@@ -317,7 +317,7 @@ export function LoginDialog({ children }: { children: React.ReactNode }) {
         </Form>
 
         {failedAttempts > 0 && failedAttempts < 5 && (
-          <div className="mt-2 text-center text-sm text-orange-600">
+          <div className="mt-2 text-center text-sm text-accent">
             {5 - failedAttempts} attempts remaining before account lockout
           </div>
         )}

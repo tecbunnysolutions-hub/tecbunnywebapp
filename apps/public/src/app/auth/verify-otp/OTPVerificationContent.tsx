@@ -169,7 +169,7 @@ export function OTPVerificationContent() {
 
   const handleVerifyOTP = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     logger.info('Form submitted - Verify OTP triggered!');
     logger.debug('Verify OTP submitted:', {
       otp,
@@ -178,7 +178,7 @@ export function OTPVerificationContent() {
       isLoading,
       verified
     });
-    
+
     if (!otp || otp.length !== 6) {
       logger.warn('Invalid OTP length');
       toast.error('Please enter a valid 6-digit OTP');
@@ -249,7 +249,7 @@ export function OTPVerificationContent() {
           statusText: verifyResponse.statusText,
           result: verifyResult
         });
-        
+
         // Try to extract a meaningful error message
         let errorMessage = 'Verification failed';
         if (verifyResult) {
@@ -268,7 +268,7 @@ export function OTPVerificationContent() {
             errorMessage = verifyResult.details;
           }
         }
-        
+
         logger.error('Extracted error message:', { errorMessage });
         throw new Error(errorMessage);
       }
@@ -335,18 +335,18 @@ export function OTPVerificationContent() {
           // Check if we got a session for automatic signin
           if (completeResult.session && !completeResult.requiresSignIn) {
             logger.info('Account created and user signed in automatically');
-            
+
             // Set browser session explicitly
             await supabase.auth.setSession({
               access_token: completeResult.session.access_token,
               refresh_token: completeResult.session.refresh_token
             });
-            
+
             toast.success('Welcome! Redirecting to home page...');
-            
+
             // Clean up stored data
             localStorage.removeItem('signup_session');
-            
+
             // Force a full page refresh to ensure auth state is updated
             setTimeout(() => {
               logger.info('Redirecting to home page with page refresh');
@@ -373,7 +373,7 @@ export function OTPVerificationContent() {
           router.push(`/auth/verification-success?email=${encodeURIComponent(email)}`);
         }, 1200);
       }
-      
+
     } catch (error) {
       logger.error('OTP verification error:', { error });
       if (error instanceof Error) {
@@ -479,7 +479,7 @@ export function OTPVerificationContent() {
     <div className="min-h-screen flex items-center justify-center bg-background py-12 px-4 sm:px-6 lg:px-8 text-foreground">
       <div className="max-w-md w-full space-y-8">
         {verified && (
-          <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 px-4 py-3 rounded-md flex items-center space-x-3">
+          <div className="bg-success/10 border border-success/20 text-success px-4 py-3 rounded-md flex items-center space-x-3">
             <span className="text-2xl">✅</span>
             <div>
               <div className="font-medium">Verification complete</div>
@@ -550,7 +550,7 @@ export function OTPVerificationContent() {
             >
               {isLoading ? (
                 <>
-                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-primary-foreground" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-foreground" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
@@ -561,7 +561,7 @@ export function OTPVerificationContent() {
               )}
             </button>
           </div>
-          
+
           <div className="text-center">
             <button
               type="button"
@@ -569,7 +569,7 @@ export function OTPVerificationContent() {
               disabled={isResending || resendCooldown > 0 || verified}
               className={`text-sm transition-colors cursor-pointer ${
                 isResending || resendCooldown > 0
-                  ? 'text-muted-foreground cursor-not-allowed' 
+                  ? 'text-muted-foreground cursor-not-allowed'
                   : 'text-primary hover:underline'
               }`}
             >

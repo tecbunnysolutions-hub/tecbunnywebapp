@@ -114,11 +114,11 @@ export default function PromotionalBroadcastPage() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900 flex items-center gap-2">
-            <Megaphone className="h-8 w-8 text-indigo-600" />
+          <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
+            <Megaphone className="h-8 w-8 text-primary" />
             Promotional Broadcast Desk
           </h1>
-          <p className="text-slate-500 mt-2">Execute high-velocity bulk marketing campaigns via WhatsApp or Email.</p>
+          <p className="text-muted-foreground mt-2">Execute high-velocity bulk marketing campaigns via WhatsApp or Email.</p>
         </div>
       </div>
 
@@ -127,7 +127,7 @@ export default function PromotionalBroadcastPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <RefreshCw className="h-5 w-5 text-blue-500" />
+              <RefreshCw className="h-5 w-5 text-primary" />
               Target Audience
             </CardTitle>
           </CardHeader>
@@ -139,33 +139,33 @@ export default function PromotionalBroadcastPage() {
                 placeholder="e.g. Summer Clearance Sale"
                 value={campaignName}
                 onChange={(e) => setCampaignName(e.target.value)}
-                className="w-full flex h-10 rounded-md border border-slate-300 bg-transparent px-3 py-2 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent"
+                className="w-full flex h-10 rounded-md border border-border bg-transparent px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
               />
             </div>
 
             <div className="space-y-2">
               <label className="text-sm font-medium flex justify-between">
                 Raw Data List
-                <span className="text-xs text-slate-500 font-normal">Format: Name, Phone, Email (Line separated)</span>
+                <span className="text-xs text-muted-foreground font-normal">Format: Name, Phone, Email (Line separated)</span>
               </label>
               <textarea
                 value={rawData}
                 onChange={(e) => setRawData(e.target.value)}
-                className="w-full h-48 rounded-md border border-slate-300 bg-slate-50 p-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent"
+                className="w-full h-48 rounded-md border border-border bg-muted p-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                 placeholder="John Doe, 919876543210, john@example.com&#10;Jane Smith, 919876543211, jane@example.com"
               />
             </div>
 
             <Button
               onClick={handleParse}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+              className="w-full bg-primary hover:bg-primary text-primary-foreground"
               variant="default"
             >
               Validate & Parse Contacts
             </Button>
 
             {parsedContacts.length > 0 && (
-              <div className="p-3 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-md text-sm flex items-center gap-2">
+              <div className="p-3 bg-success/10 text-success border border-success/20 rounded-md text-sm flex items-center gap-2">
                 <AlertCircle className="h-4 w-4" />
                 Ready to dispatch to {parsedContacts.length} verified contacts.
               </div>
@@ -177,7 +177,7 @@ export default function PromotionalBroadcastPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Megaphone className="h-5 w-5 text-indigo-500" />
+              <Megaphone className="h-5 w-5 text-primary" />
               Message Template & Channel
             </CardTitle>
           </CardHeader>
@@ -186,14 +186,14 @@ export default function PromotionalBroadcastPage() {
             <div className="flex gap-4">
               <div
                 onClick={() => setChannel('WhatsApp')}
-                className={`flex-1 flex flex-col items-center justify-center p-4 rounded-xl border-2 cursor-pointer transition-all ${channel === 'WhatsApp' ? 'border-emerald-500 bg-emerald-50 text-emerald-700' : 'border-slate-200 hover:border-emerald-200'}`}
+                className={`flex-1 flex flex-col items-center justify-center p-4 rounded-xl border-2 cursor-pointer transition-all ${channel === 'WhatsApp' ? 'border-success bg-success/10 text-success' : 'border-border hover:border-success/20'}`}
               >
                 <MessageCircle className="h-6 w-6 mb-2" />
                 <span className="font-semibold">WhatsApp</span>
               </div>
               <div
                 onClick={() => setChannel('Email')}
-                className={`flex-1 flex flex-col items-center justify-center p-4 rounded-xl border-2 cursor-pointer transition-all ${channel === 'Email' ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-slate-200 hover:border-blue-200'}`}
+                className={`flex-1 flex flex-col items-center justify-center p-4 rounded-xl border-2 cursor-pointer transition-all ${channel === 'Email' ? 'border-primary bg-primary/10 text-primary' : 'border-border hover:border-primary/20'}`}
               >
                 <Mail className="h-6 w-6 mb-2" />
                 <span className="font-semibold">Email</span>
@@ -205,7 +205,7 @@ export default function PromotionalBroadcastPage() {
               <select
                 value={activeCoupon}
                 onChange={(e) => setActiveCoupon(e.target.value)}
-                className="w-full flex h-10 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent"
+                className="w-full flex h-10 rounded-md border border-border bg-card px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
               >
                 <option value="BUNNY10">BUNNY10 - 10% Off Standard</option>
                 <option value="FREESHIP">FREESHIP - Free Delivery</option>
@@ -216,19 +216,19 @@ export default function PromotionalBroadcastPage() {
             <div className="space-y-2">
               <label className="text-sm font-medium flex justify-between">
                 Template Builder
-                <span className="text-xs text-slate-500 font-normal">Variables: {'{{NAME}}, {{COUPON_CODE}}'}</span>
+                <span className="text-xs text-muted-foreground font-normal">Variables: {'{{NAME}}, {{COUPON_CODE}}'}</span>
               </label>
               <textarea
                 value={template}
                 onChange={(e) => setTemplate(e.target.value)}
-                className="w-full h-40 rounded-md border border-slate-300 bg-white p-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent"
+                className="w-full h-40 rounded-md border border-border bg-card p-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
               />
             </div>
 
             <Button
               onClick={handleDispatch}
               disabled={isDispatching || parsedContacts.length === 0}
-              className="w-full h-12 text-lg font-bold bg-indigo-600 hover:bg-indigo-700 text-white"
+              className="w-full h-12 text-lg font-bold bg-primary hover:bg-primary text-primary-foreground"
             >
               {isDispatching ? (
                 <><RefreshCw className="mr-2 h-5 w-5 animate-spin" /> Dispatching...</>

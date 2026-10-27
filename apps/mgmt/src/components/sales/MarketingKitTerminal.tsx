@@ -44,25 +44,25 @@ export function MarketingKitTerminal({ referralCode, stats = { views: 0, clicks:
           </Badge>
         </div>
       </CardHeader>
-      
+
       <CardContent className="pt-6">
         <Tabs defaultValue="embed" className="w-full">
           <TabsList className="grid w-full grid-cols-2 bg-muted p-1 mb-6">
-            <TabsTrigger value="embed" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+            <TabsTrigger value="embed" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-foreground">
               <Globe className="h-4 w-4 mr-2" /> Embed Snippet
             </TabsTrigger>
-            <TabsTrigger value="analytics" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+            <TabsTrigger value="analytics" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-foreground">
               <BarChart3 className="h-4 w-4 mr-2" /> Real-time Tracking
             </TabsTrigger>
           </TabsList>
- 
+
           <TabsContent value="embed" className="space-y-4">
             <div className="rounded-xl border border-border bg-muted/30 p-4 relative group">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">HTML Embed Snippet</span>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
+                <Button
+                  variant="ghost"
+                  size="sm"
                   className="h-8 text-primary hover:text-foreground hover:bg-muted"
                   onClick={copyToClipboard}
                 >
@@ -74,7 +74,7 @@ export function MarketingKitTerminal({ referralCode, stats = { views: 0, clicks:
                 {embedCode}
               </pre>
             </div>
- 
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
               <div className="p-4 rounded-xl border border-border bg-muted/20">
                 <h4 className="text-sm font-bold text-foreground mb-2 flex items-center gap-2">
@@ -93,25 +93,25 @@ export function MarketingKitTerminal({ referralCode, stats = { views: 0, clicks:
                 </h4>
                 <p className="text-xs text-muted-foreground mb-4">Append sub-tags to track different campaigns.</p>
                 <div className="flex gap-2">
-                  <Input 
-                    placeholder="e.g. blog_sidebar" 
-                    className="h-8 bg-muted/20 border-border text-xs text-foreground" 
+                  <Input
+                    placeholder="e.g. blog_sidebar"
+                    className="h-8 bg-muted/20 border-border text-xs text-foreground"
                   />
-                  <Button size="sm" className="h-8 bg-primary text-white font-bold text-xs hover:bg-primary/95">
+                  <Button size="sm" className="h-8 bg-primary text-primary-foreground font-bold text-xs hover:bg-primary/95">
                     Apply
                   </Button>
                 </div>
               </div>
             </div>
           </TabsContent>
- 
+
           <TabsContent value="analytics">
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
               <div className="p-4 rounded-2xl border border-border bg-muted/20 text-center">
                 <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">Total Views</p>
                 <p className="text-3xl font-bold text-foreground">{stats.views.toLocaleString()}</p>
                 <div className="mt-2 text-[10px] text-primary flex items-center justify-center gap-1">
-                  <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" /> 
+                  <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse text-primary-foreground" />
                   Live Interaction
                 </div>
               </div>
@@ -126,7 +126,7 @@ export function MarketingKitTerminal({ referralCode, stats = { views: 0, clicks:
                 <p className="mt-2 text-[10px] text-muted-foreground">Conversion: {((stats.conversions / (stats.clicks || 1)) * 100).toFixed(1)}%</p>
               </div>
             </div>
- 
+
             <div className="rounded-xl border border-border bg-muted/20 p-4">
               <div className="flex items-center justify-between mb-4">
                 <h4 className="text-sm font-bold text-foreground uppercase tracking-tight">Recent Widget Conversions</h4>
@@ -145,7 +145,7 @@ export function MarketingKitTerminal({ referralCode, stats = { views: 0, clicks:
                     <p className="text-xs font-bold text-foreground">Industrial Surveillance Query</p>
                     <p className="text-[10px] text-muted-foreground">Source: LinkedIn Ad Campaign</p>
                   </div>
-                  <Badge className="bg-zinc-800 text-zinc-300 border-none text-[10px]">Processing</Badge>
+                  <Badge className="bg-card text-muted-foreground border-none text-[10px]">Processing</Badge>
                 </div>
               </div>
             </div>

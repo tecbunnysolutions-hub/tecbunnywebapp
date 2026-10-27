@@ -36,8 +36,8 @@ function VerificationSuccessContent() {
     <div className="min-h-screen flex items-center justify-center bg-background py-12 px-4 sm:px-6 lg:px-8 text-foreground">
       <Card className="w-full max-w-md border-border bg-card shadow-lg">
         <CardHeader className="text-center">
-          <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-emerald-500/10 mb-4">
-            <CheckCircle className="h-8 w-8 text-emerald-500" />
+          <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-success/10 mb-4">
+            <CheckCircle className="h-8 w-8 text-success" />
           </div>
           <CardTitle className="text-2xl font-bold tech-heading">
             Email Verified Successfully!

@@ -62,7 +62,7 @@ export default async function FaqsPage() {
       />
       {/* Header section with explicit bounding height to prevent CLS */}
       <div className="text-center mb-12 min-h-[120px] flex flex-col justify-center">
-        <h1 className="text-4xl font-extrabold tracking-tight lg:text-5xl mb-3 bg-clip-text text-transparent bg-gradient-to-r from-primary to-blue-400">
+        <h1 className="text-4xl font-extrabold tracking-tight lg:text-5xl mb-3 text-primary">
           Frequently Asked Questions
         </h1>
         <p className="text-lg text-muted-foreground max-w-xl mx-auto">

@@ -1,3 +1,4 @@
+import { ThemeControls } from '../../../../packages/ui/src/components/ThemeControls';
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import "./globals.css";
@@ -31,6 +32,7 @@ export default async function RootLayout({
       suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col" suppressHydrationWarning>
+        <ThemeControls floating />
         <AppProvider>
           <EnterpriseAnalyticsAutoTracker application="superadmin" defaultModule="root-console" dashboardPaths={['/dashboard', '/superadmin', '/analytics']} />
           {children}

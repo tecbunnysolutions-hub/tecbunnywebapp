@@ -231,7 +231,7 @@ function PayuPaymentContent() {
     return (
       <div className="container max-w-xl mx-auto py-12">
         <div className="flex flex-col items-center gap-4">
-          <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
           <p className="text-sm text-muted-foreground">Loading order details…</p>
         </div>
       </div>
@@ -281,7 +281,7 @@ function PayuPaymentContent() {
         <CardHeader className="flex flex-col gap-2">
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2 text-xl">
-              <ShieldCheck className="h-5 w-5 text-green-600" />
+              <ShieldCheck className="h-5 w-5 text-success" />
               Pay securely with PayU
             </CardTitle>
             <Badge variant={environmentBadge.variant}>{environmentBadge.label}</Badge>
@@ -339,7 +339,7 @@ function PayuPaymentContent() {
               {Object.entries(payuData.params).map(([key, value]) => (
                 <input key={key} type="hidden" name={key} value={value} />
               ))}
-              
+
               <Button
                 type="submit"
                 className="w-full"

@@ -6,7 +6,6 @@ import Link from 'next/link';
 
 import sanitizeHtml from "@tecbunny/core/sanitize-html";
 import { usePageContent } from '@tecbunny/core/hooks';
-import styles from './policy-page.module.css';
 
 
 interface PolicyPageProps {
@@ -23,7 +22,7 @@ type JumpItem = {
 
 export default function PolicyPage({ pageKey, defaultTitle = 'Policy', initialContent }: PolicyPageProps) {
   const { content: clientContent, loading: clientLoading, error: clientError } = usePageContent(initialContent ? '' : pageKey);
-  
+
   const content = initialContent || clientContent;
   const loading = initialContent ? false : clientLoading;
   const error = initialContent ? null : clientError;
@@ -45,8 +44,8 @@ export default function PolicyPage({ pageKey, defaultTitle = 'Policy', initialCo
       <div className="relative min-h-screen overflow-hidden bg-background text-foreground">
         <div className="pointer-events-none absolute inset-0 bg-noise opacity-10" />
         <div className="mx-auto max-w-5xl px-4 pb-16 pt-12 sm:px-6 lg:px-8">
-          <Link 
-            href="/" 
+          <Link
+            href="/"
             className="group inline-flex items-center text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
           >
             <ArrowLeft className="mr-2 h-4 w-4 transition-transform group-hover:-translate-x-1" />
@@ -71,8 +70,8 @@ export default function PolicyPage({ pageKey, defaultTitle = 'Policy', initialCo
       <div className="relative min-h-screen overflow-hidden bg-background text-foreground">
         <div className="pointer-events-none absolute inset-0 bg-noise opacity-20" />
         <div className="mx-auto max-w-5xl px-4 pb-20 pt-12 sm:px-6 lg:px-8">
-          <Link 
-            href="/" 
+          <Link
+            href="/"
             className="group inline-flex items-center text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
           >
             <ArrowLeft className="mr-2 h-4 w-4 transition-transform group-hover:-translate-x-1" />
@@ -98,41 +97,41 @@ export default function PolicyPage({ pageKey, defaultTitle = 'Policy', initialCo
   return (
     <div className="relative min-h-screen overflow-hidden bg-background text-foreground">
       <div className="pointer-events-none absolute inset-0 bg-noise opacity-10" />
-      
+
       {/* Decorative Blur Orbs */}
       <div className="absolute top-10 left-10 w-[400px] h-[400px] bg-primary/5 rounded-full blur-[100px] pointer-events-none" />
       <div className="absolute bottom-10 right-10 w-[400px] h-[400px] bg-primary/5 rounded-full blur-[100px] pointer-events-none" />
- 
+
       <div className="mx-auto max-w-5xl px-4 pb-24 pt-12 sm:px-6 lg:px-8">
-        <Link 
-          href="/" 
+        <Link
+          href="/"
           className="group inline-flex items-center text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
         >
           <ArrowLeft className="mr-2 h-4 w-4 transition-transform group-hover:-translate-x-1" />
           Back to Home
         </Link>
- 
+
         {/* Main Policy Card Container */}
         <div className="mt-8 relative overflow-hidden rounded-2xl border border-border bg-card p-6 backdrop-blur-xl sm:p-10 shadow-sm">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-border pb-8 mb-8">
-            <h1 className="text-2xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-foreground via-foreground to-primary sm:text-3xl">
+            <h1 className="text-2xl font-extrabold tracking-tight       sm:text-3xl text-primary">
               {policyData.title || defaultTitle}
             </h1>
             {policyData.lastUpdated && (
-              <span className="inline-flex items-center rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-xs font-semibold text-emerald-500 ring-1 ring-inset ring-emerald-500/20">
+              <span className="inline-flex items-center rounded-full bg-success/10 px-2.5 py-0.5 text-xs font-semibold text-success ring-1 ring-inset ring-success/20">
                 Last updated: {policyData.lastUpdated}
               </span>
             )}
           </div>
- 
-          <div className={`${styles.policyContent} mt-8 space-y-6 text-sm text-muted-foreground`}>
+
+          <div className="tb-policy-content mt-8 space-y-6 text-sm text-muted-foreground">
             {enhancedHtml && (
               <div
-                className="prose prose-invert max-w-none"
+                className="prose dark:prose-invert max-w-none"
                 dangerouslySetInnerHTML={{ __html: sanitizeHtml(enhancedHtml) }}
               />
             )}
- 
+
             {!enhancedHtml && policyData.introduction && (
               <div className="space-y-4">
                 {policyData.introduction.map((paragraph: string, index: number) => (
@@ -140,11 +139,11 @@ export default function PolicyPage({ pageKey, defaultTitle = 'Policy', initialCo
                 ))}
               </div>
             )}
- 
+
             {!enhancedHtml && policyData.sections &&
               policyData.sections.map((section: any, index: number) => (
                 <div key={index} id={sectionIds[index]} className="space-y-4 border-t border-border pt-8 mt-8 first:mt-0 first:border-0 first:pt-0">
-                  <h2 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-foreground to-muted-foreground sm:text-2xl">
+                  <h2 className="text-xl font-bold      sm:text-2xl text-primary">
                     {section.title}
                   </h2>
                   {section.content &&

@@ -1,3 +1,4 @@
+import { ThemeControls } from '../../../../packages/ui/src/components/ThemeControls';
 import type { Metadata } from "next";
 import "./globals.css";
 import { AppProvider } from "@tecbunny/core/context/AppProvider";
@@ -29,6 +30,7 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col" suppressHydrationWarning>
+        <ThemeControls floating />
         <AppProvider>
           <TRPCProvider>
             <EnterpriseAnalyticsAutoTracker application="mgmt" defaultModule="management" dashboardPaths={['/mgmt', '/admin', '/analytics']} />

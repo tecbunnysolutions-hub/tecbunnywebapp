@@ -56,7 +56,7 @@ export default async function BlogPage() {
   };
 
   return (
-    <main className="min-h-screen bg-black text-zinc-100">
+    <div className="min-h-screen bg-background text-muted-foreground">
       <BreadcrumbJsonLd
         items={[
           { name: 'Home', url: 'https://www.tecbunny.com' },
@@ -69,14 +69,14 @@ export default async function BlogPage() {
       />
       <div className="mx-auto max-w-5xl px-6 py-20 sm:py-28">
         <h1 className="text-4xl font-black tracking-tight sm:text-5xl">
-          TecBunny <span className="text-indigo-400">Blog</span>
+          TecBunny <span className="text-primary">Blog</span>
         </h1>
-        <p className="mt-4 text-zinc-400 max-w-xl">
+        <p className="mt-4 text-muted-foreground max-w-xl">
           Practical guides, security news, and tech insights from our team.
         </p>
 
         {items.length === 0 ? (
-          <p className="mt-20 text-center text-zinc-500">
+          <p className="mt-20 text-center text-muted-foreground">
             {unavailable ? 'Blog posts are temporarily unavailable. Please check back soon.' : 'No posts yet. Check back soon.'}
           </p>
         ) : (
@@ -92,10 +92,10 @@ export default async function BlogPage() {
                 <Link prefetch={false}
                   key={post.id}
                   href={`/blog/${post.slug}`}
-                  className="group flex flex-col rounded-2xl border border-zinc-800 bg-zinc-900/60 overflow-hidden hover:border-indigo-500/50 transition-all"
+                  className="group flex flex-col rounded-2xl border border-border bg-card/60 overflow-hidden hover:border-primary/50 transition-all"
                 >
                   {post.cover_image && (
-                    <div className="aspect-video w-full overflow-hidden bg-zinc-800">
+                    <div className="aspect-video w-full overflow-hidden bg-card">
                       <Image
                         src={post.cover_image}
                         alt={post.title}
@@ -109,19 +109,19 @@ export default async function BlogPage() {
                     {post.tags && post.tags.length > 0 && (
                       <div className="flex flex-wrap gap-1 mb-3">
                         {post.tags.slice(0, 3).map((tag: string) => (
-                          <span key={tag} className="text-[10px] font-semibold uppercase tracking-widest px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+                          <span key={tag} className="text-[10px] font-semibold uppercase tracking-widest px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
                             {tag}
                           </span>
                         ))}
                       </div>
                     )}
-                    <h2 className="text-base font-bold text-white group-hover:text-indigo-300 transition-colors line-clamp-2">
+                    <h2 className="text-base font-bold text-foreground group-hover:text-primary transition-colors line-clamp-2">
                       {post.title}
                     </h2>
                     {post.excerpt && (
-                      <p className="mt-2 text-sm text-zinc-400 line-clamp-3 flex-1">{post.excerpt}</p>
+                      <p className="mt-2 text-sm text-muted-foreground line-clamp-3 flex-1">{post.excerpt}</p>
                     )}
-                    <div className="mt-4 flex items-center justify-between text-xs text-zinc-500">
+                    <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground">
                       <span>{author}</span>
                       <span>{date}</span>
                     </div>
@@ -132,6 +132,6 @@ export default async function BlogPage() {
           </div>
         )}
       </div>
-    </main>
+    </div>
   );
 }

@@ -15,7 +15,7 @@ import { Button } from "@tecbunny/ui";
 function PaymentSuccessContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  
+
   const orderId = searchParams.get('orderId');
   const txnId = searchParams.get('txnId');
 
@@ -24,7 +24,7 @@ function PaymentSuccessContent() {
       <Card>
         <CardHeader className="text-center">
           <div className="mx-auto mb-4">
-            <CheckCircle2 className="h-16 w-16 text-green-500" />
+            <CheckCircle2 className="h-16 w-16 text-success" />
           </div>
           <CardTitle className="text-2xl">Payment Successful!</CardTitle>
           <CardDescription>
@@ -51,14 +51,14 @@ function PaymentSuccessContent() {
           </div>
 
           <div className="flex gap-3">
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               className="flex-1"
               onClick={() => router.push('/orders')}
             >
               View Orders
             </Button>
-            <Button 
+            <Button
               className="flex-1"
               onClick={() => router.push('/products')}
             >

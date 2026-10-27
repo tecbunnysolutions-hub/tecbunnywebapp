@@ -56,7 +56,12 @@ export function CommandPalette() {
     };
 
     document.addEventListener('keydown', down);
-    return () => document.removeEventListener('keydown', down);
+    const show = () => setOpen(true);
+    window.addEventListener('tecbunny:command-palette', show);
+    return () => {
+      document.removeEventListener('keydown', down);
+      window.removeEventListener('tecbunny:command-palette', show);
+    };
   }, []);
 
   const runCommand = React.useCallback((command: () => unknown) => {

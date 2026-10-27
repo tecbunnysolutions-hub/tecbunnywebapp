@@ -419,7 +419,7 @@ export default function NewProductPage() {
                               control={form.control}
                               name="installation_applicable"
                               render={({ field }) => (
-                                <FormItem className="flex items-center justify-between rounded-lg border border-white/10 bg-white/5 p-4">
+                                <FormItem className="flex items-center justify-between rounded-lg border border-border/10 bg-card/5 p-4">
                                   <div className="space-y-0.5">
                                     <FormLabel>Installation applicable?</FormLabel>
                                     <p className="text-xs text-muted-foreground">Enable if this product can include installation.</p>
@@ -483,7 +483,7 @@ export default function NewProductPage() {
                                   <button
                                     type="button"
                                     onClick={() => setImagePreview('')}
-                                    className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-xs font-medium transition-opacity"
+                                    className="absolute inset-0 bg-overlay/60 opacity-0 group-hover:opacity-100 flex items-center justify-center text-foreground text-xs font-medium transition-opacity"
                                   >
                                     Remove
                                   </button>

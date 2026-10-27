@@ -5,12 +5,12 @@ import { createClient } from '@tecbunny/database';
 
 import * as React from 'react';
 
-import { 
-  Percent, 
-  Gift, 
-  Trash2, 
-  Crown, 
-  Star, 
+import {
+  Percent,
+  Gift,
+  Trash2,
+  Crown,
+  Star,
   User,
   Calendar,
   Tag
@@ -53,7 +53,7 @@ export function DiscountOffersDialog({ isOpen, onClose }: DiscountOffersDialogPr
   const [offers, setOffers] = React.useState<CustomerOffer[]>([]);
   const [isLoading, setIsLoading] = React.useState(false);
   const [activeTab, setActiveTab] = React.useState('discounts');
-  
+
   // Form states
   const [discountForm, setDiscountForm] = React.useState({
     category: 'Normal' as CustomerCategory,
@@ -230,22 +230,22 @@ export function DiscountOffersDialog({ isOpen, onClose }: DiscountOffersDialogPr
   const getCategoryIcon = (category: CustomerCategory) => {
     switch (category) {
       case 'Premium':
-        return <Crown className="h-4 w-4 text-yellow-500" />;
+        return <Crown className="h-4 w-4 text-warning" />;
       case 'Standard':
-        return <Star className="h-4 w-4 text-blue-500" />;
+        return <Star className="h-4 w-4 text-primary" />;
       default:
-        return <User className="h-4 w-4 text-gray-500" />;
+        return <User className="h-4 w-4 text-muted-foreground" />;
     }
   };
 
   const getCategoryColor = (category: CustomerCategory) => {
     switch (category) {
       case 'Premium':
-        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+        return 'bg-warning/10 text-warning border-warning/20';
       case 'Standard':
-        return 'bg-blue-100 text-blue-800 border-blue-200';
+        return 'bg-primary/10 text-primary border-primary/20';
       default:
-        return 'bg-gray-100 text-gray-800 border-gray-200';
+        return 'bg-muted text-foreground border-border';
     }
   };
 
@@ -297,19 +297,19 @@ export function DiscountOffersDialog({ isOpen, onClose }: DiscountOffersDialogPr
                       <SelectContent>
                         <SelectItem value="Normal">
                           <div className="flex items-center gap-2">
-                            <User className="h-4 w-4 text-gray-500" />
+                            <User className="h-4 w-4 text-muted-foreground" />
                             Normal
                           </div>
                         </SelectItem>
                         <SelectItem value="Standard">
                           <div className="flex items-center gap-2">
-                            <Star className="h-4 w-4 text-blue-500" />
+                            <Star className="h-4 w-4 text-primary" />
                             Standard
                           </div>
                         </SelectItem>
                         <SelectItem value="Premium">
                           <div className="flex items-center gap-2">
-                            <Crown className="h-4 w-4 text-yellow-500" />
+                            <Crown className="h-4 w-4 text-warning" />
                             Premium
                           </div>
                         </SelectItem>
@@ -540,7 +540,7 @@ export function DiscountOffersDialog({ isOpen, onClose }: DiscountOffersDialogPr
                             size="sm"
                             onClick={() => handleDeleteOffer(offer.id)}
                           >
-                            <Trash2 className="h-4 w-4 text-red-500" />
+                            <Trash2 className="h-4 w-4 text-destructive" />
                           </Button>
                         </div>
                       </div>

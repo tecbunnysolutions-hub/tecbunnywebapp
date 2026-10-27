@@ -1,9 +1,9 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { 
-  Shield, 
-  Eye, 
-  Video, 
+import {
+  Shield,
+  Eye,
+  Video,
   Activity,
   ArrowRight,
   CheckCircle2,
@@ -51,8 +51,8 @@ export default function PernemHomeTheaterPage() {
       title: "Bespoke Private Cinemas",
       subtitle: "Custom-calculated seating plans, room acoustics, and high-definition laser projectors.",
       icon: Tv,
-      gradient: "from-purple-500/20 via-pink-500/10 to-transparent",
-      border: "hover:border-purple-500/35",
+      gradient: "from-primary/20 via-primary/10 to-transparent",
+      border: "hover:border-primary/35",
       points: [
         {
           label: "Laser Projection & UHD",
@@ -72,8 +72,8 @@ export default function PernemHomeTheaterPage() {
       title: "Smart Home Integration",
       subtitle: "Unified Control4/Home Assistant configurations managing audio, visual, lighting, and security.",
       icon: Shield,
-      gradient: "from-emerald-500/20 via-teal-500/10 to-transparent",
-      border: "hover:border-emerald-500/35",
+      gradient: "from-success/20 via-success/10 to-transparent",
+      border: "hover:border-success/35",
       points: [
         {
           label: "Scene-Based Controls",
@@ -107,7 +107,7 @@ export default function PernemHomeTheaterPage() {
   ];
 
   return (
-    <div className="relative min-h-screen bg-[#09090B] text-zinc-200 selection:bg-purple-500/20 selection:text-white overflow-hidden pt-0 pb-16 sm:pt-0 sm:pb-24">
+    <div className="relative min-h-screen bg-card text-muted-foreground selection:bg-primary/20 selection:text-primary overflow-hidden pt-0 pb-16 sm:pt-0 sm:pb-24">
       <BreadcrumbJsonLd
         items={[
           { name: 'Home', url: 'https://www.tecbunny.com' },
@@ -118,36 +118,36 @@ export default function PernemHomeTheaterPage() {
       />
       {/* Background Grid */}
       <div className="pointer-events-none absolute inset-0 -z-10">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]" />
-        <div className="absolute -left-40 top-0 h-[42rem] w-[42rem] rounded-full bg-purple-500/5 blur-[160px]" />
-        <div className="absolute -right-40 top-1/3 h-[46rem] w-[46rem] rounded-full bg-pink-500/5 blur-[180px]" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,hsl(var(--foreground)/0.03)_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--foreground)/0.03)_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,hsl(var(--overlay))_70%,transparent_100%)]" />
+        <div className="absolute -left-40 top-0 h-[42rem] w-[42rem] rounded-full bg-primary/5 blur-[160px]" />
+        <div className="absolute -right-40 top-1/3 h-[46rem] w-[46rem] rounded-full bg-primary/5 blur-[180px]" />
       </div>
 
-      <div className="ambient-blob pointer-events-none absolute -left-24 -top-24 h-96 w-96 rounded-full bg-purple-500/10 blur-[120px] animate-pulse" aria-hidden="true" />
-      <div className="ambient-blob ambient-blob--delayed pointer-events-none absolute right-0 top-1/2 h-96 w-96 -translate-y-1/2 rounded-full bg-pink-500/10 blur-[120px]" aria-hidden="true" />
+      <div className="ambient-blob pointer-events-none absolute -left-24 -top-24 h-96 w-96 rounded-full bg-primary/10 blur-[120px] animate-pulse" aria-hidden="true" />
+      <div className="ambient-blob ambient-blob--delayed pointer-events-none absolute right-0 top-1/2 h-96 w-96 -translate-y-1/2 rounded-full bg-primary/10 blur-[120px]" aria-hidden="true" />
 
       {/* Hero Section */}
-      <section className="relative pt-24 pb-16 md:pt-32 md:pb-24 border-b border-zinc-900">
+      <section className="relative pt-24 pb-16 md:pt-32 md:pb-24 border-b border-border">
         <div className="container mx-auto px-6 max-w-xs sm:max-w-xl md:max-w-3xl lg:max-w-5xl xl:max-w-7xl">
           <div className="flex flex-col items-center text-center space-y-6 max-w-4xl mx-auto">
-            <div className="inline-flex items-center gap-2 rounded-full border border-purple-500/20 bg-purple-500/5 px-4.5 py-1.5 text-sm font-semibold text-purple-400">
+            <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4.5 py-1.5 text-sm font-semibold text-primary">
               <Sparkles size={14} className="animate-pulse" />
               <span>Premium Custom Integration</span>
             </div>
-            
-            <h1 className="text-4xl font-extrabold tracking-tight text-white sm:text-5xl md:text-6xl font-tech leading-tight">
+
+            <h1 className="text-4xl font-extrabold tracking-tight text-foreground sm:text-5xl md:text-6xl font-tech leading-tight">
               Home Theater & Smart <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-200 to-white">
+              <span className=" text-primary">
                 Automation in Pernem
               </span>
             </h1>
 
-            <p className="text-zinc-400 text-lg md:text-xl font-light leading-relaxed max-w-2xl">
+            <p className="text-muted-foreground text-lg md:text-xl font-light leading-relaxed max-w-2xl">
               We design, install, and calibrate world-class private cinemas and smart villa controls. Elevate your Pernem residence with high-fidelity acoustics.
             </p>
 
             <div className="flex flex-wrap gap-4 pt-4 justify-center">
-              <Button asChild size="lg" className="bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-xl px-8 shadow-[0_0_25px_-5px_rgba(168,85,247,0.3)] transition-all">
+              <Button asChild size="lg" className="bg-primary hover:bg-primary text-primary-foreground font-bold rounded-xl px-8 shadow-md transition-all">
                 <Link href="#lead-form-section">Book On-Site Demo</Link>
               </Button>
             </div>
@@ -156,24 +156,24 @@ export default function PernemHomeTheaterPage() {
       </section>
 
       {/* Regional Grid */}
-      <section className="py-16 md:py-24 border-b border-zinc-900/50">
+      <section className="py-16 md:py-24 border-b border-border/50">
         <div className="container mx-auto px-6 max-w-xs sm:max-w-xl md:max-w-3xl lg:max-w-5xl xl:max-w-7xl">
           <div className="text-center max-w-3xl mx-auto mb-16">
-            <span className="text-xs uppercase tracking-[0.45em] text-purple-500 font-bold">Local Experience</span>
-            <h2 className="mt-3 text-3xl font-bold text-white font-tech tracking-tight">Tailored for Luxury Villas in Pernem</h2>
-            <p className="mt-4 text-zinc-400 font-light text-sm">
+            <span className="text-xs uppercase tracking-[0.45em] text-primary font-bold">Local Experience</span>
+            <h2 className="mt-3 text-3xl font-bold text-foreground font-tech tracking-tight">Tailored for Luxury Villas in Pernem</h2>
+            <p className="mt-4 text-muted-foreground font-light text-sm">
               We craft luxury acoustics and intuitive automation systems to fit the architecture of premium villas.
             </p>
           </div>
 
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
             {localTargetAreas.map((area, index) => (
-              <div key={index} className="flex flex-col rounded-2xl border border-zinc-900 bg-zinc-950/40 p-6 hover:border-zinc-800 transition-colors">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-500/10 text-purple-400 mb-4">
+              <div key={index} className="flex flex-col rounded-2xl border border-border bg-background/40 p-6 hover:border-border transition-colors">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary mb-4">
                   <MapPin size={20} />
                 </div>
-                <h3 className="text-lg font-bold text-white font-tech mb-2">{area.name}</h3>
-                <p className="text-xs text-zinc-400 leading-relaxed font-light mt-auto">{area.desc}</p>
+                <h3 className="text-lg font-bold text-foreground font-tech mb-2">{area.name}</h3>
+                <p className="text-xs text-muted-foreground leading-relaxed font-light mt-auto">{area.desc}</p>
               </div>
             ))}
           </div>
@@ -184,9 +184,9 @@ export default function PernemHomeTheaterPage() {
       <section className="py-16 md:py-24">
         <div className="container mx-auto px-6 max-w-xs sm:max-w-xl md:max-w-3xl lg:max-w-5xl xl:max-w-7xl">
           <div className="max-w-2xl mb-16">
-            <span className="text-sm uppercase tracking-[0.45em] text-purple-500 font-bold">What We Deliver</span>
-            <h2 className="mt-3 text-3xl font-bold text-white font-tech tracking-tight">Acoustic & Integration Services</h2>
-            <p className="mt-4 text-zinc-300 text-base font-light">
+            <span className="text-sm uppercase tracking-[0.45em] text-primary font-bold">What We Deliver</span>
+            <h2 className="mt-3 text-3xl font-bold text-foreground font-tech tracking-tight">Acoustic & Integration Services</h2>
+            <p className="mt-4 text-muted-foreground text-base font-light">
               High-end audiovisual configurations, motorized control layers, and clean smart-home execution.
             </p>
           </div>
@@ -195,27 +195,27 @@ export default function PernemHomeTheaterPage() {
             {subServices.map((service, index) => {
               const Icon = service.icon;
               return (
-                <div 
+                <div
                   key={index}
-                  className={`relative overflow-hidden rounded-2xl border border-zinc-850 bg-zinc-950/60 p-8 transition-all duration-300 ${service.border} group`}
+                  className={`relative overflow-hidden rounded-2xl border border-border bg-background/60 p-8 transition-all duration-300 ${service.border} group`}
                 >
                   <div className={`absolute -right-16 -top-16 h-48 w-48 rounded-full bg-gradient-to-br ${service.gradient} blur-3xl opacity-60 pointer-events-none transition-all duration-300 group-hover:scale-110`} />
-                  
+
                   <div className="relative z-10 flex flex-col h-full justify-between">
                     <div>
-                      <div className="mb-5 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-zinc-900 border border-zinc-850 text-white">
-                        <Icon size={22} className="text-zinc-200" />
+                      <div className="mb-5 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-card border border-border text-foreground">
+                        <Icon size={22} className="text-muted-foreground" />
                       </div>
-                      <h3 className="text-xl font-bold text-white font-tech mb-2">{service.title}</h3>
-                      <p className="text-zinc-300 text-sm font-light mb-8 leading-relaxed max-w-md">{service.subtitle}</p>
-                      
-                      <div className="space-y-6 border-t border-zinc-900 pt-6">
+                      <h3 className="text-xl font-bold text-foreground font-tech mb-2">{service.title}</h3>
+                      <p className="text-muted-foreground text-sm font-light mb-8 leading-relaxed max-w-md">{service.subtitle}</p>
+
+                      <div className="space-y-6 border-t border-border pt-6">
                         {service.points.map((pt, pIdx) => (
                           <div key={pIdx} className="flex gap-4">
-                            <CheckCircle2 size={18} className="text-purple-500 shrink-0 mt-0.5" />
+                            <CheckCircle2 size={18} className="text-primary shrink-0 mt-0.5" />
                             <div className="space-y-1">
-                              <h4 className="text-sm font-bold text-white tracking-wide">{pt.label}</h4>
-                              <p className="text-xs text-zinc-400 font-light leading-relaxed">{pt.desc}</p>
+                              <h4 className="text-sm font-bold text-foreground tracking-wide">{pt.label}</h4>
+                              <p className="text-xs text-muted-foreground font-light leading-relaxed">{pt.desc}</p>
                             </div>
                           </div>
                         ))}
@@ -230,34 +230,34 @@ export default function PernemHomeTheaterPage() {
       </section>
 
       {/* Advantages Section */}
-      <section className="py-16 md:py-24 bg-zinc-950/40 border-y border-zinc-900">
+      <section className="py-16 md:py-24 bg-background/40 border-y border-border">
         <div className="container mx-auto px-6 max-w-xs sm:max-w-xl md:max-w-3xl lg:max-w-5xl xl:max-w-7xl">
           <div className="grid gap-12 lg:grid-cols-12 lg:items-center">
             <div className="lg:col-span-5 space-y-6">
-              <span className="text-sm uppercase tracking-[0.45em] text-purple-500 font-bold">Why TecBunny</span>
-              <h2 className="text-3xl font-bold text-white font-tech leading-tight">
+              <span className="text-sm uppercase tracking-[0.45em] text-primary font-bold">Why TecBunny</span>
+              <h2 className="text-3xl font-bold text-foreground font-tech leading-tight">
                 Designed for Sound. <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-zinc-200 to-zinc-500">
+                <span className=" text-primary">
                   Built for Comfort.
                 </span>
               </h2>
-              <blockquote className="border-l-2 border-purple-500 pl-4 py-1.5 italic text-zinc-300 font-light text-sm leading-relaxed">
+              <blockquote className="border-l-2 border-primary pl-4 py-1.5 italic text-muted-foreground font-light text-sm leading-relaxed">
                 &ldquo;A cinema room is only as good as its acoustics. We control structural vibration and optimize reverberation to replicate the theater experience.&rdquo;
               </blockquote>
-              <p className="text-zinc-300 text-sm font-light leading-relaxed">
+              <p className="text-muted-foreground text-sm font-light leading-relaxed">
                 We combine sound science with premium brands (Dali, Klipsch, Denon, Control4) to craft custom entertainment sanctuaries.
               </p>
             </div>
 
             <div className="lg:col-span-7 grid gap-6">
               {benefits.map((adv, idx) => (
-                <div key={idx} className="flex gap-6 rounded-2xl border border-zinc-900 bg-[#09090B] p-6 shadow-sm">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-400">
+                <div key={idx} className="flex gap-6 rounded-2xl border border-border bg-card p-6 shadow-sm">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 border border-primary/20 text-primary">
                     <HeartHandshake size={20} />
                   </div>
                   <div className="space-y-1.5">
-                    <h3 className="text-base font-bold text-white font-tech">{adv.title}</h3>
-                    <p className="text-xs text-zinc-300 leading-relaxed font-light">{adv.desc}</p>
+                    <h3 className="text-base font-bold text-foreground font-tech">{adv.title}</h3>
+                    <p className="text-xs text-muted-foreground leading-relaxed font-light">{adv.desc}</p>
                   </div>
                 </div>
               ))}
@@ -267,12 +267,12 @@ export default function PernemHomeTheaterPage() {
       </section>
 
       {/* Intake Form */}
-      <section id="lead-form-section" className="py-16 md:py-24 border-b border-zinc-900 bg-zinc-950/20">
+      <section id="lead-form-section" className="py-16 md:py-24 border-b border-border bg-background/20">
         <div className="container mx-auto px-6 max-w-xs sm:max-w-xl md:max-w-3xl lg:max-w-5xl xl:max-w-7xl">
           <div className="text-center max-w-3xl mx-auto mb-12">
-            <span className="text-sm uppercase tracking-[0.45em] text-purple-500 font-bold">Request an Estimate</span>
-            <h2 className="mt-3 text-3xl font-bold text-white font-tech tracking-tight">Request Acoustic Survey</h2>
-            <p className="mt-4 text-zinc-300 font-light text-sm">
+            <span className="text-sm uppercase tracking-[0.45em] text-primary font-bold">Request an Estimate</span>
+            <h2 className="mt-3 text-3xl font-bold text-foreground font-tech tracking-tight">Request Acoustic Survey</h2>
+            <p className="mt-4 text-muted-foreground font-light text-sm">
               Provide your details below. A smart home systems consultant will connect with you to review blueprints or plan a room walkthrough.
             </p>
           </div>

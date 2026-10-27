@@ -2,13 +2,13 @@
 
 import * as React from 'react';
 
-import { 
-  MoreHorizontal, 
-  CheckCircle, 
-  XCircle, 
-  Printer, 
-  Package, 
-  Truck, 
+import {
+  MoreHorizontal,
+  CheckCircle,
+  XCircle,
+  Printer,
+  Package,
+  Truck,
   Clock,
   Ban,
   CreditCard,
@@ -75,27 +75,27 @@ interface CancellationDialog {
 export function OrderActions({ order, onStatusUpdate, variant = 'dropdown' }: OrderActionsProps) {
   const { toast } = useToast();
   const { user } = useAuth();
-  
+
   const [paymentDialog, setPaymentDialog] = React.useState<PaymentConfirmationDialog>({
     isOpen: false,
     onConfirm: () => {},
     onReject: () => {},
     onClose: () => {}
   });
-  
+
   const [confirmDialog, setConfirmDialog] = React.useState<OrderConfirmationDialog>({
     isOpen: false,
     onAccept: () => {},
     onReject: () => {},
     onClose: () => {}
   });
-  
+
   const [cancelDialog, setCancelDialog] = React.useState<CancellationDialog>({
     isOpen: false,
     onConfirm: () => {},
     onClose: () => {}
   });
-  
+
   const [cancellationReason, setCancellationReason] = React.useState('');
   const [isProcessing, setIsProcessing] = React.useState(false);
   const [paymentReference, setPaymentReference] = React.useState(order.payment_reference ?? '');
@@ -118,8 +118,8 @@ export function OrderActions({ order, onStatusUpdate, variant = 'dropdown' }: Or
 
       toast({
         title: 'Success',
-        description: action === 'request_pending' 
-          ? 'Pending payment request sent to customer.' 
+        description: action === 'request_pending'
+          ? 'Pending payment request sent to customer.'
           : 'Cash payment confirmed successfully.'
       });
       await onStatusUpdate();
@@ -315,8 +315,8 @@ export function OrderActions({ order, onStatusUpdate, variant = 'dropdown' }: Or
         : undefined;
       updateOrderStatus('Payment Confirmed', payload);
     } else {
-      updateOrderStatus('Cancelled', { 
-        cancellation_reason: 'Payment not confirmed' 
+      updateOrderStatus('Cancelled', {
+        cancellation_reason: 'Payment not confirmed'
       });
     }
     setPaymentDialog(prev => ({ ...prev, isOpen: false }));
@@ -326,16 +326,16 @@ export function OrderActions({ order, onStatusUpdate, variant = 'dropdown' }: Or
     if (accepted) {
       updateOrderStatus('Confirmed');
     } else {
-      updateOrderStatus('Rejected', { 
-        cancellation_reason: 'Order rejected by management' 
+      updateOrderStatus('Rejected', {
+        cancellation_reason: 'Order rejected by management'
       });
     }
     setConfirmDialog(prev => ({ ...prev, isOpen: false }));
   };
 
   const handleCancellation = (reason: string) => {
-    updateOrderStatus('Cancelled', { 
-      cancellation_reason: reason || 'No reason provided' 
+    updateOrderStatus('Cancelled', {
+      cancellation_reason: reason || 'No reason provided'
     });
     setCancelDialog(prev => ({ ...prev, isOpen: false }));
     setCancellationReason('');
@@ -371,7 +371,7 @@ export function OrderActions({ order, onStatusUpdate, variant = 'dropdown' }: Or
     });
 
     const hasPartPayment = typeof order.part_payment_amount === 'number' && order.part_payment_amount > 0;
-    const isInitialPaid = order.payment_status === 'Payment Confirmed' || 
+    const isInitialPaid = order.payment_status === 'Payment Confirmed' ||
       ['Payment Confirmed', 'Confirmed', 'Processing', 'Ready to Ship', 'Shipped', 'Ready for Pickup', 'Completed', 'Delivered', 'Delivered/Picked Up'].includes(order.status);
     const isPendingUnpaid = hasPartPayment && isInitialPaid && order.pending_payment_status !== 'paid';
 
@@ -828,15 +828,15 @@ export function OrderActions({ order, onStatusUpdate, variant = 'dropdown' }: Or
               </div>
             </div>
             <DialogFooter className="gap-2">
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 onClick={() => handlePaymentConfirmation(false)}
                 disabled={isProcessing}
               >
                 <XCircle className="h-4 w-4 mr-2" />
                 Payment Not Received
               </Button>
-              <Button 
+              <Button
                 onClick={() => handlePaymentConfirmation(true)}
                 disabled={isProcessing}
               >
@@ -848,7 +848,7 @@ export function OrderActions({ order, onStatusUpdate, variant = 'dropdown' }: Or
         </Dialog>
 
         {/* Order Confirmation Dialog */}
-        <Dialog open={confirmDialog.isOpen} onOpenChange={(open) => 
+        <Dialog open={confirmDialog.isOpen} onOpenChange={(open) =>
           !open && setConfirmDialog(prev => ({ ...prev, isOpen: false }))
         }>
           <DialogContent>
@@ -863,15 +863,15 @@ export function OrderActions({ order, onStatusUpdate, variant = 'dropdown' }: Or
               </DialogDescription>
             </DialogHeader>
             <DialogFooter className="gap-2">
-              <Button 
-                variant="destructive" 
+              <Button
+                variant="destructive"
                 onClick={() => handleOrderConfirmation(false)}
                 disabled={isProcessing}
               >
                 <XCircle className="h-4 w-4 mr-2" />
                 Reject Order
               </Button>
-              <Button 
+              <Button
                 onClick={() => handleOrderConfirmation(true)}
                 disabled={isProcessing}
               >
@@ -910,8 +910,8 @@ export function OrderActions({ order, onStatusUpdate, variant = 'dropdown' }: Or
               </div>
             </div>
             <DialogFooter className="gap-2">
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 onClick={() => {
                   setCancelDialog(prev => ({ ...prev, isOpen: false }));
                   setCancellationReason('');
@@ -919,7 +919,7 @@ export function OrderActions({ order, onStatusUpdate, variant = 'dropdown' }: Or
               >
                 Keep Order
               </Button>
-              <Button 
+              <Button
                 variant="destructive"
                 onClick={() => handleCancellation(cancellationReason)}
                 disabled={isProcessing}
@@ -938,22 +938,22 @@ export function OrderActions({ order, onStatusUpdate, variant = 'dropdown' }: Or
             setInvoiceFile(null);
           }
         }}>
-          <DialogContent className="border-zinc-800 bg-zinc-900/95 text-zinc-100 backdrop-blur-md">
+          <DialogContent className="border-border bg-card/95 text-muted-foreground backdrop-blur-md">
             <DialogHeader>
               <DialogTitle>Upload Final Invoice PDF</DialogTitle>
-              <DialogDescription className="text-zinc-400">
+              <DialogDescription className="text-muted-foreground">
                 Upload the final invoice PDF for order {formatOrderNumber(order.id)}. An email with the invoice download link will be automatically sent to the customer.
               </DialogDescription>
             </DialogHeader>
             <form onSubmit={handleUploadInvoice} className="space-y-4 pt-4">
               <div className="space-y-2">
-                <Label htmlFor="invoice-file" className="text-sm font-medium text-zinc-300">Select Invoice PDF</Label>
+                <Label htmlFor="invoice-file" className="text-sm font-medium text-muted-foreground">Select Invoice PDF</Label>
                 <Input
                   id="invoice-file"
                   type="file"
                   accept=".pdf"
                   required
-                  className="bg-zinc-950 border border-zinc-800 text-zinc-100 cursor-pointer"
+                  className="bg-background border border-border text-muted-foreground cursor-pointer"
                   onChange={(e) => {
                     const file = e.target.files?.[0];
                     if (file) setInvoiceFile(file);
@@ -961,9 +961,9 @@ export function OrderActions({ order, onStatusUpdate, variant = 'dropdown' }: Or
                 />
               </div>
               <DialogFooter className="pt-4 gap-2">
-                <Button 
+                <Button
                   type="button"
-                  variant="outline" 
+                  variant="outline"
                   onClick={() => {
                     setIsUploadInvoiceOpen(false);
                     setInvoiceFile(null);
@@ -972,7 +972,7 @@ export function OrderActions({ order, onStatusUpdate, variant = 'dropdown' }: Or
                 >
                   Cancel
                 </Button>
-                <Button 
+                <Button
                   type="submit"
                   disabled={uploadingInvoice || !invoiceFile}
                   className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold"

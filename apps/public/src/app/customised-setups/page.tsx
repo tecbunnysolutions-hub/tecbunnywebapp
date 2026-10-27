@@ -54,7 +54,7 @@ export default async function CustomisedSetupsPage({
   }
 
   return (
-    <main className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen bg-background text-foreground">
       <BreadcrumbJsonLd
         items={[
           { name: 'Home', url: 'https://www.tecbunny.com' },
@@ -64,16 +64,16 @@ export default async function CustomisedSetupsPage({
       <section className="tb-setup-hero relative overflow-hidden border-b border-border pt-24 pb-14 sm:pt-28 sm:pb-20">
         <div className="tb-setup-blueprint" aria-hidden="true"><Network /><span /><Building2 /><span /><ShieldCheck /><span /><FileText /></div>
         <div className="relative z-10 mx-auto max-w-5xl px-4 text-center sm:px-6 lg:px-8">
-          <span className="inline-flex items-center gap-2 rounded-full border border-blue-400/30 bg-blue-400/10 px-3 py-1 text-xs font-semibold text-blue-200">
+          <span className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
             <ShieldCheck className="h-4 w-4" /> TecBunny setup planner
           </span>
           <h1 className="mt-6 text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
-            Build your custom <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-blue-300">CCTV setup.</span>
+            Build your custom <span className=" text-primary">CCTV setup.</span>
           </h1>
           <p className="mt-4 mx-auto max-w-3xl text-base leading-relaxed text-muted-foreground sm:text-lg">
             Tell us about your property, coverage needs, and budget. TecBunny will help you create the right CCTV setup with recommended equipment, pricing, and installation options.
           </p>
-          <p className="mt-3 text-sm font-medium text-blue-200">No technical knowledge required.</p>
+          <p className="mt-3 text-sm font-medium text-primary">No technical knowledge required.</p>
           <div className="mt-6 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
             <Button asChild size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90">
               <Link href="#setup-planner">Start building my setup</Link>
@@ -148,6 +148,6 @@ export default async function CustomisedSetupsPage({
           </Button>
         </div>
       </section>
-    </main>
+    </div>
   );
 }

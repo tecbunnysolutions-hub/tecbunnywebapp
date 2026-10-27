@@ -52,10 +52,10 @@ export function CCTVQuoteModal({ customerName, onClose, onShare }: CCTVQuoteModa
   };
 
   const inputStyle: React.CSSProperties = {
-    border: '1px solid rgba(148, 163, 184, 0.22)',
+    border: "1px solid hsl(var(--input))",
     borderRadius: '8px',
-    background: 'rgba(2, 6, 23, 0.55)',
-    color: '#e2e8f0',
+    background: "hsl(var(--card) / 0.55)",
+    color: "hsl(var(--foreground))",
     padding: '0.5rem 0.7rem',
     outline: 'none',
     width: '100%',
@@ -63,7 +63,7 @@ export function CCTVQuoteModal({ customerName, onClose, onShare }: CCTVQuoteModa
   };
 
   const labelStyle: React.CSSProperties = {
-    color: '#94a3b8',
+    color: "hsl(var(--muted-foreground))",
     fontSize: '0.75rem',
     fontWeight: 600,
     textTransform: 'uppercase',
@@ -91,34 +91,34 @@ export function CCTVQuoteModal({ customerName, onClose, onShare }: CCTVQuoteModa
       aria-label="CCTV Quotation Builder"
       style={{
         position: 'fixed', inset: 0, zIndex: 1000,
-        background: 'rgba(0,0,0,0.75)',
+        background: "hsl(var(--overlay) / 0.75)",
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         padding: '1rem',
       }}
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
       <div style={{
-        background: '#0f172a',
-        border: '1px solid rgba(148, 163, 184, 0.18)',
+        background: "hsl(var(--card))",
+        border: "1px solid hsl(var(--border) / 0.18)",
         borderRadius: '16px',
         width: '100%',
         maxWidth: '560px',
         maxHeight: '90vh',
         overflowY: 'auto',
         padding: '1.5rem',
-        boxShadow: '0 25px 50px rgba(0,0,0,0.6)',
+        boxShadow: "0 25px 50px hsl(var(--overlay) / 0.6)",
       }}>
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem' }}>
           <div>
-            <h2 style={{ margin: 0, color: '#f1f5f9', fontSize: '1.1rem', fontWeight: 700 }}>📷 CCTV Quotation Builder</h2>
-            <p style={{ margin: '0.2rem 0 0', color: '#64748b', fontSize: '0.75rem' }}>Ref: {quoteRef}</p>
+            <h2 style={{ margin: 0, color: "hsl(var(--foreground))", fontSize: '1.1rem', fontWeight: 700 }}>📷 CCTV Quotation Builder</h2>
+            <p style={{ margin: '0.2rem 0 0', color: "hsl(var(--muted-foreground))", fontSize: '0.75rem' }}>Ref: {quoteRef}</p>
           </div>
           <button
             type="button"
             onClick={onClose}
             aria-label="Close CCTV quotation builder"
-            style={{ background: 'none', border: 'none', color: '#94a3b8', fontSize: '1.4rem', cursor: 'pointer', lineHeight: 1, padding: '0.25rem' }}
+            style={{ background: 'none', border: 'none', color: "hsl(var(--muted-foreground))", fontSize: '1.4rem', cursor: 'pointer', lineHeight: 1, padding: '0.25rem' }}
           >
             ×
           </button>
@@ -137,7 +137,7 @@ export function CCTVQuoteModal({ customerName, onClose, onShare }: CCTVQuoteModa
         </div>
 
         {/* Cameras */}
-        <div style={{ marginBottom: '0.5rem', color: '#60a5fa', fontSize: '0.8rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+        <div style={{ marginBottom: '0.5rem', color: 'hsl(var(--primary))', fontSize: '0.8rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
           Cameras
         </div>
         <div style={rowStyle}>
@@ -171,7 +171,7 @@ export function CCTVQuoteModal({ customerName, onClose, onShare }: CCTVQuoteModa
         </div>
 
         {/* Recorder */}
-        <div style={{ marginBottom: '0.5rem', color: '#60a5fa', fontSize: '0.8rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+        <div style={{ marginBottom: '0.5rem', color: 'hsl(var(--primary))', fontSize: '0.8rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
           Recorder & Storage
         </div>
         <div style={rowStyle}>
@@ -201,7 +201,7 @@ export function CCTVQuoteModal({ customerName, onClose, onShare }: CCTVQuoteModa
         </div>
 
         {/* Installation */}
-        <div style={{ marginBottom: '0.5rem', color: '#60a5fa', fontSize: '0.8rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+        <div style={{ marginBottom: '0.5rem', color: 'hsl(var(--primary))', fontSize: '0.8rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
           Installation
         </div>
         <div style={rowStyle}>
@@ -235,7 +235,7 @@ export function CCTVQuoteModal({ customerName, onClose, onShare }: CCTVQuoteModa
         </div>
 
         {/* Add-ons */}
-        <div style={{ marginBottom: '0.5rem', color: '#60a5fa', fontSize: '0.8rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+        <div style={{ marginBottom: '0.5rem', color: 'hsl(var(--primary))', fontSize: '0.8rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
           Add-ons
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.4rem', marginBottom: '1rem' }}>
@@ -244,8 +244,8 @@ export function CCTVQuoteModal({ customerName, onClose, onShare }: CCTVQuoteModa
               key={a.key}
               style={{
                 display: 'flex', alignItems: 'center', gap: '0.5rem',
-                border: `1px solid ${addons.has(a.key) ? 'rgba(96, 165, 250, 0.45)' : 'rgba(148, 163, 184, 0.15)'}`,
-                background: addons.has(a.key) ? 'rgba(96, 165, 250, 0.1)' : 'rgba(2, 6, 23, 0.4)',
+                border: `1px solid ${addons.has(a.key) ? "hsl(var(--primary) / 0.45)" : "hsl(var(--muted-foreground) / 0.15)"}`,
+                background: addons.has(a.key) ? "hsl(var(--primary) / 0.1)" : "hsl(var(--foreground) / 0.4)",
                 borderRadius: '8px', padding: '0.45rem 0.6rem', cursor: 'pointer',
               }}
             >
@@ -253,11 +253,11 @@ export function CCTVQuoteModal({ customerName, onClose, onShare }: CCTVQuoteModa
                 type="checkbox"
                 checked={addons.has(a.key)}
                 onChange={() => toggleAddon(a.key)}
-                style={{ accentColor: '#3b82f6' }}
+                style={{ accentColor: 'hsl(var(--primary))' }}
                 aria-label={a.label}
               />
-              <span style={{ color: '#cbd5e1', fontSize: '0.78rem', flex: 1 }}>{a.label}</span>
-              <span style={{ color: '#64748b', fontSize: '0.72rem', whiteSpace: 'nowrap' }}>
+              <span style={{ color: "hsl(var(--foreground))", fontSize: '0.78rem', flex: 1 }}>{a.label}</span>
+              <span style={{ color: "hsl(var(--muted-foreground))", fontSize: '0.72rem', whiteSpace: 'nowrap' }}>
                 {a.price === -1 ? `₹150/cam` : a.price === 0 ? 'Free' : formatINR(a.price)}
               </span>
             </label>
@@ -272,19 +272,19 @@ export function CCTVQuoteModal({ customerName, onClose, onShare }: CCTVQuoteModa
             onChange={e => setNotes(e.target.value)}
             placeholder="e.g. Includes 1-year warranty. Installation by certified technicians."
             rows={2}
-            style={{ ...inputStyle, resize: 'vertical', fontFamily: 'inherit' }}
+            style={{ ...inputStyle, resize: 'vertical', fontFamily: "var(--font-body)" }}
           />
         </div>
 
         {/* Price Summary */}
         <div style={{
-          border: '1px solid rgba(96, 165, 250, 0.3)',
+          border: "1px solid hsl(var(--primary) / 0.3)",
           borderRadius: '12px',
-          background: 'rgba(15, 23, 42, 0.8)',
+          background: "hsl(var(--card) / 0.8)",
           padding: '1rem',
           marginBottom: '1.25rem',
         }}>
-          <div style={{ color: '#94a3b8', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', marginBottom: '0.6rem' }}>
+          <div style={{ color: "hsl(var(--muted-foreground))", fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', marginBottom: '0.6rem' }}>
             Price Estimate
           </div>
           {[
@@ -295,16 +295,16 @@ export function CCTVQuoteModal({ customerName, onClose, onShare }: CCTVQuoteModa
             [installType, breakdown.installTotal],
             ...breakdown.addonBreakdown.map(a => [a.label, a.price] as [string, number]),
           ].map(([label, price]) => (
-            <div key={label as string} style={{ display: 'flex', justifyContent: 'space-between', color: '#cbd5e1', fontSize: '0.82rem', marginBottom: '0.2rem' }}>
+            <div key={label as string} style={{ display: 'flex', justifyContent: 'space-between', color: "hsl(var(--foreground))", fontSize: '0.82rem', marginBottom: '0.2rem' }}>
               <span>{label}</span>
-              <span style={{ color: price as number === 0 ? '#64748b' : '#e2e8f0' }}>
+              <span style={{ color: price as number === 0 ? "hsl(var(--muted-foreground))" : "hsl(var(--foreground))" }}>
                 {price as number === 0 ? 'Included' : formatINR(price as number)}
               </span>
             </div>
           ))}
-          <div style={{ borderTop: '1px solid rgba(148, 163, 184, 0.2)', marginTop: '0.6rem', paddingTop: '0.6rem', display: 'flex', justifyContent: 'space-between', fontWeight: 700 }}>
-            <span style={{ color: '#f1f5f9' }}>Estimated Total</span>
-            <span style={{ color: '#60a5fa', fontSize: '1rem' }}>{formatINR(breakdown.total)}</span>
+          <div style={{ borderTop: "1px solid hsl(var(--border) / 0.2)", marginTop: '0.6rem', paddingTop: '0.6rem', display: 'flex', justifyContent: 'space-between', fontWeight: 700 }}>
+            <span style={{ color: "hsl(var(--foreground))" }}>Estimated Total</span>
+            <span style={{ color: 'hsl(var(--primary))', fontSize: '1rem' }}>{formatINR(breakdown.total)}</span>
           </div>
         </div>
 
@@ -314,8 +314,8 @@ export function CCTVQuoteModal({ customerName, onClose, onShare }: CCTVQuoteModa
             type="button"
             onClick={onClose}
             style={{
-              border: '1px solid rgba(148, 163, 184, 0.25)', background: 'transparent',
-              color: '#94a3b8', borderRadius: '10px', padding: '0.65rem 1.2rem',
+              border: "1px solid hsl(var(--border) / 0.25)", background: 'transparent',
+              color: "hsl(var(--muted-foreground))", borderRadius: '10px', padding: '0.65rem 1.2rem',
               fontSize: '0.85rem', cursor: 'pointer',
             }}
           >
@@ -325,9 +325,9 @@ export function CCTVQuoteModal({ customerName, onClose, onShare }: CCTVQuoteModa
             type="button"
             onClick={handleShare}
             style={{
-              border: '1px solid rgba(96, 165, 250, 0.5)',
-              background: 'rgba(59, 130, 246, 0.25)',
-              color: '#bfdbfe', borderRadius: '10px', padding: '0.65rem 1.4rem',
+              border: "1px solid hsl(var(--primary) / 0.5)",
+              background: "hsl(var(--primary) / 0.25)",
+              color: "hsl(var(--foreground))", borderRadius: '10px', padding: '0.65rem 1.4rem',
               fontSize: '0.85rem', fontWeight: 700, cursor: 'pointer',
             }}
           >

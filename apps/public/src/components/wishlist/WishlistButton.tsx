@@ -25,7 +25,7 @@ export function WishlistButton({ product, className }: WishlistButtonProps) {
       size="icon"
       className={cn(
         'rounded-full h-9 w-9 bg-background/80 hover:bg-background transition-colors backdrop-blur-sm',
-        isWishlisted ? 'text-red-500' : 'text-foreground',
+        isWishlisted ? 'text-destructive' : 'text-foreground',
         className
       )}
       disabled={busy}

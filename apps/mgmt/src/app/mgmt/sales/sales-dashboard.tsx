@@ -126,7 +126,7 @@ export default function SalesDashboard() {
                 {/* User details badge */}
                 <div className="flex items-center gap-2 mt-2 md:mt-0 animate-fade-in">
                     <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-muted px-3 py-1 text-[11px] font-medium text-foreground">
-                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                        <span className="h-1.5 w-1.5 rounded-full bg-success animate-pulse text-success-foreground" />
                         {user?.name || user?.email}
                     </span>
                     <span className="rounded-md bg-primary/10 border border-primary/20 px-2 py-0.5 text-[9px] font-mono font-bold uppercase tracking-wider text-primary">
@@ -263,11 +263,11 @@ export default function SalesDashboard() {
                                         const statusStr = order.status ? String(order.status) : '';
 
                                         if (COMPLETED_STATUSES.includes(order.status)) {
-                                            badgeColorClass = "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20";
+                                            badgeColorClass = "bg-success/10 text-success dark:text-success border-success/20";
                                         } else if (PENDING_DELIVERY_STATUSES.includes(order.status) || order.status === PENDING_PICKUP_STATUS) {
                                             badgeColorClass = "bg-primary/10 text-primary border-primary/20";
                                         } else if (['Cancelled', 'Rejected', 'Payment Failed'].includes(statusStr)) {
-                                            badgeColorClass = "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20";
+                                            badgeColorClass = "bg-destructive/10 text-destructive dark:text-destructive border-destructive/20";
                                         }
 
                                         return (

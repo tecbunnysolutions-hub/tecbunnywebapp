@@ -154,7 +154,7 @@ export default async function OrderInvoicePage({ params, searchParams }: Invoice
     : printParam === '1' || printParam === 'true';
 
   return (
-    <div className="min-h-screen bg-slate-100 py-10 px-4 print:bg-white print:py-0">
+    <div className="min-h-screen bg-muted py-10 px-4 print:bg-card print:py-0">
       <div className="max-w-5xl mx-auto">
         <InvoiceTemplate order={order} settings={settings} autoPrint={shouldAutoPrint} />
       </div>

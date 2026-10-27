@@ -96,7 +96,7 @@ const nextConfig = {
             key: 'Content-Security-Policy',
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-inline' https://checkout.razorpay.com https://www.googletagmanager.com https://www.google-analytics.com https://maps.googleapis.com",
+              `script-src 'self' 'unsafe-inline'${process.env.NODE_ENV === 'development' ? " 'unsafe-eval'" : ''} https://checkout.razorpay.com https://www.googletagmanager.com https://www.google-analytics.com https://maps.googleapis.com`,
               "style-src 'self' 'unsafe-inline' https:",
               "img-src 'self' https: data: blob:",
               "font-src 'self' https: data:",
@@ -173,7 +173,7 @@ const nextConfig = {
   },
   async rewrites() {
     if (isStaticExport) return [];
-    
+
     const apiUrl = resolveApiBaseUrl();
     return [
       {

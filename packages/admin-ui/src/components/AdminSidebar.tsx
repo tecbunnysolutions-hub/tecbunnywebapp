@@ -124,7 +124,7 @@ export function AdminSidebar() {
                   aria-current={active ? 'page' : undefined}
                   className={cn(
                     'flex w-full cursor-pointer items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2 focus:ring-offset-background',
-                    active && 'bg-primary/10 text-primary border border-primary/20 shadow-[0_0_0_1px_rgba(37,99,235,0.15)]',
+                    active && 'bg-primary/10 text-primary border border-primary/20 shadow-md',
                     !active && 'hover:bg-muted hover:text-foreground'
                   )}
                 >
@@ -136,7 +136,7 @@ export function AdminSidebar() {
           </div>
         ))}
       </nav>
-      
+
       <div className="mt-auto">
          <Separator className="my-4 bg-border" />
          <div className="flex items-center gap-3 p-3 rounded-lg border border-border bg-muted/50">

@@ -1,23 +1,9 @@
 'use client';
 
 import { ReactNode } from 'react';
-import { ThemeProvider as NextThemesProvider } from 'next-themes';
 
-interface ThemeProviderProps {
-  children: ReactNode;
-  nonce?: string;
-}
-
-export function ThemeProvider({ children, nonce }: ThemeProviderProps) {
-  return (
-    <NextThemesProvider
-      attribute="class"
-      defaultTheme="dark"
-      enableSystem={false}
-      disableTransitionOnChange
-      nonce={nonce}
-    >
-      {children}
-    </NextThemesProvider>
-  );
+// ThemeControls owns the shared preference. CSS supplies the system theme before
+// hydration so every app uses the same behavior without a second theme owner.
+export function ThemeProvider({ children }: { children: ReactNode; nonce?: string }) {
+  return children;
 }

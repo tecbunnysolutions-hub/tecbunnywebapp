@@ -1273,7 +1273,7 @@ export default function AdminCustomSetupManager() {
                               <p className="font-semibold text-foreground">System totals</p>
                               <p>MRP: {currencyFormatter.format(totalMrp)}</p>
                               <p>Sale: {currencyFormatter.format(totalSale)}</p>
-                              <p className="text-emerald-600 font-semibold">
+                              <p className="text-success font-semibold">
                                 Savings: {currencyFormatter.format(discountAmount)} ({discountPercent.toFixed(1)}%)
                               </p>
                             </div>

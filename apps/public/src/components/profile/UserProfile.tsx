@@ -129,21 +129,21 @@ export default function UserProfile({ user, profile, salesAgentData, orders, ser
     switch (status) {
       case 'pending':
         return (
-          <span className="inline-flex items-center gap-1 rounded-full border border-amber-500/30 bg-amber-500/10 px-2 py-1 text-[10px] font-semibold text-amber-300">
+          <span className="inline-flex items-center gap-1 rounded-full border border-warning/30 bg-warning/10 px-2 py-1 text-[10px] font-semibold text-warning">
             <Clock className="h-3 w-3" />
             Pending Review
           </span>
         );
       case 'approved':
         return (
-          <span className="inline-flex items-center gap-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2 py-1 text-[10px] font-semibold text-emerald-300">
+          <span className="inline-flex items-center gap-1 rounded-full border border-success/30 bg-success/10 px-2 py-1 text-[10px] font-semibold text-success">
             <CheckCircle className="h-3 w-3" />
             Approved
           </span>
         );
       case 'rejected':
         return (
-          <span className="inline-flex items-center gap-1 rounded-full border border-red-500/30 bg-red-500/10 px-2 py-1 text-[10px] font-semibold text-red-300">
+          <span className="inline-flex items-center gap-1 rounded-full border border-destructive/30 bg-destructive/10 px-2 py-1 text-[10px] font-semibold text-destructive">
             <XCircle className="h-3 w-3" />
             Rejected
           </span>
@@ -169,16 +169,16 @@ export default function UserProfile({ user, profile, salesAgentData, orders, ser
   const amcDashOffset = 251.2 - (251.2 * amcPercent) / 100;
 
   const statusStyles: Record<string, { badge: string; border: string }> = {
-    completed: { badge: 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 border-emerald-500/30', border: 'border-emerald-500' },
-    delivered: { badge: 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 border-emerald-500/30', border: 'border-emerald-500' },
-    shipped: { badge: 'bg-blue-500/20 text-blue-600 dark:text-blue-300 border-blue-500/30', border: 'border-blue-500' },
-    processing: { badge: 'bg-amber-500/20 text-amber-600 dark:text-amber-300 border-amber-500/30', border: 'border-amber-500' },
+    completed: { badge: 'bg-success/20 text-success dark:text-success border-success/30', border: 'border-success' },
+    delivered: { badge: 'bg-success/20 text-success dark:text-success border-success/30', border: 'border-success' },
+    shipped: { badge: 'bg-primary/20 text-primary dark:text-primary border-primary/30', border: 'border-primary' },
+    processing: { badge: 'bg-warning/20 text-warning dark:text-warning border-warning/30', border: 'border-warning' },
     pending: { badge: 'bg-muted text-muted-foreground border-border', border: 'border-muted-foreground/30' },
   };
 
   return (
     <div className="flex min-h-[calc(100vh-73px)] bg-background text-foreground">
-      
+
 
       <aside className="hidden md:flex w-64 flex-col border-r border-border bg-card shadow-sm sticky top-[73px] h-[calc(100vh-73px)]">
         <div className="h-16 flex items-center px-6 border-b border-border bg-card/95 backdrop-blur">
@@ -218,7 +218,7 @@ export default function UserProfile({ user, profile, salesAgentData, orders, ser
 
         <div className="p-6 border-t border-border bg-muted/20">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white text-xs font-bold">
+            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-xs font-bold">
               {initials || 'TB'}
             </div>
             <div>
@@ -232,24 +232,24 @@ export default function UserProfile({ user, profile, salesAgentData, orders, ser
         </div>
       </aside>
 
-      <main className="flex-1 flex flex-col relative">
+      <div className="flex-1 flex flex-col relative">
         <header className="h-16 bg-background/85 backdrop-blur border-b border-border flex items-center justify-between px-6 sticky top-[73px] z-30">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <span className="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+            <span className="w-2 h-2 rounded-full bg-primary animate-pulse text-primary-foreground"></span>
             System Status: <span className="text-foreground font-bold">SECURE</span>
           </div>
           <div className="flex items-center gap-4">
             <Button
               type="button"
               variant="outline"
-              className="hidden sm:flex items-center gap-2 border-primary/20 bg-primary/10 text-primary text-xs hover:bg-primary hover:text-white"
+              className="hidden sm:flex items-center gap-2 border-primary/20 bg-primary/10 text-primary text-xs hover:bg-primary hover:text-foreground text-foreground"
               onClick={() => window.location.href = '/contact'}
             >
               <Plus className="h-4 w-4" /> New Request
             </Button>
             <button className="relative p-2 text-muted-foreground hover:text-foreground transition-colors">
               <Bell className="h-4 w-4" />
-              <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full border border-background"></span>
+              <span className="absolute top-1 right-1 w-2 h-2 bg-destructive rounded-full border border-background text-destructive-foreground"></span>
             </button>
           </div>
         </header>
@@ -277,7 +277,7 @@ export default function UserProfile({ user, profile, salesAgentData, orders, ser
                 </div>
               </div>
 
-              
+
             </div>
 
             <div>
@@ -320,12 +320,12 @@ export default function UserProfile({ user, profile, salesAgentData, orders, ser
                   const created = new Date(quote.created_at).toLocaleDateString();
                   const expired = new Date(quote.expiry_at) < new Date();
                   return (
-                    <div key={quote.id} className={`bento-card p-5 border-l-4 ${expired ? 'border-red-500' : 'border-primary'} group transition-all`}>
+                    <div key={quote.id} className={`bento-card p-5 border-l-4 ${expired ? 'border-destructive' : 'border-primary'} group transition-all`}>
                       <div className="flex justify-between items-start mb-3">
                         <div className="text-muted-foreground group-hover:text-foreground transition-colors">
                             <FileText className="h-5 w-5" />
                         </div>
-                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${expired ? 'bg-red-500/25 text-red-600 dark:text-red-300 border-red-500/30' : 'bg-primary/10 text-primary border-primary/20'}`}>
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${expired ? 'bg-destructive/25 text-destructive dark:text-destructive border-destructive/30' : 'bg-primary/10 text-primary border-primary/20'}`}>
                           {expired ? 'Expired' : 'Active'}
                         </span>
                       </div>
@@ -347,7 +347,7 @@ export default function UserProfile({ user, profile, salesAgentData, orders, ser
                 <h3 className="font-bold font-tech text-lg tech-heading">Service Log</h3>
                 <Link
                   href="/contact"
-                  className="text-xs bg-primary text-white px-3 py-1.5 rounded hover:bg-primary/90 transition-colors font-medium"
+                  className="text-xs bg-primary text-primary-foreground px-3 py-1.5 rounded hover:bg-primary/90 transition-colors font-medium"
                 >
                   Raise Ticket
                 </Link>
@@ -369,7 +369,7 @@ export default function UserProfile({ user, profile, salesAgentData, orders, ser
                         <td className="px-6 py-4">{log.issue_description || 'Service request'}</td>
                         <td className="px-6 py-4">{log.created_at ? new Date(log.created_at).toLocaleDateString() : '—'}</td>
                         <td className="px-6 py-4">
-                          <span className="text-emerald-600 dark:text-emerald-300 font-bold text-xs border border-emerald-500/30 bg-emerald-500/10 px-2 py-1 rounded">{log.status || 'pending'}</span>
+                          <span className="text-success dark:text-success font-bold text-xs border border-success/30 bg-success/10 px-2 py-1 rounded">{log.status || 'pending'}</span>
                         </td>
                       </tr>
                     )) : (
@@ -441,7 +441,7 @@ export default function UserProfile({ user, profile, salesAgentData, orders, ser
                   <div className="flex items-center gap-2">
                     {twoFactorStatus?.enabled ? (
                       <>
-                        <span className="inline-flex items-center gap-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2 py-1 text-[10px] font-semibold text-emerald-600 dark:text-emerald-300">
+                        <span className="inline-flex items-center gap-1 rounded-full border border-success/30 bg-success/10 px-2 py-1 text-[10px] font-semibold text-success dark:text-success">
                           <CheckCircle className="h-3 w-3" /> Enabled
                         </span>
                         <Button
@@ -469,8 +469,8 @@ export default function UserProfile({ user, profile, salesAgentData, orders, ser
 
             <div className="bento-card p-6">
               <div className="flex items-center gap-3 mb-4">
-                <div className="p-2 rounded-full bg-emerald-500/10">
-                  <Users className="h-5 w-5 text-emerald-600 dark:text-emerald-300" />
+                <div className="p-2 rounded-full bg-success/10">
+                  <Users className="h-5 w-5 text-success dark:text-success" />
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold tech-heading">Sales Agent Program</h3>
@@ -489,7 +489,7 @@ export default function UserProfile({ user, profile, salesAgentData, orders, ser
                       <li>• Track your earnings and performance</li>
                     </ul>
                   </div>
-                  <Button onClick={handleApplyForAgent} disabled={isApplying} className="bg-primary text-white hover:bg-primary/90 transition-colors font-medium">
+                  <Button onClick={handleApplyForAgent} disabled={isApplying} className="bg-primary text-primary-foreground hover:bg-primary/90 transition-colors font-medium">
                     {isApplying ? 'Submitting Application...' : 'Apply to Become a Sales Agent'}
                   </Button>
                 </div>
@@ -504,7 +504,7 @@ export default function UserProfile({ user, profile, salesAgentData, orders, ser
                   </div>
 
                   {agentStatus.status === 'approved' && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 border border-emerald-500/30 rounded-lg bg-emerald-500/10">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 border border-success/30 rounded-lg bg-success/10">
                       <div>
                         <p className="text-sm font-medium text-muted-foreground">Your Referral Code</p>
                         <p className="text-lg font-mono text-foreground font-bold">{agentStatus.referral_code}</p>
@@ -517,8 +517,8 @@ export default function UserProfile({ user, profile, salesAgentData, orders, ser
                   )}
 
                   {agentStatus.status === 'rejected' && (
-                    <div className="p-4 border border-red-500/30 rounded-lg bg-red-500/10">
-                      <p className="text-sm text-red-600 dark:text-red-200">
+                    <div className="p-4 border border-destructive/30 rounded-lg bg-destructive/10">
+                      <p className="text-sm text-destructive dark:text-destructive">
                         Your application was not approved. You may contact support for more information.
                       </p>
                     </div>
@@ -528,7 +528,7 @@ export default function UserProfile({ user, profile, salesAgentData, orders, ser
             </div>
           </div>
         </div>
-      </main>
+      </div>
 
       {showTwoFactorSetup && (
         <TwoFactorSetup

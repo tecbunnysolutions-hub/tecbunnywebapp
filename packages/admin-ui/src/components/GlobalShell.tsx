@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { 
-  Search, Bell, User, Menu, X, Sparkles, ChevronRight, LogOut 
+import {
+  Search, Bell, User, Menu, X, Sparkles, ChevronRight, LogOut
 } from 'lucide-react';
 import { cn } from "@tecbunny/core/utils";
 import { useAuth } from "@tecbunny/core/hooks";
@@ -44,25 +44,25 @@ interface GlobalShellProps {
 }
 
 const colorMaps = {
-  blue: 'bg-blue-600 text-white',
-  indigo: 'bg-indigo-600 text-white',
-  emerald: 'bg-emerald-600 text-white',
-  rose: 'bg-rose-600 text-white',
-  slate: 'bg-slate-900 text-white',
+  blue: 'bg-primary text-primary-foreground',
+  indigo: 'bg-primary text-primary-foreground',
+  emerald: 'bg-success text-success-foreground',
+  rose: 'bg-destructive text-destructive-foreground',
+  slate: 'bg-card text-foreground',
 };
 
 const activeBgMaps = {
-  blue: 'bg-blue-50 text-blue-700',
-  indigo: 'bg-indigo-50 text-indigo-700',
-  emerald: 'bg-emerald-50 text-emerald-700',
-  rose: 'bg-rose-50 text-rose-700',
-  slate: 'bg-slate-100 text-slate-900',
+  blue: 'bg-primary/10 text-primary',
+  indigo: 'bg-primary/10 text-primary',
+  emerald: 'bg-success/10 text-success',
+  rose: 'bg-destructive/10 text-destructive',
+  slate: 'bg-muted text-foreground',
 };
 
-export function GlobalShell({ 
-  children, 
-  navigation, 
-  appName, 
+export function GlobalShell({
+  children,
+  navigation,
+  appName,
   appColor = 'indigo',
   onSearchClick,
   onAIClick
@@ -71,6 +71,25 @@ export function GlobalShell({
   const pathname = usePathname();
   const { user, logout } = useAuth();
   const router = useRouter();
+  const navigationRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    if (!mobileMenuOpen || window.matchMedia('(min-width: 1024px)').matches) return;
+    const previous = document.activeElement as HTMLElement | null;
+    const panel = navigationRef.current;
+    const focusable = () => Array.from(panel?.querySelectorAll<HTMLElement>('a[href], button:not([disabled]), [tabindex="0"]') ?? []);
+    focusable()[0]?.focus();
+    const handleKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') { event.preventDefault(); setMobileMenuOpen(false); return; }
+      if (event.key !== 'Tab' || window.matchMedia('(min-width: 1024px)').matches) return;
+      const items = focusable();
+      const first = items[0], last = items[items.length - 1];
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
+    };
+    document.addEventListener('keydown', handleKey);
+    return () => { document.removeEventListener('keydown', handleKey); previous?.focus(); };
+  }, [mobileMenuOpen]);
 
   const handleLogout = async () => {
     try {
@@ -82,34 +101,35 @@ export function GlobalShell({
   };
 
   return (
-    <div className="flex h-screen bg-slate-50 overflow-hidden font-sans">
+    <div className="flex h-dvh bg-muted overflow-hidden font-sans">
       {/* Mobile sidebar backdrop */}
       {mobileMenuOpen && (
-        <div 
-          className="fixed inset-0 z-40 bg-slate-900/50 backdrop-blur-sm lg:hidden"
+        <div
+          className="fixed inset-0 z-40 bg-overlay/60 backdrop-blur-sm lg:hidden"
           onClick={() => setMobileMenuOpen(false)}
         />
       )}
 
       {/* Sidebar */}
-      <aside className={cn(
-        "fixed inset-y-0 left-0 z-50 w-64 bg-white border-r flex flex-col transition-transform duration-300 lg:static lg:translate-x-0",
-        mobileMenuOpen ? "translate-x-0" : "-translate-x-full"
+      <aside ref={navigationRef} role={mobileMenuOpen ? 'dialog' : undefined} aria-modal={mobileMenuOpen || undefined} aria-label="Workspace navigation" className={cn(
+        "fixed inset-y-0 left-0 z-50 w-64 bg-card border-r flex flex-col transition-transform duration-300 lg:static lg:translate-x-0",
+        mobileMenuOpen ? "translate-x-0" : "-translate-x-full invisible lg:visible"
       )}>
         <div className="h-16 flex items-center px-6 border-b">
           <Link href="/" className="flex items-center gap-2">
-            <Logo className={cn("h-8 w-8", `text-${appColor}-600`)} />
-            <span className="text-xl font-bold tracking-tight text-slate-900">
-              TecBunny <span className="text-slate-400 font-medium">| {appName}</span>
+            <Logo className={cn("h-8 w-8", "text-primary")} />
+            <span className="text-xl font-bold tracking-tight text-foreground">
+              TecBunny <span className="text-muted-foreground font-medium">| {appName}</span>
             </span>
           </Link>
+          <button type="button" aria-label="Close navigation" onClick={() => setMobileMenuOpen(false)} className="ml-auto flex h-11 w-11 items-center justify-center rounded-md text-muted-foreground hover:bg-muted lg:hidden"><X className="h-5 w-5" aria-hidden="true" /></button>
         </div>
 
-        <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-6">
+        <nav aria-label="Workspace navigation" className="flex-1 overflow-y-auto py-4 px-3 space-y-6">
           {navigation.map((section, idx) => (
             <div key={idx}>
               {section.title && (
-                <p className="px-3 text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">
+                <p className="px-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
                   {section.title}
                 </p>
               )}
@@ -119,14 +139,15 @@ export function GlobalShell({
                   return (
                     <Link
                       key={item.href}
+                      aria-current={isActive ? 'page' : undefined}
                       href={item.href}
                       onClick={() => setMobileMenuOpen(false)}
                       className={cn(
                         "flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors",
-                        isActive ? activeBgMaps[appColor] : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                        isActive ? activeBgMaps[appColor] : "text-muted-foreground hover:bg-muted hover:text-foreground"
                       )}
                     >
-                      <item.icon className={cn("h-5 w-5", isActive ? `text-${appColor}-600` : "text-slate-400")} />
+                      <item.icon className={cn("h-5 w-5", isActive ? "text-primary" : "text-muted-foreground")} />
                       {item.label}
                     </Link>
                   );
@@ -140,54 +161,51 @@ export function GlobalShell({
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Topbar */}
-        <header className="h-16 bg-white border-b flex items-center justify-between px-4 sm:px-6 lg:px-8 shrink-0 z-10">
+        <header className="h-16 bg-card border-b flex items-center justify-between px-4 sm:px-6 lg:px-8 shrink-0 z-10">
           <div className="flex items-center gap-4 flex-1">
-            <button 
-              className="lg:hidden p-2 -ml-2 text-slate-500 hover:text-slate-700 rounded-md"
+            <button
+              aria-label="Open navigation" aria-expanded={mobileMenuOpen} className="lg:hidden p-2 -ml-2 text-muted-foreground hover:text-foreground rounded-md"
               onClick={() => setMobileMenuOpen(true)}
             >
               <Menu className="h-6 w-6" />
             </button>
 
             {/* Global Search Button */}
-            <button 
-              onClick={onSearchClick}
-              className="hidden md:flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-500 rounded-lg max-w-md w-full transition-colors border border-transparent focus:border-indigo-500 outline-none"
+            <button
+              onClick={onSearchClick ?? (() => window.dispatchEvent(new Event('tecbunny:command-palette')))}
+              className="hidden md:flex items-center gap-2 px-4 py-2 bg-muted hover:bg-muted text-muted-foreground rounded-lg max-w-md w-full transition-colors border border-transparent focus:border-primary outline-none"
             >
               <Search className="h-4 w-4" />
-              <span className="text-sm">Search anywhere... (Cmd+K)</span>
+              <span className="text-sm">Find a workspace action · Ctrl/⌘ K</span>
             </button>
           </div>
 
           <div className="flex items-center gap-3 sm:gap-4">
             {/* AI Command Button */}
-            <button 
-              onClick={onAIClick}
+            <button
+              onClick={onAIClick ?? (() => window.dispatchEvent(new Event('tecbunny:workspace-help')))}
               className={cn(
                 "hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-all shadow-sm border",
-                "bg-gradient-to-r from-indigo-50 to-purple-50 text-indigo-700 border-indigo-100 hover:shadow-md hover:scale-105"
+                "bg-gradient-to-r from-primary/10 to-primary/10 text-primary border-primary/10 hover:shadow-md hover:scale-105"
               )}
             >
-              <Sparkles className="h-4 w-4 text-purple-500" />
-              AI Command
+              <Sparkles className="h-4 w-4 text-primary" />
+              Workspace help
             </button>
 
             {/* Notifications */}
-            <button className="p-2 text-slate-400 hover:text-slate-600 relative rounded-full hover:bg-slate-100">
-              <Bell className="h-5 w-5" />
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full ring-2 ring-white" />
-            </button>
+            <span className="sr-only">Notifications are not connected in this workspace.</span>
 
             {/* Profile Dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="flex items-center gap-2 p-1 pr-2 rounded-full hover:bg-slate-100 transition-colors">
+                <button aria-label="Open account menu" className="flex items-center gap-2 p-1 pr-2 rounded-full hover:bg-muted transition-colors">
                   <div className={cn("h-8 w-8 rounded-full flex items-center justify-center font-bold text-sm", colorMaps[appColor])}>
                     {user?.name?.[0] || user?.email?.[0] || 'U'}
                   </div>
                   <div className="hidden sm:block text-left text-sm leading-tight">
-                    <p className="font-medium text-slate-900">{user?.name || 'User'}</p>
-                    <p className="text-xs text-slate-500 capitalize">{user?.role}</p>
+                    <p className="font-medium text-foreground">{user?.name || 'User'}</p>
+                    <p className="text-xs text-muted-foreground capitalize">{user?.role}</p>
                   </div>
                 </button>
               </DropdownMenuTrigger>
@@ -196,7 +214,7 @@ export function GlobalShell({
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => router.push('/profile')}>Profile Settings</DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleLogout} className="text-red-600 focus:text-red-600">
+                <DropdownMenuItem onClick={handleLogout} className="text-destructive focus:text-destructive">
                   <LogOut className="h-4 w-4 mr-2" /> Sign out
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -205,7 +223,7 @@ export function GlobalShell({
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 overflow-y-auto bg-slate-50 relative">
+        <main id="main-content" tabIndex={-1} className="flex-1 overflow-y-auto bg-background relative">
           {children}
         </main>
       </div>

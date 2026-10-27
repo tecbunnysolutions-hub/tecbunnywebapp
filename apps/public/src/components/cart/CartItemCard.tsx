@@ -63,13 +63,13 @@ export function CartItemCard({ item }: CartItemCardProps) {
 
   return (
     <div
-      className={`p-2.5 rounded-md flex flex-col sm:flex-row items-center gap-3 group transition-colors border border-white/10 bg-white/5 ${
+      className={`p-2.5 rounded-md flex flex-col sm:flex-row items-center gap-3 group transition-colors border border-border/10 bg-card/5 ${
         isServiceItem
           ? 'border-l-2 border-primary bg-primary/10'
           : 'hover:border-primary/30'
       }`}
     >
-      <div className="w-full sm:w-16 h-16 bg-white/10 rounded-md flex items-center justify-center relative overflow-hidden p-1">
+      <div className="w-full sm:w-16 h-16 bg-card/10 rounded-md flex items-center justify-center relative overflow-hidden p-1">
         <Image
           src={imageSrc}
           alt={item.name}
@@ -85,19 +85,19 @@ export function CartItemCard({ item }: CartItemCardProps) {
         />
       </div>
       <div className="flex-1 text-center sm:text-left space-y-1">
-        <Link href={productHref} className="text-white font-semibold text-sm leading-snug hover:text-primary transition-colors line-clamp-2">
+        <Link href={productHref} className="text-foreground font-semibold text-sm leading-snug hover:text-primary transition-colors line-clamp-2">
           {item.name || 'Service Request'}
         </Link>
-        <p className="inline-flex items-center gap-1 text-[10px] text-slate-200 bg-white/10 px-2 py-[4px] rounded-full">
+        <p className="inline-flex items-center gap-1 text-[10px] text-muted-foreground bg-card/10 px-2 py-[4px] rounded-full">
           {item.category || 'Tecbunny Essentials'}
         </p>
         {!isServiceItem && typeof item.mrp === 'number' && item.mrp > unitPrice ? (
           <div className="space-y-0.5">
             <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
-              <span className="text-xs text-slate-500 line-through">MRP {formatCurrency(item.mrp)}</span>
+              <span className="text-xs text-muted-foreground line-through">MRP {formatCurrency(item.mrp)}</span>
               <span className="text-primary font-semibold text-sm">Sale {formatCurrency(unitPrice)}</span>
             </div>
-            <span className="block text-[10px] font-medium text-emerald-400">
+            <span className="block text-[10px] font-medium text-success">
               You save {formatCurrency(item.mrp - unitPrice)} per item
             </span>
           </div>
@@ -105,16 +105,16 @@ export function CartItemCard({ item }: CartItemCardProps) {
           <span className="block text-primary font-semibold text-sm">Sale {formatCurrency(unitPrice)}</span>
         )}
         {isServiceItem && (
-          <span className="mt-0.5 inline-flex text-[9px] uppercase font-bold text-slate-200 bg-primary/15 px-1.5 py-[3px] rounded">
+          <span className="mt-0.5 inline-flex text-[9px] uppercase font-bold text-muted-foreground bg-primary/15 px-1.5 py-[3px] rounded">
             Service Item
           </span>
         )}
       </div>
       <div className="flex items-center gap-3">
-        <div className="flex items-center border border-white/10 rounded-md">
+        <div className="flex items-center border border-border/10 rounded-md">
           <button
             type="button"
-            className="h-9 w-9 flex items-center justify-center rounded-md hover:bg-white/10 active:bg-white/20 text-slate-300 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
+            className="h-9 w-9 flex items-center justify-center rounded-md hover:bg-card/10 active:bg-card/20 text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
             onClick={() => handleQuantityChange(item.quantity - 1)}
             disabled={isServiceItem}
           >
@@ -126,11 +126,11 @@ export function CartItemCard({ item }: CartItemCardProps) {
             readOnly
             min={1}
             aria-label={`Quantity for ${item.name}`}
-            className="w-10 h-9 bg-transparent text-center text-white text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
+            className="w-10 h-9 bg-transparent text-center text-foreground text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
           />
           <button
             type="button"
-            className="h-9 w-9 flex items-center justify-center rounded-md hover:bg-white/10 active:bg-white/20 text-slate-300 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
+            className="h-9 w-9 flex items-center justify-center rounded-md hover:bg-card/10 active:bg-card/20 text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
             onClick={() => handleQuantityChange(item.quantity + 1)}
             disabled={isServiceItem}
           >
@@ -139,7 +139,7 @@ export function CartItemCard({ item }: CartItemCardProps) {
         </div>
         <button
           type="button"
-          className="min-h-9 min-w-9 px-2 text-slate-200 hover:text-red-400 active:text-red-300 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
+          className="min-h-9 min-w-9 px-2 text-muted-foreground hover:text-destructive active:text-destructive transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
           onClick={() => removeFromCart(item.id)}
         >
           <Trash2 className="h-4 w-4" />

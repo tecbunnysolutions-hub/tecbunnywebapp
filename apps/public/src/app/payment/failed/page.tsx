@@ -15,7 +15,7 @@ import { Button } from "@tecbunny/ui";
 function PaymentFailedContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  
+
   const orderId = searchParams.get('orderId');
   const reason = searchParams.get('reason');
 
@@ -24,7 +24,7 @@ function PaymentFailedContent() {
       <Card>
         <CardHeader className="text-center">
           <div className="mx-auto mb-4">
-            <XCircle className="h-16 w-16 text-red-500" />
+            <XCircle className="h-16 w-16 text-destructive" />
           </div>
           <CardTitle className="text-2xl">Payment Failed</CardTitle>
           <CardDescription>
@@ -33,8 +33,8 @@ function PaymentFailedContent() {
         </CardHeader>
         <CardContent className="space-y-6">
           {reason && (
-            <div className="bg-red-50 border border-red-200 p-4 rounded-lg">
-              <p className="text-sm text-red-800">
+            <div className="bg-destructive/10 border border-destructive/20 p-4 rounded-lg">
+              <p className="text-sm text-destructive">
                 <strong>Reason:</strong> {decodeURIComponent(reason)}
               </p>
             </div>
@@ -55,14 +55,14 @@ function PaymentFailedContent() {
           </div>
 
           <div className="flex gap-3">
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               className="flex-1"
               onClick={() => router.push('/contact')}
             >
               Contact Support
             </Button>
-            <Button 
+            <Button
               className="flex-1"
               onClick={() => router.push(`/checkout`)}
             >

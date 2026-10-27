@@ -1,9 +1,5 @@
-import { PageLoader } from '@tecbunny/admin-ui';
+import { RouteLoading } from '../../../../../packages/ui/src/components/RouteState';
 
-export default function ManagementLoading() {
-  return (
-    <div className="min-h-[60vh] flex items-center justify-center">
-      <PageLoader />
-    </div>
-  );
+export default function Loading() {
+  return <RouteLoading label="Loading your workspace…" />;
 }

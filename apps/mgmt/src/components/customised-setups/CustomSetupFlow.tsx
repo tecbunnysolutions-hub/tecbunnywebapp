@@ -248,14 +248,14 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
   const cardHeaderClassName = isTech ? 'text-foreground font-semibold' : undefined;
   const cardDescriptionClassName = isTech ? 'text-muted-foreground' : undefined;
   const inputClassName = isTech ? 'bg-muted/10 border-border text-foreground placeholder:text-muted-foreground' : undefined;
-  const selectTriggerClassName = isTech ? 'border-slate-700 bg-slate-950/95 text-slate-50' : undefined;
+  const selectTriggerClassName = isTech ? 'border-border bg-background/95 text-foreground' : undefined;
   const selectContentClassName = isTech
-    ? 'z-[80] border-slate-700 bg-slate-950 text-slate-50 shadow-2xl shadow-black/70'
+    ? 'z-[80] border-border bg-background text-foreground shadow-2xl shadow-black/70'
     : undefined;
   const selectItemClassName = isTech
-    ? 'min-h-12 items-start py-2.5 text-slate-50 focus:bg-cyan-500/15 focus:text-cyan-100 data-[highlighted]:bg-cyan-500/15 data-[highlighted]:text-cyan-100'
+    ? 'min-h-12 items-start py-2.5 text-foreground focus:bg-primary/15 focus:text-primary data-[highlighted]:bg-primary/15 data-[highlighted]:text-primary'
     : undefined;
-  const selectMutedClassName = isTech ? 'text-slate-300' : 'text-muted-foreground';
+  const selectMutedClassName = isTech ? 'text-muted-foreground' : 'text-muted-foreground';
 
   // Handle camera count input changes
   const handleCameraCountChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -900,7 +900,7 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
     <div className="space-y-6">
       <Card className={cardClassName}>
         <CardHeader className={cardHeaderClassName}>
-          <CardTitle className={isTech ? 'text-white' : undefined}>DVR & Power</CardTitle>
+          <CardTitle className={isTech ? 'text-foreground' : undefined}>DVR & Power</CardTitle>
           <CardDescription className={cardDescriptionClassName}>Auto-matched to the current camera count. You can upgrade to higher capacity if desired.</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4 md:grid-cols-2">
@@ -969,7 +969,7 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
 
       <Card className={cardClassName}>
         <CardHeader className={cardHeaderClassName}>
-          <CardTitle className={isTech ? 'text-white' : undefined}>Cameras & Cabling</CardTitle>
+          <CardTitle className={isTech ? 'text-foreground' : undefined}>Cameras & Cabling</CardTitle>
           <CardDescription className={cardDescriptionClassName}>Choose the megapixel rating and whether you need dual-light capability.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -1089,7 +1089,7 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
     <div className="space-y-6">
       <Card className={cardClassName}>
         <CardHeader className={cardHeaderClassName}>
-          <CardTitle className={isTech ? 'text-white' : undefined}>NVR & PoE Switching</CardTitle>
+          <CardTitle className={isTech ? 'text-foreground' : undefined}>NVR & PoE Switching</CardTitle>
           <CardDescription className={cardDescriptionClassName}>Auto-optimised for the camera count. Upgrade to higher tiers for expansion headroom.</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4 md:grid-cols-2">
@@ -1175,7 +1175,7 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
 
       <Card className={cardClassName}>
         <CardHeader className={cardHeaderClassName}>
-          <CardTitle className={isTech ? 'text-white' : undefined}>Cameras & Cabling</CardTitle>
+          <CardTitle className={isTech ? 'text-foreground' : undefined}>Cameras & Cabling</CardTitle>
           <CardDescription className={cardDescriptionClassName}>Pick your preferred megapixel profile and colour-at-night capability.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -1199,7 +1199,7 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
                   htmlFor="ip-res-4">
                   <div>
                     <span className="block font-medium">4 MP</span>
-                    <span className={cn('text-xs', isTech ? 'text-slate-400' : 'text-muted-foreground')}>Higher detail for wider coverage</span>
+                    <span className={cn('text-xs', isTech ? 'text-muted-foreground' : 'text-muted-foreground')}>Higher detail for wider coverage</span>
                   </div>
                   <RadioGroupItem value="4mp" id="ip-res-4" aria-label="Select 4 MP IP camera resolution" />
                 </Label>
@@ -1289,7 +1289,7 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
     <section className="space-y-8">
       <Card className={cardClassName}>
         <CardHeader className={cardHeaderClassName}>
-          <CardTitle className={isTech ? 'text-white' : undefined}>Configure your surveillance stack</CardTitle>
+          <CardTitle className={isTech ? 'text-foreground' : undefined}>Configure your surveillance stack</CardTitle>
           <CardDescription className={cardDescriptionClassName}>Adjust the camera count and component preferences to instantly preview bundled MRP and sale totals.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -1328,7 +1328,7 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
               placeholder="Enter number of cameras"
               className={inputClassName}
             />
-            <p className={cn('text-xs', isTech ? 'text-slate-400' : 'text-muted-foreground')}>Supported range: 1 to 32 cameras.</p>
+            <p className={cn('text-xs', isTech ? 'text-muted-foreground' : 'text-muted-foreground')}>Supported range: 1 to 32 cameras.</p>
           </div>
         </CardContent>
       </Card>
@@ -1337,7 +1337,7 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
 
       <Card className={cardClassName}>
         <CardHeader className={cardHeaderClassName}>
-          <CardTitle className={isTech ? 'text-white' : undefined}>Storage & Add-ons</CardTitle>
+          <CardTitle className={isTech ? 'text-foreground' : undefined}>Storage & Add-ons</CardTitle>
           <CardDescription className={cardDescriptionClassName}>Select the storage capacity and optional add-ons to complete your build.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -1369,11 +1369,11 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
             </CardHeader>
             <CardContent className="space-y-4">
               {/* Monitor Included Checkbox */}
-              <div className={cn('flex items-start gap-3 rounded-md border p-3', isTech && 'border-white/10 bg-white/5')}>
+              <div className={cn('flex items-start gap-3 rounded-md border p-3', isTech && 'border-border/10 bg-card/5')}>
                 <Checkbox id="monitor-included" checked={monitorIncluded} onCheckedChange={(checked) => setMonitorIncluded(Boolean(checked))} />
                 <div>
                   <Label htmlFor="monitor-included" className="text-sm font-semibold">Include Surveillance Monitor</Label>
-                  <p className={cn('text-xs', isTech ? 'text-slate-400' : 'text-muted-foreground')}>
+                  <p className={cn('text-xs', isTech ? 'text-muted-foreground' : 'text-muted-foreground')}>
                     Add a surveillance monitor to view your camera feeds on-site
                   </p>
                 </div>
@@ -1441,11 +1441,11 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
               )}
 
               {/* Spike Guard */}
-              <div className={cn('flex items-start gap-3 rounded-md border p-3', isTech && 'border-white/10 bg-white/5')}>
+              <div className={cn('flex items-start gap-3 rounded-md border p-3', isTech && 'border-border/10 bg-card/5')}>
                 <Checkbox id="spike-guard" checked={spikeGuardIncluded} onCheckedChange={(checked) => setSpikeGuardIncluded(Boolean(checked))} />
                 <div>
                   <Label htmlFor="spike-guard" className="text-sm font-semibold">{FALLBACK_SPIKE_GUARD_OPTION.label}</Label>
-                  <p className={cn('text-xs', isTech ? 'text-slate-400' : 'text-muted-foreground')}>
+                  <p className={cn('text-xs', isTech ? 'text-muted-foreground' : 'text-muted-foreground')}>
                     +{formatCurrency(resolveAccessoryPrice('spike-guard', FALLBACK_SPIKE_GUARD_OPTION.mrp ?? 0, FALLBACK_SPIKE_GUARD_OPTION.sale, accessoryPricing).sale)}
                   </p>
                 </div>
@@ -1524,15 +1524,15 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
       </Card>
 
       {activeOffer && (
-        <div className={cn("mb-6 rounded-xl overflow-hidden text-white shadow-xl", isTech ? "bg-gradient-to-r from-emerald-500/20 to-teal-600/20 border border-emerald-500/30" : "bg-gradient-to-r from-emerald-500 to-teal-600 shadow-emerald-500/20")}>
+        <div className={cn("mb-6 rounded-xl overflow-hidden text-foreground shadow-xl", isTech ? "bg-gradient-to-r from-success/20 to-success/20 border border-success/30" : "bg-gradient-to-r from-success to-success shadow-success/20")}>
           <div className="p-4 sm:p-6 relative">
             <div className="absolute top-0 right-0 p-4 opacity-20">
               <Sparkles className="w-16 h-16" />
             </div>
-            <h3 className={cn("text-xl font-bold mb-1", isTech && "text-emerald-400")}>{activeOffer.title}</h3>
-            <p className={cn("text-sm mb-4 max-w-lg", isTech ? "text-emerald-100/70" : "text-emerald-50")}>{activeOffer.description}</p>
-            <div className="inline-flex items-center bg-black/20 rounded-full px-4 py-1.5 text-sm font-semibold backdrop-blur-sm border border-white/10">
-              <span className="animate-pulse mr-2 w-2 h-2 rounded-full bg-red-400"></span>
+            <h3 className={cn("text-xl font-bold mb-1", isTech && "text-success")}>{activeOffer.title}</h3>
+            <p className={cn("text-sm mb-4 max-w-lg", isTech ? "text-success/70" : "text-success")}>{activeOffer.description}</p>
+            <div className="inline-flex items-center bg-overlay/20 rounded-full px-4 py-1.5 text-sm font-semibold backdrop-blur-sm border border-border/10">
+              <span className="animate-pulse mr-2 w-2 h-2 rounded-full bg-destructive text-destructive-foreground"></span>
               Offer Expires in {Math.max(0, Math.ceil((new Date(activeOffer.endDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)))} days
             </div>
           </div>
@@ -1541,50 +1541,50 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
 
       <Card className="border-primary/30 bg-primary/5">
         <CardHeader className={cardHeaderClassName}>
-          <CardTitle className={isTech ? 'text-white' : undefined}>Total investment preview</CardTitle>
+          <CardTitle className={isTech ? 'text-foreground' : undefined}>Total investment preview</CardTitle>
           <CardDescription className={cardDescriptionClassName}>Final proposal will reconfirm inventory and site dependencies before order.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <p className={cn('flex items-center justify-between text-sm font-bold', isTech ? 'text-slate-200' : 'text-foreground')}>
+            <p className={cn('flex items-center justify-between text-sm font-bold', isTech ? 'text-muted-foreground' : 'text-foreground')}>
               <span>1. {system === 'analog' ? 'Analog' : 'IP'} {cameraCount} Channel Complete Setup</span>
               <span className="flex flex-col items-end sm:flex-row sm:items-center gap-1 sm:gap-3">
-                <span className="text-xs text-muted-foreground line-through decoration-red-500/50">MRP: {formatCurrency(totals.system.mrp)}</span>
-                <span className="text-emerald-600 dark:text-emerald-400">Sale: {formatCurrency(totals.system.sale)}</span>
+                <span className="text-xs text-muted-foreground line-through decoration-destructive/50">MRP: {formatCurrency(totals.system.mrp)}</span>
+                <span className="text-success dark:text-success">Sale: {formatCurrency(totals.system.sale)}</span>
               </span>
             </p>
-            <ul className={cn('space-y-1 text-sm pl-4 leading-relaxed', isTech ? 'text-slate-400' : 'text-muted-foreground')}>
+            <ul className={cn('space-y-1 text-sm pl-4 leading-relaxed', isTech ? 'text-muted-foreground' : 'text-muted-foreground')}>
               {totals.system.breakdown.map((line) => (
                 <li key={line}>- {line}</li>
               ))}
             </ul>
           </div>
 
-          <div className={cn('grid gap-3 text-sm font-bold', isTech ? 'text-slate-300' : 'text-foreground')}>
+          <div className={cn('grid gap-3 text-sm font-bold', isTech ? 'text-muted-foreground' : 'text-foreground')}>
             <div className="flex items-center justify-between">
               <span>2. {totals.hdd.label}</span>
               <span className="flex flex-col items-end sm:flex-row sm:items-center gap-1 sm:gap-3">
-                <span className="text-xs text-muted-foreground line-through decoration-red-500/50">MRP: {formatCurrency(totals.hdd.mrp)}</span>
-                <span className="text-emerald-600 dark:text-emerald-400">Sale: {formatCurrency(totals.hdd.sale)}</span>
+                <span className="text-xs text-muted-foreground line-through decoration-destructive/50">MRP: {formatCurrency(totals.hdd.mrp)}</span>
+                <span className="text-success dark:text-success">Sale: {formatCurrency(totals.hdd.sale)}</span>
               </span>
             </div>
             <div className="flex items-center justify-between">
               <span>3. Monitor ({totals.monitor.included ? totals.monitor.label : 'Not included'})</span>
               {totals.monitor.included ? (
                 <span className="flex flex-col items-end sm:flex-row sm:items-center gap-1 sm:gap-3">
-                  <span className="text-xs text-muted-foreground line-through decoration-red-500/50">MRP: {formatCurrency(totals.monitor.mrp)}</span>
-                  <span className="text-emerald-600 dark:text-emerald-400">Sale: {formatCurrency(totals.monitor.sale)}</span>
+                  <span className="text-xs text-muted-foreground line-through decoration-destructive/50">MRP: {formatCurrency(totals.monitor.mrp)}</span>
+                  <span className="text-success dark:text-success">Sale: {formatCurrency(totals.monitor.sale)}</span>
                 </span>
               ) : (
-                <Badge variant="outline" className={isTech ? 'border-white/20 text-slate-300' : undefined}>Not included</Badge>
+                <Badge variant="outline" className={isTech ? 'border-border/20 text-muted-foreground' : undefined}>Not included</Badge>
               )}
             </div>
             {(totals.wallMount.included || totals.spikeGuard.included || totals.rack.selected || totals.conduit.selected) && (
               <div className="flex items-center justify-between">
                 <span>4. Accessories & Hardware</span>
                 <span className="flex flex-col items-end sm:flex-row sm:items-center gap-1 sm:gap-3">
-                  <span className="text-xs text-muted-foreground line-through decoration-red-500/50">MRP: {formatCurrency(totals.wallMount.mrp + totals.spikeGuard.mrp + totals.rack.mrp + totals.conduit.mrp)}</span>
-                  <span className="text-emerald-600 dark:text-emerald-400">Sale: {formatCurrency(totals.wallMount.sale + totals.spikeGuard.sale + totals.rack.sale + totals.conduit.sale)}</span>
+                  <span className="text-xs text-muted-foreground line-through decoration-destructive/50">MRP: {formatCurrency(totals.wallMount.mrp + totals.spikeGuard.mrp + totals.rack.mrp + totals.conduit.mrp)}</span>
+                  <span className="text-success dark:text-success">Sale: {formatCurrency(totals.wallMount.sale + totals.spikeGuard.sale + totals.rack.sale + totals.conduit.sale)}</span>
                 </span>
               </div>
             )}
@@ -1592,18 +1592,18 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
               <span>5. Installation & Cable Setup</span>
               {totals.installation.included ? (
                 <span className="flex flex-col items-end sm:flex-row sm:items-center gap-1 sm:gap-3">
-                  <span className="text-xs text-muted-foreground line-through decoration-red-500/50">MRP: {formatCurrency(totals.installation.mrp)}</span>
-                  <span className="text-emerald-600 dark:text-emerald-400">Sale: {formatCurrency(totals.installation.sale)}</span>
+                  <span className="text-xs text-muted-foreground line-through decoration-destructive/50">MRP: {formatCurrency(totals.installation.mrp)}</span>
+                  <span className="text-success dark:text-success">Sale: {formatCurrency(totals.installation.sale)}</span>
                 </span>
               ) : (
-                <Badge variant="outline" className={isTech ? 'border-white/20 text-slate-300' : undefined}>Not included</Badge>
+                <Badge variant="outline" className={isTech ? 'border-border/20 text-muted-foreground' : undefined}>Not included</Badge>
               )}
             </div>
 
           </div>
 
           {totals.appliedOffer && (
-            <div className={cn("flex flex-col sm:flex-row sm:items-center justify-between font-extrabold mt-4 p-3 rounded-md border", isTech ? "bg-emerald-950/30 text-emerald-400 border-emerald-900/50" : "bg-emerald-50 text-emerald-700 border-emerald-200")}>
+            <div className={cn("flex flex-col sm:flex-row sm:items-center justify-between font-extrabold mt-4 p-3 rounded-md border", isTech ? "bg-success/30 text-success border-success/50" : "bg-success/10 text-success border-success/20")}>
               <div className="flex items-center gap-2 mb-1 sm:mb-0">
                 <Sparkles className="w-4 h-4" />
                 <span>Special Offer Applied: {totals.appliedOffer.title}</span>
@@ -1622,37 +1622,37 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
             </div>
           )}
 
-          <div className={cn('rounded-lg p-4 text-sm shadow-inner', isTech ? 'bg-white/5 text-slate-200' : 'bg-white/70')}>
+          <div className={cn('rounded-lg p-4 text-sm shadow-inner', isTech ? 'bg-card/5 text-muted-foreground' : 'bg-card/70')}>
             {totals.appliedOffer && (
-              <p className={cn('flex items-center justify-between text-sm mb-1', isTech ? 'text-slate-400 line-through' : 'text-slate-500 line-through')}>
+              <p className={cn('flex items-center justify-between text-sm mb-1', isTech ? 'text-muted-foreground line-through' : 'text-muted-foreground line-through')}>
                 <span>Original Total</span>
                 <span>{formatCurrency(totals.appliedOffer.originalSale)}</span>
               </p>
             )}
-            <p className={cn('flex items-center justify-between text-base font-semibold', isTech ? 'text-white' : 'text-slate-900')}>
+            <p className={cn('flex items-center justify-between text-base font-semibold', isTech ? 'text-foreground' : 'text-foreground')}>
               <span>Sale Total</span>
               <span>{formatCurrency(totals.overall.sale)}</span>
             </p>
-            <p className={cn('flex items-center justify-between text-sm', isTech ? 'text-slate-400' : 'text-slate-600')}>
+            <p className={cn('flex items-center justify-between text-sm', isTech ? 'text-muted-foreground' : 'text-muted-foreground')}>
               <span>MRP Total</span>
               <span>{formatCurrency(totals.overall.mrp)}</span>
             </p>
-            <p className={cn('flex items-center justify-between text-sm', isTech ? 'text-emerald-300' : 'text-emerald-600')}>
+            <p className={cn('flex items-center justify-between text-sm', isTech ? 'text-success' : 'text-success')}>
               <span>Savings</span>
               <span>
                 {formatCurrency(totals.overall.discountAmount)} ({totals.overall.discountPercent >= 10 ? totals.overall.discountPercent.toFixed(0) : totals.overall.discountPercent.toFixed(1)}%)
               </span>
             </p>
-            <p className={cn('mt-3 border-t pt-2 text-[11px] leading-relaxed', isTech ? 'border-white/10 text-slate-400' : 'border-slate-200 text-slate-500')}>
+            <p className={cn('mt-3 border-t pt-2 text-[11px] leading-relaxed', isTech ? 'border-border/10 text-muted-foreground' : 'border-border text-muted-foreground')}>
               Calculation terms: cable run is estimated at ~25m per camera and billed in full roll/box units shown per cable option above (partial requirements always round up to the next full unit, e.g. 125m needed rounds up to 200m billed). Camera, cable, and accessory quantities update instantly as you change selections. Prices are indicative; final cost is confirmed after a site survey.
             </p>
             <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-              <span className={cn('text-xs', isTech ? 'text-slate-300' : 'text-slate-600')}>Download this estimate or proceed to book your setup.</span>
+              <span className={cn('text-xs', isTech ? 'text-muted-foreground' : 'text-muted-foreground')}>Download this estimate or proceed to book your setup.</span>
               <div className="flex gap-2 flex-wrap justify-end">
                 <Button
                   size="sm"
                   variant="outline"
-                  className={isTech ? "border-amber-500/50 text-amber-400 hover:bg-amber-500/10" : "text-amber-600 border-amber-200"}
+                  className={isTech ? "border-warning/50 text-warning hover:bg-warning/10" : "text-warning border-warning/20"}
                   onClick={() => setIsBidding(true)}
                 >
                   Negotiate Price
@@ -1680,18 +1680,18 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
       </Card>
 
       {/* 3. SHARE-FOR-DISCOUNT CONVERSION BOOSTER */}
-      <Card className="mt-8 border-yellow-500/30 bg-yellow-500/5 backdrop-blur-md overflow-hidden relative group">
+      <Card className="mt-8 border-warning/30 bg-warning/5 backdrop-blur-md overflow-hidden relative group">
         <div className="absolute top-0 right-0 p-2 opacity-20 group-hover:rotate-12 transition-transform">
-          <Share2 className="w-12 h-12 text-yellow-500" />
+          <Share2 className="w-12 h-12 text-warning" />
         </div>
         <CardContent className="p-6 relative z-10">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex-1">
-              <h4 className="text-lg font-bold text-white flex items-center gap-2">
-                <Sparkles className="h-5 w-5 text-yellow-400" /> Share & Unlock 10% Off
+              <h4 className="text-lg font-bold text-foreground flex items-center gap-2">
+                <Sparkles className="h-5 w-5 text-warning" /> Share & Unlock 10% Off
               </h4>
-              <p className="text-sm text-slate-400 mt-1 leading-relaxed">
-                Publish your technical blueprint to our public explorer and share it with your network to receive an instant <span className="text-yellow-400 font-bold">10% discount</span> on this setup.
+              <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
+                Publish your technical blueprint to our public explorer and share it with your network to receive an instant <span className="text-warning font-bold">10% discount</span> on this setup.
               </p>
             </div>
             <div className="flex flex-wrap gap-3">
@@ -1730,7 +1730,7 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
                     console.error('Viral trigger failed', err);
                   }
                 }}
-                className="bg-yellow-500 hover:bg-yellow-400 text-slate-950 font-bold h-12 px-6 rounded-xl shadow-lg shadow-yellow-500/20"
+                className="bg-warning hover:bg-warning text-warning-foreground font-bold h-12 px-6 rounded-xl shadow-lg shadow-warning/20"
               >
                 Publish & Share <Share2 className="ml-2 h-4 w-4" />
               </Button>
@@ -1740,71 +1740,71 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
       </Card>
 
       {isBidding && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-          <div className="bg-[#030712] border border-amber-500/30 rounded-xl max-w-md w-full p-6 shadow-2xl relative">
-            <h3 className="text-xl font-bold text-white mb-2">Request Revised Price</h3>
-            <p className="text-sm text-slate-400 mb-6">Enter your details and bid a price for this custom setup. Our team will review and respond shortly.</p>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-overlay/80 backdrop-blur-sm p-4">
+          <div className="bg-card border border-warning/30 rounded-xl max-w-md w-full p-6 shadow-2xl relative">
+            <h3 className="text-xl font-bold text-foreground mb-2">Request Revised Price</h3>
+            <p className="text-sm text-muted-foreground mb-6">Enter your details and bid a price for this custom setup. Our team will review and respond shortly.</p>
 
             <div className="space-y-4">
               <div>
-                <Label className="text-slate-300">Name</Label>
-                <Input value={bidForm.name} onChange={e => setBidForm({...bidForm, name: e.target.value})} className="bg-white/5 border-white/10" placeholder="John Doe" />
+                <Label className="text-muted-foreground">Name</Label>
+                <Input value={bidForm.name} onChange={e => setBidForm({...bidForm, name: e.target.value})} className="bg-card/5 border-border/10" placeholder="John Doe" />
               </div>
               <div>
-                <Label className="text-slate-300">Phone Number</Label>
-                <Input value={bidForm.phone} onChange={e => setBidForm({...bidForm, phone: e.target.value})} className="bg-white/5 border-white/10" placeholder="+91 9876543210" />
+                <Label className="text-muted-foreground">Phone Number</Label>
+                <Input value={bidForm.phone} onChange={e => setBidForm({...bidForm, phone: e.target.value})} className="bg-card/5 border-border/10" placeholder="+91 9876543210" />
               </div>
               <div>
-                <Label className="text-slate-300">Email Address (Optional)</Label>
-                <Input value={bidForm.email} onChange={e => setBidForm({...bidForm, email: e.target.value})} className="bg-white/5 border-white/10" placeholder="john@example.com" />
+                <Label className="text-muted-foreground">Email Address (Optional)</Label>
+                <Input value={bidForm.email} onChange={e => setBidForm({...bidForm, email: e.target.value})} className="bg-card/5 border-border/10" placeholder="john@example.com" />
               </div>
               <div>
-                <Label className="text-slate-300">Installation Address</Label>
-                <Input value={bidForm.address} onChange={e => setBidForm({...bidForm, address: e.target.value})} className="bg-white/5 border-white/10" placeholder="City, Area" />
+                <Label className="text-muted-foreground">Installation Address</Label>
+                <Input value={bidForm.address} onChange={e => setBidForm({...bidForm, address: e.target.value})} className="bg-card/5 border-border/10" placeholder="City, Area" />
               </div>
               <div>
-                <Label className="text-amber-400 font-bold">Your Bid Price (₹)</Label>
-                <Input type="number" value={bidForm.price} onChange={e => setBidForm({...bidForm, price: e.target.value})} className="bg-amber-500/10 border-amber-500/30 text-amber-100 placeholder:text-amber-500/30" placeholder={`E.g. ${Math.round(totals.overall.sale * 0.9)}`} />
-                <p className="text-xs text-slate-500 mt-1">Current total: {formatCurrency(totals.overall.sale)}</p>
+                <Label className="text-warning font-bold">Your Bid Price (₹)</Label>
+                <Input type="number" value={bidForm.price} onChange={e => setBidForm({...bidForm, price: e.target.value})} className="bg-warning/10 border-warning/30 text-warning placeholder:text-warning/30" placeholder={`E.g. ${Math.round(totals.overall.sale * 0.9)}`} />
+                <p className="text-xs text-muted-foreground mt-1">Current total: {formatCurrency(totals.overall.sale)}</p>
               </div>
             </div>
 
             <div className="flex gap-3 justify-end mt-8">
-              <Button variant="ghost" onClick={() => setIsBidding(false)} className="text-slate-400 hover:text-white">Cancel</Button>
-              <Button onClick={handleSubmitBid} className="bg-amber-500 hover:bg-amber-400 text-slate-900 font-bold">Submit Bid</Button>
+              <Button variant="ghost" onClick={() => setIsBidding(false)} className="text-muted-foreground hover:text-foreground">Cancel</Button>
+              <Button onClick={handleSubmitBid} className="bg-warning hover:bg-warning text-warning-foreground font-bold">Submit Bid</Button>
             </div>
           </div>
         </div>
       )}
 
       {isDownloadModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-          <div className="bg-[#030712] border border-amber-500/30 rounded-xl max-w-md w-full p-6 shadow-2xl relative">
-            <h3 className="text-xl font-bold text-white mb-2">Download Quote</h3>
-            <p className="text-sm text-slate-400 mb-6">Please provide your details to download the PDF quote.</p>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-overlay/80 backdrop-blur-sm p-4">
+          <div className="bg-card border border-warning/30 rounded-xl max-w-md w-full p-6 shadow-2xl relative">
+            <h3 className="text-xl font-bold text-foreground mb-2">Download Quote</h3>
+            <p className="text-sm text-muted-foreground mb-6">Please provide your details to download the PDF quote.</p>
 
             <div className="space-y-4">
               <div>
-                <Label className="text-slate-300">Name</Label>
-                <Input value={anonForm.name} onChange={e => setAnonForm({...anonForm, name: e.target.value})} className="bg-white/5 border-white/10" placeholder="John Doe" />
+                <Label className="text-muted-foreground">Name</Label>
+                <Input value={anonForm.name} onChange={e => setAnonForm({...anonForm, name: e.target.value})} className="bg-card/5 border-border/10" placeholder="John Doe" />
               </div>
               <div>
-                <Label className="text-slate-300">Mobile Number</Label>
-                <Input value={anonForm.phone} onChange={e => setAnonForm({...anonForm, phone: e.target.value})} className="bg-white/5 border-white/10" placeholder="+91 9876543210" />
+                <Label className="text-muted-foreground">Mobile Number</Label>
+                <Input value={anonForm.phone} onChange={e => setAnonForm({...anonForm, phone: e.target.value})} className="bg-card/5 border-border/10" placeholder="+91 9876543210" />
               </div>
               <div>
-                <Label className="text-slate-300">City / Area</Label>
-                <Input value={anonForm.address} onChange={e => setAnonForm({...anonForm, address: e.target.value})} className="bg-white/5 border-white/10" placeholder="Mumbai, Area" />
+                <Label className="text-muted-foreground">City / Area</Label>
+                <Input value={anonForm.address} onChange={e => setAnonForm({...anonForm, address: e.target.value})} className="bg-card/5 border-border/10" placeholder="Mumbai, Area" />
               </div>
               <div>
-                <Label className="text-slate-300">Email Address (Optional)</Label>
-                <Input value={anonForm.email} onChange={e => setAnonForm({...anonForm, email: e.target.value})} className="bg-white/5 border-white/10" placeholder="john@example.com" />
+                <Label className="text-muted-foreground">Email Address (Optional)</Label>
+                <Input value={anonForm.email} onChange={e => setAnonForm({...anonForm, email: e.target.value})} className="bg-card/5 border-border/10" placeholder="john@example.com" />
               </div>
             </div>
 
             <div className="flex gap-3 justify-end mt-8">
-              <Button variant="ghost" onClick={() => setIsDownloadModalOpen(false)} className="text-slate-400 hover:text-white">Cancel</Button>
-              <Button onClick={handleInlineQuoteDownloadAnon} disabled={quoteDownloading} className="bg-amber-500 hover:bg-amber-400 text-slate-900 font-bold">
+              <Button variant="ghost" onClick={() => setIsDownloadModalOpen(false)} className="text-muted-foreground hover:text-foreground">Cancel</Button>
+              <Button onClick={handleInlineQuoteDownloadAnon} disabled={quoteDownloading} className="bg-warning hover:bg-warning text-warning-foreground font-bold">
                 {quoteDownloading ? 'Preparing...' : 'Download PDF'}
               </Button>
             </div>
@@ -1817,16 +1817,16 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
   );
 
   const techLayout = (
-    <section className="blueprint-bg bg-[#050b14] py-10">
+    <section className="blueprint-bg bg-card py-10">
 
 
       <div className="flex items-center justify-center mb-12">
         <div className="flex items-center">
-          <div className="step-circle active w-8 h-8 rounded-full border-2 border-white/20 flex items-center justify-center font-bold text-sm bg-[#030712] transition-colors">1</div>
-          <div className="step-line active w-16 h-1 bg-white/10 transition-colors"></div>
-          <div className="step-circle w-8 h-8 rounded-full border-2 border-white/20 flex items-center justify-center font-bold text-sm text-slate-500 bg-[#030712] transition-colors">2</div>
-          <div className="step-line w-16 h-1 bg-white/10 transition-colors"></div>
-          <div className="step-circle w-8 h-8 rounded-full border-2 border-white/20 flex items-center justify-center font-bold text-sm text-slate-500 bg-[#030712] transition-colors">3</div>
+          <div className="step-circle active w-8 h-8 rounded-full border-2 border-border/20 flex items-center justify-center font-bold text-sm bg-card transition-colors">1</div>
+          <div className="step-line active w-16 h-1 bg-card/10 transition-colors"></div>
+          <div className="step-circle w-8 h-8 rounded-full border-2 border-border/20 flex items-center justify-center font-bold text-sm text-muted-foreground bg-card transition-colors">2</div>
+          <div className="step-line w-16 h-1 bg-card/10 transition-colors"></div>
+          <div className="step-circle w-8 h-8 rounded-full border-2 border-border/20 flex items-center justify-center font-bold text-sm text-muted-foreground bg-card transition-colors">3</div>
         </div>
       </div>
 
@@ -1834,7 +1834,7 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
         <div className="lg:col-span-2 space-y-8">
           <Card className={cardClassName}>
             <CardHeader className={cardHeaderClassName}>
-              <CardTitle className="text-white">Select Premises Type</CardTitle>
+              <CardTitle className="text-foreground">Select Premises Type</CardTitle>
               <CardDescription className={cardDescriptionClassName}>Choose the environment that best matches your site.</CardDescription>
             </CardHeader>
             <CardContent>
@@ -1903,7 +1903,7 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
                 {alarmEnabled && (
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Defense</span>
-                    <span className="text-amber-500 font-semibold text-right">Active</span>
+                    <span className="text-warning font-semibold text-right">Active</span>
                   </div>
                 )}
               </div>
@@ -1918,8 +1918,8 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
               </div>
 
               <div className="mt-6 flex gap-2 items-center">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                <span className="text-xs text-emerald-500 font-bold">SYSTEM COMPATIBLE</span>
+                <span className="w-2 h-2 rounded-full bg-success animate-pulse text-success-foreground"></span>
+                <span className="text-xs text-success font-bold">SYSTEM COMPATIBLE</span>
               </div>
 
               <div className="mt-6 pt-4 border-t border-border">
@@ -1930,26 +1930,26 @@ export function CustomSetupFlow({ blueprint, variant = 'default' }: CustomSetupF
                 <div className="flex flex-col gap-2">
                   <Button
                     onClick={handleBookNow}
-                    className="w-full bg-primary hover:bg-primary/90 text-white font-bold uppercase tracking-wider"
+                    className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold uppercase tracking-wider"
                   >
                     Book Installation
                   </Button>
                   <Button
                     onClick={() => setIsBidding(true)}
                     variant="outline"
-                    className="w-full border-amber-500/30 text-amber-500 hover:bg-amber-500/10 font-bold uppercase tracking-wider"
+                    className="w-full border-warning/30 text-warning hover:bg-warning/10 font-bold uppercase tracking-wider"
                   >
                     Negotiate Price
                   </Button>
                   <Button
                     onClick={handleBookSiteInspection}
                     variant="secondary"
-                    className="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold uppercase tracking-wider border border-slate-600"
+                    className="w-full bg-card hover:bg-secondary text-muted-foreground font-bold uppercase tracking-wider border border-border"
                   >
                     Book Site Inspection (₹999)
                   </Button>
                   <div className="text-[10px] text-muted-foreground text-center mt-1 leading-tight space-y-1">
-                    <p className="font-semibold text-amber-500/80">⚠️ Ensure to generate quote and negotiate before booking site visit.</p>
+                    <p className="font-semibold text-warning/80">⚠️ Ensure to generate quote and negotiate before booking site visit.</p>
                     <p>* ₹999/- will be adjusted on your bill if order is confirmed. The ₹999 is treated as the Visiting Charge; cancellation due to high prices will NOT be refunded.</p>
                   </div>
                 </div>

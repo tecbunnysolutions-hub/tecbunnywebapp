@@ -326,7 +326,7 @@ export default function CustomSetupOffersManager() {
                 <TableRow key={offer.id}>
                   <TableCell className="font-medium">{offer.title}</TableCell>
                   <TableCell>
-                    <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200">
+                    <Badge variant="outline" className="bg-success/10 text-success border-success/20">
                       {offer.offer_type.replace('_', ' ')} {offer.offer_value && `(${offer.offer_value})`}
                     </Badge>
                   </TableCell>

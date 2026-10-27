@@ -11,7 +11,7 @@ export default function AccountsDashboard() {
     const { user } = useAuth();
     const { toast } = useToast();
     const supabase = React.useMemo(() => createClient(), []);
-    
+
     const [stats, setStats] = React.useState({
         totalRevenue: 0,
         pendingPayments: 0,
@@ -61,7 +61,7 @@ export default function AccountsDashboard() {
                 pendingPayments,
                 invoicesGenerated: revenueRes.data?.length || 0,
             });
-            
+
             setRecentInvoices((recentRes.data as Order[]) || []);
         } catch (error) {
             console.error('Failed to load accounts metrics', error);
@@ -90,10 +90,10 @@ export default function AccountsDashboard() {
                 </div>
                 <div className="flex items-center gap-2 mt-2 md:mt-0 animate-fade-in">
                     <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-muted px-3 py-1 text-[11px] font-medium text-foreground">
-                        <span className="h-1.5 w-1.5 rounded-full bg-blue-500 animate-pulse" />
+                        <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse text-primary-foreground" />
                         {user?.name || user?.email}
                     </span>
-                    <span className="rounded-md bg-blue-500/10 border border-blue-500/20 px-2 py-0.5 text-[9px] font-mono font-bold uppercase tracking-wider text-blue-500">
+                    <span className="rounded-md bg-primary/10 border border-primary/20 px-2 py-0.5 text-[9px] font-mono font-bold uppercase tracking-wider text-primary">
                         Finance
                     </span>
                 </div>
@@ -104,7 +104,7 @@ export default function AccountsDashboard() {
                     <div className="flex items-center justify-between">
                         <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Monthly Revenue</span>
                         <div className="rounded-lg bg-muted p-2 text-muted-foreground border border-border">
-                            <IndianRupee className="h-4 w-4 text-emerald-500" />
+                            <IndianRupee className="h-4 w-4 text-success" />
                         </div>
                     </div>
                     <div className="mt-4">
@@ -121,10 +121,10 @@ export default function AccountsDashboard() {
                     </div>
                 </div>
 
-                <div className="bento-card p-4 sm:p-6 border-amber-500/20">
+                <div className="bento-card p-4 sm:p-6 border-warning/20">
                     <div className="flex items-center justify-between">
-                        <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider text-amber-500">Outstanding Payments</span>
-                        <div className="rounded-lg bg-amber-500/10 p-2 text-amber-500 border border-amber-500/20">
+                        <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider text-warning">Outstanding Payments</span>
+                        <div className="rounded-lg bg-warning/10 p-2 text-warning border border-warning/20">
                             <TrendingDown className="h-4 w-4" />
                         </div>
                     </div>
@@ -133,10 +133,10 @@ export default function AccountsDashboard() {
                             <Skeleton className="h-8 w-28 bg-muted" />
                         ) : (
                             <div>
-                                <div className="text-2xl font-bold tracking-tight text-amber-500 tech-heading">
+                                <div className="text-2xl font-bold tracking-tight text-warning tech-heading">
                                     ₹{stats.pendingPayments.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                 </div>
-                                <p className="mt-1 text-[10px] text-amber-500/70 font-light">Total pending collection</p>
+                                <p className="mt-1 text-[10px] text-warning/70 font-light">Total pending collection</p>
                             </div>
                         )}
                     </div>
@@ -146,7 +146,7 @@ export default function AccountsDashboard() {
                     <div className="flex items-center justify-between">
                         <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Invoices Generated</span>
                         <div className="rounded-lg bg-muted p-2 text-muted-foreground border border-border">
-                            <FileText className="h-4 w-4 text-blue-500" />
+                            <FileText className="h-4 w-4 text-primary" />
                         </div>
                     </div>
                     <div className="mt-4">
@@ -172,14 +172,14 @@ export default function AccountsDashboard() {
                     </div>
                     <div className="flex gap-2">
                         <span className="flex items-center gap-1.5 text-xs text-muted-foreground font-mono bg-muted/50 px-2 py-1 rounded-md border border-border">
-                            <Clock className="w-3 h-3 text-amber-500" /> Pending
+                            <Clock className="w-3 h-3 text-warning" /> Pending
                         </span>
                         <span className="flex items-center gap-1.5 text-xs text-muted-foreground font-mono bg-muted/50 px-2 py-1 rounded-md border border-border">
-                            <CheckCircle2 className="w-3 h-3 text-emerald-500" /> Confirmed
+                            <CheckCircle2 className="w-3 h-3 text-success" /> Confirmed
                         </span>
                     </div>
                 </div>
-                
+
                 <div className="p-4 sm:p-6">
                     {loading ? (
                         <div className="space-y-4">
@@ -204,7 +204,7 @@ export default function AccountsDashboard() {
                                 <tbody className="divide-y divide-border">
                                     {recentInvoices.map((invoice) => {
                                         const isPaid = invoice.payment_status === 'Paid' || invoice.payment_status === 'Success';
-                                        
+
                                         return (
                                             <tr key={invoice.id} className="hover:bg-muted/20 transition-colors">
                                                 <td className="py-4">
@@ -219,7 +219,7 @@ export default function AccountsDashboard() {
                                                     {new Date(invoice.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                                                 </td>
                                                 <td className="py-4">
-                                                    <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-medium tracking-wide ${isPaid ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' : 'bg-amber-500/10 text-amber-500 border-amber-500/20'}`}>
+                                                    <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-medium tracking-wide ${isPaid ? 'bg-success/10 text-success border-success/20' : 'bg-warning/10 text-warning border-warning/20'}`}>
                                                         {invoice.payment_status || 'Pending'}
                                                     </span>
                                                 </td>

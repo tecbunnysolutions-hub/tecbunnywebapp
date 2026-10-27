@@ -16,8 +16,8 @@ export const metadata: Metadata = {
 export default function Checkout() {
   return (
     <Suspense fallback={
-      <div className="flex min-h-screen items-center justify-center bg-[#030712] text-slate-300">
-        <div className="text-slate-400">Loading checkout...</div>
+      <div className="flex min-h-screen items-center justify-center bg-card text-muted-foreground">
+        <div className="text-muted-foreground">Loading checkout...</div>
       </div>
     }>
       <CheckoutPage />

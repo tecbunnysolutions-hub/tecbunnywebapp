@@ -199,14 +199,14 @@ export default function AdminQuotesPage() {
                     </TableCell>
                     <TableCell className="text-sm">{quote.customer_phone}</TableCell>
                     <TableCell className="text-sm">₹{Math.round(quote.selections?.totals?.sale || quote.selections?.totals?.overall?.sale || 0).toLocaleString()}</TableCell>
-                    <TableCell className="text-sm font-semibold text-amber-500">{quote.bidded_price ? `₹${Math.round(quote.bidded_price).toLocaleString()}` : '-'}</TableCell>
+                    <TableCell className="text-sm font-semibold text-warning">{quote.bidded_price ? `₹${Math.round(quote.bidded_price).toLocaleString()}` : '-'}</TableCell>
                     <TableCell>
                       <Badge className={
-                        quote.status === 'created' ? 'bg-blue-500/20 text-blue-500 dark:text-blue-300 border-blue-500/30' :
-                        quote.status === 'bidded' ? 'bg-amber-500/20 text-amber-600 dark:text-amber-300 border-amber-500/30' :
-                        quote.status === 'accepted' ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 border-emerald-500/30' :
-                        quote.status === 'countered' ? 'bg-purple-500/20 text-purple-600 dark:text-purple-300 border-purple-500/30' :
-                        'bg-red-500/20 text-red-600 dark:text-red-300 border-red-500/30'
+                        quote.status === 'created' ? 'bg-primary/20 text-primary dark:text-primary border-primary/30' :
+                        quote.status === 'bidded' ? 'bg-warning/20 text-warning dark:text-warning border-warning/30' :
+                        quote.status === 'accepted' ? 'bg-success/20 text-success dark:text-success border-success/30' :
+                        quote.status === 'countered' ? 'bg-primary/20 text-primary dark:text-primary border-primary/30' :
+                        'bg-destructive/20 text-destructive dark:text-destructive border-destructive/30'
                       } variant="outline">{quote.status}</Badge>
                     </TableCell>
                     <TableCell className="text-right">
@@ -237,7 +237,7 @@ export default function AdminQuotesPage() {
                               setClauses(quote.negotiation_clauses || '60% advance payment required');
                               setShowAdvanceModal(true);
                             }}
-                            className="text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10"
+                            className="text-success dark:text-success hover:bg-success/10"
                           >
                             <CreditCard className="h-4 w-4 mr-1" /> Advance Payment
                           </Button>
@@ -299,9 +299,9 @@ export default function AdminQuotesPage() {
                   <p className="text-xs text-muted-foreground mb-1">Original Quote Total</p>
                   <p className="text-2xl font-bold text-foreground">₹{Math.round(selectedQuote.selections?.totals?.sale || selectedQuote.selections?.totals?.overall?.sale || 0).toLocaleString()}</p>
                 </div>
-                <div className="bg-amber-500/10 p-4 rounded-lg border border-amber-500/30">
-                  <p className="text-xs text-amber-600 dark:text-amber-400 mb-1">Customer's Bid</p>
-                  <p className="text-2xl font-bold text-amber-500 dark:text-amber-300">₹{Math.round(selectedQuote.bidded_price || 0).toLocaleString()}</p>
+                <div className="bg-warning/10 p-4 rounded-lg border border-warning/30">
+                  <p className="text-xs text-warning dark:text-warning mb-1">Customer's Bid</p>
+                  <p className="text-2xl font-bold text-warning dark:text-warning">₹{Math.round(selectedQuote.bidded_price || 0).toLocaleString()}</p>
                 </div>
               </div>
 
@@ -350,7 +350,7 @@ export default function AdminQuotesPage() {
                 <Button
                   onClick={() => handleRespond('approve')}
                   disabled={respondLoading || counterPrice !== ''}
-                  className="bg-emerald-600 hover:bg-emerald-700 text-white gap-2 border-0"
+                  className="bg-success hover:bg-success text-success-foreground gap-2 border-0"
                 >
                   <Check className="h-4 w-4" /> {respondLoading ? 'Approving...' : 'Approve'}
                 </Button>
@@ -379,9 +379,9 @@ export default function AdminQuotesPage() {
                   <p className="text-xs text-muted-foreground mb-1">Total Amount</p>
                   <p className="text-2xl font-bold text-foreground">₹{Math.round(selectedQuote.counter_price || selectedQuote.bidded_price || selectedQuote.selections?.totals?.sale || selectedQuote.selections?.totals?.overall?.sale || 0).toLocaleString()}</p>
                 </div>
-                <div className="bg-emerald-500/10 p-4 rounded-lg border border-emerald-500/30">
-                  <p className="text-xs text-emerald-600 dark:text-emerald-400 mb-1">Balance Due</p>
-                  <p className="text-2xl font-bold text-emerald-500 dark:text-emerald-300">₹{Math.round((selectedQuote.counter_price || selectedQuote.bidded_price || selectedQuote.selections?.totals?.sale || selectedQuote.selections?.totals?.overall?.sale || 0) - Number(advanceAmount || 0)).toLocaleString()}</p>
+                <div className="bg-success/10 p-4 rounded-lg border border-success/30">
+                  <p className="text-xs text-success dark:text-success mb-1">Balance Due</p>
+                  <p className="text-2xl font-bold text-success dark:text-success">₹{Math.round((selectedQuote.counter_price || selectedQuote.bidded_price || selectedQuote.selections?.totals?.sale || selectedQuote.selections?.totals?.overall?.sale || 0) - Number(advanceAmount || 0)).toLocaleString()}</p>
                 </div>
               </div>
 
@@ -442,7 +442,7 @@ export default function AdminQuotesPage() {
                 <Button
                   onClick={handleSetAdvancePayment}
                   disabled={advanceLoading || !advanceAmount}
-                  className="bg-emerald-600 hover:bg-emerald-700 text-white gap-2 border-0"
+                  className="bg-success hover:bg-success text-success-foreground gap-2 border-0"
                 >
                   <CreditCard className="h-4 w-4" /> {advanceLoading ? 'Setting...' : 'Set & Notify'}
                 </Button>

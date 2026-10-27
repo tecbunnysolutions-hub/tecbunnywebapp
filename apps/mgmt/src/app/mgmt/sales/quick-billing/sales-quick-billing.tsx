@@ -113,7 +113,7 @@ export default function QuickBillingPage() {
 
     const handleCustomerCreated = async (newCustomerData: { name: string; mobile: string; email?: string; gstin?: string }) => {
         const { data, error } = await supabase.from('profiles').insert({ ...newCustomerData, role: 'customer' }).select().single();
-        
+
         if (error || !data) {
             toast({ variant: 'destructive', title: 'Failed to create customer', description: error?.message });
             return;
@@ -124,17 +124,17 @@ export default function QuickBillingPage() {
         setSearchMobile(newCustomer.mobile);
         toast({ title: 'Customer Created', description: `Customer ${newCustomer.name} has been added.` });
     };
-    
+
     const addToCart = (product: Product, quantity = 1, serialNumbers?: string[]) => {
        if (product.isSerialNumberCompulsory && !serialNumbers) {
            setProductForSerial(product);
            return;
        }
-       
+
        // Calculate GST rate based on category
        const gstRate = getGstRateForProduct(product, categoryGstRates || undefined);
        const productWithGst = { ...product, gstRate };
-       
+
        setCart((prevCart) => {
         const existingItem = prevCart.find((item) => item.id === product.id);
         if (existingItem) {
@@ -151,7 +151,7 @@ export default function QuickBillingPage() {
         });
         toast({ title: 'Added to cart', description: `${product.name} was added.`});
     };
-    
+
     const updateQuantity = (productId: string, newQuantity: number) => {
         if (newQuantity < 1) {
             setCart(prev => prev.filter(item => item.id !== productId));
@@ -173,7 +173,7 @@ export default function QuickBillingPage() {
         addToCart(product, serials.length, serials);
         setProductForSerial(null);
     }
-    
+
     const handleProcessPayment = async () => {
         if (!customer || !paymentMethod || cart.length === 0 || !staffUser) return;
 
@@ -185,9 +185,9 @@ export default function QuickBillingPage() {
             gst_amount: gstAmount,
             total: cartTotal,
             type: 'Pickup',
-            items: cart.map(item => ({ 
-                productId: item.id, 
-                quantity: item.quantity, 
+            items: cart.map(item => ({
+                productId: item.id,
+                quantity: item.quantity,
                 price: item.price,
                 gstRate: item.gstRate,
                 hsnCode: item.hsnCode,
@@ -222,7 +222,7 @@ export default function QuickBillingPage() {
                 toast({ variant: 'destructive', title: 'Inventory Error', description: `Failed to update stock for ${cartItem.name}. Please check inventory.` });
             }
         }
-        
+
         setCompletedOrder(newOrder as Order);
         toast({ title: 'Payment Processed', description: `Paid via ${paymentMethod}. Invoice generated.`});
     };
@@ -262,8 +262,8 @@ export default function QuickBillingPage() {
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <div className="flex gap-2">
-                                <Input 
-                                    placeholder="Enter customer mobile number..." 
+                                <Input
+                                    placeholder="Enter customer mobile number..."
                                     value={searchMobile}
                                     onChange={(e) => setSearchMobile(e.target.value)}
                                     onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
@@ -298,7 +298,7 @@ export default function QuickBillingPage() {
                                     <div key={product.id} className="flex items-center justify-between p-2 rounded-lg hover:bg-muted">
                                         <div className="flex items-center gap-4">
                                                                                         {product.image ? (
-                                              <Image 
+                                              <Image
                                                 src={product.image}
                                                 alt={product.name}
                                                 width={40}
@@ -307,14 +307,14 @@ export default function QuickBillingPage() {
                                                 data-ai-hint={product.category}
                                               />
                                             ) : (
-                                              <div className="w-10 h-10 rounded-md bg-gray-200 flex items-center justify-center text-gray-600 font-semibold text-sm">
+                                              <div className="w-10 h-10 rounded-md bg-muted flex items-center justify-center text-muted-foreground font-semibold text-sm">
                                                                                                 {(product.name?.charAt(0) ?? '?').toUpperCase()}
                                               </div>
                                             )}
                                             <div>
                                                 <p className="font-medium">{product.name}</p>
                                                 <p className="text-sm text-muted-foreground">₹{product.price.toFixed(2)}</p>
-                                                <p className="text-xs text-blue-600">
+                                                <p className="text-xs text-primary">
                                                   GST: {getGstRateForProduct(product, categoryGstRates || undefined)}%
                                                 </p>
                                             </div>
@@ -326,12 +326,12 @@ export default function QuickBillingPage() {
                         </CardContent>
                     </Card>
                 </div>
-                
+
                 <div className="lg:col-span-1 space-y-6 sticky top-6">
                     <Card>
                         <CardHeader>
                             <CardTitle className="flex items-center justify-between">
-                            <span>Order Summary</span> 
+                            <span>Order Summary</span>
                             <ShoppingCart className="h-5 w-5 text-muted-foreground"/>
                             </CardTitle>
                         </CardHeader>
@@ -342,7 +342,7 @@ export default function QuickBillingPage() {
                                         <div key={item.id} className="flex justify-between items-start text-sm">
                                             <div>
                                                 <p className="font-medium">{item.name}</p>
-                                                <p className="text-xs text-blue-600">GST: {item.gstRate || 0}%</p>
+                                                <p className="text-xs text-primary">GST: {item.gstRate || 0}%</p>
                                                 {item.serialNumbers && item.serialNumbers.length > 0 && (
                                                     <p className="text-xs text-muted-foreground">Serials: {item.serialNumbers.join(', ')}</p>
                                                 )}
@@ -384,7 +384,7 @@ export default function QuickBillingPage() {
                     <Card>
                         <CardHeader>
                             <CardTitle className="flex items-center justify-between">
-                            <span>Payment</span> 
+                            <span>Payment</span>
                             <CreditCard className="h-5 w-5 text-muted-foreground"/>
                             </CardTitle>
                         </CardHeader>

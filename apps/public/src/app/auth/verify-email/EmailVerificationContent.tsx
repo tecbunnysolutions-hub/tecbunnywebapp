@@ -41,7 +41,7 @@ export default function EmailVerificationContent() {
 
       if (error) {
         console.error('Resend error:', error);
-        
+
         // Provide more detailed error information
         if (error.message?.includes('rate limit') || error.message?.includes('10 seconds')) {
           setResendStatus('error');
@@ -71,7 +71,7 @@ export default function EmailVerificationContent() {
     <div className="min-h-screen flex items-center justify-center bg-background py-12 px-4 sm:px-6 lg:px-8 text-foreground">
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
-          <CheckCircle className="mx-auto h-12 w-12 text-emerald-500" />
+          <CheckCircle className="mx-auto h-12 w-12 text-success" />
           <h2 className="mt-6 text-3xl font-extrabold tech-heading">
             Check your email
           </h2>
@@ -79,7 +79,7 @@ export default function EmailVerificationContent() {
             We've sent a verification link to your email address
           </p>
         </div>
-        
+
         <Card className="border-border bg-card">
           <CardHeader className="text-center">
             <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-primary/10">
@@ -94,7 +94,7 @@ export default function EmailVerificationContent() {
               )}
             </CardDescription>
           </CardHeader>
-          
+
           <CardContent className="space-y-4">
             <div className="text-sm tech-body space-y-2">
               <p>To complete your registration:</p>
@@ -104,23 +104,23 @@ export default function EmailVerificationContent() {
                 <li>You'll be redirected back to sign in</li>
               </ol>
             </div>
-            
+
             {resendStatus === 'success' && (
-              <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-md p-3">
-                <p className="text-sm text-emerald-200">
+              <div className="bg-success/10 border border-success/20 rounded-md p-3">
+                <p className="text-sm text-success">
                   ✓ Verification email sent successfully!
                 </p>
               </div>
             )}
-            
+
             {resendStatus === 'error' && (
-              <div className="bg-red-500/10 border border-red-500/20 rounded-md p-3">
-                <p className="text-sm text-red-200">
+              <div className="bg-destructive/10 border border-destructive/20 rounded-md p-3">
+                <p className="text-sm text-destructive">
                   Failed to send verification email. Please try again.
                 </p>
               </div>
             )}
-            
+
             <div className="space-y-3">
               {email && (
                 <Button
@@ -142,7 +142,7 @@ export default function EmailVerificationContent() {
                   )}
                 </Button>
               )}
-              
+
               <Link href="/auth/signin" className="block">
                 <Button variant="ghost" className="w-full">
                   <ArrowLeft className="mr-2 h-4 w-4" />
@@ -152,7 +152,7 @@ export default function EmailVerificationContent() {
             </div>
           </CardContent>
         </Card>
-        
+
         <div className="text-center text-sm text-muted-foreground">
           <p>Didn't receive the email? Check your spam folder or contact support.</p>
         </div>

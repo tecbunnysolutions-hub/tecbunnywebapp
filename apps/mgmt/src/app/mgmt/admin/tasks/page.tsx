@@ -19,19 +19,19 @@ interface Task {
 }
 
 const PRIORITY_BADGE: Record<string, string> = {
-  LOW:    'bg-zinc-100 text-zinc-500',
-  MEDIUM: 'bg-blue-100 text-blue-700',
-  HIGH:   'bg-orange-100 text-orange-700',
-  URGENT: 'bg-red-100 text-red-700',
+  LOW:    'bg-muted text-muted-foreground',
+  MEDIUM: 'bg-primary/10 text-primary',
+  HIGH:   'bg-accent/10 text-accent',
+  URGENT: 'bg-destructive/10 text-destructive',
 };
 
 const STATUS_BADGE: Record<string, string> = {
-  OPEN:               'bg-slate-100 text-slate-600',
-  IN_PROGRESS:        'bg-blue-100 text-blue-700',
-  AWAITING_APPROVAL:  'bg-amber-100 text-amber-700',
-  APPROVED:           'bg-emerald-100 text-emerald-700',
-  REJECTED:           'bg-red-100 text-red-600',
-  DONE:               'bg-green-100 text-green-700',
+  OPEN:               'bg-muted text-muted-foreground',
+  IN_PROGRESS:        'bg-primary/10 text-primary',
+  AWAITING_APPROVAL:  'bg-warning/10 text-warning',
+  APPROVED:           'bg-success/10 text-success',
+  REJECTED:           'bg-destructive/10 text-destructive',
+  DONE:               'bg-success/10 text-success',
 };
 
 export default function TasksPage() {
@@ -77,7 +77,7 @@ export default function TasksPage() {
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
-            <CheckSquare className="w-6 h-6 text-indigo-600" /> Tasks &amp; Approvals
+            <CheckSquare className="w-6 h-6 text-primary" /> Tasks &amp; Approvals
           </h1>
           <p className="text-sm text-muted-foreground">Internal tasks, service approvals, and pending actions.</p>
         </div>
@@ -92,10 +92,10 @@ export default function TasksPage() {
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { label: 'Total Tasks', value: tasks.length, icon: CheckSquare, color: 'text-indigo-600' },
-          { label: 'Pending Approval', value: pending, icon: Clock, color: 'text-amber-600' },
-          { label: 'Overdue', value: overdue, icon: AlertCircle, color: 'text-red-600' },
-          { label: 'Done', value: tasks.filter(t => t.status === 'DONE').length, icon: CheckCircle2, color: 'text-emerald-600' },
+          { label: 'Total Tasks', value: tasks.length, icon: CheckSquare, color: 'text-primary' },
+          { label: 'Pending Approval', value: pending, icon: Clock, color: 'text-warning' },
+          { label: 'Overdue', value: overdue, icon: AlertCircle, color: 'text-destructive' },
+          { label: 'Done', value: tasks.filter(t => t.status === 'DONE').length, icon: CheckCircle2, color: 'text-success' },
         ].map(({ label, value, icon: Icon, color }) => (
           <Card key={label} className="p-4">
             <div className="flex items-center justify-between">
@@ -109,16 +109,16 @@ export default function TasksPage() {
         ))}
       </div>
 
-      {error && <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">{error}</div>}
+      {error && <div className="rounded-lg border border-destructive/20 bg-destructive/10 p-4 text-sm text-destructive">{error}</div>}
 
       {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input placeholder="Search tasks…" className="pl-9" value={search} onChange={e => setSearch(e.target.value)} />
         </div>
         <select
-          className="border border-slate-200 rounded-md px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          className="border border-border rounded-md px-3 py-2 text-sm bg-card focus:outline-none focus:ring-2 focus:ring-primary"
           value={typeFilter}
           onChange={e => setTypeFilter(e.target.value as any)}
         >
@@ -127,7 +127,7 @@ export default function TasksPage() {
           <option value="APPROVAL">Approvals</option>
         </select>
         <select
-          className="border border-slate-200 rounded-md px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          className="border border-border rounded-md px-3 py-2 text-sm bg-card focus:outline-none focus:ring-2 focus:ring-primary"
           value={statusFilter}
           onChange={e => setStatusFilter(e.target.value)}
         >
@@ -145,27 +145,27 @@ export default function TasksPage() {
           : tasks.map(task => {
               const isOverdue = task.due_date && new Date(task.due_date) < new Date() && task.status !== 'DONE';
               return (
-                <Card key={task.id} className={`p-4 ${isOverdue ? 'border-red-200' : ''}`}>
+                <Card key={task.id} className={`p-4 ${isOverdue ? 'border-destructive/20' : ''}`}>
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-medium text-sm text-slate-800 truncate">{task.title || 'Untitled'}</span>
-                        <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${PRIORITY_BADGE[task.priority || 'LOW'] || 'bg-slate-100 text-slate-600'}`}>
+                        <span className="font-medium text-sm text-foreground truncate">{task.title || 'Untitled'}</span>
+                        <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${PRIORITY_BADGE[task.priority || 'LOW'] || 'bg-muted text-muted-foreground'}`}>
                           {task.priority || 'LOW'}
                         </span>
                         {task.type === 'APPROVAL' && (
-                          <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-purple-100 text-purple-700">APPROVAL</span>
+                          <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-primary/10 text-primary">APPROVAL</span>
                         )}
                       </div>
                       {task.description && (
-                        <p className="mt-0.5 text-xs text-slate-500 line-clamp-1">{task.description}</p>
+                        <p className="mt-0.5 text-xs text-muted-foreground line-clamp-1">{task.description}</p>
                       )}
-                      <div className="mt-1 flex items-center gap-3 text-[10px] text-slate-400">
+                      <div className="mt-1 flex items-center gap-3 text-[10px] text-muted-foreground">
                         {task.assigned_to && (
                           <span className="flex items-center gap-1"><User className="w-3 h-3" />{task.assigned_to}</span>
                         )}
                         {task.due_date && (
-                          <span className={`flex items-center gap-1 ${isOverdue ? 'text-red-500 font-semibold' : ''}`}>
+                          <span className={`flex items-center gap-1 ${isOverdue ? 'text-destructive font-semibold' : ''}`}>
                             <Clock className="w-3 h-3" />
                             {new Date(task.due_date).toLocaleDateString('en-IN')}
                             {isOverdue && ' (overdue)'}
@@ -173,7 +173,7 @@ export default function TasksPage() {
                         )}
                       </div>
                     </div>
-                    <span className={`shrink-0 text-[10px] font-semibold px-2 py-0.5 rounded-full ${STATUS_BADGE[task.status || 'OPEN'] || 'bg-slate-100 text-slate-600'}`}>
+                    <span className={`shrink-0 text-[10px] font-semibold px-2 py-0.5 rounded-full ${STATUS_BADGE[task.status || 'OPEN'] || 'bg-muted text-muted-foreground'}`}>
                       {(task.status || 'OPEN').replace(/_/g, ' ')}
                     </span>
                   </div>
@@ -183,8 +183,8 @@ export default function TasksPage() {
         }
         {!loading && tasks.length === 0 && (
           <div className="py-16 text-center">
-            <CheckSquare className="w-10 h-10 text-slate-300 mx-auto mb-3" />
-            <p className="text-slate-500 font-medium">No tasks found</p>
+            <CheckSquare className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
+            <p className="text-muted-foreground font-medium">No tasks found</p>
           </div>
         )}
       </div>

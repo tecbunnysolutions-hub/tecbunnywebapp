@@ -43,8 +43,8 @@ interface SystemLog {
 
 // Sparkline Component for real-time visualization of telemetry data
 function TelemetrySparkline({ data, color }: { data: number[]; color: string }) {
-  if (!data || data.length === 0) return <div className="h-6 w-24 bg-white/5 animate-pulse rounded" />;
-  
+  if (!data || data.length === 0) return <div className="h-6 w-24 bg-card/5 animate-pulse rounded" />;
+
   const width = 120;
   const height = 24;
   const max = Math.max(...data, 1);
@@ -59,12 +59,12 @@ function TelemetrySparkline({ data, color }: { data: number[]; color: string }) 
     })
     .join(' ');
 
-  const strokeColor = 
-    color === 'blue' ? '#2563eb' :
-    color === 'indigo' ? '#818cf8' :
-    color === 'emerald' ? '#34d399' :
-    color === 'violet' ? '#c084fc' :
-    '#94a3b8';
+  const strokeColor =
+    color === 'blue' ? 'hsl(var(--chart-1))' :
+    color === 'indigo' ? 'hsl(var(--chart-2))' :
+    color === 'emerald' ? 'hsl(var(--chart-3))' :
+    color === 'violet' ? 'hsl(var(--chart-4))' :
+    'hsl(var(--chart-5))';
 
   const fillGradientId = `grad-${color}`;
 
@@ -116,14 +116,14 @@ export function InteractiveTopologyDiagram({ config }: InteractiveTopologyDiagra
 
   useEffect(() => {
     setIsMounted(true);
-    
+
     // Initialize sparkline histories with pre-filled baseline datasets
     const initialHistories: Record<string, number[]> = {};
     const nodesToInit = ['switch', 'gateway', 'storage', 'terminal', 'cam-more'];
     for (let i = 1; i <= 8; i++) {
       nodesToInit.push(`cam-${i}`);
     }
-    
+
     nodesToInit.forEach(id => {
       initialHistories[id] = Array.from({ length: 15 }, () => 20 + Math.random() * 50);
     });
@@ -132,12 +132,12 @@ export function InteractiveTopologyDiagram({ config }: InteractiveTopologyDiagra
     // Dynamic metrics fluctuation interval
     const telemetryInterval = setInterval(() => {
       setTelemetryTick((t) => t + 1);
-      
+
       setSparklineHistory((prev) => {
         const updated = { ...prev };
         nodesToInit.forEach((id) => {
           const prevHistory = prev[id] || Array.from({ length: 15 }, () => 20 + Math.random() * 50);
-          
+
           let newVal = 45;
           if (id === 'switch') {
             newVal = 20 + Math.sin(Date.now() / 2000) * 8 + Math.random() * 4 + 15;
@@ -150,7 +150,7 @@ export function InteractiveTopologyDiagram({ config }: InteractiveTopologyDiagra
           } else if (id.startsWith('cam')) {
             newVal = 4 + Math.random() * 3;
           }
-          
+
           updated[id] = [...prevHistory.slice(-14), newVal];
         });
         return updated;
@@ -401,16 +401,17 @@ export function InteractiveTopologyDiagram({ config }: InteractiveTopologyDiagra
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b border-border pb-4 mb-6 gap-3">
         <div>
           <span className="text-[10px] font-bold text-primary font-mono tracking-widest uppercase flex items-center gap-1.5">
-            <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
-            SEC-NET SYSTEM MONITOR v2.0.0
+            <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse text-primary-foreground" />
+            Explore an example setup
           </span>
           <h2 className="text-foreground text-lg font-bold tracking-tight mt-1">
             {config.premiseType || 'Premise'} Network Architecture Map
           </h2>
+          <p className="mt-2 max-w-xl text-sm text-muted-foreground">An illustrative layout with simulated readings. Final equipment and connections depend on your agreed plan.</p>
         </div>
         <div className="flex items-center gap-2 text-xs text-muted-foreground font-mono">
-          <Activity className="h-3.5 w-3.5 text-emerald-500 animate-pulse" />
-          <span>Active Connections: {cameraCount + 3} Devices</span>
+          <Activity className="h-3.5 w-3.5 text-success animate-pulse" />
+          <span>Example layout: {cameraCount + 3} devices</span>
         </div>
       </div>
 
@@ -419,7 +420,7 @@ export function InteractiveTopologyDiagram({ config }: InteractiveTopologyDiagra
         <div className="lg:col-span-3 bg-muted/30 rounded-2xl border border-border p-4 relative min-h-[360px] flex items-center justify-center overflow-hidden aspect-[4/3] max-w-full group">
           {/* Futuristic Grid Background Pattern */}
           <div className="absolute inset-0 pointer-events-none opacity-[0.05] bg-[radial-gradient(#2563eb_1px,transparent_1px)] [background-size:16px_16px]" />
-          
+
           {/* Subtle concentric grid lines in background */}
           <div className="absolute h-[340px] w-[340px] rounded-full border border-primary/5 pointer-events-none flex items-center justify-center">
             <div className="h-[220px] w-[220px] rounded-full border border-primary/5 flex items-center justify-center">
@@ -471,19 +472,19 @@ export function InteractiveTopologyDiagram({ config }: InteractiveTopologyDiagra
             {/* Connector Lines */}
             {allNodes.map((node) => {
               if (node.id === 'switch') return null;
-              
+
               const isSpecificActive = activeNodeId === node.id;
               const isSharedActive = activeNodeId === 'switch' || isSpecificActive;
 
-              let strokeColor = 'rgba(71, 85, 105, 0.2)'; // slate-600/20
-              let activeStroke = 'rgba(37, 99, 235, 0.4)'; // blue-400/40
-              
+              let strokeColor = 'hsl(var(--border))'; // slate-600/20
+              let activeStroke = 'hsl(var(--primary))'; // blue-400/40
+
               if (node.color === 'indigo') {
-                activeStroke = 'rgba(129, 140, 248, 0.5)';
+                activeStroke = 'hsl(var(--chart-2))';
               } else if (node.color === 'emerald') {
-                activeStroke = 'rgba(52, 211, 153, 0.5)';
+                activeStroke = 'hsl(var(--chart-3))';
               } else if (node.color === 'violet') {
-                activeStroke = 'rgba(192, 132, 252, 0.5)';
+                activeStroke = 'hsl(var(--chart-4))';
               }
 
               return (
@@ -496,7 +497,7 @@ export function InteractiveTopologyDiagram({ config }: InteractiveTopologyDiagra
                       x2={centralNode.x}
                       y2={centralNode.y}
                       className="stroke-[3] opacity-40"
-                      stroke={node.color === 'blue' ? '#2563eb' : node.color === 'indigo' ? '#818cf8' : node.color === 'emerald' ? '#34d399' : node.color === 'violet' ? '#c084fc' : '#94a3b8'}
+                      stroke={node.color === 'blue' ? 'hsl(var(--chart-1))' : node.color === 'indigo' ? 'hsl(var(--chart-2))' : node.color === 'emerald' ? 'hsl(var(--chart-3))' : node.color === 'violet' ? 'hsl(var(--chart-4))' : 'hsl(var(--chart-5))'}
                       filter="url(#svg-glow)"
                     />
                   )}
@@ -510,7 +511,7 @@ export function InteractiveTopologyDiagram({ config }: InteractiveTopologyDiagra
                       "transition-all duration-300",
                       isSpecificActive ? "stroke-[2]" : "stroke-[1]"
                     )}
-                    stroke={isSpecificActive ? (node.color === 'blue' ? '#2563eb' : node.color === 'indigo' ? '#818cf8' : node.color === 'emerald' ? '#34d399' : node.color === 'violet' ? '#c084fc' : '#94a3b8') : isSharedActive ? 'rgba(71, 85, 105, 0.4)' : 'rgba(51, 65, 85, 0.15)'}
+                    stroke={isSpecificActive ? (node.color === 'blue' ? 'hsl(var(--chart-1))' : node.color === 'indigo' ? 'hsl(var(--chart-2))' : node.color === 'emerald' ? 'hsl(var(--chart-3))' : node.color === 'violet' ? 'hsl(var(--chart-4))' : 'hsl(var(--chart-5))') : isSharedActive ? 'rgba(71, 85, 105, 0.4)' : 'rgba(51, 65, 85, 0.15)'}
                   />
                   {/* Moving Packets Overlay */}
                   <line
@@ -559,14 +560,14 @@ export function InteractiveTopologyDiagram({ config }: InteractiveTopologyDiagra
                 <div
                   className={cn(
                     "h-12 w-12 rounded-xl flex items-center justify-center border transition-all duration-300 relative bg-card",
-                    
+
                     // Selected glow state configurations
-                    isSelected && node.color === 'blue' && "border-primary shadow-[0_0_15px_rgba(37,99,235,0.25)] text-primary",
-                    isSelected && node.color === 'indigo' && "border-indigo-400 shadow-[0_0_15px_rgba(129,140,248,0.25)] text-indigo-400",
-                    isSelected && node.color === 'emerald' && "border-emerald-400 shadow-[0_0_15px_rgba(52,211,153,0.25)] text-emerald-400",
-                    isSelected && node.color === 'violet' && "border-violet-400 shadow-[0_0_15px_rgba(192,132,252,0.25)] text-violet-400",
-                    isSelected && node.color === 'slate' && "border-slate-400 shadow-[0_0_15px_rgba(148,163,184,0.25)] text-slate-300",
-                    
+                    isSelected && node.color === 'blue' && "border-primary shadow-md text-primary",
+                    isSelected && node.color === 'indigo' && "border-primary shadow-md text-primary",
+                    isSelected && node.color === 'emerald' && "border-success shadow-md text-success",
+                    isSelected && node.color === 'violet' && "border-primary shadow-md text-primary",
+                    isSelected && node.color === 'slate' && "border-border shadow-md text-muted-foreground",
+
                     // Default states
                     !isSelected && "border-border text-muted-foreground hover:border-foreground hover:text-foreground"
                   )}
@@ -577,35 +578,35 @@ export function InteractiveTopologyDiagram({ config }: InteractiveTopologyDiagra
                   )} />
 
                   {/* Corner Accent Brackets on hover/selection */}
-                  {(isSelected || hoverCheck) && (
+                  {isSelected && (
                     <>
                       <div className={cn("absolute top-[-2px] left-[-2px] w-2 h-2 border-t-2 border-l-2 rounded-tl-[3px]",
                         node.color === 'blue' && "border-primary",
-                        node.color === 'indigo' && "border-indigo-400",
-                        node.color === 'emerald' && "border-emerald-400",
-                        node.color === 'violet' && "border-violet-400",
-                        node.color === 'slate' && "border-slate-400"
+                        node.color === 'indigo' && "border-primary",
+                        node.color === 'emerald' && "border-success",
+                        node.color === 'violet' && "border-primary",
+                        node.color === 'slate' && "border-border"
                       )} />
                       <div className={cn("absolute top-[-2px] right-[-2px] w-2 h-2 border-t-2 border-r-2 rounded-tr-[3px]",
                         node.color === 'blue' && "border-primary",
-                        node.color === 'indigo' && "border-indigo-400",
-                        node.color === 'emerald' && "border-emerald-400",
-                        node.color === 'violet' && "border-violet-400",
-                        node.color === 'slate' && "border-slate-400"
+                        node.color === 'indigo' && "border-primary",
+                        node.color === 'emerald' && "border-success",
+                        node.color === 'violet' && "border-primary",
+                        node.color === 'slate' && "border-border"
                       )} />
                       <div className={cn("absolute bottom-[-2px] left-[-2px] w-2 h-2 border-b-2 border-l-2 rounded-bl-[3px]",
                         node.color === 'blue' && "border-primary",
-                        node.color === 'indigo' && "border-indigo-400",
-                        node.color === 'emerald' && "border-emerald-400",
-                        node.color === 'violet' && "border-violet-400",
-                        node.color === 'slate' && "border-slate-400"
+                        node.color === 'indigo' && "border-primary",
+                        node.color === 'emerald' && "border-success",
+                        node.color === 'violet' && "border-primary",
+                        node.color === 'slate' && "border-border"
                       )} />
                       <div className={cn("absolute bottom-[-2px] right-[-2px] w-2 h-2 border-b-2 border-r-2 rounded-br-[3px]",
                         node.color === 'blue' && "border-primary",
-                        node.color === 'indigo' && "border-indigo-400",
-                        node.color === 'emerald' && "border-emerald-400",
-                        node.color === 'violet' && "border-violet-400",
-                        node.color === 'slate' && "border-slate-400"
+                        node.color === 'indigo' && "border-primary",
+                        node.color === 'emerald' && "border-success",
+                        node.color === 'violet' && "border-primary",
+                        node.color === 'slate' && "border-border"
                       )} />
                     </>
                   )}
@@ -614,19 +615,19 @@ export function InteractiveTopologyDiagram({ config }: InteractiveTopologyDiagra
                   {isSelected && (
                     <span className={cn(
                       "absolute -top-1 -right-1 h-2.5 w-2.5 rounded-full border border-background flex items-center justify-center",
-                      node.color === 'blue' && "bg-primary",
-                      node.color === 'indigo' && "bg-indigo-400",
-                      node.color === 'emerald' && "bg-emerald-400",
-                      node.color === 'violet' && "bg-violet-400",
-                      node.color === 'slate' && "bg-slate-400"
+                      node.color === 'blue' && "bg-primary text-primary-foreground",
+                      node.color === 'indigo' && "bg-primary text-primary-foreground",
+                      node.color === 'emerald' && "bg-success text-success-foreground",
+                      node.color === 'violet' && "bg-primary text-primary-foreground",
+                      node.color === 'slate' && "bg-secondary"
                     )}>
                       <span className={cn(
                         "animate-ping absolute inline-flex h-full w-full rounded-full opacity-75",
-                        node.color === 'blue' && "bg-primary",
-                        node.color === 'indigo' && "bg-indigo-400",
-                        node.color === 'emerald' && "bg-emerald-400",
-                        node.color === 'violet' && "bg-violet-400",
-                        node.color === 'slate' && "bg-slate-400"
+                        node.color === 'blue' && "bg-primary text-primary-foreground",
+                        node.color === 'indigo' && "bg-primary text-primary-foreground",
+                        node.color === 'emerald' && "bg-success text-success-foreground",
+                        node.color === 'violet' && "bg-primary text-primary-foreground",
+                        node.color === 'slate' && "bg-secondary"
                       )} />
                     </span>
                   )}
@@ -654,7 +655,7 @@ export function InteractiveTopologyDiagram({ config }: InteractiveTopologyDiagra
         </div>
 
         {/* Right Side: High-Tech Monospace Console Inspector */}
-        <div 
+        <div
           id="device-inspector-panel"
           role="tabpanel"
           aria-label="Component Telemetry Details"
@@ -670,7 +671,7 @@ export function InteractiveTopologyDiagram({ config }: InteractiveTopologyDiagra
               <span className={cn(
                 "px-2 py-0.5 rounded-[4px] text-[10px] font-bold tracking-wider",
                 selectedNode.status === 'ACTIVE' || selectedNode.status === 'ONLINE' || selectedNode.status === 'CONNECTED'
-                  ? "bg-emerald-900/10 text-emerald-500 border border-emerald-900/30"
+                  ? "bg-success/10 text-success border border-success/30"
                   : selectedNode.status === 'WRITING'
                     ? "bg-primary/10 text-primary border border-primary/30 animate-pulse"
                     : "bg-muted text-muted-foreground"
@@ -700,8 +701,8 @@ export function InteractiveTopologyDiagram({ config }: InteractiveTopologyDiagra
                   {/* Render sparkline if item has sparkType defined */}
                   {item.sparkType && sparklineHistory[item.sparkType] && (
                     <div className="flex justify-end pt-1 pb-1">
-                      <TelemetrySparkline 
-                        data={sparklineHistory[item.sparkType]} 
+                      <TelemetrySparkline
+                        data={sparklineHistory[item.sparkType]}
                         color={selectedNode.color}
                       />
                     </div>
@@ -723,7 +724,7 @@ export function InteractiveTopologyDiagram({ config }: InteractiveTopologyDiagra
                     onClick={() => setActiveLogTab(tab)}
                     className={cn(
                       "px-1 py-0.5 rounded transition-all",
-                      activeLogTab === tab 
+                      activeLogTab === tab
                         ? "bg-primary/20 text-primary border border-primary/20"
                         : "text-muted-foreground hover:text-foreground"
                     )}
@@ -746,9 +747,9 @@ export function InteractiveTopologyDiagram({ config }: InteractiveTopologyDiagra
                     <span className="text-muted-foreground">[{log.timestamp}]</span>
                     <span className={cn(
                       "font-bold text-[8px] px-1 py-0.2 rounded-[3px]",
-                      log.type === 'SYS' && "bg-emerald-500/10 text-emerald-500 border border-emerald-900/30",
+                      log.type === 'SYS' && "bg-success/10 text-success border border-success/30",
                       log.type === 'NET' && "bg-primary/10 text-primary border border-primary/30",
-                      log.type === 'SEC' && "bg-violet-500/10 text-violet-500 border border-violet-900/30"
+                      log.type === 'SEC' && "bg-primary/10 text-primary border border-primary/30"
                     )}>
                       {log.type}
                     </span>
@@ -765,7 +766,7 @@ export function InteractiveTopologyDiagram({ config }: InteractiveTopologyDiagra
 
             <div className="text-[9px] text-primary/60 font-mono animate-pulse mt-1 flex items-center gap-1.5">
               <span>&gt; SOCKET MONITOR ONLINE</span>
-              <span className="h-1 w-1 bg-primary rounded-full animate-ping" />
+              <span className="h-1 w-1 bg-primary rounded-full animate-ping text-primary-foreground" />
             </div>
           </div>
         </div>
@@ -773,6 +774,3 @@ export function InteractiveTopologyDiagram({ config }: InteractiveTopologyDiagra
     </div>
   );
 }
-
-// Dummy check to avoid TS error on hover variables
-const hoverCheck = false;

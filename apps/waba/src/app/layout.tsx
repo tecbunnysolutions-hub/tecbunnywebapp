@@ -1,3 +1,4 @@
+import { ThemeControls } from '../../../../packages/ui/src/components/ThemeControls';
 import type { Metadata } from "next";
 import { EnterpriseAnalyticsAutoTracker } from "@tecbunny/core/components/EnterpriseAnalyticsAutoTracker";
 import "./globals.css";
@@ -27,6 +28,7 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body suppressHydrationWarning>
+        <ThemeControls floating />
         <EnterpriseAnalyticsAutoTracker application="waba" defaultModule="whatsapp" dashboardPaths={['/', '/analytics', '/campaigns', '/contacts', '/templates']} />
         {children}
       </body>

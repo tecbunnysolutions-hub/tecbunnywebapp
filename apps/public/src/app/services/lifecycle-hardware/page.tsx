@@ -1,9 +1,9 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { 
-  Cpu, 
-  Settings, 
-  Wrench, 
+import {
+  Cpu,
+  Settings,
+  Wrench,
   Activity,
   ArrowRight,
   CheckCircle2,
@@ -62,8 +62,8 @@ export default function LifecycleHardwarePage() {
       title: "Enterprise PC & Laptop Procurement",
       subtitle: "Acquiring commercial desktops, laptops, and server racks at wholesale corporate pricing.",
       icon: ShoppingBag,
-      gradient: "from-blue-500/20 via-indigo-500/10 to-transparent",
-      border: "hover:border-blue-500/35",
+      gradient: "from-primary/20 via-primary/10 to-transparent",
+      border: "hover:border-primary/35",
       points: [
         {
           label: "Genuine OEM Channels",
@@ -83,8 +83,8 @@ export default function LifecycleHardwarePage() {
       title: "Automated Staging & Deployment",
       subtitle: "Turnkey workstation preparation ensuring new systems arrive pre-configured and ready to work.",
       icon: Settings,
-      gradient: "from-purple-500/20 via-pink-500/10 to-transparent",
-      border: "hover:border-purple-500/35",
+      gradient: "from-primary/20 via-primary/10 to-transparent",
+      border: "hover:border-primary/35",
       points: [
         {
           label: "Golden Master Image Flashing",
@@ -104,8 +104,8 @@ export default function LifecycleHardwarePage() {
       title: "Proactive IT Annual Maintenance (AMC)",
       subtitle: "Structured preventive checkups and fast troubleshooting to maximize hardware lifespan.",
       icon: Wrench,
-      gradient: "from-emerald-500/20 via-teal-500/10 to-transparent",
-      border: "hover:border-emerald-500/35",
+      gradient: "from-success/20 via-success/10 to-transparent",
+      border: "hover:border-success/35",
       points: [
         {
           label: "Scheduled Preventive Audits",
@@ -125,8 +125,8 @@ export default function LifecycleHardwarePage() {
       title: "Secure Asset Refresh & E-Waste Disposal",
       subtitle: "Orderly hardware lifecycle transitions and secure data sanitization.",
       icon: Cpu,
-      gradient: "from-amber-500/20 via-orange-500/10 to-transparent",
-      border: "hover:border-amber-500/35",
+      gradient: "from-warning/20 via-accent/10 to-transparent",
+      border: "hover:border-warning/35",
       points: [
         {
           label: "Multi-Pass Secure Data Wiping",
@@ -145,7 +145,7 @@ export default function LifecycleHardwarePage() {
   ];
 
   return (
-    <div className="relative min-h-screen bg-[#09090B] text-zinc-200 selection:bg-blue-500/20 selection:text-white overflow-hidden pb-20">
+    <div className="relative min-h-screen bg-card text-muted-foreground selection:bg-primary/20 selection:text-primary overflow-hidden pb-20">
       <BreadcrumbJsonLd
         items={[
           { name: 'Home', url: 'https://www.tecbunny.com' },
@@ -154,36 +154,36 @@ export default function LifecycleHardwarePage() {
         ]}
       />
       <div className="pointer-events-none absolute inset-0 -z-10">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]" />
-        <div className="absolute -left-40 top-0 h-[42rem] w-[42rem] rounded-full bg-blue-500/5 blur-[160px]" />
-        <div className="absolute -right-40 top-1/3 h-[46rem] w-[46rem] rounded-full bg-indigo-500/5 blur-[180px]" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,hsl(var(--foreground)/0.02)_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--foreground)/0.02)_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,hsl(var(--overlay))_70%,transparent_100%)]" />
+        <div className="absolute -left-40 top-0 h-[42rem] w-[42rem] rounded-full bg-primary/5 blur-[160px]" />
+        <div className="absolute -right-40 top-1/3 h-[46rem] w-[46rem] rounded-full bg-primary/5 blur-[180px]" />
       </div>
 
       {/* Hero Section */}
-      <section className="relative pt-24 pb-16 md:pt-32 md:pb-24 border-b border-zinc-900">
+      <section className="relative pt-24 pb-16 md:pt-32 md:pb-24 border-b border-border">
         <div className="container mx-auto px-6 max-w-screen-2xl">
           <div className="flex flex-col items-center text-center space-y-6 max-w-4xl mx-auto">
-            <div className="inline-flex items-center gap-2 rounded-full border border-blue-500/20 bg-blue-500/5 px-4.5 py-1.5 text-xs font-semibold text-blue-400">
+            <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4.5 py-1.5 text-xs font-semibold text-primary">
               <Sparkles size={14} className="animate-pulse" />
               <span>Procurement, Workstations &amp; AMC Maintenance</span>
             </div>
-            
-            <h1 className="text-4xl font-extrabold tracking-tight text-white sm:text-5xl md:text-6xl lg:text-7xl font-tech leading-tight">
+
+            <h1 className="text-4xl font-extrabold tracking-tight text-foreground sm:text-5xl md:text-6xl lg:text-7xl font-tech leading-tight">
               Lifecycle Hardware &amp; <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-200 to-white">
+              <span className=" text-primary">
                 Workstation Management
               </span>
             </h1>
 
-            <p className="text-zinc-400 text-lg md:text-xl font-light leading-relaxed max-w-3xl">
+            <p className="text-muted-foreground text-lg md:text-xl font-light leading-relaxed max-w-3xl">
               Equip your workforce with Tier-1 enterprise hardware, turnkey workstation staging, proactive AMC support, and on-shelf local spares across Goa.
             </p>
 
             <div className="flex flex-wrap gap-4 pt-4 justify-center">
-              <Button asChild size="lg" className="bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl px-8 h-12 text-sm shadow-lg shadow-blue-500/20">
+              <Button asChild size="lg" className="bg-primary hover:bg-primary text-primary-foreground font-bold rounded-xl px-8 h-12 text-sm shadow-lg shadow-primary/20">
                 <Link href="#assessment-funnel">Discuss Your Hardware Requirements</Link>
               </Button>
-              <Button asChild variant="outline" size="lg" className="border-zinc-800 bg-zinc-900/40 text-zinc-300 hover:bg-zinc-800 hover:text-white rounded-xl px-8 text-sm h-12">
+              <Button asChild variant="outline" size="lg" className="border-border bg-card/40 text-muted-foreground hover:bg-card hover:text-foreground rounded-xl px-8 text-sm h-12">
                 <Link href="#services-grid">Explore Hardware Services &darr;</Link>
               </Button>
             </div>
@@ -192,39 +192,39 @@ export default function LifecycleHardwarePage() {
       </section>
 
       {/* What We Solve */}
-      <section className="py-16 sm:py-20 border-b border-zinc-900 bg-zinc-950/40">
+      <section className="py-16 sm:py-20 border-b border-border bg-background/40">
         <div className="container mx-auto px-6 max-w-screen-2xl">
           <div className="max-w-3xl mb-12">
-            <span className="text-xs font-bold uppercase tracking-[0.35em] text-blue-400 font-mono">
+            <span className="text-xs font-bold uppercase tracking-[0.35em] text-primary font-mono">
               Hardware Friction
             </span>
-            <h2 className="mt-3 text-3xl sm:text-4xl font-bold text-white font-tech tracking-tight">
+            <h2 className="mt-3 text-3xl sm:text-4xl font-bold text-foreground font-tech tracking-tight">
               What Hardware Problems We Solve
             </h2>
-            <p className="mt-3 text-sm sm:text-base text-zinc-400 font-light leading-relaxed">
+            <p className="mt-3 text-sm sm:text-base text-muted-foreground font-light leading-relaxed">
               Stop wasting days onboarding new employees or waiting weeks for warranty parts.
             </p>
           </div>
 
           <div className="grid gap-6 sm:grid-cols-3">
-            <div className="rounded-2xl border border-zinc-850 bg-zinc-900/30 p-6 space-y-3">
-              <div className="text-blue-400 font-mono font-bold text-sm">01 / Onboarding</div>
-              <h3 className="text-lg font-bold text-white font-tech">Manual Employee Laptop Setup Delays</h3>
-              <p className="text-xs text-zinc-400 font-light leading-relaxed">
+            <div className="rounded-2xl border border-border bg-card/30 p-6 space-y-3">
+              <div className="text-primary font-mono font-bold text-sm">01 / Onboarding</div>
+              <h3 className="text-lg font-bold text-foreground font-tech">Manual Employee Laptop Setup Delays</h3>
+              <p className="text-xs text-muted-foreground font-light leading-relaxed">
                 Manually installing software on each new hire PC takes hours. We build standardized disk images and deploy ready-to-use systems instantly.
               </p>
             </div>
-            <div className="rounded-2xl border border-zinc-850 bg-zinc-900/30 p-6 space-y-3">
-              <div className="text-blue-400 font-mono font-bold text-sm">02 / Downtime</div>
-              <h3 className="text-lg font-bold text-white font-tech">Slow 2-Week Service Center Delays</h3>
-              <p className="text-xs text-zinc-400 font-light leading-relaxed">
+            <div className="rounded-2xl border border-border bg-card/30 p-6 space-y-3">
+              <div className="text-primary font-mono font-bold text-sm">02 / Downtime</div>
+              <h3 className="text-lg font-bold text-foreground font-tech">Slow 2-Week Service Center Delays</h3>
+              <p className="text-xs text-muted-foreground font-light leading-relaxed">
                 Standard retail service centers keep laptops for weeks. Our AMC agreements can include loaner systems and local spare swaps in Goa, subject to availability.
               </p>
             </div>
-            <div className="rounded-2xl border border-zinc-850 bg-zinc-900/30 p-6 space-y-3">
-              <div className="text-blue-400 font-mono font-bold text-sm">03 / Reliability</div>
-              <h3 className="text-lg font-bold text-white font-tech">Overheating &amp; Silent Disk Failures</h3>
-              <p className="text-xs text-zinc-400 font-light leading-relaxed">
+            <div className="rounded-2xl border border-border bg-card/30 p-6 space-y-3">
+              <div className="text-primary font-mono font-bold text-sm">03 / Reliability</div>
+              <h3 className="text-lg font-bold text-foreground font-tech">Overheating &amp; Silent Disk Failures</h3>
+              <p className="text-xs text-muted-foreground font-light leading-relaxed">
                 Coastal dust and heat silently degrade thermal paste and storage drives. Our proactive monthly audits replace failing components before data loss happens.
               </p>
             </div>
@@ -236,9 +236,9 @@ export default function LifecycleHardwarePage() {
       <section id="services-grid" className="py-16 md:py-24">
         <div className="container mx-auto px-6 max-w-screen-2xl">
           <div className="max-w-2xl mb-16">
-            <span className="text-xs uppercase tracking-[0.35em] text-blue-400 font-bold font-mono">Offerings</span>
-            <h2 className="mt-3 text-3xl sm:text-4xl font-bold text-white font-tech tracking-tight">Our Hardware Management Capabilities</h2>
-            <p className="mt-4 text-zinc-400 text-sm sm:text-base font-light">
+            <span className="text-xs uppercase tracking-[0.35em] text-primary font-bold font-mono">Offerings</span>
+            <h2 className="mt-3 text-3xl sm:text-4xl font-bold text-foreground font-tech tracking-tight">Our Hardware Management Capabilities</h2>
+            <p className="mt-4 text-muted-foreground text-sm sm:text-base font-light">
               Enterprise procurement, custom workstation deployments, proactive AMC agreements, and secure data wiping.
             </p>
           </div>
@@ -247,27 +247,27 @@ export default function LifecycleHardwarePage() {
             {subServices.map((service, index) => {
               const Icon = service.icon;
               return (
-                <div 
+                <div
                   key={index}
-                  className={`relative overflow-hidden rounded-3xl border border-zinc-850 bg-zinc-950/60 p-8 sm:p-10 transition-all duration-300 ${service.border} group`}
+                  className={`relative overflow-hidden rounded-3xl border border-border bg-background/60 p-8 sm:p-10 transition-all duration-300 ${service.border} group`}
                 >
                   <div className={`absolute -right-16 -top-16 h-48 w-48 rounded-full bg-gradient-to-br ${service.gradient} blur-3xl opacity-60 pointer-events-none transition-all duration-300 group-hover:scale-110`} />
-                  
+
                   <div className="relative z-10 flex flex-col h-full justify-between">
                     <div>
-                      <div className="mb-5 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-zinc-900 border border-zinc-850 text-white">
-                        <Icon size={22} className="text-zinc-200" />
+                      <div className="mb-5 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-card border border-border text-foreground">
+                        <Icon size={22} className="text-muted-foreground" />
                       </div>
-                      <h3 className="text-xl font-bold text-white font-tech mb-2">{service.title}</h3>
-                      <p className="text-zinc-300 text-sm font-light mb-8 leading-relaxed max-w-md">{service.subtitle}</p>
-                      
-                      <div className="space-y-4 border-t border-zinc-900 pt-6">
+                      <h3 className="text-xl font-bold text-foreground font-tech mb-2">{service.title}</h3>
+                      <p className="text-muted-foreground text-sm font-light mb-8 leading-relaxed max-w-md">{service.subtitle}</p>
+
+                      <div className="space-y-4 border-t border-border pt-6">
                         {service.points.map((pt, pIdx) => (
                           <div key={pIdx} className="flex gap-4">
-                            <CheckCircle2 size={18} className="text-blue-500 shrink-0 mt-0.5" />
+                            <CheckCircle2 size={18} className="text-primary shrink-0 mt-0.5" />
                             <div className="space-y-0.5">
-                              <h4 className="text-sm font-bold text-white tracking-wide">{pt.label}</h4>
-                              <p className="text-xs text-zinc-400 font-light leading-relaxed">{pt.desc}</p>
+                              <h4 className="text-sm font-bold text-foreground tracking-wide">{pt.label}</h4>
+                              <p className="text-xs text-muted-foreground font-light leading-relaxed">{pt.desc}</p>
                             </div>
                           </div>
                         ))}
@@ -292,22 +292,22 @@ export default function LifecycleHardwarePage() {
       <TrustSection variant="compact" />
 
       {/* FAQ Section with JSON-LD Schema */}
-      <section className="py-16 sm:py-20 border-b border-zinc-900">
+      <section className="py-16 sm:py-20 border-b border-border">
         <div className="container mx-auto px-6 max-w-screen-2xl">
           <div className="max-w-3xl mb-12">
-            <span className="text-xs font-bold uppercase tracking-[0.35em] text-blue-400 font-mono flex items-center gap-2">
+            <span className="text-xs font-bold uppercase tracking-[0.35em] text-primary font-mono flex items-center gap-2">
               <HelpCircle size={14} /> Clear Answers
             </span>
-            <h2 className="mt-3 text-3xl sm:text-4xl font-bold text-white font-tech tracking-tight">
+            <h2 className="mt-3 text-3xl sm:text-4xl font-bold text-foreground font-tech tracking-tight">
               Frequently Asked Questions: Hardware &amp; AMC
             </h2>
           </div>
 
           <div className="grid gap-6 md:grid-cols-2">
             {FAQS.map((faq, idx) => (
-              <div key={idx} className="rounded-2xl border border-zinc-850 bg-zinc-950/60 p-6 space-y-2">
-                <h3 className="text-sm font-bold text-white font-tech">{faq.question}</h3>
-                <p className="text-xs text-zinc-400 font-light leading-relaxed">{faq.answer}</p>
+              <div key={idx} className="rounded-2xl border border-border bg-background/60 p-6 space-y-2">
+                <h3 className="text-sm font-bold text-foreground font-tech">{faq.question}</h3>
+                <p className="text-xs text-muted-foreground font-light leading-relaxed">{faq.answer}</p>
               </div>
             ))}
           </div>
@@ -333,23 +333,23 @@ export default function LifecycleHardwarePage() {
       </section>
 
       {/* Intake CTA — full assessment form lives on /assessment to avoid duplicating the funnel */}
-      <section id="assessment-funnel" className="py-16 sm:py-24 bg-zinc-950/20">
+      <section id="assessment-funnel" className="py-16 sm:py-24 bg-background/20">
         <div className="container mx-auto px-6 max-w-screen-2xl">
-          <div className="mx-auto max-w-3xl rounded-2xl border border-blue-500/20 bg-gradient-to-br from-blue-950/30 via-zinc-950 to-zinc-950 p-8 text-center sm:p-12 space-y-4">
-            <span className="text-xs uppercase tracking-[0.35em] text-blue-400 font-bold font-mono">Proposal Intake</span>
-            <h2 className="text-3xl sm:text-4xl font-bold text-white font-tech tracking-tight">Discuss Your Hardware Requirements</h2>
-            <p className="text-zinc-400 text-sm sm:text-base font-light max-w-xl mx-auto">
+          <div className="mx-auto max-w-3xl rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/30 via-background to-background p-8 text-center sm:p-12 space-y-4">
+            <span className="text-xs uppercase tracking-[0.35em] text-primary font-bold font-mono">Proposal Intake</span>
+            <h2 className="text-3xl sm:text-4xl font-bold text-foreground font-tech tracking-tight">Discuss Your Hardware Requirements</h2>
+            <p className="text-muted-foreground text-sm sm:text-base font-light max-w-xl mx-auto">
               Tell us about your hardware or AMC requirements in the free assessment — our enterprise solutions team will respond with an itemized proposal.
             </p>
             <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
-              <Button asChild size="lg" className="bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl h-12 px-8 text-sm shadow-lg shadow-blue-500/25">
+              <Button asChild size="lg" className="bg-primary hover:bg-primary text-primary-foreground font-bold rounded-xl h-12 px-8 text-sm shadow-lg shadow-primary/25">
                 <Link href="/assessment?service=lifecycle-hardware&context=service_lifecycle_hardware">
                   Start Free Assessment <ArrowRight size={16} className="ml-2" />
                 </Link>
               </Button>
               <Link
                 href="/contact?subject=sales&service=lifecycle_hardware&intent=enterprise_consultation&source=service_lifecycle_hardware"
-                className="text-xs text-zinc-400 hover:text-white transition-colors"
+                className="text-xs text-muted-foreground hover:text-foreground transition-colors"
               >
                 Or talk directly to our hardware team
               </Link>

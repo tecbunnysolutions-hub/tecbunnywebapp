@@ -120,7 +120,7 @@ export default function UPIPaymentPage() {
       const data = result.order as any;
 
       const extras = parseOrderExtras(data.items ?? null);
-      const isInitialConfirmed = data.payment_status === 'Payment Confirmed' || 
+      const isInitialConfirmed = data.payment_status === 'Payment Confirmed' ||
         ['Payment Confirmed', 'Confirmed', 'Processing', 'Ready to Ship', 'Shipped', 'Ready for Pickup', 'Completed', 'Delivered', 'Delivered/Picked Up'].includes(data.status ?? '');
       const isPendingPaymentMode = isInitialConfirmed && extras.part_payment_amount && (extras as any).pending_payment_status !== 'paid';
 
@@ -261,8 +261,8 @@ export default function UPIPaymentPage() {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-gray-200 rounded w-1/4"></div>
-          <div className="h-64 bg-gray-200 rounded"></div>
+          <div className="h-8 bg-muted rounded w-1/4"></div>
+          <div className="h-64 bg-muted rounded"></div>
         </div>
       </div>
     );
@@ -297,7 +297,7 @@ export default function UPIPaymentPage() {
           Back
         </Button>
         <h1 className="text-3xl font-bold">UPI Payment</h1>
-        <p className="text-gray-600">Order #{formatOrderNumber(order.id)}</p>
+        <p className="text-muted-foreground">Order #{formatOrderNumber(order.id)}</p>
       </div>
 
       <div className="space-y-6">
@@ -318,25 +318,25 @@ export default function UPIPaymentPage() {
                   ? 'Payable Part Amount:'
                   : 'Amount to Pay:'}
               </span>
-              <span className="text-2xl font-bold text-green-400">₹{order.total.toFixed(2)}</span>
+              <span className="text-2xl font-bold text-success">₹{order.total.toFixed(2)}</span>
             </div>
             {(order.isPartPayment || order.isPendingPayment) && (
-              <div className="flex justify-between text-xs text-slate-400 mt-1">
+              <div className="flex justify-between text-xs text-muted-foreground mt-1">
                 <span>Total CCTV Order Amount</span>
                 <span>₹{order.fullTotal?.toFixed(2)}</span>
               </div>
             )}
-            <div className="mt-4 grid gap-2 text-sm text-gray-600">
+            <div className="mt-4 grid gap-2 text-sm text-muted-foreground">
               {customerEmail && (
                 <div className="flex justify-between">
                   <span>Email</span>
-                  <span className="font-medium text-gray-900">{customerEmail}</span>
+                  <span className="font-medium text-foreground">{customerEmail}</span>
                 </div>
               )}
               {customerPhone && (
                 <div className="flex justify-between">
                   <span>Phone</span>
-                  <span className="font-medium text-gray-900">{customerPhone}</span>
+                  <span className="font-medium text-foreground">{customerPhone}</span>
                 </div>
               )}
               <div className="flex justify-between">
@@ -364,7 +364,7 @@ export default function UPIPaymentPage() {
             {/* Direct UPI Link */}
             <div className="space-y-2">
               <h4 className="font-medium">Option 1: Direct UPI Payment</h4>
-              <Button 
+              <Button
                 onClick={handleOpenUPI}
                 className="w-full"
                 size="lg"
@@ -372,7 +372,7 @@ export default function UPIPaymentPage() {
                 <Smartphone className="mr-2 h-4 w-4" />
                 Pay with UPI App
               </Button>
-              <p className="text-sm text-slate-300">
+              <p className="text-sm text-muted-foreground">
                 This will open your UPI app with pre-filled payment details
               </p>
             </div>
@@ -382,15 +382,15 @@ export default function UPIPaymentPage() {
             {/* Manual UPI Transfer */}
             <div className="space-y-2">
               <h4 className="font-medium">Option 2: Manual Transfer</h4>
-              <div className="bg-white/5 border border-white/10 p-4 rounded-lg">
+              <div className="bg-card/5 border border-border/10 p-4 rounded-lg">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-slate-300">UPI ID:</p>
+                    <p className="text-sm text-muted-foreground">UPI ID:</p>
                     <p className="font-mono font-medium">{UPI_ID}</p>
                   </div>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
+                  <Button
+                    variant="outline"
+                    size="sm"
                     onClick={copyUPIId}
                     aria-label="Copy UPI ID"
                   >
@@ -398,7 +398,7 @@ export default function UPIPaymentPage() {
                   </Button>
                 </div>
               </div>
-              <p className="text-sm text-slate-300">
+              <p className="text-sm text-muted-foreground">
                 Transfer ₹{order.total.toFixed(2)} to the above UPI ID with reference: Order {formatOrderNumber(order.id)}
               </p>
             </div>
@@ -408,26 +408,26 @@ export default function UPIPaymentPage() {
             {/* QR Code Section */}
             <div className="space-y-2">
               <h4 className="font-medium">Option 3: Scan QR Code</h4>
-              <div className="flex items-center justify-center bg-white/5 border border-white/10 p-8 rounded-lg">
+              <div className="flex items-center justify-center bg-card/5 border border-border/10 p-8 rounded-lg">
                 <div className="text-center">
                   {qrCodeUrl ? (
                     <div className="space-y-2">
                       <Image
-                        src={qrCodeUrl} 
-                        alt="UPI Payment QR Code" 
+                        src={qrCodeUrl}
+                        alt="UPI Payment QR Code"
                         className="mx-auto border rounded-lg shadow-sm"
                         width={200}
                         height={200}
                         unoptimized
                       />
-                      <p className="text-sm text-slate-300">
+                      <p className="text-sm text-muted-foreground">
                         Scan with any UPI app to pay ₹{order?.total.toFixed(2)}
                       </p>
                     </div>
                   ) : (
                     <div>
-                      <QrCode className="h-24 w-24 mx-auto text-slate-400 mb-2 animate-pulse" />
-                      <p className="text-sm text-slate-300">Generating QR Code...</p>
+                      <QrCode className="h-24 w-24 mx-auto text-muted-foreground mb-2 animate-pulse" />
+                      <p className="text-sm text-muted-foreground">Generating QR Code...</p>
                     </div>
                   )}
                 </div>
@@ -492,7 +492,7 @@ export default function UPIPaymentPage() {
                   </button>
                 </div>
               )}
-              <Button 
+              <Button
                 onClick={handlePaymentConfirmation}
                 className="w-full"
                 size="lg"
@@ -500,7 +500,7 @@ export default function UPIPaymentPage() {
               >
                 {paymentStatus === 'paid' ? 'Payment Confirmed' : isSubmittingClaim ? 'Submitting reference…' : paymentClaimSubmitted ? 'Submitted for verification' : 'Submit payment reference'}
               </Button>
-              <p className="text-xs text-slate-400 text-center">
+              <p className="text-xs text-muted-foreground text-center">
                 A reference submission does not confirm payment. We will verify it before updating your order.
               </p>
             </div>

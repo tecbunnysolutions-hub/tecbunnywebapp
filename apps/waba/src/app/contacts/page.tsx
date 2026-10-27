@@ -51,16 +51,16 @@ export default function ContactsConsentPage() {
       <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', alignItems: 'center', marginBottom: '1.5rem' }}>
         <div>
           <h1 style={{ fontSize: '2rem', fontWeight: 600 }}>Consent Ledger</h1>
-          <p style={{ color: '#94a3b8' }}>Manage WhatsApp opt-in and opt-out state before broadcasts.</p>
+          <p style={{ color: "hsl(var(--muted-foreground))" }}>Manage WhatsApp opt-in and opt-out state before broadcasts.</p>
         </div>
         <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-          <Link href="/analytics" style={{ color: '#bfdbfe', textDecoration: 'none' }}>Analytics</Link>
-          <Link href="/campaigns" style={{ color: '#bfdbfe', textDecoration: 'none' }}>Campaigns</Link>
-          <Link href="/" style={{ color: '#bfdbfe', textDecoration: 'none' }}>Inbox</Link>
+          <Link href="/analytics" style={{ color: "hsl(var(--foreground))", textDecoration: 'none' }}>Analytics</Link>
+          <Link href="/campaigns" style={{ color: "hsl(var(--foreground))", textDecoration: 'none' }}>Campaigns</Link>
+          <Link href="/" style={{ color: "hsl(var(--foreground))", textDecoration: 'none' }}>Inbox</Link>
         </div>
       </div>
 
-      {notice ? <div role="status" style={{ marginBottom: '1rem', color: '#bfdbfe' }}>{notice}</div> : null}
+      {notice ? <div role="status" style={{ marginBottom: '1rem', color: "hsl(var(--foreground))" }}>{notice}</div> : null}
 
       <div className="glass-panel" style={{ padding: '1.25rem', marginBottom: '1rem', display: 'grid', gap: '1rem' }}>
         <label className="crm-field">
@@ -68,23 +68,23 @@ export default function ContactsConsentPage() {
           <input className="crm-input" value={phone} onChange={(event) => setPhone(event.target.value)} placeholder="919876543210" />
         </label>
         <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-          <button type="button" onClick={() => phone && updateConsent(phone, true)} style={{ background: '#10b981', color: 'white', border: 'none', borderRadius: '8px', padding: '0.75rem 1rem', cursor: 'pointer' }}>Mark Opted In</button>
-          <button type="button" onClick={() => phone && updateConsent(phone, false)} style={{ background: '#ef4444', color: 'white', border: 'none', borderRadius: '8px', padding: '0.75rem 1rem', cursor: 'pointer' }}>Mark Opted Out</button>
+          <button type="button" onClick={() => phone && updateConsent(phone, true)} style={{ background: "hsl(var(--success))", color: "hsl(var(--success-foreground))", border: 'none', borderRadius: '8px', padding: '0.75rem 1rem', cursor: 'pointer' }}>Mark Opted In</button>
+          <button type="button" onClick={() => phone && updateConsent(phone, false)} style={{ background: "hsl(var(--destructive))", color: "hsl(var(--destructive-foreground))", border: 'none', borderRadius: '8px', padding: '0.75rem 1rem', cursor: 'pointer' }}>Mark Opted Out</button>
         </div>
       </div>
 
       <div className="glass-panel" style={{ padding: '1.25rem' }}>
         <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1rem' }}>
           <input className="crm-input" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search phone" />
-          <button type="button" onClick={() => loadContacts(search)} style={{ background: '#3b82f6', color: 'white', border: 'none', borderRadius: '8px', padding: '0.75rem 1rem', cursor: 'pointer' }}>Search</button>
+          <button type="button" onClick={() => loadContacts(search)} style={{ background: 'hsl(var(--primary))', color: "hsl(var(--primary-foreground))", border: 'none', borderRadius: '8px', padding: '0.75rem 1rem', cursor: 'pointer' }}>Search</button>
         </div>
-        {contacts.length === 0 ? <p style={{ color: '#94a3b8' }}>No consent records found.</p> : contacts.map((contact) => (
-          <div key={contact.phone} style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '1rem', padding: '0.85rem 0', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+        {contacts.length === 0 ? <p style={{ color: "hsl(var(--muted-foreground))" }}>No consent records found.</p> : contacts.map((contact) => (
+          <div key={contact.phone} style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '1rem', padding: '0.85rem 0', borderBottom: "1px solid hsl(var(--border) / 0.08)" }}>
             <div>
               <strong>{contact.phone}</strong>
-              <p style={{ color: '#94a3b8', fontSize: '0.85rem' }}>{contact.source} · Updated {new Date(contact.updated_at).toLocaleString()}</p>
+              <p style={{ color: "hsl(var(--muted-foreground))", fontSize: '0.85rem' }}>{contact.source} · Updated {new Date(contact.updated_at).toLocaleString()}</p>
             </div>
-            <span style={{ color: contact.opted_in && !contact.opted_out_at ? '#bbf7d0' : '#fecaca', fontWeight: 700 }}>{contact.opted_in && !contact.opted_out_at ? 'OPTED IN' : 'OPTED OUT'}</span>
+            <span style={{ color: contact.opted_in && !contact.opted_out_at ? "hsl(var(--success))" : 'hsl(var(--primary))', fontWeight: 700 }}>{contact.opted_in && !contact.opted_out_at ? 'OPTED IN' : 'OPTED OUT'}</span>
           </div>
         ))}
       </div>

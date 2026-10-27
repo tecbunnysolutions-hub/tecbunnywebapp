@@ -8,10 +8,10 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 
-import { 
-  Globe, 
-  Plus, 
-  X, 
+import {
+  Globe,
+  Plus,
+  X,
   ExternalLink,
   Save,
   RotateCcw,
@@ -185,17 +185,17 @@ export default function SocialMediaManager() {
     try {
       setLoading(true);
       setLoadError(null);
-      
+
       const { data: settings, error } = await withTimeout(
         supabase
           .from('settings')
           .select('key, value')
           .in('key', [
-            'facebookUrl', 
-            'twitterUrl', 
-            'instagramUrl', 
-            'linkedinUrl', 
-            'youtubeUrl', 
+            'facebookUrl',
+            'twitterUrl',
+            'instagramUrl',
+            'linkedinUrl',
+            'youtubeUrl',
             'websiteUrl'
           ]),
         12000,
@@ -301,7 +301,7 @@ export default function SocialMediaManager() {
   const addSocialLink = (platform: PlatformKey, url: string) => {
     const formKey = `${platform}Url` as keyof SocialMediaFormValues;
     form.setValue(formKey, url);
-    
+
     const newLink: SocialMediaLink = {
       id: `${platform}Url`,
       platform,
@@ -371,7 +371,7 @@ export default function SocialMediaManager() {
                 {showPreview ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 {showPreview ? 'Hide Preview' : 'Show Preview'}
               </Button>
-              <AddSocialLinkDialog 
+              <AddSocialLinkDialog
                 onAdd={addSocialLink}
                 existingPlatforms={socialLinks.map(link => link.platform)}
                 isOpen={isAddDialogOpen}
@@ -382,7 +382,7 @@ export default function SocialMediaManager() {
         </CardHeader>
         <CardContent>
           {loadError && (
-            <div className="mb-4 rounded-md border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-200">
+            <div className="mb-4 rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
               {loadError}
             </div>
           )}
@@ -397,16 +397,16 @@ export default function SocialMediaManager() {
                       const platform = SOCIAL_PLATFORMS[link.platform];
                       const IconComponent = platform.icon;
                       const formKey = `${link.platform}Url` as keyof SocialMediaFormValues;
-                      
+
                       return (
                         <div key={link.id} className="flex items-center gap-4 p-4 border rounded-lg">
-                          <div 
+                          <div
                             className="p-2 rounded-md flex items-center justify-center"
                             style={{ backgroundColor: `${platform.color}20`, color: platform.color }}
                           >
                             <IconComponent className="h-5 w-5" />
                           </div>
-                          
+
                           <div className="flex-1">
                             <FormField
                               control={form.control}
@@ -482,7 +482,7 @@ export default function SocialMediaManager() {
                   <RotateCcw className="h-4 w-4 mr-2" />
                   Reset
                 </Button>
-                
+
                 <div className="flex gap-2">
                   <Button
                     type="button"
@@ -522,11 +522,11 @@ export default function SocialMediaManager() {
 }
 
 // Add Social Link Dialog Component
-function AddSocialLinkDialog({ 
-  onAdd, 
-  existingPlatforms, 
-  isOpen, 
-  setIsOpen 
+function AddSocialLinkDialog({
+  onAdd,
+  existingPlatforms,
+  isOpen,
+  setIsOpen
 }: {
   onAdd: (platform: PlatformKey, url: string) => void;
   existingPlatforms: PlatformKey[];
@@ -564,7 +564,7 @@ function AddSocialLinkDialog({
             Choose a platform and enter the URL for your social media profile
           </DialogDescription>
         </DialogHeader>
-        
+
         <div className="space-y-4">
           <div>
             <Label>Platform</Label>
@@ -637,10 +637,10 @@ function SocialMediaPreview({ socialLinks }: { socialLinks: SocialMediaLink[] })
           <div className="flex gap-3">
             {socialLinks.map((link) => {
               if (!link.isActive || !link.url) return null;
-              
+
               const platform = SOCIAL_PLATFORMS[link.platform];
               const IconComponent = platform.icon;
-              
+
               return (
                 <Button
                   key={link.id}
@@ -650,8 +650,8 @@ function SocialMediaPreview({ socialLinks }: { socialLinks: SocialMediaLink[] })
                   style={{ borderColor: platform.color }}
                   className="hover:bg-opacity-10"
                 >
-                  <IconComponent 
-                    className="h-4 w-4" 
+                  <IconComponent
+                    className="h-4 w-4"
                     style={{ color: platform.color }}
                   />
                 </Button>

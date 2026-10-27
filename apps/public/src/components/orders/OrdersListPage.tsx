@@ -90,7 +90,7 @@ export default function OrdersListPage() {
       filtered = filtered.filter(order =>
         order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
         order.customer_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        order.items.some(item => 
+        order.items.some(item =>
           item.name.toLowerCase().includes(searchTerm.toLowerCase())
         )
       );
@@ -106,34 +106,34 @@ export default function OrdersListPage() {
 
   const getStatusColor = (status: OrderStatus) => {
     switch (status) {
-      case 'Pending': return 'bg-yellow-500/15 text-yellow-200 border border-yellow-500/30';
-      case 'Awaiting Payment': return 'bg-amber-500/15 text-amber-200 border border-amber-500/30';
-      case 'Payment Failed': return 'bg-red-500/15 text-red-200 border border-red-500/30';
+      case 'Pending': return 'bg-warning/15 text-warning border border-warning/30';
+      case 'Awaiting Payment': return 'bg-warning/15 text-warning border border-warning/30';
+      case 'Payment Failed': return 'bg-destructive/15 text-destructive border border-destructive/30';
       case 'Payment Confirmed': return 'bg-primary/15 text-primary border border-primary/30';
-      case 'Confirmed': return 'bg-blue-500/15 text-blue-200 border border-blue-500/30';
-      case 'Processing': return 'bg-purple-500/15 text-purple-200 border border-purple-500/30';
-      case 'Ready to Ship': return 'bg-indigo-500/15 text-indigo-200 border border-indigo-500/30';
-      case 'Shipped': return 'bg-indigo-500/15 text-indigo-200 border border-indigo-500/30';
-      case 'Ready for Pickup': return 'bg-sky-500/15 text-sky-200 border border-sky-500/30';
-      case 'Ready for Delivery': return 'bg-sky-500/15 text-sky-200 border border-sky-500/30';
+      case 'Confirmed': return 'bg-primary/15 text-primary border border-primary/30';
+      case 'Processing': return 'bg-primary/15 text-primary border border-primary/30';
+      case 'Ready to Ship': return 'bg-primary/15 text-primary border border-primary/30';
+      case 'Shipped': return 'bg-primary/15 text-primary border border-primary/30';
+      case 'Ready for Pickup': return 'bg-primary/15 text-primary border border-primary/30';
+      case 'Ready for Delivery': return 'bg-primary/15 text-primary border border-primary/30';
       case 'Delivered':
       case 'Delivered/Picked Up':
-        return 'bg-emerald-500/15 text-emerald-200 border border-emerald-500/30';
-      case 'Completed': return 'bg-emerald-600/15 text-emerald-200 border border-emerald-500/30';
-      case 'On Hold': return 'bg-orange-500/15 text-orange-200 border border-orange-500/30';
+        return 'bg-success/15 text-success border border-success/30';
+      case 'Completed': return 'bg-success/15 text-success border border-success/30';
+      case 'On Hold': return 'bg-accent/15 text-accent border border-accent/30';
       case 'Visit Scheduled':
-      case 'Visit Completed': return 'bg-teal-500/15 text-teal-200 border border-teal-500/30';
-      case 'Diagnosis Done': return 'bg-blue-500/15 text-blue-200 border border-blue-500/30';
+      case 'Visit Completed': return 'bg-success/15 text-success border border-success/30';
+      case 'Diagnosis Done': return 'bg-primary/15 text-primary border border-primary/30';
       case 'Quote Sent':
       case 'Awaiting Customer Approval': return 'bg-primary/15 text-primary border border-primary/30';
-      case 'Approved': return 'bg-emerald-500/15 text-emerald-200 border border-emerald-500/30';
-      case 'Parts Ordered': return 'bg-indigo-500/15 text-indigo-200 border border-indigo-500/30';
-      case 'Work In Progress': return 'bg-purple-500/15 text-purple-200 border border-purple-500/30';
-      case 'Quality Check': return 'bg-fuchsia-500/15 text-fuchsia-200 border border-fuchsia-500/30';
+      case 'Approved': return 'bg-success/15 text-success border border-success/30';
+      case 'Parts Ordered': return 'bg-primary/15 text-primary border border-primary/30';
+      case 'Work In Progress': return 'bg-primary/15 text-primary border border-primary/30';
+      case 'Quality Check': return 'bg-primary/15 text-primary border border-primary/30';
       case 'Warranty/Support Active': return 'bg-lime-500/15 text-lime-200 border border-lime-500/30';
-      case 'Cancelled': return 'bg-red-500/15 text-red-200 border border-red-500/30';
-      case 'Rejected': return 'bg-rose-500/15 text-rose-200 border border-rose-500/30';
-      default: return 'bg-slate-700/40 text-slate-200 border border-white/10';
+      case 'Cancelled': return 'bg-destructive/15 text-destructive border border-destructive/30';
+      case 'Rejected': return 'bg-destructive/15 text-destructive border border-destructive/30';
+      default: return 'bg-secondary/40 text-muted-foreground border border-border/10';
     }
   };
 
@@ -157,11 +157,11 @@ export default function OrdersListPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#09090B] py-8">
+      <div className="min-h-screen bg-card py-8">
         <div className="max-w-6xl mx-auto px-4">
           <div className="text-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="text-slate-300">Loading your orders...</p>
+            <p className="text-muted-foreground">Loading your orders...</p>
           </div>
         </div>
       </div>
@@ -169,18 +169,18 @@ export default function OrdersListPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#09090B] py-8">
+    <div className="min-h-screen bg-card py-8">
       <div className="max-w-6xl mx-auto px-4">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2">Your Orders</h1>
-          <p className="text-slate-300">Track and manage your order history</p>
+          <h1 className="text-3xl font-bold text-foreground mb-2">Your Orders</h1>
+          <p className="text-muted-foreground">Track and manage your order history</p>
         </div>
 
         {notice && (
           <div
             role={notice.tone === 'error' ? 'alert' : 'status'}
-            className={`mb-6 rounded-xl border px-4 py-3 text-sm ${notice.tone === 'error' ? 'border-red-500/30 bg-red-500/10 text-red-200' : notice.tone === 'success' ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-200' : 'border-primary/30 bg-primary/10 text-primary'}`}
+            className={`mb-6 rounded-xl border px-4 py-3 text-sm ${notice.tone === 'error' ? 'border-destructive/30 bg-destructive/10 text-destructive' : notice.tone === 'success' ? 'border-success/30 bg-success/10 text-success' : 'border-primary/30 bg-primary/10 text-primary'}`}
           >
             {notice.message}
           </div>
@@ -192,7 +192,7 @@ export default function OrdersListPage() {
             <div className="flex flex-col md:flex-row gap-4">
               <div className="flex-1">
                 <div className="relative">
-                  <Search className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
+                  <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
                     placeholder="Search by order ID, customer name, or product..."
                     value={searchTerm}
@@ -222,20 +222,20 @@ export default function OrdersListPage() {
         {filteredOrders.length === 0 ? (
           <Card>
             <CardContent className="text-center py-12">
-              <Package className="h-16 w-16 mx-auto text-slate-400 mb-4" />
-              <h3 className="text-xl font-semibold text-white mb-2">
+              <Package className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
+              <h3 className="text-xl font-semibold text-foreground mb-2">
                 {orders.length === 0 ? 'No Orders Yet' : 'No Orders Found'}
               </h3>
-              <p className="text-slate-300 mb-6">
-                {orders.length === 0 
+              <p className="text-muted-foreground mb-6">
+                {orders.length === 0
                   ? 'You haven\'t placed any orders yet. Start shopping to see your orders here.'
                   : 'Try adjusting your search or filter criteria.'
                 }
               </p>
               {orders.length === 0 && (
-                <Button 
+                <Button
                   onClick={() => window.location.href = '/products'}
-                  className="bg-primary hover:opacity-90 text-white"
+                  className="bg-primary hover:opacity-90 text-primary-foreground"
                 >
                   Start Shopping
                 </Button>
@@ -245,7 +245,7 @@ export default function OrdersListPage() {
         ) : (
           <div className="space-y-4">
             {filteredOrders.map((order) => (
-              <Card key={order.id} className="border-white/10 bg-slate-900/40 hover:shadow-md transition-shadow">
+              <Card key={order.id} className="border-border/10 bg-card/40 hover:shadow-md transition-shadow">
                 <CardContent className="p-6">
                   <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                     <div className="space-y-3">
@@ -257,8 +257,8 @@ export default function OrdersListPage() {
                           {order.status}
                         </Badge>
                       </div>
-                      
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm text-slate-300">
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm text-muted-foreground">
                         <div className="flex items-center gap-2">
                           <Calendar className="h-4 w-4" />
                           {new Date(order.created_at).toLocaleDateString('en-IN')}
@@ -285,11 +285,11 @@ export default function OrdersListPage() {
 
                       <div className="space-y-1">
                         <p className="font-medium text-sm">Customer: {order.customer_name}</p>
-                        <p className="text-sm text-slate-300">
+                        <p className="text-sm text-muted-foreground">
                           Items: {order.items.map(item => item.name).join(', ')}
                         </p>
                         {order.delivery_address && (
-                          <p className="text-sm text-slate-300">
+                          <p className="text-sm text-muted-foreground">
                             Delivery: {order.delivery_address}
                           </p>
                         )}
@@ -301,7 +301,7 @@ export default function OrdersListPage() {
                         <Button
                           variant="default"
                           size="sm"
-                          className="bg-green-600 hover:bg-green-700 text-white border-none flex items-center gap-2"
+                          className="bg-success hover:bg-success text-success-foreground border-none flex items-center gap-2"
                           onClick={() => {
                             const orderId = resolveOrderId(order.id);
                             if (!orderId) {
@@ -329,8 +329,8 @@ export default function OrdersListPage() {
                       </Button>
                       {order.status === 'Pending' && (
                         pendingCancelOrderId === order.id ? (
-                          <div className="flex flex-wrap items-center gap-2 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2">
-                            <span className="text-xs font-semibold text-red-200">Cancel order?</span>
+                          <div className="flex flex-wrap items-center gap-2 rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2">
+                            <span className="text-xs font-semibold text-destructive">Cancel order?</span>
                             <Button
                               variant="destructive"
                               size="sm"
@@ -347,7 +347,7 @@ export default function OrdersListPage() {
                           <Button
                             variant="outline"
                             size="sm"
-                            className="text-red-300 hover:text-red-200 border-red-500/30 hover:border-red-500/50"
+                            className="text-destructive hover:text-destructive border-destructive/30 hover:border-destructive/50"
                             disabled={cancellingOrderId === order.id}
                             onClick={() => setPendingCancelOrderId(order.id)}
                           >
@@ -363,27 +363,27 @@ export default function OrdersListPage() {
                     <div className="mt-6 overflow-hidden rounded-xl border border-primary/20 bg-primary/5">
                       <div className="flex items-center justify-between bg-primary/10 px-4 py-2 border-b border-primary/20">
                         <div className="flex items-center gap-2">
-                          <div className="h-2 w-2 animate-pulse rounded-full bg-primary" />
+                          <div className="h-2 w-2 animate-pulse rounded-full bg-primary text-primary-foreground" />
                           <span className="text-[10px] font-bold uppercase tracking-wider text-primary">Technician Dispatch Optimization</span>
                         </div>
                         <span className="text-[10px] font-medium text-primary/70">Arriving Soon</span>
                       </div>
                       <div className="p-4 flex flex-col sm:flex-row items-center gap-4">
                         <div className="flex-1">
-                          <p className="text-xs font-semibold text-white">Complementary Accessories</p>
-                          <p className="text-[10px] text-slate-400 mt-0.5">Have your dispatched technician deliver this addition directly with your configuration today.</p>
+                          <p className="text-xs font-semibold text-foreground">Complementary Accessories</p>
+                          <p className="text-[10px] text-muted-foreground mt-0.5">Have your dispatched technician deliver this addition directly with your configuration today.</p>
                         </div>
                         <div className="flex items-center gap-3 w-full sm:w-auto">
-                          <div className="flex items-center gap-2 rounded-lg bg-white/5 p-2 border border-white/10">
-                            <div className="h-8 w-8 rounded bg-slate-800 flex items-center justify-center text-[10px] font-bold text-primary">64GB</div>
+                          <div className="flex items-center gap-2 rounded-lg bg-card/5 p-2 border border-border/10">
+                            <div className="h-8 w-8 rounded bg-card flex items-center justify-center text-[10px] font-bold text-primary">64GB</div>
                             <div>
-                              <p className="text-[10px] font-bold text-white">Surveillance SD</p>
+                              <p className="text-[10px] font-bold text-foreground">Surveillance SD</p>
                               <p className="text-[9px] text-primary">₹899.00</p>
                             </div>
                           </div>
-                          <Button 
-                            size="sm" 
-                            className="bg-primary hover:bg-white hover:text-zinc-950 text-white text-[10px] font-bold h-8 px-3"
+                          <Button
+                            size="sm"
+                            className="bg-primary hover:bg-card hover:text-foreground text-primary-foreground text-[10px] font-bold h-8 px-3"
                             onClick={() => {
                               setNotice({ tone: 'info', message: `Surveillance SD accessory added to dispatch review for order #${formatOrderNumber(order.id)}.` });
                             }}
@@ -402,7 +402,7 @@ export default function OrdersListPage() {
 
         {/* Summary Stats */}
         {orders.length > 0 && (
-          <Card className="mt-8 border-white/10 bg-slate-900/40">
+          <Card className="mt-8 border-border/10 bg-card/40">
             <CardHeader>
               <CardTitle>Order Summary</CardTitle>
             </CardHeader>
@@ -410,25 +410,25 @@ export default function OrdersListPage() {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
                 <div>
                   <p className="text-2xl font-bold text-primary">{orders.length}</p>
-                  <p className="text-sm text-slate-300">Total Orders</p>
+                  <p className="text-sm text-muted-foreground">Total Orders</p>
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-emerald-300">
+                  <p className="text-2xl font-bold text-success">
                     {orders.filter(o => o.status === 'Delivered').length}
                   </p>
-                  <p className="text-sm text-slate-300">Delivered</p>
+                  <p className="text-sm text-muted-foreground">Delivered</p>
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-amber-300">
+                  <p className="text-2xl font-bold text-warning">
                     {orders.filter(o => ['Pending', 'Confirmed', 'Processing', 'Shipped'].includes(o.status)).length}
                   </p>
-                  <p className="text-sm text-slate-300">In Progress</p>
+                  <p className="text-sm text-muted-foreground">In Progress</p>
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-violet-300">
+                  <p className="text-2xl font-bold text-primary">
                     ₹{orders.reduce((total, order) => total + order.total, 0).toFixed(2)}
                   </p>
-                  <p className="text-sm text-slate-300">Total Spent</p>
+                  <p className="text-sm text-muted-foreground">Total Spent</p>
                 </div>
               </div>
             </CardContent>

@@ -22,7 +22,7 @@ export default function TemplatesPage() {
   const [isCreating, setIsCreating] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
   const [notice, setNotice] = useState<{ tone: 'error' | 'success'; message: string } | null>(null);
-  
+
   // New Template Form
   const [newName, setNewName] = useState("");
   const [newContent, setNewContent] = useState("");
@@ -55,7 +55,7 @@ export default function TemplatesPage() {
     e.preventDefault();
     if (!newName || !newContent) return;
     setNotice(null);
-    
+
     try {
       const res = await fetch('/api/templates', {
         method: 'POST',
@@ -101,14 +101,14 @@ export default function TemplatesPage() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
           <h1 style={{ fontSize: '2rem', fontWeight: 600 }}>Template Library</h1>
-          <p style={{ color: '#94a3b8' }}>Manage WhatsApp templates and provider approval status</p>
+          <p style={{ color: "hsl(var(--muted-foreground))" }}>Manage WhatsApp templates and provider approval status</p>
         </div>
         <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-          <Link href="/analytics" style={{ color: '#bfdbfe', textDecoration: 'none', alignSelf: 'center' }}>Analytics</Link>
-          <Link href="/contacts" style={{ color: '#bfdbfe', textDecoration: 'none', alignSelf: 'center' }}>Consent</Link>
-          <button onClick={handleSyncTemplates} disabled={isSyncing} style={{ background: isSyncing ? 'rgba(59,130,246,0.5)' : '#3b82f6', color: 'white', padding: '0.75rem 1.5rem', borderRadius: '8px', border: 'none', cursor: isSyncing ? 'not-allowed' : 'pointer', fontWeight: 600 }}>{isSyncing ? 'Syncing...' : 'Sync Provider'}</button>
-          <button onClick={() => router.push('/')} style={{ background: 'rgba(255,255,255,0.1)', color: 'white', padding: '0.75rem 1.5rem', borderRadius: '8px', border: 'none', cursor: 'pointer' }}>← Back to Inbox</button>
-          <button onClick={() => setIsCreating(!isCreating)} style={{ background: '#10b981', color: 'white', padding: '0.75rem 1.5rem', borderRadius: '8px', border: 'none', cursor: 'pointer', fontWeight: 600 }}>+ New Template</button>
+          <Link href="/analytics" style={{ color: "hsl(var(--foreground))", textDecoration: 'none', alignSelf: 'center' }}>Analytics</Link>
+          <Link href="/contacts" style={{ color: "hsl(var(--foreground))", textDecoration: 'none', alignSelf: 'center' }}>Consent</Link>
+          <button onClick={handleSyncTemplates} disabled={isSyncing} style={{ background: isSyncing ? "hsl(var(--primary) / 0.5)" : 'hsl(var(--primary))', color: "hsl(var(--foreground))", padding: '0.75rem 1.5rem', borderRadius: '8px', border: 'none', cursor: isSyncing ? 'not-allowed' : 'pointer', fontWeight: 600 }}>{isSyncing ? 'Syncing...' : 'Sync Provider'}</button>
+          <button onClick={() => router.push('/')} style={{ background: "hsl(var(--secondary) / 0.1)", color: "hsl(var(--foreground))", padding: '0.75rem 1.5rem', borderRadius: '8px', border: 'none', cursor: 'pointer' }}>← Back to Inbox</button>
+          <button onClick={() => setIsCreating(!isCreating)} style={{ background: "hsl(var(--success))", color: "hsl(var(--success-foreground))", padding: '0.75rem 1.5rem', borderRadius: '8px', border: 'none', cursor: 'pointer', fontWeight: 600 }}>+ New Template</button>
         </div>
       </div>
 
@@ -118,9 +118,9 @@ export default function TemplatesPage() {
           style={{
             padding: '0.85rem 1rem',
             borderRadius: '10px',
-            border: notice.tone === 'error' ? '1px solid rgba(239, 68, 68, 0.35)' : '1px solid rgba(16, 185, 129, 0.35)',
-            background: notice.tone === 'error' ? 'rgba(239, 68, 68, 0.12)' : 'rgba(16, 185, 129, 0.12)',
-            color: notice.tone === 'error' ? '#fecaca' : '#bbf7d0',
+            border: notice.tone === 'error' ? "1px solid hsl(var(--destructive) / 0.35)" : "1px solid hsl(var(--success) / 0.35)",
+            background: notice.tone === 'error' ? "hsl(var(--destructive) / 0.12)" : "hsl(var(--success) / 0.12)",
+            color: notice.tone === 'error' ? 'hsl(var(--primary))' : "hsl(var(--success))",
             fontSize: '0.9rem'
           }}
         >
@@ -148,7 +148,7 @@ export default function TemplatesPage() {
               <label>Message Content (Use {"{{1}}"} for variables)</label>
               <textarea className="crm-textarea" value={newContent} onChange={e => setNewContent(e.target.value)} placeholder="Hi {{1}}, your order {{2}} has shipped!" required />
             </div>
-            <button type="submit" style={{ background: '#3b82f6', color: 'white', padding: '1rem', borderRadius: '8px', border: 'none', cursor: 'pointer', fontWeight: 600 }}>Submit for Approval</button>
+            <button type="submit" style={{ background: 'hsl(var(--primary))', color: "hsl(var(--primary-foreground))", padding: '1rem', borderRadius: '8px', border: 'none', cursor: 'pointer', fontWeight: 600 }}>Submit for Approval</button>
           </form>
         </div>
       )}
@@ -163,10 +163,10 @@ export default function TemplatesPage() {
                 <h3 style={{ fontSize: '1.1rem', fontWeight: 600 }}>{t.name}</h3>
                 <span className={`crm-status-badge status-WON`} style={{ margin: 0 }}>{t.provider_status || t.status}</span>
               </div>
-              <p style={{ color: '#94a3b8', fontSize: '0.85rem', marginBottom: '1rem' }}>
+              <p style={{ color: "hsl(var(--muted-foreground))", fontSize: '0.85rem', marginBottom: '1rem' }}>
                 Language: {t.language} · Category: {t.category || 'MARKETING'} · Variables: {t.variable_count ?? 0}
               </p>
-              <div style={{ background: 'rgba(0,0,0,0.2)', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)', fontSize: '0.95rem', lineHeight: 1.5, minHeight: '100px' }}>
+              <div style={{ background: "hsl(var(--background) / 0.2)", padding: '1rem', borderRadius: '8px', border: "1px solid hsl(var(--border) / 0.05)", fontSize: '0.95rem', lineHeight: 1.5, minHeight: '100px' }}>
                 {t.content}
               </div>
             </div>

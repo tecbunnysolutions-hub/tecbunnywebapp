@@ -406,7 +406,7 @@ export function EditServiceDialog({ open, onOpenChange, service, onServiceUpdate
                             <button
                               type="button"
                               onClick={() => removeFeature(index)}
-                              className="ml-1 hover:text-red-500"
+                              className="ml-1 hover:text-destructive"
                             >
                               <X className="h-3 w-3" />
                             </button>

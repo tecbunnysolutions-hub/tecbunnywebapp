@@ -18,7 +18,7 @@ export function LoadingSpinner({ size = 'md', className, text }: LoadingSpinnerP
   };
 
   return (
-    <div className={cn('flex flex-col items-center justify-center gap-2', className)}>
+    <div role="status" aria-live="polite" aria-label={text || 'Loading content'} className={cn('flex flex-col items-center justify-center gap-2', className)}>
       <div className={cn(
         'animate-spin rounded-full border-2 border-muted border-t-primary',
         sizeClasses[size]
@@ -34,7 +34,7 @@ export function LoadingSpinner({ size = 'md', className, text }: LoadingSpinnerP
 export function PageLoader() {
   return (
     <div className="flex items-center justify-center min-h-[200px]">
-      <LoadingSpinner size="lg" text="Loading..." />
+      <LoadingSpinner size="lg" text="Getting things ready…" />
     </div>
   );
 }

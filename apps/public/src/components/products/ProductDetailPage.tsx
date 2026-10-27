@@ -128,7 +128,7 @@ export function ProductDetailPage({ productId, initialProduct, sourceContext }: 
       setShowPincodeInput(false);
       toast({
         title: 'Delivery Estimate Updated',
-        description: isGoa 
+        description: isGoa
           ? 'Next-day eligibility is confirmed at checkout for in-stock products and eligible PIN codes.'
           : 'Standard shipping of 4-5 days from Mumbai/Bangalore network.',
         variant: 'default',
@@ -145,7 +145,7 @@ export function ProductDetailPage({ productId, initialProduct, sourceContext }: 
   const initialEnrichedProduct = useMemo(() => {
     if (initialProduct) {
       const p = initialProduct;
-      
+
       // Apply source-aware pricing logic
       let discountMultiplier = 1;
       if (sourceContext?.source === 'certified-agents') {
@@ -187,7 +187,7 @@ export function ProductDetailPage({ productId, initialProduct, sourceContext }: 
         .find((value) => Number.isFinite(value) && value > 0) || 0;
       // fall back to rawPrice — avoid showing a fake discount when MRP isn't stored
       const rawMrp = typeof p.mrp === 'number' ? p.mrp : Number(p.mrp) || rawPrice;
-      
+
       const priceNum = rawPrice;
       const mrpNum = rawMrp;
 
@@ -412,7 +412,7 @@ export function ProductDetailPage({ productId, initialProduct, sourceContext }: 
           .find((value) => Number.isFinite(value) && value > 0) || 0;
         // fall back to rawPrice — avoid showing a fake discount when MRP isn't stored
         const rawMrp = typeof data.mrp === 'number' ? data.mrp : Number(data.mrp) || rawPrice;
-        
+
         const priceNum = rawPrice;
         const mrpNum = rawMrp;
 
@@ -477,14 +477,14 @@ export function ProductDetailPage({ productId, initialProduct, sourceContext }: 
       <div className="tech-main-content bg-background text-foreground">
         <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
           <div className="animate-pulse">
-            <div className="h-6 w-40 rounded bg-white/10 mb-8"></div>
+            <div className="h-6 w-40 rounded bg-card/10 mb-8"></div>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <div className="h-[420px] rounded-2xl bg-white/5"></div>
+              <div className="h-[420px] rounded-2xl bg-card/5"></div>
               <div className="space-y-4">
-                <div className="h-8 rounded bg-white/10 w-3/4"></div>
-                <div className="h-4 rounded bg-white/10 w-1/2"></div>
-                <div className="h-12 rounded bg-white/10 w-2/3"></div>
-                <div className="h-32 rounded bg-white/5"></div>
+                <div className="h-8 rounded bg-card/10 w-3/4"></div>
+                <div className="h-4 rounded bg-card/10 w-1/2"></div>
+                <div className="h-12 rounded bg-card/10 w-2/3"></div>
+                <div className="h-32 rounded bg-card/5"></div>
               </div>
             </div>
           </div>
@@ -495,10 +495,10 @@ export function ProductDetailPage({ productId, initialProduct, sourceContext }: 
 
   if (!product) {
     return (
-      <div className="relative overflow-hidden bg-[#09090B] text-zinc-200 selection:bg-blue-500/20 selection:text-white min-h-screen font-sans antialiased">
+      <div className="relative overflow-hidden bg-card text-muted-foreground selection:bg-primary/20 selection:text-primary min-h-screen font-sans antialiased">
         <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
           <div className="text-center">
-            <h2 className="text-2xl font-semibold text-white mb-4">Product Not Found</h2>
+            <h2 className="text-2xl font-semibold text-foreground mb-4">Product Not Found</h2>
             <p className="text-muted-foreground mb-8">
               The product you're looking for doesn't exist or has been removed.
             </p>
@@ -513,15 +513,15 @@ export function ProductDetailPage({ productId, initialProduct, sourceContext }: 
   }
 
   return (
-    <div className="relative overflow-hidden bg-background text-foreground selection:bg-primary/20 selection:text-white min-h-screen font-sans antialiased">
+    <div className="relative overflow-hidden bg-background text-foreground selection:bg-primary/20 selection:text-foreground min-h-screen font-sans antialiased">
       {/* Background Noise and Grid (homepage style) */}
       <div className="pointer-events-none absolute inset-0 -z-10">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,hsl(var(--border))_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--border))_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-20" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,hsl(var(--border))_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--border))_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,hsl(var(--overlay))_70%,transparent_100%)] opacity-20" />
         <div className="absolute -left-40 top-0 h-[42rem] w-[42rem] rounded-full bg-primary/5 blur-[160px]" />
         <div className="absolute -right-40 top-1/3 h-[46rem] w-[46rem] rounded-full bg-muted/5 blur-[180px]" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(var(--background),0.6),_rgba(var(--background),0.95))]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_hsl(var(--background)/0.6),_hsl(var(--background)/0.95))]" />
       </div>
-      
+
       {/* Ambient Blobs */}
       <div className="ambient-blob pointer-events-none absolute -left-24 -top-24 h-96 w-96 rounded-full bg-primary/10 blur-[120px] animate-pulse" aria-hidden="true" />
       <div className="ambient-blob ambient-blob--delayed pointer-events-none absolute right-0 top-1/2 h-96 w-96 -translate-y-1/2 rounded-full bg-primary/10 blur-[120px]" aria-hidden="true" />
@@ -545,7 +545,7 @@ export function ProductDetailPage({ productId, initialProduct, sourceContext }: 
 
           <section className="mt-8 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16">
             <div className="space-y-6 lg:col-span-5">
-              <div className="relative bg-white border border-border rounded-3xl p-8 h-[550px] flex items-center justify-center overflow-hidden group shadow-2xl">
+              <div className="relative bg-card border border-border rounded-3xl p-8 h-[550px] flex items-center justify-center overflow-hidden group shadow-2xl">
                 <div className="absolute inset-0 z-10 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500">
                   <div className="product-scan-line bg-gradient-to-b from-transparent via-primary/30 to-transparent"></div>
                 </div>
@@ -572,7 +572,7 @@ export function ProductDetailPage({ productId, initialProduct, sourceContext }: 
                       OUT OF STOCK
                     </span>
                   ) : product.stock_status === 'low_stock' ? (
-                    <span className="bg-amber-500/10 text-amber-500 border border-amber-500/20 text-[10px] font-semibold tracking-wider px-3 py-1.5 rounded-full shadow-lg">
+                    <span className="bg-warning/10 text-warning border border-warning/20 text-[10px] font-semibold tracking-wider px-3 py-1.5 rounded-full shadow-lg">
                       LOW STOCK
                     </span>
                   ) : product.stock_status === 'backorder' ? (
@@ -593,9 +593,9 @@ export function ProductDetailPage({ productId, initialProduct, sourceContext }: 
                   <button
                     key={index}
                     onClick={() => setSelectedImage(index)}
-                    className={`w-16 h-16 sm:w-20 sm:h-20 rounded-xl bg-white border p-2 flex-shrink-0 transition-all duration-300 ${
-                      selectedImage === index 
-                        ? 'border-primary bg-white shadow-[0_0_15px_rgba(59,130,246,0.2)] scale-105' 
+                    className={`w-16 h-16 sm:w-20 sm:h-20 rounded-xl bg-card border p-2 flex-shrink-0 transition-all duration-300 ${
+                      selectedImage === index
+                        ? 'border-primary bg-card shadow-md scale-105'
                          : 'border-border hover:border-border/80 hover:scale-102'
                     }`}
                   >
@@ -656,20 +656,20 @@ export function ProductDetailPage({ productId, initialProduct, sourceContext }: 
                       )}
                     </div>
                     {pricing.hasDiscount && (
-                      <p className="mt-2 text-sm font-semibold text-emerald-600 dark:text-emerald-400">
+                      <p className="mt-2 text-sm font-semibold text-success dark:text-success">
                         You save ₹{pricing.savingsAmount.toLocaleString('en-IN')}
                       </p>
                     )}
                   </div>
                 )}
-                <p className="text-xs text-muted-foreground/60 font-mono relative z-10">PRICE INCLUSIVE OF GST. INSTALLATION & CABLING CHARGED ON ACTUALS.</p>
+                <p className="text-xs text-muted-foreground font-mono relative z-10">PRICE INCLUSIVE OF GST. INSTALLATION & CABLING CHARGED ON ACTUALS.</p>
               </div>
 
               <div className="mb-8">
                 {highlightSpecs.length > 0 && (
                   <div className="bg-card/30 border border-border/50 rounded-xl p-5 mb-8">
                     <h3 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
-                      <span className="w-1 h-4 bg-primary rounded-full"></span>
+                      <span className="w-1 h-4 bg-primary rounded-full text-primary-foreground"></span>
                       Key Specifications
                     </h3>
                     <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 list-none pl-0 m-0">
@@ -691,7 +691,7 @@ export function ProductDetailPage({ productId, initialProduct, sourceContext }: 
                 <div className="flex flex-wrap gap-4">
                   <AddToCartButton
                     product={product}
-                    className="flex-1 min-w-[220px] h-14 text-base bg-primary hover:bg-primary/90 text-primary-foreground font-bold tracking-wide uppercase rounded-xl transition-all duration-300 hover:scale-[1.02] shadow-[0_0_30px_-5px_rgba(var(--primary),0.45)] border border-primary/20 cursor-pointer"
+                    className="flex-1 min-w-[220px] h-14 text-base bg-primary hover:bg-primary/90 text-primary-foreground font-bold tracking-wide uppercase rounded-xl transition-all duration-300 hover:scale-[1.02] shadow-md border border-primary/20 cursor-pointer"
                     size="lg"
                   />
                   <WishlistButton
@@ -723,10 +723,10 @@ export function ProductDetailPage({ productId, initialProduct, sourceContext }: 
                   </Button>
                   <Button
                     variant="outline"
-                    className="flex-1 h-12 border border-emerald-500/35 bg-emerald-500/5 hover:bg-emerald-500/10 hover:border-emerald-500/50 text-emerald-450 hover:text-emerald-400 rounded-xl transition-all duration-300 flex items-center justify-center gap-2 text-sm font-semibold uppercase tracking-wider cursor-pointer"
+                    className="flex-1 h-12 border border-success/35 bg-success/5 hover:bg-success/10 hover:border-success/50 text-success hover:text-success rounded-xl transition-all duration-300 flex items-center justify-center gap-2 text-sm font-semibold uppercase tracking-wider cursor-pointer"
                     onClick={() => setInquiryType('b2b')}
                   >
-                    <MessageSquare className="h-4 w-4 text-emerald-500 shrink-0" />
+                    <MessageSquare className="h-4 w-4 text-success shrink-0" />
                     Request B2B Quote
                   </Button>
                   <a
@@ -737,7 +737,7 @@ export function ProductDetailPage({ productId, initialProduct, sourceContext }: 
                       trackEvent('whatsapp_product_inquiry', { productId: product.id, productName: displayName });
                       trackMetaContact(displayName);
                     }}
-                    className="flex-1 h-12 inline-flex items-center justify-center gap-2 rounded-xl border border-[#25D366]/40 bg-[#25D366]/10 hover:bg-[#25D366]/20 hover:border-[#25D366]/60 text-[#25D366] text-sm font-semibold uppercase tracking-wider transition-all duration-300 cursor-pointer"
+                    className="flex-1 h-12 inline-flex items-center justify-center gap-2 rounded-xl border border-border/40 bg-card/10 hover:bg-card/20 hover:border-border/60 text-foreground text-sm font-semibold uppercase tracking-wider transition-all duration-300 cursor-pointer"
                     aria-label={`Chat on WhatsApp about ${displayName}`}
                   >
                     <MessageSquare className="h-4 w-4 shrink-0" />
@@ -751,18 +751,18 @@ export function ProductDetailPage({ productId, initialProduct, sourceContext }: 
                       <Truck className="h-4.5 w-4.5 text-primary shrink-0" />
                       <div>
                         {product.stock_status === 'out_of_stock' ? (
-                          <p className="font-semibold text-zinc-400">Currently unavailable — delivery estimate will appear when this product is back in stock</p>
+                          <p className="font-semibold text-muted-foreground">Currently unavailable — delivery estimate will appear when this product is back in stock</p>
                         ) : deliveryInfo.isGoa ? (
-                          <p className="font-semibold text-emerald-400">
+                          <p className="font-semibold text-success">
                             {deliveryInfo.hasEstimated ? 'Expected delivery: next working day, subject to checkout confirmation' : 'Stock at our Goa store — enter a PIN for a delivery estimate'}
                           </p>
                         ) : (
-                          <p className="font-semibold text-zinc-400">
+                          <p className="font-semibold text-muted-foreground">
                             Sourced from Mumbai/Bangalore Hub &mdash; Ships in 4&ndash;5 Days
                           </p>
                         )}
-                        <p className="text-[10px] text-muted-foreground/60 mt-0.5">
-                          {deliveryInfo.hasEstimated 
+                        <p className="text-[10px] text-muted-foreground mt-0.5">
+                          {deliveryInfo.hasEstimated
                             ? `PIN ${pincode}: delivery eligibility checked for this location`
                             : 'Enter a PIN code to check product delivery eligibility'}
                         </p>
@@ -785,7 +785,7 @@ export function ProductDetailPage({ productId, initialProduct, sourceContext }: 
                         placeholder="Enter 6-digit PIN code"
                         value={pincode}
                         onChange={(e) => setPincode(e.target.value.replace(/\D/g, ''))}
-                        className="flex-1 h-9 rounded-lg bg-zinc-950 border border-border/80 px-3 text-xs text-foreground placeholder:text-zinc-650 focus:outline-none focus:border-primary"
+                        className="flex-1 h-9 rounded-lg bg-background border border-border/80 px-3 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary"
                       />
                       <button
                         type="submit"
@@ -797,7 +797,7 @@ export function ProductDetailPage({ productId, initialProduct, sourceContext }: 
                   )}
                 </div>
 
-                <p className="text-xs text-center text-muted-foreground/60">
+                <p className="text-xs text-center text-muted-foreground">
                   <Shield className="inline-block h-3.5 w-3.5 mr-1 text-primary" />
                   Warranty: {warrantyDetails.period} · Provider: {warrantyDetails.provider} · Type: {warrantyDetails.type}
                 </p>
@@ -813,7 +813,7 @@ export function ProductDetailPage({ productId, initialProduct, sourceContext }: 
                   onClick={() => setActiveTab('specs')}
                   className={`px-4 py-3 text-sm font-bold uppercase tracking-wider border-b-2 whitespace-nowrap transition-all duration-300 cursor-pointer ${
                     activeTab === 'specs'
-                      ? 'border-primary text-primary drop-shadow-[0_0_8px_rgba(var(--primary),0.3)]'
+                      ? 'border-primary text-primary drop-shadow-md'
                       : 'border-transparent text-muted-foreground hover:text-foreground'
                   }`}
                 >
@@ -824,7 +824,7 @@ export function ProductDetailPage({ productId, initialProduct, sourceContext }: 
                   onClick={() => setActiveTab('description')}
                   className={`px-4 py-3 text-sm font-bold uppercase tracking-wider border-b-2 whitespace-nowrap transition-all duration-300 cursor-pointer ${
                     activeTab === 'description'
-                      ? 'border-primary text-primary drop-shadow-[0_0_8px_rgba(var(--primary),0.3)]'
+                      ? 'border-primary text-primary drop-shadow-md'
                       : 'border-transparent text-muted-foreground hover:text-foreground'
                   }`}
                 >
@@ -835,7 +835,7 @@ export function ProductDetailPage({ productId, initialProduct, sourceContext }: 
                   onClick={() => setActiveTab('warranty')}
                   className={`px-4 py-3 text-sm font-bold uppercase tracking-wider border-b-2 whitespace-nowrap transition-all duration-300 cursor-pointer ${
                     activeTab === 'warranty'
-                      ? 'border-primary text-primary drop-shadow-[0_0_8px_rgba(var(--primary),0.3)]'
+                      ? 'border-primary text-primary drop-shadow-md'
                       : 'border-transparent text-muted-foreground hover:text-foreground'
                   }`}
                 >
@@ -902,23 +902,23 @@ export function ProductDetailPage({ productId, initialProduct, sourceContext }: 
                 <RefreshCw className="h-5 w-5 animate-spin-slow" />
               </div>
               <div className="flex-1">
-                <h4 className="text-sm font-bold text-white">Need a custom surveillance blueprint?</h4>
+                <h4 className="text-sm font-bold text-foreground">Need a custom surveillance blueprint?</h4>
                 <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                  {triggerContext === 'pricing' 
+                  {triggerContext === 'pricing'
                     ? "Our experts can help optimize this configuration for your specific space and budget requirements."
                     : "Architecture can be complex. Let's schedule a 10-minute discovery call to finalize your setup."}
                 </p>
                 <div className="mt-4 flex gap-3">
-                  <Button 
-                    size="sm" 
-                    className="h-8 bg-primary hover:bg-primary/90 text-white text-[10px]"
+                  <Button
+                    size="sm"
+                    className="h-8 bg-primary hover:bg-primary/90 text-primary-foreground text-[10px]"
                     onClick={() => router.push('/contact?ref=behavioral_assistance')}
                   >
                     Speak to Specialist
                   </Button>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
+                  <Button
+                    variant="ghost"
+                    size="sm"
                     className="h-8 text-[10px] text-muted-foreground hover:text-muted-foreground"
                     onClick={dismissAssistance}
                   >

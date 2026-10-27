@@ -64,19 +64,19 @@ export default function Page() {
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight text-white">Reports</h1>
-        <p className="mt-1 text-sm text-zinc-400">Recent administrative activity across governed data surfaces.</p>
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">Reports</h1>
+        <p className="mt-1 text-sm text-muted-foreground">Recent administrative activity across governed data surfaces.</p>
       </div>
 
       {error && (
-        <div role="alert" className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+        <div role="alert" className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
           {error}
         </div>
       )}
 
-      <div className="rounded-lg border border-zinc-800 bg-zinc-900/50">
+      <div className="rounded-lg border border-border bg-card/50">
         {loading ? (
-          <div className="px-6 py-12 text-center text-sm text-zinc-400">Loading recent activity...</div>
+          <div className="px-6 py-12 text-center text-sm text-muted-foreground">Loading recent activity...</div>
         ) : (
           <RecentActivityTable activities={activities} />
         )}

@@ -100,7 +100,7 @@ export function TechStackAudit({ onComplete, isLocked = false }: TechStackAuditP
         </div>
         <div className="flex gap-1">
           {[1, 2, 3].map((s) => (
-            <div key={s} className={`h-1 w-8 rounded-full transition-all ${s <= step ? 'bg-primary' : 'bg-muted'}`} />
+            <div key={s} className={`h-1 w-8 rounded-full transition-all ${s <= step ? 'bg-primary text-primary-foreground' : 'bg-muted'}`} />
           ))}
         </div>
       </div>
@@ -113,7 +113,7 @@ export function TechStackAudit({ onComplete, isLocked = false }: TechStackAuditP
         <p className="text-[10px] text-muted-foreground max-w-[200px]">
           Our AI will generate a tailored telemetry report based on these parameters.
         </p>
-        <Button 
+        <Button
           onClick={handleNext}
           disabled={
             (step === 1 && !selections.infrastructure) ||
@@ -135,7 +135,7 @@ export function TechStackAudit({ onComplete, isLocked = false }: TechStackAuditP
           <p className="mb-6 max-w-xs text-sm text-muted-foreground">
             Corporate authentication required. Please verify your identity via WhatsApp OTP to unlock this telemetry report.
           </p>
-          <Button className="bg-emerald-600 hover:bg-emerald-700 text-white">
+          <Button className="bg-success hover:bg-success text-success-foreground">
              Unlock with WhatsApp OTP
           </Button>
         </div>

@@ -52,11 +52,11 @@ export default function AdminProductsPage() {
   const pathname = usePathname();
   const isSuperadmin = pathname?.startsWith('/superadmin');
   const fileInputRef = React.useRef<HTMLInputElement>(null);
-  
+
   const [products, setProducts] = React.useState<Product[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [searchQuery, setSearchQuery] = React.useState('');
-  
+
   const filteredProducts = React.useMemo(() => {
     const q = searchQuery.toLowerCase().trim();
     if (!q) return products;
@@ -107,7 +107,7 @@ export default function AdminProductsPage() {
 
   const handleBulkAction = async (action: 'delete' | 'activate' | 'deactivate') => {
     if (selectedProductIds.size === 0) return;
-    
+
     // Add confirmation for delete
     if (action === 'delete') {
       const confirmed = window.confirm(`Are you sure you want to permanently delete ${selectedProductIds.size} products?`);
@@ -123,12 +123,12 @@ export default function AdminProductsPage() {
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'Bulk action failed');
-      
+
       toast({
         title: 'Success',
         description: `Successfully applied '${action}' to ${selectedProductIds.size} products.`,
       });
-      
+
       setSelectedProductIds(new Set());
       fetchProducts();
     } catch (error: any) {
@@ -185,7 +185,7 @@ export default function AdminProductsPage() {
 
       toast({
         title: data.details?.errorCount > 0 ? 'Import completed with errors' : 'Success',
-        description: data.details?.errorCount > 0 
+        description: data.details?.errorCount > 0
           ? `${data.message}\nErrors:\n${data.details.errors.slice(0, 5).join('\n')}`
           : (data.message || 'CSV imported successfully'),
         variant: data.details?.errorCount > 0 ? 'destructive' : 'default',
@@ -541,16 +541,16 @@ export default function AdminProductsPage() {
                       <Download className="mr-2 h-4 w-4 text-muted-foreground" />
                       Download Sample CSV
                     </DropdownMenuItem>
-                    <DropdownMenuItem 
-                      onClick={() => fileInputRef.current?.click()} 
+                    <DropdownMenuItem
+                      onClick={() => fileInputRef.current?.click()}
                       disabled={importing}
                       className="h-11 cursor-pointer"
                     >
                       <Upload className="mr-2 h-4 w-4 text-muted-foreground" />
                       Import CSV
                     </DropdownMenuItem>
-                    <DropdownMenuItem 
-                      onClick={exportToCSV} 
+                    <DropdownMenuItem
+                      onClick={exportToCSV}
                       disabled={products.length === 0}
                       className="h-11 cursor-pointer"
                     >
@@ -596,7 +596,7 @@ export default function AdminProductsPage() {
               </div>
             </>
           )}
-          <Button 
+          <Button
             onClick={() => setScrapeDialogOpen(true)}
             variant="outline"
             className="w-full sm:w-auto h-11 sm:h-9 text-sm flex items-center justify-center border-primary text-primary hover:bg-primary/10"
@@ -604,9 +604,9 @@ export default function AdminProductsPage() {
             <Plus className="mr-1.5 h-4 w-4" />
             URL Scrape
           </Button>
-          <Button 
+          <Button
             onClick={() => setCreateDialogOpen(true)}
-            className="w-full sm:w-auto h-11 sm:h-9 text-sm font-semibold flex items-center justify-center bg-primary text-white hover:bg-primary/95"
+            className="w-full sm:w-auto h-11 sm:h-9 text-sm font-semibold flex items-center justify-center bg-primary text-primary-foreground hover:bg-primary/95"
           >
             <Plus className="mr-1.5 h-4 w-4" />
             Add Product
@@ -625,7 +625,7 @@ export default function AdminProductsPage() {
             variant="ghost"
             onClick={() => handleBulkAction('activate')}
             disabled={!!bulkActionLoading}
-            className="text-green-500 hover:text-green-600 hover:bg-green-500/10 whitespace-nowrap"
+            className="text-success hover:text-success hover:bg-success/10 whitespace-nowrap"
           >
             {bulkActionLoading === 'activate' ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
             Set Active
@@ -635,7 +635,7 @@ export default function AdminProductsPage() {
             variant="ghost"
             onClick={() => handleBulkAction('deactivate')}
             disabled={!!bulkActionLoading}
-            className="text-orange-500 hover:text-orange-600 hover:bg-orange-500/10 whitespace-nowrap"
+            className="text-accent hover:text-accent hover:bg-accent/10 whitespace-nowrap"
           >
             {bulkActionLoading === 'deactivate' ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
             Set Inactive
@@ -645,7 +645,7 @@ export default function AdminProductsPage() {
             variant="ghost"
             onClick={() => handleBulkAction('delete')}
             disabled={!!bulkActionLoading}
-            className="text-red-500 hover:text-red-600 hover:bg-red-500/10 whitespace-nowrap"
+            className="text-destructive hover:text-destructive hover:bg-destructive/10 whitespace-nowrap"
           >
             {bulkActionLoading === 'delete' ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Trash2 className="h-4 w-4 sm:mr-2" />}
             <span className="hidden sm:inline">Delete</span>
@@ -677,7 +677,7 @@ export default function AdminProductsPage() {
                 placeholder="Search products by title, category, brand..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full h-10 px-4 pr-10 rounded-lg border border-border bg-zinc-950 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/30 font-mono"
+                className="w-full h-10 px-4 pr-10 rounded-lg border border-border bg-background text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/30 font-mono"
               />
               {searchQuery && (
                 <button
@@ -757,7 +757,7 @@ export default function AdminProductsPage() {
                   <TableHeader>
                     <TableRow>
                       <TableHead className="w-10">
-                        <Checkbox 
+                        <Checkbox
                           checked={filteredProducts.length > 0 && selectedProductIds.size === filteredProducts.length}
                           onCheckedChange={handleSelectAll}
                         />
@@ -775,7 +775,7 @@ export default function AdminProductsPage() {
                     {filteredProducts.map((product) => (
                       <TableRow key={product.id}>
                         <TableCell>
-                          <Checkbox 
+                          <Checkbox
                             checked={selectedProductIds.has(product.id)}
                             onCheckedChange={(checked) => handleSelectProduct(product.id, checked as boolean)}
                           />
@@ -900,9 +900,9 @@ export default function AdminProductsPage() {
                                   )}
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator />
-                                <DropdownMenuItem 
+                                <DropdownMenuItem
                                   onClick={() => handleDeleteClick(product)}
-                                  className="text-red-600 focus:text-red-600"
+                                  className="text-destructive focus:text-destructive"
                                 >
                                   <Trash2 className="mr-2 h-4 w-4" />
                                   Delete
@@ -920,13 +920,13 @@ export default function AdminProductsPage() {
               {/* Mobile Card Grid View (Hidden on Desktop) */}
               <div className="grid grid-cols-1 gap-4 md:hidden">
                 {filteredProducts.map((product) => (
-                  <div 
-                    key={product.id} 
+                  <div
+                    key={product.id}
                     className="rounded-xl border border-border/80 p-4 space-y-4 bg-card/60 text-card-foreground shadow-sm hover:border-border transition-all"
                   >
                     <div className="flex items-start gap-3">
                       <div className="pt-1">
-                        <Checkbox 
+                        <Checkbox
                           checked={selectedProductIds.has(product.id)}
                           onCheckedChange={(checked) => handleSelectProduct(product.id, checked as boolean)}
                         />
@@ -970,7 +970,7 @@ export default function AdminProductsPage() {
                               )}
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem onClick={() => handleDeleteClick(product)} className="text-red-600 focus:text-red-600">
+                            <DropdownMenuItem onClick={() => handleDeleteClick(product)} className="text-destructive focus:text-destructive">
                               <Trash2 className="mr-2 h-4 w-4" /> Delete
                             </DropdownMenuItem>
                           </DropdownMenuContent>
@@ -1016,7 +1016,7 @@ export default function AdminProductsPage() {
                           Cancel
                         </Button>
                         <Button
-                          className="flex-1 h-11 text-sm bg-primary text-white hover:bg-primary/95"
+                          className="flex-1 h-11 text-sm bg-primary text-primary-foreground hover:bg-primary/95"
                           onClick={() => handleSavePrices(product.id)}
                           disabled={savingProductId === product.id}
                         >
@@ -1060,14 +1060,14 @@ export default function AdminProductsPage() {
         </CardContent>
       </Card>
 
-      <CreateProductDialog 
-        open={createDialogOpen} 
+      <CreateProductDialog
+        open={createDialogOpen}
         onOpenChange={setCreateDialogOpen}
         onProductCreated={fetchProducts}
       />
 
       {selectedProduct && (
-        <EditProductDialog 
+        <EditProductDialog
             open={editDialogOpen}
             onOpenChange={setEditDialogOpen}
             product={selectedProduct}
@@ -1086,9 +1086,9 @@ export default function AdminProductsPage() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel className="h-11 sm:h-9">Cancel</AlertDialogCancel>
-            <AlertDialogAction 
+            <AlertDialogAction
                 onClick={handleDeleteProduct}
-                className="h-11 sm:h-9 bg-red-600 focus:ring-red-600 hover:bg-red-700 text-white"
+                className="h-11 sm:h-9 bg-destructive focus:ring-destructive hover:bg-destructive text-destructive-foreground"
             >
               Delete
             </AlertDialogAction>
@@ -1106,7 +1106,7 @@ export default function AdminProductsPage() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <div className="py-4">
-            <Input 
+            <Input
               value={scrapeUrl}
               onChange={(e) => setScrapeUrl(e.target.value)}
               placeholder="https://www.amazon.in/dp/B0..."

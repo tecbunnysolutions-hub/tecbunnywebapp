@@ -44,7 +44,7 @@ export default function SignUpPage() {
         return 'email';
     }
   };
-  
+
   const router = useRouter();
   const { toast } = useToast();
 
@@ -115,13 +115,13 @@ export default function SignUpPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) return;
     if (turnstileSiteKey && !captchaToken) {
       setError('Please complete the captcha.');
       return;
     }
-    
+
     setIsLoading(true);
     setError('');
 
@@ -172,7 +172,7 @@ export default function SignUpPage() {
           description: data.message,
           variant: 'default'
         });
-        
+
         // Show additional info for email issues
         setTimeout(() => {
           toast({
@@ -249,8 +249,8 @@ export default function SignUpPage() {
         <div className="absolute top-1/2 right-1/2 translate-x-1/2 -translate-y-1/2 w-[520px] h-[520px] bg-primary/10 rounded-full blur-[100px] animate-pulse pointer-events-none" />
 
         <div className="relative w-full max-w-md signup-card rounded-2xl p-8 text-center border border-border bg-card">
-          <div className="mx-auto w-12 h-12 bg-emerald-500/10 rounded-full flex items-center justify-center mb-4">
-            <CheckCircle className="h-6 w-6 text-emerald-500" />
+          <div className="mx-auto w-12 h-12 bg-success/10 rounded-full flex items-center justify-center mb-4">
+            <CheckCircle className="h-6 w-6 text-success" />
           </div>
           <h2 className="text-2xl font-bold tech-heading">Identity Verified.</h2>
           <p className="mt-2 text-sm tech-body">
@@ -373,9 +373,9 @@ export default function SignUpPage() {
                 </div>
                 {(!emailValid || !mobileSupportsMessaging) && (
                   <p className="text-xs text-muted-foreground pt-1">
-                    {!emailValid && !mobileSupportsMessaging 
+                    {!emailValid && !mobileSupportsMessaging
                       ? "A valid email and mobile number are required to create an account."
-                      : !emailValid 
+                      : !emailValid
                         ? "Provide a valid email to enable email verification."
                         : "Provide a valid mobile number to enable WhatsApp verification."}
                   </p>
@@ -427,9 +427,9 @@ export default function SignUpPage() {
               </div>
 
               {error && (
-                <div className="md:col-span-2 p-3 bg-red-500/10 border border-red-500/30 rounded-lg flex items-center space-x-2">
-                  <AlertCircle className="h-4 w-4 text-red-500" />
-                  <span className="text-sm text-red-200">{error}</span>
+                <div className="md:col-span-2 p-3 bg-destructive/10 border border-destructive/30 rounded-lg flex items-center space-x-2">
+                  <AlertCircle className="h-4 w-4 text-destructive" />
+                  <span className="text-sm text-destructive">{error}</span>
                 </div>
               )}
 
@@ -476,10 +476,10 @@ export default function SignUpPage() {
 
                 <button
                   type="submit"
-                  className="group relative w-full py-3 bg-primary hover:bg-primary/90 text-primary-foreground font-bold tracking-wide rounded-lg transition-colors flex items-center justify-center gap-3 shadow-[0_0_20px_rgba(37,99,235,0.3)] hover:shadow-[0_0_30px_rgba(37,99,235,0.5)] overflow-hidden cursor-pointer"
+                  className="group relative w-full py-3 bg-primary hover:bg-primary/90 text-primary-foreground font-bold tracking-wide rounded-lg transition-colors flex items-center justify-center gap-3 shadow-md hover:shadow-md overflow-hidden cursor-pointer"
                   disabled={isLoading}
                 >
-                  <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent group-hover:translate-x-full transition-transform duration-700" />
+                  <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-card/30 to-transparent group-hover:translate-x-full transition-transform duration-700" />
                   {isLoading ? 'Creating Account...' : 'Activate Profile'}
                 </button>
 

@@ -2,17 +2,17 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { 
-  Building2, 
-  Send, 
-  CheckCircle2, 
-  ArrowRight, 
-  ArrowLeft, 
-  ShieldCheck, 
-  Clock, 
-  Phone, 
+import {
+  Building2,
+  Send,
+  CheckCircle2,
+  ArrowRight,
+  ArrowLeft,
+  ShieldCheck,
+  Clock,
+  Phone,
   PhoneCall,
-  Mail, 
+  Mail,
   Sparkles,
   Server,
   Shield,
@@ -440,7 +440,7 @@ ${formData.additionalNotes.trim() || 'None'}
       submitFormData.append('form_identifier', 'technology_assessment_funnel');
       submitFormData.append('website', formData.website);
       submitFormData.append('consent', String(formData.privacyConsent));
-      
+
       // Append file if present
       if (attachedFile) {
         submitFormData.append('file', attachedFile);
@@ -546,43 +546,43 @@ ${formData.additionalNotes.trim() || 'None'}
 
   if (isSuccess) {
     return (
-      <div className={`rounded-3xl border border-emerald-500/30 bg-gradient-to-b from-emerald-950/20 via-zinc-950 to-zinc-950 p-8 sm:p-12 text-center space-y-8 max-w-3xl mx-auto backdrop-blur-md animate-fade-in shadow-2xl ${className}`}>
-        <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-3xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 shadow-xl shadow-emerald-500/10">
+      <div className={`rounded-3xl border border-success/30 bg-gradient-to-b from-success/20 via-background to-background p-8 sm:p-12 text-center space-y-8 max-w-3xl mx-auto backdrop-blur-md animate-fade-in shadow-2xl ${className}`}>
+        <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-3xl bg-success/10 text-success border border-success/30 shadow-xl shadow-success/10">
           <CheckCircle2 size={44} />
         </div>
 
         <div className="space-y-3">
-          <span className="text-xs font-bold uppercase tracking-[0.3em] text-emerald-400 font-mono">Assessment Request Confirmed</span>
-          <h3 className="text-3xl sm:text-4xl font-extrabold text-white font-tech">Your Requirements Are in Engineering Review</h3>
-          <p className="text-zinc-300 text-sm sm:text-base leading-relaxed font-light max-w-xl mx-auto">
-            Our systems engineering team has received your project specifications for <strong className="text-white font-medium">{formData.company || 'your facility'}</strong>.
+          <span className="text-xs font-bold uppercase tracking-[0.3em] text-success font-mono">Assessment Request Confirmed</span>
+          <h3 className="text-3xl sm:text-4xl font-extrabold text-foreground font-tech">Your Requirements Are in Engineering Review</h3>
+          <p className="text-muted-foreground text-sm sm:text-base leading-relaxed font-light max-w-xl mx-auto">
+            Our systems engineering team has received your project specifications for <strong className="text-foreground font-medium">{formData.company || 'your facility'}</strong>.
           </p>
         </div>
 
         {/* 3-Step What Happens Next Roadmap */}
-        <div className="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-6 text-left space-y-4">
-          <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-400 font-mono">What Happens Next:</h4>
+        <div className="rounded-2xl border border-border bg-card/60 p-6 text-left space-y-4">
+          <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground font-mono">What Happens Next:</h4>
           <div className="grid gap-4 sm:grid-cols-3 text-xs">
-            <div className="space-y-1.5 border-l-2 border-blue-500 pl-3">
-              <span className="font-bold text-white block">1. Technical Scoping</span>
-              <p className="text-zinc-400 font-light leading-relaxed">Our engineer analyzes your location, device count, and cabling requirements.</p>
+            <div className="space-y-1.5 border-l-2 border-primary pl-3">
+              <span className="font-bold text-foreground block">1. Technical Scoping</span>
+              <p className="text-muted-foreground font-light leading-relaxed">Our engineer analyzes your location, device count, and cabling requirements.</p>
             </div>
-            <div className="space-y-1.5 border-l-2 border-indigo-500 pl-3">
-              <span className="font-bold text-white block">2. Preliminary BOQ</span>
-              <p className="text-zinc-400 font-light leading-relaxed">We generate an itemized Bill of Materials with Tier-1 OEM hardware options.</p>
+            <div className="space-y-1.5 border-l-2 border-primary pl-3">
+              <span className="font-bold text-foreground block">2. Preliminary BOQ</span>
+              <p className="text-muted-foreground font-light leading-relaxed">We generate an itemized Bill of Materials with Tier-1 OEM hardware options.</p>
             </div>
-            <div className="space-y-1.5 border-l-2 border-emerald-500 pl-3">
-              <span className="font-bold text-white block">3. Site Survey Booking</span>
-              <p className="text-zinc-400 font-light leading-relaxed">We coordinate on-site inspections in North Goa and the Sawantwadi area of Sindhudurg district, Maharashtra, to finalize cable paths.</p>
+            <div className="space-y-1.5 border-l-2 border-success pl-3">
+              <span className="font-bold text-foreground block">3. Site Survey Booking</span>
+              <p className="text-muted-foreground font-light leading-relaxed">We coordinate on-site inspections in North Goa and the Sawantwadi area of Sindhudurg district, Maharashtra, to finalize cable paths.</p>
             </div>
           </div>
         </div>
 
         {/* Immediate Connect Box */}
-        <div className="rounded-2xl border border-blue-500/20 bg-blue-500/5 p-6 space-y-4">
+        <div className="rounded-2xl border border-primary/20 bg-primary/5 p-6 space-y-4">
           <div>
-            <h4 className="text-sm font-bold text-white font-tech">Want to discuss your requirement immediately?</h4>
-            <p className="text-xs text-zinc-400 mt-1">Speak directly with our enterprise solutions desk during business hours.</p>
+            <h4 className="text-sm font-bold text-foreground font-tech">Want to discuss your requirement immediately?</h4>
+            <p className="text-xs text-muted-foreground mt-1">Speak directly with our enterprise solutions desk during business hours.</p>
           </div>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <a
@@ -597,7 +597,7 @@ ${formData.additionalNotes.trim() || 'None'}
                   email: formData.email,
                 });
               }}
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-6 py-3 text-xs uppercase tracking-wider transition-colors shadow-lg shadow-emerald-500/20"
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-success hover:bg-success text-success-foreground font-bold px-6 py-3 text-xs uppercase tracking-wider transition-colors shadow-lg shadow-success/20"
             >
               <MessageSquare size={16} />
               <span>Connect on WhatsApp</span>
@@ -612,7 +612,7 @@ ${formData.additionalNotes.trim() || 'None'}
                   email: formData.email,
                 });
               }}
-              className="inline-flex items-center justify-center gap-2 rounded-xl border border-zinc-700 bg-zinc-900 hover:bg-zinc-850 text-white font-semibold px-6 py-3 text-xs uppercase tracking-wider transition-colors"
+              className="inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-card hover:bg-secondary text-foreground font-semibold px-6 py-3 text-xs uppercase tracking-wider transition-colors"
             >
               <PhoneCall size={16} />
               <span>Call +91 96041 36010</span>
@@ -628,11 +628,11 @@ ${formData.additionalNotes.trim() || 'None'}
               setCurrentStep(1);
               setAttachedFile(null);
             }}
-            className="border-zinc-800 bg-zinc-900/50 text-zinc-300 hover:bg-zinc-800 hover:text-white rounded-xl h-11 text-xs"
+            className="border-border bg-card/50 text-muted-foreground hover:bg-card hover:text-foreground rounded-xl h-11 text-xs"
           >
             Submit Another Requirement
           </Button>
-          <Button asChild className="bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl h-11 text-xs">
+          <Button asChild className="bg-primary hover:bg-primary text-primary-foreground font-bold rounded-xl h-11 text-xs">
             <Link href="/">Return to Homepage</Link>
           </Button>
         </div>
@@ -641,9 +641,9 @@ ${formData.additionalNotes.trim() || 'None'}
   }
 
   return (
-    <div className={`relative rounded-3xl border border-zinc-850 bg-zinc-950/80 p-6 sm:p-10 md:p-12 backdrop-blur-xl shadow-2xl ${className}`}>
+    <div className={`relative rounded-3xl border border-border bg-background/80 p-6 sm:p-10 md:p-12 backdrop-blur-xl shadow-2xl ${className}`}>
       {/* Progress Indicator */}
-      <div className="mb-8 border-b border-zinc-900 pb-6">
+      <div className="mb-8 border-b border-border pb-6">
         <div className="flex items-center justify-between gap-4 max-w-lg mx-auto">
           {[
             { step: 1, title: 'Scope & Need' },
@@ -655,22 +655,22 @@ ${formData.additionalNotes.trim() || 'None'}
             return (
               <div key={item.step} className="flex items-center gap-2 flex-1">
                 <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl font-mono text-xs font-bold transition-colors ${
-                  isCompleted 
-                    ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' 
-                    : isCurrent 
-                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' 
-                    : 'bg-zinc-900 text-zinc-500 border border-zinc-800'
+                  isCompleted
+                    ? 'bg-success/20 text-success border border-success/30'
+                    : isCurrent
+                    ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20'
+                    : 'bg-card text-muted-foreground border border-border'
                 }`}>
                   {isCompleted ? '✓' : item.step}
                 </div>
                 <span className={`text-[11px] font-semibold hidden sm:inline ${
-                  isCurrent ? 'text-white' : 'text-zinc-500'
+                  isCurrent ? 'text-foreground' : 'text-muted-foreground'
                 }`}>
                   {item.title}
                 </span>
                 {idx < 2 && (
                   <div className={`h-px flex-1 ml-2 transition-colors ${
-                    isCompleted ? 'bg-emerald-500/30' : 'bg-zinc-850'
+                    isCompleted ? 'bg-success/30' : 'bg-secondary'
                   }`} />
                 )}
               </div>
@@ -684,9 +684,9 @@ ${formData.additionalNotes.trim() || 'None'}
         {currentStep === 1 && (
           <div className="space-y-6 animate-fade-in">
             <div className="space-y-1">
-              <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-blue-400 font-mono">Step 1 of 3</span>
-              <h3 className="text-xl sm:text-2xl font-bold text-white font-tech">What technology solutions does your business require?</h3>
-              <p className="text-xs sm:text-sm text-zinc-400 font-light leading-relaxed">
+              <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-primary font-mono">Step 1 of 3</span>
+              <h3 className="text-xl sm:text-2xl font-bold text-foreground font-tech">What technology solutions does your business require?</h3>
+              <p className="text-xs sm:text-sm text-muted-foreground font-light leading-relaxed">
                 Select the primary system category you would like evaluated or upgraded.
               </p>
             </div>
@@ -702,20 +702,20 @@ ${formData.additionalNotes.trim() || 'None'}
                     onClick={() => setFormData(prev => ({ ...prev, service: service.id }))}
                     className={`flex items-start gap-4 p-4 rounded-2xl border text-left transition-all duration-200 ${
                       isSelected
-                        ? 'border-blue-500 bg-blue-500/10 shadow-[0_0_20px_rgba(59,130,246,0.15)] ring-1 ring-blue-500'
-                        : 'border-zinc-850 bg-zinc-900/30 hover:border-zinc-700 hover:bg-zinc-900/50'
+                        ? 'border-primary bg-primary/10 shadow-md ring-1 ring-primary'
+                        : 'border-border bg-card/30 hover:border-border hover:bg-card/50'
                     }`}
                   >
                     <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border ${
-                      isSelected 
-                        ? 'bg-blue-500/20 text-blue-400 border-blue-500/30' 
-                        : 'bg-zinc-900 text-zinc-400 border-zinc-850'
+                      isSelected
+                        ? 'bg-primary/20 text-primary border-primary/30'
+                        : 'bg-card text-muted-foreground border-border'
                     }`}>
                       <Icon size={20} />
                     </div>
                     <div className="space-y-1 min-w-0">
-                      <div className="text-sm font-bold text-white leading-snug">{service.label}</div>
-                      <div className="text-xs text-zinc-400 font-light leading-normal">{service.desc}</div>
+                      <div className="text-sm font-bold text-foreground leading-snug">{service.label}</div>
+                      <div className="text-xs text-muted-foreground font-light leading-normal">{service.desc}</div>
                     </div>
                   </button>
                 );
@@ -724,7 +724,7 @@ ${formData.additionalNotes.trim() || 'None'}
 
             {/* Timeline */}
             <div className="space-y-3 pt-2">
-              <p className="text-xs font-semibold text-zinc-400 uppercase tracking-wider block">
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block">
                 Target Implementation Timeline *
               </p>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
@@ -737,8 +737,8 @@ ${formData.additionalNotes.trim() || 'None'}
                       onClick={() => setFormData(prev => ({ ...prev, timeline: time.id }))}
                       className={`p-3 rounded-xl border text-xs font-semibold transition-all duration-200 flex flex-col items-center justify-center gap-1 ${
                         isSelected
-                          ? 'border-blue-500 bg-blue-500/15 text-white'
-                          : 'border-zinc-850 bg-zinc-900/20 text-zinc-400 hover:border-zinc-700'
+                          ? 'border-primary bg-primary/15 text-primary'
+                          : 'border-border bg-card/20 text-muted-foreground hover:border-border'
                       }`}
                     >
                       <span>{time.label}</span>
@@ -750,7 +750,7 @@ ${formData.additionalNotes.trim() || 'None'}
 
             <div className="grid gap-6 sm:grid-cols-2">
               <div className="space-y-2">
-                <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider" htmlFor="business-type-select">
+                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider" htmlFor="business-type-select">
                   Business Type *
                 </label>
                 <select
@@ -758,7 +758,7 @@ ${formData.additionalNotes.trim() || 'None'}
                   name="businessType"
                   value={formData.businessType}
                   onChange={handleChange}
-                  className="w-full bg-[#09090B] border border-zinc-850 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition-colors"
+                  className="w-full bg-card border border-border rounded-xl px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 transition-colors"
                 >
                   <option value="">-- Select business type --</option>
                   {BUSINESS_TYPE_OPTIONS.map(option => (
@@ -768,7 +768,7 @@ ${formData.additionalNotes.trim() || 'None'}
               </div>
 
               <div className="space-y-2">
-                <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider" htmlFor="project-stage-select">
+                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider" htmlFor="project-stage-select">
                   Project Stage *
                 </label>
                 <select
@@ -776,7 +776,7 @@ ${formData.additionalNotes.trim() || 'None'}
                   name="projectStage"
                   value={formData.projectStage}
                   onChange={handleChange}
-                  className="w-full bg-[#09090B] border border-zinc-850 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition-colors"
+                  className="w-full bg-card border border-border rounded-xl px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 transition-colors"
                 >
                   <option value="">-- Select project stage --</option>
                   {PROJECT_STAGE_OPTIONS.map(option => (
@@ -788,7 +788,7 @@ ${formData.additionalNotes.trim() || 'None'}
 
             {/* Current Problem Textarea */}
             <div className="space-y-2">
-              <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider block" htmlFor="current-problem">
+              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block" htmlFor="current-problem">
                 What problem or challenge are you currently facing? (Optional)
               </label>
               <Textarea
@@ -798,13 +798,13 @@ ${formData.additionalNotes.trim() || 'None'}
                 onChange={handleChange}
                 placeholder="e.g. Wi-Fi dead zones in resort guest rooms, outdated analog CCTV, need biometric access for 50 staff members, frequent network drops..."
                 rows={3}
-                className="bg-[#09090B] border-zinc-850 focus-visible:ring-blue-500/40 text-white placeholder:text-zinc-600 text-sm rounded-xl"
+                className="bg-card border-border focus-visible:ring-primary/40 text-foreground placeholder:text-muted-foreground text-sm rounded-xl"
               />
             </div>
 
             {/* Email Address */}
             <div className="space-y-2">
-              <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider" htmlFor="step1-email">
+              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider" htmlFor="step1-email">
                 Email Address *
               </label>
               <Input
@@ -816,16 +816,16 @@ ${formData.additionalNotes.trim() || 'None'}
                 placeholder="e.g. contact@yourcompany.com"
                 required
                 disabled={isSubmitting}
-                className="bg-[#09090B] border-zinc-850 focus-visible:ring-blue-500/40 text-white rounded-xl h-11"
+                className="bg-card border-border focus-visible:ring-primary/40 text-foreground rounded-xl h-11"
               />
-              <p className="text-[10px] text-zinc-500 mt-1 font-light">We'll send the preliminary technical assessment and site survey schedule to this email.</p>
+              <p className="text-[10px] text-muted-foreground mt-1 font-light">We'll send the preliminary technical assessment and site survey schedule to this email.</p>
             </div>
 
             <div className="flex justify-end pt-4">
               <Button
                 type="button"
                 onClick={handleNextStep}
-                className="bg-blue-600 hover:bg-blue-500 text-white font-bold px-8 h-12 rounded-xl text-sm flex items-center gap-2 shadow-lg shadow-blue-500/20"
+                className="bg-primary hover:bg-primary text-primary-foreground font-bold px-8 h-12 rounded-xl text-sm flex items-center gap-2 shadow-lg shadow-primary/20"
               >
                 <span>Continue to Property Details</span>
                 <ArrowRight size={16} />
@@ -838,9 +838,9 @@ ${formData.additionalNotes.trim() || 'None'}
         {currentStep === 2 && (
           <div className="space-y-6 animate-fade-in">
             <div className="space-y-1">
-              <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-blue-400 font-mono">Step 2 of 3</span>
-              <h3 className="text-xl sm:text-2xl font-bold text-white font-tech">Property Details & Project Scale</h3>
-              <p className="text-xs sm:text-sm text-zinc-400 font-light leading-relaxed">
+              <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-primary font-mono">Step 2 of 3</span>
+              <h3 className="text-xl sm:text-2xl font-bold text-foreground font-tech">Property Details & Project Scale</h3>
+              <p className="text-xs sm:text-sm text-muted-foreground font-light leading-relaxed">
                 Helps our engineering team determine equipment density, cabling requirements, and site surveyor dispatch.
               </p>
             </div>
@@ -848,7 +848,7 @@ ${formData.additionalNotes.trim() || 'None'}
             <div className="grid gap-6 sm:grid-cols-2">
               {/* Industry */}
               <div className="space-y-2">
-                <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider" htmlFor="industry-select">
+                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider" htmlFor="industry-select">
                   Industry / Property Type *
                 </label>
                 <select
@@ -856,7 +856,7 @@ ${formData.additionalNotes.trim() || 'None'}
                   name="industry"
                   value={formData.industry}
                   onChange={handleChange}
-                  className="w-full bg-[#09090B] border border-zinc-850 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition-colors"
+                  className="w-full bg-card border border-border rounded-xl px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 transition-colors"
                 >
                   <option value="">-- Select Industry --</option>
                   {INDUSTRY_OPTIONS.map(ind => (
@@ -867,7 +867,7 @@ ${formData.additionalNotes.trim() || 'None'}
 
               {/* Property Scale */}
               <div className="space-y-2">
-                <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider" htmlFor="scale-select">
+                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider" htmlFor="scale-select">
                   Estimated Requirement Scale *
                 </label>
                 <select
@@ -875,7 +875,7 @@ ${formData.additionalNotes.trim() || 'None'}
                   name="scale"
                   value={formData.scale}
                   onChange={handleChange}
-                  className="w-full bg-[#09090B] border border-zinc-850 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition-colors"
+                  className="w-full bg-card border border-border rounded-xl px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 transition-colors"
                 >
                   <option value="">-- Select Project Scale --</option>
                   {SCALE_OPTIONS.map(sc => (
@@ -886,7 +886,7 @@ ${formData.additionalNotes.trim() || 'None'}
 
               {/* Approximate Project Size */}
               <div className="space-y-2">
-                <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider" htmlFor="project-size-select">
+                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider" htmlFor="project-size-select">
                   Approximate Project Size *
                 </label>
                 <select
@@ -894,7 +894,7 @@ ${formData.additionalNotes.trim() || 'None'}
                   name="projectSize"
                   value={formData.projectSize}
                   onChange={handleChange}
-                  className="w-full bg-[#09090B] border border-zinc-850 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition-colors"
+                  className="w-full bg-card border border-border rounded-xl px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 transition-colors"
                 >
                   <option value="">-- Select approximate size --</option>
                   {PROJECT_SIZE_OPTIONS.map(option => (
@@ -905,7 +905,7 @@ ${formData.additionalNotes.trim() || 'None'}
 
               {/* City / Location */}
               <div className="space-y-2">
-                <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider" htmlFor="city-input">
+                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider" htmlFor="city-input">
                   Project Location / City *
                 </label>
                 <Input
@@ -915,13 +915,13 @@ ${formData.additionalNotes.trim() || 'None'}
                   onChange={handleChange}
                   placeholder="e.g. Panaji, Goa / Anjuna / Mapusa / Mumbai"
                   required
-                  className="bg-[#09090B] border-zinc-850 focus-visible:ring-blue-500/40 text-white rounded-xl h-11"
+                  className="bg-card border-border focus-visible:ring-primary/40 text-foreground rounded-xl h-11"
                 />
               </div>
 
               {/* Budget (Optional) */}
               <div className="space-y-2">
-                <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider" htmlFor="budget-select">
+                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider" htmlFor="budget-select">
                   Target Budget Allocation (Optional)
                 </label>
                 <select
@@ -929,7 +929,7 @@ ${formData.additionalNotes.trim() || 'None'}
                   name="budget"
                   value={formData.budget}
                   onChange={handleChange}
-                  className="w-full bg-[#09090B] border border-zinc-850 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition-colors"
+                  className="w-full bg-card border border-border rounded-xl px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 transition-colors"
                 >
                   <option value="Flexible / Proposal Based">Flexible / Proposal Based</option>
                   <option value="Under ₹1,00,000">Under ₹1,00,000</option>
@@ -945,7 +945,7 @@ ${formData.additionalNotes.trim() || 'None'}
                 type="button"
                 variant="outline"
                 onClick={handlePrevStep}
-                className="border-zinc-850 bg-zinc-900/40 text-zinc-400 hover:text-white rounded-xl h-12 px-6"
+                className="border-border bg-card/40 text-muted-foreground hover:text-foreground rounded-xl h-12 px-6"
               >
                 <ArrowLeft size={16} className="mr-2" />
                 Back
@@ -953,7 +953,7 @@ ${formData.additionalNotes.trim() || 'None'}
               <Button
                 type="button"
                 onClick={handleNextStep}
-                className="bg-blue-600 hover:bg-blue-500 text-white font-bold px-8 h-12 rounded-xl text-sm flex items-center gap-2 shadow-lg shadow-blue-500/20"
+                className="bg-primary hover:bg-primary text-primary-foreground font-bold px-8 h-12 rounded-xl text-sm flex items-center gap-2 shadow-lg shadow-primary/20"
               >
                 <span>Continue to Contact Info</span>
                 <ArrowRight size={16} />
@@ -966,16 +966,16 @@ ${formData.additionalNotes.trim() || 'None'}
         {currentStep === 3 && (
           <div className="space-y-6 animate-fade-in">
             <div className="space-y-1">
-              <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-blue-400 font-mono">Step 3 of 3</span>
-              <h3 className="text-xl sm:text-2xl font-bold text-white font-tech">Where should we deliver the assessment proposal?</h3>
-              <p className="text-xs sm:text-sm text-zinc-400 font-light leading-relaxed">
+              <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-primary font-mono">Step 3 of 3</span>
+              <h3 className="text-xl sm:text-2xl font-bold text-foreground font-tech">Where should we deliver the assessment proposal?</h3>
+              <p className="text-xs sm:text-sm text-muted-foreground font-light leading-relaxed">
                 We will send the technical blueprint and connect with you to arrange a complimentary site survey.
               </p>
             </div>
 
             <div className="grid gap-6 sm:grid-cols-2">
               <div className="space-y-2">
-                <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider" htmlFor="contact-name">
+                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider" htmlFor="contact-name">
                   Full Name *
                 </label>
                 <Input
@@ -986,12 +986,12 @@ ${formData.additionalNotes.trim() || 'None'}
                   placeholder="e.g. Rahul Sharma"
                   required
                   disabled={isSubmitting}
-                  className="bg-[#09090B] border-zinc-850 focus-visible:ring-blue-500/40 text-white rounded-xl h-11"
+                  className="bg-card border-border focus-visible:ring-primary/40 text-foreground rounded-xl h-11"
                 />
               </div>
 
               <div className="space-y-2">
-                <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider" htmlFor="company-name">
+                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider" htmlFor="company-name">
                   Company / Organization Name *
                 </label>
                 <Input
@@ -1002,12 +1002,12 @@ ${formData.additionalNotes.trim() || 'None'}
                   placeholder="e.g. Azure Palms Resort Goa"
                   required
                   disabled={isSubmitting}
-                  className="bg-[#09090B] border-zinc-850 focus-visible:ring-blue-500/40 text-white rounded-xl h-11"
+                  className="bg-card border-border focus-visible:ring-primary/40 text-foreground rounded-xl h-11"
                 />
               </div>
 
               <div className="space-y-2">
-                <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider" htmlFor="work-email">
+                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider" htmlFor="work-email">
                   Email Address *
                 </label>
                 <Input
@@ -1019,12 +1019,12 @@ ${formData.additionalNotes.trim() || 'None'}
                   placeholder="e.g. rahul@azurepalms.com"
                   required
                   disabled={isSubmitting}
-                  className="bg-[#09090B] border-zinc-850 focus-visible:ring-blue-500/40 text-white rounded-xl h-11"
+                  className="bg-card border-border focus-visible:ring-primary/40 text-foreground rounded-xl h-11"
                 />
               </div>
 
               <div className="space-y-2">
-                <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider" htmlFor="phone-number">
+                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider" htmlFor="phone-number">
                   Phone / WhatsApp Number *
                 </label>
                 <Input
@@ -1036,19 +1036,19 @@ ${formData.additionalNotes.trim() || 'None'}
                   placeholder="e.g. +91 98765 43210"
                   required
                   disabled={isSubmitting}
-                  className="bg-[#09090B] border-zinc-850 focus-visible:ring-blue-500/40 text-white rounded-xl h-11"
+                  className="bg-card border-border focus-visible:ring-primary/40 text-foreground rounded-xl h-11"
                 />
               </div>
             </div>
 
             {/* Optional Project Document / Blueprint Upload */}
-            <div className="space-y-2 rounded-2xl border border-dashed border-zinc-800 bg-zinc-950/40 p-4">
+            <div className="space-y-2 rounded-2xl border border-dashed border-border bg-background/40 p-4">
               <div className="flex items-center justify-between">
-                <label className="text-xs font-semibold text-zinc-300 flex items-center gap-1.5" htmlFor="project-document">
-                  <FileText size={14} className="text-blue-400" />
+                <label className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5" htmlFor="project-document">
+                  <FileText size={14} className="text-primary" />
                   <span>Attach Floorplan / BOQ / Blueprint (Optional)</span>
                 </label>
-                <span className="text-[10px] font-mono text-zinc-500">PDF, PNG, JPG (Max 10MB)</span>
+                <span className="text-[10px] font-mono text-muted-foreground">PDF, PNG, JPG (Max 10MB)</span>
               </div>
               <input
                 id="project-document"
@@ -1056,10 +1056,10 @@ ${formData.additionalNotes.trim() || 'None'}
                 accept=".pdf,.png,.jpg,.jpeg,.webp"
                 onChange={handleFileUpload}
                 disabled={isSubmitting}
-                className="w-full text-xs text-zinc-400 file:mr-3 file:py-1.5 file:px-3.5 file:rounded-lg file:border file:border-zinc-700 file:bg-zinc-850 file:text-xs file:font-semibold file:text-white hover:file:bg-zinc-800 cursor-pointer"
+                className="w-full text-xs text-muted-foreground file:mr-3 file:py-1.5 file:px-3.5 file:rounded-lg file:border file:border-border file:bg-secondary file:text-xs file:font-semibold file:text-foreground hover:file:bg-card cursor-pointer"
               />
               {attachedFile && (
-                <p className="text-[11px] text-emerald-400 flex items-center gap-1 font-mono">
+                <p className="text-[11px] text-success flex items-center gap-1 font-mono">
                   <CheckCircle2 size={12} />
                   <span>Selected: {attachedFile.name} ({Math.round(attachedFile.size / 1024)} KB)</span>
                 </p>
@@ -1067,7 +1067,7 @@ ${formData.additionalNotes.trim() || 'None'}
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider" htmlFor="additional-notes">
+              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider" htmlFor="additional-notes">
                 Additional Requirements or Floorplan Notes (Optional)
               </label>
               <Textarea
@@ -1078,7 +1078,7 @@ ${formData.additionalNotes.trim() || 'None'}
                 placeholder="Mention any specific brands requested (Cisco, Hikvision, Ubiquiti), architectural drawings ready, or key installation dates..."
                 rows={3}
                 disabled={isSubmitting}
-                className="bg-[#09090B] border-zinc-850 focus-visible:ring-blue-500/40 text-white placeholder:text-zinc-600 text-sm rounded-xl"
+                className="bg-card border-border focus-visible:ring-primary/40 text-foreground placeholder:text-muted-foreground text-sm rounded-xl"
               />
             </div>
 
@@ -1096,17 +1096,17 @@ ${formData.additionalNotes.trim() || 'None'}
               />
             </div>
 
-            <div className="rounded-xl border border-zinc-850 bg-zinc-900/30 p-4 space-y-2">
+            <div className="rounded-xl border border-border bg-card/30 p-4 space-y-2">
               <label className="flex items-start gap-3 cursor-pointer select-none">
                 <input
                   type="checkbox"
                   checked={formData.privacyConsent}
                   onChange={(e) => setFormData(prev => ({ ...prev, privacyConsent: e.target.checked }))}
-                  className="mt-1 h-4 w-4 rounded border-zinc-700 bg-zinc-900 text-blue-600 focus:ring-blue-500/40 accent-blue-600"
+                  className="mt-1 h-4 w-4 rounded border-border bg-card text-primary focus:ring-primary/40 accent-blue-600"
                 />
-                <span className="text-xs text-zinc-400 leading-relaxed">
+                <span className="text-xs text-muted-foreground leading-relaxed">
                   I agree that TecBunny Solutions may contact me via Phone, WhatsApp, or Email regarding this technology assessment. We adhere strictly to our{' '}
-                  <Link href="/info/policies/privacy" target="_blank" className="text-blue-400 hover:underline">
+                  <Link href="/info/policies/privacy" target="_blank" className="text-primary hover:underline">
                     Privacy Policy
                   </Link>{' '}
                   and never share your details with third parties.
@@ -1120,7 +1120,7 @@ ${formData.additionalNotes.trim() || 'None'}
                 variant="outline"
                 onClick={handlePrevStep}
                 disabled={isSubmitting}
-                className="border-zinc-850 bg-zinc-900/40 text-zinc-400 hover:text-white rounded-xl h-12 px-6"
+                className="border-border bg-card/40 text-muted-foreground hover:text-foreground rounded-xl h-12 px-6"
               >
                 <ArrowLeft size={16} className="mr-2" />
                 Back
@@ -1129,7 +1129,7 @@ ${formData.additionalNotes.trim() || 'None'}
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="bg-blue-600 hover:bg-blue-500 text-white font-bold px-8 h-12 rounded-xl text-sm flex items-center gap-2 shadow-lg shadow-blue-500/20"
+                className="bg-primary hover:bg-primary text-primary-foreground font-bold px-8 h-12 rounded-xl text-sm flex items-center gap-2 shadow-lg shadow-primary/20"
               >
                 {isSubmitting ? (
                   <span>Transmitting Details...</span>
@@ -1143,8 +1143,8 @@ ${formData.additionalNotes.trim() || 'None'}
             </div>
 
             <div className="pt-2 text-center">
-              <p className="text-[11px] text-zinc-500 flex items-center justify-center gap-1.5">
-                <ShieldCheck size={13} className="text-emerald-400 shrink-0" />
+              <p className="text-[11px] text-muted-foreground flex items-center justify-center gap-1.5">
+                <ShieldCheck size={13} className="text-success shrink-0" />
                 <span>No obligation. Your information is used solely to evaluate your technical requirements and deliver your itemized proposal.</span>
               </p>
             </div>

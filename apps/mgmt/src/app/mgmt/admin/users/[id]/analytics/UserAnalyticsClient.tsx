@@ -7,12 +7,12 @@ import { Badge } from "@tecbunny/ui";
 import { ScrollArea } from "@tecbunny/ui";
 import { Avatar, AvatarFallback, AvatarImage } from "@tecbunny/ui";
 import { Separator } from "@tecbunny/ui";
-import { 
-  Activity, 
-  ShoppingCart, 
-  MessageSquare, 
-  FileText, 
-  Eye, 
+import {
+  Activity,
+  ShoppingCart,
+  MessageSquare,
+  FileText,
+  Eye,
   Globe,
   Phone
 } from 'lucide-react';
@@ -91,42 +91,42 @@ export default function UserAnalyticsPage() {
   }, [params.id]);
 
   if (loading) return <div className="p-8">Loading user history...</div>;
-  if (!data || data.error) return <div className="p-8 text-red-500">Error loading user history: {data?.error}</div>;
+  if (!data || data.error) return <div className="p-8 text-destructive">Error loading user history: {data?.error}</div>;
 
   const { profile, timeline } = data;
 
   const getIcon = (item: any) => {
-    if (item.type === 'order') return <ShoppingCart className="h-4 w-4 text-green-500" />;
-    if (item.type === 'message') return <MessageSquare className="h-4 w-4 text-blue-500" />;
-    if (item.type === 'lead') return <FileText className="h-4 w-4 text-orange-500" />;
-    
+    if (item.type === 'order') return <ShoppingCart className="h-4 w-4 text-success" />;
+    if (item.type === 'message') return <MessageSquare className="h-4 w-4 text-primary" />;
+    if (item.type === 'lead') return <FileText className="h-4 w-4 text-accent" />;
+
     // Events
-    if (item.event_type === 'page_view') return <Eye className="h-4 w-4 text-gray-500" />;
-    if (item.event_type === 'add_to_cart') return <ShoppingCart className="h-4 w-4 text-purple-500" />;
+    if (item.event_type === 'page_view') return <Eye className="h-4 w-4 text-muted-foreground" />;
+    if (item.event_type === 'add_to_cart') return <ShoppingCart className="h-4 w-4 text-primary" />;
     if (item.event_type === 'social_click') {
       const platform = item.metadata?.platform?.toLowerCase();
-      if (platform?.includes('facebook')) return <FacebookIcon className="h-4 w-4 text-blue-600" />;
-      if (platform?.includes('instagram')) return <InstagramIcon className="h-4 w-4 text-pink-600" />;
-      if (platform?.includes('twitter')) return <XIcon className="h-4 w-4 text-blue-400" />;
-      if (platform?.includes('linkedin')) return <LinkedinIcon className="h-4 w-4 text-blue-700" />;
-      if (platform?.includes('youtube')) return <YoutubeIcon className="h-4 w-4 text-red-600" />;
-      if (platform?.includes('whatsapp')) return <Phone className="h-4 w-4 text-green-500" />;
-      return <Globe className="h-4 w-4 text-blue-500" />;
+      if (platform?.includes('facebook')) return <FacebookIcon className="h-4 w-4 text-primary" />;
+      if (platform?.includes('instagram')) return <InstagramIcon className="h-4 w-4 text-primary" />;
+      if (platform?.includes('twitter')) return <XIcon className="h-4 w-4 text-primary" />;
+      if (platform?.includes('linkedin')) return <LinkedinIcon className="h-4 w-4 text-primary" />;
+      if (platform?.includes('youtube')) return <YoutubeIcon className="h-4 w-4 text-destructive" />;
+      if (platform?.includes('whatsapp')) return <Phone className="h-4 w-4 text-success" />;
+      return <Globe className="h-4 w-4 text-primary" />;
     }
-    
-    return <Activity className="h-4 w-4 text-gray-400" />;
+
+    return <Activity className="h-4 w-4 text-muted-foreground" />;
   };
 
   const formatEventDescription = (item: any) => {
     if (item.type === 'order') return `Placed Order #${item.id.slice(0, 8)} - $${item.total}`;
     if (item.type === 'message') return `Sent message: ${item.subject || 'No Subject'}`;
     if (item.type === 'lead') return `Submitted ${item.type} inquiry`;
-    
+
     if (item.event_type === 'page_view') return `Viewed page: ${item.page_url}`;
     if (item.event_type === 'add_to_cart') return `Added "${item.metadata?.productName}" to cart`;
     if (item.event_type === 'remove_from_cart') return `Removed "${item.metadata?.productName}" from cart`;
     if (item.event_type === 'social_click') return `Clicked on ${item.metadata?.platform}`;
-    
+
     return `Event: ${item.event_type}`;
   };
 

@@ -1,0 +1,238 @@
+{
+  "pagesPreserved": 223,
+  "appsUsingSharedTokens": [
+    "public",
+    "mgmt",
+    "superadmin",
+    "api",
+    "waba",
+    "webmail"
+  ],
+  "contrast": [
+    {
+      "mode": "light",
+      "foreground": "foreground",
+      "background": "background",
+      "ratio": 17.09,
+      "minimum": 4.5
+    },
+    {
+      "mode": "light",
+      "foreground": "foreground",
+      "background": "card",
+      "ratio": 17.9,
+      "minimum": 4.5
+    },
+    {
+      "mode": "light",
+      "foreground": "muted-foreground",
+      "background": "card",
+      "ratio": 10.21,
+      "minimum": 4.5
+    },
+    {
+      "mode": "light",
+      "foreground": "muted-foreground",
+      "background": "background",
+      "ratio": 9.75,
+      "minimum": 4.5
+    },
+    {
+      "mode": "light",
+      "foreground": "primary-foreground",
+      "background": "primary",
+      "ratio": 6.65,
+      "minimum": 4.5
+    },
+    {
+      "mode": "light",
+      "foreground": "primary-foreground",
+      "background": "primary-hover",
+      "ratio": 8.79,
+      "minimum": 4.5
+    },
+    {
+      "mode": "light",
+      "foreground": "accent-foreground",
+      "background": "accent",
+      "ratio": 4.9,
+      "minimum": 4.5
+    },
+    {
+      "mode": "light",
+      "foreground": "success-foreground",
+      "background": "success",
+      "ratio": 7.37,
+      "minimum": 4.5
+    },
+    {
+      "mode": "light",
+      "foreground": "warning-foreground",
+      "background": "warning",
+      "ratio": 6.63,
+      "minimum": 4.5
+    },
+    {
+      "mode": "light",
+      "foreground": "destructive-foreground",
+      "background": "destructive",
+      "ratio": 6.41,
+      "minimum": 4.5
+    },
+    {
+      "mode": "light",
+      "foreground": "success",
+      "background": "card",
+      "ratio": 7.37,
+      "minimum": 4.5
+    },
+    {
+      "mode": "light",
+      "foreground": "warning",
+      "background": "card",
+      "ratio": 6.63,
+      "minimum": 4.5
+    },
+    {
+      "mode": "light",
+      "foreground": "destructive",
+      "background": "card",
+      "ratio": 6.41,
+      "minimum": 4.5
+    },
+    {
+      "mode": "light",
+      "foreground": "primary",
+      "background": "card",
+      "ratio": 6.65,
+      "minimum": 4.5
+    },
+    {
+      "mode": "light",
+      "foreground": "input",
+      "background": "card",
+      "ratio": 4.72,
+      "minimum": 3
+    },
+    {
+      "mode": "light",
+      "foreground": "ring",
+      "background": "background",
+      "ratio": 6.35,
+      "minimum": 3
+    },
+    {
+      "mode": "dark",
+      "foreground": "foreground",
+      "background": "background",
+      "ratio": 17.19,
+      "minimum": 4.5
+    },
+    {
+      "mode": "dark",
+      "foreground": "foreground",
+      "background": "card",
+      "ratio": 15.32,
+      "minimum": 4.5
+    },
+    {
+      "mode": "dark",
+      "foreground": "muted-foreground",
+      "background": "card",
+      "ratio": 8.04,
+      "minimum": 4.5
+    },
+    {
+      "mode": "dark",
+      "foreground": "muted-foreground",
+      "background": "background",
+      "ratio": 9.01,
+      "minimum": 4.5
+    },
+    {
+      "mode": "dark",
+      "foreground": "primary-foreground",
+      "background": "primary",
+      "ratio": 7.48,
+      "minimum": 4.5
+    },
+    {
+      "mode": "dark",
+      "foreground": "primary-foreground",
+      "background": "primary-hover",
+      "ratio": 10.43,
+      "minimum": 4.5
+    },
+    {
+      "mode": "dark",
+      "foreground": "accent-foreground",
+      "background": "accent",
+      "ratio": 10.66,
+      "minimum": 4.5
+    },
+    {
+      "mode": "dark",
+      "foreground": "success-foreground",
+      "background": "success",
+      "ratio": 13.44,
+      "minimum": 4.5
+    },
+    {
+      "mode": "dark",
+      "foreground": "warning-foreground",
+      "background": "warning",
+      "ratio": 13.63,
+      "minimum": 4.5
+    },
+    {
+      "mode": "dark",
+      "foreground": "destructive-foreground",
+      "background": "destructive",
+      "ratio": 10.02,
+      "minimum": 4.5
+    },
+    {
+      "mode": "dark",
+      "foreground": "success",
+      "background": "card",
+      "ratio": 11.98,
+      "minimum": 4.5
+    },
+    {
+      "mode": "dark",
+      "foreground": "warning",
+      "background": "card",
+      "ratio": 12.15,
+      "minimum": 4.5
+    },
+    {
+      "mode": "dark",
+      "foreground": "destructive",
+      "background": "card",
+      "ratio": 8.93,
+      "minimum": 4.5
+    },
+    {
+      "mode": "dark",
+      "foreground": "primary",
+      "background": "card",
+      "ratio": 6.66,
+      "minimum": 4.5
+    },
+    {
+      "mode": "dark",
+      "foreground": "input",
+      "background": "card",
+      "ratio": 3.56,
+      "minimum": 3
+    },
+    {
+      "mode": "dark",
+      "foreground": "ring",
+      "background": "background",
+      "ratio": 7.48,
+      "minimum": 3
+    }
+  ],
+  "scope": "Source and token invariants; not a full accessibility or workflow certification."
+}

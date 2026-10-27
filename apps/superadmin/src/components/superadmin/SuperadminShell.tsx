@@ -92,10 +92,10 @@ export function SuperadminShell({ children }: { children: React.ReactNode }) {
   const breadcrumbs = getBreadcrumbs(pathname || '/superadmin/mgmt/dashboard');
 
   return (
-    <div className="flex h-screen bg-zinc-950 overflow-hidden font-sans text-zinc-100">
+    <div className="flex h-screen bg-background overflow-hidden font-sans text-muted-foreground">
       <a
         href="#superadmin-main-content"
-        className="sr-only focus:not-sr-only focus:absolute focus:left-3 focus:top-3 focus:z-[60] rounded-md border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-white"
+        className="sr-only focus:not-sr-only focus:absolute focus:left-3 focus:top-3 focus:z-[60] rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground"
       >
         Skip to main content
       </a>
@@ -113,27 +113,27 @@ export function SuperadminShell({ children }: { children: React.ReactNode }) {
       {/* Mobile backdrop */}
       {mobileOpen && (
         <div
-          className="fixed inset-0 z-40 bg-zinc-950/80 backdrop-blur-sm lg:hidden"
+          className="fixed inset-0 z-40 bg-background/80 backdrop-blur-sm lg:hidden"
           onClick={() => setMobileOpen(false)}
         />
       )}
 
       {/* ── Sidebar ── */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 w-64 bg-zinc-900 border-r border-zinc-800/80 flex flex-col transition-transform duration-300 lg:static lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-50 w-64 bg-card border-r border-border/80 flex flex-col transition-transform duration-300 lg:static lg:translate-x-0 ${
           mobileOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
         {/* Logo */}
-        <div className="h-16 flex items-center gap-3 px-5 border-b border-zinc-800 shrink-0">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-red-600 to-red-800 flex items-center justify-center text-white font-black text-sm shrink-0">
+        <div className="h-16 flex items-center gap-3 px-5 border-b border-border shrink-0">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-destructive to-destructive flex items-center justify-center text-foreground font-black text-sm shrink-0">
             T
           </div>
           <div>
-            <p className="text-sm font-black uppercase tracking-tight text-zinc-100 leading-tight">
+            <p className="text-sm font-black uppercase tracking-tight text-muted-foreground leading-tight">
               TecBunny
             </p>
-            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-red-500 leading-tight">
+            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-destructive leading-tight">
               Superadmin
             </p>
           </div>
@@ -143,7 +143,7 @@ export function SuperadminShell({ children }: { children: React.ReactNode }) {
         <nav className="flex-1 overflow-y-auto no-scrollbar py-4 px-3 space-y-4">
           {NAV_SECTIONS.map((section) => (
             <div key={section.title}>
-              <p className="px-3 mb-1 text-[9px] font-bold uppercase tracking-widest text-zinc-500">
+              <p className="px-3 mb-1 text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
                 {section.title}
               </p>
               <div className="space-y-0.5">
@@ -159,13 +159,13 @@ export function SuperadminShell({ children }: { children: React.ReactNode }) {
                       onClick={() => setMobileOpen(false)}
                       className={`flex items-center gap-2.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${
                         isActive
-                          ? 'bg-red-950/40 text-red-400 border border-red-900/50 shadow-sm'
-                          : 'text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-100'
+                          ? 'bg-destructive/40 text-destructive border border-destructive/50 shadow-sm'
+                          : 'text-muted-foreground hover:bg-card/50 hover:text-muted-foreground'
                       }`}
                     >
                       <Icon
                         className={`h-4 w-4 shrink-0 ${
-                          isActive ? 'text-red-400' : 'text-zinc-500'
+                          isActive ? 'text-destructive' : 'text-muted-foreground'
                         }`}
                       />
                       {item.label}
@@ -178,26 +178,26 @@ export function SuperadminShell({ children }: { children: React.ReactNode }) {
         </nav>
 
         {/* Sign out */}
-        <form action="/superadmin/mgmt/logout" method="post" className="border-t border-zinc-800 p-2.5 shrink-0">
+        <form action="/superadmin/mgmt/logout" method="post" className="border-t border-border p-2.5 shrink-0">
           <button
             type="submit"
-            className="flex w-full items-center gap-2.5 px-3 py-1.5 rounded-md text-xs font-semibold text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-200 transition-colors"
+            className="flex w-full items-center gap-2.5 px-3 py-1.5 rounded-md text-xs font-semibold text-muted-foreground hover:bg-card/50 hover:text-muted-foreground transition-colors"
           >
-            <LogOut className="h-4 w-4 shrink-0 text-zinc-500" />
+            <LogOut className="h-4 w-4 shrink-0 text-muted-foreground" />
             Sign out
           </button>
         </form>
       </aside>
 
       {/* ── Main area ── */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden bg-zinc-950">
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden bg-background">
         {/* Topbar */}
-        <header className="h-16 bg-zinc-900/30 border-b border-zinc-800/80 flex items-center justify-between px-4 sm:px-6 shrink-0 z-10">
+        <header className="h-16 bg-card/30 border-b border-border/80 flex items-center justify-between px-4 sm:px-6 shrink-0 z-10">
           <div className="flex items-center gap-4 flex-1">
             {/* Mobile hamburger */}
             <button
               type="button"
-              className="lg:hidden p-2 -ml-2 text-zinc-400 hover:text-zinc-200 rounded-md hover:bg-zinc-900/50"
+              className="lg:hidden p-2 -ml-2 text-muted-foreground hover:text-muted-foreground rounded-md hover:bg-card/50"
               onClick={() => setMobileOpen(true)}
               aria-label="Open superadmin navigation"
               aria-expanded={mobileOpen}
@@ -208,8 +208,8 @@ export function SuperadminShell({ children }: { children: React.ReactNode }) {
             <nav aria-label="Breadcrumb" className="hidden min-w-0 items-center gap-2 text-sm md:flex">
               {breadcrumbs.map((breadcrumb, index) => (
                 <React.Fragment key={`${breadcrumb}-${index}`}>
-                  {index > 0 ? <ChevronRight className="h-3.5 w-3.5 shrink-0 text-zinc-600" /> : null}
-                  <span className={index === breadcrumbs.length - 1 ? 'truncate font-semibold text-zinc-200' : 'truncate text-zinc-500'}>
+                  {index > 0 ? <ChevronRight className="h-3.5 w-3.5 shrink-0 text-muted-foreground" /> : null}
+                  <span className={index === breadcrumbs.length - 1 ? 'truncate font-semibold text-muted-foreground' : 'truncate text-muted-foreground'}>
                     {breadcrumb}
                   </span>
                 </React.Fragment>
@@ -218,31 +218,31 @@ export function SuperadminShell({ children }: { children: React.ReactNode }) {
           </div>
 
           <div className="flex items-center gap-3">
-            <Link href="/superadmin/mgmt/ai-config" className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-gradient-to-r from-indigo-950/40 to-purple-950/40 text-indigo-300 border border-indigo-900/50 hover:shadow-lg hover:border-indigo-800/60 transition-all">
-              <Sparkles className="h-3.5 w-3.5 text-purple-400 shrink-0" />
+            <Link href="/superadmin/mgmt/ai-config" className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-gradient-to-r from-primary/40 to-primary/40 text-primary border border-primary/50 hover:shadow-lg hover:border-primary/60 transition-all">
+              <Sparkles className="h-3.5 w-3.5 text-primary shrink-0" />
               AI Command
             </Link>
 
-            <Link href="/superadmin/mgmt/audit-logs" className="p-2 text-zinc-400 hover:text-zinc-200 relative rounded-full hover:bg-zinc-900/60" aria-label="View superadmin activity log">
+            <Link href="/superadmin/mgmt/audit-logs" className="p-2 text-muted-foreground hover:text-muted-foreground relative rounded-full hover:bg-card/60" aria-label="View superadmin activity log">
               <Bell className="h-5 w-5" />
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full ring-2 ring-zinc-900" />
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-destructive rounded-full ring-2 ring-ring text-destructive-foreground" />
             </Link>
 
             {/* Profile */}
             <div className="flex items-center gap-2 pl-1">
-              <div className="h-8 w-8 rounded-full bg-red-600 flex items-center justify-center text-white font-bold text-sm shrink-0">
+              <div className="h-8 w-8 rounded-full bg-destructive flex items-center justify-center text-destructive-foreground font-bold text-sm shrink-0">
                 S
               </div>
               <div className="hidden sm:block text-left text-xs leading-tight">
-                <p className="font-semibold text-zinc-200">System Super Administrator</p>
-                <p className="text-[10px] text-zinc-500 font-medium">Superadmin</p>
+                <p className="font-semibold text-muted-foreground">System Super Administrator</p>
+                <p className="text-[10px] text-muted-foreground font-medium">Superadmin</p>
               </div>
             </div>
           </div>
         </header>
 
         {/* Page content */}
-        <main id="superadmin-main-content" tabIndex={-1} className="flex-1 overflow-y-auto bg-zinc-950 focus:outline-none">
+        <main id="superadmin-main-content" tabIndex={-1} className="flex-1 overflow-y-auto bg-background focus:outline-none">
           <div className="mx-auto max-w-7xl p-4 sm:p-6 lg:p-8">{children}</div>
         </main>
       </div>

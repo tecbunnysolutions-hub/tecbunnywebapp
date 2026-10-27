@@ -26,7 +26,7 @@ function SignInForm() {
   const [twoFactorUser, setTwoFactorUser] = useState<any>(null);
 
   const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY?.trim() || undefined;
-  
+
 
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -270,7 +270,7 @@ function SignInForm() {
 
   return (
     <div className="min-h-screen bg-background text-foreground flex items-center justify-center px-4 py-16">
-      
+
 
       <div className="absolute inset-0 bg-noise opacity-10" />
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[100px] animate-pulse pointer-events-none" />
@@ -288,8 +288,8 @@ function SignInForm() {
           {!showTwoFactor ? (
             <>
               {verified === 'true' && (
-                <div className="mb-6 p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-lg flex items-center space-x-3">
-                  <CheckCircle className="h-5 w-5 text-emerald-500" />
+                <div className="mb-6 p-4 bg-success/10 border border-success/30 rounded-lg flex items-center space-x-3">
+                  <CheckCircle className="h-5 w-5 text-success" />
                   <div className="text-sm text-foreground">
                     <strong>Account created successfully!</strong>
                     <br />
@@ -354,9 +354,9 @@ function SignInForm() {
                 </div>
 
                 {error && (
-                  <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-lg flex items-center space-x-2">
-                    <AlertCircle className="h-4 w-4 text-red-500" />
-                    <span className="text-sm text-red-200">{error}</span>
+                  <div className="p-3 bg-destructive/10 border border-destructive/30 rounded-lg flex items-center space-x-2">
+                    <AlertCircle className="h-4 w-4 text-destructive" />
+                    <span className="text-sm text-destructive">{error}</span>
                   </div>
                 )}
 
@@ -384,10 +384,10 @@ function SignInForm() {
 
                 <button
                   type="submit"
-                  className="group relative w-full py-3 bg-primary hover:bg-primary/90 text-primary-foreground font-bold tracking-wide rounded-lg transition-colors flex items-center justify-center gap-3 shadow-[0_0_20px_rgba(37,99,235,0.3)] hover:shadow-[0_0_30px_rgba(37,99,235,0.5)] overflow-hidden cursor-pointer"
+                  className="group relative w-full py-3 bg-primary hover:bg-primary/90 text-primary-foreground font-bold tracking-wide rounded-lg transition-colors flex items-center justify-center gap-3 shadow-md hover:shadow-md overflow-hidden cursor-pointer"
                   disabled={isLoading || isRedirecting || !identifier || !password || isLockedOut}
                 >
-                  <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent group-hover:translate-x-full transition-transform duration-700" />
+                  <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-card/30 to-transparent group-hover:translate-x-full transition-transform duration-700" />
                   {isRedirecting ? (
                     <>
                       <span className="animate-spin h-4 w-4 border-2 border-current border-t-transparent rounded-full" />
@@ -407,7 +407,7 @@ function SignInForm() {
               </form>
 
               {failedAttempts > 0 && failedAttempts < 5 && (
-                <div className="mt-4 text-center text-sm text-amber-500">
+                <div className="mt-4 text-center text-sm text-warning">
                   {5 - failedAttempts} attempts remaining before account lockout
                 </div>
               )}

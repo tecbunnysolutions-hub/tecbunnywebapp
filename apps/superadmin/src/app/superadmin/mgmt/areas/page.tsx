@@ -272,7 +272,7 @@ export default function SuperadminAreasPage() {
                 <p className="mt-2 text-xs text-muted-foreground">
                   {area.pincodes.length} pincodes · {area.salesTeamIds.length} sales staff · {area.serviceEngineerIds.length} engineers
                 </p>
-                <p className={`mt-1 text-xs ${area.services_enabled ? 'text-emerald-500' : 'text-muted-foreground'}`}>
+                <p className={`mt-1 text-xs ${area.services_enabled ? 'text-success' : 'text-muted-foreground'}`}>
                   Service orders {area.services_enabled ? 'enabled' : 'disabled'}
                 </p>
               </button>

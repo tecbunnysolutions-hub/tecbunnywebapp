@@ -18,7 +18,7 @@ export default function AdvancePaymentPage() {
   const quoteId = params.id as string;
   const actionToken = searchParams.get('token') || '';
   const { toast } = useToast();
-  
+
   const [advancePayment, setAdvancePayment] = useState<any>(null);
   const [quote, setQuote] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -30,7 +30,7 @@ export default function AdvancePaymentPage() {
 
   useEffect(() => {
     if (!quoteId) return;
-    
+
     Promise.all([
       fetch(`/api/quotes/${quoteId}?token=${encodeURIComponent(actionToken)}`, { credentials: 'include' })
         .then(r => {
@@ -56,10 +56,10 @@ export default function AdvancePaymentPage() {
             : status === '404'
               ? 'Quote not found. Please check the quote link and try again.'
               : 'Unable to load the advance payment request right now. Please try again.';
-        toast({ 
-          title: 'Error', 
+        toast({
+          title: 'Error',
           description,
-          variant: 'destructive' 
+          variant: 'destructive'
         });
         setLoading(false);
       });
@@ -167,7 +167,7 @@ export default function AdvancePaymentPage() {
       }
 
       const paymentData = await paymentRes.json();
-      
+
       // For PayU, we need to submit a form to their payment gateway
       if (advancePayment.payment_method === 'payu') {
         submitPayUForm(paymentData.data);
@@ -244,9 +244,9 @@ export default function AdvancePaymentPage() {
         {/* Status Badge */}
         <div className="flex items-center gap-2">
           <Badge className={`${
-            advancePayment.status === 'paid' ? 'bg-emerald-600 text-white' :
+            advancePayment.status === 'paid' ? 'bg-success text-success-foreground' :
             advancePayment.status === 'payment_initiated' ? 'bg-primary text-primary-foreground' :
-            advancePayment.status === 'confirmed' ? 'bg-amber-600 text-white' :
+            advancePayment.status === 'confirmed' ? 'bg-warning text-warning-foreground' :
             'bg-muted text-muted-foreground'
           }`}>
             {advancePayment.status.charAt(0).toUpperCase() + advancePayment.status.slice(1)}
@@ -270,12 +270,12 @@ export default function AdvancePaymentPage() {
               </div>
             </div>
 
-            <div className="bg-amber-500/10 border border-amber-500/30 p-4 rounded-lg">
-              <p className="text-xs text-amber-600 dark:text-amber-400 mb-2 flex items-center gap-2">
+            <div className="bg-warning/10 border border-warning/30 p-4 rounded-lg">
+              <p className="text-xs text-warning dark:text-warning mb-2 flex items-center gap-2">
                 <AlertCircle className="h-4 w-4" />
                 Payment Method
               </p>
-              <p className="text-sm font-semibold text-amber-700 dark:text-amber-100">
+              <p className="text-sm font-semibold text-warning dark:text-warning">
                 {advancePayment.payment_method === 'payu' ? 'Online Payment (PayU)' : 'Wire Transfer'}
               </p>
             </div>
@@ -312,12 +312,12 @@ export default function AdvancePaymentPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             {advancePayment.final_quotation_url && (
-              <div className="bg-emerald-500/10 border border-emerald-500/30 p-4 rounded-lg flex items-center gap-2">
-                <Check className="h-4 w-4 text-emerald-500" />
-                <span className="text-sm text-emerald-500">Quotation uploaded successfully</span>
+              <div className="bg-success/10 border border-success/30 p-4 rounded-lg flex items-center gap-2">
+                <Check className="h-4 w-4 text-success" />
+                <span className="text-sm text-success">Quotation uploaded successfully</span>
               </div>
             )}
-            
+
             {!advancePayment.final_quotation_url && (
               <div className="space-y-3">
                 <div className="border-2 border-dashed border-border rounded-lg p-6 text-center hover:border-muted-foreground transition">

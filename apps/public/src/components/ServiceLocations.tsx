@@ -17,19 +17,19 @@ export function ServiceLocations({ serviceUrl }: ServiceLocationsProps) {
 
   return (
     <section aria-label="Service locations" className="mx-auto max-w-6xl px-6 pb-16">
-      <h2 className="mb-6 text-2xl font-bold text-zinc-100">Service Locations</h2>
+      <h2 className="mb-6 text-2xl font-bold text-muted-foreground">Service Locations</h2>
       <div className="grid gap-4 sm:grid-cols-2">
         {locations.map((location) => (
           <Link prefetch={false}
             key={location.url}
             href={location.url}
-            className="group rounded-xl border border-white/10 bg-white/5 p-5 transition-colors hover:border-blue-500/40 hover:bg-white/10"
+            className="group rounded-xl border border-border/10 bg-card/5 p-5 transition-colors hover:border-primary/40 hover:bg-card/10"
           >
-            <div className="flex items-center gap-2 text-lg font-semibold text-zinc-100 group-hover:text-blue-400">
+            <div className="flex items-center gap-2 text-lg font-semibold text-muted-foreground group-hover:text-primary">
               <MapPin className="h-4 w-4" aria-hidden="true" />
               {location.name}
             </div>
-            <p className="mt-2 text-sm text-zinc-400">
+            <p className="mt-2 text-sm text-muted-foreground">
               Serving {location.areas.join(', ')}
             </p>
           </Link>

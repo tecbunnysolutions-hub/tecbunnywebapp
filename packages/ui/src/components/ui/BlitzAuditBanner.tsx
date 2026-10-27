@@ -215,7 +215,7 @@ export function BlitzAuditBanner() {
 
   return (
     <div
-      className="fixed inset-x-0 bottom-0 z-50 border-t-2 border-primary/50 bg-card/95 text-foreground backdrop-blur-xl shadow-[0_0_60px_-15px_rgba(37,99,235,0.4)] animate-slide-up pb-[env(safe-area-inset-bottom,0px)] font-sans transition-all duration-500"
+      className="fixed inset-x-0 bottom-0 z-50 border-t-2 border-primary/50 bg-card/95 text-foreground backdrop-blur-xl shadow-md animate-slide-up pb-[env(safe-area-inset-bottom,0px)] font-sans transition-all duration-500"
       role="region"
       aria-label="Free installation offer"
     >
@@ -231,7 +231,7 @@ export function BlitzAuditBanner() {
           <button
             type="button"
             onClick={() => setExpanded(true)}
-            className="shrink-0 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2.5 text-xs font-black tracking-wider sm:text-sm transition-all hover:scale-105 hover:shadow-[0_0_20px_rgba(37,99,235,0.5)]"
+            className="shrink-0 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2.5 text-xs font-black tracking-wider sm:text-sm transition-all hover:scale-105 hover:shadow-md"
           >
             Claim
           </button>
@@ -259,11 +259,11 @@ export function BlitzAuditBanner() {
           <div className="flex items-start justify-between gap-3 lg:block">
             <div className="min-w-0">
               <h3 className="text-lg font-black sm:text-2xl flex items-center gap-2 font-tech tracking-wider text-foreground">
-                <span className="text-primary animate-pulse drop-shadow-[0_0_8px_rgba(37,99,235,0.8)]">⚡</span> MONTHLY FREE INSTALLATION OFFER
+                <span className="text-primary animate-pulse drop-shadow-md">⚡</span> MONTHLY FREE INSTALLATION OFFER
               </h3>
               <p className="mt-1 text-sm font-semibold sm:text-base text-muted-foreground tracking-wide">
                 First 10 confirmed orders get 100% Free Installation. Only{" "}
-                <span className="rounded-lg bg-primary/20 border border-primary/40 px-2.5 py-1 font-black text-xl text-primary drop-shadow-[0_0_10px_rgba(37,99,235,0.5)]">{slotsDisplay}</span> slots
+                <span className="rounded-lg bg-primary/20 border border-primary/40 px-2.5 py-1 font-black text-xl text-primary drop-shadow-md">{slotsDisplay}</span> slots
                 remaining this month!
               </p>
             </div>
@@ -303,7 +303,7 @@ export function BlitzAuditBanner() {
                   type="button"
                   onClick={handleRequestOtp}
                   disabled={submitting}
-                  className="whitespace-nowrap rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-4 font-black tracking-widest shadow-[0_0_20px_rgba(37,99,235,0.4)] transition-all hover:scale-105 hover:shadow-[0_0_30px_rgba(37,99,235,0.6)] disabled:opacity-60 sm:py-3"
+                  className="whitespace-nowrap rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-4 font-black tracking-widest shadow-md transition-all hover:scale-105 hover:shadow-md disabled:opacity-60 sm:py-3"
                 >
                   {submitting ? "SENDING..." : "CLAIM SLOT NOW"}
                 </button>
@@ -323,7 +323,7 @@ export function BlitzAuditBanner() {
                   type="button"
                   onClick={handleVerifyAndClaim}
                   disabled={submitting}
-                  className="whitespace-nowrap rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-4 font-black tracking-widest shadow-[0_0_20px_rgba(37,99,235,0.4)] transition-all hover:scale-105 hover:shadow-[0_0_30px_rgba(37,99,235,0.6)] disabled:opacity-60 sm:py-3"
+                  className="whitespace-nowrap rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-4 font-black tracking-widest shadow-md transition-all hover:scale-105 hover:shadow-md disabled:opacity-60 sm:py-3"
                 >
                   {submitting ? "VERIFYING..." : "VERIFY & DISPATCH"}
                 </button>

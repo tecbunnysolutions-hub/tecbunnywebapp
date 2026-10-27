@@ -31,11 +31,11 @@ export const parsePartnerBrands = (raw: string | undefined): Array<{ name: strin
     .map(name => ({ name, logoUrl: '' }));
 };
 
-export const PartnerBrandsEditor = ({ 
-  value, 
-  onChange, 
-}: { 
-  value: string; 
+export const PartnerBrandsEditor = ({
+  value,
+  onChange,
+}: {
+  value: string;
   onChange: (newValue: string) => void;
 }) => {
   const brands = React.useMemo(() => parsePartnerBrands(value), [value]);
@@ -54,12 +54,12 @@ export const PartnerBrandsEditor = ({
       const formData = new FormData();
       formData.append('file', file);
       formData.append('type', 'brand');
-      
+
       const response = await fetch('/api/upload', {
         method: 'POST',
         body: formData,
       });
-      
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ error: 'Upload failed' }));
         const errMsg = typeof errorData.error === 'object' && errorData.error?.message
@@ -67,7 +67,7 @@ export const PartnerBrandsEditor = ({
           : (typeof errorData.error === 'string' ? errorData.error : `Upload failed: ${response.statusText}`);
         throw new Error(errMsg);
       }
-      
+
       const data = await response.json();
       const imageUrl = data.secure_url || data.url;
       if (!imageUrl) {
@@ -96,7 +96,7 @@ export const PartnerBrandsEditor = ({
     const fileInput = document.getElementById('new-brand-logo') as HTMLInputElement;
     const file = fileInput?.files?.[0];
     let logoUrl = '';
-    
+
     if (file) {
       setIsUploadingBrand(true);
       try {
@@ -107,7 +107,7 @@ export const PartnerBrandsEditor = ({
       }
       setIsUploadingBrand(false);
     }
-    
+
     const updated = [...brands, { name: newBrandName.trim(), logoUrl }];
     onChange(JSON.stringify(updated));
     setNewBrandName('');
@@ -120,17 +120,17 @@ export const PartnerBrandsEditor = ({
       {brands.length > 0 ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
           {brands.map((brand, idx) => (
-            <div key={idx} className="relative group border border-border rounded-lg p-4 flex flex-col items-center justify-center gap-3 bg-zinc-50 dark:bg-zinc-900/50 hover:border-primary/50 transition-colors">
-              <Button 
+            <div key={idx} className="relative group border border-border rounded-lg p-4 flex flex-col items-center justify-center gap-3 bg-muted dark:bg-card/50 hover:border-primary/50 transition-colors">
+              <Button
                 type="button"
-                variant="destructive" 
-                size="icon" 
+                variant="destructive"
+                size="icon"
                 className="absolute -top-2 -right-2 h-6 w-6 rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"
                 onClick={() => handleDelete(idx)}
               >
                 <Trash className="h-3 w-3" />
               </Button>
-              <div className="h-14 w-full flex items-center justify-center bg-white rounded-md p-2 shadow-sm">
+              <div className="h-14 w-full flex items-center justify-center bg-card rounded-md p-2 shadow-sm">
                 {brand.logoUrl ? (
                   <img src={brand.logoUrl} alt={brand.name} className="max-h-full max-w-full object-contain" />
                 ) : (
@@ -146,7 +146,7 @@ export const PartnerBrandsEditor = ({
           No partner brands configured.
         </div>
       )}
-      
+
       {/* Add New Brand Section */}
       <div className="rounded-lg border border-border bg-card p-4 space-y-4 shadow-sm">
         <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
@@ -155,25 +155,25 @@ export const PartnerBrandsEditor = ({
         <div className="flex flex-col sm:flex-row items-end gap-4">
           <div className="space-y-2 flex-1 w-full">
             <Label htmlFor="brand-name" className="text-xs font-medium text-muted-foreground">Brand Name</Label>
-            <Input 
-              id="brand-name" 
-              placeholder="e.g. DAHUA" 
-              value={newBrandName} 
-              onChange={e => setNewBrandName(e.target.value)} 
+            <Input
+              id="brand-name"
+              placeholder="e.g. DAHUA"
+              value={newBrandName}
+              onChange={e => setNewBrandName(e.target.value)}
               className="bg-background"
             />
           </div>
           <div className="space-y-2 flex-1 w-full">
             <Label htmlFor="new-brand-logo" className="text-xs font-medium text-muted-foreground">Brand Logo (Optional)</Label>
-            <Input 
-              id="new-brand-logo" 
-              type="file" 
+            <Input
+              id="new-brand-logo"
+              type="file"
               accept="image/*"
               disabled={isUploadingBrand}
               className="bg-background cursor-pointer file:cursor-pointer file:text-primary file:font-semibold"
             />
           </div>
-          <Button 
+          <Button
             type="button"
             disabled={isUploadingBrand || !newBrandName.trim()}
             onClick={handleAdd}

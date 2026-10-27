@@ -7,10 +7,10 @@ import { AuditLog } from '@tecbunny/core/types';
 const PAGE_SIZE = 50;
 
 const ACTION_COLORS: Record<string, string> = {
-  insert: 'bg-green-100 text-green-800',
-  update: 'bg-blue-100 text-blue-800',
-  upsert: 'bg-indigo-100 text-indigo-800',
-  delete: 'bg-red-100 text-red-800',
+  insert: 'bg-success/10 text-success',
+  update: 'bg-primary/10 text-primary',
+  upsert: 'bg-primary/10 text-primary',
+  delete: 'bg-destructive/10 text-destructive',
 };
 
 export default function AuditLogsPage() {
@@ -88,7 +88,7 @@ export default function AuditLogsPage() {
           <h1 className="text-3xl font-bold tracking-tight">Audit Logs</h1>
           <p className="text-muted-foreground mt-1 text-sm">
             System-wide write operations tracked by the security middleware.
-            {logs.length > 0 && <span className="ml-2 font-medium text-gray-700">Showing {logs.length} records</span>}
+            {logs.length > 0 && <span className="ml-2 font-medium text-foreground">Showing {logs.length} records</span>}
           </p>
         </div>
       </div>
@@ -116,26 +116,26 @@ export default function AuditLogsPage() {
       </div>
 
       {/* Table */}
-      <div className="border rounded-lg overflow-x-auto bg-white shadow-sm">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
+      <div className="border rounded-lg overflow-x-auto bg-card shadow-sm">
+        <table className="min-w-full divide-y divide-border">
+          <thead className="bg-muted">
             <tr>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Timestamp</th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">User / System</th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Action</th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Table</th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Record ID</th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Payload diff</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">Timestamp</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">User / System</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">Action</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">Table</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">Record ID</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">Payload diff</th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody className="bg-card divide-y divide-border">
             {loading ? (
               <tr>
-                <td colSpan={6} className="px-6 py-12 text-center text-gray-400 text-sm">Loading audit logs…</td>
+                <td colSpan={6} className="px-6 py-12 text-center text-muted-foreground text-sm">Loading audit logs…</td>
               </tr>
             ) : logs.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-6 py-12 text-center text-gray-400 text-sm">No logs match your criteria.</td>
+                <td colSpan={6} className="px-6 py-12 text-center text-muted-foreground text-sm">No logs match your criteria.</td>
               </tr>
             ) : (
               logs.map((log) => {
@@ -143,30 +143,30 @@ export default function AuditLogsPage() {
                 return (
                   <tr
                     key={log.id}
-                    className="hover:bg-gray-50 cursor-pointer"
+                    className="hover:bg-muted cursor-pointer"
                     onClick={() => setExpandedId(isExpanded ? null : log.id)}
                     title={isExpanded ? 'Collapse' : 'Expand payload'}
                   >
-                    <td className="px-4 py-3 whitespace-nowrap text-xs text-gray-500">
+                    <td className="px-4 py-3 whitespace-nowrap text-xs text-muted-foreground">
                       {new Date(log.created_at).toLocaleString('en-IN', { hour12: false })}
                     </td>
-                    <td className="px-4 py-3 whitespace-nowrap text-xs font-mono text-gray-700 max-w-[160px] truncate" title={log.user_id ?? undefined}>
-                      {log.user_id ?? <span className="italic text-gray-400">system</span>}
+                    <td className="px-4 py-3 whitespace-nowrap text-xs font-mono text-foreground max-w-[160px] truncate" title={log.user_id ?? undefined}>
+                      {log.user_id ?? <span className="italic text-muted-foreground">system</span>}
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap">
-                      <span className={`px-2 py-0.5 inline-flex text-[11px] leading-5 font-semibold rounded-full ${ACTION_COLORS[log.action] ?? 'bg-gray-100 text-gray-700'}`}>
+                      <span className={`px-2 py-0.5 inline-flex text-[11px] leading-5 font-semibold rounded-full ${ACTION_COLORS[log.action] ?? 'bg-muted text-foreground'}`}>
                         {log.action.toUpperCase()}
                       </span>
                     </td>
-                    <td className="px-4 py-3 whitespace-nowrap text-xs text-gray-600 font-medium">
+                    <td className="px-4 py-3 whitespace-nowrap text-xs text-muted-foreground font-medium">
                       {log.table_name}
                     </td>
-                    <td className="px-4 py-3 whitespace-nowrap text-xs font-mono text-gray-500 max-w-[120px] truncate" title={(log as any).record_id ?? undefined}>
+                    <td className="px-4 py-3 whitespace-nowrap text-xs font-mono text-muted-foreground max-w-[120px] truncate" title={(log as any).record_id ?? undefined}>
                       {(log as any).record_id ?? '—'}
                     </td>
-                    <td className="px-4 py-3 text-xs text-gray-500 max-w-xs">
+                    <td className="px-4 py-3 text-xs text-muted-foreground max-w-xs">
                       {isExpanded ? (
-                        <pre className="whitespace-pre-wrap break-all text-[10px] bg-gray-50 p-2 rounded border max-h-40 overflow-y-auto">
+                        <pre className="whitespace-pre-wrap break-all text-[10px] bg-muted p-2 rounded border max-h-40 overflow-y-auto">
                           {JSON.stringify(log.payload, null, 2)}
                         </pre>
                       ) : (
@@ -189,7 +189,7 @@ export default function AuditLogsPage() {
           <button
             onClick={loadMore}
             disabled={loadingMore}
-            className="px-6 py-2 text-sm font-medium rounded-md border border-gray-300 bg-white hover:bg-gray-50 disabled:opacity-50 transition"
+            className="px-6 py-2 text-sm font-medium rounded-md border border-border bg-card hover:bg-muted disabled:opacity-50 transition"
           >
             {loadingMore ? 'Loading…' : 'Load more'}
           </button>

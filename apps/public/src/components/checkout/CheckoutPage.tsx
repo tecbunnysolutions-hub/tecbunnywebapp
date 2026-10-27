@@ -45,12 +45,12 @@ export default function CheckoutPage() {
   const quoteToken = searchParams.get('token') || '';
   const pickupStores = PICKUP_STORES;
   const { isEnabled, isLoading: flagsLoading } = useFeatureFlags();
-  
+
   const [quote, setQuote] = useState<any>(null);
   const [isPartPayment, setIsPartPayment] = useState(false);
   const [partPaymentAmount, setPartPaymentAmount] = useState('');
   const [loadingQuote, setLoadingQuote] = useState(false);
-  
+
   const [customerInfo, setCustomerInfo] = useState({
     name: '',
     email: '',
@@ -97,12 +97,12 @@ export default function CheckoutPage() {
           setIsFetchingGst(false);
         }
       };
-      
+
       timeoutId = setTimeout(fetchGstDetails, 600);
     } else {
       setGstError('');
     }
-    
+
     return () => {
       if (timeoutId) clearTimeout(timeoutId);
     };
@@ -140,7 +140,7 @@ export default function CheckoutPage() {
         setLoadingQuote(false);
       });
   }, [quoteId, quoteToken, toast]);
-  
+
   const [orderType, setOrderType] = useState<OrderType>('Delivery');
   const [selectedPickupStoreId, setSelectedPickupStoreId] = useState<string>('tecbunny-store-parcem');
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>('');
@@ -177,9 +177,9 @@ export default function CheckoutPage() {
 
   const hasServiceItem = React.useMemo(() => {
     if (!cartItems.length) return false;
-    return cartItems.some(item => 
-      item.product_type === 'service' || 
-      item.id?.startsWith('service-') || 
+    return cartItems.some(item =>
+      item.product_type === 'service' ||
+      item.id?.startsWith('service-') ||
       item.id?.startsWith('pricing-')
     );
   }, [cartItems]);
@@ -364,7 +364,7 @@ export default function CheckoutPage() {
     handleInputChange('pincode', pincode);
     pincodeLookupRef.current.value = pincode;
     pincodeLookupRef.current.controller?.abort();
-    
+
     if (pincode.length === 6 && /^\d+$/.test(pincode)) {
       const controller = new AbortController();
       pincodeLookupRef.current.controller = controller;
@@ -490,7 +490,7 @@ export default function CheckoutPage() {
       if (orderType === 'Delivery') {
         fieldsToValidate.push('address', 'city', 'pincode', 'state');
       }
-      
+
       fieldsToValidate.forEach(field => {
         const value = customerInfo[field as keyof typeof customerInfo] || '';
         if (!validateField(field, value)) {
@@ -563,15 +563,15 @@ export default function CheckoutPage() {
       ].filter(Boolean).join(' | ');
 
       const idempotencyKey = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-      
+
       const orderData = {
         customer_name: customerInfo.name,
         customer_email: customerInfo.email,
         customer_phone: customerInfo.phone,
         company_gstin: customerInfo.company_gstin || undefined,
         type: serviceOnlyCart ? 'Service' : (hasServiceItem ? 'Delivery' : orderType),
-        delivery_address: orderType === 'Delivery' ? 
-          `${customerInfo.address}, ${customerInfo.city}, ${customerInfo.state} - ${customerInfo.pincode}` : 
+        delivery_address: orderType === 'Delivery' ?
+          `${customerInfo.address}, ${customerInfo.city}, ${customerInfo.state} - ${customerInfo.pincode}` :
           pickupAddress || undefined,
         delivery_pincode: orderType === 'Delivery' || serviceOnlyCart ? customerInfo.pincode : undefined,
         pickup_store: orderType === 'Pickup' && !hasServiceItem ? pickupAddress : undefined,
@@ -596,7 +596,7 @@ export default function CheckoutPage() {
       };
 
       const order = await createOrder(orderData);
-      
+
       if (order) {
         const orderId = resolveOrderId((order as { id?: unknown }).id);
         if (!orderId) {
@@ -650,7 +650,7 @@ export default function CheckoutPage() {
           </div>
           <h2 className="text-2xl font-bold tech-heading mb-2">Your Setup is Empty</h2>
           <p className="text-muted-foreground mb-6">Design your infrastructure or add hardware before finalizing your deployment.</p>
-          <Button onClick={() => window.location.href = '/products'} className="bg-primary text-white hover:bg-primary/90 font-semibold font-medium">
+          <Button onClick={() => window.location.href = '/products'} className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold font-medium">
             Build My Setup
           </Button>
         </div>
@@ -663,12 +663,12 @@ export default function CheckoutPage() {
     return (
       <div className="min-h-screen bg-background py-16 text-foreground">
         <div className="max-w-4xl mx-auto px-4 text-center">
-          <div className="mx-auto w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center mb-4 border border-red-500/20">
-            <Shield className="h-8 w-8 text-red-500" />
+          <div className="mx-auto w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center mb-4 border border-destructive/20">
+            <Shield className="h-8 w-8 text-destructive" />
           </div>
-          <h2 className="text-2xl font-bold tech-heading mb-2 text-red-500">Checkout is Currently Disabled</h2>
+          <h2 className="text-2xl font-bold tech-heading mb-2 text-destructive">Checkout is Currently Disabled</h2>
           <p className="text-muted-foreground mb-6">We are performing scheduled maintenance on our payment systems. Please try again later or contact support if you need immediate assistance.</p>
-          <Button onClick={() => window.location.href = '/contact'} className="bg-primary text-white hover:bg-primary/90 font-semibold font-medium">
+          <Button onClick={() => window.location.href = '/contact'} className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold font-medium">
             Contact Support
           </Button>
         </div>
@@ -677,9 +677,9 @@ export default function CheckoutPage() {
   }
 
   return (
-    <main className="min-h-screen bg-background text-foreground selection:bg-primary/20 selection:text-foreground" aria-busy={paymentLoading || isProcessingOrder}>
+    <div className="min-h-screen bg-background text-foreground selection:bg-primary/20 selection:text-foreground" aria-busy={paymentLoading || isProcessingOrder}>
       <section className="pt-32 pb-24 relative">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#1f2937_1px,transparent_1px),linear-gradient(to_bottom,#1f2937_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-[0.15] pointer-events-none"></div>
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#1f2937_1px,transparent_1px),linear-gradient(to_bottom,#1f2937_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,hsl(var(--overlay))_70%,transparent_100%)] opacity-[0.15] pointer-events-none"></div>
 
         <div className="max-w-6xl mx-auto px-6 relative z-10">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
@@ -699,15 +699,15 @@ export default function CheckoutPage() {
           <div className="hidden md:flex justify-center mb-16 w-full max-w-2xl mx-auto">
             <div className="flex items-center justify-between w-full relative">
               <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-[2px] bg-border -z-10"></div>
-              
+
               {/* Step 1: Cart (Completed) */}
               <div className="flex flex-col items-center gap-2 bg-background px-4">
-                <div className="w-8 h-8 rounded-full bg-emerald-500/10 text-emerald-500 flex items-center justify-center border border-emerald-500/20 ring-4 ring-background">
+                <div className="w-8 h-8 rounded-full bg-success/10 text-success flex items-center justify-center border border-success/20 ring-4 ring-background">
                   <CheckCircle className="w-4 h-4" />
                 </div>
-                <span className="text-xs font-bold uppercase tracking-wider text-emerald-500">Cart</span>
+                <span className="text-xs font-bold uppercase tracking-wider text-success">Cart</span>
               </div>
-              
+
               {/* Step 2: Shipping/Details (Current) */}
               <div className="flex flex-col items-center gap-2 bg-background px-4">
                 <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center border border-primary/50 ring-4 ring-background">
@@ -715,7 +715,7 @@ export default function CheckoutPage() {
                 </div>
                 <span className="text-xs font-bold uppercase tracking-wider text-foreground">Details & Shipping</span>
               </div>
-              
+
               {/* Step 3: Payment (Pending) */}
               <div className="flex flex-col items-center gap-2 bg-background px-4">
                 <div className="w-8 h-8 rounded-full bg-muted/20 text-muted-foreground flex items-center justify-center border border-border ring-4 ring-background">
@@ -752,11 +752,11 @@ export default function CheckoutPage() {
                       onBlur={(event) => handleInputBlur('name', event.target.value)}
                       aria-invalid={!!fieldErrors.name}
                       aria-describedby={fieldErrors.name ? "name-error" : undefined}
-                      className={`w-full bg-muted/10 border rounded-lg px-4 py-3 text-sm text-foreground outline-none transition-all placeholder:text-muted-foreground ${fieldErrors.name ? 'border-red-500/80 focus:ring-2 focus:ring-red-500/20 focus:border-red-500' : 'border-border focus:ring-2 focus:ring-primary/20 focus:border-primary'}`}
+                      className={`w-full bg-muted/10 border rounded-lg px-4 py-3 text-sm text-foreground outline-none transition-all placeholder:text-muted-foreground ${fieldErrors.name ? 'border-destructive/80 focus:ring-2 focus:ring-destructive/20 focus:border-destructive' : 'border-border focus:ring-2 focus:ring-primary/20 focus:border-primary'}`}
                       placeholder="John Doe"
                     />
                     {fieldErrors.name && (
-                      <span id="name-error" role="alert" aria-live="polite" className="text-xs text-red-400 mt-1 block pl-1">{fieldErrors.name}</span>
+                      <span id="name-error" role="alert" aria-live="polite" className="text-xs text-destructive mt-1 block pl-1">{fieldErrors.name}</span>
                     )}
                   </div>
                   <div className="flex flex-col gap-1.5">
@@ -775,11 +775,11 @@ export default function CheckoutPage() {
                       onBlur={(event) => handleInputBlur('phone', event.target.value)}
                       aria-invalid={!!fieldErrors.phone}
                       aria-describedby={fieldErrors.phone ? "phone-error" : undefined}
-                      className={`w-full bg-muted/10 border rounded-lg px-4 py-3 text-sm text-foreground outline-none transition-all placeholder:text-muted-foreground ${fieldErrors.phone ? 'border-red-500/80 focus:ring-2 focus:ring-red-500/20 focus:border-red-500' : 'border-border focus:ring-2 focus:ring-primary/20 focus:border-primary'}`}
+                      className={`w-full bg-muted/10 border rounded-lg px-4 py-3 text-sm text-foreground outline-none transition-all placeholder:text-muted-foreground ${fieldErrors.phone ? 'border-destructive/80 focus:ring-2 focus:ring-destructive/20 focus:border-destructive' : 'border-border focus:ring-2 focus:ring-primary/20 focus:border-primary'}`}
                       placeholder="e.g. 9876543210"
                     />
                     {fieldErrors.phone && (
-                      <span id="phone-error" role="alert" aria-live="polite" className="text-xs text-red-400 mt-1 block pl-1">{fieldErrors.phone}</span>
+                      <span id="phone-error" role="alert" aria-live="polite" className="text-xs text-destructive mt-1 block pl-1">{fieldErrors.phone}</span>
                     )}
                     <div aria-hidden="true" style={{ position: 'absolute', left: '-10000px', width: 1, height: 1, overflow: 'hidden' }}>
                       <label htmlFor="recovery-website">Leave this field empty</label>
@@ -833,11 +833,11 @@ export default function CheckoutPage() {
                       onBlur={(event) => handleInputBlur('email', event.target.value)}
                       aria-invalid={!!fieldErrors.email}
                       aria-describedby={fieldErrors.email ? "email-error" : undefined}
-                      className={`w-full bg-muted/10 border rounded-lg px-4 py-3 text-sm text-foreground outline-none transition-all placeholder:text-muted-foreground ${fieldErrors.email ? 'border-red-500/80 focus:ring-2 focus:ring-red-500/20 focus:border-red-500' : 'border-border focus:ring-2 focus:ring-primary/20 focus:border-primary'}`}
+                      className={`w-full bg-muted/10 border rounded-lg px-4 py-3 text-sm text-foreground outline-none transition-all placeholder:text-muted-foreground ${fieldErrors.email ? 'border-destructive/80 focus:ring-2 focus:ring-destructive/20 focus:border-destructive' : 'border-border focus:ring-2 focus:ring-primary/20 focus:border-primary'}`}
                       placeholder="john@example.com"
                     />
                     {fieldErrors.email && (
-                      <span id="email-error" role="alert" aria-live="polite" className="text-xs text-red-400 mt-1 block pl-1">{fieldErrors.email}</span>
+                      <span id="email-error" role="alert" aria-live="polite" className="text-xs text-destructive mt-1 block pl-1">{fieldErrors.email}</span>
                     )}
                   </div>
                   <div className="flex flex-col gap-1.5">
@@ -854,11 +854,11 @@ export default function CheckoutPage() {
                       onBlur={(event) => handleInputBlur('company_gstin', event.target.value)}
                       aria-invalid={!!(gstError || fieldErrors.company_gstin)}
                       aria-describedby={(gstError || fieldErrors.company_gstin) ? "gstin-error" : undefined}
-                      className={`w-full bg-muted/10 border rounded-lg px-4 py-3 text-sm text-foreground outline-none transition-all placeholder:text-muted-foreground ${gstError || fieldErrors.company_gstin ? 'border-red-500/80 focus:ring-2 focus:ring-red-500/20 focus:border-red-500' : 'border-border focus:ring-2 focus:ring-primary/20 focus:border-primary'}`}
+                      className={`w-full bg-muted/10 border rounded-lg px-4 py-3 text-sm text-foreground outline-none transition-all placeholder:text-muted-foreground ${gstError || fieldErrors.company_gstin ? 'border-destructive/80 focus:ring-2 focus:ring-destructive/20 focus:border-destructive' : 'border-border focus:ring-2 focus:ring-primary/20 focus:border-primary'}`}
                       placeholder="15-character GSTIN"
                     />
                     {(gstError || fieldErrors.company_gstin) && (
-                      <span id="gstin-error" role="alert" aria-live="polite" className="text-xs text-red-400 mt-1 block pl-1">{gstError || fieldErrors.company_gstin}</span>
+                      <span id="gstin-error" role="alert" aria-live="polite" className="text-xs text-destructive mt-1 block pl-1">{gstError || fieldErrors.company_gstin}</span>
                     )}
                   </div>
                 </div>
@@ -886,11 +886,11 @@ export default function CheckoutPage() {
                       onBlur={(event) => handleInputBlur('address', event.target.value)}
                       aria-invalid={!!fieldErrors.address}
                       aria-describedby={fieldErrors.address ? "address-error" : undefined}
-                      className={`w-full bg-muted/10 border rounded-lg px-4 py-3 text-sm text-foreground outline-none transition-all placeholder:text-muted-foreground ${fieldErrors.address ? 'border-red-500/80 focus:ring-2 focus:ring-red-500/20 focus:border-red-500' : 'border-border focus:ring-2 focus:ring-primary/20 focus:border-primary'}`}
+                      className={`w-full bg-muted/10 border rounded-lg px-4 py-3 text-sm text-foreground outline-none transition-all placeholder:text-muted-foreground ${fieldErrors.address ? 'border-destructive/80 focus:ring-2 focus:ring-destructive/20 focus:border-destructive' : 'border-border focus:ring-2 focus:ring-primary/20 focus:border-primary'}`}
                       placeholder="Apartment, suite, unit, building, street address"
                     ></textarea>
                     {fieldErrors.address && (
-                      <span id="address-error" role="alert" aria-live="polite" className="text-xs text-red-400 mt-1 block pl-1">{fieldErrors.address}</span>
+                      <span id="address-error" role="alert" aria-live="polite" className="text-xs text-destructive mt-1 block pl-1">{fieldErrors.address}</span>
                     )}
                   </div>
 
@@ -939,11 +939,11 @@ export default function CheckoutPage() {
                         onBlur={(event) => handleInputBlur('city', event.target.value)}
                         aria-invalid={!!fieldErrors.city}
                         aria-describedby={fieldErrors.city ? "city-error" : undefined}
-                        className={`w-full bg-muted/10 border rounded-lg px-4 py-3 text-sm text-foreground outline-none transition-all placeholder:text-muted-foreground ${fieldErrors.city ? 'border-red-500/80 focus:ring-2 focus:ring-red-500/20 focus:border-red-500' : 'border-border focus:ring-2 focus:ring-primary/20 focus:border-primary'}`}
+                        className={`w-full bg-muted/10 border rounded-lg px-4 py-3 text-sm text-foreground outline-none transition-all placeholder:text-muted-foreground ${fieldErrors.city ? 'border-destructive/80 focus:ring-2 focus:ring-destructive/20 focus:border-destructive' : 'border-border focus:ring-2 focus:ring-primary/20 focus:border-primary'}`}
                         placeholder="Panaji"
                       />
                       {fieldErrors.city && (
-                        <span id="city-error" role="alert" aria-live="polite" className="text-xs text-red-400 mt-1 block pl-1">{fieldErrors.city}</span>
+                        <span id="city-error" role="alert" aria-live="polite" className="text-xs text-destructive mt-1 block pl-1">{fieldErrors.city}</span>
                       )}
                     </div>
                     <div className="flex flex-col gap-1.5">
@@ -958,11 +958,11 @@ export default function CheckoutPage() {
                         onBlur={(event) => handleInputBlur('state', event.target.value)}
                         aria-invalid={!!fieldErrors.state}
                         aria-describedby={fieldErrors.state ? "state-error" : undefined}
-                        className={`w-full bg-muted/10 border rounded-lg px-4 py-3 text-sm text-foreground outline-none transition-all placeholder:text-muted-foreground ${fieldErrors.state ? 'border-red-500/80 focus:ring-2 focus:ring-red-500/20 focus:border-red-500' : 'border-border focus:ring-2 focus:ring-primary/20 focus:border-primary'}`}
+                        className={`w-full bg-muted/10 border rounded-lg px-4 py-3 text-sm text-foreground outline-none transition-all placeholder:text-muted-foreground ${fieldErrors.state ? 'border-destructive/80 focus:ring-2 focus:ring-destructive/20 focus:border-destructive' : 'border-border focus:ring-2 focus:ring-primary/20 focus:border-primary'}`}
                         placeholder="Goa"
                       />
                       {fieldErrors.state && (
-                        <span id="state-error" role="alert" aria-live="polite" className="text-xs text-red-400 mt-1 block pl-1">{fieldErrors.state}</span>
+                        <span id="state-error" role="alert" aria-live="polite" className="text-xs text-destructive mt-1 block pl-1">{fieldErrors.state}</span>
                       )}
                     </div>
                     <div className="flex flex-col gap-1.5">
@@ -977,11 +977,11 @@ export default function CheckoutPage() {
                         onBlur={(event) => handleInputBlur('pincode', event.target.value)}
                         aria-invalid={!!fieldErrors.pincode}
                         aria-describedby={fieldErrors.pincode ? "pincode-error" : undefined}
-                        className={`w-full bg-muted/10 border rounded-lg px-4 py-3 text-sm text-foreground outline-none transition-all placeholder:text-muted-foreground ${fieldErrors.pincode ? 'border-red-500/80 focus:ring-2 focus:ring-red-500/20 focus:border-red-500' : 'border-border focus:ring-2 focus:ring-primary/20 focus:border-primary'}`}
+                        className={`w-full bg-muted/10 border rounded-lg px-4 py-3 text-sm text-foreground outline-none transition-all placeholder:text-muted-foreground ${fieldErrors.pincode ? 'border-destructive/80 focus:ring-2 focus:ring-destructive/20 focus:border-destructive' : 'border-border focus:ring-2 focus:ring-primary/20 focus:border-primary'}`}
                         placeholder="6-digit PIN"
                       />
                       {fieldErrors.pincode && (
-                        <span id="pincode-error" role="alert" aria-live="polite" className="text-xs text-red-400 mt-1 block pl-1">{fieldErrors.pincode}</span>
+                        <span id="pincode-error" role="alert" aria-live="polite" className="text-xs text-destructive mt-1 block pl-1">{fieldErrors.pincode}</span>
                       )}
                     </div>
                   </div>
@@ -1053,11 +1053,11 @@ export default function CheckoutPage() {
                         }`}>
                           <div className={`w-4 h-4 rounded-full border flex items-center justify-center transition-all ${
                             selectedPaymentMethod === method.id
-                              ? 'border-primary bg-primary'
+                              ? 'border-primary bg-primary text-primary-foreground'
                               : 'border-muted-foreground/60 bg-transparent group-hover:border-foreground'
                           }`}>
                             {selectedPaymentMethod === method.id && (
-                              <div className="w-1.5 h-1.5 rounded-full bg-white" />
+                              <div className="w-1.5 h-1.5 rounded-full bg-card" />
                             )}
                           </div>
                           <div className="flex-1">
@@ -1121,7 +1121,7 @@ export default function CheckoutPage() {
                               Sale ₹{(item.price * item.quantity).toFixed(2)}
                             </span>
                             {typeof item.mrp === 'number' && item.mrp > item.price && (
-                              <span className="font-medium text-emerald-600 dark:text-emerald-400">
+                              <span className="font-medium text-success dark:text-success">
                                 Save ₹{((item.mrp - item.price) * item.quantity).toFixed(2)}
                               </span>
                             )}
@@ -1133,7 +1133,7 @@ export default function CheckoutPage() {
 
                   <div className="border-t border-border pt-5 space-y-3">
                     {displayMrpSavings > 0 && (
-                      <div className="flex justify-between text-xs text-emerald-600 dark:text-emerald-400">
+                      <div className="flex justify-between text-xs text-success dark:text-success">
                         <span>Savings vs MRP</span>
                         <span className="tabular-nums">-₹{displayMrpSavings.toFixed(2)}</span>
                       </div>
@@ -1143,7 +1143,7 @@ export default function CheckoutPage() {
                       <span className="text-foreground font-medium tabular-nums">₹{displaySubtotal.toFixed(2)}</span>
                     </div>
                     {totalDiscount > 0 && (
-                      <div className="flex justify-between text-xs text-emerald-600 dark:text-emerald-400">
+                      <div className="flex justify-between text-xs text-success dark:text-success">
                         <span>Discount</span>
                         <span className="tabular-nums">-₹{totalDiscount.toFixed(2)}</span>
                       </div>
@@ -1208,16 +1208,16 @@ export default function CheckoutPage() {
                   </div>
 
                   {autoOffer && autoOfferDiscount > 0 && autoOffer.description && (
-                    <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-4 text-xs text-emerald-650 dark:text-emerald-300 leading-relaxed mb-4">
+                    <div className="rounded-xl border border-success/20 bg-success/10 p-4 text-xs text-success dark:text-success leading-relaxed mb-4">
                       <div className="flex items-center justify-between font-semibold">
                         <span className="flex items-center gap-2">
-                          <Sparkles className="h-4 w-4 text-emerald-500" /> {autoOffer.title}
+                          <Sparkles className="h-4 w-4 text-success" /> {autoOffer.title}
                         </span>
-                        <span className="text-emerald-600 dark:text-emerald-400 font-bold">
+                        <span className="text-success dark:text-success font-bold">
                           -₹{autoOfferDiscount.toFixed(2)}
                         </span>
                       </div>
-                      <p className="mt-1.5 text-emerald-600/80 dark:text-emerald-400/70 text-xs">{autoOffer.description}</p>
+                      <p className="mt-1.5 text-success/80 dark:text-success/70 text-xs">{autoOffer.description}</p>
                     </div>
                   )}
 
@@ -1231,8 +1231,8 @@ export default function CheckoutPage() {
                   )}
 
                   {orderError && (
-                    <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 mb-4">
-                      <p className="text-red-650 dark:text-red-400 text-xs font-semibold leading-normal">{orderError}</p>
+                    <div className="bg-destructive/10 border border-destructive/20 rounded-xl p-4 mb-4">
+                      <p className="text-destructive dark:text-destructive text-xs font-semibold leading-normal">{orderError}</p>
                     </div>
                   )}
 
@@ -1256,11 +1256,11 @@ export default function CheckoutPage() {
                     type="submit"
                     disabled={isProcessingOrder || !selectedPaymentMethod || paymentLoading || !privacyAccepted}
                     aria-busy={isProcessingOrder}
-                    className="w-full py-4 bg-primary hover:bg-primary/95 text-white font-bold text-sm tracking-wider uppercase rounded-xl transition-all shadow-md flex items-center justify-center gap-2 disabled:bg-muted/40 disabled:text-muted-foreground disabled:opacity-40 disabled:cursor-not-allowed font-medium"
+                    className="w-full py-4 bg-primary hover:bg-primary/95 text-primary-foreground font-bold text-sm tracking-wider uppercase rounded-xl transition-all shadow-md flex items-center justify-center gap-2 disabled:bg-muted/40 disabled:text-muted-foreground disabled:opacity-40 disabled:cursor-not-allowed font-medium"
                   >
                     {isProcessingOrder ? (
                       <span className="flex items-center gap-2">
-                        <span className="h-4 w-4 rounded-full border-2 border-white border-b-transparent animate-spin"></span>
+                        <span className="h-4 w-4 rounded-full border-2 border-border border-b-transparent animate-spin"></span>
                         Processing...
                       </span>
                     ) : (
@@ -1272,31 +1272,31 @@ export default function CheckoutPage() {
                 </div>
 
                 {/* Verified Business Identity Trust Panel */}
-                <div className="bento-card p-6 space-y-5 bg-zinc-950/20 border border-border/80 rounded-2xl shadow-sm">
+                <div className="bento-card p-6 space-y-5 bg-background/20 border border-border/80 rounded-2xl shadow-sm">
                   <div className="flex items-center gap-2.5 pb-2.5 border-b border-border/60">
-                    <Shield className="h-4 w-4 text-emerald-500" />
+                    <Shield className="h-4 w-4 text-success" />
                     <h3 className="text-xs font-bold text-foreground uppercase tracking-wider font-sans tech-heading">Verified Business Identity</h3>
                   </div>
 
                   <div className="space-y-3.5 text-xs text-muted-foreground">
                     <div>
-                      <span className="block text-xs uppercase font-bold text-muted-foreground/75 tracking-wider">Registered Entity</span>
+                      <span className="block text-xs uppercase font-bold text-muted-foreground tracking-wider">Registered Entity</span>
                       <span className="text-foreground font-semibold">TECBUNNY SOLUTIONS PVT LTD</span>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <span className="block text-xs uppercase font-bold text-muted-foreground/75 tracking-wider">GSTIN</span>
+                        <span className="block text-xs uppercase font-bold text-muted-foreground tracking-wider">GSTIN</span>
                         <span className="font-mono text-xs text-foreground font-medium">30AAMCT1608G1ZO</span>
                       </div>
                       <div>
-                        <span className="block text-xs uppercase font-bold text-muted-foreground/75 tracking-wider">CIN</span>
+                        <span className="block text-xs uppercase font-bold text-muted-foreground tracking-wider">CIN</span>
                         <span className="font-mono text-xs text-foreground font-medium">U80200GA2025PTC017488</span>
                       </div>
                     </div>
 
                     <div>
-                      <span className="block text-xs uppercase font-bold text-muted-foreground/75 tracking-wider">Corporate Headquarters</span>
+                      <span className="block text-xs uppercase font-bold text-muted-foreground tracking-wider">Corporate Headquarters</span>
                       <address className="not-italic leading-relaxed font-light text-xs">
                         H. No. 11, Nhayginwada, Parcem, Pernem, North Goa, Goa - 403512
                       </address>
@@ -1308,14 +1308,14 @@ export default function CheckoutPage() {
                       href="https://wa.me/919604136010"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="w-full py-2.5 bg-emerald-500/10 hover:bg-emerald-500/15 border border-emerald-500/30 text-emerald-450 hover:text-emerald-400 font-bold text-xs uppercase tracking-wider rounded-xl transition-all flex items-center justify-center gap-2"
+                      className="w-full py-2.5 bg-success/10 hover:bg-success/15 border border-success/30 text-success hover:text-success font-bold text-xs uppercase tracking-wider rounded-xl transition-all flex items-center justify-center gap-2"
                     >
-                      <svg viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4 text-emerald-500 fill-emerald-500">
+                      <svg viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4 text-success fill-success">
                         <path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38c1.45.79 3.08 1.21 4.79 1.21 5.46 0 9.91-4.45 9.91-9.91S17.5 2 12.04 2m.01 1.67c4.56 0 8.25 3.69 8.25 8.25 0 4.56-3.69 8.25-8.25 8.25-1.53 0-3-.42-4.29-1.19l-.3-.18-3.18.83.85-3.11-.2-.32a8.182 8.182 0 0 1-1.25-4.38c0-4.56 3.69-8.25 8.25-8.25M9.42 7.72l-.12.02c-.15.03-.3.06-.44.09-.15.03-.28.06-.41.1-.39.12-.76.3-1.09.56-.33.27-.63.6-.88.97-.27.41-.43.85-.43 1.32 0 .5.16.98.48 1.41.32.43.72.84 1.2 1.24.48.4 1 1.03 1.63 1.28.63.25 1.22.4 1.84.4.45 0 .86-.08 1.23-.25.37-.17.63-.38.83-.63.2-.25.32-.54.4-.85.08-.31.13-.64.13-1s-.05-.72-.13-1.03c-.08-.31-.2-.59-.4-.84-.2-.25-.46-.46-.83-.63-.37-.17-.78-.25-1.23-.25-.62 0-1.21.15-1.84.4-.05.02-.1.04-.15.07-.1.03-.18.07-.27.1-.1.03-.18.05-.28.07l-.17.04c-.06.01-.1.02-.12.02-.02 0-.04.01-.06.01-.02 0-.03 0-.03-.01s0-.01 0-.01l-.01-.01c0-.01.01-.02.01-.04 0-.02 0-.04.01-.06.01-.02.01-.04.02-.06a.7.7 0 0 1 .05-.12c.04-.08.08-.15.14-.23.06-.08.12-.15.2-.22.07-.07.15-.14.23-.2.08-.06.16-.12.25-.17.09-.05.18-.09.28-.13.05-.02.1-.04.13-.05.28-.11.53-.17.75-.17.22 0 .43.03.62.09.19.06.37.14.53.25.16.11.3.25.41.41s.19.34.24.54c.05.2.07.4.07.61 0 .02 0 .03 0 .03s0 .02 0 .02l-.01.03c0 .01-.01.02-.01.03 0 .01-.01.02-.02.03-.01.01-.02.02-.04.03l-.05.03-.06.03c-.02.01-.05.02-.08.03-.03.01-.06.02-.1.04-.04.01-.07.02-.11.04-.04.01-.07.03-.11.04-.04.02-.07.03-.1.05s-.07.04-.1.06-.06.04-.1.07c-.03.02-.06.04-.1.07l-.07.05c-.01 0-.01.01-.01.01s0 .01 0 .01l.01.01c.22-.12.44-.24.67-.35.23-.11.45-.24.67-.35.22-.11.44-.22.65-.33.21-.11.42-.22.62-.33l.2-.1c.14-.07.26-.15.39-.22.13-.07.25-.15.36-.24.11-.09.22-.18.31-.29s.18-.23.25-.36a2.64 2.64 0 0 0 .28-1.38c0-.52-.13-1-.39-1.44a3.17 3.17 0 0 0-1.08-1.21c-.4-.33-.86-.57-1.36-.72s-1.02-.22-1.56-.22c-.54 0-1.06.07-1.56.22s-.96.39-1.36.72c-.4.34-.72.75-.97 1.21-.25.46-.38.96-.38 1.51 0 .42.09.82.26 1.17.17.35.4.66.68.92.28.26.59.47.92.62.33.15.68.25 1.04.28h.1c.02 0 .03 0 .03-.01s0-.01 0-.01l-.01-.01c0-.01 0-.01.01-.02l.01-.02c0-.01.01-.02.01-.03l.01-.03c.01-.02.01-.03.01-.05 0-.02 0-.04.01-.06 0-.02.01-.04.01-.06a.71.71 0 0 0 0-.1c0-.04 0-.08-.02-.13s-.04-.1-.07-.15a.43.43 0 0 0-.1-.13c-.04-.04-.08-.08-.13-.11-.05-.03-.1-.06-.17-.08-.07-.02-.13-.04-.2-.06-.07-.02-.15-.03-.22-.04-.04-.01-.07-.01-.11-.02l-.11-.02h-.04z" />
                       </svg>
                       Direct Help Line
                     </a>
-                    <div className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground/50 tracking-wider">
+                    <div className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground tracking-wider">
                       <span>100% SECURE SSL ENCRYPTED TRANSACTION</span>
                     </div>
                   </div>
@@ -1325,6 +1325,6 @@ export default function CheckoutPage() {
           </form>
         </div>
       </section>
-    </main>
+    </div>
   );
 }

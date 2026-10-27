@@ -44,3 +44,5 @@ export * from "./hooks/use-feature-flags";
 export * from "./components/enterprise-actions";
 export * from "./product-telemetry";
 export * from "./theme";
+
+export * from "./components/ThemeControls";

@@ -86,7 +86,7 @@ export default function AffiliateProgramPage() {
           <input name="reason" placeholder="Reason or product policy" className="w-full rounded-md border bg-background p-2" />
           <button className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground" type="submit">Save product rule</button>
         </form>
-        <div className="rounded-xl border bg-card p-5"><h2 className="font-semibold">Current product rules</h2><div className="mt-3 space-y-2 text-sm">{data?.productRules?.length ? data.productRules.map((rule: any) => <div className="flex justify-between border-b pb-2" key={rule.id}><span>{rule.products?.name || rule.product_id}</span><span className={rule.commission_eligible ? 'text-emerald-600' : 'text-destructive'}>{rule.commission_eligible ? 'Eligible' : 'Commission-free'}</span></div>) : <p className="text-muted-foreground">All products remain eligible until a rule is added.</p>}</div></div>
+        <div className="rounded-xl border bg-card p-5"><h2 className="font-semibold">Current product rules</h2><div className="mt-3 space-y-2 text-sm">{data?.productRules?.length ? data.productRules.map((rule: any) => <div className="flex justify-between border-b pb-2" key={rule.id}><span>{rule.products?.name || rule.product_id}</span><span className={rule.commission_eligible ? 'text-success' : 'text-destructive'}>{rule.commission_eligible ? 'Eligible' : 'Commission-free'}</span></div>) : <p className="text-muted-foreground">All products remain eligible until a rule is added.</p>}</div></div>
       </section>
 
       <section className="grid gap-6 lg:grid-cols-2">

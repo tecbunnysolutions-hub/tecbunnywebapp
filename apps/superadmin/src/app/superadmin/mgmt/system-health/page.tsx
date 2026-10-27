@@ -29,9 +29,9 @@ type HealthResponse = {
 };
 
 const statusStyles: Record<string, string> = {
-  healthy: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-200',
-  configuration_required: 'border-amber-500/30 bg-amber-500/10 text-amber-200',
-  informational: 'border-blue-500/30 bg-blue-500/10 text-blue-200',
+  healthy: 'border-success/30 bg-success/10 text-success',
+  configuration_required: 'border-warning/30 bg-warning/10 text-warning',
+  informational: 'border-primary/30 bg-primary/10 text-primary',
 };
 
 function emitProductTelemetry(event: string, payload: Record<string, string | number | boolean | null | undefined>) {
@@ -93,11 +93,11 @@ export default function SystemHealthPage() {
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="flex items-center gap-2 text-2xl font-extrabold tracking-tight text-white sm:text-3xl">
-            <Activity className="h-7 w-7 text-blue-400" />
+          <h1 className="flex items-center gap-2 text-2xl font-extrabold tracking-tight text-foreground sm:text-3xl">
+            <Activity className="h-7 w-7 text-primary" />
             System Health
           </h1>
-          <p className="mt-1 max-w-3xl text-sm leading-6 text-zinc-400">
+          <p className="mt-1 max-w-3xl text-sm leading-6 text-muted-foreground">
             Review runtime readiness, provider contracts, and launch blockers before enabling enterprise traffic.
           </p>
         </div>
@@ -105,7 +105,7 @@ export default function SystemHealthPage() {
           type="button"
           onClick={() => void loadHealth()}
           disabled={loading}
-          className="inline-flex items-center gap-2 rounded-lg border border-zinc-700 px-4 py-2 text-sm font-semibold text-zinc-200 transition-colors hover:bg-zinc-900 disabled:opacity-60"
+          className="inline-flex items-center gap-2 rounded-lg border border-border px-4 py-2 text-sm font-semibold text-muted-foreground transition-colors hover:bg-card disabled:opacity-60"
         >
           <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
           Refresh
@@ -113,43 +113,43 @@ export default function SystemHealthPage() {
       </div>
 
       {error && (
-        <div role="alert" className="rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-200">
+        <div role="alert" className="rounded-xl border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">
           {error}
         </div>
       )}
 
       {health && (
         <section aria-label="Launch risk summary" className="grid gap-4 lg:grid-cols-3">
-          <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-5">
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-zinc-500">Healthy checks</p>
-            <p className="mt-2 text-3xl font-black text-emerald-200">{healthyChecks.length}</p>
-            <p className="mt-1 text-sm text-zinc-500">Runtime/provider checks currently ready.</p>
+          <div className="rounded-xl border border-border bg-card/50 p-5">
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground">Healthy checks</p>
+            <p className="mt-2 text-3xl font-black text-success">{healthyChecks.length}</p>
+            <p className="mt-1 text-sm text-muted-foreground">Runtime/provider checks currently ready.</p>
           </div>
-          <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-5">
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-amber-200/70">Launch blockers</p>
-            <p className="mt-2 text-3xl font-black text-amber-100">{launchBlockers.length}</p>
-            <p className="mt-1 text-sm text-amber-100/70">Configuration items required before enterprise traffic.</p>
+          <div className="rounded-xl border border-warning/30 bg-warning/10 p-5">
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-warning/70">Launch blockers</p>
+            <p className="mt-2 text-3xl font-black text-warning">{launchBlockers.length}</p>
+            <p className="mt-1 text-sm text-warning/70">Configuration items required before enterprise traffic.</p>
           </div>
-          <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-5">
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-red-200/70">Risk alerts</p>
-            <p className="mt-2 text-3xl font-black text-red-100">{riskAlerts.length}</p>
-            <p className="mt-1 text-sm text-red-100/70">Non-healthy signals to review before launch approval.</p>
+          <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-5">
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-destructive/70">Risk alerts</p>
+            <p className="mt-2 text-3xl font-black text-destructive">{riskAlerts.length}</p>
+            <p className="mt-1 text-sm text-destructive/70">Non-healthy signals to review before launch approval.</p>
           </div>
         </section>
       )}
 
       {launchBlockers.length > 0 && (
-        <section aria-label="Launch blockers" className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-5">
+        <section aria-label="Launch blockers" className="rounded-xl border border-warning/30 bg-warning/10 p-5">
           <div className="flex items-start gap-3">
-            <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-200" />
+            <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-warning" />
             <div>
-              <h2 className="text-base font-bold text-white">Launch approval blocked</h2>
-              <p className="mt-1 text-sm leading-6 text-amber-100/75">
+              <h2 className="text-base font-bold text-foreground">Launch approval blocked</h2>
+              <p className="mt-1 text-sm leading-6 text-warning/75">
                 Resolve these configuration requirements before presenting this environment as enterprise-ready.
               </p>
-              <ul className="mt-3 grid gap-2 text-sm text-amber-50">
+              <ul className="mt-3 grid gap-2 text-sm text-warning">
                 {launchBlockers.map((check) => (
-                  <li key={check.id} className="rounded-lg bg-black/20 px-3 py-2">
+                  <li key={check.id} className="rounded-lg bg-overlay/20 px-3 py-2">
                     <span className="font-semibold">{check.label}:</span> {check.detail}
                   </li>
                 ))}
@@ -164,11 +164,11 @@ export default function SystemHealthPage() {
           const healthy = check.status === 'healthy';
           const Icon = healthy ? CheckCircle2 : AlertTriangle;
           return (
-            <article key={check.id} className={`rounded-xl border p-5 ${statusStyles[check.status] ?? 'border-zinc-700 bg-zinc-900 text-zinc-200'}`}>
+            <article key={check.id} className={`rounded-xl border p-5 ${statusStyles[check.status] ?? 'border-border bg-card text-muted-foreground'}`}>
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <p className="text-xs font-bold uppercase tracking-[0.18em] opacity-70">{check.status.replaceAll('_', ' ')}</p>
-                  <h2 className="mt-2 text-base font-bold text-white">{check.label}</h2>
+                  <h2 className="mt-2 text-base font-bold text-foreground">{check.label}</h2>
                 </div>
                 <Icon className="h-5 w-5" />
               </div>
@@ -178,27 +178,27 @@ export default function SystemHealthPage() {
         })}
 
         {loading && !health && (
-          <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-5 text-sm text-zinc-400">
+          <div className="rounded-xl border border-border bg-card/50 p-5 text-sm text-muted-foreground">
             Loading health checks...
           </div>
         )}
       </section>
 
       {health?.apiFailures && health.apiFailures.length > 0 && (
-        <section aria-label="API failure log" className="rounded-xl border border-red-500/30 bg-red-500/10 p-5">
+        <section aria-label="API failure log" className="rounded-xl border border-destructive/30 bg-destructive/10 p-5">
           <div className="flex items-start gap-3">
-            <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-red-400" />
+            <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-destructive" />
             <div className="min-w-0 flex-1">
-              <h2 className="text-base font-bold text-white">API Failure Details</h2>
-              <p className="mt-1 text-sm leading-6 text-red-200/70">
+              <h2 className="text-base font-bold text-foreground">API Failure Details</h2>
+              <p className="mt-1 text-sm leading-6 text-destructive/70">
                 The following API endpoints recorded errors within the last 24 hours. Investigate the corresponding services to restore full availability.
               </p>
-              
-              <div className="mt-4 overflow-hidden rounded-lg border border-zinc-800 bg-zinc-950/60 p-4">
+
+              <div className="mt-4 overflow-hidden rounded-lg border border-border bg-background/60 p-4">
                 <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-zinc-900 text-sm">
+                  <table className="min-w-full divide-y divide-border text-sm">
                     <thead>
-                      <tr className="text-left font-bold text-zinc-500">
+                      <tr className="text-left font-bold text-muted-foreground">
                         <th className="pb-2 pr-3 uppercase text-[11px] tracking-wider">Method</th>
                         <th className="pb-2 px-3 uppercase text-[11px] tracking-wider">Endpoint</th>
                         <th className="pb-2 px-3 text-center uppercase text-[11px] tracking-wider">Status</th>
@@ -206,20 +206,20 @@ export default function SystemHealthPage() {
                         <th className="pb-2 pl-3 uppercase text-[11px] tracking-wider">Problem</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-zinc-900 text-zinc-300">
+                    <tbody className="divide-y divide-border text-muted-foreground">
                       {health.apiFailures.map((ep, idx) => (
-                        <tr key={`${ep.method}-${ep.endpoint}-${ep.status}-${idx}`} className="hover:bg-zinc-900/40">
-                          <td className="py-2.5 pr-3 font-mono font-bold text-zinc-400">{ep.method}</td>
+                        <tr key={`${ep.method}-${ep.endpoint}-${ep.status}-${idx}`} className="hover:bg-card/40">
+                          <td className="py-2.5 pr-3 font-mono font-bold text-muted-foreground">{ep.method}</td>
                           <td className="py-2.5 px-3 font-mono truncate max-w-[220px]" title={ep.endpoint}>{ep.endpoint}</td>
                           <td className="py-2.5 px-3 text-center">
                             <span className={`px-2 py-0.5 rounded font-mono font-bold text-xs ${
-                              ep.status >= 500 ? 'bg-red-500/20 text-red-300' : 'bg-amber-500/20 text-amber-300'
+                              ep.status >= 500 ? 'bg-destructive/20 text-destructive' : 'bg-warning/20 text-warning'
                             }`}>
                               {ep.status}
                             </span>
                           </td>
-                          <td className="py-2.5 px-3 text-center font-mono font-bold text-zinc-400">{ep.count}</td>
-                          <td className="py-2.5 pl-3 text-zinc-400 leading-normal">{ep.problem}</td>
+                          <td className="py-2.5 px-3 text-center font-mono font-bold text-muted-foreground">{ep.count}</td>
+                          <td className="py-2.5 pl-3 text-muted-foreground leading-normal">{ep.problem}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -232,7 +232,7 @@ export default function SystemHealthPage() {
       )}
 
       {health && (
-        <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 text-xs text-zinc-500">
+        <div className="rounded-xl border border-border bg-card/50 p-4 text-xs text-muted-foreground">
           Last checked {new Date(health.timestamp).toLocaleString()} · {health.service} · {health.environment} · v{health.version}
         </div>
       )}

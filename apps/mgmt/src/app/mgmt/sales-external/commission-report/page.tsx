@@ -58,7 +58,7 @@ export default function CommissionReportPage() {
             .select('id, amount, status, created_at, order_id, orders(total, customer_name)')
             .eq('user_id', user.id)
             .order('created_at', { ascending: false });
-          
+
           if (attempt2.error) {
             queryError = attempt2.error;
           } else {
@@ -113,7 +113,7 @@ export default function CommissionReportPage() {
         <Card className="bg-card border-border text-foreground">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Cleared Earnings</CardTitle>
-            <DollarSign className="h-4 w-4 text-emerald-500" />
+            <DollarSign className="h-4 w-4 text-success" />
           </CardHeader>
           <CardContent>
             {loading ? (
@@ -223,16 +223,16 @@ export default function CommissionReportPage() {
                         variant="secondary"
                         className={
                           rec.status === 'paid'
-                            ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-300 border border-emerald-500/30'
+                            ? 'bg-success/10 text-success dark:text-success border border-success/30'
                             : rec.status === 'pending'
-                            ? 'bg-amber-500/10 text-amber-600 dark:text-amber-300 border border-amber-500/30'
+                            ? 'bg-warning/10 text-warning dark:text-warning border border-warning/30'
                             : 'bg-destructive/10 text-destructive border border-destructive/30'
                         }
                       >
                         {rec.status.toUpperCase()}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-right text-emerald-500 font-tech font-semibold">
+                    <TableCell className="text-right text-success font-tech font-semibold">
                       ₹{Number(rec.amount || 0).toFixed(2)}
                     </TableCell>
                   </TableRow>

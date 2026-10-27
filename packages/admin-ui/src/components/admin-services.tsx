@@ -6,12 +6,12 @@ import { createClient } from '@tecbunny/database';
 import * as React from 'react';
 import Link from 'next/link';
 
-import { 
-  PlusCircle, 
-  MoreHorizontal, 
-  Eye, 
-  Edit, 
-  Trash2, 
+import {
+  PlusCircle,
+  MoreHorizontal,
+  Eye,
+  Edit,
+  Trash2,
   ToggleLeft,
   ToggleRight,
   Users,
@@ -20,13 +20,13 @@ import {
   AlertCircle
 } from 'lucide-react';
 
-import { 
-  Wrench, 
-  Shield, 
-  Truck, 
-  HeadphonesIcon, 
-  RefreshCw, 
-  Award 
+import {
+  Wrench,
+  Shield,
+  Truck,
+  HeadphonesIcon,
+  RefreshCw,
+  Award
 } from 'lucide-react';
 
 import type { LucideProps } from 'lucide-react';
@@ -76,7 +76,7 @@ export default function AdminServicesPage() {
   const [createDialogOpen, setCreateDialogOpen] = React.useState(false);
   const [editDialogOpen, setEditDialogOpen] = React.useState(false);
   const [selectedService, setSelectedService] = React.useState<Service | null>(null);
-  
+
   const supabase = createClient();
   const { toast } = useToast();
 
@@ -154,8 +154,8 @@ export default function AdminServicesPage() {
 
       if (error) throw error;
 
-      setServices(services.map(service => 
-        service.id === serviceId 
+      setServices(services.map(service =>
+        service.id === serviceId
           ? { ...service, is_active: !currentStatus }
           : service
       ));
@@ -202,7 +202,7 @@ export default function AdminServicesPage() {
     try {
       const { error } = await supabase
         .from('service_requests')
-        .update({ 
+        .update({
           status: newStatus,
           completed_date: newStatus === 'completed' ? new Date().toISOString() : null
         })
@@ -210,8 +210,8 @@ export default function AdminServicesPage() {
 
       if (error) throw error;
 
-      setServiceRequests(serviceRequests.map(request => 
-        request.id === requestId 
+      setServiceRequests(serviceRequests.map(request =>
+        request.id === requestId
           ? { ...request, status: newStatus as any }
           : request
       ));
@@ -322,8 +322,8 @@ export default function AdminServicesPage() {
                 <p className="text-sm text-muted-foreground">Total Services</p>
                 <p className="text-2xl font-bold">{totalServices}</p>
               </div>
-              <div className="p-2 bg-blue-100 rounded-full">
-                <Users className="h-6 w-6 text-blue-600" />
+              <div className="p-2 bg-primary/10 rounded-full">
+                <Users className="h-6 w-6 text-primary" />
               </div>
             </div>
           </CardContent>
@@ -336,8 +336,8 @@ export default function AdminServicesPage() {
                 <p className="text-sm text-muted-foreground">Active Services</p>
                 <p className="text-2xl font-bold">{activeServices}</p>
               </div>
-              <div className="p-2 bg-green-100 rounded-full">
-                <CheckCircle className="h-6 w-6 text-green-600" />
+              <div className="p-2 bg-success/10 rounded-full">
+                <CheckCircle className="h-6 w-6 text-success" />
               </div>
             </div>
           </CardContent>
@@ -350,8 +350,8 @@ export default function AdminServicesPage() {
                 <p className="text-sm text-muted-foreground">Total Requests</p>
                 <p className="text-2xl font-bold">{totalRequests}</p>
               </div>
-              <div className="p-2 bg-purple-100 rounded-full">
-                <AlertCircle className="h-6 w-6 text-purple-600" />
+              <div className="p-2 bg-primary/10 rounded-full">
+                <AlertCircle className="h-6 w-6 text-primary" />
               </div>
             </div>
           </CardContent>
@@ -364,8 +364,8 @@ export default function AdminServicesPage() {
                 <p className="text-sm text-muted-foreground">Pending Requests</p>
                 <p className="text-2xl font-bold">{pendingRequests}</p>
               </div>
-              <div className="p-2 bg-orange-100 rounded-full">
-                <Clock className="h-6 w-6 text-orange-600" />
+              <div className="p-2 bg-accent/10 rounded-full">
+                <Clock className="h-6 w-6 text-accent" />
               </div>
             </div>
           </CardContent>
@@ -447,15 +447,15 @@ export default function AdminServicesPage() {
                           <div className="flex items-center gap-2">
                             <button
                               onClick={() => toggleServiceStatus(service.id, service.is_active)}
-                              className="p-1 hover:bg-gray-100 rounded"
+                              className="p-1 hover:bg-muted rounded"
                             >
                               {service.is_active ? (
-                                <ToggleRight className="h-5 w-5 text-green-600" />
+                                <ToggleRight className="h-5 w-5 text-success" />
                               ) : (
-                                <ToggleLeft className="h-5 w-5 text-gray-400" />
+                                <ToggleLeft className="h-5 w-5 text-muted-foreground" />
                               )}
                             </button>
-                            <span className={`text-sm ${service.is_active ? 'text-green-600' : 'text-gray-400'}`}>
+                            <span className={`text-sm ${service.is_active ? 'text-success' : 'text-muted-foreground'}`}>
                               {service.is_active ? 'Active' : 'Inactive'}
                             </span>
                           </div>
@@ -479,7 +479,7 @@ export default function AdminServicesPage() {
                                 <Edit className="mr-2 h-4 w-4" />
                                 Edit
                               </DropdownMenuItem>
-                              <DropdownMenuItem 
+                              <DropdownMenuItem
                                 onClick={() => toggleServiceStatus(service.id, service.is_active)}
                               >
                                 {service.is_active ? (
@@ -495,9 +495,9 @@ export default function AdminServicesPage() {
                                 )}
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
-                              <DropdownMenuItem 
+                              <DropdownMenuItem
                                 onClick={() => deleteService(service.id)}
-                                className="text-red-600"
+                                className="text-destructive"
                               >
                                 <Trash2 className="mr-2 h-4 w-4" />
                                 Delete
@@ -599,19 +599,19 @@ export default function AdminServicesPage() {
                                 View Details
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
-                              <DropdownMenuItem 
+                              <DropdownMenuItem
                                 onClick={() => updateRequestStatus(request.id, 'in_progress')}
                               >
                                 Mark In Progress
                               </DropdownMenuItem>
-                              <DropdownMenuItem 
+                              <DropdownMenuItem
                                 onClick={() => updateRequestStatus(request.id, 'completed')}
                               >
                                 Mark Completed
                               </DropdownMenuItem>
-                              <DropdownMenuItem 
+                              <DropdownMenuItem
                                 onClick={() => updateRequestStatus(request.id, 'cancelled')}
-                                className="text-red-600"
+                                className="text-destructive"
                               >
                                 Cancel Request
                               </DropdownMenuItem>

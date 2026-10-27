@@ -1,291 +1,37 @@
-'use client';
-
 import Link from 'next/link';
+import { Camera, Network, Monitor, Key, Code, ArrowRight, MapPin, FileText, MessageSquare } from 'lucide-react';
+
+const services = [
+  { name: 'CCTV that covers what matters', detail: 'Plan camera positions, recording and viewing around your entrances, property and daily routine.', href: '/services/cctv-security', icon: Camera },
+  { name: 'Practical computer and IT support', detail: 'Work through repairs, upgrades, backups and the devices your home or business relies on.', href: '/services/it-support', icon: Monitor },
+  { name: 'Networking built for your space', detail: 'Understand weak Wi-Fi, plan cabling and choose access points around the rooms you use.', href: '/services/networking', icon: Network },
+  { name: 'Access that is easier to manage', detail: 'Explore RFID locks and credentials with your users, doors and exit arrangements in mind.', href: '/services/rfid-locks', icon: Key },
+  { name: 'Websites with a clear next step', detail: 'Help visitors understand your business, explore your offering and get in touch on any screen.', href: '/webdev', icon: Code },
+];
 
 export default function AboutPage() {
   return (
-    <div className="relative overflow-hidden bg-background text-foreground">
-      <div className="pointer-events-none absolute inset-0 bg-noise opacity-20" />
-      <div className="pointer-events-none absolute top-20 right-20 h-96 w-96 rounded-full bg-primary/10 blur-[110px]" />
-
-      <section className="relative pb-14 pt-16 sm:pt-20">
-        <div className="mx-auto max-w-7xl px-4 text-center sm:px-6 lg:px-8">
-          <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-primary">
-            Est. 2025 • Goa
-          </div>
-          <h1 className="mt-5 text-3xl font-semibold sm:text-4xl lg:text-5xl tech-heading">
-            Your Trusted{' '}
-            <span className="bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">
-              Technology Partner.
-            </span>
-          </h1>
-          <p className="mx-auto mt-4 max-w-2xl text-base text-muted-foreground sm:text-lg">
-            We plan and support CCTV, networking, access control and websites for homes and small businesses in North Goa and the Sawantwadi area of Sindhudurg district, Maharashtra.
-          </p>
+    <div className="tb-page">
+      <section className="tb-hero border-b border-border">
+        <div className="tb-container grid gap-10 lg:grid-cols-[1.3fr_1fr] lg:items-center">
+          <div><p className="tb-kicker">About TecBunny</p><h1 className="mt-5 text-4xl font-bold sm:text-5xl">Local people.<br /><span className="text-primary">Practical technology.</span></h1><p className="tb-lede mt-6 max-w-2xl">Technology should make your day easier. We help homes and small businesses plan, choose and look after the systems they use — from a camera at the gate to the network behind the office.</p><Link href="/contact?intent=help_me_choose&source=about" className="tb-button mt-8">Talk through your requirements <ArrowRight size={18} aria-hidden="true" /></Link></div>
+          <aside className="tb-card p-7 sm:p-9"><MapPin className="text-primary" size={32} aria-hidden="true" /><h2 className="mt-5 text-2xl">Based in Pernem. Focused on your space.</h2><p className="mt-4 text-muted-foreground">We serve North Goa and the Sawantwadi area of Sindhudurg district, Maharashtra. Share your location and the work you have in mind so we can discuss the practical next step.</p><Link href="/about/business-info" className="mt-6 inline-flex min-h-11 items-center gap-2 font-semibold text-primary">View our business information <ArrowRight size={16} aria-hidden="true" /></Link></aside>
         </div>
       </section>
-
-      <section className="border-y border-border bg-muted/10 py-16">
-        <div className="mx-auto grid max-w-7xl grid-cols-1 items-center gap-12 px-4 sm:px-6 lg:grid-cols-2 lg:px-8">
-          <div className="relative">
-            <div className="absolute -inset-4 rounded-2xl bg-gradient-to-r from-primary/40 to-primary/10 opacity-20 blur-2xl" />
-            <div className="relative bento-card p-8">
-              <h3 className="text-2xl font-semibold tech-heading">Our Mission</h3>
-              <div className="mt-4 text-sm leading-relaxed text-muted-foreground space-y-4">
-                <p>We believe every organization deserves dependable infrastructure. Our mission is simple:</p>
-                <ul className="list-disc pl-5 space-y-2">
-                  <li><strong className="text-foreground">Enterprise-Grade Engineering:</strong> Proven infrastructure patterns and documented deployments — without unnecessary complexity.</li>
-                  <li><strong className="text-foreground">Transparent Commercial Terms:</strong> Itemized BOMs, GST invoicing, and direct OEM-channel sourcing.</li>
-                  <li><strong className="text-foreground">Local Support You Can Count On:</strong> A Goa-based engineering team with defined response targets.</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
-          <div className="space-y-6">
-            <h2 className="text-3xl font-semibold tech-heading">The Core Philosophy</h2>
-            <div className="flex gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">🏷️</div>
-              <div>
-                <h4 className="text-lg font-semibold tech-heading">Transparent Value</h4>
-                <p className="mt-1 text-sm text-muted-foreground">Genuine Tier-1 equipment with itemized BOM pricing and GST input credit.</p>
-              </div>
-            </div>
-            <div className="flex gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">🛠️</div>
-              <div>
-                <h4 className="text-lg font-semibold tech-heading">Done-For-You Service</h4>
-                <p className="mt-1 text-sm text-muted-foreground">Professional installation and SLA-backed support, every step of the way.</p>
-              </div>
-            </div>
-            <div className="flex gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">🧰</div>
-              <div>
-                <h4 className="text-lg font-semibold tech-heading">Clean, Documented Installation</h4>
-                <p className="mt-1 text-sm text-muted-foreground">Structured cabling, labeled racks, and as-built documentation at every handover.</p>
-              </div>
-            </div>
-          </div>
+      <section className="tb-container py-14 sm:py-20" aria-labelledby="about-approach">
+        <p className="tb-kicker">Our approach</p><h2 id="about-approach" className="mt-3 text-3xl">Start with the problem. Make the options clear.</h2>
+        <div className="mt-8 grid gap-5 md:grid-cols-3">
+          {[
+            { icon: MessageSquare, title: 'Listen before recommending', description: 'Tell us what is happening, who uses the system and what you want to improve. Those details shape the recommendation.' },
+            { icon: FileText, title: 'Put the scope in writing', description: 'Review the proposed equipment and work in a written quote. Ask questions before deciding what to go ahead with.' },
+            { icon: MapPin, title: 'Work with local conditions', description: 'Walls, weather, power and the way you use a property can all affect the setup. We discuss those conditions when they matter.' },
+          ].map(({ icon: Icon, title, description }) => <article key={title} className="tb-card p-6"><Icon className="text-primary" size={24} aria-hidden="true" /><h3 className="mt-5 text-xl">{title}</h3><p className="mt-3 text-muted-foreground">{description}</p></article>)}
         </div>
       </section>
-
-      <section className="py-20">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <span className="text-xs font-semibold uppercase tracking-[0.3em] text-primary">Leadership</span>
-            <h2 className="mt-3 text-3xl font-semibold sm:text-4xl tech-heading">Meet the Directors</h2>
-          </div>
-          <div className="mt-12 grid gap-6 md:grid-cols-2">
-            <div className="bento-card p-6">
-              <div className="flex items-center gap-6">
-                <div className="flex h-24 w-24 items-center justify-center rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/20 to-primary/10 text-2xl font-bold text-primary font-tech">
-                  SB
-                </div>
-                <div>
-                  <h3 className="text-xl font-semibold tech-heading">Shubham Sakharam Bhisaji</h3>
-                  <p className="text-sm font-medium text-primary">Director & Co-Founder</p>
-                  <div className="mt-2 flex gap-2 text-xs text-muted-foreground">
-                    <span className="rounded bg-muted px-2 py-1">TECH_LEAD</span>
-                    <span className="rounded bg-muted px-2 py-1">OPS</span>
-                  </div>
-                </div>
-              </div>
-              <p className="mt-6 border-t border-border pt-6 text-sm text-muted-foreground italic">
-                “We don&apos;t sell hardware. We sell the absolute certainty that your business is safe when you lock the doors.”
-              </p>
-            </div>
-
-            <div className="bento-card p-6">
-              <div className="flex items-center gap-6">
-                <div className="flex h-24 w-24 items-center justify-center rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/20 to-primary/10 text-2xl font-bold text-primary font-tech">
-                  KB
-                </div>
-                <div>
-                  <h3 className="text-xl font-semibold tech-heading">Kamana Ashok Bandekar</h3>
-                  <p className="text-sm font-medium text-primary">Director & Co-Founder</p>
-                  <div className="mt-2 flex gap-2 text-xs text-muted-foreground">
-                    <span className="rounded bg-muted px-2 py-1">STRATEGY</span>
-                    <span className="rounded bg-muted px-2 py-1">FINANCE</span>
-                  </div>
-                </div>
-              </div>
-              <p className="mt-6 border-t border-border pt-6 text-sm text-muted-foreground italic">
-                “We build systems that work for you, not the other way around.”
-              </p>
-            </div>
-          </div>
-        </div>
+      <section className="border-y border-border bg-card">
+        <div className="tb-container py-14 sm:py-20"><p className="tb-kicker">What we help with</p><h2 className="mt-3 text-3xl">One team for connected requirements.</h2><div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{services.map(({ name, detail, href, icon: Icon }) => <article key={href} className="rounded-xl border border-border bg-background p-6"><Icon className="text-primary" size={24} aria-hidden="true" /><h3 className="mt-5 text-xl">{name}</h3><p className="mt-3 text-muted-foreground">{detail}</p><Link href={href} className="mt-5 inline-flex min-h-11 items-center gap-2 font-semibold text-primary">Explore this service <ArrowRight size={16} aria-hidden="true" /></Link></article>)}</div></div>
       </section>
-
-      {/* Brand & Partner Ecosystem */}
-      <section className="py-16 border-t border-border bg-muted/5">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-3xl mx-auto">
-            <span className="text-xs font-semibold uppercase tracking-[0.3em] text-primary">Ecosystem</span>
-            <h2 className="mt-3 text-3xl font-semibold tech-heading">Partner &amp; Brand Relationships</h2>
-            <p className="mt-3 text-sm text-muted-foreground">
-              We deploy genuine Tier-1 hardware and configure standards-compliant enterprise ecosystems.
-            </p>
-          </div>
-
-          <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            <div className="bento-card p-6 text-center space-y-2">
-              <span className="inline-block rounded-full bg-blue-500/10 px-3 py-1 text-xs font-bold uppercase text-blue-400">System Integrator</span>
-              <h3 className="text-base font-bold font-tech text-foreground">CP PLUS &amp; Hikvision</h3>
-              <p className="text-xs text-muted-foreground font-light">Direct sourcing, firmware security patching, and OEM-backed warranty servicing for surveillance systems.</p>
-            </div>
-            <div className="bento-card p-6 text-center space-y-2">
-              <span className="inline-block rounded-full bg-purple-500/10 px-3 py-1 text-xs font-bold uppercase text-purple-400">Supply &amp; Configure</span>
-              <h3 className="text-base font-bold font-tech text-foreground">TP-Link &amp; Ubiquiti</h3>
-              <p className="text-xs text-muted-foreground font-light">Enterprise Wi-Fi 6/7, managed switches, multi-gigabit gateways, and fiber distribution network deployment.</p>
-            </div>
-            <div className="bento-card p-6 text-center space-y-2">
-              <span className="inline-block rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-bold uppercase text-emerald-400">Genuine Channel Sourcing</span>
-              <h3 className="text-base font-bold font-tech text-foreground">Dahua &amp; Matrix Comsec</h3>
-              <p className="text-xs text-muted-foreground font-light">RFID hotel lock management, biometric access controllers, and IP intercom solutions for modern properties.</p>
-            </div>
-            <div className="bento-card p-6 text-center space-y-2">
-              <span className="inline-block rounded-full bg-amber-500/10 px-3 py-1 text-xs font-bold uppercase text-amber-400">Genuine Hardware</span>
-              <h3 className="text-base font-bold font-tech text-foreground">Tier-1 OEM Hardware</h3>
-              <p className="text-xs text-muted-foreground font-light">Seagate SkyHawk / WD Purple surveillance storage, Dell/Lenovo workstation rollouts, and custom server racks.</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Company Timeline */}
-      <section className="py-16 border-t border-border">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-3xl mx-auto">
-            <span className="text-xs font-semibold uppercase tracking-[0.3em] text-primary">Milestones</span>
-            <h2 className="mt-3 text-3xl font-semibold tech-heading">Our Evolution &amp; Journey</h2>
-            <p className="mt-3 text-sm text-muted-foreground">
-              From local computer &amp; CCTV repairs to comprehensive enterprise infrastructure integration in Goa.
-            </p>
-          </div>
-
-          <div className="mt-12 grid gap-6 md:grid-cols-4">
-            <div className="bento-card p-6 relative">
-              <span className="text-xs font-mono font-bold text-primary">2025 · INCEPTION</span>
-              <h3 className="text-base font-bold font-tech text-foreground mt-2">Founded in Goa</h3>
-              <p className="text-xs text-muted-foreground font-light mt-2 leading-relaxed">
-                Incorporated as Tecbunny Solutions Private Limited in Parcem, Pernem to bring transparent tech pricing and reliable local IT support to Goa.
-              </p>
-            </div>
-            <div className="bento-card p-6 relative">
-              <span className="text-xs font-mono font-bold text-primary">2025 · SECURITY EXPANSION</span>
-              <h3 className="text-base font-bold font-tech text-foreground mt-2">CCTV &amp; Access Control</h3>
-              <p className="text-xs text-muted-foreground font-light mt-2 leading-relaxed">
-                Began commercial and residential CCTV installations across North and South Goa, with instant quotation calculators.
-              </p>
-            </div>
-            <div className="bento-card p-6 relative">
-              <span className="text-xs font-mono font-bold text-primary">2026 · NETWORK &amp; ITES</span>
-              <h3 className="text-base font-bold font-tech text-foreground mt-2">Enterprise Infrastructure</h3>
-              <p className="text-xs text-muted-foreground font-light mt-2 leading-relaxed">
-                Launched structured fiber networking, managed IT AMC programs, Active Directory administration, and remote engineering helpdesk.
-              </p>
-            </div>
-            <div className="bento-card p-6 relative">
-              <span className="text-xs font-mono font-bold text-primary">2026 · SMART HOSPITALITY</span>
-              <h3 className="text-base font-bold font-tech text-foreground mt-2">Smart Infrastructure</h3>
-              <p className="text-xs text-muted-foreground font-light mt-2 leading-relaxed">
-                Expanded into complete hospitality automation (GRMS), hotel RFID locks, and full-property high availability systems for builders and luxury resorts.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="border-t border-border bg-muted/10 py-16">
-        <div className="mx-auto grid max-w-7xl grid-cols-1 gap-6 px-4 text-center sm:px-6 md:grid-cols-3 lg:px-8">
-          <div className="bento-card p-6">
-            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">🏛️</div>
-            <h4 className="text-lg font-semibold tech-heading">Registered Entity</h4>
-            <p className="mt-2 text-sm text-muted-foreground">Tecbunny Solutions Private Limited</p>
-            <p className="mt-3 inline-block rounded bg-primary/10 px-2 py-1 text-xs font-semibold text-primary">CIN: U80200GA2025PTC017488</p>
-          </div>
-          <div className="bento-card p-6">
-            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">📍</div>
-            <h4 className="text-lg font-semibold tech-heading">Headquarters</h4>
-            <p className="mt-2 text-sm text-muted-foreground">Parcem, Pernem<br />North Goa, 403512</p>
-          </div>
-          <div className="bento-card p-6">
-            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">🤝</div>
-            <h4 className="text-lg font-semibold tech-heading">Support</h4>
-            <p className="mt-2 text-sm text-muted-foreground">Local Goa-based Team</p>
-            <Link href="/contact" className="mt-3 inline-block text-xs font-semibold text-primary hover:underline">
-              Get in touch →
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      <section className="py-16">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <h2 className="text-3xl font-semibold tech-heading">Get in Touch</h2>
-            <p className="mt-3 text-sm text-muted-foreground">Ready to connect? We&apos;re here to help you with all your technology needs.</p>
-          </div>
-          <div className="mt-10 grid gap-6 md:grid-cols-3">
-            <div className="bento-card p-6 text-center">
-              <h3 className="text-lg font-semibold tech-heading">WhatsApp Us</h3>
-              <p className="mt-2 text-sm text-muted-foreground">Quick responses for urgent queries</p>
-              <a
-                href="https://wa.me/919604136010"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-5 inline-flex items-center justify-center rounded-lg bg-primary hover:bg-primary/90 px-5 py-2.5 text-sm font-semibold text-white transition-colors"
-              >
-                Chat Now
-              </a>
-            </div>
-            <div className="bento-card p-6 text-center">
-              <h3 className="text-lg font-semibold tech-heading">Email Us</h3>
-              <p className="mt-2 text-sm text-muted-foreground">For detailed inquiries and support</p>
-              <a
-                href="mailto:support@tecbunny.com"
-                className="mt-5 inline-flex items-center justify-center rounded-lg border border-border bg-muted/20 hover:bg-muted/40 px-5 py-2.5 text-sm font-semibold text-foreground transition-colors"
-              >
-                Send Email
-              </a>
-            </div>
-            <div className="bento-card p-6 text-center">
-              <h3 className="text-lg font-semibold tech-heading">Visit Us</h3>
-              <p className="mt-2 text-sm text-muted-foreground">Parcem, Pernem, Goa - 403512</p>
-              <p className="mt-1 text-xs text-muted-foreground">GST No: 30AAMCT1608G1ZO</p>
-              <a
-                href="https://maps.app.goo.gl/HZDjt3zoB1Rcrjqp8"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-5 inline-flex items-center justify-center rounded-lg border border-border bg-muted/20 hover:bg-muted/40 px-5 py-2.5 text-sm font-semibold text-foreground transition-colors"
-              >
-                Get Directions
-              </a>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="bg-muted/20 py-16 text-center border-t border-border">
-        <div className="mx-auto max-w-4xl px-4 sm:px-6">
-          <h2 className="text-3xl font-semibold tech-heading">Ready to Experience the Difference?</h2>
-          <p className="mt-3 text-sm text-muted-foreground">Join the businesses that trust TecBunny for mission-critical technology infrastructure.</p>
-          <div className="mt-6 flex flex-col items-center justify-center gap-4 sm:flex-row">
-            <Link href="/contact" className="rounded-lg bg-primary hover:bg-primary/90 px-6 py-3 text-sm font-semibold text-white transition-colors">
-              Contact TecBunny
-            </Link>
-            <a
-              href="https://wa.me/919604136010"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="rounded-lg border border-border bg-muted/20 hover:bg-muted/40 px-6 py-3 text-sm font-semibold text-foreground transition-colors"
-            >
-              WhatsApp Us
-            </a>
-          </div>
-        </div>
-      </section>
+      <section className="tb-container grid gap-6 py-14 sm:grid-cols-[1fr_auto] sm:items-center"><div><h2 className="text-3xl">What would you like to improve?</h2><p className="mt-3 text-muted-foreground">A short description of the problem is enough to start a conversation.</p></div><Link href="/contact?intent=quote_request&source=about_final" className="tb-button">Discuss your project <ArrowRight size={18} aria-hidden="true" /></Link></section>
     </div>
   );
 }

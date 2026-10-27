@@ -4,12 +4,12 @@ import * as React from 'react';
 import { Input } from "@tecbunny/ui";
 import { useToast } from "@tecbunny/ui";
 
-export const SingleImageUploader = ({ 
-  value, 
+export const SingleImageUploader = ({
+  value,
   onChange,
   type
-}: { 
-  value: string; 
+}: {
+  value: string;
   onChange: (newValue: string) => void;
   type: 'logo' | 'favicon' | 'general' | 'product';
 }) => {
@@ -28,12 +28,12 @@ export const SingleImageUploader = ({
       const formData = new FormData();
       formData.append('file', file);
       formData.append('type', type);
-      
+
       const response = await fetch('/api/upload', {
         method: 'POST',
         body: formData,
       });
-      
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ error: 'Upload failed' }));
         const errMsg = typeof errorData.error === 'object' && errorData.error?.message
@@ -41,13 +41,13 @@ export const SingleImageUploader = ({
           : (typeof errorData.error === 'string' ? errorData.error : `Upload failed: ${response.statusText}`);
         throw new Error(errMsg);
       }
-      
+
       const data = await response.json();
       const imageUrl = data.secure_url || data.url;
       if (!imageUrl) {
         throw new Error('Invalid response from upload service');
       }
-      
+
       onChange(imageUrl);
       toast({
         title: 'Upload successful',
@@ -68,14 +68,14 @@ export const SingleImageUploader = ({
 
   return (
     <div className="flex items-center gap-4 mt-2">
-      <div className="relative w-16 h-16 rounded border bg-slate-950 flex items-center justify-center overflow-hidden shrink-0 group">
+      <div className="relative w-16 h-16 rounded border bg-background flex items-center justify-center overflow-hidden shrink-0 group">
         {value ? (
           <>
             <img src={value} alt="Preview" className="w-full h-full object-contain" />
             <button
               type="button"
               onClick={() => onChange('')}
-              className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-[10px] font-medium transition-opacity"
+              className="absolute inset-0 bg-overlay/60 opacity-0 group-hover:opacity-100 flex items-center justify-center text-overlay-foreground text-[10px] font-medium transition-opacity"
             >
               Remove
             </button>
@@ -88,19 +88,19 @@ export const SingleImageUploader = ({
         <Input
           type="file"
           accept="image/*"
-          className="text-xs h-8 py-1 px-2 border-white/10 bg-slate-950/80 text-slate-100"
+          className="text-xs h-8 py-1 px-2 border-border/10 bg-background/80 text-muted-foreground"
           disabled={uploading}
           onChange={(e) => {
             const file = e.target.files?.[0];
             if (file) handleFileChange(file);
           }}
         />
-        {uploading && <span className="text-[10px] text-amber-400 animate-pulse">Uploading...</span>}
+        {uploading && <span className="text-[10px] text-warning animate-pulse">Uploading...</span>}
         {value && !uploading && (
           <button
             type="button"
             onClick={() => onChange('')}
-            className="text-[10px] text-red-400 hover:text-red-300 hover:underline text-left self-start mt-0.5"
+            className="text-[10px] text-destructive hover:text-destructive hover:underline text-left self-start mt-0.5"
           >
             Remove image
           </button>

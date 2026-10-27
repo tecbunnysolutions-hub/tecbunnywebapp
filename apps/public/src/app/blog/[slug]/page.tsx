@@ -107,7 +107,7 @@ export default async function BlogPostPage({ params }: Props) {
   };
 
   return (
-    <main className="min-h-screen bg-black text-zinc-100">
+    <div className="min-h-screen bg-background text-muted-foreground">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: serializeJsonLd(blogPostingJsonLd) }}
@@ -118,7 +118,7 @@ export default async function BlogPostPage({ params }: Props) {
       />
       <article className="mx-auto max-w-3xl px-6 py-20 sm:py-28">
         {/* Back */}
-        <Link href="/blog" className="text-xs text-zinc-500 hover:text-indigo-400 transition-colors">
+        <Link href="/blog" className="text-xs text-muted-foreground hover:text-primary transition-colors">
           ← Back to Blog
         </Link>
 
@@ -126,7 +126,7 @@ export default async function BlogPostPage({ params }: Props) {
         {post.tags && post.tags.length > 0 && (
           <div className="mt-6 flex flex-wrap gap-1">
             {post.tags.map((tag: string) => (
-              <span key={tag} className="text-[10px] font-semibold uppercase tracking-widest px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+              <span key={tag} className="text-[10px] font-semibold uppercase tracking-widest px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
                 {tag}
               </span>
             ))}
@@ -134,12 +134,12 @@ export default async function BlogPostPage({ params }: Props) {
         )}
 
         {/* Title */}
-        <h1 className="mt-4 text-3xl font-black tracking-tight sm:text-4xl text-white">
+        <h1 className="mt-4 text-3xl font-black tracking-tight sm:text-4xl text-foreground">
           {post.title}
         </h1>
 
         {/* Meta */}
-        <div className="mt-4 flex items-center gap-3 text-sm text-zinc-500">
+        <div className="mt-4 flex items-center gap-3 text-sm text-muted-foreground">
           <span>By {author}</span>
           {publishedDate && <><span>·</span><span>{publishedDate}</span></>}
         </div>
@@ -160,10 +160,10 @@ export default async function BlogPostPage({ params }: Props) {
 
         {/* Content */}
         <div
-          className="mt-10 prose prose-invert prose-zinc max-w-none prose-headings:font-bold prose-a:text-indigo-400"
+          className="mt-10 prose prose-invert prose-zinc max-w-none prose-headings:font-bold prose-a:text-primary"
           dangerouslySetInnerHTML={{ __html: sanitizeHtml(post.content ?? '') }}
         />
       </article>
-    </main>
+    </div>
   );
 }

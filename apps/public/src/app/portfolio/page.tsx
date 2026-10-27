@@ -1,260 +1,28 @@
 import type { Metadata } from 'next';
+import Image from 'next/image';
 import Link from 'next/link';
-import { 
-  Sparkles, 
-  ArrowRight, 
-  MapPin, 
-  ShieldCheck, 
-  Wifi, 
-  Camera, 
-  Lock, 
-  Layers, 
-  Server, 
-  Activity, 
-  FlameKindling,
-  Workflow
-} from 'lucide-react';
-
-import { Button } from "@tecbunny/ui";
-import { createPageMetadata } from "@tecbunny/core/metadata";
+import { ArrowRight, Camera, Network, Key } from 'lucide-react';
+import { createPageMetadata } from '@tecbunny/core/metadata';
 import { BreadcrumbJsonLd } from '@/components/BreadcrumbJsonLd';
+import { PROJECT_PHOTOS } from '@/content/homepage-proof';
 
 export async function generateMetadata(): Promise<Metadata> {
-  return createPageMetadata({
-    title: 'Client Case Studies & Project Portfolio | TecBunny Solutions',
-    description: 'Real projects from TecBunny in Goa: a villa Wi-Fi mesh in Anjuna, an 8-camera estate CCTV setup in Parra, and biometric access control for a Panaji co-working space.',
-    keywords: [
-      'TecBunny portfolio',
-      'Goa IT case studies',
-      'custom networking Anjuna',
-      'CCTV installation Parra',
-      'biometric access Panaji',
-      'smart home setups Pernem'
-    ],
-    path: '/portfolio',
-    image: '/opengraph-image',
-  });
+  return createPageMetadata({ title: 'Technology Projects & Planning | TecBunny', description: 'Explore TecBunny project references when available and learn what to consider for CCTV, Wi-Fi and access-control work in Goa.', path: '/portfolio', image: '/opengraph-image' });
 }
 
-interface ProjectCaseStudy {
-  title: string;
-  location: string;
-  category: 'Networking' | 'Surveillance' | 'Access Control';
-  badge: string;
-  icon: any;
-  before: string;
-  challenges: string[];
-  blueprint: {
-    item: string;
-    qty: string;
-  }[];
-  results: string;
-}
+const planningNotes = [
+  { icon: Network, title: 'Wi-Fi for a larger home', description: 'Start with the rooms, walls and outdoor areas that need coverage. Review cabling, access-point placement and how devices move around the property.', href: '/services/networking' },
+  { icon: Camera, title: 'CCTV around an entrance', description: 'Decide what you need to see and when you need to see it. Camera position, lighting, storage and power arrangements shape a useful system.', href: '/services/cctv-security' },
+  { icon: Key, title: 'Access for a shared workspace', description: 'Plan who needs access, how credentials are issued and what happens during a power failure or emergency exit.', href: '/services/rfid-locks' },
+];
 
 export default function PortfolioPage() {
-  const caseStudies: ProjectCaseStudy[] = [
-    {
-      title: "6-Node Mesh Network Installation for a Villa",
-      location: "Anjuna, North Goa",
-      category: "Networking",
-      badge: "High-End Residential Wifi",
-      icon: Wifi,
-      before: "A luxury 3-story heritage villa struggled with dead zones and constant dropouts. The 18-inch thick Portuguese-style laterite stone walls blocked standard ISP router signals entirely, leaving 90% of the bedrooms and pool deck without coverage.",
-      challenges: [
-        "Routing structural ethernet lines without compromising the architectural heritage wood and plaster carvings.",
-        "Drilling heavy laterite stone walls safely without causing structural cracks.",
-        "Monsoon humidity protection for outdoor pool access points."
-      ],
-      blueprint: [
-        { item: "Wi-Fi 6 Access Points", qty: "6 units" },
-        { item: "Cloud-Managed Gateway", qty: "1 unit" },
-        { item: "8-Port PoE Switch", qty: "1 unit" },
-        { item: "Cat6 FTP Shielded Weatherproof Cable", qty: "150 meters" }
-      ],
-      results: "Implemented a fully managed wireless subnet. On-site tests at handover measured sub-50ms roaming handoff and sustained download speeds above 450 Mbps across all indoor areas and the poolside garden."
-    },
-    {
-      title: "8-Camera Enterprise IP CCTV Surveillance Setup",
-      location: "Parra, North Goa",
-      category: "Surveillance",
-      badge: "Commercial Perimeter Security",
-      icon: Camera,
-      before: "A private estate suffered from blind spots along its perimeter fencing, leading to minor trespassing incidents. The old analog cameras lacked night-vision capture and frequently lost their feeds due to local power surges.",
-      challenges: [
-        "Running long outdoor cable runs (up to 95 meters) prone to lightning induction and noise.",
-        "Achieving identification-grade resolution at night on poorly illuminated entry points.",
-        "Protecting NVR storage against Goa's frequent electrical grid fluctuations."
-      ],
-      blueprint: [
-        { item: "Hikvision 4MP ColorVu PoE Bullet Cameras", qty: "8 units" },
-        { item: "Hikvision 8-Channel NVR (4TB SkyHawk HDD)", qty: "1 unit" },
-        { item: "TP-Link 8-Port Gigabit PoE+ Managed Switch", qty: "1 unit" },
-        { item: "APC 1KVA Line-Interactive Online UPS", qty: "1 unit" },
-        { item: "Surge Protection Devices (SPD) on all lines", qty: "8 units" }
-      ],
-      results: "Full 24/7 color coverage is archived locally and backed up dynamically to cloud storage. Surges are mitigated by SPDs and an online UPS, keeping cameras and the recorder running through short utility blackouts; runtime depends on UPS load."
-    },
-    {
-      title: "Smart Biometric Access Control for Coworking Hub",
-      location: "Panaji, Goa",
-      category: "Access Control",
-      badge: "Workspace Identity Management",
-      icon: Lock,
-      before: "A shared office space with 80+ daily hot-desk members relied on manual logbooks. Physical keys were frequently copied or lost, creating a serious security breach liability and manual admin overhead.",
-      challenges: [
-        "Integrating high daily transit capacity with fast, fail-safe unlock triggers.",
-        "Mounting heavy locks on custom structural glass doors without frame drill options.",
-        "Ensuring immediate emergency release compliance linked to the central fire panel."
-      ],
-      blueprint: [
-        { item: "Essl X990 Biometric Fingerprint & RFID Controller", qty: "2 units" },
-        { item: "Fail-Safe Magnetic Locks (600 lbs holding force)", qty: "2 units" },
-        { item: "U-Bracket Mounts for Toughened Glass Doors", qty: "2 units" },
-        { item: "Encrypted 13.56MHz MIFARE Smart Cards", qty: "100 units" },
-        { item: "Central Control Access Management Server", qty: "1 unit" }
-      ],
-      results: "biometric registration takes under 1.5 seconds. Reception entry queues dropped by 85%. The local server automatically logs check-ins and disengages magnetic locks instantly on fire alarm panel triggers."
-    }
-  ];
-
-  return (
-    <div className="relative min-h-screen bg-[#09090B] text-zinc-200 selection:bg-blue-500/20 selection:text-white overflow-hidden py-12 sm:py-16">
-      <BreadcrumbJsonLd
-        items={[
-          { name: 'Home', url: 'https://www.tecbunny.com' },
-          { name: 'Portfolio', url: 'https://www.tecbunny.com/portfolio' },
-        ]}
-      />
-      {/* Background Grids */}
-      <div className="pointer-events-none absolute inset-0 -z-10">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]" />
-        <div className="absolute -left-40 top-0 h-[42rem] w-[42rem] rounded-full bg-blue-500/5 blur-[160px]" />
-        <div className="absolute -right-40 top-1/3 h-[46rem] w-[46rem] rounded-full bg-indigo-500/5 blur-[180px]" />
-      </div>
-
-      <div className="mx-auto flex max-w-5xl flex-col gap-12 px-6 sm:px-8">
-        {/* Page Hero */}
-        <section className="text-center space-y-4 max-w-3xl mx-auto">
-          <div className="inline-flex items-center gap-2 rounded-full border border-blue-500/20 bg-blue-500/5 px-4.5 py-1.5 text-xs font-semibold text-blue-400">
-            <Sparkles size={14} className="animate-pulse" />
-            <span>Proof of Capability</span>
-          </div>
-          <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl md:text-5xl font-tech leading-tight text-white">
-            Our Deployment <span className="bg-gradient-to-r from-blue-400 via-indigo-200 to-white bg-clip-text text-transparent">Portfolio</span>
-          </h1>
-          <p className="text-base font-light leading-relaxed text-zinc-400">
-            We don't expect you to take our word for it. Here are documented examples of IT and security work we have designed and built in North Goa and the Sawantwadi area.
-          </p>
-        </section>
-
-        {/* Case Studies Display */}
-        <section className="space-y-12">
-          {caseStudies.map((project, idx) => {
-            const IconComponent = project.icon;
-            return (
-              <div 
-                key={idx} 
-                className="bento-card p-8 bg-zinc-950/60 border border-zinc-900 rounded-3xl hover:border-zinc-800 transition-all duration-300 grid grid-cols-1 lg:grid-cols-12 gap-8 items-start relative overflow-hidden group"
-              >
-                {/* Background Ambient Glow */}
-                <div className="absolute -right-16 -top-16 h-36 w-36 rounded-full bg-blue-500/5 blur-2xl pointer-events-none transition-all duration-300 group-hover:scale-125" />
-
-                {/* Left Column: Project Overview */}
-                <div className="lg:col-span-7 space-y-5">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="inline-flex items-center gap-1.5 rounded-md border border-zinc-800 bg-zinc-900/50 px-2.5 py-1 text-[10px] font-bold text-blue-400 uppercase tracking-wider">
-                      <IconComponent className="h-3.5 w-3.5" />
-                      {project.category}
-                    </span>
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-550 flex items-center gap-1">
-                      <MapPin className="h-3.5 w-3.5 text-zinc-650" />
-                      {project.location}
-                    </span>
-                  </div>
-
-                  <h2 className="text-xl md:text-2xl font-bold font-tech text-white leading-tight">
-                    {project.title}
-                  </h2>
-
-                  <div className="space-y-4">
-                    <div>
-                      <h4 className="text-[10px] uppercase font-bold text-zinc-500 tracking-widest mb-1.5 flex items-center gap-1.5">
-                        <Activity className="h-3.5 w-3.5 text-rose-500" />
-                        The Dilemma (Before)
-                      </h4>
-                      <p className="text-xs text-zinc-400 leading-relaxed font-light">
-                        {project.before}
-                      </p>
-                    </div>
-
-                    <div>
-                      <h4 className="text-[10px] uppercase font-bold text-zinc-500 tracking-widest mb-1.5 flex items-center gap-1.5">
-                        <Workflow className="h-3.5 w-3.5 text-amber-500" />
-                        Structural & Environmental Challenges
-                      </h4>
-                      <ul className="space-y-1.5 text-xs text-zinc-400 font-light">
-                        {project.challenges.map((challenge, cIdx) => (
-                          <li key={cIdx} className="flex gap-2.5">
-                            <span className="text-amber-500 font-bold shrink-0">&middot;</span>
-                            <span>{challenge}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Right Column: Hardware Blueprint & Results */}
-                <div className="lg:col-span-5 space-y-6 lg:border-l lg:border-zinc-900 lg:pl-8 h-full flex flex-col justify-between">
-                  <div>
-                    <h4 className="text-[10px] uppercase font-bold text-zinc-500 tracking-widest mb-3 flex items-center gap-1.5">
-                      <Server className="h-3.5 w-3.5 text-blue-500" />
-                      Hardware Blueprint (BOM)
-                    </h4>
-                    <div className="divide-y divide-zinc-900 border-y border-zinc-900 py-1.5">
-                      {project.blueprint.map((bp, bpIdx) => (
-                        <div key={bpIdx} className="flex justify-between text-xs py-2">
-                          <span className="text-zinc-400 font-light">{bp.item}</span>
-                          <span className="text-zinc-300 font-mono text-[10px] font-bold shrink-0">{bp.qty}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="bg-blue-500/5 border border-blue-500/10 rounded-2xl p-5 mt-auto">
-                    <h4 className="text-[10px] uppercase font-bold text-blue-400 tracking-widest mb-1.5 flex items-center gap-1.5">
-                      <ShieldCheck className="h-3.5 w-3.5 text-emerald-500" />
-                      Results
-                    </h4>
-                    <p className="text-xs text-zinc-300 leading-relaxed font-light">
-                      {project.results}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </section>
-
-        {/* CTA Footer */}
-        <section className="tb-panel relative overflow-hidden p-8 rounded-3xl border border-zinc-900 bg-zinc-950/20 text-center space-y-5 max-w-3xl mx-auto w-full mt-6">
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-blue-500/25 bg-blue-500/5 px-3 py-1 text-[10px] font-bold text-blue-400 uppercase tracking-widest">
-            <FlameKindling className="h-3.5 w-3.5" /> Ready to build?
-          </span>
-          <h2 className="text-2xl font-bold font-tech text-white leading-snug">Need a Custom Technical Setup for Your Premises?</h2>
-          <p className="text-xs text-zinc-400 font-light max-w-xl mx-auto leading-relaxed">
-            Whether it's an office network migration, estate perimeter security design, or private cinema build in Goa, our engineering team is ready to survey and configure your space.
-          </p>
-          <div className="flex flex-col sm:flex-row justify-center gap-3 pt-3">
-            <Button asChild size="lg" className="bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl px-8 shadow-sm">
-              <Link href="/customised-setups">Configure Custom Setup</Link>
-            </Button>
-            <Button asChild size="lg" variant="outline" className="border-zinc-800 text-zinc-300 hover:bg-zinc-900 rounded-xl px-8">
-              <Link href="/contact">Book On-Site Survey</Link>
-            </Button>
-          </div>
-        </section>
-      </div>
-    </div>
-  );
+  return <div className="tb-page">
+    <BreadcrumbJsonLd items={[{ name: 'Home', url: 'https://www.tecbunny.com' }, { name: 'Portfolio', url: 'https://www.tecbunny.com/portfolio' }]} />
+    <section className="tb-hero border-b border-border"><div className="tb-container"><p className="tb-kicker">Projects and practical planning</p><h1 className="mt-5 max-w-3xl text-4xl font-bold sm:text-5xl">Every space needs its own plan.</h1><p className="tb-lede mt-5 max-w-3xl">A working system starts with the details: the entrance you need to see, the room where Wi-Fi drops, or the door your team uses every day.</p><Link href="/contact?intent=quote_request&source=portfolio" className="tb-button mt-8">Tell us about your space <ArrowRight size={18} aria-hidden="true" /></Link></div></section>
+    <section className="tb-container py-14 sm:py-20" aria-labelledby="project-reference-title"><h2 id="project-reference-title" className="text-3xl">Project references</h2>
+      {PROJECT_PHOTOS.length ? <ul className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">{PROJECT_PHOTOS.map(photo => <li key={photo.src} className="tb-card overflow-hidden"><Image src={photo.src} alt={photo.alt} width={photo.width} height={photo.height} sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw" className="aspect-[4/3] w-full object-cover" /><div className="p-5"><h3 className="text-xl">{photo.title}</h3><p className="mt-2 text-muted-foreground">{photo.location}</p></div></li>)}</ul> : <div className="tb-card mt-7 p-6 sm:p-8"><h3 className="text-xl">Want to discuss work similar to yours?</h3><p className="mt-3 max-w-2xl text-muted-foreground">Public project photos are not available here yet. Tell us what you are planning and ask our team about relevant experience and any references we can share.</p><Link href="/contact?intent=project_reference&source=portfolio" className="mt-5 inline-flex min-h-11 items-center gap-2 font-semibold text-primary">Ask about a project reference <ArrowRight size={16} aria-hidden="true" /></Link></div>}
+    </section>
+    <section className="border-y border-border bg-card"><div className="tb-container py-14 sm:py-20"><p className="tb-kicker">Planning examples</p><h2 className="mt-3 text-3xl">Start with the questions that matter.</h2><p className="mt-4 max-w-2xl text-muted-foreground">These are example requirements to help you plan a conversation.</p><div className="mt-8 grid gap-5 md:grid-cols-3">{planningNotes.map(({icon: Icon, title, description, href}) => <article key={title} className="rounded-xl border border-border bg-background p-6"><Icon size={26} className="text-primary" aria-hidden="true" /><h3 className="mt-5 text-xl">{title}</h3><p className="mt-3 text-muted-foreground">{description}</p><Link href={href} className="mt-6 inline-flex min-h-11 items-center gap-2 font-semibold text-primary">Explore the service <ArrowRight size={16} aria-hidden="true" /></Link></article>)}</div></div></section>
+  </div>;
 }

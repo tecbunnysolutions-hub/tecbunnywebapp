@@ -323,15 +323,15 @@ export default function PaymentApiPage() {
           </div>
           <div className="rounded-lg border border-dashed p-4 space-y-2 text-xs text-muted-foreground">
             <p className="font-semibold text-foreground">Required environment variables (API app)</p>
-            <p className="text-muted-foreground mb-1">Set both pairs — the active one is chosen by <span className="font-mono text-blue-500">CASHFREE_ENV</span>.</p>
+            <p className="text-muted-foreground mb-1">Set both pairs — the active one is chosen by <span className="font-mono text-primary">CASHFREE_ENV</span>.</p>
             <ul className="space-y-1 font-mono">
-              <li className="text-yellow-600 font-semibold">Sandbox credentials</li>
+              <li className="text-warning font-semibold">Sandbox credentials</li>
               <li>CASHFREE_SANDBOX_APP_ID</li>
               <li>CASHFREE_SANDBOX_SECRET_KEY</li>
-              <li className="mt-2 text-emerald-600 font-semibold">Production credentials</li>
+              <li className="mt-2 text-success font-semibold">Production credentials</li>
               <li>CASHFREE_PROD_APP_ID</li>
               <li>CASHFREE_PROD_SECRET_KEY</li>
-              <li className="mt-2">CASHFREE_ENV — <span className="text-yellow-600">sandbox</span> | <span className="text-emerald-600">production</span></li>
+              <li className="mt-2">CASHFREE_ENV — <span className="text-warning">sandbox</span> | <span className="text-success">production</span></li>
             </ul>
           </div>
           <Button onClick={handleSaveCashfree} disabled={savingStates.cashfree}>
@@ -352,9 +352,9 @@ export default function PaymentApiPage() {
               <Label>Enable Cash on Delivery</Label>
               <p className="text-xs text-muted-foreground">Allow customers to pay with cash upon delivery.</p>
             </div>
-            <Switch 
+            <Switch
               checked={formData.cod.enabled}
-              onCheckedChange={(checked) => 
+              onCheckedChange={(checked) =>
                 setFormData(prev => ({
                   ...prev,
                   cod: { ...prev.cod, enabled: checked }
@@ -364,12 +364,12 @@ export default function PaymentApiPage() {
           </div>
           <div className="space-y-2">
             <Label htmlFor="cod-min-amount">Minimum Order Amount (₹)</Label>
-            <Input 
-              id="cod-min-amount" 
+            <Input
+              id="cod-min-amount"
               type="number"
               placeholder="e.g., 0 (optional)"
               value={formData.cod.minOrderAmount}
-              onChange={(e) => 
+              onChange={(e) =>
                 setFormData(prev => ({
                   ...prev,
                   cod: { ...prev.cod, minOrderAmount: e.target.value }
@@ -382,12 +382,12 @@ export default function PaymentApiPage() {
           </div>
           <div className="space-y-2">
             <Label htmlFor="cod-max-amount">Maximum Order Amount (₹)</Label>
-            <Input 
-              id="cod-max-amount" 
+            <Input
+              id="cod-max-amount"
               type="number"
               placeholder="e.g., 50000 (optional)"
               value={formData.cod.maxOrderAmount}
-              onChange={(e) => 
+              onChange={(e) =>
                 setFormData(prev => ({
                   ...prev,
                   cod: { ...prev.cod, maxOrderAmount: e.target.value }
@@ -400,12 +400,12 @@ export default function PaymentApiPage() {
           </div>
           <div className="space-y-2">
             <Label htmlFor="cod-instructions">Instructions for Customers</Label>
-            <Textarea 
-              id="cod-instructions" 
+            <Textarea
+              id="cod-instructions"
               placeholder="e.g., Please keep exact change ready. Our delivery partner will collect the payment."
               value={formData.cod.instructions}
               rows={3}
-              onChange={(e) => 
+              onChange={(e) =>
                 setFormData(prev => ({
                   ...prev,
                   cod: { ...prev.cod, instructions: e.target.value }
@@ -433,9 +433,9 @@ export default function PaymentApiPage() {
               <Label>Enable UPI Payments</Label>
               <p className="text-xs text-muted-foreground">Allow customers to pay via UPI/QR code.</p>
             </div>
-            <Switch 
+            <Switch
               checked={formData.upi.enabled}
-              onCheckedChange={(checked) => 
+              onCheckedChange={(checked) =>
                 setFormData(prev => ({
                   ...prev,
                   upi: { ...prev.upi, enabled: checked }
@@ -445,11 +445,11 @@ export default function PaymentApiPage() {
           </div>
           <div className="space-y-2">
             <Label htmlFor="upi-id">UPI ID</Label>
-            <Input 
-              id="upi-id" 
+            <Input
+              id="upi-id"
               placeholder="e.g., yourstore@paytm or 9876543210@ybl"
               value={formData.upi.upiId}
-              onChange={(e) => 
+              onChange={(e) =>
                 setFormData(prev => ({
                   ...prev,
                   upi: { ...prev.upi, upiId: e.target.value }
@@ -462,11 +462,11 @@ export default function PaymentApiPage() {
           </div>
           <div className="space-y-2">
             <Label htmlFor="upi-name">Account Holder Name</Label>
-            <Input 
-              id="upi-name" 
+            <Input
+              id="upi-name"
               placeholder="e.g., TecBunny Solutions"
               value={formData.upi.upiName}
-              onChange={(e) => 
+              onChange={(e) =>
                 setFormData(prev => ({
                   ...prev,
                   upi: { ...prev.upi, upiName: e.target.value }
@@ -479,12 +479,12 @@ export default function PaymentApiPage() {
           </div>
           <div className="space-y-2">
             <Label htmlFor="upi-instructions">Payment Instructions</Label>
-            <Textarea 
-              id="upi-instructions" 
+            <Textarea
+              id="upi-instructions"
               placeholder="e.g., Scan the QR code and complete the payment. Share the transaction screenshot/ID with us."
               value={formData.upi.instructions}
               rows={3}
-              onChange={(e) => 
+              onChange={(e) =>
                 setFormData(prev => ({
                   ...prev,
                   upi: { ...prev.upi, instructions: e.target.value }

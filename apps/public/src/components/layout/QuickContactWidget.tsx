@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { MessageSquare, Phone, Send, X, CheckCircle2 } from 'lucide-react';
 
-import { Button, Input, Textarea, useToast } from '@tecbunny/ui';
+import { Button, Input, Textarea, useToast, Dialog, DialogContent, DialogTitle } from '@tecbunny/ui';
 import { useAnalytics, logger } from '@tecbunny/core';
 
 import { useDeferredActivation } from '../../hooks/use-deferred-activation';
@@ -245,13 +245,13 @@ export function QuickContactWidget() {
     <>
       <div className="fixed bottom-24 right-4 sm:right-6 z-40 flex flex-col items-end gap-2">
         {isOpen && (
-          <div className="flex flex-col gap-2 rounded-2xl border border-zinc-800 bg-zinc-950/95 p-3 shadow-2xl backdrop-blur-md animate-fade-in">
+          <div className="flex flex-col gap-2 rounded-2xl border border-border bg-background/95 p-3 shadow-2xl backdrop-blur-md animate-fade-in">
             <a
               href={buildWhatsAppUrl(context, typeof window !== 'undefined' ? window.location.href : '')}
               target="_blank"
               rel="noopener noreferrer"
               onClick={handleWhatsAppClick}
-              className="flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium text-white bg-[#25D366] hover:bg-[#1fb857] transition-colors"
+              className="flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium text-foreground bg-card hover:bg-card transition-colors"
             >
               <WhatsAppGlyph className="h-4 w-4 fill-white" />
               WhatsApp us
@@ -259,7 +259,7 @@ export function QuickContactWidget() {
             <a
               href={CALL_HREF}
               onClick={handleCallClick}
-              className="flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium text-zinc-100 border border-zinc-800 bg-zinc-900/60 hover:bg-zinc-800/60 transition-colors"
+              className="flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium text-muted-foreground border border-border bg-card/60 hover:bg-card/60 transition-colors"
             >
               <Phone size={16} />
               Call +91 96041 36010
@@ -267,7 +267,7 @@ export function QuickContactWidget() {
             <button
               type="button"
               onClick={openDrawer}
-              className="flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium text-zinc-100 border border-zinc-800 bg-zinc-900/60 hover:bg-zinc-800/60 transition-colors text-left"
+              className="flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium text-muted-foreground border border-border bg-card/60 hover:bg-card/60 transition-colors text-left"
             >
               <Send size={16} />
               Quick enquiry
@@ -278,7 +278,7 @@ export function QuickContactWidget() {
         <button
           type="button"
           onClick={() => setIsOpen(prev => !prev)}
-          className="flex h-14 w-14 items-center justify-center rounded-full bg-[#25D366] text-white shadow-xl shadow-emerald-950/30 transition-all duration-300 hover:scale-110 hover:shadow-emerald-500/25 active:scale-95"
+          className="flex h-14 w-14 items-center justify-center rounded-full bg-card text-foreground shadow-xl shadow-success/30 transition-all duration-300 hover:scale-110 hover:shadow-success/25 active:scale-95"
           aria-label={isOpen ? 'Close contact options' : 'Contact TecBunny Solutions'}
           aria-expanded={isOpen}
         >
@@ -286,31 +286,22 @@ export function QuickContactWidget() {
         </button>
       </div>
 
-      {isDrawerOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-0 sm:p-6"
-          role="dialog"
-          aria-modal="true"
-          aria-label="Quick enquiry"
-          onClick={() => setIsDrawerOpen(false)}
-        >
-          <div
-            className="w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl border border-zinc-800 bg-zinc-950 p-6 shadow-2xl animate-fade-in"
-            onClick={e => e.stopPropagation()}
-          >
+      <Dialog open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
+        <DialogContent className="max-h-[90dvh] w-[calc(100%-2rem)] overflow-y-auto border-border bg-card text-foreground" aria-describedby={undefined}>
+          <DialogTitle className="sr-only">Quick enquiry</DialogTitle>
             {isSuccess ? (
               <div className="text-center space-y-4 py-4">
-                <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-400">
+                <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-success/10 text-success">
                   <CheckCircle2 size={28} />
                 </div>
-                <h3 className="text-lg font-bold text-white">Enquiry received</h3>
-                <p className="text-sm text-zinc-400 leading-relaxed">
+                <h3 className="text-lg font-bold text-foreground">Enquiry received</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">
                   Thanks! Our team will reach out within business hours.
                 </p>
                 <Button
                   variant="outline"
                   onClick={() => { setIsSuccess(false); setIsDrawerOpen(false); }}
-                  className="border-zinc-800 bg-zinc-900/30 text-white hover:bg-white/10"
+                  className="border-border bg-card/30 text-foreground hover:bg-card/10"
                 >
                   Close
                 </Button>
@@ -319,15 +310,15 @@ export function QuickContactWidget() {
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="flex items-start justify-between gap-4">
                   <div>
-                    <h3 className="text-lg font-bold text-white">Quick enquiry</h3>
-                    <p className="text-xs text-zinc-500 mt-1">
+                    <h3 className="text-lg font-bold text-foreground">Quick enquiry</h3>
+                    <p className="text-xs text-muted-foreground mt-1">
                       {context.service ? `About: ${context.service}` : 'Tell us what you need and we will call you back.'}
                     </p>
                   </div>
                   <button
                     type="button"
                     onClick={() => setIsDrawerOpen(false)}
-                    className="text-zinc-500 hover:text-zinc-300"
+                    className="text-muted-foreground hover:text-muted-foreground"
                     aria-label="Close quick enquiry"
                   >
                     <X size={18} />
@@ -335,7 +326,7 @@ export function QuickContactWidget() {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider" htmlFor="qc-name">
+                  <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider" htmlFor="qc-name">
                     Name *
                   </label>
                   <Input
@@ -346,12 +337,12 @@ export function QuickContactWidget() {
                     placeholder="Your name"
                     required
                     disabled={isSubmitting}
-                    className="bg-[#09090B] border-zinc-850 focus-visible:ring-emerald-500/40 text-white"
+                    className="bg-card border-border focus-visible:ring-success/40 text-foreground"
                   />
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider" htmlFor="qc-phone">
+                  <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider" htmlFor="qc-phone">
                     Phone / WhatsApp *
                   </label>
                   <Input
@@ -363,12 +354,12 @@ export function QuickContactWidget() {
                     placeholder="e.g. +91 98765 43210"
                     required
                     disabled={isSubmitting}
-                    className="bg-[#09090B] border-zinc-850 focus-visible:ring-emerald-500/40 text-white"
+                    className="bg-card border-border focus-visible:ring-success/40 text-foreground"
                   />
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider" htmlFor="qc-email">
+                  <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider" htmlFor="qc-email">
                     Email (optional)
                   </label>
                   <Input
@@ -379,12 +370,12 @@ export function QuickContactWidget() {
                     onChange={handleChange}
                     placeholder="you@example.com"
                     disabled={isSubmitting}
-                    className="bg-[#09090B] border-zinc-850 focus-visible:ring-emerald-500/40 text-white"
+                    className="bg-card border-border focus-visible:ring-success/40 text-foreground"
                   />
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider" htmlFor="qc-requirement">
+                  <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider" htmlFor="qc-requirement">
                     What do you need? (optional)
                   </label>
                   <Textarea
@@ -395,7 +386,7 @@ export function QuickContactWidget() {
                     placeholder="e.g. 8 CCTV cameras for a resort in Baga"
                     rows={2}
                     disabled={isSubmitting}
-                    className="bg-[#09090B] border-zinc-850 focus-visible:ring-emerald-500/40 text-white"
+                    className="bg-card border-border focus-visible:ring-success/40 text-foreground"
                   />
                 </div>
 
@@ -419,11 +410,11 @@ export function QuickContactWidget() {
                     checked={form.consent}
                     onChange={e => setForm(prev => ({ ...prev, consent: e.target.checked }))}
                     disabled={isSubmitting}
-                    className="mt-1 h-4 w-4 rounded border-zinc-700 bg-zinc-900 text-emerald-600 focus:ring-emerald-500/40 accent-emerald-600"
+                    className="mt-1 h-4 w-4 rounded border-border bg-card text-success focus:ring-success/40 accent-emerald-600"
                   />
-                  <span className="text-xs text-zinc-400 leading-relaxed">
+                  <span className="text-xs text-muted-foreground leading-relaxed">
                     I agree that TecBunny Solutions may contact me via Phone, WhatsApp, or Email regarding this enquiry, as described in the{' '}
-                    <Link href="/info/policies/privacy" target="_blank" className="text-emerald-400 hover:underline">
+                    <Link href="/info/policies/privacy" target="_blank" className="text-success hover:underline">
                       Privacy Policy
                     </Link>
                     .
@@ -433,7 +424,7 @@ export function QuickContactWidget() {
                 <Button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl transition duration-200 flex items-center justify-center gap-2"
+                  className="w-full bg-success hover:bg-success text-success-foreground font-bold py-3 rounded-xl transition duration-200 flex items-center justify-center gap-2"
                 >
                   {isSubmitting ? 'Sending...' : (
                     <>
@@ -444,9 +435,8 @@ export function QuickContactWidget() {
                 </Button>
               </form>
             )}
-          </div>
-        </div>
-      )}
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

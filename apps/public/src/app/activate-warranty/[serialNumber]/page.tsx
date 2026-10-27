@@ -105,12 +105,12 @@ export default function WarrantyActivationPage() {
             <p>{`> DEVICE MATCH: ${deviceDetails.model} [${deviceDetails.type}]`}</p>
           )}
 
-          {error && <p className="text-rose-500">{`> ERROR: ${error}`}</p>}
+          {error && <p className="text-destructive">{`> ERROR: ${error}`}</p>}
 
           {step === "init" && (
             <button
               onClick={() => setStep("phone")}
-              className="mt-6 bg-primary/10 border border-primary text-primary hover:bg-primary hover:text-primary-foreground px-6 py-2 transition-all uppercase tracking-wider text-sm font-bold rounded-md"
+              className="mt-6 bg-primary/10 border border-primary text-primary hover:bg-primary hover:text-primary-foreground px-6 py-2 transition-all uppercase tracking-wider text-sm font-bold rounded-md text-foreground"
             >
               Authenticate & Unlock Warranty
             </button>

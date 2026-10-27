@@ -2,12 +2,12 @@
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 
-import { 
-  Plus, 
-  Edit2, 
-  Trash2, 
-  Eye, 
-  EyeOff, 
+import {
+  Plus,
+  Edit2,
+  Trash2,
+  Eye,
+  EyeOff,
   Tag,
   TrendingUp,
   Gift,
@@ -155,7 +155,7 @@ export default function OffersManagement({ initialTab = 'offers' }: OffersManage
     try {
       const response = await fetch('/api/offers?include_expired=true', { signal: controller.signal });
       const data = await response.json();
-      
+
       if (response.ok) {
         setOffers(data.offers || []);
         setOffersUpdatedAt(new Date());
@@ -390,7 +390,7 @@ export default function OffersManagement({ initialTab = 'offers' }: OffersManage
           title: 'Success',
           description: result.message
         });
-        
+
         await fetchOffers();
         handleCloseDialog();
       } else {
@@ -628,7 +628,7 @@ export default function OffersManagement({ initialTab = 'offers' }: OffersManage
                       onClick={() => deleteDiscount(discount)}
                       disabled={discountActionId === discount.id}
                     >
-                      <Trash2 className="h-4 w-4 text-red-500" />
+                      <Trash2 className="h-4 w-4 text-destructive" />
                     </Button>
                   </div>
                 </TableCell>
@@ -985,10 +985,10 @@ export default function OffersManagement({ initialTab = 'offers' }: OffersManage
               <Card>
                 <CardContent className="p-6">
                   <div className="flex items-center">
-                    <TrendingUp className="h-8 w-8 text-emerald-300" />
+                    <TrendingUp className="h-8 w-8 text-success" />
                     <div className="ml-4">
-                      <p className="text-sm font-medium text-slate-400">Active Offers</p>
-                      <p className="text-2xl font-bold text-white">
+                      <p className="text-sm font-medium text-muted-foreground">Active Offers</p>
+                      <p className="text-2xl font-bold text-foreground">
                         {offers.filter(o => o.is_active && new Date(o.end_date) > new Date()).length}
                       </p>
                     </div>
@@ -998,10 +998,10 @@ export default function OffersManagement({ initialTab = 'offers' }: OffersManage
               <Card>
                 <CardContent className="p-6">
                   <div className="flex items-center">
-                    <Tag className="h-8 w-8 text-purple-300" />
+                    <Tag className="h-8 w-8 text-primary" />
                     <div className="ml-4">
-                      <p className="text-sm font-medium text-slate-400">Featured Offers</p>
-                      <p className="text-2xl font-bold text-white">
+                      <p className="text-sm font-medium text-muted-foreground">Featured Offers</p>
+                      <p className="text-2xl font-bold text-foreground">
                         {offers.filter(o => o.is_featured).length}
                       </p>
                     </div>
@@ -1011,10 +1011,10 @@ export default function OffersManagement({ initialTab = 'offers' }: OffersManage
               <Card>
                 <CardContent className="p-6">
                   <div className="flex items-center">
-                    <Users className="h-8 w-8 text-amber-300" />
+                    <Users className="h-8 w-8 text-warning" />
                     <div className="ml-4">
-                      <p className="text-sm font-medium text-slate-400">Total Usage</p>
-                      <p className="text-2xl font-bold text-white">
+                      <p className="text-sm font-medium text-muted-foreground">Total Usage</p>
+                      <p className="text-2xl font-bold text-foreground">
                         {offers.reduce((sum, o) => sum + o.usage_count, 0)}
                       </p>
                     </div>
@@ -1073,7 +1073,7 @@ export default function OffersManagement({ initialTab = 'offers' }: OffersManage
                           <TableCell>
                             <div>
                               <div className="font-medium">{offer.title}</div>
-                              <div className="text-sm text-slate-400 line-clamp-1">
+                              <div className="text-sm text-muted-foreground line-clamp-1">
                                 {offer.description}
                               </div>
                               <div className="mt-1 flex space-x-1">
@@ -1096,13 +1096,13 @@ export default function OffersManagement({ initialTab = 'offers' }: OffersManage
                                 {offer.offer_code}
                               </code>
                             ) : (
-                              <span className="text-slate-500">Auto-apply</span>
+                              <span className="text-muted-foreground">Auto-apply</span>
                             )}
                           </TableCell>
                           <TableCell>
                             <div className="text-sm">
                               <div>{new Date(offer.start_date).toLocaleDateString()}</div>
-                              <div className="text-slate-400">to {new Date(offer.end_date).toLocaleDateString()}</div>
+                              <div className="text-muted-foreground">to {new Date(offer.end_date).toLocaleDateString()}</div>
                             </div>
                           </TableCell>
                           <TableCell>{getStatusBadge(offer)}</TableCell>
@@ -1110,7 +1110,7 @@ export default function OffersManagement({ initialTab = 'offers' }: OffersManage
                             <div className="text-sm">
                               <div>{offer.usage_count}</div>
                               {offer.usage_limit && (
-                                <div className="text-slate-400">of {offer.usage_limit}</div>
+                                <div className="text-muted-foreground">of {offer.usage_limit}</div>
                               )}
                             </div>
                           </TableCell>

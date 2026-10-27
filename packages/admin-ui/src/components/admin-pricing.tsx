@@ -121,7 +121,7 @@ export function AdminPricing() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     try {
       const payload = {
         ...formData,
@@ -135,7 +135,7 @@ export function AdminPricing() {
       const url = editingRule
         ? `/api/admin/pricing/${editingRule.id}`
         : '/api/admin/pricing';
-      
+
       const method = editingRule ? 'PUT' : 'POST';
 
       const response = await fetch(url, {
@@ -391,7 +391,7 @@ export function AdminPricing() {
                   id="is_active"
                   checked={formData.is_active}
                   onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
-                  className="h-4 w-4 rounded border-gray-300"
+                  className="h-4 w-4 rounded border-border"
                 />
                 <Label htmlFor="is_active" className="cursor-pointer">
                   Active Rule
@@ -492,7 +492,7 @@ export function AdminPricing() {
                         {rule.customer_category || 'All'}
                       </TableCell>
                       <TableCell>
-                        <span className="font-semibold text-green-600">
+                        <span className="font-semibold text-success">
                           ₹{rule.price.toFixed(2)}
                         </span>
                       </TableCell>

@@ -16,11 +16,11 @@ export function QuotationStatusLookup() {
     e.preventDefault();
     const inputVal = quoteNumberInput.trim();
     if (!inputVal) return;
-    
+
     setLookupLoading(true);
     setLookupError('');
     const actionToken = new URLSearchParams(window.location.search).get('token') || '';
-    
+
     const tokenQuery = actionToken ? `?token=${encodeURIComponent(actionToken)}` : '';
     fetch(`/api/quotes/${encodeURIComponent(inputVal)}${tokenQuery}`, { credentials: 'include' })
       .then(res => {
@@ -48,7 +48,7 @@ export function QuotationStatusLookup() {
         <div className="flex items-center justify-between gap-2">
           <div>
             <p className="text-sm text-primary font-semibold flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-primary animate-pulse" />
+              <span className="h-2 w-2 rounded-full bg-primary animate-pulse text-primary-foreground" />
               Check Quotation Status
             </p>
             <p className="text-xs text-muted-foreground">Track revisions, approval, or proceed with payment.</p>
@@ -73,7 +73,7 @@ export function QuotationStatusLookup() {
               <Button
                 type="submit"
                 disabled={lookupLoading || !quoteNumberInput.trim()}
-                className="bg-primary text-white font-semibold hover:bg-primary/90 disabled:opacity-50 transition shrink-0"
+                className="bg-primary text-primary-foreground font-semibold hover:bg-primary/90 disabled:opacity-50 transition shrink-0"
               >
                 {lookupLoading ? 'Checking...' : 'Track'}
               </Button>
@@ -82,7 +82,7 @@ export function QuotationStatusLookup() {
         </form>
       </div>
       {lookupError && (
-        <p className="text-xs text-rose-400 mt-2">{lookupError}</p>
+        <p className="text-xs text-destructive mt-2">{lookupError}</p>
       )}
     </div>
   );

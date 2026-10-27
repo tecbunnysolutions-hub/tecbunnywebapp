@@ -280,10 +280,10 @@ export function CreateProductDialog({ open, onOpenChange, onProductCreated }: Cr
                     </Button>
                   </div>
                   <FormControl>
-                    <Textarea 
-                      placeholder="Detailed product description..." 
+                    <Textarea
+                      placeholder="Detailed product description..."
                       className="min-h-[100px]"
-                      {...field} 
+                      {...field}
                     />
                   </FormControl>
                   <FormMessage />
@@ -359,8 +359,8 @@ export function CreateProductDialog({ open, onOpenChange, onProductCreated }: Cr
                     <FormLabel>Product Brand</FormLabel>
                     {productBrands.length > 0 && !isCustomBrand ? (
                       <div className="flex flex-col gap-1.5">
-                        <Select 
-                          onValueChange={(val) => field.onChange(val === 'none' ? '' : val)} 
+                        <Select
+                          onValueChange={(val) => field.onChange(val === 'none' ? '' : val)}
                           value={field.value || 'none'}
                         >
                           <FormControl>
@@ -421,12 +421,12 @@ export function CreateProductDialog({ open, onOpenChange, onProductCreated }: Cr
                   <FormItem>
                     <FormLabel>Price (₹)</FormLabel>
                     <FormControl>
-                    <Input 
-                      type="number" 
-                      min="0" 
-                      step="0.01" 
-                      {...field} 
-                      value={field.value as number ?? ''} 
+                    <Input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      {...field}
+                      value={field.value as number ?? ''}
                     />
                     </FormControl>
                     <FormMessage />
@@ -441,10 +441,10 @@ export function CreateProductDialog({ open, onOpenChange, onProductCreated }: Cr
                   <FormItem>
                     <FormLabel>Stock Quantity</FormLabel>
                     <FormControl>
-                    <Input 
-                      type="number" 
-                      min="0" 
-                      {...field} 
+                    <Input
+                      type="number"
+                      min="0"
+                      {...field}
                       value={field.value as number ?? ''}
                     />
                     </FormControl>
@@ -492,11 +492,11 @@ export function CreateProductDialog({ open, onOpenChange, onProductCreated }: Cr
                       />
                       <div className="flex items-center gap-2">
                         <span className="text-xs text-muted-foreground whitespace-nowrap">Or paste URL:</span>
-                        <Input 
-                          placeholder="https://..." 
-                          {...field} 
-                          value={field.value || ''} 
-                          className="h-8 text-xs bg-slate-950/80 text-slate-100 border-white/10"
+                        <Input
+                          placeholder="https://..."
+                          {...field}
+                          value={field.value || ''}
+                          className="h-8 text-xs bg-background/80 text-muted-foreground border-border/10"
                         />
                       </div>
                     </div>

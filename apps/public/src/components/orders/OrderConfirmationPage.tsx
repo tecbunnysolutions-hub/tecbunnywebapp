@@ -98,7 +98,7 @@ export default function OrderConfirmationPage({ orderId }: OrderConfirmationPage
           <Package className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
           <h2 className="text-2xl font-bold text-foreground mb-2">Order Not Found</h2>
           <p className="text-muted-foreground mb-6">The order you're looking for doesn't exist.</p>
-          <Button 
+          <Button
             onClick={() => window.location.href = '/products'}
             className="bg-primary hover:bg-primary/90 text-primary-foreground"
           >
@@ -111,31 +111,31 @@ export default function OrderConfirmationPage({ orderId }: OrderConfirmationPage
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'Awaiting Payment': return 'bg-amber-500/15 text-amber-500 border border-amber-500/30';
-      case 'Pending': return 'bg-yellow-500/15 text-yellow-500 border border-yellow-500/30';
-      case 'Payment Confirmed': return 'bg-blue-500/15 text-blue-500 border border-blue-500/30';
-      case 'Confirmed': return 'bg-blue-500/15 text-blue-500 border border-blue-500/30';
-      case 'Processing': return 'bg-purple-500/15 text-purple-500 border border-purple-500/30';
-      case 'Ready to Ship': return 'bg-indigo-500/15 text-indigo-500 border border-indigo-500/30';
-      case 'Shipped': return 'bg-indigo-500/15 text-indigo-500 border border-indigo-500/30';
-      case 'Ready for Pickup': return 'bg-sky-500/15 text-sky-500 border border-sky-500/30';
-      case 'Ready for Delivery': return 'bg-sky-500/15 text-sky-500 border border-sky-500/30';
+      case 'Awaiting Payment': return 'bg-warning/15 text-warning border border-warning/30';
+      case 'Pending': return 'bg-warning/15 text-warning border border-warning/30';
+      case 'Payment Confirmed': return 'bg-primary/15 text-primary border border-primary/30';
+      case 'Confirmed': return 'bg-primary/15 text-primary border border-primary/30';
+      case 'Processing': return 'bg-primary/15 text-primary border border-primary/30';
+      case 'Ready to Ship': return 'bg-primary/15 text-primary border border-primary/30';
+      case 'Shipped': return 'bg-primary/15 text-primary border border-primary/30';
+      case 'Ready for Pickup': return 'bg-primary/15 text-primary border border-primary/30';
+      case 'Ready for Delivery': return 'bg-primary/15 text-primary border border-primary/30';
       case 'Delivered':
-      case 'Delivered/Picked Up': return 'bg-emerald-500/15 text-emerald-500 border border-emerald-500/30';
-      case 'Completed': return 'bg-emerald-600/15 text-emerald-500 border border-emerald-500/30';
-      case 'On Hold': return 'bg-orange-500/15 text-orange-500 border border-orange-500/30';
+      case 'Delivered/Picked Up': return 'bg-success/15 text-success border border-success/30';
+      case 'Completed': return 'bg-success/15 text-success border border-success/30';
+      case 'On Hold': return 'bg-accent/15 text-accent border border-accent/30';
       case 'Visit Scheduled':
-      case 'Visit Completed': return 'bg-teal-500/15 text-teal-500 border border-teal-500/30';
-      case 'Diagnosis Done': return 'bg-blue-500/15 text-blue-500 border border-blue-500/30';
+      case 'Visit Completed': return 'bg-success/15 text-success border border-success/30';
+      case 'Diagnosis Done': return 'bg-primary/15 text-primary border border-primary/30';
       case 'Quote Sent':
-      case 'Awaiting Customer Approval': return 'bg-blue-500/15 text-blue-500 border border-blue-500/30';
-      case 'Approved': return 'bg-emerald-500/15 text-emerald-500 border border-emerald-500/30';
-      case 'Parts Ordered': return 'bg-indigo-500/15 text-indigo-500 border border-indigo-500/30';
-      case 'Work In Progress': return 'bg-purple-500/15 text-purple-500 border border-purple-500/30';
-      case 'Quality Check': return 'bg-fuchsia-500/15 text-fuchsia-500 border border-fuchsia-500/30';
+      case 'Awaiting Customer Approval': return 'bg-primary/15 text-primary border border-primary/30';
+      case 'Approved': return 'bg-success/15 text-success border border-success/30';
+      case 'Parts Ordered': return 'bg-primary/15 text-primary border border-primary/30';
+      case 'Work In Progress': return 'bg-primary/15 text-primary border border-primary/30';
+      case 'Quality Check': return 'bg-primary/15 text-primary border border-primary/30';
       case 'Warranty/Support Active': return 'bg-lime-500/15 text-lime-500 border border-lime-500/30';
-      case 'Cancelled': return 'bg-red-500/15 text-red-500 border border-red-500/30';
-      case 'Rejected': return 'bg-rose-500/15 text-rose-500 border border-rose-500/30';
+      case 'Cancelled': return 'bg-destructive/15 text-destructive border border-destructive/30';
+      case 'Rejected': return 'bg-destructive/15 text-destructive border border-destructive/30';
       default: return 'bg-muted text-muted-foreground border border-border';
     }
   };
@@ -166,12 +166,12 @@ export default function OrderConfirmationPage({ orderId }: OrderConfirmationPage
     return 'Payment Confirmed';
   })();
   const paymentStatusTone = paymentStatusLabel === 'Payment Confirmed'
-    ? 'text-emerald-300'
+    ? 'text-success'
     : paymentStatusLabel === 'Payment Confirmation Pending'
-      ? 'text-amber-300'
+      ? 'text-warning'
       : ['Payment Cancelled', 'Payment Failed'].includes(paymentStatusLabel)
-        ? 'text-red-300'
-        : 'text-slate-300';
+        ? 'text-destructive'
+        : 'text-muted-foreground';
   const paymentMethodLabel = order.payment_method
     ? order.payment_method.toUpperCase()
     : 'NOT SPECIFIED';
@@ -179,8 +179,8 @@ export default function OrderConfirmationPage({ orderId }: OrderConfirmationPage
     && !isPaymentConfirmed
     && !['Cancelled', 'Rejected'].includes(order.status);
 
-  const shouldShowPayRemaining = !!order.part_payment_amount 
-    && order.pending_payment_status !== 'paid' 
+  const shouldShowPayRemaining = !!order.part_payment_amount
+    && order.pending_payment_status !== 'paid'
     && order.pending_amount_requested;
 
   const showDownloadInvoice = !!order.invoice_pdf_url;
@@ -190,7 +190,7 @@ export default function OrderConfirmationPage({ orderId }: OrderConfirmationPage
       <div id="order-print-area" className="max-w-4xl mx-auto px-4">
         {/* Success Header */}
         <div className="text-center mb-8">
-          <CheckCircle className="h-16 w-16 text-emerald-500 mx-auto mb-4" />
+          <CheckCircle className="h-16 w-16 text-success mx-auto mb-4" />
           <h1 className="text-3xl font-bold text-foreground mb-2">Order Confirmed!</h1>
           <p className="text-muted-foreground mb-4">
             Thank you for your order. We'll send you a confirmation email shortly.
@@ -203,9 +203,9 @@ export default function OrderConfirmationPage({ orderId }: OrderConfirmationPage
 
         {/* Alerts / Actions for Pending Payment or Final Invoice */}
         {shouldShowPayRemaining && (
-          <div className="mb-6 p-4 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-500 flex flex-col sm:flex-row items-center justify-between gap-4 no-print animate-pulse">
+          <div className="mb-6 p-4 rounded-lg bg-warning/10 border border-warning/30 text-warning flex flex-col sm:flex-row items-center justify-between gap-4 no-print animate-pulse">
             <div className="flex items-center gap-3">
-              <AlertTriangle className="h-6 w-6 text-amber-500 shrink-0" />
+              <AlertTriangle className="h-6 w-6 text-warning shrink-0" />
               <div>
                 <h4 className="font-semibold text-foreground">Pending Balance Requested</h4>
                 <p className="text-sm text-muted-foreground">
@@ -215,7 +215,7 @@ export default function OrderConfirmationPage({ orderId }: OrderConfirmationPage
             </div>
             <Button
               onClick={() => window.location.href = `/payment/upi/${order.id}`}
-              className="bg-amber-500 hover:bg-amber-600 text-white font-semibold px-6 w-full sm:w-auto shrink-0"
+              className="bg-warning hover:bg-warning text-warning-foreground font-semibold px-6 w-full sm:w-auto shrink-0"
             >
               <CreditCard className="mr-2 h-4 w-4" />
               Pay Remaining Balance
@@ -224,9 +224,9 @@ export default function OrderConfirmationPage({ orderId }: OrderConfirmationPage
         )}
 
         {showDownloadInvoice && (
-          <div className="mb-6 p-4 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-500 flex flex-col sm:flex-row items-center justify-between gap-4 no-print">
+          <div className="mb-6 p-4 rounded-lg bg-success/10 border border-success/30 text-success flex flex-col sm:flex-row items-center justify-between gap-4 no-print">
             <div className="flex items-center gap-3">
-              <CheckCircle className="h-6 w-6 text-emerald-500 shrink-0" />
+              <CheckCircle className="h-6 w-6 text-success shrink-0" />
               <div>
                 <h4 className="font-semibold text-foreground">Final Invoice Ready</h4>
                 <p className="text-sm text-muted-foreground">
@@ -236,7 +236,7 @@ export default function OrderConfirmationPage({ orderId }: OrderConfirmationPage
             </div>
             <Button
               onClick={() => window.open(order.invoice_pdf_url!, '_blank', 'noopener,noreferrer')}
-              className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-6 w-full sm:w-auto shrink-0"
+              className="bg-success hover:bg-success text-success-foreground font-semibold px-6 w-full sm:w-auto shrink-0"
             >
               <FileText className="mr-2 h-4 w-4" />
               Download Invoice PDF
@@ -278,7 +278,7 @@ export default function OrderConfirmationPage({ orderId }: OrderConfirmationPage
                   const gstRate = item.gstRate || 18;
                   const basePrice = item.price / (1 + (gstRate / 100));
                   const gstAmount = basePrice * (gstRate / 100);
-                  
+
                   return (
                     <div key={index} className="flex justify-between items-start py-2 border-b border-border last:border-b-0">
                       <div className="flex-1">
@@ -312,7 +312,7 @@ export default function OrderConfirmationPage({ orderId }: OrderConfirmationPage
                 {order.type === 'Delivery' && (
                   <div className="flex justify-between">
                     <span>Delivery Charges</span>
-                    <span className="text-green-600 font-medium">Free</span>
+                    <span className="text-success font-medium">Free</span>
                   </div>
                 )}
               </div>
@@ -353,13 +353,13 @@ export default function OrderConfirmationPage({ orderId }: OrderConfirmationPage
                     <span>Part Payment Paid</span>
                     <span>₹{Number(order.part_payment_amount).toFixed(2)}</span>
                   </div>
-                  <div className="flex justify-between text-lg font-bold text-amber-500 mt-2">
+                  <div className="flex justify-between text-lg font-bold text-warning mt-2">
                     <span>Remaining Balance</span>
                     <span>₹{(Number(order.total) - Number(order.part_payment_amount)).toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between text-xs text-muted-foreground mt-1">
                     <span>Balance Payment Status</span>
-                    <span className={order.pending_payment_status === 'paid' ? 'text-emerald-500 font-semibold' : 'text-amber-500 font-semibold'}>
+                    <span className={order.pending_payment_status === 'paid' ? 'text-success font-semibold' : 'text-warning font-semibold'}>
                       {order.pending_payment_status === 'paid' ? 'Paid' : 'Unpaid'}
                     </span>
                   </div>
@@ -418,10 +418,10 @@ export default function OrderConfirmationPage({ orderId }: OrderConfirmationPage
                       {(order.pickup_store || order.delivery_address || 'TecBunny Solutions, Pernem, North Goa.').trim()}
                     </p>
                     {order.status === 'Ready for Pickup' && order.pickup_code && (
-                      <div className="mt-4 p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-lg">
-                        <p className="text-sm text-emerald-500 mb-1 font-medium">Pickup Authorization Code</p>
+                      <div className="mt-4 p-4 bg-success/10 border border-success/30 rounded-lg">
+                        <p className="text-sm text-success mb-1 font-medium">Pickup Authorization Code</p>
                         <p className="text-2xl font-bold text-foreground tracking-wider">{order.pickup_code}</p>
-                        <p className="text-xs text-emerald-500 mt-1">Show this code to the store staff to collect your order.</p>
+                        <p className="text-xs text-success mt-1">Show this code to the store staff to collect your order.</p>
                       </div>
                     )}
                     <p className="mt-3 text-xs text-muted-foreground">
@@ -429,7 +429,7 @@ export default function OrderConfirmationPage({ orderId }: OrderConfirmationPage
                     </p>
                   </div>
                 )}
-                
+
                 {order.notes && (
                   <div className="mt-4 pt-4 border-t border-border">
                     <p className="font-medium mb-2">Order Notes:</p>
@@ -467,7 +467,7 @@ export default function OrderConfirmationPage({ orderId }: OrderConfirmationPage
           {shouldShowPayRemaining && (
             <Button
               onClick={() => window.location.href = `/payment/upi/${order.id}`}
-              className="bg-amber-500 hover:bg-amber-600 px-6 text-white font-medium"
+              className="bg-warning hover:bg-warning px-6 text-warning-foreground font-medium"
             >
               <CreditCard className="mr-2 h-4 w-4" />
               Pay Remaining Balance
@@ -476,7 +476,7 @@ export default function OrderConfirmationPage({ orderId }: OrderConfirmationPage
           {showDownloadInvoice ? (
             <Button
               onClick={() => window.open(order.invoice_pdf_url!, '_blank', 'noopener,noreferrer')}
-              className="bg-emerald-600 hover:bg-emerald-700 px-6 text-white font-medium"
+              className="bg-success hover:bg-success px-6 text-success-foreground font-medium"
             >
               <FileText className="mr-2 h-4 w-4" />
               Download Final Invoice (PDF)
@@ -507,26 +507,26 @@ export default function OrderConfirmationPage({ orderId }: OrderConfirmationPage
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
               <div className="text-center">
-                <div className="w-8 h-8 bg-blue-500/10 text-blue-500 rounded-full flex items-center justify-center mx-auto mb-2">1</div>
+                <div className="w-8 h-8 bg-primary/10 text-primary rounded-full flex items-center justify-center mx-auto mb-2">1</div>
                 <p className="font-medium">Order Confirmation</p>
                 <p className="text-muted-foreground">You'll receive an email confirmation shortly</p>
               </div>
               <div className="text-center">
-                <div className="w-8 h-8 bg-blue-500/10 text-blue-500 rounded-full flex items-center justify-center mx-auto mb-2">2</div>
+                <div className="w-8 h-8 bg-primary/10 text-primary rounded-full flex items-center justify-center mx-auto mb-2">2</div>
                 <p className="font-medium">{order.type === 'Delivery' ? 'Processing & Shipping' : 'Processing & Pickup'}</p>
                 <p className="text-muted-foreground">
-                  {order.type === 'Delivery' 
-                    ? 'We\'ll process and ship your order' 
+                  {order.type === 'Delivery'
+                    ? 'We\'ll process and ship your order'
                     : 'We\'ll prepare your order for pickup'
                   }
                 </p>
               </div>
               <div className="text-center">
-                <div className="w-8 h-8 bg-blue-500/10 text-blue-500 rounded-full flex items-center justify-center mx-auto mb-2">3</div>
+                <div className="w-8 h-8 bg-primary/10 text-primary rounded-full flex items-center justify-center mx-auto mb-2">3</div>
                 <p className="font-medium">{order.type === 'Delivery' ? 'Delivery' : 'Pickup'}</p>
                 <p className="text-muted-foreground">
-                  {order.type === 'Delivery' 
-                    ? 'Your order will be delivered to your address' 
+                  {order.type === 'Delivery'
+                    ? 'Your order will be delivered to your address'
                     : 'Collect your order from our store'
                   }
                 </p>

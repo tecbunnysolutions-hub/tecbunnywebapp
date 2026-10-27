@@ -42,9 +42,9 @@ export default function AIAssistantPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ query: userMessage })
       });
-      
+
       const data = await res.json();
-      
+
       if (data.error) {
         setMessages(prev => [...prev, { role: 'assistant', content: `Error: ${data.error}` }]);
       } else {
@@ -119,7 +119,7 @@ export default function AIAssistantPage() {
               {data.items?.map((item: any) => (
                 <tr key={item.id} className="border-b last:border-0">
                   <td className="p-2">{item.title}</td>
-                  {data.type === 'products' && <td className="p-2 text-red-500 font-bold">{item.stock}</td>}
+                  {data.type === 'products' && <td className="p-2 text-destructive font-bold">{item.stock}</td>}
                   {(data.type === 'analytics' || data.type === 'products_report') && <td className="p-2">{item.view_count ?? item.views ?? '-'}</td>}
                 </tr>
               ))}
@@ -222,7 +222,7 @@ export default function AIAssistantPage() {
               <div ref={scrollRef} />
             </div>
           </ScrollArea>
-          
+
           <div className="p-4 border-t bg-background">
             <form
               onSubmit={(e) => {

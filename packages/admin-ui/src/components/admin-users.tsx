@@ -51,7 +51,7 @@ export default function UserManagementPage() {
   const [showEditDialog, setShowEditDialog] = React.useState(false);
   const [showDiscountDialog, setShowDiscountDialog] = React.useState(false);
   const [activeTab, setActiveTab] = React.useState<'all' | 'staff' | 'customer' | 'sales'>('all');
-  
+
   // Search and filter states
   const [searchQuery, setSearchQuery] = React.useState('');
   const [filters, setFilters] = React.useState<Record<string, any>>({});
@@ -73,7 +73,7 @@ export default function UserManagementPage() {
     ? '/superadmin/mgmt/users'
     : '/mgmt/admin/users';
   const isSuperadminView = pathname?.startsWith('/superadmin') ?? false;
-  
+
   const roleFiltersFromTab = React.useMemo(() => {
     switch (activeTab) {
       case 'staff':
@@ -252,7 +252,7 @@ export default function UserManagementPage() {
     sortDirection,
     toast
   ]);
-  
+
   React.useEffect(() => {
     fetchUsers();
   }, [fetchUsers]);
@@ -319,11 +319,11 @@ export default function UserManagementPage() {
     if (!category) return null;
     switch (category) {
       case 'Premium':
-        return <Crown className="h-3 w-3 text-yellow-500" />;
+        return <Crown className="h-3 w-3 text-warning" />;
       case 'Standard':
-        return <Star className="h-3 w-3 text-blue-500" />;
+        return <Star className="h-3 w-3 text-primary" />;
       default:
-        return <UserIcon className="h-3 w-3 text-gray-500" />;
+        return <UserIcon className="h-3 w-3 text-muted-foreground" />;
     }
   };
 
@@ -444,8 +444,8 @@ export default function UserManagementPage() {
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             onClick={() => setShowDiscountDialog(true)}
             className="flex items-center gap-2"
           >

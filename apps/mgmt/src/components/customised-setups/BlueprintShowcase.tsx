@@ -22,9 +22,9 @@ export function BlueprintShowcase({ blueprint }: BlueprintShowcaseProps) {
   }, [id, trackLanding]);
 
   const handleClonePlaceholder = () => {
-    toast({ 
-      title: 'Layout Customization Notice', 
-      description: 'The automated catalog hardware matching system is under design development. Please contact our support to customize this setup.', 
+    toast({
+      title: 'Layout Customization Notice',
+      description: 'The automated catalog hardware matching system is under design development. Please contact our support to customize this setup.',
       variant: 'default'
     });
   };
@@ -37,7 +37,7 @@ export function BlueprintShowcase({ blueprint }: BlueprintShowcaseProps) {
           <div className="absolute top-0 right-0 p-6 opacity-10">
             <Network className="w-64 h-64 text-primary" />
           </div>
-          
+
           <div className="relative z-10">
             <Badge className="bg-primary/10 text-primary border-primary/20 mb-4">Public Shared Blueprint</Badge>
             <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4 tracking-tight">
@@ -73,16 +73,16 @@ export function BlueprintShowcase({ blueprint }: BlueprintShowcaseProps) {
         <Card className="border-primary/20 bg-primary/5 backdrop-blur-md sticky top-28">
           <CardHeader>
             <CardTitle className="text-foreground flex items-center gap-2">
-              <Zap className="h-5 w-5 text-yellow-500" /> Save Design Specification
+              <Zap className="h-5 w-5 text-warning" /> Save Design Specification
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
             <p className="text-sm text-muted-foreground leading-relaxed">
               This technical layout is currently in view-only template mode. Request customization to have our engineers compile the precise bill of hardware for your site.
             </p>
-            
+
             <div className="space-y-3">
-              <Button onClick={handleClonePlaceholder} className="w-full bg-primary hover:bg-primary/90 text-white font-bold h-14 text-lg rounded-xl transition-all shadow-lg shadow-primary/20">
+              <Button onClick={handleClonePlaceholder} className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold h-14 text-lg rounded-xl transition-all shadow-lg shadow-primary/20">
                 Request Layout Customization
               </Button>
               <Button variant="outline" className="w-full border-border text-muted-foreground h-12">

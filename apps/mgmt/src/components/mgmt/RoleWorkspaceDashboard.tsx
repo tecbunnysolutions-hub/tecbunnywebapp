@@ -166,11 +166,11 @@ const formatSlaAge = (timestamp?: string | null) => {
 };
 
 const getSlaTone = (timestamp?: string | null) => {
-  if (!timestamp) return 'text-zinc-400';
+  if (!timestamp) return 'text-muted-foreground';
   const minutes = Math.max(0, Math.floor((Date.now() - new Date(timestamp).getTime()) / 60000));
-  if (minutes >= 30) return 'text-red-200';
-  if (minutes >= 15) return 'text-amber-200';
-  return 'text-emerald-200';
+  if (minutes >= 30) return 'text-destructive';
+  if (minutes >= 15) return 'text-warning';
+  return 'text-success';
 };
 
 export function RoleWorkspaceDashboard({ kind }: RoleWorkspaceDashboardProps) {
@@ -188,21 +188,21 @@ export function RoleWorkspaceDashboard({ kind }: RoleWorkspaceDashboardProps) {
       value: String(needsAttentionQueue.length),
       guidance: needsAttentionQueue.length > 0 ? 'Take over the oldest human handoff first.' : 'No human takeover queue is waiting.',
       icon: AlertTriangle,
-      tone: needsAttentionQueue.length > 0 ? 'text-red-300' : 'text-emerald-300',
+      tone: needsAttentionQueue.length > 0 ? 'text-destructive' : 'text-success',
     },
     {
       label: 'Live AI captures',
       value: String(liveLeadCaptureQueue.length),
       guidance: liveLeadCaptureQueue.length > 0 ? 'Monitor active lead capture before it needs human help.' : 'No live AI lead capture is active right now.',
       icon: Radio,
-      tone: liveLeadCaptureQueue.length > 0 ? 'text-blue-300' : 'text-zinc-400',
+      tone: liveLeadCaptureQueue.length > 0 ? 'text-primary' : 'text-muted-foreground',
     },
     {
       label: 'Recommended next action',
       value: config.primaryAction.title,
       guidance: config.primaryAction.description,
       icon: PrimaryIcon,
-      tone: 'text-blue-300',
+      tone: 'text-primary',
     },
   ];
   const workflowTasks = [
@@ -222,7 +222,7 @@ export function RoleWorkspaceDashboard({ kind }: RoleWorkspaceDashboardProps) {
       priority: 'Critical',
       href: `/mgmt/sales/lead-center?chat=${conv.id}`,
       icon: AlertTriangle,
-      tone: 'border-red-500/30 bg-red-500/10 text-red-200',
+      tone: 'border-destructive/30 bg-destructive/10 text-destructive',
     })),
     ...liveLeadCaptureQueue.slice(0, 2).map((conv) => ({
       id: `capture-${conv.id}`,
@@ -240,7 +240,7 @@ export function RoleWorkspaceDashboard({ kind }: RoleWorkspaceDashboardProps) {
       priority: 'Watch',
       href: `/mgmt/sales/lead-center?chat=${conv.id}`,
       icon: Radio,
-      tone: 'border-blue-500/30 bg-blue-500/10 text-blue-200',
+      tone: 'border-primary/30 bg-primary/10 text-primary',
     })),
     {
       id: `primary-${kind}`,
@@ -258,7 +258,7 @@ export function RoleWorkspaceDashboard({ kind }: RoleWorkspaceDashboardProps) {
       priority: 'Next',
       href: config.primaryAction.href,
       icon: PrimaryIcon,
-      tone: 'border-zinc-700 bg-zinc-900 text-zinc-200',
+      tone: 'border-border bg-card text-muted-foreground',
     },
   ];
 
@@ -335,39 +335,39 @@ export function RoleWorkspaceDashboard({ kind }: RoleWorkspaceDashboardProps) {
 
   return (
     <div className="space-y-6 sm:space-y-8">
-      <section className="overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900/60">
+      <section className="overflow-hidden rounded-2xl border border-border bg-card/60">
         <div className="grid gap-6 p-5 sm:p-7 lg:grid-cols-[1.4fr_0.6fr] lg:p-9">
           <div className="min-w-0">
-            <p className="text-xs font-bold uppercase tracking-[0.22em] text-blue-300">{config.eyebrow}</p>
-            <p className="mt-3 text-sm font-semibold text-blue-100">Good {new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 18 ? 'afternoon' : 'evening'}, {user?.name || 'there'}.</p>
-            <h1 className="mt-3 max-w-3xl text-3xl font-black tracking-tight text-white sm:text-4xl">
+            <p className="text-xs font-bold uppercase tracking-[0.22em] text-primary">{config.eyebrow}</p>
+            <p className="mt-3 text-sm font-semibold text-primary">Good {new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 18 ? 'afternoon' : 'evening'}, {user?.name || 'there'}.</p>
+            <h1 className="mt-3 max-w-3xl text-3xl font-black tracking-tight text-foreground sm:text-4xl">
               Here’s what needs your attention today.
             </h1>
-            <p className="mt-3 max-w-2xl text-sm leading-6 text-zinc-400 sm:text-base">{config.description}</p>
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">{config.description}</p>
             <div className="mt-5 flex flex-wrap items-center gap-2 text-xs">
-              <span className="rounded-full border border-zinc-700 bg-zinc-950 px-3 py-1.5 text-zinc-300">
+              <span className="rounded-full border border-border bg-background px-3 py-1.5 text-muted-foreground">
                 {user?.name || user?.email || 'Staff member'}
               </span>
-              <span className="rounded-full border border-blue-500/20 bg-blue-500/10 px-3 py-1.5 font-semibold text-blue-200">
+              <span className="rounded-full border border-primary/20 bg-primary/10 px-3 py-1.5 font-semibold text-primary">
                 {ROLE_DISPLAY_NAME[role] ?? role}
               </span>
-              <span className="rounded-full border border-zinc-700 px-3 py-1.5 text-zinc-400">{config.scope}</span>
+              <span className="rounded-full border border-border px-3 py-1.5 text-muted-foreground">{config.scope}</span>
             </div>
           </div>
 
           <Link
             href={config.primaryAction.href}
-            className="group flex min-h-44 flex-col justify-between rounded-xl border border-blue-500/20 bg-blue-500/10 p-5 transition-colors hover:border-blue-400/40 hover:bg-blue-500/15"
+            className="group flex min-h-44 flex-col justify-between rounded-xl border border-primary/20 bg-primary/10 p-5 transition-colors hover:border-primary/40 hover:bg-primary/15"
           >
-            <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-400 text-zinc-950">
+            <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary text-primary-foreground">
               <PrimaryIcon className="h-5 w-5" />
             </span>
             <span>
-              <span className="flex items-center justify-between gap-3 text-base font-bold text-white">
+              <span className="flex items-center justify-between gap-3 text-base font-bold text-foreground">
                 {config.primaryAction.title}
                 <ArrowUpRight className="h-4 w-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
               </span>
-              <span className="mt-1 block text-sm text-blue-100/60">{config.primaryAction.description}</span>
+              <span className="mt-1 block text-sm text-primary/60">{config.primaryAction.description}</span>
             </span>
           </Link>
         </div>
@@ -377,15 +377,15 @@ export function RoleWorkspaceDashboard({ kind }: RoleWorkspaceDashboardProps) {
         {decisionBriefItems.map((item) => {
           const Icon = item.icon;
           return (
-            <div key={item.label} className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4">
+            <div key={item.label} className="rounded-xl border border-border bg-card/50 p-4">
               <div className="flex items-start gap-3">
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-zinc-950 text-zinc-300">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-background text-muted-foreground">
                   <Icon className={`h-4 w-4 ${item.tone}`} />
                 </span>
                 <div className="min-w-0">
-                  <p className="text-xs font-bold uppercase tracking-[0.18em] text-zinc-500">{item.label}</p>
-                  <p className="mt-1 truncate text-base font-bold text-white">{item.value}</p>
-                  <p className="mt-1 text-xs leading-5 text-zinc-500">{item.guidance}</p>
+                  <p className="text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground">{item.label}</p>
+                  <p className="mt-1 truncate text-base font-bold text-foreground">{item.value}</p>
+                  <p className="mt-1 text-xs leading-5 text-muted-foreground">{item.guidance}</p>
                 </div>
               </div>
             </div>
@@ -393,13 +393,13 @@ export function RoleWorkspaceDashboard({ kind }: RoleWorkspaceDashboardProps) {
         })}
       </section>
 
-      <section aria-label="Workflow inbox" className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 sm:p-6">
+      <section aria-label="Workflow inbox" className="rounded-xl border border-border bg-card/50 p-4 sm:p-6">
         <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-zinc-500">My work</p>
-            <h2 className="mt-1 text-xl font-bold text-white">Start with these next actions</h2>
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">My work</p>
+            <h2 className="mt-1 text-xl font-bold text-foreground">Start with these next actions</h2>
           </div>
-          <span className="rounded-full border border-zinc-700 px-3 py-1 text-xs font-semibold text-zinc-400">
+          <span className="rounded-full border border-border px-3 py-1 text-xs font-semibold text-muted-foreground">
             {workflowTasks.length} open item{workflowTasks.length === 1 ? '' : 's'}
           </span>
         </div>
@@ -410,57 +410,57 @@ export function RoleWorkspaceDashboard({ kind }: RoleWorkspaceDashboardProps) {
               <Link
                 key={task.id}
                 href={task.href}
-                className={`group rounded-xl border p-4 transition-colors hover:border-blue-400/40 ${task.tone}`}
+                className={`group rounded-xl border p-4 transition-colors hover:border-primary/40 ${task.tone}`}
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <p className="text-[10px] font-bold uppercase tracking-[0.18em] opacity-70">{task.label}</p>
-                    <h3 className="mt-1 truncate text-sm font-bold text-white">{task.title}</h3>
+                    <h3 className="mt-1 truncate text-sm font-bold text-foreground">{task.title}</h3>
                     <p className="mt-1 line-clamp-2 text-xs leading-5 opacity-75">{task.detail}</p>
                     <dl className="mt-3 grid gap-1 text-[11px] opacity-75">
                       <div className="flex items-center justify-between gap-3">
                         <dt>Owner</dt>
-                        <dd className="truncate font-semibold text-white">{task.owner}</dd>
+                        <dd className="truncate font-semibold text-foreground">{task.owner}</dd>
                       </div>
                       <div className="flex items-center justify-between gap-3">
                         <dt>Evidence</dt>
-                        <dd className="truncate font-semibold text-white">{task.evidence}</dd>
+                        <dd className="truncate font-semibold text-foreground">{task.evidence}</dd>
                       </div>
                       <div className="flex items-center justify-between gap-3">
                         <dt>SLA</dt>
-                        <dd className="truncate font-semibold text-white">{task.sla}</dd>
+                        <dd className="truncate font-semibold text-foreground">{task.sla}</dd>
                       </div>
                     </dl>
                     <div className="mt-3 grid gap-2 text-[11px] opacity-85">
-                      <span className="inline-flex items-center gap-1 rounded-full bg-black/20 px-2 py-1">
+                      <span className="inline-flex items-center gap-1 rounded-full bg-overlay/20 px-2 py-1">
                         <UserCheck className="h-3 w-3" /> {task.statusReason}
                       </span>
-                      <span className="inline-flex items-center gap-1 rounded-full bg-black/20 px-2 py-1">
+                      <span className="inline-flex items-center gap-1 rounded-full bg-overlay/20 px-2 py-1">
                         <ClipboardCheck className="h-3 w-3" /> {task.requiredEvidence}
                       </span>
                     </div>
-                    <div className="mt-3 rounded-lg border border-white/10 bg-black/10 p-2 text-[11px] opacity-85">
+                    <div className="mt-3 rounded-lg border border-border/10 bg-overlay/10 p-2 text-[11px] opacity-85">
                       <div className="flex items-center justify-between gap-3">
                         <span>Watchers</span>
-                        <span className="truncate font-semibold text-white">{task.watchers.join(', ')}</span>
+                        <span className="truncate font-semibold text-foreground">{task.watchers.join(', ')}</span>
                       </div>
                       <div className="mt-1 flex items-center justify-between gap-3">
                         <span>Status history</span>
-                        <span className="truncate font-semibold text-white">{task.statusHistory.join(' -> ')}</span>
+                        <span className="truncate font-semibold text-foreground">{task.statusHistory.join(' -> ')}</span>
                       </div>
                       <div className="mt-1 flex items-center justify-between gap-3">
                         <span>Comment</span>
-                        <span className="truncate font-semibold text-white">{task.commentPrompt}</span>
+                        <span className="truncate font-semibold text-foreground">{task.commentPrompt}</span>
                       </div>
                     </div>
                   </div>
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-black/20">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-overlay/20">
                     <Icon className="h-4 w-4" />
                   </span>
                 </div>
                 <div className="mt-4 flex items-center justify-between gap-3 text-xs font-semibold">
                   <span>{task.priority}</span>
-                  <span className="inline-flex items-center gap-1 text-white">
+                  <span className="inline-flex items-center gap-1 text-foreground">
                     Open <ArrowUpRight className="h-3 w-3 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
                   </span>
                 </div>
@@ -472,30 +472,30 @@ export function RoleWorkspaceDashboard({ kind }: RoleWorkspaceDashboardProps) {
 
       {/* Real-Time "Needs Attention" Queue */}
       {needsAttentionQueue.length > 0 && (
-        <section className="rounded-xl border border-red-500/30 bg-red-500/5 p-4 sm:p-6 shadow-sm">
+        <section className="rounded-xl border border-destructive/30 bg-destructive/5 p-4 sm:p-6 shadow-sm">
           <div className="mb-4 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-red-500" />
-              <h2 className="text-lg font-bold text-red-500">Needs Attention Queue</h2>
+              <AlertTriangle className="h-5 w-5 text-destructive" />
+              <h2 className="text-lg font-bold text-destructive">Needs Attention Queue</h2>
             </div>
-            <span className="rounded-full bg-red-500/20 px-3 py-1 text-xs font-bold text-red-400">
+            <span className="rounded-full bg-destructive/20 px-3 py-1 text-xs font-bold text-destructive">
               {needsAttentionQueue.length} Active Escalat{needsAttentionQueue.length === 1 ? 'ion' : 'ions'}
             </span>
           </div>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {needsAttentionQueue.map((conv) => (
-              <div key={conv.id} className="group relative flex flex-col justify-between overflow-hidden rounded-lg border border-red-500/20 bg-zinc-900 p-4 transition-colors hover:border-red-500/50">
+              <div key={conv.id} className="group relative flex flex-col justify-between overflow-hidden rounded-lg border border-destructive/20 bg-card p-4 transition-colors hover:border-destructive/50">
                 <div>
                   <div className="flex items-start justify-between">
-                    <p className="font-bold text-white">{conv.contact_name || conv.sender_number}</p>
-                    <MessageSquare className="h-4 w-4 text-zinc-500" />
+                    <p className="font-bold text-foreground">{conv.contact_name || conv.sender_number}</p>
+                    <MessageSquare className="h-4 w-4 text-muted-foreground" />
                   </div>
-                  <p className="mt-1 text-xs text-zinc-400">{conv.address || 'No address provided'}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">{conv.address || 'No address provided'}</p>
                   <div className="mt-3 flex flex-wrap gap-2 text-[11px] font-semibold">
-                    <span className={`inline-flex items-center gap-1 rounded-full bg-red-950/40 px-2 py-1 ${getSlaTone(conv.last_interaction_timestamp)}`}>
+                    <span className={`inline-flex items-center gap-1 rounded-full bg-destructive/40 px-2 py-1 ${getSlaTone(conv.last_interaction_timestamp)}`}>
                       <Clock3 className="h-3 w-3" /> {formatSlaAge(conv.last_interaction_timestamp)}
                     </span>
-                    <span className="inline-flex items-center gap-1 rounded-full bg-zinc-800 px-2 py-1 text-zinc-300">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-card px-2 py-1 text-muted-foreground">
                       <ClipboardCheck className="h-3 w-3" /> {conv.address ? 'Address captured' : 'Address needed'}
                     </span>
                   </div>
@@ -503,7 +503,7 @@ export function RoleWorkspaceDashboard({ kind }: RoleWorkspaceDashboardProps) {
                 <div className="mt-4">
                   <Link
                     href={`/mgmt/sales/lead-center?chat=${conv.id}`}
-                    className="inline-flex items-center gap-2 text-sm font-semibold text-red-400 hover:text-red-300"
+                    className="inline-flex items-center gap-2 text-sm font-semibold text-destructive hover:text-destructive"
                   >
                     Take over chat <ArrowUpRight className="h-4 w-4" />
                   </Link>
@@ -516,30 +516,30 @@ export function RoleWorkspaceDashboard({ kind }: RoleWorkspaceDashboardProps) {
 
       {/* Real-Time "Live Lead Captures" Queue */}
       {liveLeadCaptureQueue.length > 0 && (
-        <section className="rounded-xl border border-blue-500/30 bg-blue-500/5 p-4 sm:p-6 shadow-sm">
+        <section className="rounded-xl border border-primary/30 bg-primary/5 p-4 sm:p-6 shadow-sm">
           <div className="mb-4 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Radio className="h-5 w-5 text-blue-500 animate-pulse" />
-              <h2 className="text-lg font-bold text-blue-500">Live Lead Captures (SDR AI)</h2>
+              <Radio className="h-5 w-5 text-primary animate-pulse" />
+              <h2 className="text-lg font-bold text-primary">Live Lead Captures (SDR AI)</h2>
             </div>
-            <span className="rounded-full bg-blue-500/20 px-3 py-1 text-xs font-bold text-blue-400">
+            <span className="rounded-full bg-primary/20 px-3 py-1 text-xs font-bold text-primary">
               {liveLeadCaptureQueue.length} User{liveLeadCaptureQueue.length === 1 ? '' : 's'} Talking
             </span>
           </div>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {liveLeadCaptureQueue.map((conv) => (
-              <div key={conv.id} className="group relative flex flex-col justify-between overflow-hidden rounded-lg border border-blue-500/20 bg-zinc-900 p-4 transition-colors hover:border-blue-500/50">
+              <div key={conv.id} className="group relative flex flex-col justify-between overflow-hidden rounded-lg border border-primary/20 bg-card p-4 transition-colors hover:border-primary/50">
                 <div>
                   <div className="flex items-start justify-between">
-                    <p className="font-bold text-white">{conv.contact_name || conv.sender_number}</p>
-                    <MessageSquare className="h-4 w-4 text-zinc-500" />
+                    <p className="font-bold text-foreground">{conv.contact_name || conv.sender_number}</p>
+                    <MessageSquare className="h-4 w-4 text-muted-foreground" />
                   </div>
-                  <p className="mt-1 text-xs text-zinc-400">Capturing location/details...</p>
+                  <p className="mt-1 text-xs text-muted-foreground">Capturing location/details...</p>
                   <div className="mt-3 flex flex-wrap gap-2 text-[11px] font-semibold">
-                    <span className={`inline-flex items-center gap-1 rounded-full bg-blue-950/40 px-2 py-1 ${getSlaTone(conv.last_interaction_timestamp)}`}>
+                    <span className={`inline-flex items-center gap-1 rounded-full bg-primary/40 px-2 py-1 ${getSlaTone(conv.last_interaction_timestamp)}`}>
                       <Clock3 className="h-3 w-3" /> {formatSlaAge(conv.last_interaction_timestamp)}
                     </span>
-                    <span className="inline-flex items-center gap-1 rounded-full bg-zinc-800 px-2 py-1 text-zinc-300">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-card px-2 py-1 text-muted-foreground">
                       <UserCheck className="h-3 w-3" /> AI qualifying
                     </span>
                   </div>
@@ -547,7 +547,7 @@ export function RoleWorkspaceDashboard({ kind }: RoleWorkspaceDashboardProps) {
                 <div className="mt-4">
                   <Link
                     href={`/mgmt/sales/lead-center?chat=${conv.id}`}
-                    className="inline-flex items-center gap-2 text-sm font-semibold text-blue-400 hover:text-blue-300"
+                    className="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:text-primary"
                   >
                     View active chat <ArrowUpRight className="h-4 w-4" />
                   </Link>
@@ -562,14 +562,14 @@ export function RoleWorkspaceDashboard({ kind }: RoleWorkspaceDashboardProps) {
         {config.focus.map((item) => {
           const Icon = item.icon;
           return (
-            <div key={item.label} className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4">
+            <div key={item.label} className="rounded-xl border border-border bg-card/50 p-4">
               <div className="flex items-center gap-3">
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-zinc-800 text-blue-300">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-card text-primary">
                   <Icon className="h-4 w-4" />
                 </span>
                 <div className="min-w-0">
-                  <p className="truncate text-xs text-zinc-500">{item.label}</p>
-                  <p className="truncate text-sm font-bold text-white">{item.value}</p>
+                  <p className="truncate text-xs text-muted-foreground">{item.label}</p>
+                  <p className="truncate text-sm font-bold text-foreground">{item.value}</p>
                 </div>
               </div>
             </div>
@@ -581,8 +581,8 @@ export function RoleWorkspaceDashboard({ kind }: RoleWorkspaceDashboardProps) {
         <section>
           <div className="mb-3 flex items-end justify-between gap-4">
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.2em] text-zinc-500">Daily tools</p>
-              <h2 className="mt-1 text-xl font-bold text-white">What do you need to do?</h2>
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">Daily tools</p>
+              <h2 className="mt-1 text-xl font-bold text-foreground">What do you need to do?</h2>
             </div>
           </div>
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
@@ -592,16 +592,16 @@ export function RoleWorkspaceDashboard({ kind }: RoleWorkspaceDashboardProps) {
                 <Link
                   key={`${action.href}-${action.title}`}
                   href={action.href}
-                  className="group rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 transition-colors hover:border-zinc-700 hover:bg-zinc-900"
+                  className="group rounded-xl border border-border bg-card/50 p-4 transition-colors hover:border-border hover:bg-card"
                 >
                   <div className="flex items-start justify-between gap-4">
-                    <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-zinc-800 text-zinc-200">
+                    <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-card text-muted-foreground">
                       <Icon className="h-4 w-4" />
                     </span>
-                    <ArrowUpRight className="h-4 w-4 text-zinc-600 transition-colors group-hover:text-blue-300" />
+                    <ArrowUpRight className="h-4 w-4 text-muted-foreground transition-colors group-hover:text-primary" />
                   </div>
-                  <h3 className="mt-5 text-sm font-bold text-white">{action.title}</h3>
-                  <p className="mt-1 text-xs leading-5 text-zinc-500">{action.description}</p>
+                  <h3 className="mt-5 text-sm font-bold text-foreground">{action.title}</h3>
+                  <p className="mt-1 text-xs leading-5 text-muted-foreground">{action.description}</p>
                 </Link>
               );
             })}

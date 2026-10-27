@@ -65,11 +65,11 @@ export function Sidebar({
     <div className={`glass-panel sidebar ${!showSidebar ? 'hidden' : ''}`}>
       <div className="sidebar-header">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h2>Inbox <span style={{ fontSize: '0.8rem', color: '#94a3b8', fontWeight: 'normal' }}>({currentUser.name})</span></h2>
+          <h2>Inbox <span style={{ fontSize: '0.8rem', color: "hsl(var(--muted-foreground))", fontWeight: 'normal' }}>({currentUser.name})</span></h2>
           <div style={{ display: 'flex', gap: '8px' }}>
             <Link
               href="/cctv-quote"
-              style={{ fontSize: '0.72rem', padding: '4px 9px', borderRadius: '6px', background: 'rgba(59,130,246,0.15)', border: '1px solid rgba(96,165,250,0.3)', color: '#93c5fd', textDecoration: 'none', whiteSpace: 'nowrap' }}
+              style={{ fontSize: '0.72rem', padding: '4px 9px', borderRadius: '6px', background: "hsl(var(--primary) / 0.15)", border: "1px solid hsl(var(--primary) / 0.3)", color: 'hsl(var(--primary))', textDecoration: 'none', whiteSpace: 'nowrap' }}
               title="Open CCTV Quotation Builder"
             >
               📷 CCTV Quote
@@ -79,7 +79,7 @@ export function Sidebar({
         </div>
         <label htmlFor="conversation-search" style={{ display: 'block', marginTop: '12px' }}>
           <span className="sr-only">Search conversations</span>
-          <input id="conversation-search" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search customer, phone or status…" style={{ width: '100%', minHeight: '40px', borderRadius: '8px', border: '1px solid rgba(148,163,184,.3)', background: 'rgba(15,23,42,.7)', color: 'white', padding: '0 10px' }} />
+          <input id="conversation-search" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search customer, phone or status…" style={{ width: '100%', minHeight: '40px', borderRadius: '8px', border: "1px solid hsl(var(--input))", background: "hsl(var(--card) / .7)", color: "hsl(var(--foreground))", padding: '0 10px' }} />
         </label>
 
         {/* Workspace Navigation Tabs */}
@@ -89,7 +89,7 @@ export function Sidebar({
             role="tab"
             aria-selected={activeTab === 'queue'}
             onClick={() => setActiveTab('queue')}
-            style={{ flex: 1, padding: '8px', background: activeTab === 'queue' ? 'rgba(255,255,255,0.1)' : 'transparent', border: 'none', color: 'white', cursor: 'pointer', borderBottom: activeTab === 'queue' ? '2px solid var(--accent)' : 'none' }}
+            style={{ flex: 1, padding: '8px', background: activeTab === 'queue' ? "hsl(var(--foreground) / 0.1)" : 'transparent', border: 'none', color: "hsl(var(--foreground))", cursor: 'pointer', borderBottom: activeTab === 'queue' ? '2px solid hsl(var(--primary))' : 'none' }}
           >
             Conversations
           </button>
@@ -98,7 +98,7 @@ export function Sidebar({
             role="tab"
             aria-selected={activeTab === 'team'}
             onClick={() => setActiveTab('team')}
-            style={{ flex: 1, padding: '8px', background: activeTab === 'team' ? 'rgba(255,255,255,0.1)' : 'transparent', border: 'none', color: 'white', cursor: 'pointer', borderBottom: activeTab === 'team' ? '2px solid var(--accent)' : 'none' }}
+            style={{ flex: 1, padding: '8px', background: activeTab === 'team' ? "hsl(var(--foreground) / 0.1)" : 'transparent', border: 'none', color: "hsl(var(--foreground))", cursor: 'pointer', borderBottom: activeTab === 'team' ? '2px solid hsl(var(--primary))' : 'none' }}
           >
             Assigned teams
           </button>
@@ -113,7 +113,7 @@ export function Sidebar({
                 type="button"
                 aria-pressed={activeQueue === q}
                 onClick={() => setActiveQueue(q)}
-                style={{ fontSize: '0.75rem', padding: '4px 8px', borderRadius: '12px', background: activeQueue === q ? 'var(--accent)' : 'rgba(255,255,255,0.1)', border: 'none', color: 'white', cursor: 'pointer', whiteSpace: 'nowrap' }}
+                style={{ fontSize: '0.75rem', padding: '4px 8px', borderRadius: '12px', background: activeQueue === q ? 'hsl(var(--primary))' : "hsl(var(--foreground) / 0.1)", border: 'none', color: activeQueue === q ? 'hsl(var(--primary-foreground))' : 'hsl(var(--foreground))', cursor: 'pointer', whiteSpace: 'nowrap' }}
               >
                 {({ unassigned: 'Needs owner', assigned: 'Assigned to me', waiting: 'Needs reply', urgent: 'Urgent', vip: 'Important' } as Record<string, string>)[q]}
               </button>
@@ -125,7 +125,7 @@ export function Sidebar({
                 type="button"
                 aria-pressed={activeTeam === t}
                 onClick={() => setActiveTeam(t)}
-                style={{ fontSize: '0.75rem', padding: '4px 8px', borderRadius: '12px', background: activeTeam === t ? 'var(--accent)' : 'rgba(255,255,255,0.1)', border: 'none', color: 'white', cursor: 'pointer', whiteSpace: 'nowrap' }}
+                style={{ fontSize: '0.75rem', padding: '4px 8px', borderRadius: '12px', background: activeTeam === t ? 'hsl(var(--primary))' : "hsl(var(--foreground) / 0.1)", border: 'none', color: activeTeam === t ? 'hsl(var(--primary-foreground))' : 'hsl(var(--foreground))', cursor: 'pointer', whiteSpace: 'nowrap' }}
               >
                 {t.charAt(0).toUpperCase() + t.slice(1)}
               </button>
@@ -138,7 +138,7 @@ export function Sidebar({
         {loading ? (
           <div className="spinner"></div>
         ) : filteredConversations.length === 0 ? (
-          <div style={{ padding: '24px 20px', textAlign: 'center', color: '#94a3b8', fontSize: '0.9rem' }}><strong style={{ display: 'block', color: '#e2e8f0', marginBottom: '6px' }}>{search ? 'No matching conversations' : 'You’re all caught up 🎉'}</strong>{search ? 'Try a customer name, phone number, status, or team.' : 'There are no conversations needing attention here.'}</div>
+          <div style={{ padding: '24px 20px', textAlign: 'center', color: "hsl(var(--muted-foreground))", fontSize: '0.9rem' }}><strong style={{ display: 'block', color: "hsl(var(--foreground))", marginBottom: '6px' }}>{search ? 'No matching conversations' : 'You’re all caught up 🎉'}</strong>{search ? 'Try a customer name, phone number, status, or team.' : 'There are no conversations needing attention here.'}</div>
         ) : (
           filteredConversations.map(conv => (
             <button
@@ -158,15 +158,15 @@ export function Sidebar({
                 </span>
 
                 {/* SLA / Countdown mockup */}
-                <div style={{ marginTop: '4px', fontSize: '0.7rem', color: conv.status === 'URGENT' ? '#ef4444' : '#f59e0b', fontWeight: 'bold' }}>
+                <div style={{ marginTop: '4px', fontSize: '0.7rem', color: conv.status === 'URGENT' ? "hsl(var(--destructive))" : "hsl(var(--primary))", fontWeight: 'bold' }}>
                   ⏳ SLA: {conv.status === 'URGENT' ? '15m' : '2h 10m'} left
                 </div>
 
                 <div style={{ marginTop: '4px', display: 'flex', gap: '4px' }}>
                   {conv.ai_active !== false && !globalAiOverride ? (
-                    <span style={{ fontSize: '0.7rem', color: 'var(--ai-accent)', border: '1px solid var(--ai-accent)', padding: '2px 4px', borderRadius: '4px', background: 'rgba(16, 185, 129, 0.1)' }}>AI Active</span>
+                    <span style={{ fontSize: '0.7rem', color: 'var(--ai-accent)', border: '1px solid var(--ai-accent)', padding: '2px 4px', borderRadius: '4px', background: "hsl(var(--success) / 0.1)" }}>AI Active</span>
                   ) : (
-                    <span style={{ fontSize: '0.7rem', color: '#ef4444', border: '1px solid #ef4444', padding: '2px 4px', borderRadius: '4px', background: 'rgba(239, 68, 68, 0.1)' }}>{globalAiOverride ? 'AI Overridden' : 'Paused (Human)'}</span>
+                    <span style={{ fontSize: '0.7rem', color: "hsl(var(--destructive))", border: "1px solid hsl(var(--destructive))", padding: '2px 4px', borderRadius: '4px', background: "hsl(var(--destructive) / 0.1)" }}>{globalAiOverride ? 'AI Overridden' : 'Paused (Human)'}</span>
                   )}
                 </div>
                 <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
@@ -176,10 +176,10 @@ export function Sidebar({
                     </span>
                   )}
                   {conv.department && conv.department !== 'UNASSIGNED' && (
-                    <span style={{ fontSize: '0.7rem', background: 'rgba(255,255,255,0.1)', padding: '2px 6px', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.2)' }}>🏢 {conv.department}</span>
+                    <span style={{ fontSize: '0.7rem', background: "hsl(var(--secondary) / 0.1)", padding: '2px 6px', borderRadius: '4px', border: "1px solid hsl(var(--border) / 0.2)" }}>🏢 {conv.department}</span>
                   )}
                   {conv.assigned_to && (
-                    <span style={{ fontSize: '0.7rem', background: 'rgba(255,255,255,0.1)', padding: '2px 6px', borderRadius: '4px' }}>👤 {conv.assigned_to}</span>
+                    <span style={{ fontSize: '0.7rem', background: "hsl(var(--secondary) / 0.1)", padding: '2px 6px', borderRadius: '4px' }}>👤 {conv.assigned_to}</span>
                   )}
                 </div>
               </div>

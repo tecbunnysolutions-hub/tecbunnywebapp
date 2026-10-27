@@ -1,15 +1,15 @@
 'use client';
 
 import React, { useState } from 'react';
-import { 
-  Building2, 
-  Package, 
-  Truck, 
-  Wallet, 
-  PlusCircle, 
-  CheckCircle2, 
-  Clock, 
-  AlertTriangle, 
+import {
+  Building2,
+  Package,
+  Truck,
+  Wallet,
+  PlusCircle,
+  CheckCircle2,
+  Clock,
+  AlertTriangle,
   DollarSign,
   TrendingUp,
   Tag,
@@ -92,23 +92,23 @@ export default function SellerDashboardPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 p-6 space-y-6 max-w-7xl mx-auto">
+    <div className="min-h-screen bg-background text-muted-foreground p-6 space-y-6 max-w-7xl mx-auto">
       {/* Top Banner */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-xl">
+      <div className="bg-card border border-border rounded-2xl p-6 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-xl">
         <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center">
-            <Building2 className="w-6 h-6 text-indigo-400" />
+          <div className="w-12 h-12 rounded-xl bg-primary/20 border border-primary/30 flex items-center justify-center">
+            <Building2 className="w-6 h-6 text-primary" />
           </div>
           <div>
-            <h1 className="text-xl font-bold text-white">Apex Security Solutions Pvt Ltd</h1>
-            <div className="text-xs text-slate-400 flex items-center gap-2 mt-0.5">
+            <h1 className="text-xl font-bold text-foreground">Apex Security Solutions Pvt Ltd</h1>
+            <div className="text-xs text-muted-foreground flex items-center gap-2 mt-0.5">
               <span>Seller ID: SLR-1092</span>
               <span>•</span>
-              <span className="text-emerald-400 font-semibold flex items-center gap-1">
+              <span className="text-success font-semibold flex items-center gap-1">
                 <CheckCircle2 className="w-3.5 h-3.5" /> Approved Partner
               </span>
               <span>•</span>
-              <span className="text-indigo-300 font-medium">100% White-Label Isolation Active</span>
+              <span className="text-primary font-medium">100% White-Label Isolation Active</span>
             </div>
           </div>
         </div>
@@ -116,7 +116,7 @@ export default function SellerDashboardPage() {
         <div className="flex items-center gap-2">
           <button
             onClick={() => setActiveTab('PRODUCTS')}
-            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg font-semibold text-xs transition flex items-center gap-1.5 shadow-lg shadow-indigo-600/30"
+            className="px-4 py-2 bg-primary hover:bg-primary text-primary-foreground rounded-lg font-semibold text-xs transition flex items-center gap-1.5 shadow-lg shadow-primary/30"
           >
             <PlusCircle className="w-4 h-4" /> Add Product Draft
           </button>
@@ -124,15 +124,15 @@ export default function SellerDashboardPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex items-center gap-2 border-b border-slate-800 pb-2">
+      <div className="flex items-center gap-2 border-b border-border pb-2">
         {(['OVERVIEW', 'PRODUCTS', 'ORDERS', 'SETTLEMENTS'] as const).map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
             className={`px-4 py-2 rounded-lg text-xs font-semibold transition ${
               activeTab === tab
-                ? 'bg-indigo-600/20 text-indigo-300 border border-indigo-500/30'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900'
+                ? 'bg-primary/20 text-primary border border-primary/30'
+                : 'text-muted-foreground hover:text-muted-foreground hover:bg-card'
             }`}
           >
             {tab}
@@ -144,50 +144,50 @@ export default function SellerDashboardPage() {
       {activeTab === 'OVERVIEW' && (
         <div className="space-y-6">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-slate-900 border border-slate-800 p-5 rounded-xl">
-              <p className="text-xs font-medium text-slate-400 uppercase">Available Settlement Balance</p>
-              <p className="text-2xl font-bold text-emerald-400 mt-1">₹48,250</p>
-              <p className="text-[11px] text-slate-500 mt-1">Post-return window release</p>
+            <div className="bg-card border border-border p-5 rounded-xl">
+              <p className="text-xs font-medium text-muted-foreground uppercase">Available Settlement Balance</p>
+              <p className="text-2xl font-bold text-success mt-1">₹48,250</p>
+              <p className="text-[11px] text-muted-foreground mt-1">Post-return window release</p>
             </div>
-            <div className="bg-slate-900 border border-amber-500/20 p-5 rounded-xl">
-              <p className="text-xs font-medium text-amber-400 uppercase">Pending Settlement Balance</p>
-              <p className="text-2xl font-bold text-amber-300 mt-1">₹24,500</p>
-              <p className="text-[11px] text-slate-500 mt-1">Awaiting 7-day return expiration</p>
+            <div className="bg-card border border-warning/20 p-5 rounded-xl">
+              <p className="text-xs font-medium text-warning uppercase">Pending Settlement Balance</p>
+              <p className="text-2xl font-bold text-warning mt-1">₹24,500</p>
+              <p className="text-[11px] text-muted-foreground mt-1">Awaiting 7-day return expiration</p>
             </div>
-            <div className="bg-slate-900 border border-slate-800 p-5 rounded-xl">
-              <p className="text-xs font-medium text-slate-400 uppercase">Assigned Orders</p>
-              <p className="text-2xl font-bold text-white mt-1">{orders.length}</p>
-              <p className="text-[11px] text-indigo-400 mt-1">Ready for pickup: {orders.filter(o => o.status === 'READY_FOR_PICKUP').length}</p>
+            <div className="bg-card border border-border p-5 rounded-xl">
+              <p className="text-xs font-medium text-muted-foreground uppercase">Assigned Orders</p>
+              <p className="text-2xl font-bold text-foreground mt-1">{orders.length}</p>
+              <p className="text-[11px] text-primary mt-1">Ready for pickup: {orders.filter(o => o.status === 'READY_FOR_PICKUP').length}</p>
             </div>
-            <div className="bg-slate-900 border border-slate-800 p-5 rounded-xl">
-              <p className="text-xs font-medium text-slate-400 uppercase">Seller Quality Score</p>
-              <p className="text-2xl font-bold text-indigo-400 mt-1">98.4 / 100</p>
-              <p className="text-[11px] text-emerald-400 mt-1">On-Time Pickup SLA: 99.1%</p>
+            <div className="bg-card border border-border p-5 rounded-xl">
+              <p className="text-xs font-medium text-muted-foreground uppercase">Seller Quality Score</p>
+              <p className="text-2xl font-bold text-primary mt-1">98.4 / 100</p>
+              <p className="text-[11px] text-success mt-1">On-Time Pickup SLA: 99.1%</p>
             </div>
           </div>
 
-          <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 space-y-4">
-            <h3 className="text-base font-bold text-white flex items-center gap-2">
-              <Truck className="w-5 h-5 text-indigo-400" />
+          <div className="bg-card border border-border rounded-xl p-6 space-y-4">
+            <h3 className="text-base font-bold text-foreground flex items-center gap-2">
+              <Truck className="w-5 h-5 text-primary" />
               Pending Pickup Orders ("Ready for Pickup" SLA Workflow)
             </h3>
-            <div className="divide-y divide-slate-800">
+            <div className="divide-y divide-border">
               {orders.map((ord) => (
                 <div key={ord.id} className="py-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
                   <div>
-                    <div className="font-semibold text-slate-100">{ord.productName}</div>
-                    <div className="text-xs text-slate-400">Order: {ord.orderNumber} • Qty: {ord.qty} • SKU: {ord.sku}</div>
-                    <div className="text-xs font-semibold text-emerald-400 mt-1">Agreed Wholesale Purchase Price: ₹{ord.sellerPurchasePrice}</div>
+                    <div className="font-semibold text-muted-foreground">{ord.productName}</div>
+                    <div className="text-xs text-muted-foreground">Order: {ord.orderNumber} • Qty: {ord.qty} • SKU: {ord.sku}</div>
+                    <div className="text-xs font-semibold text-success mt-1">Agreed Wholesale Purchase Price: ₹{ord.sellerPurchasePrice}</div>
                   </div>
                   <div>
                     {ord.status === 'READY_FOR_PICKUP' ? (
-                      <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                      <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-success/20 text-success border border-success/30">
                         <CheckCircle2 className="w-4 h-4" /> Ready for Pickup (TecBunny Dispatch)
                       </span>
                     ) : (
                       <button
                         onClick={() => markReadyForPickup(ord.id)}
-                        className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg font-semibold text-xs transition shadow-lg shadow-indigo-600/30"
+                        className="px-4 py-2 bg-primary hover:bg-primary text-primary-foreground rounded-lg font-semibold text-xs transition shadow-lg shadow-primary/30"
                       >
                         Pack & Mark "Ready for Pickup"
                       </button>
@@ -202,55 +202,55 @@ export default function SellerDashboardPage() {
 
       {/* Tab 2: Products */}
       {activeTab === 'PRODUCTS' && (
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-2xl mx-auto space-y-6">
-          <div className="border-b border-slate-800 pb-4">
-            <h2 className="text-lg font-bold text-white flex items-center gap-2">
-              <Package className="w-5 h-5 text-indigo-400" />
+        <div className="bg-card border border-border rounded-2xl p-6 max-w-2xl mx-auto space-y-6">
+          <div className="border-b border-border pb-4">
+            <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
+              <Package className="w-5 h-5 text-primary" />
               Submit Product Draft (Wholesale Supply Model)
             </h2>
-            <p className="text-xs text-slate-400 mt-1">
-              Provide net <strong className="text-indigo-300">Seller Purchase Price</strong>. TecBunny Superadmin handles Customer Selling Price and Branding.
+            <p className="text-xs text-muted-foreground mt-1">
+              Provide net <strong className="text-primary">Seller Purchase Price</strong>. TecBunny Superadmin handles Customer Selling Price and Branding.
             </p>
           </div>
 
           {productCreated && (
-            <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 p-4 rounded-xl text-xs font-semibold flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+            <div className="bg-success/10 border border-success/20 text-success p-4 rounded-xl text-xs font-semibold flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 text-success" />
               Product Draft Submitted for Superadmin Approval & Margin Check!
             </div>
           )}
 
           <form onSubmit={handleProductSubmit} className="space-y-4">
             <div>
-              <label htmlFor="app-seller-dashboard-page-product-title" className="block text-xs font-semibold text-slate-400">Product Title</label>
+              <label htmlFor="app-seller-dashboard-page-product-title" className="block text-xs font-semibold text-muted-foreground">Product Title</label>
               <input id="app-seller-dashboard-page-product-title"
                 type="text"
                 required
                 placeholder="e.g. 8-Channel PoE CCTV NVR Recorder"
                 value={newProduct.name}
                 onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })}
-                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 mt-1"
+                className="w-full bg-card border border-border rounded-lg px-4 py-2 text-sm text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary mt-1"
               />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label htmlFor="app-seller-dashboard-page-sku-model-number" className="block text-xs font-semibold text-slate-400">SKU / Model Number</label>
+                <label htmlFor="app-seller-dashboard-page-sku-model-number" className="block text-xs font-semibold text-muted-foreground">SKU / Model Number</label>
                 <input id="app-seller-dashboard-page-sku-model-number"
                   type="text"
                   required
                   placeholder="NVR-8CH-POE"
                   value={newProduct.sku}
                   onChange={(e) => setNewProduct({ ...newProduct, sku: e.target.value })}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-sm font-mono text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 mt-1"
+                  className="w-full bg-card border border-border rounded-lg px-4 py-2 text-sm font-mono text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary mt-1"
                 />
               </div>
               <div>
-                <label htmlFor="app-seller-dashboard-page-category" className="block text-xs font-semibold text-slate-400">Category</label>
+                <label htmlFor="app-seller-dashboard-page-category" className="block text-xs font-semibold text-muted-foreground">Category</label>
                 <select id="app-seller-dashboard-page-category"
                   value={newProduct.category}
                   onChange={(e) => setNewProduct({ ...newProduct, category: e.target.value })}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 mt-1"
+                  className="w-full bg-card border border-border rounded-lg px-4 py-2 text-sm text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary mt-1"
                 >
                   <option value="CCTV & Surveillance">CCTV & Surveillance</option>
                   <option value="Networking & IT">Networking & IT</option>
@@ -262,43 +262,43 @@ export default function SellerDashboardPage() {
 
             <div className="grid grid-cols-3 gap-4">
               <div>
-                <label htmlFor="app-seller-dashboard-page-seller-purchase-price" className="block text-xs font-bold text-emerald-400">Seller Purchase Price (₹)</label>
+                <label htmlFor="app-seller-dashboard-page-seller-purchase-price" className="block text-xs font-bold text-success">Seller Purchase Price (₹)</label>
                 <input id="app-seller-dashboard-page-seller-purchase-price"
                   type="number"
                   required
                   placeholder="1200"
                   value={newProduct.sellerPurchasePrice}
                   onChange={(e) => setNewProduct({ ...newProduct, sellerPurchasePrice: e.target.value })}
-                  className="w-full bg-slate-800 border border-emerald-500/40 rounded-lg px-4 py-2 text-sm font-bold text-emerald-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 mt-1"
+                  className="w-full bg-card border border-success/40 rounded-lg px-4 py-2 text-sm font-bold text-success focus:outline-none focus:ring-2 focus:ring-success mt-1"
                 />
               </div>
               <div>
-                <label htmlFor="app-seller-dashboard-page-mrp" className="block text-xs font-semibold text-slate-400">MRP (₹)</label>
+                <label htmlFor="app-seller-dashboard-page-mrp" className="block text-xs font-semibold text-muted-foreground">MRP (₹)</label>
                 <input id="app-seller-dashboard-page-mrp"
                   type="number"
                   required
                   placeholder="2400"
                   value={newProduct.mrp}
                   onChange={(e) => setNewProduct({ ...newProduct, mrp: e.target.value })}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 mt-1"
+                  className="w-full bg-card border border-border rounded-lg px-4 py-2 text-sm text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary mt-1"
                 />
               </div>
               <div>
-                <label htmlFor="app-seller-dashboard-page-initial-stock-quantity" className="block text-xs font-semibold text-slate-400">Initial Stock Quantity</label>
+                <label htmlFor="app-seller-dashboard-page-initial-stock-quantity" className="block text-xs font-semibold text-muted-foreground">Initial Stock Quantity</label>
                 <input id="app-seller-dashboard-page-initial-stock-quantity"
                   type="number"
                   required
                   placeholder="50"
                   value={newProduct.stock}
                   onChange={(e) => setNewProduct({ ...newProduct, stock: e.target.value })}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 mt-1"
+                  className="w-full bg-card border border-border rounded-lg px-4 py-2 text-sm text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary mt-1"
                 />
               </div>
             </div>
 
             <button
               type="submit"
-              className="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-lg shadow-lg shadow-indigo-600/30 transition text-sm"
+              className="w-full py-3 bg-primary hover:bg-primary text-primary-foreground font-semibold rounded-lg shadow-lg shadow-primary/30 transition text-sm"
             >
               Submit Product for Superadmin Pricing & Catalog Review
             </button>
@@ -308,17 +308,17 @@ export default function SellerDashboardPage() {
 
       {/* Tab 3: Orders */}
       {activeTab === 'ORDERS' && (
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
-          <h2 className="text-lg font-bold text-white mb-4">Assigned Marketplace Orders</h2>
-          <div className="divide-y divide-slate-800">
+        <div className="bg-card border border-border rounded-xl p-6">
+          <h2 className="text-lg font-bold text-foreground mb-4">Assigned Marketplace Orders</h2>
+          <div className="divide-y divide-border">
             {orders.map((ord) => (
               <div key={ord.id} className="py-4 flex items-center justify-between">
                 <div>
-                  <div className="font-semibold text-slate-100">{ord.productName}</div>
-                  <div className="text-xs text-slate-400">Ref: {ord.orderNumber} • Qty: {ord.qty} • Created: {ord.createdAt}</div>
+                  <div className="font-semibold text-muted-foreground">{ord.productName}</div>
+                  <div className="text-xs text-muted-foreground">Ref: {ord.orderNumber} • Qty: {ord.qty} • Created: {ord.createdAt}</div>
                 </div>
                 <div>
-                  <span className="px-3 py-1 rounded-full text-xs font-semibold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                  <span className="px-3 py-1 rounded-full text-xs font-semibold bg-primary/20 text-primary border border-primary/30">
                     {ord.status}
                   </span>
                 </div>
@@ -330,23 +330,23 @@ export default function SellerDashboardPage() {
 
       {/* Tab 4: Settlements */}
       {activeTab === 'SETTLEMENTS' && (
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 space-y-4">
-          <h2 className="text-lg font-bold text-white flex items-center gap-2">
-            <Wallet className="w-5 h-5 text-emerald-400" />
+        <div className="bg-card border border-border rounded-xl p-6 space-y-4">
+          <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
+            <Wallet className="w-5 h-5 text-success" />
             Wallet Ledger & Financial Settlements
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-slate-800/60 p-4 rounded-xl border border-slate-700">
-              <p className="text-xs text-slate-400">Available Balance</p>
-              <p className="text-2xl font-bold text-emerald-400">₹48,250</p>
+            <div className="bg-card/60 p-4 rounded-xl border border-border">
+              <p className="text-xs text-muted-foreground">Available Balance</p>
+              <p className="text-2xl font-bold text-success">₹48,250</p>
             </div>
-            <div className="bg-slate-800/60 p-4 rounded-xl border border-slate-700">
-              <p className="text-xs text-slate-400">Pending Balance</p>
-              <p className="text-2xl font-bold text-amber-300">₹24,500</p>
+            <div className="bg-card/60 p-4 rounded-xl border border-border">
+              <p className="text-xs text-muted-foreground">Pending Balance</p>
+              <p className="text-2xl font-bold text-warning">₹24,500</p>
             </div>
-            <div className="bg-slate-800/60 p-4 rounded-xl border border-slate-700">
-              <p className="text-xs text-slate-400">Total Settled to Bank</p>
-              <p className="text-2xl font-bold text-slate-200">₹3,42,800</p>
+            <div className="bg-card/60 p-4 rounded-xl border border-border">
+              <p className="text-xs text-muted-foreground">Total Settled to Bank</p>
+              <p className="text-2xl font-bold text-muted-foreground">₹3,42,800</p>
             </div>
           </div>
         </div>

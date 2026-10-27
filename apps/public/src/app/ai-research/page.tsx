@@ -51,7 +51,7 @@ export default function AiResearchPage() {
   const [leadVerified, setLeadVerified] = React.useState(false);
   const [showLeadGate, setShowLeadGate] = React.useState(false);
   const [leadData, setLeadData] = React.useState({ phone: '', email: '' });
-  
+
   const messagesContainerRef = React.useRef<HTMLDivElement>(null);
   const isUserNearBottomRef = React.useRef(true);
 
@@ -135,13 +135,13 @@ export default function AiResearchPage() {
       }
 
       const result: ResearchResult = data;
-      
+
       const assistantMessage: Message = {
         id: Date.now().toString(),
         role: 'assistant',
         result: result,
       };
-      
+
       setMessages((prev) => [...prev, assistantMessage]);
 
     } catch (err: any) {
@@ -189,7 +189,7 @@ export default function AiResearchPage() {
     // ... rest of the logic similar to handleSubmit but simplified for direct query
     const loadingMessageId = (Date.now() + 1).toString();
     setMessages((prev) => [...prev, { id: loadingMessageId, role: 'assistant', isLoading: true }]);
-    
+
     try {
       const response = await fetch('/api/ai/research', {
         method: 'POST',
@@ -222,14 +222,14 @@ export default function AiResearchPage() {
       setShowLeadGate(false);
       setIsLoading(false);
       // Re-trigger audit completion
-      setShowAudit(true); 
+      setShowAudit(true);
     }, 1500);
   };
 
   return (
     <div className="flex h-[calc(100vh-80px)] flex-col bg-background text-foreground">
       <div className="pointer-events-none absolute inset-0 bg-noise opacity-20" />
-      
+
       {/* Header */}
       <header className="relative z-10 flex items-center justify-between border-b border-border bg-background/80 px-4 py-4 backdrop-blur-md sm:px-6 lg:px-8">
         <div className="flex items-center gap-3">
@@ -280,7 +280,7 @@ export default function AiResearchPage() {
                     <span className="text-xs font-medium">Analyzing...</span>
                   </div>
                 ) : message.error ? (
-                  <p className="text-rose-400">{message.error}</p>
+                  <p className="text-destructive">{message.error}</p>
                 ) : message.content ? (
                   <MarkdownRenderer content={message.content} />
                 ) : message.result ? (
@@ -301,7 +301,7 @@ export default function AiResearchPage() {
                                   {product.image ? (
                                     <Image src={product.image} alt={product.title} width={64} height={64} className="h-full w-full object-cover" />
                                   ) : (
-                                    <div className="flex h-full w-full items-center justify-center text-muted-foreground/60">
+                                    <div className="flex h-full w-full items-center justify-center text-muted-foreground">
                                       <Bot className="h-6 w-6" />
                                     </div>
                                   )}
@@ -342,14 +342,14 @@ export default function AiResearchPage() {
             <p className="mb-8 text-sm text-muted-foreground leading-relaxed">
               We require corporate verification to share comprehensive architectural telemetry reports. Please provide your business contact details.
             </p>
-            
+
             <form onSubmit={handleLeadVerification} className="space-y-4">
               <div className="space-y-2">
                 <label htmlFor="app-ai-research-page-corporate-email" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Corporate Email</label>
                 <Input id="app-ai-research-page-corporate-email"
-                  required 
-                  type="email" 
-                  placeholder="name@company.com" 
+                  required
+                  type="email"
+                  placeholder="name@company.com"
                   className="bg-muted/50 border-border text-foreground h-12"
                   value={leadData.email}
                   onChange={(e) => setLeadData({ ...leadData, email: e.target.value })}
@@ -358,17 +358,17 @@ export default function AiResearchPage() {
               <div className="space-y-2">
                 <label htmlFor="app-ai-research-page-phone-for-whatsapp-otp" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Phone (for WhatsApp OTP)</label>
                 <Input id="app-ai-research-page-phone-for-whatsapp-otp"
-                  required 
-                  type="tel" 
-                  placeholder="+91 12345 67890" 
+                  required
+                  type="tel"
+                  placeholder="+91 12345 67890"
                   className="bg-muted/50 border-border text-foreground h-12"
                   value={leadData.phone}
                   onChange={(e) => setLeadData({ ...leadData, phone: e.target.value })}
                 />
               </div>
-              
-              <Button 
-                type="submit" 
+
+              <Button
+                type="submit"
                 className="w-full h-14 bg-primary hover:bg-primary/90 text-primary-foreground text-lg font-bold mt-4"
                 disabled={isLoading}
               >
@@ -382,9 +382,9 @@ export default function AiResearchPage() {
                   </span>
                 )}
               </Button>
-              
-              <button 
-                type="button" 
+
+              <button
+                type="button"
                 onClick={() => setShowLeadGate(false)}
                 className="w-full py-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
               >

@@ -103,7 +103,7 @@ export default function FaqsClient({ initialFaqs }: FaqsClientProps) {
         ) : (
           <div className="text-center py-16 border-2 border-dashed border-muted rounded-2xl flex flex-col items-center justify-center p-6 min-h-[300px]">
             <p className="text-lg font-medium text-muted-foreground">No FAQs found matching your criteria.</p>
-            <p className="text-sm text-muted-foreground/75 mt-1">Try modifying your search or choosing another category.</p>
+            <p className="text-sm text-muted-foreground mt-1">Try modifying your search or choosing another category.</p>
           </div>
         )}
       </div>

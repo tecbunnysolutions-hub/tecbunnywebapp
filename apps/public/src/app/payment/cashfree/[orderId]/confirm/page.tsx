@@ -59,7 +59,7 @@ function ConfirmContent() {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background text-foreground px-4">
         <div className="max-w-sm w-full text-center space-y-5">
-          <CheckCircle2 className="h-16 w-16 text-emerald-500 mx-auto" />
+          <CheckCircle2 className="h-16 w-16 text-success mx-auto" />
           <h1 className="text-2xl font-bold">Payment Successful</h1>
           <p className="text-sm text-muted-foreground">
             Your payment has been confirmed and your order is being processed.

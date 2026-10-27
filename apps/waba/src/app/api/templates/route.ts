@@ -6,9 +6,11 @@ import { requireApiRole } from '@tecbunny/core/server-role-guard';
 import { z } from 'zod';
 import { applyOrgBranchScope, resolveActorScope } from '@/lib/authorization-scope';
 
+import type { UserRole } from '@tecbunny/core/roles';
+
 export const dynamic = 'force-dynamic';
 
-const TEMPLATE_WRITE_ROLES = ['admin', 'sales_manager', 'marketing_manager', 'superadmin', 'manager'];
+const TEMPLATE_WRITE_ROLES: UserRole[] = ['admin', 'sales_manager', 'marketing_manager', 'superadmin', 'manager'];
 
 const templateSchema = z.object({
   name: z.string().trim().regex(/^[a-z0-9_]{3,80}$/),
@@ -31,23 +33,11 @@ export async function GET() {
     if (!scope) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     logger.info('waba_templates.audit.list_requested', { role: auth.role ?? null });
 
-    const { data: templates, error } = await applyOrgBranchScope(supabase.from('Template').select('*'), scope).order('created_at', { ascending: false });
+    const { data: templates, error } = await applyOrgBranchScope(supabase.from('Template').select('*') as any, scope).order('created_at', { ascending: false });
     if (error) throw error;
-    
-    // Seed templates if empty for demo purposes
-    if (scope.isGlobal && (!templates || templates.length === 0)) {
-      const demoTemplates = [
-        { id: crypto.randomUUID(), name: 'welcome_message', content: 'Hello {{1}}, welcome to our service! How can we help you today?', status: 'DRAFT', provider_status: 'LOCAL_ONLY', variable_count: 1 },
-        { id: crypto.randomUUID(), name: 'appointment_reminder', content: 'Hi {{1}}, this is a reminder for your appointment tomorrow at {{2}}.', status: 'DRAFT', provider_status: 'LOCAL_ONLY', variable_count: 2 },
-        { id: crypto.randomUUID(), name: 'out_of_office', content: 'Thank you for your message. We are currently out of the office. We will reply when we return.', status: 'DRAFT', provider_status: 'LOCAL_ONLY', variable_count: 0 }
-      ];
-      await supabase.from('Template').insert(demoTemplates);
-      logger.info('waba_templates.audit.list_success', { seeded: true, count: demoTemplates.length });
-      return NextResponse.json({ templates: demoTemplates });
-    }
 
-    logger.info('waba_templates.audit.list_success', { seeded: false, count: templates.length });
-    return NextResponse.json({ templates });
+    logger.info('waba_templates.audit.list_success', { count: templates?.length ?? 0 });
+    return NextResponse.json({ templates: templates ?? [] });
   } catch (error: unknown) {
     logger.error('waba_templates.audit.list_failed', { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json({ error: error instanceof Error ? error.message : String(error) }, { status: 500 });

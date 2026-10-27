@@ -327,9 +327,9 @@ export default function PageContentAdmin() {
   if (error) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <Card className="border-red-200">
+        <Card className="border-destructive/20">
           <CardHeader>
-            <CardTitle className="text-red-600">Error Loading Content</CardTitle>
+            <CardTitle className="text-destructive">Error Loading Content</CardTitle>
             <CardDescription>{error instanceof Error ? error.message : String(error)}</CardDescription>
           </CardHeader>
           <CardContent>
@@ -352,15 +352,15 @@ export default function PageContentAdmin() {
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
         <h1 className="text-3xl font-bold">Page Content Management</h1>
-        <p className="text-gray-600 mt-2">
+        <p className="text-muted-foreground mt-2">
           Manage marketing and informational pages that power TecBunny.com. Create new entries, update existing content, or retire pages that are no longer needed.
         </p>
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-4">
+        <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 mt-4">
           <div className="flex items-start gap-3">
-            <FileText className="h-5 w-5 text-blue-600 mt-0.5" />
+            <FileText className="h-5 w-5 text-primary mt-0.5" />
             <div>
-              <h4 className="font-medium text-blue-900">Tip</h4>
-              <p className="text-sm text-blue-700 mt-1">
+              <h4 className="font-medium text-primary">Tip</h4>
+              <p className="text-sm text-primary mt-1">
                 Use structured JSON for complex layouts. Keep drafts unpublished until you are ready to surface them on the storefront navigation.
               </p>
             </div>
@@ -442,7 +442,7 @@ export default function PageContentAdmin() {
               className="font-mono text-sm"
               placeholder="JSON or plain text"
             />
-            <div className={`mt-2 rounded-md border px-3 py-2 text-xs ${newPageValidation.tone === 'error' ? 'border-red-500/30 bg-red-500/10 text-red-700' : newPageValidation.tone === 'success' ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700' : 'border-blue-500/30 bg-blue-500/10 text-blue-700'}`}>
+            <div className={`mt-2 rounded-md border px-3 py-2 text-xs ${newPageValidation.tone === 'error' ? 'border-destructive/30 bg-destructive/10 text-destructive' : newPageValidation.tone === 'success' ? 'border-success/30 bg-success/10 text-success' : 'border-primary/30 bg-primary/10 text-primary'}`}>
               <strong>{newPageValidation.label}:</strong> {newPageValidation.detail}
             </div>
           </div>
@@ -486,8 +486,8 @@ export default function PageContentAdmin() {
                   key={page.id}
                   className={`p-3 rounded-lg border cursor-pointer transition-colors ${
                     selectedPage?.id === page.id
-                      ? 'bg-blue-50 border-blue-200'
-                      : 'hover:bg-white/5 border-white/10'
+                      ? 'bg-primary/10 border-primary/20'
+                      : 'hover:bg-card/5 border-border/10'
                   }`}
                   onClick={() => {
                     if (!guardUnsavedChanges()) return;
@@ -499,7 +499,7 @@ export default function PageContentAdmin() {
                   <div className="flex items-center justify-between">
                     <div>
                       <h4 className="font-medium">{formatPageKey(page.page_key)}</h4>
-                      <p className="text-sm text-gray-500">{page.title}</p>
+                      <p className="text-sm text-muted-foreground">{page.title}</p>
                     </div>
                     <Badge variant={page.status === 'published' ? 'default' : 'secondary'}>
                       {page.status}
@@ -509,8 +509,8 @@ export default function PageContentAdmin() {
               ))
             ) : (
               <div className="text-center py-8">
-                <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-500 text-sm">
+                <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                <p className="text-muted-foreground text-sm">
                   No homepage content found. You may need to create it first.
                 </p>
               </div>
@@ -570,8 +570,8 @@ export default function PageContentAdmin() {
                     </Button>
                   )}
                   {deleteReviewOpen ? (
-                    <div className="flex flex-wrap items-center gap-2 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2">
-                      <span className="text-sm font-medium text-red-700">Delete this page?</span>
+                    <div className="flex flex-wrap items-center gap-2 rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2">
+                      <span className="text-sm font-medium text-destructive">Delete this page?</span>
                       <Button
                         onClick={handleDeletePage}
                         variant="destructive"
@@ -610,7 +610,7 @@ export default function PageContentAdmin() {
             {notice && (
               <div
                 role={notice.tone === 'error' ? 'alert' : 'status'}
-                className={`mb-4 rounded-lg border px-4 py-3 text-sm ${notice.tone === 'error' ? 'border-red-500/30 bg-red-500/10 text-red-700' : 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700'}`}
+                className={`mb-4 rounded-lg border px-4 py-3 text-sm ${notice.tone === 'error' ? 'border-destructive/30 bg-destructive/10 text-destructive' : 'border-success/30 bg-success/10 text-success'}`}
               >
                 {notice.message}
               </div>
@@ -619,7 +619,7 @@ export default function PageContentAdmin() {
               editMode ? (
                 <div className="space-y-4">
                   {recoverableDraft && (
-                    <div role="status" className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-amber-800">
+                    <div role="status" className="rounded-lg border border-warning/30 bg-warning/10 p-4 text-sm text-warning">
                       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                         <p>A saved draft is available for this page.</p>
                         <div className="flex gap-2">
@@ -691,7 +691,7 @@ export default function PageContentAdmin() {
                       rows={15}
                       className="font-mono text-sm"
                     />
-                    <div className={`mt-2 rounded-md border px-3 py-2 text-xs ${editContentValidation.tone === 'error' ? 'border-red-500/30 bg-red-500/10 text-red-700' : editContentValidation.tone === 'success' ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700' : 'border-blue-500/30 bg-blue-500/10 text-blue-700'}`}>
+                    <div className={`mt-2 rounded-md border px-3 py-2 text-xs ${editContentValidation.tone === 'error' ? 'border-destructive/30 bg-destructive/10 text-destructive' : editContentValidation.tone === 'success' ? 'border-success/30 bg-success/10 text-success' : 'border-primary/30 bg-primary/10 text-primary'}`}>
                       <strong>{editContentValidation.label}:</strong> {editContentValidation.detail}
                     </div>
                   </div>
@@ -726,7 +726,7 @@ export default function PageContentAdmin() {
 
                   <div>
                     <h4 className="font-medium mb-2">Content Preview:</h4>
-                    <div className="bg-white/5 border border-white/10 p-4 rounded-lg">
+                    <div className="bg-card/5 border border-border/10 p-4 rounded-lg">
                       <pre className="text-sm overflow-x-auto">
                         {typeof selectedPage.content === 'string'
                           ? selectedPage.content
@@ -738,22 +738,22 @@ export default function PageContentAdmin() {
                   {selectedPage.meta_description && (
                     <div>
                       <h4 className="font-medium mb-2">Meta Description:</h4>
-                      <p className="text-sm text-gray-600">{selectedPage.meta_description}</p>
+                      <p className="text-sm text-muted-foreground">{selectedPage.meta_description}</p>
                     </div>
                   )}
 
                   {selectedPage.meta_keywords && (
                     <div>
                       <h4 className="font-medium mb-2">Meta Keywords:</h4>
-                      <p className="text-sm text-gray-600">{selectedPage.meta_keywords}</p>
+                      <p className="text-sm text-muted-foreground">{selectedPage.meta_keywords}</p>
                     </div>
                   )}
                 </div>
               )
             ) : (
               <div className="text-center py-12">
-                <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-500">Select a page from the list to view and edit its content.</p>
+                <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                <p className="text-muted-foreground">Select a page from the list to view and edit its content.</p>
               </div>
             )}
           </CardContent>

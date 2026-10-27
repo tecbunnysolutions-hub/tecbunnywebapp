@@ -7,16 +7,13 @@ import { BRAND_LOGO_URL } from "@tecbunny/core/brand";
 import { stripHtmlToPlainText } from "@tecbunny/core/strings";
 import { isPubliclyVisibleProduct, resolvePublicProductPrice } from "@tecbunny/core/product-visibility";
 import { notFound } from 'next/navigation';
+import { serializeJsonLd } from '@/lib/jsonld';
 
 // Product data is cached at the API (60s); the page is ISR on the same cadence.
 export const revalidate = 60;
 
 interface ProductPageProps {
   params: Promise<{ id: string }>;
-}
-
-function serializeJsonLd(value: unknown) {
-  return JSON.stringify(value).replace(/</g, '\\u003c');
 }
 
 export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
@@ -49,7 +46,7 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
   const productPrice = resolvePublicProductPrice(product);
   const formattedPrice = productPrice > 0 ? `₹${productPrice.toLocaleString('en-IN')}` : 'Request Quote';
   const availabilityText = product.stock_status === 'out_of_stock' ? 'Out of Stock' : 'In Stock';
-  
+
   const ogTitle = `${formattedPrice} - ${title} (${availabilityText})`;
   const ogDescription = `${plainDesc.substring(0, 120)}... Need a custom setup in Goa? Chat with a TecBunny Expert: https://wa.me/919604136010`;
 
@@ -94,14 +91,14 @@ function ProductPageSkeleton() {
     <div className="tech-main-content bg-background text-foreground">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         <div className="animate-pulse">
-          <div className="h-6 w-40 rounded bg-white/10 mb-8"></div>
+          <div className="h-6 w-40 rounded bg-card/10 mb-8"></div>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <div className="h-[420px] rounded-2xl bg-white/5"></div>
+            <div className="h-[420px] rounded-2xl bg-card/5"></div>
             <div className="space-y-4">
-              <div className="h-8 rounded bg-white/10 w-3/4"></div>
-              <div className="h-4 rounded bg-white/10 w-1/2"></div>
-              <div className="h-12 rounded bg-white/10 w-2/3"></div>
-              <div className="h-32 rounded bg-white/5"></div>
+              <div className="h-8 rounded bg-card/10 w-3/4"></div>
+              <div className="h-4 rounded bg-card/10 w-1/2"></div>
+              <div className="h-12 rounded bg-card/10 w-2/3"></div>
+              <div className="h-32 rounded bg-card/5"></div>
             </div>
           </div>
         </div>
@@ -112,7 +109,7 @@ function ProductPageSkeleton() {
 
 export default async function ProductPage({ params }: ProductPageProps) {
   const { id } = await params;
-  
+
   return (
     <Suspense fallback={<ProductPageSkeleton />}>
       <ProductDataLoader id={id} />
@@ -247,9 +244,9 @@ async function ProductDataLoader({ id }: { id: string }) {
           dangerouslySetInnerHTML={{ __html: serializeJsonLd(productWebPageJsonLd) }}
         />
       )}
-      <ProductDetailPage 
-        productId={id} 
-        initialProduct={product} 
+      <ProductDetailPage
+        productId={id}
+        initialProduct={product}
       />
     </>
   );

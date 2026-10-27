@@ -27,7 +27,7 @@ export function FreeInstallationOfferBanner({
         setIsLoading(true);
         const response = await fetch('/api/free-installation-slots');
         const data = await response.json();
-        
+
         if (data.success) {
           setSlotsRemaining(data.remainingSlots);
           setConfirmedCount(data.confirmedCount);
@@ -54,22 +54,22 @@ export function FreeInstallationOfferBanner({
   if (variant === 'card') {
     return (
       <div className={`rounded-lg border p-4 ${
-        isFreeEligible 
-          ? 'border-emerald-500/30 bg-emerald-500/10' 
-          : 'border-slate-500/30 bg-slate-500/10'
+        isFreeEligible
+          ? 'border-success/30 bg-success/10'
+          : 'border-border/30 bg-secondary/10'
       }`}>
         <div className="flex items-start gap-3">
-          <div className={`mt-1 ${isFreeEligible ? 'text-emerald-400' : 'text-slate-400'}`}>
+          <div className={`mt-1 ${isFreeEligible ? 'text-success' : 'text-muted-foreground'}`}>
             {isFreeEligible ? <Check className="h-5 w-5" /> : <Zap className="h-5 w-5" />}
           </div>
           <div className="flex-1">
-            <p className="font-semibold text-white">
+            <p className="font-semibold text-foreground">
               {isFreeEligible ? '✓ Free Installation Eligible' : 'Installation Offer'}
             </p>
-            <p className={`text-sm mt-1 ${isFreeEligible ? 'text-emerald-200' : 'text-slate-300'}`}>
+            <p className={`text-sm mt-1 ${isFreeEligible ? 'text-success' : 'text-muted-foreground'}`}>
               {isFreeEligible ? (
                 <>
-                  Your installation (₹{Math.round(installationPrice).toLocaleString()}) qualifies for our <strong>FREE installation offer</strong> (up to ₹2,499/-). 
+                  Your installation (₹{Math.round(installationPrice).toLocaleString()}) qualifies for our <strong>FREE installation offer</strong> (up to ₹2,499/-).
                   <strong className="ml-1">
                     {isLoading ? (
                       <span className="inline-flex items-center gap-1">
@@ -94,29 +94,29 @@ export function FreeInstallationOfferBanner({
 
   return (
     <div className={`flex items-center justify-between rounded-md p-3 text-sm ${
-      isFreeEligible 
-        ? 'border border-emerald-500/30 bg-emerald-500/10' 
-        : 'border border-slate-500/30 bg-slate-500/10'
+      isFreeEligible
+        ? 'border border-success/30 bg-success/10'
+        : 'border border-border/30 bg-secondary/10'
     }`}>
       <div className="flex items-center gap-2">
         {isFreeEligible ? (
           <>
-            <Check className="h-4 w-4 text-emerald-400" />
-            <span className="text-emerald-200">
+            <Check className="h-4 w-4 text-success" />
+            <span className="text-success">
               <strong>Free Installation</strong> • {isLoading ? 'Loading...' : `${slotsRemaining} confirmed`}
             </span>
           </>
         ) : (
           <>
-            <Zap className="h-4 w-4 text-slate-400" />
-            <span className="text-slate-300">
+            <Zap className="h-4 w-4 text-muted-foreground" />
+            <span className="text-muted-foreground">
               Free installation up to ₹2,499/- • Your setup: ₹{Math.round(installationPrice).toLocaleString()}
             </span>
           </>
         )}
       </div>
       {isFreeEligible && !isLoading && (
-        <Badge className="bg-emerald-600 text-white hover:bg-emerald-700">OFFER ACTIVE</Badge>
+        <Badge className="bg-success text-success-foreground hover:bg-success">OFFER ACTIVE</Badge>
       )}
     </div>
   );

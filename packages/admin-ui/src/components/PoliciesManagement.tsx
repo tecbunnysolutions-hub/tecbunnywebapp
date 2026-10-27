@@ -3,10 +3,10 @@
 import * as React from 'react';
 import { useState, useEffect, useCallback, useMemo } from 'react';
 
-import { 
+import {
   Plus,
-  Edit2, 
-  RefreshCw, 
+  Edit2,
+  RefreshCw,
   FileText,
   Shield,
   Truck,
@@ -238,7 +238,7 @@ export default function PoliciesManagement() {
       setSaving(true);
       const pageKey = selectedPolicy.page_key;
       const isUpdate = Boolean(selectedPolicy.id);
-      
+
       // Prepare simplified content structure
       const content = {
         title: formData.title,
@@ -264,7 +264,7 @@ export default function PoliciesManagement() {
       });
 
       const result = await response.json();
-      
+
       if (response.ok) {
         toast({
           title: 'Success',
@@ -297,13 +297,13 @@ export default function PoliciesManagement() {
   };
 
   return (
-    <div className="min-h-screen bg-transparent p-6 text-slate-200">
+    <div className="min-h-screen bg-transparent p-6 text-muted-foreground">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold text-white">Policy Management</h1>
-            <p className="text-slate-400">Manage legal documents and policies for your store</p>
+            <h1 className="text-3xl font-bold text-foreground">Policy Management</h1>
+            <p className="text-muted-foreground">Manage legal documents and policies for your store</p>
           </div>
           <Button asChild variant="outline">
             <Link href="/info/policies" target="_blank" rel="noopener noreferrer">
@@ -319,7 +319,7 @@ export default function PoliciesManagement() {
           {policyTypes.map((policyType) => {
             const IconComponent = policyType.icon;
             const existingPolicy = getExistingPolicy(policyType.key);
-            
+
             return (
               <Card key={policyType.key} className="cursor-pointer hover:shadow-lg transition-shadow">
                 <CardHeader>
@@ -347,16 +347,16 @@ export default function PoliciesManagement() {
                         Last updated: {new Date(existingPolicy.updated_at).toLocaleDateString()}
                       </p>
                       <div className="flex space-x-2">
-                        <Button 
-                          size="sm" 
+                        <Button
+                          size="sm"
                           onClick={() => handleEditPolicy(existingPolicy)}
                           className="flex-1"
                         >
                           <Edit2 className="h-4 w-4 mr-2" />
                           Edit
                         </Button>
-                        <Button 
-                          size="sm" 
+                        <Button
+                          size="sm"
                           variant="outline"
                           asChild
                         >
@@ -367,8 +367,8 @@ export default function PoliciesManagement() {
                       </div>
                     </div>
                   ) : (
-                    <Button 
-                      size="sm" 
+                    <Button
+                      size="sm"
                       variant="outline"
                       onClick={() => handleEditPolicy(null, policyType.key)}
                       className="w-full"

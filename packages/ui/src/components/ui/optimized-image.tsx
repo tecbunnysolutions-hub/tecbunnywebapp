@@ -38,28 +38,28 @@ const isSupabaseUrl = (url: string): boolean => {
 
 // Generate Supabase URL with transformations (basic optimization)
 const getOptimizedUrl = (
-  src: string, 
+  src: string,
   transformation?: Record<string, unknown>
 ): string => {
   if (!src || typeof src !== 'string') return src || '';
-  
+
   // For Supabase URLs, we can add basic query parameters for optimization
   if (isSupabaseUrl(src)) {
     try {
       const url = new URL(src);
-      
+
       // Add basic optimization parameters
       if (transformation?.width) url.searchParams.set('width', transformation.width.toString());
       if (transformation?.height) url.searchParams.set('height', transformation.height.toString());
       if (transformation?.quality) url.searchParams.set('quality', transformation.quality.toString());
-      
+
       return url.toString();
     } catch (error) {
       logger.warn('Failed to parse Supabase URL', { error, src, context: 'OptimizedImage.getOptimizedSrc' });
       return src;
     }
   }
-  
+
   // For other URLs, return as-is
   return src;
 };
@@ -104,14 +104,14 @@ export function OptimizedImage({
   // Get optimized URL
   const optimizedSrc = React.useMemo(() => {
     if (hasError) return fallbackSrc;
-    
+
     const optimizationParams = {
       ...transformation,
       width: width || transformation?.width,
       height: height || transformation?.height,
       quality,
     };
-    
+
     return getOptimizedUrl(imgSrc, optimizationParams);
   }, [imgSrc, transformation, width, height, quality, hasError, fallbackSrc]);
 
@@ -149,8 +149,8 @@ export function OptimizedImage({
         <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(0,0,0,0.02)_1px,transparent_1px),linear-gradient(to_bottom,rgba(0,0,0,0.02)_1px,transparent_1px)] dark:bg-[linear-gradient(to_right,rgba(255,255,255,0.01)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.01)_1px,transparent_1px)] bg-[size:14px_24px] pointer-events-none" />
         <div className="absolute -left-12 -top-12 h-24 w-24 rounded-full bg-primary/5 blur-xl pointer-events-none" />
         <div className="absolute -right-12 -bottom-12 h-24 w-24 rounded-full bg-primary/5 blur-xl pointer-events-none" />
-        
-        <div className="relative z-10 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 border border-primary/20 text-primary shadow-[0_0_15px_rgba(37,99,235,0.1)]">
+
+        <div className="relative z-10 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 border border-primary/20 text-primary shadow-md">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6">
             <rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect>
             <rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect>

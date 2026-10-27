@@ -67,7 +67,7 @@ export default function RolesPage() {
       return;
     }
     setNotice(null);
-    
+
     try {
       const res = await fetch('/api/roles', {
         method: 'POST',
@@ -138,16 +138,16 @@ export default function RolesPage() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-white flex items-center gap-2">
-            <Shield className="w-8 h-8 text-indigo-600" />
+          <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
+            <Shield className="w-8 h-8 text-primary" />
             Dynamic Role Builder
           </h1>
-          <p className="text-zinc-400 mt-1">Create and manage granular permissions for organizational roles.</p>
+          <p className="text-muted-foreground mt-1">Create and manage granular permissions for organizational roles.</p>
         </div>
         {!isCreating && (
-          <button 
+          <button
             onClick={() => setIsCreating(true)}
-            className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700"
+            className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-md hover:bg-primary"
           >
             <Plus className="w-4 h-4" /> Create Custom Role
           </button>
@@ -157,52 +157,52 @@ export default function RolesPage() {
       {notice && (
         <div
           role={notice.tone === 'error' ? 'alert' : 'status'}
-          className={`rounded-lg border px-4 py-3 text-sm ${notice.tone === 'error' ? 'border-red-500/30 bg-red-500/10 text-red-200' : 'border-emerald-500/30 bg-emerald-500/10 text-emerald-200'}`}
+          className={`rounded-lg border px-4 py-3 text-sm ${notice.tone === 'error' ? 'border-destructive/30 bg-destructive/10 text-destructive' : 'border-success/30 bg-success/10 text-success'}`}
         >
           {notice.message}
         </div>
       )}
 
-      <GlobalDrawer 
-        isOpen={isCreating} 
-        onClose={() => setIsCreating(false)} 
+      <GlobalDrawer
+        isOpen={isCreating}
+        onClose={() => setIsCreating(false)}
         title="New Role Configuration"
         width="600px"
       >
         <div className="space-y-6">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700">Role Name</label>
-              <input 
+              <label className="block text-sm font-medium text-foreground">Role Name</label>
+              <input
                 value={newRoleName} onChange={e => setNewRoleName(e.target.value)}
                 placeholder="e.g. Warehouse Manager"
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:border-indigo-500 focus:ring-indigo-500 text-black" 
+                className="mt-1 block w-full rounded-md border-border shadow-sm p-2 border focus:border-primary focus:ring-primary text-foreground"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700">Description</label>
-              <input 
+              <label className="block text-sm font-medium text-foreground">Description</label>
+              <input
                 value={newRoleDesc} onChange={e => setNewRoleDesc(e.target.value)}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:border-indigo-500 focus:ring-indigo-500 text-black" 
+                className="mt-1 block w-full rounded-md border-border shadow-sm p-2 border focus:border-primary focus:ring-primary text-foreground"
               />
             </div>
           </div>
 
           <div>
-            <h3 className="text-lg font-medium text-gray-200 mb-4">Permission Matrix</h3>
+            <h3 className="text-lg font-medium text-muted-foreground mb-4">Permission Matrix</h3>
             <div className="grid grid-cols-1 gap-4">
               {modules.map(mod => (
-                <div key={mod} className="bg-gray-800 rounded-lg p-4 border border-gray-700">
-                  <h4 className="font-semibold text-gray-200 capitalize mb-3 pb-2 border-b border-gray-700">{mod}</h4>
+                <div key={mod} className="bg-card rounded-lg p-4 border border-border">
+                  <h4 className="font-semibold text-muted-foreground capitalize mb-3 pb-2 border-b border-border">{mod}</h4>
                   <div className="flex flex-wrap gap-4">
                     {permissions.filter(p => p.module === mod).map(p => (
-                      <label key={p.id} className="flex items-center gap-2 cursor-pointer hover:bg-gray-700 p-2 rounded">
-                        {selectedPerms.has(p.id) ? 
-                          <CheckSquare className="w-5 h-5 text-indigo-400" /> : 
-                          <Square className="w-5 h-5 text-gray-500" />
+                      <label key={p.id} className="flex items-center gap-2 cursor-pointer hover:bg-secondary p-2 rounded">
+                        {selectedPerms.has(p.id) ?
+                          <CheckSquare className="w-5 h-5 text-primary" /> :
+                          <Square className="w-5 h-5 text-muted-foreground" />
                         }
                         <input type="checkbox" className="hidden" checked={selectedPerms.has(p.id)} onChange={() => togglePermission(p.id)} />
-                        <span className="text-sm text-gray-300 capitalize">{p.action}</span>
+                        <span className="text-sm text-muted-foreground capitalize">{p.action}</span>
                       </label>
                     ))}
                   </div>
@@ -211,28 +211,28 @@ export default function RolesPage() {
             </div>
           </div>
 
-          <div className="rounded-lg border border-indigo-500/20 bg-indigo-950/20 p-4">
+          <div className="rounded-lg border border-primary/20 bg-primary/20 p-4">
             <div className="flex items-start gap-3">
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-500/20 text-indigo-200">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/20 text-primary">
                 <Eye className="h-4 w-4" />
               </span>
               <div className="min-w-0 flex-1">
-                <h3 className="text-sm font-semibold text-white">Policy impact preview</h3>
-                <dl className="mt-3 grid gap-2 text-xs text-gray-300 sm:grid-cols-3">
-                  <div className="rounded-md bg-black/20 p-3">
-                    <dt className="text-gray-500">Selected permissions</dt>
-                    <dd className="mt-1 font-bold text-white">{selectedPermissionDetails.length}</dd>
+                <h3 className="text-sm font-semibold text-foreground">Policy impact preview</h3>
+                <dl className="mt-3 grid gap-2 text-xs text-muted-foreground sm:grid-cols-3">
+                  <div className="rounded-md bg-overlay/20 p-3">
+                    <dt className="text-muted-foreground">Selected permissions</dt>
+                    <dd className="mt-1 font-bold text-foreground">{selectedPermissionDetails.length}</dd>
                   </div>
-                  <div className="rounded-md bg-black/20 p-3">
-                    <dt className="text-gray-500">Modules affected</dt>
-                    <dd className="mt-1 font-bold text-white">{selectedModules.length}</dd>
+                  <div className="rounded-md bg-overlay/20 p-3">
+                    <dt className="text-muted-foreground">Modules affected</dt>
+                    <dd className="mt-1 font-bold text-foreground">{selectedModules.length}</dd>
                   </div>
-                  <div className="rounded-md bg-black/20 p-3">
-                    <dt className="text-gray-500">Elevated actions</dt>
-                    <dd className={`mt-1 font-bold ${highRiskPermissions.length > 0 ? 'text-amber-200' : 'text-emerald-200'}`}>{highRiskPermissions.length}</dd>
+                  <div className="rounded-md bg-overlay/20 p-3">
+                    <dt className="text-muted-foreground">Elevated actions</dt>
+                    <dd className={`mt-1 font-bold ${highRiskPermissions.length > 0 ? 'text-warning' : 'text-success'}`}>{highRiskPermissions.length}</dd>
                   </div>
                 </dl>
-                <div className="mt-3 rounded-md border border-amber-500/20 bg-amber-500/10 p-3 text-xs text-amber-100">
+                <div className="mt-3 rounded-md border border-warning/20 bg-warning/10 p-3 text-xs text-warning">
                   <div className="flex items-start gap-2">
                     <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
                     <p>
@@ -245,7 +245,7 @@ export default function RolesPage() {
                 {selectedModules.length > 0 && (
                   <div className="mt-3 flex flex-wrap gap-2">
                     {selectedModules.map(module => (
-                      <span key={module} className="rounded-full border border-indigo-500/20 bg-indigo-500/10 px-2.5 py-1 text-xs font-semibold capitalize text-indigo-100">
+                      <span key={module} className="rounded-full border border-primary/20 bg-primary/10 px-2.5 py-1 text-xs font-semibold capitalize text-primary">
                         {module}
                       </span>
                     ))}
@@ -255,21 +255,21 @@ export default function RolesPage() {
             </div>
           </div>
 
-          <div className="rounded-lg border border-slate-700 bg-slate-900 p-4" aria-label="RBAC simulator">
+          <div className="rounded-lg border border-border bg-card p-4" aria-label="RBAC simulator">
             <div className="flex items-start gap-3">
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-800 text-slate-200">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-card text-muted-foreground">
                 <Shield className="h-4 w-4" />
               </span>
               <div className="min-w-0 flex-1">
-                <h3 className="text-sm font-semibold text-white">RBAC simulator</h3>
-                <p className="mt-1 text-xs leading-5 text-gray-400">
+                <h3 className="text-sm font-semibold text-foreground">RBAC simulator</h3>
+                <p className="mt-1 text-xs leading-5 text-muted-foreground">
                   Test whether this draft role would allow a common action before saving it.
                 </p>
                 <div className="mt-3 grid gap-3 sm:grid-cols-[180px_1fr] sm:items-center">
                   <select
                     value={simulatedAction}
                     onChange={(event) => setSimulatedAction(event.target.value)}
-                    className="rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white"
+                    className="rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground"
                     aria-label="Simulated permission action"
                   >
                     <option value="read">Read</option>
@@ -279,7 +279,7 @@ export default function RolesPage() {
                     <option value="manage">Manage</option>
                     <option value="admin">Admin</option>
                   </select>
-                  <div className={`rounded-md border px-3 py-2 text-sm ${simulatorDecision === 'allow' ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-100' : simulatorDecision === 'review' ? 'border-amber-500/30 bg-amber-500/10 text-amber-100' : 'border-red-500/30 bg-red-500/10 text-red-100'}`}>
+                  <div className={`rounded-md border px-3 py-2 text-sm ${simulatorDecision === 'allow' ? 'border-success/30 bg-success/10 text-success' : simulatorDecision === 'review' ? 'border-warning/30 bg-warning/10 text-warning' : 'border-destructive/30 bg-destructive/10 text-destructive'}`}>
                     <span className="font-semibold uppercase tracking-wide">{simulatorDecision}</span>
                     <span className="ml-2 text-xs opacity-80">
                       {simulatorDecision === 'allow'
@@ -293,7 +293,7 @@ export default function RolesPage() {
                 {simulatedMatches.length > 0 && (
                   <div className="mt-3 flex flex-wrap gap-2">
                     {simulatedMatches.slice(0, 6).map(permission => (
-                      <span key={permission.id} className="rounded-full border border-slate-700 bg-slate-950 px-2.5 py-1 text-xs font-semibold capitalize text-slate-200">
+                      <span key={permission.id} className="rounded-full border border-border bg-background px-2.5 py-1 text-xs font-semibold capitalize text-muted-foreground">
                         {permission.module}: {permission.action}
                       </span>
                     ))}
@@ -303,51 +303,51 @@ export default function RolesPage() {
             </div>
           </div>
 
-          <div className="flex justify-end gap-3 pt-4 border-t border-gray-700">
-            <button onClick={() => setIsCreating(false)} className="px-4 py-2 text-gray-300 hover:bg-gray-800 rounded-md">Cancel</button>
-            <button onClick={handleCreateRole} className="flex items-center gap-2 bg-indigo-600 text-white px-6 py-2 rounded-md hover:bg-indigo-700">
+          <div className="flex justify-end gap-3 pt-4 border-t border-border">
+            <button onClick={() => setIsCreating(false)} className="px-4 py-2 text-muted-foreground hover:bg-card rounded-md">Cancel</button>
+            <button onClick={handleCreateRole} className="flex items-center gap-2 bg-primary text-primary-foreground px-6 py-2 rounded-md hover:bg-primary">
               <Save className="w-4 h-4" /> Save Custom Role
             </button>
           </div>
         </div>
       </GlobalDrawer>
 
-      <div className="bg-zinc-900/50 rounded-xl border border-zinc-800 shadow-sm overflow-hidden">
-        <table className="min-w-full divide-y divide-zinc-800">
-          <thead className="bg-zinc-900/80">
+      <div className="bg-card/50 rounded-xl border border-border shadow-sm overflow-hidden">
+        <table className="min-w-full divide-y divide-border">
+          <thead className="bg-card/80">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-bold text-zinc-400 uppercase tracking-wider">Role</th>
-              <th className="px-6 py-3 text-left text-xs font-bold text-zinc-400 uppercase tracking-wider">Permissions Count</th>
-              <th className="px-6 py-3 text-left text-xs font-bold text-zinc-400 uppercase tracking-wider text-right">Actions</th>
+              <th className="px-6 py-3 text-left text-xs font-bold text-muted-foreground uppercase tracking-wider">Role</th>
+              <th className="px-6 py-3 text-left text-xs font-bold text-muted-foreground uppercase tracking-wider">Permissions Count</th>
+              <th className="px-6 py-3 text-left text-xs font-bold text-muted-foreground uppercase tracking-wider text-right">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-zinc-800/60 bg-transparent">
+          <tbody className="divide-y divide-border/60 bg-transparent">
             {roles.map(role => (
-              <tr key={role.id} className="hover:bg-zinc-900/30 transition-colors">
+              <tr key={role.id} className="hover:bg-card/30 transition-colors">
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="font-bold text-white text-sm">{role.name}</div>
-                  <div className="text-xs text-zinc-400">{role.description}</div>
+                  <div className="font-bold text-foreground text-sm">{role.name}</div>
+                  <div className="text-xs text-muted-foreground">{role.description}</div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-xs text-zinc-400">
-                  <span className="bg-indigo-950/40 text-indigo-300 border border-indigo-900/50 py-1 px-3 rounded-full text-xs font-semibold">
+                <td className="px-6 py-4 whitespace-nowrap text-xs text-muted-foreground">
+                  <span className="bg-primary/40 text-primary border border-primary/50 py-1 px-3 rounded-full text-xs font-semibold">
                     {role.permissions?.length || 0} Permissions
                   </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
                   {pendingDeleteId === role.id ? (
-                    <div className="inline-flex items-center justify-end gap-2 rounded-lg border border-red-500/30 bg-red-500/10 px-2 py-1">
-                      <span className="text-xs font-medium text-red-200">Delete?</span>
+                    <div className="inline-flex items-center justify-end gap-2 rounded-lg border border-destructive/30 bg-destructive/10 px-2 py-1">
+                      <span className="text-xs font-medium text-destructive">Delete?</span>
                       <button
                         type="button"
                         onClick={() => handleDeleteRole(role.id)}
-                        className="rounded-md bg-red-600 px-2 py-1 text-xs font-semibold text-white hover:bg-red-700"
+                        className="rounded-md bg-destructive px-2 py-1 text-xs font-semibold text-destructive-foreground hover:bg-destructive"
                       >
                         Confirm
                       </button>
                       <button
                         type="button"
                         onClick={() => setPendingDeleteId(null)}
-                        className="rounded-md px-2 py-1 text-xs font-semibold text-zinc-300 hover:bg-zinc-800 hover:text-white"
+                        className="rounded-md px-2 py-1 text-xs font-semibold text-muted-foreground hover:bg-card hover:text-foreground"
                       >
                         Cancel
                       </button>
@@ -357,7 +357,7 @@ export default function RolesPage() {
                       type="button"
                       onClick={() => setPendingDeleteId(role.id)}
                       aria-label={`Delete role ${role.name}`}
-                      className="p-1.5 text-zinc-500 hover:text-red-500 rounded-md hover:bg-red-500/10 transition-all inline-flex items-center"
+                      className="p-1.5 text-muted-foreground hover:text-destructive rounded-md hover:bg-destructive/10 transition-all inline-flex items-center"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -367,7 +367,7 @@ export default function RolesPage() {
             ))}
             {roles.length === 0 && (
               <tr>
-                <td colSpan={3} className="px-6 py-16 text-center text-zinc-500 italic text-sm">
+                <td colSpan={3} className="px-6 py-16 text-center text-muted-foreground italic text-sm">
                   No custom roles defined. Create one to get started.
                 </td>
               </tr>

@@ -19,11 +19,11 @@ interface CalEvent {
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const EVENT_COLORS: Record<string, string> = {
-  SERVICE:      'bg-blue-100 text-blue-700 border-blue-200',
-  INSTALLATION: 'bg-emerald-100 text-emerald-700 border-emerald-200',
-  MEETING:      'bg-purple-100 text-purple-700 border-purple-200',
-  DELIVERY:     'bg-amber-100 text-amber-700 border-amber-200',
-  DEFAULT:      'bg-slate-100 text-slate-700 border-slate-200',
+  SERVICE:      'bg-primary/10 text-primary border-primary/20',
+  INSTALLATION: 'bg-success/10 text-success border-success/20',
+  MEETING:      'bg-primary/10 text-primary border-primary/20',
+  DELIVERY:     'bg-warning/10 text-warning border-warning/20',
+  DEFAULT:      'bg-muted text-foreground border-border',
 };
 
 function getMonthMatrix(year: number, month: number): (Date | null)[][] {
@@ -93,7 +93,7 @@ export default function CalendarPage() {
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
-            <CalendarDays className="w-6 h-6 text-indigo-600" /> Calendar
+            <CalendarDays className="w-6 h-6 text-primary" /> Calendar
           </h1>
           <p className="text-sm text-muted-foreground">Service schedules, installations, and team events.</p>
         </div>
@@ -113,7 +113,7 @@ export default function CalendarPage() {
 
           <div className="grid grid-cols-7 text-center">
             {DAYS.map(d => (
-              <div key={d} className="py-2 text-xs font-semibold text-slate-500">{d}</div>
+              <div key={d} className="py-2 text-xs font-semibold text-muted-foreground">{d}</div>
             ))}
             {matrix.map((week, wi) =>
               week.map((date, di) => {
@@ -124,17 +124,17 @@ export default function CalendarPage() {
                 return (
                   <div
                     key={`${wi}-${di}`}
-                    className={`relative min-h-[72px] border border-slate-100 p-1.5 cursor-pointer transition-colors ${
-                      !date ? 'bg-slate-50' :
-                      isSelected ? 'bg-indigo-50 border-indigo-200' :
-                      'hover:bg-slate-50'
+                    className={`relative min-h-[72px] border border-border p-1.5 cursor-pointer transition-colors ${
+                      !date ? 'bg-muted' :
+                      isSelected ? 'bg-primary/10 border-primary/20' :
+                      'hover:bg-muted'
                     }`}
                     onClick={() => date && setSelected(date)}
                   >
                     {date && (
                       <>
                         <span className={`text-xs font-medium inline-flex h-5 w-5 items-center justify-center rounded-full ${
-                          isToday ? 'bg-indigo-600 text-white' : 'text-slate-700'
+                          isToday ? 'bg-primary text-primary-foreground' : 'text-foreground'
                         }`}>
                           {date.getDate()}
                         </span>
@@ -149,7 +149,7 @@ export default function CalendarPage() {
                           </div>
                         ))}
                         {dayEvents.length > 2 && (
-                          <div className="text-[9px] text-slate-400 mt-0.5">+{dayEvents.length - 2} more</div>
+                          <div className="text-[9px] text-muted-foreground mt-0.5">+{dayEvents.length - 2} more</div>
                         )}
                       </>
                     )}
@@ -162,16 +162,16 @@ export default function CalendarPage() {
 
         {/* Day Detail Panel */}
         <Card className="p-5">
-          <h3 className="font-semibold text-sm text-slate-800 mb-4">
+          <h3 className="font-semibold text-sm text-foreground mb-4">
             {selected
               ? selected.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' })
               : 'Select a day'}
           </h3>
           {!selected && (
-            <p className="text-xs text-slate-400">Click any date on the calendar to see its events.</p>
+            <p className="text-xs text-muted-foreground">Click any date on the calendar to see its events.</p>
           )}
           {selected && selectedEvents.length === 0 && (
-            <p className="text-xs text-slate-400">No events scheduled for this day.</p>
+            <p className="text-xs text-muted-foreground">No events scheduled for this day.</p>
           )}
           <div className="space-y-3">
             {selectedEvents.map(e => (

@@ -365,7 +365,7 @@ export default function HeroCarouselManager() {
           <Tabs value={activeTab} onValueChange={value => setActiveTab(value as HeroCarouselPageKey)}>
             <TabsList className="flex flex-wrap gap-2">
               {PAGE_TABS.map(tab => (
-                <TabsTrigger key={tab.key} value={tab.key} className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                <TabsTrigger key={tab.key} value={tab.key} className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-foreground">
                   {tab.label}
                   {localContent[tab.key].length > 0 ? (
                     <Badge variant="secondary" className="ml-2">

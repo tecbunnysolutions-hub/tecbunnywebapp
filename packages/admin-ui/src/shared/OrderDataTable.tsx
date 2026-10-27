@@ -51,13 +51,13 @@ const STATUS_VARIANT: Record<OrderStatus, 'default' | 'destructive' | 'outline' 
 };
 
 const TYPE_BADGE_CLASS: Record<OrderType, string> = {
-  Delivery: 'bg-blue-500/10 text-blue-500 border border-blue-500/20',
-  Pickup: 'bg-amber-500/10 text-amber-500 border border-amber-500/20',
-  'Walk-in': 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20',
+  Delivery: 'bg-primary/10 text-primary border border-primary/20',
+  Pickup: 'bg-warning/10 text-warning border border-warning/20',
+  'Walk-in': 'bg-success/10 text-success border border-success/20',
   Service: 'bg-primary/10 text-primary border border-primary/20',
-  Repair: 'bg-purple-500/10 text-purple-500 border border-purple-500/20',
-  Installation: 'bg-indigo-500/10 text-indigo-500 border border-indigo-500/20',
-  Setup: 'bg-sky-500/10 text-sky-500 border border-sky-500/20',
+  Repair: 'bg-primary/10 text-primary border border-primary/20',
+  Installation: 'bg-primary/10 text-primary border border-primary/20',
+  Setup: 'bg-primary/10 text-primary border border-primary/20',
 };
 
 type TypeFilter = 'all' | OrderType;
@@ -359,7 +359,7 @@ export default function OrderDataTable({ role }: OrderDataTableProps) {
 
   const getTypeBadgeClass = (type: OrderType | null | undefined) => {
     if (!type || !(type in TYPE_BADGE_CLASS)) {
-      return 'bg-gray-100 text-gray-700';
+      return 'bg-muted text-foreground';
     }
     return TYPE_BADGE_CLASS[type as OrderType];
   };
@@ -482,8 +482,8 @@ export default function OrderDataTable({ role }: OrderDataTableProps) {
         <div>
           <h1 className="text-3xl font-bold">{role === 'ADMIN' ? 'Order Management' : 'Pickup Orders'}</h1>
           <p className="text-muted-foreground">
-            {role === 'ADMIN' 
-              ? 'Monitor and control every order across the storefront.' 
+            {role === 'ADMIN'
+              ? 'Monitor and control every order across the storefront.'
               : 'Manage and track orders designated for in-store pickup.'}
           </p>
         </div>
@@ -585,10 +585,10 @@ export default function OrderDataTable({ role }: OrderDataTableProps) {
           </CardContent>
         </Card>
       ) : (
-        <Card className="border-l-2 border-l-emerald-500 bg-emerald-500/5 border-border">
+        <Card className="border-l-2 border-l-emerald-500 bg-success/5 border-border">
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
-              <div className="h-3 w-3 rounded-full bg-emerald-500"></div>
+              <div className="h-3 w-3 rounded-full bg-success text-success-foreground"></div>
               <div>
                 <p className="font-medium text-foreground">Sales & Manager Access</p>
                 <p className="text-sm text-muted-foreground">You can view and manage all pickup order statuses.</p>

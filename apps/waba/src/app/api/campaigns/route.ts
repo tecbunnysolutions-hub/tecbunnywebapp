@@ -47,7 +47,7 @@ export async function POST(req: Request) {
     }
 
     const { data: template, error: templateError } = await applyOrgBranchScope(
-      supabase.from('Template').select('name, status, provider_status').eq('name', templateName),
+      supabase.from('Template').select('name, status, provider_status').eq('name', templateName) as any,
       scope,
     ).maybeSingle();
 
@@ -162,7 +162,7 @@ export async function POST(req: Request) {
             skippedCount++;
             continue;
           }
-          
+
           await queue.add(
             'send-template',
             {

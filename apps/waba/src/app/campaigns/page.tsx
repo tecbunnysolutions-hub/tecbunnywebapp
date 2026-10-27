@@ -129,26 +129,26 @@ export default function CampaignsPage() {
   return (
     <div className="dashboard-container" style={{ display: "flex", justifyContent: "center", alignItems: "flex-start" }}>
       <div className="glass-panel" style={{ width: "100%", maxWidth: "760px", padding: "2rem", display: "flex", flexDirection: "column", gap: "1.25rem" }}>
-        <div style={{ borderBottom: "1px solid rgba(255,255,255,0.1)", paddingBottom: "1rem" }}>
+        <div style={{ borderBottom: "1px solid hsl(var(--border) / 0.1)", paddingBottom: "1rem" }}>
           <h2 style={{ fontSize: "1.5rem", fontWeight: 600 }}>WhatsApp campaign</h2>
-          <p style={{ color: "#94a3b8", fontSize: "0.9rem", marginTop: "0.5rem" }}>Upload consented contacts, validate eligibility, preview the approved message, then queue the campaign.</p>
+          <p style={{ color: "hsl(var(--muted-foreground))", fontSize: "0.9rem", marginTop: "0.5rem" }}>Upload consented contacts, validate eligibility, preview the approved message, then queue the campaign.</p>
         </div>
 
-        <label style={{ border: "1px dashed rgba(96,165,250,0.55)", borderRadius: "8px", padding: "1.5rem", cursor: "pointer", color: "#bfdbfe" }}>
+        <label style={{ border: "1px dashed hsl(var(--primary) / 0.55)", borderRadius: "8px", padding: "1.5rem", cursor: "pointer", color: "hsl(var(--foreground))" }}>
           <strong>{fileName || "Choose Excel or CSV file"}</strong>
-          <span style={{ display: "block", color: "#94a3b8", fontSize: "0.85rem", marginTop: "0.35rem" }}>Required columns: Name and Mobile Number. Optional: Offer.</span>
+          <span style={{ display: "block", color: "hsl(var(--muted-foreground))", fontSize: "0.85rem", marginTop: "0.35rem" }}>Required columns: Name and Mobile Number. Optional: Offer.</span>
           <input type="file" accept=".xlsx,.xls,.csv" onChange={handleFile} style={{ display: "none" }} />
         </label>
 
         <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)", gap: "1rem" }}>
-          <label style={{ display: "flex", flexDirection: "column", gap: "0.5rem", color: "#94a3b8", fontSize: "0.85rem" }}>
+          <label style={{ display: "flex", flexDirection: "column", gap: "0.5rem", color: "hsl(var(--muted-foreground))", fontSize: "0.85rem" }}>
             Approved WhatsApp template
             <select className="crm-select" value={templateName} onChange={(event) => setTemplateName(event.target.value)}>
               <option value="">Select template</option>
               {templates.map((template) => <option key={template.name} value={template.name}>{template.name}</option>)}
             </select>
           </label>
-          <label style={{ display: "flex", flexDirection: "column", gap: "0.5rem", color: "#94a3b8", fontSize: "0.85rem" }}>
+          <label style={{ display: "flex", flexDirection: "column", gap: "0.5rem", color: "hsl(var(--muted-foreground))", fontSize: "0.85rem" }}>
             Promotion or offer
             <input className="crm-input" value={offer} onChange={(event) => setOffer(event.target.value)} placeholder="Optional fallback for {{2}}" />
           </label>
@@ -156,29 +156,29 @@ export default function CampaignsPage() {
 
         <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
           <button type="button" onClick={validateContacts} disabled={isBusy || !recipients.length} className="crm-button">{isBusy ? "Checking..." : "Validate contacts"}</button>
-          {preview && <button type="button" onClick={startCampaign} disabled={isBusy || !preview.eligible} className="crm-button" style={{ background: "#f59e0b", color: "#111827" }}>{isBusy ? "Starting..." : "Start campaign"}</button>}
+          {preview && <button type="button" onClick={startCampaign} disabled={isBusy || !preview.eligible} className="crm-button" style={{ background: "hsl(var(--primary))", color: "hsl(var(--accent-foreground))" }}>{isBusy ? "Starting..." : "Start campaign"}</button>}
         </div>
 
         <div style={{ display: "flex", gap: "0.75rem", alignItems: "end", flexWrap: "wrap" }}>
-          <label style={{ display: "flex", flexDirection: "column", gap: "0.5rem", color: "#94a3b8", fontSize: "0.85rem", flex: "1 1 240px" }}>
+          <label style={{ display: "flex", flexDirection: "column", gap: "0.5rem", color: "hsl(var(--muted-foreground))", fontSize: "0.85rem", flex: "1 1 240px" }}>
             Test phone number
             <input className="crm-input" value={testPhone} onChange={(event) => setTestPhone(event.target.value)} placeholder="+15551234567" />
           </label>
           <button type="button" onClick={sendTest} disabled={isBusy} className="crm-button">Send test</button>
         </div>
 
-        {preview && <div role="status" style={{ padding: "1rem", borderRadius: "8px", background: "rgba(16,185,129,0.1)", border: "1px solid rgba(16,185,129,0.25)", color: "#d1fae5" }}>
+        {preview && <div role="status" style={{ padding: "1rem", borderRadius: "8px", background: "hsl(var(--success) / 0.1)", border: "1px solid hsl(var(--success) / 0.25)", color: "hsl(var(--primary))" }}>
           <strong>{preview.uploaded} uploaded -&gt; {preview.eligible} eligible</strong>
-          <div style={{ color: "#a7f3d0", fontSize: "0.85rem", marginTop: "0.4rem" }}>Invalid: {preview.invalid} | Duplicates: {preview.duplicates} | Opted out or no consent: {preview.optedOut}</div>
-          <div style={{ marginTop: "0.75rem", color: "#f8fafc" }}>{previewText}</div>
+          <div style={{ color: "hsl(var(--success))", fontSize: "0.85rem", marginTop: "0.4rem" }}>Invalid: {preview.invalid} | Duplicates: {preview.duplicates} | Opted out or no consent: {preview.optedOut}</div>
+          <div style={{ marginTop: "0.75rem", color: "hsl(var(--foreground))" }}>{previewText}</div>
         </div>}
 
-        {message && <div role="alert" style={{ padding: "1rem", borderRadius: "8px", background: "rgba(239,68,68,0.1)", color: "#fecaca", border: "1px solid rgba(239,68,68,0.2)" }}>{message}</div>}
+        {message && <div role="alert" style={{ padding: "1rem", borderRadius: "8px", background: "hsl(var(--destructive) / 0.1)", color: "hsl(var(--primary))", border: "1px solid hsl(var(--destructive) / 0.2)" }}>{message}</div>}
 
         <div style={{ display: "flex", justifyContent: "center", gap: "1rem", flexWrap: "wrap", marginTop: "0.5rem" }}>
-          <Link href="/analytics" style={{ color: "#60a5fa", textDecoration: "none", fontSize: "0.9rem" }}>Analytics</Link>
-          <Link href="/contacts" style={{ color: "#60a5fa", textDecoration: "none", fontSize: "0.9rem" }}>Consent ledger</Link>
-          <Link href="/" style={{ color: "#60a5fa", textDecoration: "none", fontSize: "0.9rem" }}>Back to inbox</Link>
+          <Link href="/analytics" style={{ color: "hsl(var(--primary))", textDecoration: "none", fontSize: "0.9rem" }}>Analytics</Link>
+          <Link href="/contacts" style={{ color: "hsl(var(--primary))", textDecoration: "none", fontSize: "0.9rem" }}>Consent ledger</Link>
+          <Link href="/" style={{ color: "hsl(var(--primary))", textDecoration: "none", fontSize: "0.9rem" }}>Back to inbox</Link>
         </div>
       </div>
     </div>

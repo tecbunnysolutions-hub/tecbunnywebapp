@@ -16,13 +16,13 @@ export default function RecentActivityTable({ activities }: RecentActivityTableP
     const statusBadgeClass = (status: string) => {
         switch (status) {
             case 'completed':
-                return 'bg-emerald-500/10 text-emerald-300 border border-emerald-500/30';
+                return 'bg-success/10 text-success border border-success/30';
             case 'pending':
-                return 'bg-amber-500/10 text-amber-300 border border-amber-500/30';
+                return 'bg-warning/10 text-warning border border-warning/30';
             case 'cancelled':
-                return 'bg-red-500/10 text-red-300 border border-red-500/30';
+                return 'bg-destructive/10 text-destructive border border-destructive/30';
             default:
-                return 'bg-white/5 text-slate-300 border border-white/10';
+                return 'bg-card/5 text-muted-foreground border border-border/10';
         }
     };
 

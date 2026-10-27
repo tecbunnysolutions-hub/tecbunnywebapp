@@ -2,15 +2,15 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { 
-  Building2, 
-  Send, 
-  CheckCircle2, 
-  MapPin, 
-  Calendar, 
-  Clock, 
-  ShieldCheck, 
-  ChevronRight, 
+import {
+  Building2,
+  Send,
+  CheckCircle2,
+  MapPin,
+  Calendar,
+  Clock,
+  ShieldCheck,
+  ChevronRight,
   Sparkles,
   Server,
   Wifi,
@@ -76,13 +76,13 @@ export default function SolutionsPage() {
 
   const getDowntimeRiskLevel = (loss: number) => {
     const ratio = loss / dailyRevenue;
-    if (ratio < 0.05) return { text: 'Low Impact', color: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20' };
-    if (ratio < 0.15) return { text: 'Moderate Financial Risk', color: 'text-yellow-400 bg-yellow-500/10 border-yellow-500/20' };
-    return { text: 'CRITICAL OPERATIONAL EXPOSURE', color: 'text-red-400 bg-red-500/10 border-red-500/20' };
+    if (ratio < 0.05) return { text: 'Low Impact', color: 'text-success bg-success/10 border-success/20' };
+    if (ratio < 0.15) return { text: 'Moderate Financial Risk', color: 'text-warning bg-warning/10 border-warning/20' };
+    return { text: 'CRITICAL OPERATIONAL EXPOSURE', color: 'text-destructive bg-destructive/10 border-destructive/20' };
   };
 
   const handleSystemToggle = (system: string) => {
-    setAffectedSystems(prev => 
+    setAffectedSystems(prev =>
       prev.includes(system) ? prev.filter(s => s !== system) : [...prev, system]
     );
   };
@@ -121,30 +121,9 @@ We require an infrastructure redundancy proposal with direct SLAs to prevent thi
   };
 
   const caseStudies: CaseStudy[] = [
-    {
-      title: "6-Node Mesh Network for a Villa in Anjuna",
-      category: "Networking & IT Infrastructure",
-      location: "Anjuna, North Goa",
-      scope: "Fitted shielded Cat6 outdoor lines and managed Digisol access points through 18-inch Portuguese-style stone walls.",
-      results: "On-site tests at handover measured sub-50ms roaming handoffs and sustained download speeds above 450 Mbps across the 12,000 sq ft property.",
-      icon: Wifi
-    },
-    {
-      title: "8-Camera Enterprise Perimeter CCTV surveillance",
-      category: "Physical Security Systems",
-      location: "Parra, Goa",
-      scope: "Deployed ColorVu IP cameras, surge protection devices (SPDs), and centralized battery backup to withstand Goa grid fluctuations.",
-      results: "Continuous security coverage during utility outages, instant perimeter alerts, and high-resolution color night-vision feeds.",
-      icon: ShieldCheck
-    },
-    {
-      title: "Smart Biometrics & RFID Lock Integration",
-      category: "Facility Access Control",
-      location: "Panaji, Goa",
-      scope: "Installed glass-door biometric fingerprint/card readers integrated with localized central server auditing logs.",
-      results: "Log-in automation for 80+ daily transits, reducing front-desk log queues by 85% with fail-safe fire alarm release mapping.",
-      icon: Lock
-    }
+ { title: 'Wi-Fi for a larger property', category: 'Networking', location: 'Example residential requirement', scope: 'Review room coverage, wall construction, access-point placement and cable routes.', results: 'Define the areas that need coverage and agree how the proposed setup will be checked.', icon: Wifi },
+ { title: 'CCTV around key entrances', category: 'CCTV', location: 'Example security requirement', scope: 'Review camera views, recording needs, lighting, storage and power arrangements.', results: 'Plan usable views around the places that matter rather than choosing by camera count alone.', icon: ShieldCheck },
+ { title: 'Managed access for a workplace', category: 'Access control', location: 'Example workplace requirement', scope: 'Discuss door hardware, access credentials, user administration and emergency exit needs.', results: 'Agree how users receive access, how it is removed and what happens if power fails.', icon: Lock },
   ];
 
   const timelineSteps = [
@@ -265,25 +244,25 @@ ${form.details.trim()}
   };
 
   return (
-    <div className="relative min-h-screen bg-[#09090B] text-zinc-200 selection:bg-blue-500/20 selection:text-white overflow-hidden py-12 sm:py-16">
+    <div className="relative min-h-screen bg-card text-muted-foreground selection:bg-primary/20 selection:text-primary overflow-hidden py-12 sm:py-16">
       {/* Background Gradients */}
       <div className="pointer-events-none absolute inset-0 -z-10">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:5rem_5rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]" />
-        <div className="absolute -left-40 top-0 h-[48rem] w-[48rem] rounded-full bg-blue-500/5 blur-[170px]" />
-        <div className="absolute -right-40 top-1/4 h-[50rem] w-[50rem] rounded-full bg-indigo-500/5 blur-[200px]" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,hsl(var(--foreground)/0.02)_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--foreground)/0.02)_1px,transparent_1px)] bg-[size:5rem_5rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,hsl(var(--overlay))_70%,transparent_100%)]" />
+        <div className="absolute -left-40 top-0 h-[48rem] w-[48rem] rounded-full bg-primary/5 blur-[170px]" />
+        <div className="absolute -right-40 top-1/4 h-[50rem] w-[50rem] rounded-full bg-primary/5 blur-[200px]" />
       </div>
 
       <div className="mx-auto flex max-w-6xl flex-col gap-12 px-6 sm:px-8">
         {/* Page Hero */}
         <section className="text-center space-y-4 max-w-3xl mx-auto">
-          <div className="inline-flex items-center gap-2 rounded-full border border-blue-500/20 bg-blue-500/5 px-4.5 py-1.5 text-xs font-semibold text-blue-400">
-            <Building2 size={14} className="text-blue-400" />
+          <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4.5 py-1.5 text-xs font-semibold text-primary">
+            <Building2 size={14} className="text-primary" />
             <span>Corporate Solutions Division</span>
           </div>
-          <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl md:text-5xl font-tech leading-tight text-white">
-            Technology & Security <span className="bg-gradient-to-r from-blue-400 via-indigo-200 to-white bg-clip-text text-transparent">Solutions</span>
+          <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl md:text-5xl font-tech leading-tight text-foreground">
+            Technology & Security <span className=" text-primary">Solutions</span>
           </h1>
-          <p className="text-base sm:text-lg font-light leading-relaxed text-zinc-400 max-w-2xl mx-auto">
+          <p className="text-base sm:text-lg font-light leading-relaxed text-muted-foreground max-w-2xl mx-auto">
             Practical CCTV, networking, access control and automation for small businesses, hospitality sites and homes in North Goa and the Sawantwadi area of Sindhudurg district, Maharashtra.
           </p>
         </section>
@@ -291,30 +270,30 @@ ${form.details.trim()}
         {/* Corporate Case Studies Bento Grid */}
         <section className="space-y-8">
           <div>
-            <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-blue-400">Proof of capability</span>
-            <h2 className="text-2xl font-bold font-tech text-white mt-1">Verified Corporate Case Studies</h2>
+            <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-primary">Planning examples</span>
+            <h2 className="text-2xl font-bold font-tech text-foreground mt-1">Example project requirements</h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {caseStudies.map((cs, idx) => {
               const IconComp = cs.icon;
               return (
-                <div key={idx} className="p-6 bg-zinc-950/60 border border-zinc-900 rounded-2xl flex flex-col justify-between hover:border-zinc-800 transition-all duration-300">
+                <div key={idx} className="p-6 bg-background/60 border border-border rounded-2xl flex flex-col justify-between hover:border-border transition-all duration-300">
                   <div className="space-y-4">
-                    <div className="h-10 w-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-400">
+                    <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
                       <IconComp size={20} />
                     </div>
                     <div>
-                      <span className="text-[9px] font-bold text-zinc-550 uppercase tracking-widest flex items-center gap-1.5">
-                        <MapPin size={11} className="text-zinc-600" />
+                      <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-1.5">
+                        <MapPin size={11} className="text-muted-foreground" />
                         {cs.location}
                       </span>
-                      <h3 className="text-base font-bold text-white mt-1 leading-snug">{cs.title}</h3>
+                      <h3 className="text-base font-bold text-foreground mt-1 leading-snug">{cs.title}</h3>
                     </div>
-                    <p className="text-xs text-zinc-400 font-light leading-relaxed">{cs.scope}</p>
+                    <p className="text-xs text-muted-foreground font-light leading-relaxed">{cs.scope}</p>
                   </div>
-                  <div className="mt-6 border-t border-zinc-900/80 pt-4 bg-blue-500/5 -mx-6 -mb-6 p-6 rounded-b-2xl">
-                    <span className="text-[9px] uppercase font-bold text-blue-400 tracking-wider">Handoff Metric</span>
-                    <p className="text-xs text-zinc-300 font-medium mt-1 leading-relaxed">{cs.results}</p>
+                  <div className="mt-6 border-t border-border/80 pt-4 bg-primary/5 -mx-6 -mb-6 p-6 rounded-b-2xl">
+                    <span className="text-[9px] uppercase font-bold text-primary tracking-wider">What to plan</span>
+                    <p className="text-xs text-muted-foreground font-medium mt-1 leading-relaxed">{cs.results}</p>
                   </div>
                 </div>
               );
@@ -325,32 +304,32 @@ ${form.details.trim()}
         {/* Deployment Timeline */}
         <section className="space-y-12">
           <div className="max-w-2xl">
-            <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-blue-400">Our Methodology</span>
-            <h2 className="text-2xl font-bold font-tech text-white mt-1">Project Deployment Timeline</h2>
-            <p className="text-xs text-zinc-450 mt-2 font-light">
+            <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-primary">Our Methodology</span>
+            <h2 className="text-2xl font-bold font-tech text-foreground mt-1">Project Deployment Timeline</h2>
+            <p className="text-xs text-muted-foreground mt-2 font-light">
               We manage every deployment through a structured, 5-phase engineering process backed by local Goan technicians.
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
             {timelineSteps.map((step, idx) => (
-              <div key={idx} className="p-5 bg-zinc-900/20 border border-zinc-900/50 rounded-2xl relative overflow-hidden flex flex-col gap-3">
-                <span className="text-3xl font-black text-zinc-800 font-mono absolute -right-2 -top-2 opacity-30 select-none">{step.phase}</span>
-                <h3 className="text-xs font-bold text-white mt-2 leading-snug font-tech">{step.title}</h3>
-                <p className="text-[11px] text-zinc-500 font-light leading-relaxed">{step.desc}</p>
+              <div key={idx} className="p-5 bg-card/20 border border-border/50 rounded-2xl relative overflow-hidden flex flex-col gap-3">
+                <span className="text-3xl font-black text-foreground font-mono absolute -right-2 -top-2 opacity-30 select-none">{step.phase}</span>
+                <h3 className="text-xs font-bold text-foreground mt-2 leading-snug font-tech">{step.title}</h3>
+                <p className="text-[11px] text-muted-foreground font-light leading-relaxed">{step.desc}</p>
               </div>
             ))}
           </div>
         </section>
 
         {/* B2B Institutional Downtime Cost Calculator */}
-        <section className="bg-zinc-950/60 border border-zinc-900 rounded-3xl p-8 relative overflow-hidden space-y-8">
-          <div className="absolute -right-24 -bottom-24 h-48 w-48 rounded-full bg-blue-500/5 blur-3xl pointer-events-none" />
+        <section className="bg-background/60 border border-border rounded-3xl p-8 relative overflow-hidden space-y-8">
+          <div className="absolute -right-24 -bottom-24 h-48 w-48 rounded-full bg-primary/5 blur-3xl pointer-events-none" />
 
           <div className="space-y-2">
-            <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-blue-400">Financial Risk Assessment</span>
-            <h2 className="text-2xl font-bold font-tech text-white">Institutional Downtime Cost Calculator</h2>
-            <p className="text-xs text-zinc-400 font-light leading-relaxed max-w-2xl">
+            <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-primary">Financial Risk Assessment</span>
+            <h2 className="text-2xl font-bold font-tech text-foreground">Institutional Downtime Cost Calculator</h2>
+            <p className="text-xs text-muted-foreground font-light leading-relaxed max-w-2xl">
               Select your business parameters to project estimated financial exposure from network infrastructure outages during North Goa's high tourist seasons.
             </p>
           </div>
@@ -359,7 +338,7 @@ ${form.details.trim()}
             {/* Controls */}
             <div className="lg:col-span-7 space-y-6">
               <div className="space-y-3">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-450 block">Property Type</p>
+                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">Property Type</p>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   {(['resort', 'coworking', 'office', 'restaurant'] as const).map((type) => (
                     <button
@@ -368,8 +347,8 @@ ${form.details.trim()}
                       onClick={() => setPropertyType(type)}
                       className={`h-11 rounded-xl text-xs font-semibold capitalize border transition-all duration-200
                         ${propertyType === type
-                          ? 'border-blue-500 bg-blue-500/10 text-white'
-                          : 'border-zinc-900 bg-zinc-950 hover:border-zinc-800 text-zinc-400'
+                          ? 'border-primary bg-primary/10 text-primary'
+                          : 'border-border bg-background hover:border-border text-muted-foreground'
                         }
                       `}
                     >
@@ -381,8 +360,8 @@ ${form.details.trim()}
 
               <div className="space-y-3">
                 <div className="flex justify-between items-center text-xs">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-450">Average Daily Revenue</span>
-                  <span className="font-bold text-white font-mono">₹{dailyRevenue.toLocaleString('en-IN')}</span>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Average Daily Revenue</span>
+                  <span className="font-bold text-foreground font-mono">₹{dailyRevenue.toLocaleString('en-IN')}</span>
                 </div>
                 <input
                   type="range"
@@ -391,9 +370,9 @@ ${form.details.trim()}
                   step="10000"
                   value={dailyRevenue}
                   onChange={(e) => setDailyRevenue(Number(e.target.value))}
-                  className="w-full h-1 bg-zinc-900 rounded-lg appearance-none cursor-pointer accent-blue-500 focus:outline-none"
+                  className="w-full h-1 bg-card rounded-lg appearance-none cursor-pointer accent-blue-500 focus:outline-none"
                 />
-                <div className="flex justify-between text-[10px] text-zinc-650 font-mono">
+                <div className="flex justify-between text-[10px] text-muted-foreground font-mono">
                   <span>₹20,000</span>
                   <span>₹5,00,000</span>
                   <span>₹10,00,000</span>
@@ -402,8 +381,8 @@ ${form.details.trim()}
 
               <div className="space-y-3">
                 <div className="flex justify-between items-center text-xs">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-450">Estimated Outage Duration</span>
-                  <span className="font-bold text-white font-mono">{downtimeHours} Hour{downtimeHours > 1 ? 's' : ''}</span>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Estimated Outage Duration</span>
+                  <span className="font-bold text-foreground font-mono">{downtimeHours} Hour{downtimeHours > 1 ? 's' : ''}</span>
                 </div>
                 <input
                   type="range"
@@ -412,9 +391,9 @@ ${form.details.trim()}
                   step="1"
                   value={downtimeHours}
                   onChange={(e) => setDowntimeHours(Number(e.target.value))}
-                  className="w-full h-1 bg-zinc-900 rounded-lg appearance-none cursor-pointer accent-blue-500 focus:outline-none"
+                  className="w-full h-1 bg-card rounded-lg appearance-none cursor-pointer accent-blue-500 focus:outline-none"
                 />
-                <div className="flex justify-between text-[10px] text-zinc-650 font-mono">
+                <div className="flex justify-between text-[10px] text-muted-foreground font-mono">
                   <span>1 Hour</span>
                   <span>12 Hours</span>
                   <span>24 Hours</span>
@@ -422,7 +401,7 @@ ${form.details.trim()}
               </div>
 
               <div className="space-y-3">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-450 block">Affected Critical Systems</p>
+                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">Affected Critical Systems</p>
                 <div className="grid grid-cols-2 gap-3">
                   {[
                     { id: 'wifi', label: 'Guest Wi-Fi / Hotspot' },
@@ -436,16 +415,16 @@ ${form.details.trim()}
                       onClick={() => handleSystemToggle(sys.id)}
                       className={`h-11 px-4 rounded-xl text-xs font-semibold text-left border transition-all duration-200 flex items-center justify-between
                         ${affectedSystems.includes(sys.id)
-                          ? 'border-blue-500/40 bg-blue-500/5 text-white'
-                          : 'border-zinc-900 bg-zinc-950/40 text-zinc-500 hover:border-zinc-900'
+                          ? 'border-primary/40 bg-primary/5 text-primary'
+                          : 'border-border bg-background/40 text-muted-foreground hover:border-border'
                         }
                       `}
                     >
                       <span>{sys.label}</span>
                       <span className={`h-4 w-4 rounded border flex items-center justify-center text-[10px]
                         ${affectedSystems.includes(sys.id)
-                          ? 'border-blue-500 bg-blue-600 text-white'
-                          : 'border-zinc-855 bg-zinc-900'
+                          ? 'border-primary bg-primary text-primary-foreground'
+                          : 'border-border bg-card'
                         }
                       `}>
                         {affectedSystems.includes(sys.id) && '✓'}
@@ -457,10 +436,10 @@ ${form.details.trim()}
             </div>
 
             {/* Results Display */}
-            <div className="lg:col-span-5 p-6 bg-zinc-900/30 border border-zinc-900 rounded-2xl flex flex-col justify-between space-y-6">
+            <div className="lg:col-span-5 p-6 bg-card/30 border border-border rounded-2xl flex flex-col justify-between space-y-6">
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">Risk Assessment Report</span>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Risk Assessment Report</span>
                   {(() => {
                     const risk = getDowntimeRiskLevel(calculateDowntimeLoss());
                     return (
@@ -472,16 +451,16 @@ ${form.details.trim()}
                 </div>
 
                 <div className="space-y-1">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-450 block">Direct Financial Exposure</span>
-                  <div className="text-4xl font-extrabold text-white font-tech tracking-tight">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">Direct Financial Exposure</span>
+                  <div className="text-4xl font-extrabold text-foreground font-tech tracking-tight">
                     ₹{calculateDowntimeLoss().toLocaleString('en-IN')}
                   </div>
-                  <span className="text-[10px] text-zinc-550 font-light block">Estimated direct loss + operational overhead recovery.</span>
+                  <span className="text-[10px] text-muted-foreground font-light block">Estimated direct loss + operational overhead recovery.</span>
                 </div>
 
-                <div className="border-t border-zinc-900/80 pt-4 space-y-2">
-                  <span className="text-[9px] font-extrabold uppercase text-blue-400 tracking-widest block">Technical Justification</span>
-                  <p className="text-[11px] text-zinc-450 leading-relaxed font-light font-sans">
+                <div className="border-t border-border/80 pt-4 space-y-2">
+                  <span className="text-[9px] font-extrabold uppercase text-primary tracking-widest block">Technical Justification</span>
+                  <p className="text-[11px] text-muted-foreground leading-relaxed font-light font-sans">
                     Consumer router chipsets lack multi-WAN failover capability and thermal resistance required for continuous Goan grid fluctuation loads. Switching to managed Ubiquiti switches with automated dual-ISP backup lines reduces downtime probability to sub-0.01%.
                   </p>
                 </div>
@@ -490,7 +469,7 @@ ${form.details.trim()}
               <button
                 type="button"
                 onClick={applyCalculatorToForm}
-                className="w-full h-11 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold uppercase tracking-wider rounded-xl transition-all duration-300 flex items-center justify-center gap-2 group"
+                className="w-full h-11 bg-primary hover:bg-primary text-primary-foreground text-xs font-bold uppercase tracking-wider rounded-xl transition-all duration-300 flex items-center justify-center gap-2 group"
               >
                 <span>Apply to Redundancy Proposal</span>
                 <ArrowRight size={12} className="group-hover:translate-x-0.5 transition-transform" />
@@ -502,29 +481,29 @@ ${form.details.trim()}
         {/* Split Layout: Lead Capture & Enterprise FAQ */}
         <section id="b2b-form-section" className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
           {/* Left Column: Intake Form */}
-          <div className="lg:col-span-7 bg-zinc-950/60 border border-zinc-900 rounded-3xl p-8 relative overflow-hidden">
-            <div className="absolute -right-16 -top-16 h-36 w-36 rounded-full bg-blue-500/5 blur-2xl pointer-events-none" />
+          <div className="lg:col-span-7 bg-background/60 border border-border rounded-3xl p-8 relative overflow-hidden">
+            <div className="absolute -right-16 -top-16 h-36 w-36 rounded-full bg-primary/5 blur-2xl pointer-events-none" />
 
             <div className="mb-6 space-y-2">
-              <h2 className="text-xl font-bold font-tech text-white">Enterprise Onboarding Form</h2>
-              <p className="text-xs text-zinc-400 font-light">
+              <h2 className="text-xl font-bold font-tech text-foreground">Enterprise Onboarding Form</h2>
+              <p className="text-xs text-muted-foreground font-light">
                 Request a formal consultation, dynamic quotation, or physical site survey for your facility in Goa.
               </p>
             </div>
 
             {isSuccess ? (
-              <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-8 text-center space-y-4 max-w-xl mx-auto animate-fade-in">
-                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-400">
+              <div className="rounded-2xl border border-success/20 bg-success/5 p-8 text-center space-y-4 max-w-xl mx-auto animate-fade-in">
+                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-success/10 text-success">
                   <CheckCircle2 size={24} />
                 </div>
-                <h3 className="text-base font-bold text-white">Lead Successfully Logged</h3>
-                <p className="text-xs text-zinc-400 font-light leading-relaxed">
+                <h3 className="text-base font-bold text-foreground">Lead Successfully Logged</h3>
+                <p className="text-xs text-muted-foreground font-light leading-relaxed">
                   Thanks for reaching out! Our enterprise operations team is reviewing your property setup and will connect with you on WhatsApp / Email within 24 hours.
                 </p>
-                <Button 
+                <Button
                   onClick={() => setIsSuccess(false)}
-                  variant="outline" 
-                  className="border-zinc-850 text-zinc-400 hover:bg-zinc-900"
+                  variant="outline"
+                  className="border-border text-muted-foreground hover:bg-card"
                 >
                   Submit Another Inquiry
                 </Button>
@@ -533,48 +512,48 @@ ${form.details.trim()}
               <form onSubmit={handleSubmit} className="space-y-5">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label htmlFor="app-solutions-page-company-legal-name" className="text-[10px] font-bold uppercase tracking-wider text-zinc-450 block">Company Legal Name *</label>
+                    <label htmlFor="app-solutions-page-company-legal-name" className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">Company Legal Name *</label>
                     <Input id="app-solutions-page-company-legal-name"
                       name="companyName"
                       required
                       placeholder="e.g., Marriott Goa Resort"
                       value={form.companyName}
                       onChange={handleChange}
-                      className="bg-zinc-950 border-zinc-900 text-xs rounded-xl focus:border-blue-500 text-white placeholder:text-zinc-700"
+                      className="bg-background border-border text-xs rounded-xl focus:border-primary text-foreground placeholder:text-foreground"
                     />
                   </div>
                   <div className="space-y-2">
-                    <label htmlFor="app-solutions-page-gstin-for-tax-credit-optional" className="text-[10px] font-bold uppercase tracking-wider text-zinc-450 block">GSTIN (For Tax Credit) (Optional)</label>
+                    <label htmlFor="app-solutions-page-gstin-for-tax-credit-optional" className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">GSTIN (For Tax Credit) (Optional)</label>
                     <Input id="app-solutions-page-gstin-for-tax-credit-optional"
                       name="gstin"
                       maxLength={15}
                       placeholder="e.g., 30AAMCT1608G1ZO"
                       value={form.gstin}
                       onChange={handleChange}
-                      className="bg-zinc-950 border-zinc-900 text-xs rounded-xl focus:border-blue-500 text-white placeholder:text-zinc-700 uppercase"
+                      className="bg-background border-border text-xs rounded-xl focus:border-primary text-foreground placeholder:text-foreground uppercase"
                     />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label htmlFor="app-solutions-page-whatsapp-contact-number" className="text-[10px] font-bold uppercase tracking-wider text-zinc-450 block">WhatsApp Contact Number *</label>
+                    <label htmlFor="app-solutions-page-whatsapp-contact-number" className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">WhatsApp Contact Number *</label>
                     <Input id="app-solutions-page-whatsapp-contact-number"
                       name="phone"
                       required
                       placeholder="e.g., +91 96041 36010"
                       value={form.phone}
                       onChange={handleChange}
-                      className="bg-zinc-950 border-zinc-900 text-xs rounded-xl focus:border-blue-500 text-white placeholder:text-zinc-700"
+                      className="bg-background border-border text-xs rounded-xl focus:border-primary text-foreground placeholder:text-foreground"
                     />
                   </div>
                   <div className="space-y-2">
-                    <label htmlFor="app-solutions-page-estimated-project-budget" className="text-[10px] font-bold uppercase tracking-wider text-zinc-450 block">Estimated Project Budget *</label>
+                    <label htmlFor="app-solutions-page-estimated-project-budget" className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">Estimated Project Budget *</label>
                     <select id="app-solutions-page-estimated-project-budget"
                       name="budget"
                       value={form.budget}
                       onChange={handleChange}
-                      className="w-full h-10 px-3 bg-zinc-950 border border-zinc-900 text-xs rounded-xl focus:outline-none focus:border-blue-500 text-zinc-300 cursor-pointer"
+                      className="w-full h-10 px-3 bg-background border border-border text-xs rounded-xl focus:outline-none focus:border-primary text-muted-foreground cursor-pointer"
                     >
                       <option value="₹50k - ₹1.5L">₹50k - ₹1.5L</option>
                       <option value="₹1.5L - ₹5L">₹1.5L - ₹5L</option>
@@ -586,18 +565,18 @@ ${form.details.trim()}
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label htmlFor="app-solutions-page-contact-name" className="text-[10px] font-bold uppercase tracking-wider text-zinc-450 block">Contact Name *</label>
+                    <label htmlFor="app-solutions-page-contact-name" className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">Contact Name *</label>
                     <Input id="app-solutions-page-contact-name"
                       name="name"
                       required
                       placeholder="e.g., Shubham Bhisaji"
                       value={form.name}
                       onChange={handleChange}
-                      className="bg-zinc-950 border-zinc-900 text-xs rounded-xl focus:border-blue-500 text-white placeholder:text-zinc-700"
+                      className="bg-background border-border text-xs rounded-xl focus:border-primary text-foreground placeholder:text-foreground"
                     />
                   </div>
                   <div className="space-y-2">
-                    <label htmlFor="app-solutions-page-corporate-email" className="text-[10px] font-bold uppercase tracking-wider text-zinc-450 block">Corporate Email *</label>
+                    <label htmlFor="app-solutions-page-corporate-email" className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">Corporate Email *</label>
                     <Input id="app-solutions-page-corporate-email"
                       name="email"
                       type="email"
@@ -605,13 +584,13 @@ ${form.details.trim()}
                       placeholder="e.g., manager@resort.com"
                       value={form.email}
                       onChange={handleChange}
-                      className="bg-zinc-950 border-zinc-900 text-xs rounded-xl focus:border-blue-500 text-white placeholder:text-zinc-700"
+                      className="bg-background border-border text-xs rounded-xl focus:border-primary text-foreground placeholder:text-foreground"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <label htmlFor="app-solutions-page-project-requirements-scope" className="text-[10px] font-bold uppercase tracking-wider text-zinc-450 block">Project Requirements & Scope *</label>
+                  <label htmlFor="app-solutions-page-project-requirements-scope" className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">Project Requirements & Scope *</label>
                   <Textarea id="app-solutions-page-project-requirements-scope"
                     name="details"
                     required
@@ -619,14 +598,14 @@ ${form.details.trim()}
                     placeholder="Describe your structural layout, estimated number of access points/cameras, and timeline constraints..."
                     value={form.details}
                     onChange={handleChange}
-                    className="bg-zinc-950 border-zinc-900 text-xs rounded-xl focus:border-blue-500 text-white placeholder:text-zinc-700"
+                    className="bg-background border-border text-xs rounded-xl focus:border-primary text-foreground placeholder:text-foreground"
                   />
                 </div>
 
-                <Button 
-                  type="submit" 
+                <Button
+                  type="submit"
                   disabled={isSubmitting}
-                  className="w-full h-11 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold uppercase tracking-wider rounded-xl transition-all duration-300 flex items-center justify-center gap-2"
+                  className="w-full h-11 bg-primary hover:bg-primary text-primary-foreground text-xs font-bold uppercase tracking-wider rounded-xl transition-all duration-300 flex items-center justify-center gap-2"
                 >
                   {isSubmitting ? (
                     <span>Routing Lead...</span>
@@ -643,44 +622,44 @@ ${form.details.trim()}
 
           {/* Right Column: FAQ / SLA Info */}
           <div className="lg:col-span-5 space-y-6">
-            <div className="p-6 bg-zinc-950/40 border border-zinc-900/80 rounded-2xl space-y-4">
-              <h3 className="text-sm font-bold font-tech text-white flex items-center gap-2">
-                <FileCheck size={16} className="text-emerald-500" />
+            <div className="p-6 bg-background/40 border border-border/80 rounded-2xl space-y-4">
+              <h3 className="text-sm font-bold font-tech text-foreground flex items-center gap-2">
+                <FileCheck size={16} className="text-success" />
                 Why TecBunny Enterprise?
               </h3>
-              <ul className="space-y-3.5 text-xs text-zinc-400 font-light leading-relaxed">
+              <ul className="space-y-3.5 text-xs text-muted-foreground font-light leading-relaxed">
                 <li className="flex gap-2.5">
-                  <span className="text-emerald-500 shrink-0 font-bold">&radic;</span>
+                  <span className="text-success shrink-0 font-bold">&radic;</span>
                   <span><strong>Official Compliance</strong>: Private Limited corporate entity holding valid GSTIN and CIN registrations in Goa.</span>
                 </li>
                 <li className="flex gap-2.5">
-                  <span className="text-emerald-500 shrink-0 font-bold">&radic;</span>
+                  <span className="text-success shrink-0 font-bold">&radic;</span>
                   <span><strong>Tax Credits</strong>: Automatically matching GST invoices to verify your business input tax credit.</span>
                 </li>
                 <li className="flex gap-2.5">
-                  <span className="text-emerald-500 shrink-0 font-bold">&radic;</span>
+                  <span className="text-success shrink-0 font-bold">&radic;</span>
                   <span><strong>Dedicated SLAs</strong>: Same-day troubleshooting response windows with local hardware spares kept on-shelf.</span>
                 </li>
               </ul>
             </div>
 
-            <div className="p-6 bg-zinc-950/20 border border-zinc-900/40 rounded-2xl space-y-4">
-              <h3 className="text-sm font-bold font-tech text-white flex items-center gap-2">
-                <HelpCircle size={16} className="text-blue-500" />
+            <div className="p-6 bg-background/20 border border-border/40 rounded-2xl space-y-4">
+              <h3 className="text-sm font-bold font-tech text-foreground flex items-center gap-2">
+                <HelpCircle size={16} className="text-primary" />
                 Frequently Asked Questions
               </h3>
-              <div className="space-y-4 divide-y divide-zinc-900">
+              <div className="space-y-4 divide-y divide-border">
                 <div className="space-y-1.5 pt-1">
-                  <h4 className="text-xs font-bold text-white">Do you charge for site surveys?</h4>
-                  <p className="text-[11px] text-zinc-500 leading-relaxed font-light">Site surveys are fully free for all locations within Pernem, Mapusa, Siolim, Anjuna, Parra, and Panaji.</p>
+                  <h4 className="text-xs font-bold text-foreground">Do you charge for site surveys?</h4>
+                  <p className="text-[11px] text-muted-foreground leading-relaxed font-light">Site surveys are fully free for all locations within Pernem, Mapusa, Siolim, Anjuna, Parra, and Panaji.</p>
                 </div>
                 <div className="space-y-1.5 pt-4">
-                  <h4 className="text-xs font-bold text-white">What hardware brands do you configure?</h4>
-                  <p className="text-[11px] text-zinc-500 leading-relaxed font-light">We configure genuine enterprise hardware including Digisol, HFCL IO, TP-Link Omada, Hikvision, CP Plus, and Honeywell.</p>
+                  <h4 className="text-xs font-bold text-foreground">What hardware brands do you configure?</h4>
+                  <p className="text-[11px] text-muted-foreground leading-relaxed font-light">We configure genuine enterprise hardware including Digisol, HFCL IO, TP-Link Omada, Hikvision, CP Plus, and Honeywell.</p>
                 </div>
                 <div className="space-y-1.5 pt-4">
-                  <h4 className="text-xs font-bold text-white">Do you offer Net-30 payment terms?</h4>
-                  <p className="text-[11px] text-zinc-500 leading-relaxed font-light">Yes, corporate clients with valid trade licenses and clean credit audit profiles can request Net-30 invoicing terms upon onboarding.</p>
+                  <h4 className="text-xs font-bold text-foreground">Do you offer Net-30 payment terms?</h4>
+                  <p className="text-[11px] text-muted-foreground leading-relaxed font-light">Yes, corporate clients with valid trade licenses and clean credit audit profiles can request Net-30 invoicing terms upon onboarding.</p>
                 </div>
               </div>
             </div>

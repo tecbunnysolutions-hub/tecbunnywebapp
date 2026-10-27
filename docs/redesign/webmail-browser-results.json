@@ -1,0 +1,20 @@
+[
+  {
+    "path": "/inbox",
+    "url": "http://localhost:9010/inbox",
+    "status": 200,
+    "light": {
+      "title": "Webmail — TecBunny",
+      "headings": [
+        "Webmail requires a production mailbox provider"
+      ],
+      "overflow": false,
+      "background": "rgb(241, 245, 249)"
+    },
+    "mobile": {
+      "overflow": false,
+      "background": "rgb(29, 40, 58)"
+    },
+    "errors": []
+  }
+]

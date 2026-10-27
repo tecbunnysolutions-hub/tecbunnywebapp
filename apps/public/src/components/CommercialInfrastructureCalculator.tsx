@@ -2,15 +2,15 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { 
-  Camera, 
-  Wifi, 
-  Server, 
-  HardDrive, 
-  Cpu, 
-  Layers, 
-  ArrowRight, 
-  ShieldCheck, 
+import {
+  Camera,
+  Wifi,
+  Server,
+  HardDrive,
+  Cpu,
+  Layers,
+  ArrowRight,
+  ShieldCheck,
   AlertCircle,
   Sparkles,
   RefreshCw
@@ -129,22 +129,22 @@ export function CommercialInfrastructureCalculator({
   const wifiResults = calculateWifi();
 
   return (
-    <div className={`rounded-3xl border border-zinc-800 bg-zinc-950/80 p-6 sm:p-10 shadow-2xl backdrop-blur-md ${className}`}>
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-zinc-850 pb-6 mb-8">
+    <div className={`rounded-3xl border border-border bg-background/80 p-6 sm:p-10 shadow-2xl backdrop-blur-md ${className}`}>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border pb-6 mb-8">
         <div>
-          <span className="inline-flex items-center gap-1.5 rounded-lg border border-blue-500/20 bg-blue-500/10 px-3 py-1 text-[11px] font-mono font-bold uppercase tracking-wider text-blue-400">
+          <span className="inline-flex items-center gap-1.5 rounded-lg border border-primary/20 bg-primary/10 px-3 py-1 text-[11px] font-mono font-bold uppercase tracking-wider text-primary">
             <Sparkles size={13} /> Engineering Planning Tool
           </span>
-          <h3 className="text-2xl font-bold text-white font-tech mt-2">
+          <h3 className="text-2xl font-bold text-foreground font-tech mt-2">
             Commercial Infrastructure Sizing Calculator
           </h3>
-          <p className="text-xs text-zinc-400 mt-1">
+          <p className="text-xs text-muted-foreground mt-1">
             Calculate preliminary storage, bandwidth, and hardware requirements for commercial projects in Goa.
           </p>
         </div>
 
         {/* Tab Switcher */}
-        <div className="inline-flex rounded-xl border border-zinc-800 bg-zinc-900/60 p-1 self-start md:self-auto">
+        <div className="inline-flex rounded-xl border border-border bg-card/60 p-1 self-start md:self-auto">
           <button
             type="button"
             onClick={() => {
@@ -152,7 +152,7 @@ export function CommercialInfrastructureCalculator({
               trackEvent('resource_cta_clicked', { cta: 'calculator_tab_cctv' });
             }}
             className={`flex items-center gap-2 rounded-lg px-3.5 py-2 text-xs font-semibold transition-all ${
-              activeTab === 'cctv' ? 'bg-blue-600 text-white shadow-md' : 'text-zinc-400 hover:text-white'
+              activeTab === 'cctv' ? 'bg-primary text-primary-foreground shadow-md' : 'text-muted-foreground hover:text-foreground'
             }`}
           >
             <Camera size={14} />
@@ -165,7 +165,7 @@ export function CommercialInfrastructureCalculator({
               trackEvent('resource_cta_clicked', { cta: 'calculator_tab_network' });
             }}
             className={`flex items-center gap-2 rounded-lg px-3.5 py-2 text-xs font-semibold transition-all ${
-              activeTab === 'network' ? 'bg-blue-600 text-white shadow-md' : 'text-zinc-400 hover:text-white'
+              activeTab === 'network' ? 'bg-primary text-primary-foreground shadow-md' : 'text-muted-foreground hover:text-foreground'
             }`}
           >
             <Server size={14} />
@@ -178,7 +178,7 @@ export function CommercialInfrastructureCalculator({
               trackEvent('resource_cta_clicked', { cta: 'calculator_tab_wifi' });
             }}
             className={`flex items-center gap-2 rounded-lg px-3.5 py-2 text-xs font-semibold transition-all ${
-              activeTab === 'wifi' ? 'bg-blue-600 text-white shadow-md' : 'text-zinc-400 hover:text-white'
+              activeTab === 'wifi' ? 'bg-primary text-primary-foreground shadow-md' : 'text-muted-foreground hover:text-foreground'
             }`}
           >
             <Wifi size={14} />
@@ -192,9 +192,9 @@ export function CommercialInfrastructureCalculator({
         <div className="grid gap-8 lg:grid-cols-12 items-start">
           <div className="lg:col-span-7 space-y-6">
             <div>
-              <div className="flex justify-between items-center text-xs font-semibold text-zinc-300 mb-2">
+              <div className="flex justify-between items-center text-xs font-semibold text-muted-foreground mb-2">
                 <label htmlFor="camera-count">Number of IP Security Cameras:</label>
-                <span className="font-mono text-blue-400 font-bold text-sm">{cctvCameras} Cameras</span>
+                <span className="font-mono text-primary font-bold text-sm">{cctvCameras} Cameras</span>
               </div>
               <input
                 id="camera-count"
@@ -204,9 +204,9 @@ export function CommercialInfrastructureCalculator({
                 step="2"
                 value={cctvCameras}
                 onChange={(e) => setCctvCameras(Number(e.target.value))}
-                className="w-full h-2 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-blue-500"
+                className="w-full h-2 bg-card rounded-lg appearance-none cursor-pointer accent-blue-500"
               />
-              <div className="flex justify-between text-[10px] text-zinc-500 mt-1 font-mono">
+              <div className="flex justify-between text-[10px] text-muted-foreground mt-1 font-mono">
                 <span>4 cams</span>
                 <span>16 cams</span>
                 <span>32 cams</span>
@@ -216,11 +216,11 @@ export function CommercialInfrastructureCalculator({
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label htmlFor="components-CommercialInfrastructureCalculator-camera-resolution" className="text-xs font-semibold text-zinc-400 block mb-2">Camera Resolution</label>
+                <label htmlFor="components-CommercialInfrastructureCalculator-camera-resolution" className="text-xs font-semibold text-muted-foreground block mb-2">Camera Resolution</label>
                 <select id="components-CommercialInfrastructureCalculator-camera-resolution"
                   value={cctvResolution}
                   onChange={(e) => setCctvResolution(e.target.value as any)}
-                  className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-xs text-white focus:ring-1 focus:ring-blue-500"
+                  className="w-full bg-card border border-border rounded-xl px-3 py-2 text-xs text-foreground focus:ring-1 focus:ring-primary"
                 >
                   <option value="1080p">1080p Full HD (2MP)</option>
                   <option value="4mp">4MP ColorVu / Ultra HD</option>
@@ -229,11 +229,11 @@ export function CommercialInfrastructureCalculator({
               </div>
 
               <div>
-                <label htmlFor="components-CommercialInfrastructureCalculator-video-compression-codec" className="text-xs font-semibold text-zinc-400 block mb-2">Video Compression Codec</label>
+                <label htmlFor="components-CommercialInfrastructureCalculator-video-compression-codec" className="text-xs font-semibold text-muted-foreground block mb-2">Video Compression Codec</label>
                 <select id="components-CommercialInfrastructureCalculator-video-compression-codec"
                   value={cctvCodec}
                   onChange={(e) => setCctvCodec(e.target.value as any)}
-                  className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-xs text-white focus:ring-1 focus:ring-blue-500"
+                  className="w-full bg-card border border-border rounded-xl px-3 py-2 text-xs text-foreground focus:ring-1 focus:ring-primary"
                 >
                   <option value="h265plus">H.265+ Smart Codec (Recommended)</option>
                   <option value="h265">Standard H.265</option>
@@ -243,9 +243,9 @@ export function CommercialInfrastructureCalculator({
             </div>
 
             <div>
-              <div className="flex justify-between items-center text-xs font-semibold text-zinc-300 mb-2">
+              <div className="flex justify-between items-center text-xs font-semibold text-muted-foreground mb-2">
                 <label htmlFor="retention-days">Required Video Retention Window:</label>
-                <span className="font-mono text-blue-400 font-bold text-sm">{cctvDays} Days</span>
+                <span className="font-mono text-primary font-bold text-sm">{cctvDays} Days</span>
               </div>
               <input
                 id="retention-days"
@@ -255,9 +255,9 @@ export function CommercialInfrastructureCalculator({
                 step="1"
                 value={cctvDays}
                 onChange={(e) => setCctvDays(Number(e.target.value))}
-                className="w-full h-2 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-blue-500"
+                className="w-full h-2 bg-card rounded-lg appearance-none cursor-pointer accent-blue-500"
               />
-              <div className="flex justify-between text-[10px] text-zinc-500 mt-1 font-mono">
+              <div className="flex justify-between text-[10px] text-muted-foreground mt-1 font-mono">
                 <span>7 days</span>
                 <span>30 days (Standard)</span>
                 <span>60 days</span>
@@ -267,29 +267,29 @@ export function CommercialInfrastructureCalculator({
           </div>
 
           {/* Results Box */}
-          <div className="lg:col-span-5 rounded-2xl border border-blue-500/30 bg-gradient-to-br from-blue-950/30 to-zinc-900/60 p-6 space-y-4 shadow-xl">
-            <div className="flex items-center justify-between border-b border-zinc-800/80 pb-3">
-              <span className="text-xs uppercase font-mono font-bold text-blue-400">Estimated Sizing</span>
-              <span className="text-[10px] bg-blue-500/10 border border-blue-500/20 text-blue-300 px-2 py-0.5 rounded-full font-mono">H.265+ 24/7 Feed</span>
+          <div className="lg:col-span-5 rounded-2xl border border-primary/30 bg-gradient-to-br from-primary/30 to-card/60 p-6 space-y-4 shadow-xl">
+            <div className="flex items-center justify-between border-b border-border/80 pb-3">
+              <span className="text-xs uppercase font-mono font-bold text-primary">Estimated Sizing</span>
+              <span className="text-[10px] bg-primary/10 border border-primary/20 text-primary px-2 py-0.5 rounded-full font-mono">H.265+ 24/7 Feed</span>
             </div>
 
             <div className="space-y-3">
               <div>
-                <span className="text-[11px] text-zinc-400 block">Recommended Usable Storage:</span>
-                <p className="text-2xl sm:text-3xl font-black text-white font-tech text-blue-400">
-                  {cctvResults.recommendedStorageTb} TB <span className="text-xs text-zinc-400 font-normal font-sans">(Raw: {cctvResults.totalTb} TB)</span>
+                <span className="text-[11px] text-muted-foreground block">Recommended Usable Storage:</span>
+                <p className="text-2xl sm:text-3xl font-black text-foreground font-tech text-primary">
+                  {cctvResults.recommendedStorageTb} TB <span className="text-xs text-muted-foreground font-normal font-sans">(Raw: {cctvResults.totalTb} TB)</span>
                 </p>
               </div>
 
-              <div className="text-xs space-y-1.5 pt-2 border-t border-zinc-800/60">
-                <div className="flex justify-between"><span className="text-zinc-400">Drive Configuration:</span> <strong className="text-zinc-200 text-right">{cctvResults.recommendedDrives}</strong></div>
-                <div className="flex justify-between"><span className="text-zinc-400">Recommended NVR:</span> <strong className="text-zinc-200">{cctvResults.recommendedNvr}</strong></div>
-                <div className="flex justify-between"><span className="text-zinc-400">Total Ingestion Throughput:</span> <strong className="text-zinc-200 font-mono">~{cctvResults.totalBitrateMbps} Mbps</strong></div>
+              <div className="text-xs space-y-1.5 pt-2 border-t border-border/60">
+                <div className="flex justify-between"><span className="text-muted-foreground">Drive Configuration:</span> <strong className="text-muted-foreground text-right">{cctvResults.recommendedDrives}</strong></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">Recommended NVR:</span> <strong className="text-muted-foreground">{cctvResults.recommendedNvr}</strong></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">Total Ingestion Throughput:</span> <strong className="text-muted-foreground font-mono">~{cctvResults.totalBitrateMbps} Mbps</strong></div>
               </div>
             </div>
 
             <div className="pt-2">
-              <Button asChild size="sm" className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl text-xs h-10 shadow-lg shadow-blue-500/20">
+              <Button asChild size="sm" className="w-full bg-primary hover:bg-primary text-primary-foreground font-bold rounded-xl text-xs h-10 shadow-lg shadow-primary/20">
                 <Link href={`/assessment?service=physical-security&cams=${cctvCameras}&storage=${cctvResults.recommendedStorageTb}`}>
                   Request CCTV Proposal with This Sizing &rarr;
                 </Link>
@@ -304,9 +304,9 @@ export function CommercialInfrastructureCalculator({
         <div className="grid gap-8 lg:grid-cols-12 items-start">
           <div className="lg:col-span-7 space-y-6">
             <div>
-              <div className="flex justify-between items-center text-xs font-semibold text-zinc-300 mb-2">
+              <div className="flex justify-between items-center text-xs font-semibold text-muted-foreground mb-2">
                 <label htmlFor="network-users">Active Staff / Users Count:</label>
-                <span className="font-mono text-blue-400 font-bold text-sm">{networkUsers} Users</span>
+                <span className="font-mono text-primary font-bold text-sm">{networkUsers} Users</span>
               </div>
               <input
                 id="network-users"
@@ -316,29 +316,29 @@ export function CommercialInfrastructureCalculator({
                 step="5"
                 value={networkUsers}
                 onChange={(e) => setNetworkUsers(Number(e.target.value))}
-                className="w-full h-2 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-blue-500"
+                className="w-full h-2 bg-card rounded-lg appearance-none cursor-pointer accent-blue-500"
               />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label htmlFor="components-CommercialInfrastructureCalculator-dedicated-workstations" className="text-xs font-semibold text-zinc-400 block mb-2">Dedicated Workstations</label>
+                <label htmlFor="components-CommercialInfrastructureCalculator-dedicated-workstations" className="text-xs font-semibold text-muted-foreground block mb-2">Dedicated Workstations</label>
                 <input id="components-CommercialInfrastructureCalculator-dedicated-workstations"
                   type="number"
                   min="5"
                   max="200"
                   value={networkWorkstations}
                   onChange={(e) => setNetworkWorkstations(Number(e.target.value))}
-                  className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-xs text-white focus:ring-1 focus:ring-blue-500"
+                  className="w-full bg-card border border-border rounded-xl px-3 py-2 text-xs text-foreground focus:ring-1 focus:ring-primary"
                 />
               </div>
 
               <div>
-                <label htmlFor="components-CommercialInfrastructureCalculator-workload-profile" className="text-xs font-semibold text-zinc-400 block mb-2">Workload Profile</label>
+                <label htmlFor="components-CommercialInfrastructureCalculator-workload-profile" className="text-xs font-semibold text-muted-foreground block mb-2">Workload Profile</label>
                 <select id="components-CommercialInfrastructureCalculator-workload-profile"
                   value={networkProfile}
                   onChange={(e) => setNetworkProfile(e.target.value as any)}
-                  className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-xs text-white focus:ring-1 focus:ring-blue-500"
+                  className="w-full bg-card border border-border rounded-xl px-3 py-2 text-xs text-foreground focus:ring-1 focus:ring-primary"
                 >
                   <option value="standard">Standard Web &amp; Email</option>
                   <option value="heavy">Heavy Zoom / VoIP / CRM</option>
@@ -347,44 +347,44 @@ export function CommercialInfrastructureCalculator({
               </div>
             </div>
 
-            <div className="flex items-center gap-3 bg-zinc-900/50 border border-zinc-850 p-3.5 rounded-xl">
+            <div className="flex items-center gap-3 bg-card/50 border border-border p-3.5 rounded-xl">
               <input
                 type="checkbox"
                 id="dual-isp-check"
                 checked={dualIsp}
                 onChange={(e) => setDualIsp(e.target.checked)}
-                className="h-4 w-4 rounded border-zinc-700 bg-zinc-900 text-blue-600 focus:ring-blue-500/40 accent-blue-600"
+                className="h-4 w-4 rounded border-border bg-card text-primary focus:ring-primary/40 accent-blue-600"
               />
-              <label htmlFor="dual-isp-check" className="text-xs text-zinc-300 cursor-pointer">
+              <label htmlFor="dual-isp-check" className="text-xs text-muted-foreground cursor-pointer">
                 <strong>Include Dual-ISP Auto-Failover Architecture</strong> (Zero downtime during fiber cuts)
               </label>
             </div>
           </div>
 
           {/* Results Box */}
-          <div className="lg:col-span-5 rounded-2xl border border-indigo-500/30 bg-gradient-to-br from-indigo-950/30 to-zinc-900/60 p-6 space-y-4 shadow-xl">
-            <div className="flex items-center justify-between border-b border-zinc-800/80 pb-3">
-              <span className="text-xs uppercase font-mono font-bold text-indigo-400">Network Sizing Estimate</span>
-              <span className="text-[10px] bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded-full font-mono">Managed LAN</span>
+          <div className="lg:col-span-5 rounded-2xl border border-primary/30 bg-gradient-to-br from-primary/30 to-card/60 p-6 space-y-4 shadow-xl">
+            <div className="flex items-center justify-between border-b border-border/80 pb-3">
+              <span className="text-xs uppercase font-mono font-bold text-primary">Network Sizing Estimate</span>
+              <span className="text-[10px] bg-primary/10 border border-primary/20 text-primary px-2 py-0.5 rounded-full font-mono">Managed LAN</span>
             </div>
 
             <div className="space-y-3 text-xs">
               <div>
-                <span className="text-[11px] text-zinc-400 block">Recommended Internet Bandwidth:</span>
-                <p className="text-xl sm:text-2xl font-black text-white font-tech text-indigo-400">
+                <span className="text-[11px] text-muted-foreground block">Recommended Internet Bandwidth:</span>
+                <p className="text-xl sm:text-2xl font-black text-foreground font-tech text-primary">
                   {networkResults.recommendedWan}
                 </p>
               </div>
 
-              <div className="space-y-1.5 pt-2 border-t border-zinc-800/60">
-                <div><span className="text-zinc-400 block text-[11px]">Core Switching Capacity:</span> <strong className="text-zinc-200">{networkResults.switchPorts}</strong></div>
-                <div><span className="text-zinc-400 block text-[11px]">Server Rack Enclosure:</span> <strong className="text-zinc-200">{networkResults.serverRackUnits}</strong></div>
-                <div><span className="text-zinc-400 block text-[11px]">Power Backup UPS:</span> <strong className="text-zinc-200">{networkResults.upsRating}</strong></div>
+              <div className="space-y-1.5 pt-2 border-t border-border/60">
+                <div><span className="text-muted-foreground block text-[11px]">Core Switching Capacity:</span> <strong className="text-muted-foreground">{networkResults.switchPorts}</strong></div>
+                <div><span className="text-muted-foreground block text-[11px]">Server Rack Enclosure:</span> <strong className="text-muted-foreground">{networkResults.serverRackUnits}</strong></div>
+                <div><span className="text-muted-foreground block text-[11px]">Power Backup UPS:</span> <strong className="text-muted-foreground">{networkResults.upsRating}</strong></div>
               </div>
             </div>
 
             <div className="pt-2">
-              <Button asChild size="sm" className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl text-xs h-10 shadow-lg shadow-blue-500/20">
+              <Button asChild size="sm" className="w-full bg-primary hover:bg-primary text-primary-foreground font-bold rounded-xl text-xs h-10 shadow-lg shadow-primary/20">
                 <Link href={`/assessment?service=network-infrastructure&users=${networkUsers}`}>
                   Request Network Design Proposal &rarr;
                 </Link>
@@ -399,9 +399,9 @@ export function CommercialInfrastructureCalculator({
         <div className="grid gap-8 lg:grid-cols-12 items-start">
           <div className="lg:col-span-7 space-y-6">
             <div>
-              <div className="flex justify-between items-center text-xs font-semibold text-zinc-300 mb-2">
+              <div className="flex justify-between items-center text-xs font-semibold text-muted-foreground mb-2">
                 <label htmlFor="wifi-rooms">Guest Rooms / Villas Count:</label>
-                <span className="font-mono text-blue-400 font-bold text-sm">{wifiRooms} Keys</span>
+                <span className="font-mono text-primary font-bold text-sm">{wifiRooms} Keys</span>
               </div>
               <input
                 id="wifi-rooms"
@@ -411,29 +411,29 @@ export function CommercialInfrastructureCalculator({
                 step="2"
                 value={wifiRooms}
                 onChange={(e) => setWifiRooms(Number(e.target.value))}
-                className="w-full h-2 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-blue-500"
+                className="w-full h-2 bg-card rounded-lg appearance-none cursor-pointer accent-blue-500"
               />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label htmlFor="components-CommercialInfrastructureCalculator-public-areas-pool-lobby-dining" className="text-xs font-semibold text-zinc-400 block mb-2">Public Areas (Pool/Lobby/Dining)</label>
+                <label htmlFor="components-CommercialInfrastructureCalculator-public-areas-pool-lobby-dining" className="text-xs font-semibold text-muted-foreground block mb-2">Public Areas (Pool/Lobby/Dining)</label>
                 <input id="components-CommercialInfrastructureCalculator-public-areas-pool-lobby-dining"
                   type="number"
                   min="1"
                   max="15"
                   value={wifiPublicZones}
                   onChange={(e) => setWifiPublicZones(Number(e.target.value))}
-                  className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-xs text-white focus:ring-1 focus:ring-blue-500"
+                  className="w-full bg-card border border-border rounded-xl px-3 py-2 text-xs text-foreground focus:ring-1 focus:ring-primary"
                 />
               </div>
 
               <div>
-                <label htmlFor="components-CommercialInfrastructureCalculator-guest-density-profile" className="text-xs font-semibold text-zinc-400 block mb-2">Guest Density Profile</label>
+                <label htmlFor="components-CommercialInfrastructureCalculator-guest-density-profile" className="text-xs font-semibold text-muted-foreground block mb-2">Guest Density Profile</label>
                 <select id="components-CommercialInfrastructureCalculator-guest-density-profile"
                   value={wifiGuestLoad}
                   onChange={(e) => setWifiGuestLoad(e.target.value as any)}
-                  className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-xs text-white focus:ring-1 focus:ring-blue-500"
+                  className="w-full bg-card border border-border rounded-xl px-3 py-2 text-xs text-foreground focus:ring-1 focus:ring-primary"
                 >
                   <option value="high_density">High-Density (3-4 devices/guest)</option>
                   <option value="standard">Standard (1-2 devices/guest)</option>
@@ -441,36 +441,36 @@ export function CommercialInfrastructureCalculator({
               </div>
             </div>
 
-            <div className="rounded-xl border border-zinc-850 bg-zinc-900/40 p-3.5 text-xs text-zinc-400 space-y-1">
-              <span className="text-zinc-300 font-semibold block">Goa Masonry &amp; Laterite Consideration:</span>
+            <div className="rounded-xl border border-border bg-card/40 p-3.5 text-xs text-muted-foreground space-y-1">
+              <span className="text-muted-foreground font-semibold block">Goa Masonry &amp; Laterite Consideration:</span>
               <p>For Portuguese villas and laterite structures with 350-450mm stone walls, ceiling-mounted corridor APs lose 65-80% signal power. In-wall per-room APs are strongly recommended.</p>
             </div>
           </div>
 
           {/* Results Box */}
-          <div className="lg:col-span-5 rounded-2xl border border-emerald-500/30 bg-gradient-to-br from-emerald-950/30 to-zinc-900/60 p-6 space-y-4 shadow-xl">
-            <div className="flex items-center justify-between border-b border-zinc-800/80 pb-3">
-              <span className="text-xs uppercase font-mono font-bold text-emerald-400">Resort Wi-Fi Sizing</span>
-              <span className="text-[10px] bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded-full font-mono">Wi-Fi 6 (802.11ax)</span>
+          <div className="lg:col-span-5 rounded-2xl border border-success/30 bg-gradient-to-br from-success/30 to-card/60 p-6 space-y-4 shadow-xl">
+            <div className="flex items-center justify-between border-b border-border/80 pb-3">
+              <span className="text-xs uppercase font-mono font-bold text-success">Resort Wi-Fi Sizing</span>
+              <span className="text-[10px] bg-success/10 border border-success/20 text-success px-2 py-0.5 rounded-full font-mono">Wi-Fi 6 (802.11ax)</span>
             </div>
 
             <div className="space-y-3 text-xs">
               <div>
-                <span className="text-[11px] text-zinc-400 block">Total Access Points Required:</span>
-                <p className="text-2xl sm:text-3xl font-black text-white font-tech text-emerald-400">
+                <span className="text-[11px] text-muted-foreground block">Total Access Points Required:</span>
+                <p className="text-2xl sm:text-3xl font-black text-foreground font-tech text-success">
                   {wifiResults.totalAps} Access Points
                 </p>
               </div>
 
-              <div className="space-y-1.5 pt-2 border-t border-zinc-800/60">
-                <div><span className="text-zinc-400 block text-[11px]">Room / Villa Coverage:</span> <strong className="text-zinc-200">{wifiResults.roomAps}</strong></div>
-                <div><span className="text-zinc-400 block text-[11px]">Public Outdoor / F&amp;B Zones:</span> <strong className="text-zinc-200">{wifiResults.publicAps}</strong></div>
-                <div><span className="text-zinc-400 block text-[11px]">Max Concurrent Guest Devices:</span> <strong className="text-zinc-200 font-mono">~{wifiResults.maxConcurrentClients} Devices</strong></div>
+              <div className="space-y-1.5 pt-2 border-t border-border/60">
+                <div><span className="text-muted-foreground block text-[11px]">Room / Villa Coverage:</span> <strong className="text-muted-foreground">{wifiResults.roomAps}</strong></div>
+                <div><span className="text-muted-foreground block text-[11px]">Public Outdoor / F&amp;B Zones:</span> <strong className="text-muted-foreground">{wifiResults.publicAps}</strong></div>
+                <div><span className="text-muted-foreground block text-[11px]">Max Concurrent Guest Devices:</span> <strong className="text-muted-foreground font-mono">~{wifiResults.maxConcurrentClients} Devices</strong></div>
               </div>
             </div>
 
             <div className="pt-2">
-              <Button asChild size="sm" className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl text-xs h-10 shadow-lg shadow-blue-500/20">
+              <Button asChild size="sm" className="w-full bg-primary hover:bg-primary text-primary-foreground font-bold rounded-xl text-xs h-10 shadow-lg shadow-primary/20">
                 <Link href={`/assessment?industry=Hospitality&keys=${wifiRooms}&aps=${wifiResults.totalAps}`}>
                   Request Heatmap &amp; Wi-Fi Assessment &rarr;
                 </Link>
@@ -481,8 +481,8 @@ export function CommercialInfrastructureCalculator({
       )}
 
       {/* Mandatory Disclaimer */}
-      <div className="mt-8 pt-4 border-t border-zinc-850 flex items-start gap-2 text-[11px] text-zinc-500">
-        <AlertCircle size={14} className="text-blue-400 shrink-0 mt-0.5" />
+      <div className="mt-8 pt-4 border-t border-border flex items-start gap-2 text-[11px] text-muted-foreground">
+        <AlertCircle size={14} className="text-primary shrink-0 mt-0.5" />
         <span>
           <strong>Preliminary planning estimate</strong> — Final storage and network capacity requires physical on-site RF heatmapping, cable path verification, and structural wall inspection by our field engineers.
         </span>

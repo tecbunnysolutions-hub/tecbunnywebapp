@@ -93,7 +93,7 @@ export function EditUserDialog({ isOpen, onClose, user, onUserUpdated, canManage
     if (!user) return;
 
     setIsLoading(true);
-    
+
     // Prepare update data with core fields
     const updateData: any = {
       name: formData.name,
@@ -149,10 +149,10 @@ export function EditUserDialog({ isOpen, onClose, user, onUserUpdated, canManage
       onClose();
     } catch (error: any) {
       logger.error('Error updating user in EditUserDialog', { error, updateData, userId: user?.id });
-      
+
       let errorMessage = 'Unknown error occurred';
       let errorDetails = '';
-      
+
       if (error?.message) {
         errorMessage = error.message;
       } else if (error?.details) {
@@ -167,12 +167,12 @@ export function EditUserDialog({ isOpen, onClose, user, onUserUpdated, canManage
           errorDetails = ' - Column does not exist. Database migration may be needed.';
         }
       }
-      
+
       // Check if it might be a column error
       if (errorMessage.includes('column') && errorMessage.includes('does not exist')) {
         errorDetails = ' - This usually means the database migration needs to be applied.';
       }
-      
+
       toast({
         title: 'Update Failed',
         description: `Failed to update user information: ${errorMessage}${errorDetails}`,
@@ -208,11 +208,11 @@ export function EditUserDialog({ isOpen, onClose, user, onUserUpdated, canManage
   const getCategoryIcon = (category: CustomerCategory) => {
     switch (category) {
       case 'Premium':
-        return <Crown className="h-4 w-4 text-yellow-500" />;
+        return <Crown className="h-4 w-4 text-warning" />;
       case 'Standard':
-        return <Star className="h-4 w-4 text-blue-500" />;
+        return <Star className="h-4 w-4 text-primary" />;
       default:
-        return <UserIcon className="h-4 w-4 text-gray-500" />;
+        return <UserIcon className="h-4 w-4 text-muted-foreground" />;
     }
   };
 
@@ -263,7 +263,7 @@ export function EditUserDialog({ isOpen, onClose, user, onUserUpdated, canManage
                         type="email"
                         value={formData.email}
                         disabled
-                        className="bg-white/5 border-white/10 text-slate-200"
+                        className="bg-card/5 border-border/10 text-muted-foreground"
                       />
                       <p className="text-xs text-muted-foreground">Email cannot be changed</p>
                     </div>
@@ -345,7 +345,7 @@ export function EditUserDialog({ isOpen, onClose, user, onUserUpdated, canManage
                     </Select>
                   </div>
 
-                  <div className="bg-white/5 border border-white/10 p-4 rounded-lg">
+                  <div className="bg-card/5 border border-border/10 p-4 rounded-lg">
                     <h4 className="font-medium">{ROLE_DISPLAY_NAME[selectedAssignableRole]}</h4>
                     <p className="mt-1 text-sm text-muted-foreground">
                       {ROLE_DESCRIPTION[selectedAssignableRole]}
@@ -423,11 +423,11 @@ export function EditUserDialog({ isOpen, onClose, user, onUserUpdated, canManage
                     <>
                       <div className="space-y-2">
                         <Label htmlFor="customerCategory">Customer Category</Label>
-                        <Select 
-                          value={formData.customerCategory} 
+                        <Select
+                          value={formData.customerCategory}
                           onValueChange={(value: CustomerCategory) => {
-                            setFormData({ 
-                              ...formData, 
+                            setFormData({
+                              ...formData,
                               customerCategory: value
                             });
                           }}
@@ -443,19 +443,19 @@ export function EditUserDialog({ isOpen, onClose, user, onUserUpdated, canManage
                           <SelectContent>
                             <SelectItem value="Normal">
                               <div className="flex items-center gap-2">
-                                <UserIcon className="h-4 w-4 text-gray-500" />
+                                <UserIcon className="h-4 w-4 text-muted-foreground" />
                                 Normal Customer
                               </div>
                             </SelectItem>
                             <SelectItem value="Standard">
                               <div className="flex items-center gap-2">
-                                <Star className="h-4 w-4 text-blue-500" />
+                                <Star className="h-4 w-4 text-primary" />
                                 Standard Customer
                               </div>
                             </SelectItem>
                             <SelectItem value="Premium">
                               <div className="flex items-center gap-2">
-                                <Crown className="h-4 w-4 text-yellow-500" />
+                                <Crown className="h-4 w-4 text-warning" />
                                 Premium Customer
                               </div>
                             </SelectItem>
@@ -463,7 +463,7 @@ export function EditUserDialog({ isOpen, onClose, user, onUserUpdated, canManage
                         </Select>
                       </div>
 
-                      <div className="bg-blue-50 p-4 rounded-lg">
+                      <div className="bg-primary/10 p-4 rounded-lg">
                         <h4 className="font-medium mb-2 flex items-center gap-2">
                           {getCategoryIcon(formData.customerCategory)}
                           {formData.customerCategory} Customer Classification
@@ -483,7 +483,7 @@ export function EditUserDialog({ isOpen, onClose, user, onUserUpdated, canManage
                               <div>• Premium service features</div>
                             </>
                           )}
-                          <div className="mt-2 text-xs font-medium text-blue-600">
+                          <div className="mt-2 text-xs font-medium text-primary">
                             Note: Discounts and offers are managed in the Discount Management section
                           </div>
                         </div>

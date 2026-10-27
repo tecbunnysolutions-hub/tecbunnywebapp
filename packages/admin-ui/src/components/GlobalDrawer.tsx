@@ -22,9 +22,9 @@ export function GlobalDrawer() {
 
   return (
     <Sheet open={isOpen} onOpenChange={(open) => !open && closeDrawer()}>
-      <SheetContent className={`overflow-y-auto w-full ${sizeClasses[(size || 'md') as keyof typeof sizeClasses]} bg-slate-50 border-l-0 shadow-2xl`}>
-        <SheetHeader className="mb-6 sticky top-0 bg-slate-50/90 backdrop-blur-md z-10 pb-4 border-b">
-          <SheetTitle className="text-xl font-bold text-slate-900">{title}</SheetTitle>
+      <SheetContent className={`overflow-y-auto w-full ${sizeClasses[(size || 'md') as keyof typeof sizeClasses]} bg-muted border-l-0 shadow-2xl`}>
+        <SheetHeader className="mb-6 sticky top-0 bg-muted/90 backdrop-blur-md z-10 pb-4 border-b">
+          <SheetTitle className="text-xl font-bold text-foreground">{title}</SheetTitle>
         </SheetHeader>
         <div className="pb-8">
           {content}

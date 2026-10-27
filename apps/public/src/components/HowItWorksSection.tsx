@@ -1,15 +1,15 @@
 import React from 'react';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
-import { 
-  FileCheck, 
-  MapPin, 
-  Layers, 
-  FileText, 
-  Wrench, 
-  CheckCircle2, 
-  ShieldCheck, 
-  Headphones 
+import {
+  FileCheck,
+  MapPin,
+  Layers,
+  FileText,
+  Wrench,
+  CheckCircle2,
+  ShieldCheck,
+  Headphones
 } from 'lucide-react';
 
 export const DEPLOYMENT_STEPS = [
@@ -30,7 +30,7 @@ export const DEPLOYMENT_STEPS = [
   {
     step: '03',
     title: 'Solution Design',
-    desc: 'Preparation of precise network topologies, camera angle coverage heatmaps, and Bill of Materials (BOM).',
+    desc: 'Plan the relevant equipment, camera views or network layout and explain the choices in the proposal.',
     icon: Layers,
     badge: 'Engineering'
   },
@@ -50,8 +50,8 @@ export const DEPLOYMENT_STEPS = [
   },
   {
     step: '06',
-    title: 'Rigorous Testing',
-    desc: 'Comprehensive cable certification testing, throughput load tests, VLAN isolation checks, and camera frame verification.',
+    title: 'Check the agreed functions',
+    desc: 'Check the agreed functions and review the results with you. Discuss any specialist testing needed for your project.',
     icon: CheckCircle2,
     badge: 'Quality Assurance'
   },
@@ -64,16 +64,16 @@ export const DEPLOYMENT_STEPS = [
   },
   {
     step: '08',
-    title: 'Direct SLA Support',
-    desc: 'Continuous post-deployment support, routine maintenance audits, and rapid local engineering dispatch under clear SLAs.',
+    title: 'Support and maintenance',
+    desc: 'Review how to request support and whether a separate maintenance agreement would suit your setup.',
     icon: Headphones,
     badge: 'Continuous Care'
   },
 ];
 
 export function HowItWorksSection({
-  title = "Our Structured 8-Step Project Lifecycle",
-  subtitle = "From initial property survey to ongoing SLA support, every deployment is executed with strict engineering rigor.",
+  title = "From your first question to a working setup.",
+  subtitle = "We work through the requirements, agree the scope and explain what happens next. The steps depend on the project.",
   className = "",
   variant = "full"
 }: {
@@ -92,15 +92,15 @@ export function HowItWorksSection({
     return (
       <section className={`py-10 sm:py-14 ${className}`}>
         <div className="container mx-auto px-6 max-w-screen-2xl">
-          <div className="rounded-2xl border border-zinc-850 bg-zinc-950/60 p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5">
+          <div className="rounded-2xl border border-border bg-background/60 p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5">
             <div className="max-w-2xl space-y-2">
-              <span className="text-xs font-bold uppercase tracking-[0.35em] text-blue-400 font-mono">Structured Execution</span>
-              <h2 className="text-xl sm:text-2xl font-bold text-white font-tech tracking-tight">{title}</h2>
-              <p className="text-sm text-zinc-400 font-light leading-relaxed">{subtitle}</p>
+              <span className="text-xs font-bold uppercase tracking-[0.35em] text-primary font-mono">Structured Execution</span>
+              <h2 className="text-xl sm:text-2xl font-bold text-foreground font-tech tracking-tight">{title}</h2>
+              <p className="text-sm text-muted-foreground font-light leading-relaxed">{subtitle}</p>
             </div>
             <Link
               href="/services#process"
-              className="inline-flex shrink-0 items-center gap-2 rounded-xl border border-blue-500/30 bg-blue-500/10 px-5 py-3 text-xs font-bold uppercase tracking-widest text-blue-300 transition-colors hover:bg-blue-500/20 hover:text-white"
+              className="inline-flex shrink-0 items-center gap-2 rounded-xl border border-primary/30 bg-primary/10 px-5 py-3 text-xs font-bold uppercase tracking-widest text-primary transition-colors hover:bg-primary/20 hover:text-primary"
             >
               See Our Full 8-Step Process <ArrowRight size={14} />
             </Link>
@@ -114,13 +114,13 @@ export function HowItWorksSection({
     <section className={`py-16 sm:py-20 ${className}`}>
       <div className="container mx-auto px-6 max-w-screen-2xl">
         <div className="max-w-3xl mb-12">
-          <span className="text-xs font-bold uppercase tracking-[0.35em] text-blue-400 font-mono">
+          <span className="text-xs font-bold uppercase tracking-[0.35em] text-primary font-mono">
             Structured Execution
           </span>
-          <h2 className="mt-3 text-3xl sm:text-4xl font-bold text-white font-tech tracking-tight">
+          <h2 className="mt-3 text-3xl sm:text-4xl font-bold text-foreground font-tech tracking-tight">
             {title}
           </h2>
-          <p className="mt-3 text-sm sm:text-base text-zinc-400 font-light leading-relaxed">
+          <p className="mt-3 text-sm sm:text-base text-muted-foreground font-light leading-relaxed">
             {subtitle}
           </p>
         </div>
@@ -129,28 +129,28 @@ export function HowItWorksSection({
           {steps.map((item, idx) => {
             const Icon = item.icon;
             return (
-              <div 
+              <div
                 key={item.step}
-                className="relative rounded-2xl border border-zinc-850 bg-zinc-950/60 p-6 flex flex-col justify-between transition-all duration-300 hover:border-blue-500/40 hover:bg-zinc-900/40 hover:shadow-lg hover:shadow-blue-500/10 group"
+                className="relative rounded-2xl border border-border bg-background/60 p-6 flex flex-col justify-between transition-all duration-300 hover:border-primary/40 hover:bg-card/40 hover:shadow-lg hover:shadow-primary/10 group"
               >
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-500/20 border border-blue-500/40 text-blue-300 group-hover:bg-blue-500 group-hover:text-white group-hover:scale-110 transition-all shadow-lg shadow-blue-500/20">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/20 border border-primary/40 text-primary group-hover:bg-primary group-hover:text-primary group-hover:scale-110 transition-all shadow-lg shadow-primary/20 text-foreground">
                       <Icon size={20} />
                     </div>
-                    <span className="text-3xl font-black text-blue-500/40 font-mono group-hover:text-blue-400 transition-colors">
+                    <span className="text-3xl font-black text-primary/40 font-mono group-hover:text-primary transition-colors">
                       {item.step}
                     </span>
                   </div>
                   <div>
-                    <span className="text-[10px] font-bold tracking-widest uppercase text-blue-400 font-mono">
+                    <span className="text-[10px] font-bold tracking-widest uppercase text-primary font-mono">
                       {item.badge}
                     </span>
-                    <h3 className="text-base font-bold text-white font-tech mt-1">
+                    <h3 className="text-base font-bold text-foreground font-tech mt-1">
                       {item.title}
                     </h3>
                   </div>
-                  <p className="text-xs text-zinc-400 font-light leading-relaxed">
+                  <p className="text-xs text-muted-foreground font-light leading-relaxed">
                     {item.desc}
                   </p>
                 </div>

@@ -41,75 +41,75 @@ export default function SellerRegisterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-background text-muted-foreground flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-xl">
         <div className="flex justify-center items-center gap-3">
-          <Building2 className="w-10 h-10 text-indigo-500" />
-          <h1 className="text-3xl font-extrabold tracking-tight text-white">TecBunny Seller Partner Network</h1>
+          <Building2 className="w-10 h-10 text-primary" />
+          <h1 className="text-3xl font-extrabold tracking-tight text-foreground">TecBunny Seller Partner Network</h1>
         </div>
-        <p className="mt-2 text-center text-sm text-slate-400">
+        <p className="mt-2 text-center text-sm text-muted-foreground">
           Managed White-Label Commerce Platform. Reach millions of technology buyers across India.
         </p>
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-xl">
-        <div className="bg-slate-900 border border-slate-800 py-8 px-6 shadow-2xl rounded-2xl sm:px-10">
+        <div className="bg-card border border-border py-8 px-6 shadow-2xl rounded-2xl sm:px-10">
           {!registeredSuccess ? (
             step === 1 ? (
               <form onSubmit={handleRegisterSubmit} className="space-y-5">
                 <div>
-                  <h2 className="text-xl font-bold text-slate-100 border-b border-slate-800 pb-3 mb-4">
+                  <h2 className="text-xl font-bold text-muted-foreground border-b border-border pb-3 mb-4">
                     Step 1: Business Account Registration
                   </h2>
                 </div>
 
                 <div>
-                  <label htmlFor="app-seller-register-page-legal-business-name" className="block text-xs font-semibold uppercase tracking-wider text-slate-300">
+                  <label htmlFor="app-seller-register-page-legal-business-name" className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                     Legal Business Name
                   </label>
                   <div className="mt-1 relative">
-                    <Building2 className="w-4 h-4 absolute left-3 top-3 text-slate-500" />
+                    <Building2 className="w-4 h-4 absolute left-3 top-3 text-muted-foreground" />
                     <input id="app-seller-register-page-legal-business-name"
                       type="text"
                       required
                       placeholder="e.g. Apex Security Solutions Pvt Ltd"
                       value={formData.businessName}
                       onChange={(e) => setFormData({ ...formData, businessName: e.target.value })}
-                      className="w-full bg-slate-800 border border-slate-700 rounded-lg pl-9 pr-4 py-2.5 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="w-full bg-card border border-border rounded-lg pl-9 pr-4 py-2.5 text-sm text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                     />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label htmlFor="app-seller-register-page-owner-authorized-name" className="block text-xs font-semibold uppercase tracking-wider text-slate-300">
+                    <label htmlFor="app-seller-register-page-owner-authorized-name" className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                       Owner / Authorized Name
                     </label>
                     <div className="mt-1 relative">
-                      <User className="w-4 h-4 absolute left-3 top-3 text-slate-500" />
+                      <User className="w-4 h-4 absolute left-3 top-3 text-muted-foreground" />
                       <input id="app-seller-register-page-owner-authorized-name"
                         type="text"
                         required
                         placeholder="Owner Name"
                         value={formData.ownerName}
                         onChange={(e) => setFormData({ ...formData, ownerName: e.target.value })}
-                        className="w-full bg-slate-800 border border-slate-700 rounded-lg pl-9 pr-4 py-2.5 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        className="w-full bg-card border border-border rounded-lg pl-9 pr-4 py-2.5 text-sm text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                       />
                     </div>
                   </div>
                   <div>
-                    <label htmlFor="app-seller-register-page-official-email-id" className="block text-xs font-semibold uppercase tracking-wider text-slate-300">
+                    <label htmlFor="app-seller-register-page-official-email-id" className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                       Official Email ID
                     </label>
                     <div className="mt-1 relative">
-                      <Mail className="w-4 h-4 absolute left-3 top-3 text-slate-500" />
+                      <Mail className="w-4 h-4 absolute left-3 top-3 text-muted-foreground" />
                       <input id="app-seller-register-page-official-email-id"
                         type="email"
                         required
                         placeholder="seller@business.com"
                         value={formData.email}
                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                        className="w-full bg-slate-800 border border-slate-700 rounded-lg pl-9 pr-4 py-2.5 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        className="w-full bg-card border border-border rounded-lg pl-9 pr-4 py-2.5 text-sm text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                       />
                     </div>
                   </div>
@@ -117,23 +117,23 @@ export default function SellerRegisterPage() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label htmlFor="app-seller-register-page-mobile-number" className="block text-xs font-semibold uppercase tracking-wider text-slate-300">
+                    <label htmlFor="app-seller-register-page-mobile-number" className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                       Mobile Number
                     </label>
                     <div className="mt-1 relative">
-                      <Phone className="w-4 h-4 absolute left-3 top-3 text-slate-500" />
+                      <Phone className="w-4 h-4 absolute left-3 top-3 text-muted-foreground" />
                       <input id="app-seller-register-page-mobile-number"
                         type="tel"
                         required
                         placeholder="+91 9876543210"
                         value={formData.phone}
                         onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                        className="w-full bg-slate-800 border border-slate-700 rounded-lg pl-9 pr-4 py-2.5 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        className="w-full bg-card border border-border rounded-lg pl-9 pr-4 py-2.5 text-sm text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                       />
                     </div>
                   </div>
                   <div>
-                    <label htmlFor="app-seller-register-page-gstin-number" className="block text-xs font-semibold uppercase tracking-wider text-slate-300">
+                    <label htmlFor="app-seller-register-page-gstin-number" className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                       GSTIN Number
                     </label>
                     <input id="app-seller-register-page-gstin-number"
@@ -143,7 +143,7 @@ export default function SellerRegisterPage() {
                       placeholder="27AAACA123411Z5"
                       value={formData.gstNumber}
                       onChange={(e) => handleGSTChange(e.target.value)}
-                      className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2.5 text-sm font-mono text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 mt-1"
+                      className="w-full bg-card border border-border rounded-lg px-4 py-2.5 text-sm font-mono text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary mt-1"
                     />
                   </div>
                 </div>
@@ -152,8 +152,8 @@ export default function SellerRegisterPage() {
                   <div
                     className={`p-3 rounded-lg text-xs font-medium border ${
                       gstValidation.isValidFormat
-                        ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20'
-                        : 'bg-rose-500/10 text-rose-300 border-rose-500/20'
+                        ? 'bg-success/10 text-success border-success/20'
+                        : 'bg-destructive/10 text-destructive border-destructive/20'
                     }`}
                   >
                     {gstValidation.isValidFormat ? (
@@ -167,11 +167,11 @@ export default function SellerRegisterPage() {
                 )}
 
                 <div>
-                  <label htmlFor="app-seller-register-page-account-password" className="block text-xs font-semibold uppercase tracking-wider text-slate-300">
+                  <label htmlFor="app-seller-register-page-account-password" className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                     Account Password
                   </label>
                   <div className="mt-1 relative">
-                    <Lock className="w-4 h-4 absolute left-3 top-3 text-slate-500" />
+                    <Lock className="w-4 h-4 absolute left-3 top-3 text-muted-foreground" />
                     <input id="app-seller-register-page-account-password"
                       type="password"
                       required
@@ -179,14 +179,14 @@ export default function SellerRegisterPage() {
                       placeholder="Min 12 characters (upper, lower, num, symbol)"
                       value={formData.password}
                       onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                      className="w-full bg-slate-800 border border-slate-700 rounded-lg pl-9 pr-4 py-2.5 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="w-full bg-card border border-border rounded-lg pl-9 pr-4 py-2.5 text-sm text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                     />
                   </div>
                 </div>
 
                 <button
                   type="submit"
-                  className="w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-lg shadow-lg shadow-indigo-600/30 transition flex items-center justify-center gap-2 text-sm"
+                  className="w-full py-3 px-4 bg-primary hover:bg-primary text-primary-foreground font-semibold rounded-lg shadow-lg shadow-primary/30 transition flex items-center justify-center gap-2 text-sm"
                 >
                   Proceed to Mobile OTP Verification
                   <ArrowRight className="w-4 h-4" />
@@ -195,16 +195,16 @@ export default function SellerRegisterPage() {
             ) : (
               <form onSubmit={handleOTPSubmit} className="space-y-5">
                 <div>
-                  <h2 className="text-xl font-bold text-slate-100 border-b border-slate-800 pb-3 mb-2">
+                  <h2 className="text-xl font-bold text-muted-foreground border-b border-border pb-3 mb-2">
                     Step 2: Mobile OTP Verification
                   </h2>
-                  <p className="text-xs text-slate-400">
-                    Enter the 6-digit OTP sent to <span className="text-indigo-400 font-semibold">{formData.phone}</span>
+                  <p className="text-xs text-muted-foreground">
+                    Enter the 6-digit OTP sent to <span className="text-primary font-semibold">{formData.phone}</span>
                   </p>
                 </div>
 
                 <div>
-                  <label htmlFor="app-seller-register-page-6-digit-verification-code" className="block text-xs font-semibold uppercase tracking-wider text-slate-300 text-center mb-2">
+                  <label htmlFor="app-seller-register-page-6-digit-verification-code" className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground text-center mb-2">
                     6-Digit Verification Code
                   </label>
                   <input id="app-seller-register-page-6-digit-verification-code"
@@ -214,13 +214,13 @@ export default function SellerRegisterPage() {
                     placeholder="123456"
                     value={formData.otp}
                     onChange={(e) => setFormData({ ...formData, otp: e.target.value })}
-                    className="w-full bg-slate-800 border border-slate-700 rounded-lg py-3 text-center text-2xl font-mono tracking-widest text-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full bg-card border border-border rounded-lg py-3 text-center text-2xl font-mono tracking-widest text-primary focus:outline-none focus:ring-2 focus:ring-primary"
                   />
                 </div>
 
                 <button
                   type="submit"
-                  className="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-lg shadow-lg shadow-emerald-600/30 transition flex items-center justify-center gap-2 text-sm"
+                  className="w-full py-3 px-4 bg-success hover:bg-success text-success-foreground font-semibold rounded-lg shadow-lg shadow-success/30 transition flex items-center justify-center gap-2 text-sm"
                 >
                   Verify OTP & Complete Account Setup
                   <CheckCircle2 className="w-4 h-4" />
@@ -229,15 +229,15 @@ export default function SellerRegisterPage() {
             )
           ) : (
             <div className="text-center py-6 space-y-4">
-              <CheckCircle2 className="w-16 h-16 text-emerald-400 mx-auto animate-bounce" />
-              <h2 className="text-2xl font-bold text-white">Seller Registration Submitted!</h2>
-              <p className="text-sm text-slate-300">
-                Your initial registration for <strong className="text-indigo-400">{formData.businessName}</strong> is complete. Next, complete your mandatory GST, PAN, Bank, and Document KYC.
+              <CheckCircle2 className="w-16 h-16 text-success mx-auto animate-bounce" />
+              <h2 className="text-2xl font-bold text-foreground">Seller Registration Submitted!</h2>
+              <p className="text-sm text-muted-foreground">
+                Your initial registration for <strong className="text-primary">{formData.businessName}</strong> is complete. Next, complete your mandatory GST, PAN, Bank, and Document KYC.
               </p>
               <div className="pt-4">
                 <a
                   href="/seller/kyc"
-                  className="inline-flex items-center gap-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-lg shadow-lg shadow-indigo-600/30 transition text-sm"
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-primary hover:bg-primary text-primary-foreground font-semibold rounded-lg shadow-lg shadow-primary/30 transition text-sm"
                 >
                   Complete KYC Onboarding Wizard
                   <ArrowRight className="w-4 h-4" />

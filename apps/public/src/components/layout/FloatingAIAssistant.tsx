@@ -74,15 +74,15 @@ export function FloatingAIAssistant() {
   return (
     <div className="floating-ai-anchor fixed bottom-6 right-4 z-50 sm:right-6 flex flex-col gap-4 items-end">
       {open && (
-        <div className="mb-1 w-[290px] rounded-2xl border border-zinc-700 bg-zinc-900 p-4 text-zinc-100 shadow-2xl">
+        <div className="mb-1 w-[290px] rounded-2xl border border-border bg-card p-4 text-muted-foreground shadow-2xl">
           <div className="flex items-start justify-between gap-2">
             <div className="flex items-center gap-2">
               <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/15 text-primary">
                 <Bot className="h-5 w-5" />
               </span>
               <div>
-                <p className="text-sm font-semibold text-white">Get help</p>
-                <p className="text-xs text-zinc-300">Tell TecBunny what you need.</p>
+                <p className="text-sm font-semibold text-foreground">Get help</p>
+                <p className="text-xs text-muted-foreground">Tell TecBunny what you need.</p>
               </div>
             </div>
             <button
@@ -97,7 +97,7 @@ export function FloatingAIAssistant() {
 
           <div className="mt-4 grid grid-cols-2 gap-2">
             {helpOptions.map(([label, intent]) => (
-              <Link key={intent} href={`/contact?subject=${intent === 'network_support' || intent === 'repair_request' ? 'support' : 'sales'}&intent=${intent}&source=floating_help`} onClick={() => setOpen(false)} className="rounded-xl border border-zinc-700 bg-zinc-800 px-3 py-2.5 text-xs font-semibold text-zinc-100 transition hover:border-primary/50 hover:bg-zinc-700">
+              <Link key={intent} href={`/contact?subject=${intent === 'network_support' || intent === 'repair_request' ? 'support' : 'sales'}&intent=${intent}&source=floating_help`} onClick={() => setOpen(false)} className="rounded-xl border border-border bg-card px-3 py-2.5 text-xs font-semibold text-muted-foreground transition hover:border-primary/50 hover:bg-secondary">
                 {label}
               </Link>
             ))}
@@ -115,7 +115,7 @@ export function FloatingAIAssistant() {
             type="button"
             aria-label="Scroll to top"
             onClick={scrollToTop}
-            className="group flex h-14 w-14 items-center justify-center rounded-full bg-zinc-800/80 text-zinc-300 shadow-lg backdrop-blur transition hover:bg-zinc-700 hover:text-white hover:scale-105 border border-zinc-700/50"
+            className="group flex h-14 w-14 items-center justify-center rounded-full bg-card/80 text-muted-foreground shadow-lg backdrop-blur transition hover:bg-secondary hover:text-foreground hover:scale-105 border border-border/50"
           >
             <ArrowUp className="h-6 w-6 transition-transform group-hover:-translate-y-1" />
           </button>
@@ -127,7 +127,7 @@ export function FloatingAIAssistant() {
           target="_blank"
           rel="noopener noreferrer"
           aria-label="Chat on WhatsApp"
-          className="group flex h-14 w-14 items-center justify-center rounded-full shadow-[0_0_25px_rgba(37,211,102,0.45)] transition hover:shadow-[0_0_35px_rgba(37,211,102,0.65)] hover:scale-105"
+          className="group flex h-14 w-14 items-center justify-center rounded-full shadow-md transition hover:shadow-md hover:scale-105"
         >
           <Image src="/whatsapp.svg" alt="WhatsApp" width={52} height={52} className="transition-transform group-hover:scale-110 drop-shadow-md" />
         </Link>
@@ -138,7 +138,7 @@ export function FloatingAIAssistant() {
           aria-label="Open Get Help options"
           onClick={() => setOpen((prev) => !prev)}
           className={cn(
-            'group flex h-14 w-14 items-center justify-center rounded-full border border-primary/30 bg-gradient-to-br from-primary/60 to-primary text-white shadow-[0_0_25px_rgba(37,99,235,0.45)] transition hover:shadow-[0_0_35px_rgba(37,99,235,0.65)]',
+            'group flex h-14 w-14 items-center justify-center rounded-full border border-primary/30 bg-gradient-to-br from-primary/60 to-primary text-foreground shadow-md transition hover:shadow-md',
             open && 'ring-2 ring-primary/60'
           )}
         >

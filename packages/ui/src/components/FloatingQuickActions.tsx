@@ -22,9 +22,9 @@ const ACTION_ICONS: Record<EnterpriseActionId, LucideIcon> = {
 };
 
 const ACTION_COLORS: Partial<Record<EnterpriseActionId, string>> = {
-  leadCenter: 'bg-blue-500 text-white hover:bg-blue-600',
-  createFieldOrder: 'bg-emerald-500 text-white hover:bg-emerald-600',
-  findInvoice: 'bg-amber-500 text-white hover:bg-amber-600',
+  leadCenter: 'bg-primary text-primary-foreground hover:bg-primary',
+  createFieldOrder: 'bg-success text-success-foreground hover:bg-success',
+  findInvoice: 'bg-warning text-warning-foreground hover:bg-warning',
 };
 
 export function FloatingQuickActions() {
@@ -34,7 +34,7 @@ export function FloatingQuickActions() {
   const actions = quickActionIds.map((actionId) => ({
     ...enterpriseActions[actionId],
     icon: ACTION_ICONS[actionId],
-    color: ACTION_COLORS[actionId] ?? 'bg-blue-500 text-white hover:bg-blue-600',
+    color: ACTION_COLORS[actionId] ?? 'bg-primary text-primary-foreground hover:bg-primary',
   }));
 
   return (
@@ -47,7 +47,7 @@ export function FloatingQuickActions() {
               className="flex items-center gap-3 group animate-in slide-in-from-bottom-2 fade-in-0"
               style={{ animationDelay: `${(actions.length - i) * 50}ms`, animationFillMode: 'both' }}
             >
-              <span className="px-2.5 py-1 text-xs font-semibold text-white bg-zinc-900 rounded-md shadow-sm border border-zinc-700/50">
+              <span className="px-2.5 py-1 text-xs font-semibold text-foreground bg-card rounded-md shadow-sm border border-border/50">
                 {action.label}
               </span>
               <button
@@ -68,12 +68,12 @@ export function FloatingQuickActions() {
           ))}
         </div>
       )}
-      
+
       <button
         onClick={() => setOpen(!open)}
         className={cn(
-          "flex items-center justify-center w-14 h-14 rounded-full shadow-2xl shadow-blue-500/20 transition-all duration-300",
-          open ? "bg-zinc-800 text-zinc-400 rotate-45" : "bg-blue-600 text-white hover:bg-blue-700 hover:scale-105"
+          "flex items-center justify-center w-14 h-14 rounded-full shadow-2xl shadow-primary/20 transition-all duration-300",
+          open ? "bg-card text-muted-foreground rotate-45" : "bg-primary text-primary-foreground hover:bg-primary hover:scale-105"
         )}
         aria-label={open ? 'Close quick actions' : 'Open quick actions'}
         aria-expanded={open}

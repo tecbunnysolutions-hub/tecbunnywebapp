@@ -8,8 +8,8 @@ const CustomSetupFlow = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="h-96 w-full rounded-2xl border border-white/5 bg-slate-900/40 animate-pulse flex items-center justify-center">
-        <span className="text-sm text-slate-400">Loading configurator modules...</span>
+      <div className="h-96 w-full rounded-2xl border border-border/5 bg-card/40 animate-pulse flex items-center justify-center">
+        <span className="text-sm text-muted-foreground">Loading configurator modules...</span>
       </div>
     ),
   }

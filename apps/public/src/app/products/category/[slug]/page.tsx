@@ -68,7 +68,7 @@ export default async function ProductCategoryPage({ params }: Props) {
   };
 
   return (
-    <main className="bg-zinc-950 text-white">
+    <div className="bg-background text-foreground">
       <BreadcrumbJsonLd
         items={[
           { name: 'Home', url: SITE },
@@ -79,9 +79,9 @@ export default async function ProductCategoryPage({ params }: Props) {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c') }} />
 
       <section className="tb-container py-12 sm:py-16">
-        <Link href="/products" className="text-sm font-semibold text-blue-300 hover:text-white">&larr; All products</Link>
+        <Link href="/products" className="text-sm font-semibold text-primary hover:text-foreground">&larr; All products</Link>
         <h1 className="mt-5 text-4xl font-bold sm:text-5xl">{categoryLabel}</h1>
-        <p className="mt-4 max-w-3xl text-lg leading-8 text-zinc-300">
+        <p className="mt-4 max-w-3xl text-lg leading-8 text-muted-foreground">
           {products.length} {products.length === 1 ? 'product' : 'products'} from TecBunny. We can supply and install them in North Goa and the Sawantwadi area of Sindhudurg district, Maharashtra; the final price for installation work is confirmed in a written quote.
         </p>
 
@@ -91,16 +91,16 @@ export default async function ProductCategoryPage({ params }: Props) {
             const name = String(product.name ?? product.title ?? 'Product');
             const price = resolvePublicProductPrice(product);
             return (
-              <li key={String(product.id)} className="overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900">
+              <li key={String(product.id)} className="overflow-hidden rounded-2xl border border-border bg-card">
                 <Link href={`/products/${product.id}`} className="block">
                   {image ? (
-                    <Image src={image} alt={name} width={400} height={400} unoptimized className="aspect-square w-full bg-white object-contain" />
+                    <Image src={image} alt={name} width={400} height={400} unoptimized className="aspect-square w-full bg-card object-contain" />
                   ) : (
-                    <div className="aspect-square w-full bg-zinc-800" />
+                    <div className="aspect-square w-full bg-card" />
                   )}
                   <div className="p-4">
                     <h2 className="line-clamp-2 font-semibold">{name}</h2>
-                    <p className="mt-2 font-bold text-blue-300">{formatInr(price)}</p>
+                    <p className="mt-2 font-bold text-primary">{formatInr(price)}</p>
                   </div>
                 </Link>
               </li>
@@ -114,7 +114,7 @@ export default async function ProductCategoryPage({ params }: Props) {
             <ul className="mt-5 flex flex-wrap gap-3">
               {related.map((item) => (
                 <li key={item.slug}>
-                  <Link href={`/products/category/${item.slug}`} className="inline-flex rounded-full border border-zinc-700 px-4 py-2 text-sm font-semibold text-zinc-300 hover:border-blue-400">
+                  <Link href={`/products/category/${item.slug}`} className="inline-flex rounded-full border border-border px-4 py-2 text-sm font-semibold text-muted-foreground hover:border-primary">
                     {item.name.split(' > ').join(' / ')} ({item.count})
                   </Link>
                 </li>
@@ -123,6 +123,6 @@ export default async function ProductCategoryPage({ params }: Props) {
           </nav>
         )}
       </section>
-    </main>
+    </div>
   );
 }

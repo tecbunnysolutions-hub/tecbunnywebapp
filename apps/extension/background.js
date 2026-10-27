@@ -48,9 +48,9 @@ function redactForLog(value, depth = 0) {
 // Logger utility
 const ExtensionLogger = {
   log: (message, data) => {
-    console.log(`[TecBunny Scraper] ${message}`, data || '');
     chrome.storage.local.get(['debugLogs'], (result) => {
       if (result.debugLogs) {
+        console.log(`[TecBunny Scraper] ${message}`, data || '');
         const logs = result.debugLogs || [];
         logs.push({ timestamp: new Date().toISOString(), message: redactForLog(message), data: redactForLog(data) });
         chrome.storage.local.set({ debugLogs: logs.slice(-100) }); // Keep last 100 logs

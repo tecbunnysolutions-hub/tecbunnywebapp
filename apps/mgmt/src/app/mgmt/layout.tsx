@@ -6,7 +6,7 @@ import { useAuth } from "@tecbunny/core/hooks";
 import { GlobalShell, NavSection } from '@tecbunny/admin-ui';
 import { isAtLeast } from '@tecbunny/core/roles';
 import type { UserRole } from '@tecbunny/core/roles';
-import { 
+import {
   LayoutDashboard, Users, ShoppingCart, Activity, Briefcase,
   Megaphone, CheckSquare, ClipboardList, Box, X, UserCog
 } from 'lucide-react';
@@ -105,12 +105,12 @@ export default function ManagementLayout({ children }: { children: React.ReactNo
       {/* Accessibility: skip-to-content link */}
       <a
         href="#main-content"
-        className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[9999] focus:px-4 focus:py-2 focus:bg-indigo-600 focus:text-white focus:rounded-md focus:text-sm focus:font-medium focus:shadow-lg"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[9999] focus:px-4 focus:py-2 focus:bg-primary focus:text-primary-foreground focus:rounded-md focus:text-sm focus:font-medium focus:shadow-lg text-foreground"
       >
         Skip to main content
       </a>
-    <GlobalShell 
-      appName="Workspace" 
+    <GlobalShell
+      appName="Workspace"
       appColor="indigo"
       navigation={navigation}
     >
@@ -125,7 +125,7 @@ export default function ManagementLayout({ children }: { children: React.ReactNo
             aria-label={fabOpen ? 'Close quick actions' : 'Open quick actions'}
             aria-expanded={fabOpen}
             onClick={() => setFabOpen(prev => !prev)}
-            className="flex items-center justify-center w-14 h-14 bg-emerald-600 text-white rounded-full shadow-lg hover:bg-emerald-700 hover:scale-105 transition-all shadow-emerald-600/30"
+            className="flex items-center justify-center w-14 h-14 bg-success text-success-foreground rounded-full shadow-lg hover:bg-success hover:scale-105 transition-all shadow-success/30"
           >
             {fabOpen
               ? <X className="w-6 h-6" />
@@ -134,14 +134,14 @@ export default function ManagementLayout({ children }: { children: React.ReactNo
           </button>
 
           {fabOpen && (
-            <div className="absolute bottom-16 right-0 w-48 bg-white border border-slate-100 rounded-xl shadow-xl overflow-hidden">
+            <div className="absolute bottom-16 right-0 w-48 bg-card border border-border rounded-xl shadow-xl overflow-hidden">
               <div className="py-1">
-                <p className="px-4 py-2 text-xs font-semibold text-slate-500 uppercase tracking-wider bg-slate-50 border-b">Create New</p>
+                <p className="px-4 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider bg-muted border-b">Create New</p>
                 {Object.keys(QUICK_CREATE_ROUTES).map(label => (
                   <button
                     key={label}
                     onClick={() => handleQuickCreate(label)}
-                    className="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-100 hover:text-emerald-700 transition-colors focus-visible:outline focus-visible:outline-indigo-500"
+                    className="w-full text-left px-4 py-2 text-sm text-foreground hover:bg-muted hover:text-success transition-colors focus-visible:outline focus-visible:outline-primary"
                     aria-label={`Create new ${label}`}
                   >
                     {label}

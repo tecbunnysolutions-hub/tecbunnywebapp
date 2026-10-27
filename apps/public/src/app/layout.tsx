@@ -283,21 +283,11 @@ export default async function RootLayout({
 }>) {
   const gaId = process.env.NEXT_PUBLIC_GA_ID || 'G-6QWJ4732Q9';
   const metaPixelId = process.env.NEXT_PUBLIC_META_PIXEL_ID;
-  // NOTE: no per-request CSP nonce is read here. Middleware only sets x-nonce
-  // on protected routes (/checkout, /orders, /payment, /profile), and reading
-  // headers() in this shared layout forced EVERY public page into dynamic
-  // rendering — defeating ISR/CDN caching for zero benefit (public routes
-  // receive no nonce-based CSP). next-themes' inline init script may be
-  // blocked by CSP on protected routes, so the default dark theme is applied
-  // statically via className="dark" below to avoid any theme flash there.
+  // Shared CSS follows system preference before the appearance control hydrates.
   return (
     <html
       lang="en"
-      className="dark"
       suppressHydrationWarning
-      style={{
-        ['--font-body' as string]: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
-      }}
     >
       <head>
         <link rel="preconnect" href="https://fbcsagupcxheyiusjfak.supabase.co" crossOrigin="anonymous" />
@@ -316,6 +306,7 @@ export default async function RootLayout({
       </head>
       <body className="font-body antialiased overflow-x-hidden w-full" suppressHydrationWarning>
         <ThemeProvider>
+          <a className="tb-skip-link" href="#main-content">Skip to content</a>
           <TRPCProvider>
             <FeatureFlagProviderLoader>
               <AppProvider>
@@ -325,7 +316,7 @@ export default async function RootLayout({
                       <Suspense fallback={<div className="h-16 border-b" />}>
                         <Header />
                       </Suspense>
-                      <main className="flex-1">{children}</main>
+                      <main id="main-content" tabIndex={-1} className="flex-1">{children}</main>
                       <Footer />
                     </div>
                   </TechShell>

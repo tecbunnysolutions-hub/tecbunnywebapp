@@ -145,8 +145,8 @@ export default function ProfileSettingsPage() {
         </button>
       </div>
 
-      {error && <div className="rounded-lg border border-red-300 bg-red-50 p-4 text-sm text-red-700 dark:bg-red-950/30 dark:text-red-200">{error}</div>}
-      {message && <div className="rounded-lg border border-emerald-300 bg-emerald-50 p-4 text-sm text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-200">{message}</div>}
+      {error && <div className="rounded-lg border border-destructive bg-destructive/10 p-4 text-sm text-destructive dark:bg-destructive/30 dark:text-destructive">{error}</div>}
+      {message && <div className="rounded-lg border border-success bg-success/10 p-4 text-sm text-success dark:bg-success/30 dark:text-success">{message}</div>}
 
       <section className="grid gap-4 lg:grid-cols-[1fr_360px]">
         <div className="rounded-xl border border-border bg-card p-5">

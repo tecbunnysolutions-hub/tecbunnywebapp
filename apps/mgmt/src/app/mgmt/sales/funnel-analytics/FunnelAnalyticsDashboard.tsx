@@ -51,16 +51,16 @@ function StatCard({
   color: 'red' | 'amber' | 'blue' | 'emerald';
 }) {
   const colorClasses = {
-    red: 'bg-red-50 text-red-700 border-red-200',
-    amber: 'bg-amber-50 text-amber-700 border-amber-200',
-    blue: 'bg-blue-50 text-blue-700 border-blue-200',
-    emerald: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+    red: 'bg-destructive/10 text-destructive border-destructive/20',
+    amber: 'bg-warning/10 text-warning border-warning/20',
+    blue: 'bg-primary/10 text-primary border-primary/20',
+    emerald: 'bg-success/10 text-success border-success/20',
   };
   const iconBgClasses = {
-    red: 'bg-red-100 text-red-600',
-    amber: 'bg-amber-100 text-amber-600',
-    blue: 'bg-blue-100 text-blue-600',
-    emerald: 'bg-emerald-100 text-emerald-600',
+    red: 'bg-destructive/10 text-destructive',
+    amber: 'bg-warning/10 text-warning',
+    blue: 'bg-primary/10 text-primary',
+    emerald: 'bg-success/10 text-success',
   };
 
   return (
@@ -82,14 +82,14 @@ function StatCard({
 function PriorityBreakdownCard({ data }: { data: Record<string, number> }) {
   const total = Object.values(data).reduce((a, b) => a + b, 0);
   const items = [
-    { label: 'HOT', count: data.HOT || 0, color: 'bg-red-500', textColor: 'text-red-600' },
-    { label: 'WARM', count: data.WARM || 0, color: 'bg-amber-500', textColor: 'text-amber-600' },
-    { label: 'COLD', count: data.COLD || 0, color: 'bg-blue-500', textColor: 'text-blue-600' },
+    { label: 'HOT', count: data.HOT || 0, color: 'bg-destructive text-destructive-foreground', textColor: 'text-destructive' },
+    { label: 'WARM', count: data.WARM || 0, color: 'bg-warning text-warning-foreground', textColor: 'text-warning' },
+    { label: 'COLD', count: data.COLD || 0, color: 'bg-primary text-primary-foreground', textColor: 'text-primary' },
   ];
 
   return (
     <Card className="p-6">
-      <h3 className="text-sm font-bold text-slate-900 mb-4 flex items-center gap-2">
+      <h3 className="text-sm font-bold text-foreground mb-4 flex items-center gap-2">
         <TrendingUp size={16} />
         Lead Priority Breakdown
       </h3>
@@ -100,9 +100,9 @@ function PriorityBreakdownCard({ data }: { data: Record<string, number> }) {
             <div key={item.label}>
               <div className="flex justify-between mb-1">
                 <span className={`text-xs font-semibold ${item.textColor}`}>{item.label}</span>
-                <span className="text-xs font-mono text-slate-600">{item.count} ({percentage}%)</span>
+                <span className="text-xs font-mono text-muted-foreground">{item.count} ({percentage}%)</span>
               </div>
-              <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+              <div className="h-2 bg-muted rounded-full overflow-hidden">
                 <div
                   className={`h-full ${item.color} transition-all duration-300`}
                   style={{ width: `${percentage}%` }}
@@ -112,8 +112,8 @@ function PriorityBreakdownCard({ data }: { data: Record<string, number> }) {
           );
         })}
       </div>
-      <div className="mt-4 p-3 bg-slate-50 rounded-lg">
-        <p className="text-xs text-slate-600">
+      <div className="mt-4 p-3 bg-muted rounded-lg">
+        <p className="text-xs text-muted-foreground">
           <strong>{total}</strong> total assessments in period
         </p>
       </div>
@@ -134,35 +134,35 @@ function ServicePerformanceCard({
 }) {
   return (
     <Card className="p-6">
-      <h3 className="text-sm font-bold text-slate-900 mb-4 flex items-center gap-2">
+      <h3 className="text-sm font-bold text-foreground mb-4 flex items-center gap-2">
         <Zap size={16} />
         Service Performance
       </h3>
       <div className="space-y-3 max-h-64 overflow-y-auto">
         {metrics.length === 0 ? (
-          <p className="text-xs text-slate-500">No service data</p>
+          <p className="text-xs text-muted-foreground">No service data</p>
         ) : (
           metrics.map(metric => (
             <div
               key={metric.service}
-              className="p-3 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
+              className="p-3 border border-border rounded-lg hover:bg-muted transition-colors"
             >
               <div className="flex justify-between items-start mb-2">
-                <span className="text-sm font-semibold text-slate-800 truncate max-w-xs">
+                <span className="text-sm font-semibold text-foreground truncate max-w-xs">
                   {metric.service}
                 </span>
-                <span className="text-xs font-mono bg-blue-100 text-blue-700 px-2 py-1 rounded">
+                <span className="text-xs font-mono bg-primary/10 text-primary px-2 py-1 rounded">
                   {metric.hotConversionRate}% HOT
                 </span>
               </div>
               <div className="flex gap-4 text-xs">
-                <span className="text-red-600">
+                <span className="text-destructive">
                   <strong>{metric.hot}</strong> HOT
                 </span>
-                <span className="text-amber-600">
+                <span className="text-warning">
                   <strong>{metric.warm}</strong> WARM
                 </span>
-                <span className="text-slate-600">
+                <span className="text-muted-foreground">
                   <strong>{metric.total}</strong> Total
                 </span>
               </div>
@@ -189,7 +189,7 @@ function DailyTrendCard({
 
   return (
     <Card className="p-6">
-      <h3 className="text-sm font-bold text-slate-900 mb-4 flex items-center gap-2">
+      <h3 className="text-sm font-bold text-foreground mb-4 flex items-center gap-2">
         <TrendingUp size={16} />
         30-Day Trend
       </h3>
@@ -199,31 +199,31 @@ function DailyTrendCard({
           return (
             <div key={day.date}>
               <div className="flex justify-between mb-1">
-                <span className="text-xs font-mono text-slate-600">{day.date}</span>
-                <span className="text-xs text-slate-600">
-                  <span className="text-red-600">●</span> {day.hot}{' '}
-                  <span className="text-amber-600">●</span> {day.warm}{' '}
-                  <span className="text-blue-600">●</span> {day.cold}
+                <span className="text-xs font-mono text-muted-foreground">{day.date}</span>
+                <span className="text-xs text-muted-foreground">
+                  <span className="text-destructive">●</span> {day.hot}{' '}
+                  <span className="text-warning">●</span> {day.warm}{' '}
+                  <span className="text-primary">●</span> {day.cold}
                 </span>
               </div>
-              <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden flex">
+              <div className="h-1.5 bg-muted rounded-full overflow-hidden flex">
                 {day.total > 0 && (
                   <>
                     {day.hot > 0 && (
                       <div
-                        className="bg-red-500 h-full"
+                        className="bg-destructive h-full text-destructive-foreground"
                         style={{ width: `${(day.hot / day.total) * 100}%` }}
                       />
                     )}
                     {day.warm > 0 && (
                       <div
-                        className="bg-amber-500 h-full"
+                        className="bg-warning h-full text-warning-foreground"
                         style={{ width: `${(day.warm / day.total) * 100}%` }}
                       />
                     )}
                     {day.cold > 0 && (
                       <div
-                        className="bg-blue-500 h-full"
+                        className="bg-primary h-full text-primary-foreground"
                         style={{ width: `${(day.cold / day.total) * 100}%` }}
                       />
                     )}
@@ -275,12 +275,12 @@ export default function FunnelAnalyticsDashboard() {
   if (error && !data) {
     return (
       <div className="space-y-4">
-        <div className="rounded-lg border border-red-200 bg-red-50 p-6">
+        <div className="rounded-lg border border-destructive/20 bg-destructive/10 p-6">
           <div className="flex items-center gap-3">
-            <AlertCircle className="text-red-600" size={24} />
+            <AlertCircle className="text-destructive" size={24} />
             <div>
-              <h3 className="font-semibold text-red-900">Analytics Error</h3>
-              <p className="text-sm text-red-700">{error}</p>
+              <h3 className="font-semibold text-destructive">Analytics Error</h3>
+              <p className="text-sm text-destructive">{error}</p>
             </div>
           </div>
           <Button
@@ -301,8 +301,8 @@ export default function FunnelAnalyticsDashboard() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Assessment Funnel Analytics</h1>
-          <p className="text-sm text-slate-600 mt-1">
+          <h1 className="text-2xl font-bold text-foreground">Assessment Funnel Analytics</h1>
+          <p className="text-sm text-muted-foreground mt-1">
             Real-time lead qualification metrics and conversion performance
           </p>
         </div>
@@ -414,15 +414,15 @@ export default function FunnelAnalyticsDashboard() {
       {/* Source Breakdown */}
       {!loading && data && (
         <Card className="p-6">
-          <h3 className="text-sm font-bold text-slate-900 mb-4 flex items-center gap-2">
+          <h3 className="text-sm font-bold text-foreground mb-4 flex items-center gap-2">
             <Activity size={16} />
             Lead Source Breakdown
           </h3>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             {Object.entries(data.sourceBreakdown).map(([source, count]) => (
-              <div key={source} className="p-3 border border-slate-200 rounded-lg text-center">
-                <p className="text-xs font-semibold text-slate-700 truncate">{source}</p>
-                <p className="text-lg font-bold text-slate-900 mt-1">{count}</p>
+              <div key={source} className="p-3 border border-border rounded-lg text-center">
+                <p className="text-xs font-semibold text-foreground truncate">{source}</p>
+                <p className="text-lg font-bold text-foreground mt-1">{count}</p>
               </div>
             ))}
           </div>

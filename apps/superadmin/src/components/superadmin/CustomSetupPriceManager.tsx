@@ -289,13 +289,13 @@ export default function CustomSetupPriceManager() {
   return (
     <div className="space-y-6">
       {/* Control Header with Template Selector & Actions */}
-      <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 bg-zinc-900/60 border border-zinc-800 p-4 rounded-xl">
+      <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 bg-card/60 border border-border p-4 rounded-xl">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <DollarSign className="w-5 h-5 text-emerald-400" />
-            <h2 className="text-xl font-bold tracking-tight text-white">Customised Setup Price Manager</h2>
+            <DollarSign className="w-5 h-5 text-success" />
+            <h2 className="text-xl font-bold tracking-tight text-foreground">Customised Setup Price Manager</h2>
           </div>
-          <p className="text-xs text-zinc-400">
+          <p className="text-xs text-muted-foreground">
             Configure base prices, component MRP/Sale rates, accessories, and system packages for customized setup calculations.
           </p>
         </div>
@@ -303,14 +303,14 @@ export default function CustomSetupPriceManager() {
         <div className="flex flex-wrap items-center gap-2.5 w-full lg:w-auto">
           {/* Template Selector Dropdown */}
           <div className="flex items-center gap-2 min-w-[220px]">
-            <Layers className="w-4 h-4 text-emerald-400 shrink-0" />
+            <Layers className="w-4 h-4 text-success shrink-0" />
             <Select value={selectedSlug} onValueChange={(val) => setSelectedSlug(val)}>
-              <SelectTrigger className="bg-zinc-950 border-zinc-800 text-white text-xs h-9 font-medium focus:ring-emerald-500">
+              <SelectTrigger className="bg-background border-border text-foreground text-xs h-9 font-medium focus:ring-success">
                 <SelectValue placeholder="Select setup template..." />
               </SelectTrigger>
-              <SelectContent className="bg-zinc-900 border-zinc-800 text-white">
+              <SelectContent className="bg-card border-border text-foreground">
                 {templates.map((tpl) => (
-                  <SelectItem key={tpl.id || tpl.slug} value={tpl.slug} className="text-xs focus:bg-emerald-600 focus:text-white">
+                  <SelectItem key={tpl.id || tpl.slug} value={tpl.slug} className="text-xs focus:bg-success focus:text-success-foreground text-foreground">
                     {tpl.name} {tpl.category ? `(${tpl.category})` : ''}
                   </SelectItem>
                 ))}
@@ -322,7 +322,7 @@ export default function CustomSetupPriceManager() {
           <Button
             size="sm"
             onClick={() => setCreateModalOpen(true)}
-            className="bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-xs h-9"
+            className="bg-success hover:bg-success text-success-foreground font-medium text-xs h-9"
           >
             <Plus className="w-3.5 h-3.5 mr-1" />
             New Template
@@ -334,7 +334,7 @@ export default function CustomSetupPriceManager() {
             size="sm"
             onClick={() => fetchTemplateDetails(selectedSlug)}
             disabled={loading}
-            className="border-zinc-800 text-zinc-300 hover:bg-zinc-800 text-xs h-9"
+            className="border-border text-muted-foreground hover:bg-card text-xs h-9"
           >
             <RefreshCw className={`w-3.5 h-3.5 mr-1 ${loading ? 'animate-spin' : ''}`} />
             Refresh
@@ -345,7 +345,7 @@ export default function CustomSetupPriceManager() {
             size="sm"
             onClick={handleSaveChanges}
             disabled={saving || !Object.keys(pendingOptionState).length}
-            className="bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-xs h-9"
+            className="bg-success hover:bg-success text-success-foreground font-medium text-xs h-9"
           >
             <Save className="w-3.5 h-3.5 mr-1" />
             {saving ? 'Saving...' : `Save (${Object.keys(pendingOptionState).length})`}
@@ -355,24 +355,24 @@ export default function CustomSetupPriceManager() {
 
       {/* Current Template Details Meta */}
       {blueprint && (
-        <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-2.5 bg-zinc-950/80 border border-zinc-800/80 rounded-lg text-xs">
-          <div className="flex items-center gap-3 text-zinc-300">
-            <span className="font-semibold text-white">{blueprint.name}</span>
-            <Badge variant="outline" className="border-emerald-500/40 text-emerald-400 text-[10px]">
+        <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-2.5 bg-background/80 border border-border/80 rounded-lg text-xs">
+          <div className="flex items-center gap-3 text-muted-foreground">
+            <span className="font-semibold text-foreground">{blueprint.name}</span>
+            <Badge variant="outline" className="border-success/40 text-success text-[10px]">
               {blueprint.category || 'Surveillance'}
             </Badge>
-            <span className="text-zinc-500">Slug: <code className="text-zinc-300 font-mono">{blueprint.slug}</code></span>
+            <span className="text-muted-foreground">Slug: <code className="text-muted-foreground font-mono">{blueprint.slug}</code></span>
           </div>
-          <div className="text-zinc-400 flex items-center gap-4">
-            <span>Systems: <strong className="text-white">{blueprint.systems?.length ?? 0}</strong></span>
-            <span>Currency: <strong className="text-emerald-400">{blueprint.currency || 'INR'}</strong></span>
+          <div className="text-muted-foreground flex items-center gap-4">
+            <span>Systems: <strong className="text-foreground">{blueprint.systems?.length ?? 0}</strong></span>
+            <span>Currency: <strong className="text-success">{blueprint.currency || 'INR'}</strong></span>
           </div>
         </div>
       )}
 
       {/* Systems Tab Bar */}
       {blueprint?.systems && blueprint.systems.length > 0 && (
-        <div className="flex flex-wrap items-center gap-2 p-1 bg-zinc-900/80 border border-zinc-800 rounded-xl">
+        <div className="flex flex-wrap items-center gap-2 p-1 bg-card/80 border border-border rounded-xl">
           {blueprint.systems.map((sys) => {
             const isActive = sys.slug === activeSystemSlug;
             return (
@@ -381,8 +381,8 @@ export default function CustomSetupPriceManager() {
                 onClick={() => setActiveSystemSlug(sys.slug)}
                 className={`px-4 py-2 text-xs font-semibold rounded-lg transition-all ${
                   isActive
-                    ? 'bg-emerald-600 text-white shadow-md'
-                    : 'text-zinc-400 hover:text-white hover:bg-zinc-800'
+                    ? 'bg-success text-success-foreground shadow-md'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-card'
                 }`}
               >
                 {sys.name}
@@ -398,26 +398,26 @@ export default function CustomSetupPriceManager() {
           placeholder="Filter components or options..."
           value={filterQuery}
           onChange={(e) => setFilterQuery(e.target.value)}
-          className="max-w-md bg-zinc-950 border-zinc-800 text-white text-xs placeholder:text-zinc-500"
+          className="max-w-md bg-background border-border text-foreground text-xs placeholder:text-muted-foreground"
         />
       </div>
 
       {/* Components & Options List */}
       {loading ? (
-        <div className="py-20 text-center text-sm text-zinc-500 animate-pulse">
+        <div className="py-20 text-center text-sm text-muted-foreground animate-pulse">
           Loading customized setup catalog & blueprint...
         </div>
       ) : !currentSystem ? (
-        <div className="py-16 text-center space-y-4 bg-zinc-900/40 border border-zinc-800 rounded-xl p-8">
-          <Package className="w-12 h-12 text-zinc-600 mx-auto" />
-          <div className="text-sm font-semibold text-zinc-300">No system blueprint loaded for this template</div>
-          <p className="text-xs text-zinc-500 max-w-md mx-auto">
+        <div className="py-16 text-center space-y-4 bg-card/40 border border-border rounded-xl p-8">
+          <Package className="w-12 h-12 text-muted-foreground mx-auto" />
+          <div className="text-sm font-semibold text-muted-foreground">No system blueprint loaded for this template</div>
+          <p className="text-xs text-muted-foreground max-w-md mx-auto">
             Select an existing setup template from the dropdown above or initialize the default CCTV camera blueprint.
           </p>
           <Button
             size="sm"
             onClick={() => fetchTemplateDetails(DEFAULT_CUSTOM_SETUP_TEMPLATE_SLUG)}
-            className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs"
+            className="bg-success hover:bg-success text-success-foreground text-xs"
           >
             <Sparkles className="w-3.5 h-3.5 mr-1.5" />
             Load Default Setup Blueprint
@@ -435,32 +435,32 @@ export default function CustomSetupPriceManager() {
               );
             })
             .map((comp) => (
-              <Card key={comp.id} className="bg-zinc-950/60 border-zinc-800 shadow-sm">
-                <CardHeader className="py-3.5 px-4 bg-zinc-900/40 border-b border-zinc-800/80">
+              <Card key={comp.id} className="bg-background/60 border-border shadow-sm">
+                <CardHeader className="py-3.5 px-4 bg-card/40 border-b border-border/80">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <Package className="w-4 h-4 text-emerald-400" />
-                      <CardTitle className="text-sm font-semibold text-white">{comp.name}</CardTitle>
-                      <Badge variant="outline" className="text-[10px] border-zinc-700 text-zinc-400">
+                      <Package className="w-4 h-4 text-success" />
+                      <CardTitle className="text-sm font-semibold text-foreground">{comp.name}</CardTitle>
+                      <Badge variant="outline" className="text-[10px] border-border text-muted-foreground">
                         {comp.slug}
                       </Badge>
                     </div>
-                    <span className="text-[11px] text-zinc-500 font-mono">
+                    <span className="text-[11px] text-muted-foreground font-mono">
                       {comp.options.length} {comp.options.length === 1 ? 'option' : 'options'}
                     </span>
                   </div>
                 </CardHeader>
                 <CardContent className="p-0">
                   <Table>
-                    <TableHeader className="bg-zinc-950/80">
-                      <TableRow className="border-zinc-800 hover:bg-transparent">
-                        <TableHead className="text-zinc-400 text-xs font-semibold">Option Name</TableHead>
-                        <TableHead className="text-zinc-400 text-xs font-semibold text-right w-36">MRP Price (₹)</TableHead>
-                        <TableHead className="text-zinc-400 text-xs font-semibold text-right w-36">Sale Price (₹)</TableHead>
-                        <TableHead className="text-zinc-400 text-xs font-semibold text-center w-28">Status</TableHead>
+                    <TableHeader className="bg-background/80">
+                      <TableRow className="border-border hover:bg-transparent">
+                        <TableHead className="text-muted-foreground text-xs font-semibold">Option Name</TableHead>
+                        <TableHead className="text-muted-foreground text-xs font-semibold text-right w-36">MRP Price (₹)</TableHead>
+                        <TableHead className="text-muted-foreground text-xs font-semibold text-right w-36">Sale Price (₹)</TableHead>
+                        <TableHead className="text-muted-foreground text-xs font-semibold text-center w-28">Status</TableHead>
                       </TableRow>
                     </TableHeader>
-                    <TableBody className="divide-y divide-zinc-800/60">
+                    <TableBody className="divide-y divide-border/60">
                       {comp.options.map((option) => {
                         const mrpKey = `${option.id}_mrp`;
                         const saleKey = `${option.id}_sale`;
@@ -474,10 +474,10 @@ export default function CustomSetupPriceManager() {
                         const isModified = pendingOptionState[option.id] !== undefined;
 
                         return (
-                          <TableRow key={option.id} className="hover:bg-zinc-900/30 transition-colors">
+                          <TableRow key={option.id} className="hover:bg-card/30 transition-colors">
                             <TableCell className="py-2.5 px-4">
-                              <div className="font-medium text-xs text-zinc-200">{option.label}</div>
-                              <div className="text-[10px] font-mono text-zinc-500">{option.id}</div>
+                              <div className="font-medium text-xs text-muted-foreground">{option.label}</div>
+                              <div className="text-[10px] font-mono text-muted-foreground">{option.id}</div>
                             </TableCell>
                             <TableCell className="py-2.5 px-4 text-right">
                               <Input
@@ -486,7 +486,7 @@ export default function CustomSetupPriceManager() {
                                 step={10}
                                 value={mrpInputValue}
                                 onChange={(e) => handlePriceChange(option.id, 'mrp', e.target.value)}
-                                className="w-28 text-right text-xs bg-zinc-900 border-zinc-800 text-zinc-100 focus:border-emerald-500 ml-auto"
+                                className="w-28 text-right text-xs bg-card border-border text-muted-foreground focus:border-success ml-auto"
                               />
                             </TableCell>
                             <TableCell className="py-2.5 px-4 text-right">
@@ -496,16 +496,16 @@ export default function CustomSetupPriceManager() {
                                 step={10}
                                 value={saleInputValue}
                                 onChange={(e) => handlePriceChange(option.id, 'sale', e.target.value)}
-                                className="w-28 text-right text-xs bg-zinc-900 border-zinc-800 text-emerald-300 font-semibold focus:border-emerald-500 ml-auto"
+                                className="w-28 text-right text-xs bg-card border-border text-success font-semibold focus:border-success ml-auto"
                               />
                             </TableCell>
                             <TableCell className="py-2.5 px-4 text-center">
                               {isModified ? (
-                                <Badge className="bg-amber-500/20 text-amber-300 border-amber-500/40 text-[10px]">
+                                <Badge className="bg-warning/20 text-warning border-warning/40 text-[10px]">
                                   Modified
                                 </Badge>
                               ) : (
-                                <Badge variant="outline" className="text-zinc-500 border-zinc-800 text-[10px]">
+                                <Badge variant="outline" className="text-muted-foreground border-border text-[10px]">
                                   Active
                                 </Badge>
                               )}
@@ -523,35 +523,35 @@ export default function CustomSetupPriceManager() {
 
       {/* Create Template Dialog */}
       <Dialog open={createModalOpen} onOpenChange={setCreateModalOpen}>
-        <DialogContent className="bg-zinc-950 border-zinc-800 text-white max-w-md">
+        <DialogContent className="bg-background border-border text-foreground max-w-md">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-lg font-bold text-white">
-              <FolderPlus className="w-5 h-5 text-emerald-400" />
+            <DialogTitle className="flex items-center gap-2 text-lg font-bold text-foreground">
+              <FolderPlus className="w-5 h-5 text-success" />
               Create Custom Setup Template
             </DialogTitle>
-            <DialogDescription className="text-xs text-zinc-400">
+            <DialogDescription className="text-xs text-muted-foreground">
               Add a new customizable setup package template for products, hardware, or installation services.
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 py-2">
             <div className="space-y-1.5">
-              <Label className="text-xs font-semibold text-zinc-300">Template Name</Label>
+              <Label className="text-xs font-semibold text-muted-foreground">Template Name</Label>
               <Input
                 placeholder="e.g. Smart Home Security Package"
                 value={newTemplateName}
                 onChange={(e) => setNewTemplateName(e.target.value)}
-                className="bg-zinc-900 border-zinc-800 text-white text-xs"
+                className="bg-card border-border text-foreground text-xs"
               />
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-xs font-semibold text-zinc-300">Category</Label>
+              <Label className="text-xs font-semibold text-muted-foreground">Category</Label>
               <Select value={newTemplateCategory} onValueChange={setNewTemplateCategory}>
-                <SelectTrigger className="bg-zinc-900 border-zinc-800 text-white text-xs">
+                <SelectTrigger className="bg-card border-border text-foreground text-xs">
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
-                <SelectContent className="bg-zinc-900 border-zinc-800 text-white">
+                <SelectContent className="bg-card border-border text-foreground">
                   <SelectItem value="Surveillance">Surveillance & CCTV</SelectItem>
                   <SelectItem value="Automation">Home & Office Automation</SelectItem>
                   <SelectItem value="Solar">Solar Power Systems</SelectItem>
@@ -562,24 +562,24 @@ export default function CustomSetupPriceManager() {
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-xs font-semibold text-zinc-300">Description (Optional)</Label>
+              <Label className="text-xs font-semibold text-muted-foreground">Description (Optional)</Label>
               <Input
                 placeholder="Brief summary of setup package components"
                 value={newTemplateDescription}
                 onChange={(e) => setNewTemplateDescription(e.target.value)}
-                className="bg-zinc-900 border-zinc-800 text-white text-xs"
+                className="bg-card border-border text-foreground text-xs"
               />
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-xs font-semibold text-zinc-300">Base Setup Fee (₹)</Label>
+              <Label className="text-xs font-semibold text-muted-foreground">Base Setup Fee (₹)</Label>
               <Input
                 type="number"
                 min={0}
                 placeholder="0"
                 value={newTemplateBasePrice}
                 onChange={(e) => setNewTemplateBasePrice(e.target.value)}
-                className="bg-zinc-900 border-zinc-800 text-white text-xs"
+                className="bg-card border-border text-foreground text-xs"
               />
             </div>
           </div>
@@ -589,7 +589,7 @@ export default function CustomSetupPriceManager() {
               variant="outline"
               size="sm"
               onClick={() => setCreateModalOpen(false)}
-              className="border-zinc-800 text-zinc-300 hover:bg-zinc-900 text-xs"
+              className="border-border text-muted-foreground hover:bg-card text-xs"
             >
               Cancel
             </Button>
@@ -597,7 +597,7 @@ export default function CustomSetupPriceManager() {
               size="sm"
               onClick={handleCreateTemplate}
               disabled={creatingTemplate || !newTemplateName.trim()}
-              className="bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-xs"
+              className="bg-success hover:bg-success text-success-foreground font-medium text-xs"
             >
               {creatingTemplate ? 'Creating...' : 'Create Template'}
             </Button>

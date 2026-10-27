@@ -58,7 +58,7 @@ export default function SalesAgentsManagement({ initialApplications }: SalesAgen
   React.useEffect(() => {
     async function fetchApplications() {
       if (initialApplications.length > 0) return; // Already have data
-      
+
       setDataLoading(true);
       try {
         const response = await fetch('/api/admin/sales-agents');
@@ -158,18 +158,18 @@ export default function SalesAgentsManagement({ initialApplications }: SalesAgen
         </CardHeader>
         <CardContent>
           <div className="text-center py-8">
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
-              <h3 className="text-lg font-medium text-yellow-800 mb-2">
+            <div className="bg-warning/10 border border-warning/20 rounded-lg p-6">
+              <h3 className="text-lg font-medium text-warning mb-2">
                 Database Migration Required
               </h3>
-              <p className="text-yellow-700 mb-4">
+              <p className="text-warning mb-4">
                 The sales agent feature requires a database migration to be run. Please run the migration SQL in your Supabase dashboard.
               </p>
-              <div className="bg-white border rounded p-4 text-left">
-                <p className="text-sm text-gray-600 mb-2">
+              <div className="bg-card border rounded p-4 text-left">
+                <p className="text-sm text-muted-foreground mb-2">
                   <strong>Steps to complete setup:</strong>
                 </p>
-                <ol className="text-sm text-gray-700 list-decimal list-inside space-y-1">
+                <ol className="text-sm text-foreground list-decimal list-inside space-y-1">
                   <li>Go to your Supabase project dashboard</li>
                   <li>Navigate to SQL Editor</li>
                   <li>Copy and paste the migration SQL from the migration file</li>

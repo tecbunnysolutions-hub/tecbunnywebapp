@@ -33,7 +33,7 @@ export default function AgentRecruitPage() {
           </div>
           <h1 className="mb-6 text-4xl font-extrabold tracking-tight text-foreground md:text-6xl">
             Scale Your Revenue as a <br />
-            <span className="bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
+            <span className=" text-primary">
               TecBunny Certified Agent
             </span>
           </h1>
@@ -80,7 +80,7 @@ export default function AgentRecruitPage() {
               }
             ].map((item, i) => (
               <div key={i} className="group rounded-2xl border border-border bg-card p-8 transition hover:border-primary/30">
-                <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary transition-colors text-foreground">
                   <item.icon className="h-6 w-6" />
                 </div>
                 <h3 className="mb-3 text-xl font-bold text-foreground">{item.title}</h3>
@@ -121,18 +121,18 @@ export default function AgentRecruitPage() {
                 <h3 className="mb-6 text-2xl font-bold text-foreground">Affiliate Partner Programme</h3>
                 <div className="space-y-6">
                   <div className="relative pl-8 before:absolute before:left-0 before:top-2 before:h-full before:w-[2px] before:bg-border">
-                    <div className="absolute -left-[5px] top-2 h-[10px] w-[10px] rounded-full bg-primary" />
+                    <div className="absolute -left-[5px] top-2 h-[10px] w-[10px] rounded-full bg-primary text-primary-foreground" />
                     <p className="text-xs font-bold uppercase tracking-widest text-primary">Bronze Tier</p>
                     <p className="text-sm text-muted-foreground mt-1">5% base commission · ₹2,00,000 monthly business limit.</p>
                   </div>
                   <div className="relative pl-8 before:absolute before:left-0 before:top-2 before:h-full before:w-[2px] before:bg-border">
-                    <div className="absolute -left-[5px] top-2 h-[10px] w-[10px] rounded-full bg-blue-500" />
-                    <p className="text-xs font-bold uppercase tracking-widest text-blue-500">Silver Tier</p>
+                    <div className="absolute -left-[5px] top-2 h-[10px] w-[10px] rounded-full bg-primary text-primary-foreground" />
+                    <p className="text-xs font-bold uppercase tracking-widest text-primary">Silver Tier</p>
                     <p className="text-sm text-muted-foreground mt-1">7% base commission · ₹5,00,000 monthly business limit.</p>
                   </div>
                   <div className="relative pl-8">
-                    <div className="absolute -left-[5px] top-2 h-[10px] w-[10px] rounded-full bg-emerald-500" />
-                    <p className="text-xs font-bold uppercase tracking-widest text-emerald-500">Gold Tier</p>
+                    <div className="absolute -left-[5px] top-2 h-[10px] w-[10px] rounded-full bg-success text-success-foreground" />
+                    <p className="text-xs font-bold uppercase tracking-widest text-success">Gold Tier</p>
                     <p className="text-sm text-muted-foreground mt-1">10% base commission · ₹20,00,000 monthly business limit.</p>
                   </div>
                 </div>
@@ -144,7 +144,7 @@ export default function AgentRecruitPage() {
 
       <section className="border-y border-border bg-muted/20 py-16">
         <div className="container mx-auto grid gap-6 px-4 md:grid-cols-2">
-          
+
           <div><h2 className="text-xl font-bold">Approved price uplift</h2><p className="mt-2 text-sm text-muted-foreground">With written approval, quotes may be up to 20% above the eligible base price. Affiliates receive 50% of that approved difference after final settlement.</p></div>
           <div><h2 className="text-xl font-bold">Payout milestones</h2><p className="mt-2 text-sm text-muted-foreground">40% of base commission is scheduled after booking. The remaining base and uplift share are scheduled after installation and final customer settlement.</p></div>
         </div>
@@ -154,8 +154,8 @@ export default function AgentRecruitPage() {
       <section className="py-20 lg:py-32">
         <div className="container mx-auto px-4">
           <div className="relative overflow-hidden rounded-3xl bg-primary px-8 py-16 text-center text-primary-foreground lg:px-16">
-            <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_25%,rgba(255,255,255,0.1)_50%,transparent_75%)] bg-[length:200%_200%] animate-shimmer" />
-            <h2 className="relative mb-6 text-3xl font-extrabold md:text-4xl text-primary-foreground">Ready to Start Your TecBunny Journey?</h2>
+            <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_25%,hsl(var(--foreground)/0.1)_50%,transparent_75%)] bg-[length:200%_200%] animate-shimmer" />
+            <h2 className="relative mb-6 text-3xl font-extrabold md:text-4xl text-foreground">Ready to Start Your TecBunny Journey?</h2>
             <p className="relative mx-auto mb-10 max-w-2xl text-primary-foreground/90">
               Applications are reviewed within 24 hours. You can start referring customers as soon as you are approved.
             </p>

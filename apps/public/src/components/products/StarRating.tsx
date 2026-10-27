@@ -32,11 +32,11 @@ export function StarRating({ rating, maxRating = 5, className, size = 'md' }: St
   return (
     <div className={cn('flex items-center gap-0.5', className)}>
       {Array.from({ length: fullStars }).map((_, i) => (
-        <Star key={`full_${i}`} className="text-yellow-400 fill-yellow-400" style={{ width: starSize, height: starSize }} />
+        <Star key={`full_${i}`} className="text-warning fill-warning" style={{ width: starSize, height: starSize }} />
       ))}
-      {halfStar === 1 && <StarHalf className="text-yellow-400 fill-yellow-400" style={{ width: starSize, height: starSize }} />}
+      {halfStar === 1 && <StarHalf className="text-warning fill-warning" style={{ width: starSize, height: starSize }} />}
       {Array.from({ length: emptyStars }).map((_, i) => (
-        <Star key={`empty_${i}`} className="text-yellow-400" style={{ width: starSize, height: starSize }} />
+        <Star key={`empty_${i}`} className="text-warning" style={{ width: starSize, height: starSize }} />
       ))}
     </div>
   );

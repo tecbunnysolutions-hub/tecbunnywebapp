@@ -75,7 +75,7 @@ export default function SalesStaffReportsPage() {
         <Card className="bg-card border-border">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Completed Orders</CardTitle>
-            <TrendingUp className="h-4 w-4 text-emerald-500" />
+            <TrendingUp className="h-4 w-4 text-success" />
           </CardHeader>
           <CardContent>
             {loading ? (
@@ -92,7 +92,7 @@ export default function SalesStaffReportsPage() {
         <Card className="bg-card border-border">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Average Order Value</CardTitle>
-            <Award className="h-4 w-4 text-amber-500" />
+            <Award className="h-4 w-4 text-warning" />
           </CardHeader>
           <CardContent>
             {loading ? (
@@ -154,11 +154,11 @@ export default function SalesStaffReportsPage() {
                       {new Date(invoice.created_at).toLocaleDateString()}
                     </TableCell>
                     <TableCell>
-                      <Badge variant="secondary" className="bg-emerald-500/10 text-emerald-500 border border-emerald-500/30">
+                      <Badge variant="secondary" className="bg-success/10 text-success border border-success/30">
                         {invoice.status}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-right text-emerald-500 font-tech">
+                    <TableCell className="text-right text-success font-tech">
                       ₹{Number(invoice.total || 0).toFixed(2)}
                     </TableCell>
                   </TableRow>

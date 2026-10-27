@@ -84,7 +84,7 @@ export function TwoFactorVerification({
                 onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
                 autoComplete="one-time-code"
               />
-              <p className="text-xs text-slate-400 text-center">
+              <p className="text-xs text-muted-foreground text-center">
                 Enter the 6-digit code from your authenticator app
               </p>
             </div>
@@ -98,7 +98,7 @@ export function TwoFactorVerification({
               >
                 {isLoading ? (
                   <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-border mr-2"></div>
                     Verifying...
                   </>
                 ) : (
@@ -122,11 +122,11 @@ export function TwoFactorVerification({
           </form>
 
           <div className="mt-6 text-center">
-            <div className="text-sm text-slate-300 space-y-2">
+            <div className="text-sm text-muted-foreground space-y-2">
               <p>
                 <strong>Don't have access to your authenticator?</strong>
               </p>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-muted-foreground">
                 You can also use one of your backup codes if you have them saved.
               </p>
             </div>

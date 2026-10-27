@@ -16,7 +16,7 @@ export default function RootError({ error, reset }: { error: Error & { digest?: 
   return (
     <PublicRouteError
       title="Something went wrong"
-      description={error?.message || "An unexpected error occurred. Please try again or contact support if the issue persists."}
+      description="We couldn’t load this page. Try again, or contact our team if you still need help."
       reset={reset}
     />
   );

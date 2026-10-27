@@ -29,14 +29,14 @@ interface Offer {
 const sanitizeTerms = (raw: string) => sanitizeHtml(raw);
 
 const getReadableTextColor = (hex?: string) => {
-  if (!hex) return '#ffffff';
+  if (!hex || !/^#?[a-f\d]{6}$/i.test(hex)) return 'hsl(var(--primary-foreground))';
   const normalized = hex.replace('#', '');
-  if (normalized.length !== 6) return '#ffffff';
-  const r = parseInt(normalized.slice(0, 2), 16);
-  const g = parseInt(normalized.slice(2, 4), 16);
-  const b = parseInt(normalized.slice(4, 6), 16);
-  const yiq = (r * 299 + g * 587 + b * 114) / 1000;
-  return yiq >= 160 ? '#111827' : '#ffffff';
+  const channels = [0, 2, 4].map(offset => {
+    const value = parseInt(normalized.slice(offset, offset + 2), 16) / 255;
+    return value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
+  });
+  const luminance = channels.reduce((sum, value, index) => sum + value * [0.2126, 0.7152, 0.0722][index], 0);
+  return luminance > 0.179 ? 'hsl(var(--ink-on-light))' : 'hsl(var(--ink-on-dark))';
 };
 
 export default function OffersPage() {
@@ -55,9 +55,9 @@ export default function OffersPage() {
   const fetchOffers = async () => {
     try {
       setLoading(true);
-      
+
       const offersData = await utils.offers.getAll.fetch({ activeOnly: true, homepageOnly: true });
-      
+
       const allOffers = (offersData?.offers as unknown as Offer[]) || [];
       setOffers(allOffers);
       setFeaturedOffers(allOffers.filter((offer: Offer) => offer.is_featured));
@@ -87,7 +87,7 @@ export default function OffersPage() {
     const now = new Date();
     const end = new Date(endDate);
     const daysLeft = Math.ceil((end.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-    
+
     if (daysLeft <= 0) return 'Expired';
     if (daysLeft === 1) return 'Ends today';
     if (daysLeft <= 7) return `Ends in ${daysLeft} days`;
@@ -140,7 +140,7 @@ export default function OffersPage() {
               <>
                 <h1 className="mt-6 text-4xl font-semibold text-foreground sm:text-5xl lg:text-6xl">
                   Big Savings on{' '}
-                  <span className="bg-gradient-to-r from-primary via-blue-500 to-indigo-600 bg-clip-text text-transparent">
+                  <span className=" text-primary">
                     Complete Security.
                   </span>
                 </h1>
@@ -176,14 +176,14 @@ export default function OffersPage() {
                     <div
                       className="absolute right-4 top-4 rounded-md px-2 py-1 text-xs font-semibold"
                       style={{
-                        backgroundColor: offer.banner_color || '#2563EB',
-                        color: getReadableTextColor(offer.banner_color || '#2563EB'),
+                        backgroundColor: offer.banner_color || 'hsl(var(--primary))',
+                        color: getReadableTextColor(offer.banner_color),
                       }}
                     >
                       {offer.banner_text}
                     </div>
                   )}
-                  <div className="mb-5 flex h-40 items-center justify-center rounded-xl bg-muted text-5xl text-muted-foreground/40">
+                  <div className="mb-5 flex h-40 items-center justify-center rounded-xl bg-muted text-5xl text-muted-foreground">
                     ★
                   </div>
                   <h3 className="text-xl font-semibold text-foreground">{offer.title}</h3>
@@ -232,7 +232,7 @@ export default function OffersPage() {
                   key={offer.id}
                   className="group relative overflow-hidden rounded-2xl border border-border bg-card p-6"
                 >
-                  <div className="absolute inset-0 opacity-0 transition-opacity duration-300 [background:linear-gradient(120deg,transparent,rgba(255,255,255,0.08),transparent)] group-hover:opacity-100" />
+                  <div className="absolute inset-0 opacity-0 transition-opacity duration-300 [background:linear-gradient(120deg,transparent,hsl(var(--foreground)/0.08),transparent)] group-hover:opacity-100" />
                   <div className="flex flex-col items-center justify-between gap-6 sm:flex-row">
                     <div className="flex items-center gap-4">
                       <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">

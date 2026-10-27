@@ -1,9 +1,5 @@
-import { PageLoader } from '@/components/shared/LoadingSpinner';
+import { RouteLoading } from '../../../../packages/ui/src/components/RouteState';
 
-export default function RootLoading() {
-  return (
-    <div className="min-h-[70vh] flex items-center justify-center bg-background">
-      <PageLoader />
-    </div>
-  );
+export default function Loading() {
+  return <RouteLoading label="Loading TecBunny…" />;
 }

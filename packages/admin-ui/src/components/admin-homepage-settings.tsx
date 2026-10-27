@@ -58,7 +58,7 @@ const ProductSelector: React.FC<ProductSelectorProps> = ({ title, description, a
             <div key={product.id} className="flex items-center justify-between rounded-lg border p-3">
               <div className="flex items-center gap-4">
                 {getProductDisplayImage(product) ? (
-                  <Image 
+                  <Image
                     src={getProductDisplayImage(product)!}
                     alt={product.name}
                     width={48}
@@ -66,7 +66,7 @@ const ProductSelector: React.FC<ProductSelectorProps> = ({ title, description, a
                     className="rounded-md object-cover"
                   />
                 ) : (
-                  <div className="w-12 h-12 rounded-md bg-gray-200 flex items-center justify-center text-gray-600 font-semibold">
+                  <div className="w-12 h-12 rounded-md bg-muted flex items-center justify-center text-muted-foreground font-semibold">
                     {product.name.charAt(0).toUpperCase()}
                   </div>
                 )}
@@ -78,7 +78,7 @@ const ProductSelector: React.FC<ProductSelectorProps> = ({ title, description, a
               <Checkbox
                 checked={selectedIds.has(product.id)}
                 onCheckedChange={() => onToggle(product.id)}
-                aria-label={`Select ${product.name}`}                
+                aria-label={`Select ${product.name}`}
                 disabled={!selectedIds.has(product.id) && selectedIds.size >= (maxSelection ?? 15)}
               />
             </div>
@@ -94,7 +94,7 @@ export default function HomepageSettingsPage() {
   const { toast } = useToast();
   const supabase = createClient();
   const [allProducts, setAllProducts] = React.useState<Product[]>([]);
-  
+
   const [featuredProductIds, setFeaturedProductIds] = React.useState<Set<string>>(new Set());
   const [newArrivalProductIds, setNewArrivalProductIds] = React.useState<Set<string>>(new Set());
   const [trendingProductIds, setTrendingProductIds] = React.useState<Set<string>>(new Set());
@@ -352,7 +352,7 @@ export default function HomepageSettingsPage() {
           <Button onClick={handleSaveChanges} size="lg">Save All Changes</Button>
         </div>
       </div>
-     
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <ProductSelector
           title="Featured Products"

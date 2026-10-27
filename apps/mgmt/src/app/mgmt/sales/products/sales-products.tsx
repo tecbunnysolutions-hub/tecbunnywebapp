@@ -97,7 +97,7 @@ export default function ProductManagementPage() {
   const handleExport = async () => {
     try {
       const response = await fetch('/api/products/bulk-edit');
-      
+
       if (!response.ok) {
         throw new Error('Export failed');
       }
@@ -136,10 +136,10 @@ export default function ProductManagementPage() {
 
   const handleDownloadTemplate = () => {
     const headers = [
-        "name", "description", "price", "category", "image", 
+        "name", "description", "price", "category", "image",
         "brand", "mrp", "warranty", "hsnCode", "gstRate", "isSerialNumberCompulsory"
     ];
-    
+
     // Add sample data to help users understand the format
     const sampleData = [
       [
@@ -235,7 +235,7 @@ export default function ProductManagementPage() {
     // Reset file input
     event.target.value = '';
   };
-  
+
   const handleDelete = async (productId: string) => {
     const { error } = await supabase.from('products').delete().eq('id', productId);
     if (error) {
@@ -324,7 +324,7 @@ export default function ProductManagementPage() {
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center">
-                      <span className="text-slate-400 mr-1">₹</span>
+                      <span className="text-muted-foreground mr-1">₹</span>
                       <Input
                         type="number"
                         className="w-24 h-8 text-sm"

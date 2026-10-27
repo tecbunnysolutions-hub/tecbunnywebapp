@@ -57,14 +57,14 @@ function DefaultErrorFallback({ error }: { error: Error | null }) {
       aria-live="assertive"
       className="flex flex-col items-center justify-center gap-4 py-16 px-6 text-center"
     >
-      <div className="rounded-full bg-red-50 p-4">
-        <svg className="h-8 w-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+      <div className="rounded-full bg-destructive/10 p-4">
+        <svg className="h-8 w-8 text-destructive" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
         </svg>
       </div>
       <div>
-        <h2 className="text-lg font-semibold text-slate-800">Something went wrong</h2>
-        <p className="mt-1 text-sm text-slate-500 max-w-sm">
+        <h2 className="text-lg font-semibold text-foreground">Something went wrong</h2>
+        <p className="mt-1 text-sm text-muted-foreground max-w-sm">
           {process.env.NODE_ENV === 'development' && error
             ? error.message
             : 'An unexpected error occurred. Please refresh the page or try again later.'}
@@ -72,7 +72,7 @@ function DefaultErrorFallback({ error }: { error: Error | null }) {
       </div>
       <button
         onClick={() => window.location.reload()}
-        className="mt-2 rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900"
+        className="mt-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
       >
         Reload page
       </button>

@@ -85,7 +85,7 @@ function SuperadminSignInForm() {
     <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center px-4 py-16 relative overflow-hidden">
       {/* Background radial effects */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[140px] pointer-events-none" />
-      <div className="absolute top-1/3 left-1/4 w-[400px] h-[400px] bg-blue-600/5 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute top-1/3 left-1/4 w-[400px] h-[400px] bg-primary/5 rounded-full blur-[120px] pointer-events-none" />
 
       <div className="relative w-full max-w-md">
         {/* Header */}
@@ -152,9 +152,9 @@ function SuperadminSignInForm() {
 
             {/* Error Message */}
             {error && (
-              <div className="p-3 bg-rose-500/10 border border-rose-500/30 rounded-lg flex items-start gap-2">
-                <AlertCircle className="h-4 w-4 text-rose-500 mt-0.5 shrink-0" />
-                <span className="text-sm text-rose-600 dark:text-rose-300">{error}</span>
+              <div className="p-3 bg-destructive/10 border border-destructive/30 rounded-lg flex items-start gap-2">
+                <AlertCircle className="h-4 w-4 text-destructive mt-0.5 shrink-0" />
+                <span className="text-sm text-destructive dark:text-destructive">{error}</span>
               </div>
             )}
 
@@ -187,7 +187,7 @@ function SuperadminSignInForm() {
               disabled={isLoading || !userId || !password}
               className="group relative w-full py-3 bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed text-primary-foreground font-bold tracking-widest uppercase rounded-lg transition-colors flex items-center justify-center gap-2 shadow-lg overflow-hidden"
             >
-              <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/10 to-transparent group-hover:translate-x-full transition-transform duration-700" />
+              <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-card/10 to-transparent group-hover:translate-x-full transition-transform duration-700" />
               {isLoading ? (
                 <>
                   <span className="animate-spin h-4 w-4 border-2 border-primary-foreground border-t-transparent rounded-full" />

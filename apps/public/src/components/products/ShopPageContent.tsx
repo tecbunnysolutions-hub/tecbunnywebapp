@@ -6,7 +6,7 @@ import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 
-import { 
+import {
   Search,
   Sparkles
 } from 'lucide-react';
@@ -179,12 +179,12 @@ function getSimplifiedDescription(desc: string | undefined | null): string {
     .replace(/[#*`_\[\]()]/g, '')
     .replace(/\s+/g, ' ')
     .trim();
-  
+
   const firstSentence = clean.split(/[.!?]/)[0];
   if (firstSentence && firstSentence.length > 15 && firstSentence.length < 100) {
     return firstSentence + '.';
   }
-  
+
   if (clean.length > 85) {
     return clean.slice(0, 82) + '...';
   }
@@ -220,7 +220,7 @@ function ProductGridImage({
 
   return (
     <div className="flex h-full w-full items-center justify-center rounded-xl border border-border bg-card/40 p-1.5 transition-all duration-300 group-hover:border-border">
-      <div className="flex h-full w-full items-center justify-center overflow-hidden rounded-lg bg-white p-3 shadow-inner">
+      <div className="flex h-full w-full items-center justify-center overflow-hidden rounded-lg bg-card p-3 shadow-inner">
         <Image
           src={src}
           alt={alt}
@@ -254,7 +254,7 @@ class ProductTileErrorBoundary extends React.Component<
   render() {
     if (this.state.hasError) {
       return (
-        <div className="flex min-h-[320px] flex-col justify-center rounded-3xl border border-dashed border-white/[0.08] bg-neutral-900/40 p-5 text-center text-xs text-neutral-400">
+        <div className="flex min-h-[320px] flex-col justify-center rounded-3xl border border-dashed border-border/[0.08] bg-card/40 p-5 text-center text-xs text-muted-foreground">
           Product unavailable
         </div>
       );
@@ -344,13 +344,13 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
-  
+
   const searchQuery = searchParams.get('q') || '';
   const sortOption = searchParams.get('sort') || 'newest';
   const categoryFilter = searchParams.get('category') || '';
   const brandFilter = searchParams.get('brand') || '';
   const refresh = searchParams.get('refresh') || '';
-  
+
   const initialEnrichedProducts = React.useMemo(() => {
     if (initialRawProducts && initialRawProducts.length > 0) {
       const normalized = initialRawProducts.map(normalizeRawProduct);
@@ -363,7 +363,7 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
   const [loading, setLoading] = React.useState(!initialRawProducts || initialRawProducts.length === 0);
   const [fetchWarning, setFetchWarning] = React.useState<string | null>(null);
   const [isMobileFilterOpen, setIsMobileFilterOpen] = React.useState(false);
-  
+
   const [categories, setCategories] = React.useState<string[]>(() => {
     if (initialEnrichedProducts.length > 0) {
       return [...new Set(initialEnrichedProducts.map(p => p.category).filter(Boolean))]
@@ -381,7 +381,7 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
     }
     return [];
   });
-  
+
   const [priceRange, setPriceRange] = React.useState<[number, number]>(() => {
     if (initialEnrichedProducts.length > 0) {
       const prices = initialEnrichedProducts.map(p => p.price);
@@ -389,21 +389,21 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
     }
     return [0, 100000];
   });
-  
+
   const [maxPrice, setMaxPrice] = React.useState(() => {
     if (initialEnrichedProducts.length > 0) {
       return Math.max(...initialEnrichedProducts.map(p => p.price));
     }
     return 100000;
   });
-  
+
   const [localSearchQuery, setLocalSearchQuery] = React.useState(searchQuery);
   const { addToCart } = useCart();
-  
+
   // Update URL parameters
   const updateUrlParams = React.useCallback((params: Record<string, string>) => {
     const currentParams = new URLSearchParams(searchParams.toString());
-    
+
     Object.entries(params).forEach(([key, value]) => {
       if (value) {
         currentParams.set(key, value);
@@ -411,7 +411,7 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
         currentParams.delete(key);
       }
     });
-    
+
     const queryString = currentParams.toString();
     const newUrl = queryString ? `${pathname}?${queryString}` : pathname;
     router.push(newUrl, { scroll: false });
@@ -425,7 +425,7 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
     const fetchProducts = async () => {
       setLoading(true);
       setFetchWarning(null);
-      
+
       try {
         logger.info('ShopPage: Fetching products...');
         const response = await fetch('/api/products?status=active&limit=200', { cache: 'no-store' });
@@ -452,14 +452,14 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
           } else {
             logger.warn('No products found in database');
           }
-          setFetchWarning(warningMessage || 'No products are currently available.');
+          setFetchWarning(warningMessage || 'The catalogue is currently empty. Contact us and we’ll help you find what you need.');
           setProducts([]);
           setCategories([]);
           setBrands([]);
           setLoading(false);
           return;
         }
-        
+
         // Normalize products to ensure required fields exist and are properly typed
         const normalized = data.map(normalizeRawProduct);
 
@@ -469,18 +469,18 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
         const enrichedProducts = deduplicateCatalogProducts(applyAutoOffersToProducts(normalized, activeOffers));
 
         setProducts(enrichedProducts);
-        
+
         // Extract unique categories and brands
         const uniqueCategories = [...new Set(enrichedProducts.map(p => p.category).filter(Boolean))]
           .sort((a, b) => a.localeCompare(b));
         setCategories(uniqueCategories);
-        
+
         const extractedBrands = enrichedProducts
           .map(p => p.brand)
           .filter((b): b is string => Boolean(b));
         const uniqueBrands = [...new Set(extractedBrands)].sort((a, b) => a.localeCompare(b));
         setBrands(uniqueBrands);
-        
+
         // Set price range based on actual product prices
         if (enrichedProducts.length === 0) {
           setMaxPrice(100000);
@@ -520,8 +520,8 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
     }
 
     if (categoryFilter) {
-      filtered = filtered.filter(product => 
-        product.category === categoryFilter || 
+      filtered = filtered.filter(product =>
+        product.category === categoryFilter ||
         (product.category || '').startsWith(`${categoryFilter} > `)
       );
     }
@@ -531,7 +531,7 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
     }
 
     // Price range filter
-    filtered = filtered.filter(product => 
+    filtered = filtered.filter(product =>
       product.price >= priceRange[0] && product.price <= priceRange[1]
     );
 
@@ -569,11 +569,11 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
 
   const clearFilters = () => {
     setPriceRange([0, maxPrice]);
-    updateUrlParams({ 
-      category: '', 
-      brand: '', 
+    updateUrlParams({
+      category: '',
+      brand: '',
       q: '',
-      sort: 'popularity' 
+      sort: 'popularity'
     });
     setLocalSearchQuery('');
   };
@@ -590,13 +590,13 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
   // Helper to parse hierarchical category paths and build a tree
   const categoryTree = React.useMemo(() => {
     const tree: Record<string, { name: string; count: number; fullName: string; children: Record<string, any> }> = {};
-    
+
     products.forEach(p => {
       if (!p.category) return;
       const parts = p.category.split(' > ').map(s => s.trim());
       let currentLevel = tree;
       let path = '';
-      
+
       parts.forEach((part, idx) => {
         path = idx === 0 ? part : `${path} > ${part}`;
         if (!currentLevel[part]) {
@@ -611,20 +611,20 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
         currentLevel = currentLevel[part].children;
       });
     });
-    
+
     return tree;
   }, [products]);
 
   // Helper to render nested category lists recursively
   const renderCategoryTree = (
-    tree: Record<string, any>, 
+    tree: Record<string, any>,
     level = 0
   ) => {
     return Object.keys(tree).map(key => {
       const node = tree[key];
       const isSelected = categoryFilter === node.fullName;
       const isParentOfSelected = categoryFilter.startsWith(`${node.fullName} > `);
-      
+
       return (
         <div key={node.fullName} className="space-y-1">
           <button
@@ -632,15 +632,15 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
             onClick={() => updateUrlParams({ category: isSelected ? '' : node.fullName })}
             className={cn(
               "w-full text-left py-1 hover:text-primary transition-colors flex items-center justify-between gap-2 font-sans",
-              level === 0 ? "font-semibold text-white" : "font-normal text-xs",
+              level === 0 ? "font-semibold text-foreground" : "font-normal text-xs",
               isSelected ? "text-primary font-bold" : "text-muted-foreground",
               level > 0 && "pl-3 border-l border-border/40 ml-1.5"
             )}
           >
             <span className="truncate">{node.name}</span>
-            <span className="text-[10px] font-mono text-muted-foreground/60">({node.count})</span>
+            <span className="text-[10px] font-mono text-muted-foreground">({node.count})</span>
           </button>
-          
+
           {/* Render children if this node has children and is selected or is a parent of the selected category */}
           {Object.keys(node.children).length > 0 && (isSelected || isParentOfSelected || categoryFilter === '') && (
             <div className="space-y-1">
@@ -653,15 +653,15 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
   };
 
   return (
-    <section className="relative overflow-hidden bg-background text-foreground selection:bg-primary/20 selection:text-white min-h-screen font-sans antialiased">
+    <section className="relative overflow-hidden bg-background text-foreground selection:bg-primary/20 selection:text-foreground min-h-screen font-sans antialiased">
       {/* Background Noise and Grid (homepage style) */}
       <div className="pointer-events-none absolute inset-0 -z-10">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,hsl(var(--border))_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--border))_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-20" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,hsl(var(--border))_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--border))_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,hsl(var(--overlay))_70%,transparent_100%)] opacity-20" />
         <div className="absolute -left-40 top-0 h-[42rem] w-[42rem] rounded-full bg-primary/5 blur-[160px]" />
         <div className="absolute -right-40 top-1/3 h-[46rem] w-[46rem] rounded-full bg-muted/5 blur-[180px]" />
         <div className="absolute inset-0 bg-background" />
       </div>
-      
+
       {/* Ambient Blobs */}
       <div className="ambient-blob pointer-events-none absolute -left-24 -top-24 h-96 w-96 rounded-full bg-primary/10 blur-[120px] animate-pulse" aria-hidden="true" />
       <div className="ambient-blob ambient-blob--delayed pointer-events-none absolute right-0 top-1/2 h-96 w-96 -translate-y-1/2 rounded-full bg-primary/10 blur-[120px]" aria-hidden="true" />
@@ -669,20 +669,20 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
       {/* Mobile Filter Drawer Overlay */}
       {isMobileFilterOpen && (
         <div className="fixed inset-0 z-50 flex lg:hidden bg-background/80 backdrop-blur-sm animate-fade-in transition-all">
-          <div 
-            className="fixed inset-y-0 left-0 w-full max-w-[280px] bg-zinc-950 border-r border-border p-6 overflow-y-auto flex flex-col justify-between space-y-6 shadow-2xl animate-slide-in"
+          <div
+            className="fixed inset-y-0 left-0 w-full max-w-[280px] bg-background border-r border-border p-6 overflow-y-auto flex flex-col justify-between space-y-6 shadow-2xl animate-slide-in"
           >
             <div className="space-y-6">
               <div className="flex items-center justify-between border-b border-border/60 pb-3">
-                <h2 className="text-sm font-bold uppercase tracking-wider font-mono text-white">Filters</h2>
-                <button 
+                <h2 className="text-sm font-bold uppercase tracking-wider font-mono text-foreground">Filters</h2>
+                <button
                   onClick={() => setIsMobileFilterOpen(false)}
-                  className="text-xs font-mono text-muted-foreground hover:text-white transition-colors"
+                  className="text-xs font-mono text-muted-foreground hover:text-foreground transition-colors"
                 >
                   Close ✕
                 </button>
               </div>
-              
+
               {/* Category Tree Filter */}
               <div className="space-y-3">
                 <h3 className="text-xs font-semibold uppercase tracking-wider font-mono text-muted-foreground">Categories</h3>
@@ -704,7 +704,7 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
                       const isChecked = brandFilter === brand;
                       return (
                         <label key={brand} className="flex items-center gap-2.5 cursor-pointer text-muted-foreground hover:text-foreground transition-colors group">
-                          <input 
+                          <input
                             type="checkbox"
                             checked={isChecked}
                             onChange={() => {
@@ -727,30 +727,30 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
                 <h3 className="text-xs font-semibold uppercase tracking-wider font-mono text-muted-foreground">Price (INR)</h3>
                 <div className="flex gap-2 items-center">
                   <div className="relative flex-1">
-                    <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[10px] font-mono text-muted-foreground/60">₹</span>
-                    <input 
-                      type="number" 
-                      value={priceRange[0] || ''} 
+                    <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[10px] font-mono text-muted-foreground">₹</span>
+                    <input
+                      type="number"
+                      value={priceRange[0] || ''}
                       onChange={e => {
                         const val = e.target.value ? Number(e.target.value) : 0;
                         setPriceRange([val, priceRange[1]]);
                       }}
-                      className="w-full bg-background border border-border/80 rounded-lg pl-5 pr-1 py-1 text-xs font-mono text-white focus:outline-none focus:border-primary/50"
-                      placeholder="Min"
+                      className="w-full bg-background border border-border/80 rounded-lg pl-5 pr-1 py-1 text-xs font-mono text-foreground focus:outline-none focus:border-primary/50"
+                      aria-label="Minimum price in rupees" placeholder="Min"
                     />
                   </div>
-                  <span className="text-muted-foreground/50 text-xs">-</span>
+                  <span className="text-muted-foreground text-xs">-</span>
                   <div className="relative flex-1">
-                    <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[10px] font-mono text-muted-foreground/60">₹</span>
-                    <input 
-                      type="number" 
-                      value={priceRange[1] || ''} 
+                    <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[10px] font-mono text-muted-foreground">₹</span>
+                    <input
+                      type="number"
+                      value={priceRange[1] || ''}
                       onChange={e => {
                         const val = e.target.value ? Number(e.target.value) : maxPrice;
                         setPriceRange([priceRange[0], val]);
                       }}
-                      className="w-full bg-background border border-border/80 rounded-lg pl-5 pr-1 py-1 text-xs font-mono text-white focus:outline-none focus:border-primary/50"
-                      placeholder="Max"
+                      className="w-full bg-background border border-border/80 rounded-lg pl-5 pr-1 py-1 text-xs font-mono text-foreground focus:outline-none focus:border-primary/50"
+                      aria-label="Maximum price in rupees" placeholder="Max"
                     />
                   </div>
                 </div>
@@ -758,16 +758,16 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
             </div>
 
             <div className="border-t border-border/60 pt-4 flex gap-2">
-              <button 
+              <button
                 onClick={() => {
                   clearFilters();
                   setIsMobileFilterOpen(false);
                 }}
-                className="flex-1 border border-border hover:bg-muted text-xs font-mono py-2 rounded-lg text-white"
+                className="flex-1 border border-border hover:bg-muted text-xs font-mono py-2 rounded-lg text-foreground"
               >
                 Reset
               </button>
-              <button 
+              <button
                 onClick={() => setIsMobileFilterOpen(false)}
                 className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-mono py-2 rounded-lg"
               >
@@ -787,17 +787,17 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
             <div className={cn('reveal-item flex flex-col items-center gap-4', revealDelayClass(0))}>
               <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-semibold text-primary">
                 <Sparkles size={14} className="animate-pulse" />
-                Equipment Manifest
+                Browse products
               </div>
-              <h1 className="text-2xl font-black tracking-tight text-white sm:text-3xl md:text-4xl uppercase leading-tight">
+              <h1 className="text-2xl font-black tracking-tight text-foreground sm:text-3xl md:text-4xl uppercase leading-tight">
                 CCTV, IT Hardware <br className="sm:hidden" />
-                <span className="bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-500 bg-clip-text text-transparent">
+                <span className=" text-primary">
                   &amp; Security Systems
                 </span>
               </h1>
-              <p className="max-w-xl text-base leading-relaxed text-zinc-300 font-light">
-                {searchQuery 
-                  ? `Found results matching "${searchQuery}"` 
+              <p className="max-w-xl text-base leading-relaxed text-muted-foreground font-light">
+                {searchQuery
+                  ? `Showing results for "${searchQuery}"`
                   : 'Genuine CCTV cameras, computers, networking gear and accessories for homes and small businesses, with installation and support in North Goa and the Sawantwadi area of Sindhudurg district, Maharashtra.'
                 }
               </p>
@@ -809,30 +809,30 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
                 <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary" />
                 <input
                   type="text"
-                  placeholder="Search catalog..."
+                  aria-label="Search products" placeholder="Search cameras, laptops, networking…"
                   value={localSearchQuery}
                   onChange={(e) => setLocalSearchQuery(e.target.value)}
-                  className="h-12 w-full rounded-xl border border-border bg-muted/30 pl-11 pr-12 text-sm text-foreground placeholder:text-muted-foreground/60 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/30 sm:text-base transition-all duration-300 font-mono"
+                  className="h-12 w-full rounded-xl border border-border bg-muted/30 pl-11 pr-12 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/30 sm:text-base transition-all duration-300 font-mono"
                 />
-                <div className="absolute right-3 top-1/2 -translate-y-1/2 hidden sm:flex items-center gap-1 px-1.5 py-0.5 rounded border border-border bg-background text-[9px] font-mono text-muted-foreground/50 pointer-events-none">
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 hidden sm:flex items-center gap-1 px-1.5 py-0.5 rounded border border-border bg-background text-[9px] font-mono text-muted-foreground pointer-events-none">
                   <span>⏎</span>
                 </div>
               </div>
-              {!loading && <p className="mt-2.5 text-xs font-mono text-muted-foreground/60 tracking-wider uppercase">{filteredProducts.length} items</p>}
+              {!loading && <p className="mt-2.5 text-xs font-mono text-muted-foreground tracking-wider uppercase">{filteredProducts.length} items</p>}
             </form>
           </div>
         </div>
 
         {/* Layout container */}
         <div className="flex flex-col lg:flex-row gap-8 items-start mt-6 w-full">
-          
+
           {/* Sidebar Filters - Desktop only */}
-          <aside className="w-full lg:w-64 shrink-0 bg-zinc-950 border border-border rounded-2xl p-6 lg:sticky lg:top-[90px] space-y-6 reveal-section hidden lg:block" data-reveal-id="products-sidebar">
+          <aside className="w-full lg:w-64 shrink-0 bg-background border border-border rounded-2xl p-6 lg:sticky lg:top-[90px] space-y-6 reveal-section hidden lg:block" data-reveal-id="products-sidebar">
             {/* Header */}
             <div className="flex items-center justify-between border-b border-border/60 pb-3">
-              <h2 className="text-sm font-bold uppercase tracking-wider font-mono text-white">Filters</h2>
+              <h2 className="text-sm font-bold uppercase tracking-wider font-mono text-foreground">Filters</h2>
               {(categoryFilter || brandFilter || priceRange[0] > 0 || priceRange[1] < maxPrice) && (
-                <button 
+                <button
                   onClick={clearFilters}
                   className="text-xs font-mono text-primary hover:underline transition-all"
                 >
@@ -862,7 +862,7 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
                     const isChecked = brandFilter === brand;
                     return (
                       <label key={brand} className="flex items-center gap-2.5 cursor-pointer text-muted-foreground hover:text-foreground transition-colors group">
-                        <input 
+                        <input
                           type="checkbox"
                           checked={isChecked}
                           onChange={() => updateUrlParams({ brand: isChecked ? '' : brand })}
@@ -883,29 +883,29 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
               <h3 className="text-xs font-semibold uppercase tracking-wider font-mono text-muted-foreground">Price (INR)</h3>
               <div className="flex gap-2 items-center">
                 <div className="relative flex-1">
-                  <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[10px] font-mono text-muted-foreground/60">₹</span>
-                  <input 
-                    type="number" 
-                    value={priceRange[0] || ''} 
+                  <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[10px] font-mono text-muted-foreground">₹</span>
+                  <input
+                    type="number"
+                    value={priceRange[0] || ''}
                     onChange={e => {
                       const val = e.target.value ? Number(e.target.value) : 0;
                       setPriceRange([val, priceRange[1]]);
                     }}
-                    className="w-full bg-background border border-border/80 rounded-lg pl-5 pr-1 py-1 text-xs font-mono text-white focus:outline-none focus:border-primary/50"
+                    className="w-full bg-background border border-border/80 rounded-lg pl-5 pr-1 py-1 text-xs font-mono text-foreground focus:outline-none focus:border-primary/50"
                     placeholder="Min"
                   />
                 </div>
-                <span className="text-muted-foreground/50 text-xs">-</span>
+                <span className="text-muted-foreground text-xs">-</span>
                 <div className="relative flex-1">
-                  <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[10px] font-mono text-muted-foreground/60">₹</span>
-                  <input 
-                    type="number" 
-                    value={priceRange[1] || ''} 
+                  <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[10px] font-mono text-muted-foreground">₹</span>
+                  <input
+                    type="number"
+                    value={priceRange[1] || ''}
                     onChange={e => {
                       const val = e.target.value ? Number(e.target.value) : maxPrice;
                       setPriceRange([priceRange[0], val]);
                     }}
-                    className="w-full bg-background border border-border/80 rounded-lg pl-5 pr-1 py-1 text-xs font-mono text-white focus:outline-none focus:border-primary/50"
+                    className="w-full bg-background border border-border/80 rounded-lg pl-5 pr-1 py-1 text-xs font-mono text-foreground focus:outline-none focus:border-primary/50"
                     placeholder="Max"
                   />
                 </div>
@@ -921,7 +921,7 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
                 <button
                   type="button"
                   onClick={() => setIsMobileFilterOpen(true)}
-                  className="lg:hidden flex items-center gap-2 rounded-lg border border-border/85 bg-card/65 px-3 py-1.5 text-xs font-mono font-bold text-white uppercase hover:bg-muted/80 transition-colors animate-pulse"
+                  className="lg:hidden flex items-center gap-2 rounded-lg border border-border/85 bg-card/65 px-3 py-1.5 text-xs font-mono font-bold text-foreground uppercase hover:bg-muted/80 transition-colors animate-pulse"
                 >
                   Filters
                 </button>
@@ -932,7 +932,7 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
                 <select
                   value={sortOption}
                   onChange={(e) => updateUrlParams({ sort: e.target.value })}
-                  style={{ colorScheme: 'dark' }}
+
                   className="bg-background text-foreground border border-border rounded-lg px-2 sm:px-3 py-1 sm:py-1.5 focus:outline-none focus:border-primary/50 hover:bg-muted transition-all duration-300 font-mono cursor-pointer text-xs sm:text-sm"
                 >
                   <option value="popularity">Popularity</option>
@@ -996,14 +996,14 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
                       fallbackSize: '400x400',
                     });
                     const basePrice = typeof product.price === 'number' ? product.price : Number(product.price) || 0;
-                    
+
                     const tierVal = (product as any)?.pricing?.tiers?.[0]?.discount;
                     const activeTierPrice = tierVal != null ? Number(tierVal) || basePrice : basePrice;
 
                     let offerPrice = typeof product.offer_price === 'number' && product.offer_price > 0 && product.offer_price < basePrice
                       ? product.offer_price
                       : null;
-                    
+
                     if (!offerPrice && activeTierPrice < basePrice) {
                       offerPrice = activeTierPrice;
                     }
@@ -1013,12 +1013,12 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
                     const availability = !stockStatus
                       ? null
                       : stockStatus === 'out_of_stock'
-                      ? { label: 'Out of stock', className: 'text-zinc-500' }
+                      ? { label: 'Out of stock', className: 'text-muted-foreground' }
                       : stockStatus === 'low_stock'
-                        ? { label: 'Low stock', className: 'text-amber-500' }
+                        ? { label: 'Low stock', className: 'text-warning' }
                         : stockStatus === 'backorder'
-                          ? { label: 'Pre-order', className: 'text-blue-400' }
-                          : { label: 'In stock', className: 'text-emerald-500' };
+                          ? { label: 'Pre-order', className: 'text-primary' }
+                          : { label: 'In stock', className: 'text-success' };
                     const isOutOfStock = stockStatus === 'out_of_stock';
                     const salePrice = offerPrice ?? basePrice;
                     const listedMrp = Number((product as any).mrp);
@@ -1031,11 +1031,11 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
                     return (
                       <ProductTileErrorBoundary key={product.id || index} productId={product.id}>
                         <div
-                          className="relative flex h-full w-full flex-col justify-between p-3 sm:p-6 rounded-xl sm:rounded-2xl border border-border bg-zinc-900 shadow-[0_4px_20px_-1px_rgba(0,0,0,0.3)] transition-all duration-500 hover:-translate-y-1.5 hover:border-primary/50 hover:shadow-[0_0_30px_-5px_rgba(var(--primary),0.15)] group"
+                          className="relative flex h-full w-full flex-col justify-between p-3 sm:p-6 rounded-xl sm:rounded-2xl border border-border bg-card shadow-md transition-all duration-500 hover:-translate-y-1.5 hover:border-primary/50 hover:shadow-md group"
                         >
                           <Link href={`/products/${product.id}`} className="block flex-grow">
                             {/* Image Frame */}
-                            <div className="relative mb-3 sm:mb-6 aspect-square overflow-hidden rounded-lg sm:rounded-xl bg-white border border-border/50 group-hover:border-primary/30 transition-colors">
+                            <div className="relative mb-3 sm:mb-6 aspect-square overflow-hidden rounded-lg sm:rounded-xl bg-card border border-border/50 group-hover:border-primary/30 transition-colors">
                               <ProductGridImage
                                 src={imageUrl}
                                 alt={displayName}
@@ -1058,16 +1058,16 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
                                 </span>
                                 {product.rating > 0 && (
                                   <div className="flex items-center gap-0.5 text-[10px] font-mono text-muted-foreground">
-                                    <span className="text-amber-500">★</span>
+                                    <span className="text-warning">★</span>
                                     <span>{product.rating.toFixed(1)}</span>
                                   </div>
                                 )}
                               </div>
-                              
+
                               <h3 className="text-xs sm:text-lg font-bold tracking-tight text-foreground transition-colors group-hover:text-primary font-tech line-clamp-2 h-8 sm:h-auto">
                                 {displayName}
                               </h3>
-                              
+
                               <p className="text-xs font-light text-muted-foreground line-clamp-2 leading-relaxed hidden sm:block">
                                 {simpleDesc}
                               </p>
@@ -1086,7 +1086,7 @@ export function ShopPageContent({ initialRawProducts, initialRawAutoOffers }: Sh
                                 MRP ₹{mrpPrice.toLocaleString('en-IN')}
                               </span>
                               {mrpPrice > salePrice && (
-                                <span className="text-[10px] sm:text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+                                <span className="text-[10px] sm:text-xs font-semibold text-success dark:text-success">
                                   You save ₹{(mrpPrice - salePrice).toLocaleString('en-IN')}
                                 </span>
                               )}

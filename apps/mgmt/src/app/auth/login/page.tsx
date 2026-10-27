@@ -279,22 +279,22 @@ function StaffSignInForm() {
   };
 
   return (
-    <div className="relative flex min-h-screen w-full flex-col items-center justify-center overflow-x-hidden bg-[#030712] px-4 py-16 text-slate-200">
-      
+    <div className="relative flex min-h-screen w-full flex-col items-center justify-center overflow-x-hidden bg-card px-4 py-16 text-muted-foreground">
+
 
       {/* Background effects */}
       <div className="absolute inset-0 bg-noise opacity-10 pointer-events-none" />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-indigo-500/5 rounded-full blur-[120px] animate-pulse pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-primary/5 rounded-full blur-[120px] animate-pulse pointer-events-none" />
 
       <div className="relative w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-slate-900/60 border border-indigo-500/20 mb-5 shadow-lg shadow-indigo-500/10">
-            <ShieldCheck className="h-8 w-8 text-indigo-400" />
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-card/60 border border-primary/20 mb-5 shadow-lg shadow-primary/10">
+            <ShieldCheck className="h-8 w-8 text-primary" />
           </div>
-          <h1 className="text-3xl font-bold text-white tracking-wide">CRM Staff Portal</h1>
-          <p className="text-slate-400 text-sm mt-2">TecBunny Solutions — Authorised Staff Only</p>
-          <div className="mt-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-xs text-indigo-300">
+          <h1 className="text-3xl font-bold text-foreground tracking-wide">CRM Staff Portal</h1>
+          <p className="text-muted-foreground text-sm mt-2">TecBunny Solutions — Authorised Staff Only</p>
+          <div className="mt-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-xs text-primary">
             <Users className="h-3 w-3" />
             Staff Control Panel
           </div>
@@ -302,9 +302,9 @@ function StaffSignInForm() {
 
         <div className="crm-card rounded-2xl p-8">
           {denied === '1' && !error && (
-            <div className="mb-5 p-4 bg-red-500/10 border border-red-500/30 rounded-lg flex items-start gap-3">
-              <AlertCircle className="h-5 w-5 text-red-400 mt-0.5 shrink-0" />
-              <div className="text-sm text-red-200">
+            <div className="mb-5 p-4 bg-destructive/10 border border-destructive/30 rounded-lg flex items-start gap-3">
+              <AlertCircle className="h-5 w-5 text-destructive mt-0.5 shrink-0" />
+              <div className="text-sm text-destructive">
                 <strong>Access denied.</strong> Your account does not have staff privileges. Contact your administrator.
               </div>
             </div>
@@ -314,7 +314,7 @@ function StaffSignInForm() {
             <form onSubmit={handleSignIn} className="space-y-5">
               {/* Email / Mobile */}
               <div className="relative">
-                <Label htmlFor="staff-identifier" className="text-xs text-slate-400 mb-1.5 block">
+                <Label htmlFor="staff-identifier" className="text-xs text-muted-foreground mb-1.5 block">
                   Staff Email or Mobile
                 </Label>
                 <div className="relative">
@@ -324,17 +324,17 @@ function StaffSignInForm() {
                     value={identifier}
                     onChange={e => setIdentifier(e.target.value)}
                     placeholder="staff@tecbunny.com"
-                    className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white outline-none focus:border-indigo-400 transition-colors pr-10"
+                    className="w-full bg-card/5 border border-border/10 rounded-lg px-4 py-3 text-foreground outline-none focus:border-primary transition-colors pr-10"
                     required
                     autoComplete="username"
                   />
-                  <Mail className="absolute right-3 top-3.5 h-4 w-4 text-slate-500 pointer-events-none" />
+                  <Mail className="absolute right-3 top-3.5 h-4 w-4 text-muted-foreground pointer-events-none" />
                 </div>
               </div>
 
               {/* Password */}
               <div>
-                <Label htmlFor="staff-password" className="text-xs text-slate-400 mb-1.5 block">
+                <Label htmlFor="staff-password" className="text-xs text-muted-foreground mb-1.5 block">
                   Password
                 </Label>
                 <div className="relative">
@@ -344,14 +344,14 @@ function StaffSignInForm() {
                     value={password}
                     onChange={e => setPassword(e.target.value)}
                     placeholder="••••••••"
-                    className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white outline-none focus:border-indigo-400 transition-colors pr-12"
+                    className="w-full bg-card/5 border border-border/10 rounded-lg px-4 py-3 text-foreground outline-none focus:border-primary transition-colors pr-12"
                     required
                     autoComplete="current-password"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-3.5 text-slate-500 hover:text-indigo-300 transition-colors"
+                    className="absolute right-3 top-3.5 text-muted-foreground hover:text-primary transition-colors"
                     aria-label={showPassword ? 'Hide password' : 'Show password'}
                   >
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -363,7 +363,7 @@ function StaffSignInForm() {
               <div className="flex justify-end">
                 <Link
                   href="/auth/forgot-password"
-                  className="text-xs text-indigo-300 hover:text-white transition-colors"
+                  className="text-xs text-primary hover:text-foreground transition-colors"
                 >
                   Forgot password?
                 </Link>
@@ -371,16 +371,16 @@ function StaffSignInForm() {
 
               {/* Error */}
               {error && (
-                <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-lg flex items-start gap-2">
-                  <AlertCircle className="h-4 w-4 text-red-300 mt-0.5 shrink-0" />
-                  <span className="text-sm text-red-200">{error}</span>
+                <div className="p-3 bg-destructive/10 border border-destructive/30 rounded-lg flex items-start gap-2">
+                  <AlertCircle className="h-4 w-4 text-destructive mt-0.5 shrink-0" />
+                  <span className="text-sm text-destructive">{error}</span>
                 </div>
               )}
 
               {/* CAPTCHA */}
               {turnstileSiteKey && (
                 <div className="space-y-1">
-                  <Label className="text-xs text-slate-400">Security Check</Label>
+                  <Label className="text-xs text-muted-foreground">Security Check</Label>
                   <Turnstile
                     sitekey={turnstileSiteKey}
                     action="staff_signin"
@@ -404,12 +404,12 @@ function StaffSignInForm() {
               <button
                 type="submit"
                 disabled={isLoading || !identifier || !password || isLockedOut}
-                className="group relative w-full py-3 bg-indigo-500 hover:bg-indigo-400 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold tracking-wide rounded-lg transition-colors flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(99,102,241,0.25)] overflow-hidden"
+                className="group relative w-full py-3 bg-primary hover:bg-primary disabled:opacity-50 disabled:cursor-not-allowed text-primary-foreground font-semibold tracking-wide rounded-lg transition-colors flex items-center justify-center gap-2 shadow-md overflow-hidden"
               >
-                <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/10 to-transparent group-hover:translate-x-full transition-transform duration-700" />
+                <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-card/10 to-transparent group-hover:translate-x-full transition-transform duration-700" />
                 {isLoading ? (
                   <>
-                    <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
+                    <span className="animate-spin h-4 w-4 border-2 border-border border-t-transparent rounded-full" />
                     Verifying...
                   </>
                 ) : isLockedOut ? (
@@ -423,7 +423,7 @@ function StaffSignInForm() {
               </button>
 
               {failedAttempts > 0 && failedAttempts < 5 && (
-                <p className="text-center text-xs text-amber-300">
+                <p className="text-center text-xs text-warning">
                   {5 - failedAttempts} attempts remaining before lockout
                 </p>
               )}
@@ -439,9 +439,9 @@ function StaffSignInForm() {
         </div>
 
         {/* Footer note */}
-        <p className="text-center mt-6 text-xs text-slate-600">
+        <p className="text-center mt-6 text-xs text-muted-foreground">
           Customer? Visit{' '}
-          <a href="https://www.tecbunny.com" className="text-slate-500 hover:text-slate-300 transition-colors underline">
+          <a href="https://www.tecbunny.com" className="text-muted-foreground hover:text-muted-foreground transition-colors underline">
             www.tecbunny.com
           </a>
         </p>
@@ -453,8 +453,8 @@ function StaffSignInForm() {
 export default function StaffSignInPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-[#030712] flex items-center justify-center">
-        <div className="animate-spin h-8 w-8 border-2 border-indigo-400 border-t-transparent rounded-full" />
+      <div className="min-h-screen bg-card flex items-center justify-center">
+        <div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-full" />
       </div>
     }>
       <StaffSignInForm />

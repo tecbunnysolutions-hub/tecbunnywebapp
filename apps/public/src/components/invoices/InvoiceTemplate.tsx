@@ -93,7 +93,7 @@ export function InvoiceTemplate({ order, settings, autoPrint }: InvoiceTemplateP
             printWindow.document.write('</body></html>');
             printWindow.document.close();
             printWindow.focus();
-            
+
             setTimeout(() => {
                 printWindow.print();
                 printWindow.close();
@@ -129,16 +129,16 @@ export function InvoiceTemplate({ order, settings, autoPrint }: InvoiceTemplateP
                                 <Logo className="h-14 w-14 text-primary sm:h-16 sm:w-16" />
                                 <div className="space-y-1">
                                     <h1 className="text-2xl font-bold text-primary sm:text-3xl">{merged.name}</h1>
-                                    <p className="text-sm text-gray-500 sm:text-base">{merged.address}</p>
-                                    {merged.gstin && (<p className="text-sm text-gray-500">GSTIN: {merged.gstin}</p>)}
-                                    {merged.pan && (<p className="text-sm text-gray-500">PAN: {merged.pan}</p>)}
-                                    {merged.tan && (<p className="text-sm text-gray-500">TAN: {merged.tan}</p>)}
-                                    {merged.cin && (<p className="text-sm text-gray-500">CIN: {merged.cin}</p>)}
+                                    <p className="text-sm text-muted-foreground sm:text-base">{merged.address}</p>
+                                    {merged.gstin && (<p className="text-sm text-muted-foreground">GSTIN: {merged.gstin}</p>)}
+                                    {merged.pan && (<p className="text-sm text-muted-foreground">PAN: {merged.pan}</p>)}
+                                    {merged.tan && (<p className="text-sm text-muted-foreground">TAN: {merged.tan}</p>)}
+                                    {merged.cin && (<p className="text-sm text-muted-foreground">CIN: {merged.cin}</p>)}
                                 </div>
                             </div>
                             <div className="text-left md:text-right">
                                 <h2 className="text-xl font-semibold uppercase tracking-widest text-primary sm:text-2xl">Invoice</h2>
-                                <p className="text-sm text-gray-500 sm:text-base">#{formatOrderNumber(order.id)}</p>
+                                <p className="text-sm text-muted-foreground sm:text-base">#{formatOrderNumber(order.id)}</p>
                             </div>
                         </div>
                     </CardHeader>
@@ -148,7 +148,7 @@ export function InvoiceTemplate({ order, settings, autoPrint }: InvoiceTemplateP
                              <div>
                                 <h3 className="mb-2 font-semibold text-primary">Bill To</h3>
                                 <p className="font-medium">{order.customer_name}</p>
-                                <p className="text-sm text-gray-500">Place of Supply: {order.place_of_supply || formatPlaceOfSupply(supplyState, order.customer_state)}</p>
+                                <p className="text-sm text-muted-foreground">Place of Supply: {order.place_of_supply || formatPlaceOfSupply(supplyState, order.customer_state)}</p>
                             </div>
                             <div className="text-left sm:text-right">
                                 <h3 className="mb-2 font-semibold text-primary">Invoice Date</h3>

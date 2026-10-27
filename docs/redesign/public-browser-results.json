@@ -1,0 +1,902 @@
+[
+  {
+    "path": "/",
+    "url": "http://localhost:9003/",
+    "status": 200,
+    "light": {
+      "title": "CCTV & IT Support for Goa Homes | TecBunny",
+      "headings": [
+        "Make your technology work for you."
+      ],
+      "overflow": false,
+      "background": "rgb(248, 250, 252)"
+    },
+    "mobile": {
+      "overflow": false,
+      "background": "rgb(248, 250, 252)"
+    },
+    "errors": []
+  },
+  {
+    "path": "/about",
+    "url": "http://localhost:9003/about",
+    "status": 200,
+    "light": {
+      "title": "About TecBunny Solutions in Goa",
+      "headings": [
+        "Local people.Practical technology."
+      ],
+      "overflow": false,
+      "background": "rgb(248, 250, 252)"
+    },
+    "mobile": {
+      "overflow": false,
+      "background": "rgb(248, 250, 252)"
+    },
+    "errors": []
+  },
+  {
+    "path": "/services",
+    "url": "http://localhost:9003/services",
+    "status": 200,
+    "light": {
+      "title": "Services in Goa | TecBunny",
+      "headings": [
+        "Find the right help for your technology."
+      ],
+      "overflow": false,
+      "background": "rgb(248, 250, 252)"
+    },
+    "mobile": {
+      "overflow": false,
+      "background": "rgb(10, 17, 30)"
+    },
+    "errors": []
+  },
+  {
+    "path": "/services/cctv-security",
+    "url": "http://localhost:9003/services/cctv-security",
+    "status": 200,
+    "light": {
+      "title": "CCTV Installation in Goa | TecBunny",
+      "headings": [
+        "CCTV in Goa"
+      ],
+      "overflow": false,
+      "background": "rgb(248, 250, 252)"
+    },
+    "mobile": {
+      "overflow": false,
+      "background": "rgb(10, 17, 30)"
+    },
+    "errors": []
+  },
+  {
+    "path": "/services/it-support",
+    "url": "http://localhost:9003/services/it-support",
+    "status": 200,
+    "light": {
+      "title": "IT Support in Goa | TecBunny",
+      "headings": [
+        "IT Support in Goa"
+      ],
+      "overflow": false,
+      "background": "rgb(248, 250, 252)"
+    },
+    "mobile": {
+      "overflow": false,
+      "background": "rgb(10, 17, 30)"
+    },
+    "errors": []
+  },
+  {
+    "path": "/services/rfid-locks",
+    "url": "http://localhost:9003/services/rfid-locks",
+    "status": 200,
+    "light": {
+      "title": "RFID Locks in Goa | TecBunny",
+      "headings": [
+        "RFID Locks in Goa"
+      ],
+      "overflow": false,
+      "background": "rgb(248, 250, 252)"
+    },
+    "mobile": {
+      "overflow": false,
+      "background": "rgb(10, 17, 30)"
+    },
+    "errors": []
+  },
+  {
+    "path": "/services/networking",
+    "url": "http://localhost:9003/services/networking",
+    "status": 200,
+    "light": {
+      "title": "Networking in Goa | TecBunny",
+      "headings": [
+        "Networking in Goa"
+      ],
+      "overflow": false,
+      "background": "rgb(248, 250, 252)"
+    },
+    "mobile": {
+      "overflow": false,
+      "background": "rgb(10, 17, 30)"
+    },
+    "errors": []
+  },
+  {
+    "path": "/webdev",
+    "url": "http://localhost:9003/webdev",
+    "status": 200,
+    "light": {
+      "title": "Website Development in Goa | TecBunny",
+      "headings": [
+        "Website Development in Goa"
+      ],
+      "overflow": false,
+      "background": "rgb(248, 250, 252)"
+    },
+    "mobile": {
+      "overflow": false,
+      "background": "rgb(10, 17, 30)"
+    },
+    "errors": []
+  },
+  {
+    "path": "/contact",
+    "url": "http://localhost:9003/contact",
+    "status": 200,
+    "light": {
+      "title": "Contact TecBunny in Goa",
+      "headings": [
+        "Let’s talk about your project."
+      ],
+      "overflow": false,
+      "background": "rgb(248, 250, 252)"
+    },
+    "mobile": {
+      "overflow": false,
+      "background": "rgb(10, 17, 30)"
+    },
+    "errors": []
+  },
+  {
+    "path": "/products",
+    "url": "http://localhost:9003/products",
+    "status": 200,
+    "light": {
+      "title": "CCTV, Computers & IT Products in Goa | TecBunny",
+      "headings": [
+        "CCTV, IT Hardware & Security Systems"
+      ],
+      "overflow": false,
+      "background": "rgb(248, 250, 252)"
+    },
+    "mobile": {
+      "overflow": false,
+      "background": "rgb(248, 250, 252)"
+    },
+    "errors": []
+  },
+  {
+    "path": "/cart",
+    "url": "http://localhost:9003/cart",
+    "status": 200,
+    "light": {
+      "title": "Cart | TecBunny",
+      "headings": [
+        "Your cart"
+      ],
+      "overflow": false,
+      "background": "rgb(248, 250, 252)"
+    },
+    "mobile": {
+      "overflow": false,
+      "background": "rgb(248, 250, 252)"
+    },
+    "errors": []
+  },
+  {
+    "path": "/checkout",
+    "url": "http://localhost:9003/checkout",
+    "status": 200,
+    "light": {
+      "title": "Checkout | Complete Your Purchase",
+      "headings": [],
+      "overflow": false,
+      "background": "rgb(248, 250, 252)"
+    },
+    "mobile": {
+      "overflow": false,
+      "background": "rgb(10, 17, 30)"
+    },
+    "errors": []
+  },
+  {
+    "path": "/auth/signin",
+    "url": "http://localhost:9003/auth/signin",
+    "status": 200,
+    "light": {
+      "title": "Sign In",
+      "headings": [],
+      "overflow": false,
+      "background": "rgb(248, 250, 252)"
+    },
+    "mobile": {
+      "overflow": false,
+      "background": "rgb(248, 250, 252)"
+    },
+    "errors": []
+  },
+  {
+    "path": "/auth/signup",
+    "url": "http://localhost:9003/auth/signup",
+    "status": 200,
+    "light": {
+      "title": "Create Account",
+      "headings": [
+        "CREATE YOUR SECURE IDENTITY"
+      ],
+      "overflow": false,
+      "background": "rgb(248, 250, 252)"
+    },
+    "mobile": {
+      "overflow": true,
+      "background": "rgb(10, 17, 30)"
+    },
+    "errors": []
+  },
+  {
+    "path": "/search?query=wifi",
+    "url": "http://localhost:9003/search?query=wifi",
+    "status": 200,
+    "light": {
+      "title": "Search TecBunny | TecBunny",
+      "headings": [
+        "Find the service you need"
+      ],
+      "overflow": false,
+      "background": "rgb(248, 250, 252)"
+    },
+    "mobile": {
+      "overflow": false,
+      "background": "rgb(10, 17, 30)"
+    },
+    "errors": []
+  },
+  {
+    "path": "/search?query=unmatched-example",
+    "url": "http://localhost:9003/search?query=unmatched-example",
+    "status": 200,
+    "light": {
+      "title": "Search TecBunny | TecBunny",
+      "headings": [
+        "Find the service you need"
+      ],
+      "overflow": false,
+      "background": "rgb(248, 250, 252)"
+    },
+    "mobile": {
+      "overflow": false,
+      "background": "rgb(10, 17, 30)"
+    },
+    "errors": []
+  },
+  {
+    "path": "/portfolio",
+    "url": "http://localhost:9003/portfolio",
+    "status": 200,
+    "light": {
+      "title": "Technology Projects & Planning | TecBunny",
+      "headings": [
+        "Every space needs its own plan."
+      ],
+      "overflow": false,
+      "background": "rgb(248, 250, 252)"
+    },
+    "mobile": {
+      "overflow": false,
+      "background": "rgb(10, 17, 30)"
+    },
+    "errors": []
+  },
+  {
+    "path": "/resources",
+    "url": "http://localhost:9003/resources",
+    "status": 200,
+    "light": {
+      "title": "Resources & Technology Planning Guides | TecBunny",
+      "headings": [
+        "Technology Resources & Planning Guides"
+      ],
+      "overflow": false,
+      "background": "rgb(248, 250, 252)"
+    },
+    "mobile": {
+      "overflow": false,
+      "background": "rgb(248, 250, 252)"
+    },
+    "errors": []
+  },
+  {
+    "path": "/resources/cctv-planning-guide",
+    "url": "http://localhost:9003/resources/cctv-planning-guide",
+    "status": 200,
+    "light": {
+      "title": "Commercial CCTV & IP Surveillance Engineering | TecBunny",
+      "headings": [
+        "Commercial CCTV & IP Surveillance Engineering Guide"
+      ],
+      "overflow": false,
+      "background": "rgb(248, 250, 252)"
+    },
+    "mobile": {
+      "overflow": false,
+      "background": "rgb(10, 17, 30)"
+    },
+    "errors": []
+  },
+  {
+    "path": "/resources/infrastructure-planning-guide",
+    "url": "http://localhost:9003/resources/infrastructure-planning-guide",
+    "status": 200,
+    "light": {
+      "title": "Business IT & Network Infrastructure Planning | TecBunny",
+      "headings": [
+        "Business IT & Network Infrastructure Planning Guide"
+      ],
+      "overflow": false,
+      "background": "rgb(248, 250, 252)"
+    },
+    "mobile": {
+      "overflow": false,
+      "background": "rgb(10, 17, 30)"
+    },
+    "errors": []
+  },
+  {
+    "path": "/info/faqs",
+    "url": "http://localhost:9003/info/faqs",
+    "status": 200,
+    "light": {
+      "title": "Frequently Asked Questions | TecBunny Solutions Goa",
+      "headings": [
+        "Frequently Asked Questions"
+      ],
+      "overflow": false,
+      "background": "rgb(248, 250, 252)"
+    },
+    "mobile": {
+      "overflow": false,
+      "background": "rgb(10, 17, 30)"
+    },
+    "errors": []
+  },
+  {
+    "path": "/info/policies",
+    "url": "http://localhost:9003/info/policies",
+    "status": 200,
+    "light": {
+      "title": "Policies - TecBunny Store",
+      "headings": [
+        "Legal & Compliance"
+      ],
+      "overflow": false,
+      "background": "rgb(248, 250, 252)"
+    },
+    "mobile": {
+      "overflow": false,
+      "background": "rgb(248, 250, 252)"
+    },
+    "errors": []
+  },
+  {
+    "path": "/info/policies/privacy",
+    "url": "http://localhost:9003/info/policies/privacy",
+    "status": 200,
+    "light": {
+      "title": "Privacy Policy | TecBunny",
+      "headings": [
+        "Privacy Policy"
+      ],
+      "overflow": false,
+      "background": "rgb(248, 250, 252)"
+    },
+    "mobile": {
+      "overflow": false,
+      "background": "rgb(10, 17, 30)"
+    },
+    "errors": []
+  },
+  {
+    "path": "/info/policies/terms",
+    "url": "http://localhost:9003/info/policies/terms",
+    "status": 200,
+    "light": {
+      "title": "Terms of Service | TecBunny",
+      "headings": [
+        "Terms of Service"
+      ],
+      "overflow": false,
+      "background": "rgb(248, 250, 252)"
+    },
+    "mobile": {
+      "overflow": false,
+      "background": "rgb(10, 17, 30)"
+    },
+    "errors": []
+  },
+  {
+    "path": "/info/policies/shipping",
+    "url": "http://localhost:9003/info/policies/shipping",
+    "status": 200,
+    "light": {
+      "title": "Shipping Policy | TecBunny",
+      "headings": [
+        "Shipping Policy"
+      ],
+      "overflow": false,
+      "background": "rgb(248, 250, 252)"
+    },
+    "mobile": {
+      "overflow": false,
+      "background": "rgb(248, 250, 252)"
+    },
+    "errors": []
+  },
+  {
+    "path": "/info/policies/return",
+    "url": "http://localhost:9003/info/policies/return",
+    "status": 200,
+    "light": {
+      "title": "Return & Exchange Policy | TecBunny",
+      "headings": [
+        "Return & Exchange Policy"
+      ],
+      "overflow": false,
+      "background": "rgb(248, 250, 252)"
+    },
+    "mobile": {
+      "overflow": false,
+      "background": "rgb(248, 250, 252)"
+    },
+    "errors": []
+  },
+  {
+    "path": "/info/policies/refund-cancellation",
+    "url": "http://localhost:9003/info/policies/refund-cancellation",
+    "status": 200,
+    "light": {
+      "title": "Refund & Cancellation Policy | TecBunny",
+      "headings": [
+        "Refund & Cancellation Policy"
+      ],
+      "overflow": false,
+      "background": "rgb(248, 250, 252)"
+    },
+    "mobile": {
+      "overflow": false,
+      "background": "rgb(248, 250, 252)"
+    },
+    "errors": []
+  },
+  {
+    "path": "/info/policies/cookie",
+    "url": "http://localhost:9003/info/policies/cookie",
+    "status": 200,
+    "light": {
+      "title": "Cookie Policy | TecBunny",
+      "headings": [
+        "Cookie Policy"
+      ],
+      "overflow": false,
+      "background": "rgb(248, 250, 252)"
+    },
+    "mobile": {
+      "overflow": false,
+      "background": "rgb(248, 250, 252)"
+    },
+    "errors": []
+  },
+  {
+    "path": "/blog",
+    "url": "http://localhost:9003/blog",
+    "status": 200,
+    "light": {
+      "title": "Blog: CCTV, IT & Smart Security Insights | TecBunny",
+      "headings": [
+        "TecBunny Blog"
+      ],
+      "overflow": false,
+      "background": "rgb(248, 250, 252)"
+    },
+    "mobile": {
+      "overflow": false,
+      "background": "rgb(10, 17, 30)"
+    },
+    "errors": []
+  },
+  {
+    "path": "/offers",
+    "url": "http://localhost:9003/offers",
+    "status": 200,
+    "light": {
+      "title": "Special Offers & Deals - TecBunny Store",
+      "headings": [
+        "Big Savings on Complete Security."
+      ],
+      "overflow": false,
+      "background": "rgb(248, 250, 252)"
+    },
+    "mobile": {
+      "overflow": false,
+      "background": "rgb(248, 250, 252)"
+    },
+    "errors": []
+  },
+  {
+    "path": "/customised-setups",
+    "url": "http://localhost:9003/customised-setups",
+    "status": 200,
+    "light": {
+      "title": "Build Your Custom CCTV Setup | TecBunny",
+      "headings": [
+        "Build your custom CCTV setup."
+      ],
+      "overflow": false,
+      "background": "rgb(248, 250, 252)"
+    },
+    "mobile": {
+      "overflow": false,
+      "background": "rgb(248, 250, 252)"
+    },
+    "errors": []
+  },
+  {
+    "path": "/solutions",
+    "url": "http://localhost:9003/solutions",
+    "status": 200,
+    "light": {
+      "title": "Technology Solutions & Project Planning in Goa | TecBunny",
+      "headings": [
+        "Technology & Security Solutions"
+      ],
+      "overflow": false,
+      "background": "rgb(248, 250, 252)"
+    },
+    "mobile": {
+      "overflow": false,
+      "background": "rgb(10, 17, 30)"
+    },
+    "errors": []
+  },
+  {
+    "path": "/assessment",
+    "url": "http://localhost:9003/assessment",
+    "status": 200,
+    "light": {
+      "title": "Free Technology Assessment & Site Survey | TecBunny",
+      "headings": [
+        "Get Your Free Technology Assessment"
+      ],
+      "overflow": false,
+      "background": "rgb(248, 250, 252)"
+    },
+    "mobile": {
+      "overflow": false,
+      "background": "rgb(10, 17, 30)"
+    },
+    "errors": []
+  },
+  {
+    "path": "/lead-capture",
+    "url": "http://localhost:9003/lead-capture",
+    "status": 200,
+    "light": {
+      "title": "Get Your Free Infrastructure Guide | TecBunny",
+      "headings": [
+        "Get Your Property's Infrastructure Guide"
+      ],
+      "overflow": false,
+      "background": "rgb(248, 250, 252)"
+    },
+    "mobile": {
+      "overflow": false,
+      "background": "rgb(10, 17, 30)"
+    },
+    "errors": []
+  },
+  {
+    "path": "/about/business-info",
+    "url": "http://localhost:9003/about/business-info",
+    "status": 200,
+    "light": {
+      "title": "Business Information - TecBunny Store",
+      "headings": [
+        "Business Information"
+      ],
+      "overflow": false,
+      "background": "rgb(248, 250, 252)"
+    },
+    "mobile": {
+      "overflow": false,
+      "background": "rgb(10, 17, 30)"
+    },
+    "errors": []
+  },
+  {
+    "path": "/agents/recruit",
+    "url": "http://localhost:9003/agents/recruit",
+    "status": 200,
+    "light": {
+      "title": "Become a TecBunny Certified Agent | Earn High Commissions",
+      "headings": [
+        "Scale Your Revenue as a TecBunny Certified Agent"
+      ],
+      "overflow": false,
+      "background": "rgb(248, 250, 252)"
+    },
+    "mobile": {
+      "overflow": false,
+      "background": "rgb(10, 17, 30)"
+    },
+    "errors": []
+  },
+  {
+    "path": "/seller/login",
+    "url": "http://localhost:9003/seller/login",
+    "status": 200,
+    "light": {
+      "title": "Seller sign in | TecBunny",
+      "headings": [
+        "TecBunny Seller Partner"
+      ],
+      "overflow": false,
+      "background": "rgb(248, 250, 252)"
+    },
+    "mobile": {
+      "overflow": false,
+      "background": "rgb(10, 17, 30)"
+    },
+    "errors": []
+  },
+  {
+    "path": "/seller/register",
+    "url": "http://localhost:9003/seller/register",
+    "status": 200,
+    "light": {
+      "title": "Create a seller account | TecBunny",
+      "headings": [
+        "TecBunny Seller Partner Network"
+      ],
+      "overflow": false,
+      "background": "rgb(248, 250, 252)"
+    },
+    "mobile": {
+      "overflow": false,
+      "background": "rgb(10, 17, 30)"
+    },
+    "errors": []
+  },
+  {
+    "path": "/seller/kyc",
+    "url": "http://localhost:9003/seller/kyc",
+    "status": 200,
+    "light": {
+      "title": "Seller verification | TecBunny",
+      "headings": [
+        "Seller KYC & Statutory Verification"
+      ],
+      "overflow": false,
+      "background": "rgb(248, 250, 252)"
+    },
+    "mobile": {
+      "overflow": false,
+      "background": "rgb(10, 17, 30)"
+    },
+    "errors": []
+  },
+  {
+    "path": "/seller/dashboard",
+    "url": "http://localhost:9003/seller/dashboard",
+    "status": 200,
+    "light": {
+      "title": "Seller dashboard | TecBunny",
+      "headings": [
+        "Apex Security Solutions Pvt Ltd"
+      ],
+      "overflow": false,
+      "background": "rgb(248, 250, 252)"
+    },
+    "mobile": {
+      "overflow": true,
+      "background": "rgb(10, 17, 30)"
+    },
+    "errors": []
+  },
+  {
+    "path": "/payment/failed",
+    "url": "http://localhost:9003/payment/failed",
+    "status": 200,
+    "light": {
+      "title": "Payment not completed | TecBunny",
+      "headings": [],
+      "overflow": false,
+      "background": "rgb(248, 250, 252)"
+    },
+    "mobile": {
+      "overflow": false,
+      "background": "rgb(248, 250, 252)"
+    },
+    "errors": []
+  },
+  {
+    "path": "/payment/success",
+    "url": "http://localhost:9003/payment/success",
+    "status": 200,
+    "light": {
+      "title": "Payment confirmation | TecBunny",
+      "headings": [],
+      "overflow": false,
+      "background": "rgb(248, 250, 252)"
+    },
+    "mobile": {
+      "overflow": false,
+      "background": "rgb(248, 250, 252)"
+    },
+    "errors": []
+  },
+  {
+    "path": "/auth/verify-email",
+    "url": "http://localhost:9003/auth/verify-email",
+    "status": 200,
+    "light": {
+      "title": "Verify your email | TecBunny",
+      "headings": [],
+      "overflow": false,
+      "background": "rgb(248, 250, 252)"
+    },
+    "mobile": {
+      "overflow": false,
+      "background": "rgb(10, 17, 30)"
+    },
+    "errors": []
+  },
+  {
+    "path": "/auth/verify-otp",
+    "url": "http://localhost:9003/auth/verify-otp",
+    "status": 200,
+    "light": {
+      "title": "Verify your code | TecBunny",
+      "headings": [],
+      "overflow": false,
+      "background": "rgb(248, 250, 252)"
+    },
+    "mobile": {
+      "overflow": false,
+      "background": "rgb(248, 250, 252)"
+    },
+    "errors": []
+  },
+  {
+    "path": "/auth/verification-success",
+    "url": "http://localhost:9003/auth/verification-success",
+    "status": 200,
+    "light": {
+      "title": "Email verified | TecBunny",
+      "headings": [],
+      "overflow": false,
+      "background": "rgb(248, 250, 252)"
+    },
+    "mobile": {
+      "overflow": false,
+      "background": "rgb(248, 250, 252)"
+    },
+    "errors": []
+  },
+  {
+    "path": "/auth/change-password",
+    "url": "http://localhost:9003/auth/change-password",
+    "status": 200,
+    "light": {
+      "title": "Change your password | TecBunny",
+      "headings": [],
+      "overflow": false,
+      "background": "rgb(248, 250, 252)"
+    },
+    "mobile": {
+      "overflow": false,
+      "background": "rgb(10, 17, 30)"
+    },
+    "errors": []
+  },
+  {
+    "path": "/profile",
+    "url": "http://localhost:9003/auth/signin",
+    "status": 200,
+    "light": {
+      "title": "Sign In",
+      "headings": [
+        "SYSTEM ACCESS"
+      ],
+      "overflow": false,
+      "background": "rgb(248, 250, 252)"
+    },
+    "mobile": {
+      "overflow": true,
+      "background": "rgb(10, 17, 30)"
+    },
+    "errors": []
+  },
+  {
+    "path": "/orders",
+    "url": "http://localhost:9003/auth/signin",
+    "status": 200,
+    "light": {
+      "title": "Sign In",
+      "headings": [
+        "SYSTEM ACCESS"
+      ],
+      "overflow": false,
+      "background": "rgb(248, 250, 252)"
+    },
+    "mobile": {
+      "overflow": true,
+      "background": "rgb(10, 17, 30)"
+    },
+    "errors": []
+  },
+  {
+    "path": "/ai-research",
+    "url": "http://localhost:9003/ai-research",
+    "status": 200,
+    "light": {
+      "title": "AI Research Assistant | TecBunny",
+      "headings": [
+        "AI Research Assistant"
+      ],
+      "overflow": false,
+      "background": "rgb(248, 250, 252)"
+    },
+    "mobile": {
+      "overflow": false,
+      "background": "rgb(10, 17, 30)"
+    },
+    "errors": []
+  },
+  {
+    "path": "/embed/configurator",
+    "url": "http://localhost:9003/embed/configurator",
+    "status": 200,
+    "light": {
+      "title": "CCTV & IT Support for Goa Homes | TecBunny",
+      "headings": [],
+      "overflow": false,
+      "background": "rgb(248, 250, 252)"
+    },
+    "mobile": {
+      "overflow": false,
+      "background": "rgb(10, 17, 30)"
+    },
+    "errors": []
+  },
+  {
+    "path": "/redesign-missing-page",
+    "url": "http://localhost:9003/redesign-missing-page",
+    "status": 404,
+    "light": {
+      "title": "Page Not Found | TecBunny Solutions",
+      "headings": [
+        "Page not found"
+      ],
+      "overflow": false,
+      "background": "rgb(248, 250, 252)"
+    },
+    "mobile": {
+      "overflow": false,
+      "background": "rgb(10, 17, 30)"
+    },
+    "errors": []
+  }
+]

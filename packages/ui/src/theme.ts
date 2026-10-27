@@ -39,112 +39,26 @@ export const enterpriseTokenContract = {
 } as const;
 
 export const theme = {
+  // Values resolve from styles/tokens.css; no second physical palette lives here.
   colors: {
-    /* Brand Palette - Aligned with global.css */
-    brand: {
-      dark: 'hsl(224, 60%, 8%)',      /* Section dark background */
-      navy: 'hsl(224, 64%, 15%)',      /* Primary - Deep Obsidian */
-      blue: 'hsl(220, 85%, 57%)',      /* Secondary - Electric Cobalt */
-      amber: 'hsl(22, 95%, 50%)',      /* Accent - Sunset Amber */
-      slate: 'hsl(210, 40%, 96%)',     /* Neutral - Pale Slate */
-    },
-    /* Semantic Colors */
-    primary: {
-      DEFAULT: 'hsl(224, 64%, 15%)',
-      foreground: 'hsl(0, 0%, 100%)',
-      light: 'hsl(224, 60%, 25%)',
-      lighter: 'hsl(224, 50%, 40%)',
-    },
-    secondary: {
-      DEFAULT: 'hsl(220, 85%, 57%)',
-      foreground: 'hsl(0, 0%, 100%)',
-      hover: 'hsl(220, 85%, 50%)',
-      active: 'hsl(220, 85%, 45%)',
-    },
-    accent: {
-      DEFAULT: 'hsl(22, 95%, 50%)',
-      foreground: 'hsl(0, 0%, 100%)',
-      hover: 'hsl(22, 95%, 45%)',
-    },
-    /* Feedback States */
-    success: 'hsl(142, 71%, 45%)',
-    warning: 'hsl(38, 92%, 50%)',
-    error: 'hsl(0, 84%, 60%)',
-    info: 'hsl(217, 91%, 60%)',
-    /* Priority Badges */
-    priority: {
-      hot: 'hsl(0, 84%, 60%)',
-      warm: 'hsl(38, 92%, 50%)',
-      cold: 'hsl(215, 25%, 60%)',
-    },
-    /* Surfaces & Backgrounds */
-    background: 'hsl(210, 40%, 96%)',
-    foreground: 'hsl(224, 60%, 10%)',
-    card: {
-      DEFAULT: 'hsl(0, 0%, 100%)',
-      foreground: 'hsl(224, 60%, 10%)',
-      muted: 'hsl(210, 40%, 98%)',
-    },
-    popover: {
-      DEFAULT: 'hsl(0, 0%, 100%)',
-      foreground: 'hsl(224, 60%, 10%)',
-    },
-    muted: {
-      DEFAULT: 'hsl(215, 20%, 45%)',
-      foreground: 'hsl(224, 60%, 10%)',
-    },
-    destructive: {
-      DEFAULT: 'hsl(0, 84%, 60%)',
-      foreground: 'hsl(0, 0%, 100%)',
-    },
-    border: 'hsl(214, 30%, 88%)',
-    input: 'hsl(0, 0%, 100%)',
-    ring: 'hsl(220, 85%, 57%)',
-    chart: {
-      '1': 'hsl(220, 85%, 57%)',
-      '2': 'hsl(22, 95%, 50%)',
-      '3': 'hsl(142, 71%, 45%)',
-      '4': 'hsl(38, 92%, 50%)',
-      '5': 'hsl(217, 91%, 60%)',
-    },
-    sidebar: {
-      DEFAULT: 'hsl(0, 0%, 100%)',
-      foreground: 'hsl(224, 60%, 10%)',
-      primary: 'hsl(220, 85%, 57%)',
-      'primary-foreground': 'hsl(0, 0%, 100%)',
-      accent: 'hsl(22, 95%, 50%)',
-      'accent-foreground': 'hsl(0, 0%, 100%)',
-      border: 'hsl(214, 30%, 88%)',
-      ring: 'hsl(220, 85%, 57%)',
-    },
+    brand: { dark: 'hsl(var(--background))', navy: 'hsl(var(--foreground))', blue: 'hsl(var(--primary))', amber: 'hsl(var(--accent))', slate: 'hsl(var(--muted))' },
+    primary: { DEFAULT: 'hsl(var(--primary))', foreground: 'hsl(var(--primary-foreground))', light: 'hsl(var(--primary) / .8)', lighter: 'hsl(var(--primary) / .6)' },
+    secondary: { DEFAULT: 'hsl(var(--secondary))', foreground: 'hsl(var(--secondary-foreground))', hover: 'hsl(var(--secondary) / .9)', active: 'hsl(var(--secondary) / .8)' },
+    accent: { DEFAULT: 'hsl(var(--accent))', foreground: 'hsl(var(--accent-foreground))', hover: 'hsl(var(--accent) / .9)' },
+    success: 'hsl(var(--success))', warning: 'hsl(var(--warning))', error: 'hsl(var(--destructive))', info: 'hsl(var(--primary))',
+    priority: { hot: 'hsl(var(--destructive))', warm: 'hsl(var(--warning))', cold: 'hsl(var(--muted-foreground))' },
+    background: 'hsl(var(--background))', foreground: 'hsl(var(--foreground))',
+    card: { DEFAULT: 'hsl(var(--card))', foreground: 'hsl(var(--card-foreground))', muted: 'hsl(var(--muted))' },
+    popover: { DEFAULT: 'hsl(var(--popover))', foreground: 'hsl(var(--popover-foreground))' },
+    muted: { DEFAULT: 'hsl(var(--muted))', foreground: 'hsl(var(--muted-foreground))' },
+    destructive: { DEFAULT: 'hsl(var(--destructive))', foreground: 'hsl(var(--destructive-foreground))' },
+    border: 'hsl(var(--border))', input: 'hsl(var(--input))', ring: 'hsl(var(--ring))',
+    chart: { '1': 'hsl(var(--chart-1))', '2': 'hsl(var(--chart-2))', '3': 'hsl(var(--chart-3))', '4': 'hsl(var(--chart-4))', '5': 'hsl(var(--chart-5))' },
+    sidebar: { DEFAULT: 'hsl(var(--sidebar-background))', foreground: 'hsl(var(--sidebar-foreground))', primary: 'hsl(var(--sidebar-primary))', 'primary-foreground': 'hsl(var(--sidebar-primary-foreground))', accent: 'hsl(var(--sidebar-accent))', 'accent-foreground': 'hsl(var(--sidebar-accent-foreground))', border: 'hsl(var(--sidebar-border))', ring: 'hsl(var(--sidebar-ring))' },
   },
-  fontFamily: {
-    sans: ['var(--font-body)', 'Inter', 'Outfit', 'sans-serif'],
-    heading: ['Outfit', 'sans-serif'],
-    tech: ['var(--font-body)', 'sans-serif'],
-    body: ['var(--font-body)', 'Inter', 'sans-serif'],
-    code: ['ui-monospace', 'SFMono-Regular', 'Consolas', 'monospace'],
-  },
-  borderRadius: {
-    none: '0',
-    xs: '4px',
-    sm: '8px',
-    md: '8px',
-    lg: '16px',
-    xl: '24px',
-    full: '9999px',
-  },
-  boxShadow: {
-    none: 'none',
-    xs: '0 1px 2px rgba(15, 23, 42, 0.06)',
-    sm: '0 4px 6px rgba(15, 23, 42, 0.06)',
-    md: '0 4px 6px rgba(15, 23, 42, 0.12)',
-    lg: '0 10px 20px rgba(15, 23, 42, 0.18)',
-    xl: '0 20px 40px rgba(15, 23, 42, 0.25)',
-    hover: '0 8px 16px rgba(15, 23, 42, 0.12)',
-    focus: '0 0 0 3px rgba(59, 130, 246, 0.1), 0 0 0 4px hsl(220, 85%, 57%)',
-    inner: 'inset 0 2px 4px rgba(15, 23, 42, 0.06)',
-  },
+  fontFamily: { sans: ['var(--font-body)'], heading: ['var(--font-body)'], tech: ['var(--font-body)'], body: ['var(--font-body)'], code: ['var(--font-code)'] },
+  borderRadius: { none: '0', xs: '.25rem', sm: 'calc(var(--radius) - .125rem)', md: 'var(--radius)', lg: 'var(--radius-card)', xl: 'var(--radius-feature)', full: '9999px' },
+  boxShadow: { none: 'none', xs: 'var(--tb-shadow-sm)', sm: 'var(--tb-shadow-sm)', md: 'var(--tb-shadow-md)', lg: 'var(--tb-shadow-lg)', xl: 'var(--tb-shadow-xl)', hover: 'var(--tb-shadow-md)', focus: '0 0 0 3px hsl(var(--ring) / .3)', inner: 'inset 0 1px 3px hsl(var(--overlay) / .06)' },
   spacing: {
     '0': '0',
     '1': 'var(--space-3xs)',

@@ -1,13 +1,13 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { 
-  Building2, 
-  Briefcase, 
-  Award, 
-  Activity, 
-  ShoppingBag, 
-  ArrowRight, 
-  ShieldCheck, 
+import {
+  Building2,
+  Briefcase,
+  Award,
+  Activity,
+  ShoppingBag,
+  ArrowRight,
+  ShieldCheck,
   Sparkles,
   Server,
   Lock,
@@ -97,7 +97,7 @@ const INDUSTRIES = [
 
 export default function IndustriesIndexPage() {
   return (
-    <div className="relative min-h-screen bg-[#09090B] text-zinc-200 selection:bg-blue-500/20 selection:text-white overflow-hidden pb-20">
+    <div className="relative min-h-screen bg-card text-muted-foreground selection:bg-primary/20 selection:text-primary overflow-hidden pb-20">
       <BreadcrumbJsonLd
         items={[
           { name: 'Home', url: 'https://www.tecbunny.com' },
@@ -105,33 +105,33 @@ export default function IndustriesIndexPage() {
         ]}
       />
       <div className="pointer-events-none absolute inset-0 -z-10">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]" />
-        <div className="absolute -left-40 top-0 h-[48rem] w-[48rem] rounded-full bg-blue-500/5 blur-[160px]" />
-        <div className="absolute -right-40 top-1/4 h-[50rem] w-[50rem] rounded-full bg-indigo-500/5 blur-[180px]" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,hsl(var(--foreground)/0.02)_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--foreground)/0.02)_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,hsl(var(--overlay))_70%,transparent_100%)]" />
+        <div className="absolute -left-40 top-0 h-[48rem] w-[48rem] rounded-full bg-primary/5 blur-[160px]" />
+        <div className="absolute -right-40 top-1/4 h-[50rem] w-[50rem] rounded-full bg-primary/5 blur-[180px]" />
       </div>
 
       {/* Header Hero */}
-      <section className="relative pt-24 pb-16 md:pt-32 md:pb-24 border-b border-zinc-900">
+      <section className="relative pt-24 pb-16 md:pt-32 md:pb-24 border-b border-border">
         <div className="container mx-auto px-6 max-w-screen-2xl">
           <div className="text-center max-w-3xl mx-auto space-y-5">
-            <div className="inline-flex items-center gap-2 rounded-full border border-blue-500/20 bg-blue-500/5 px-4 py-1.5 text-xs font-semibold text-blue-400">
+            <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-xs font-semibold text-primary">
               <Building2 size={14} />
               <span>Tailored B2B Technology Architectures</span>
             </div>
 
-            <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl md:text-6xl font-tech leading-tight text-white">
+            <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl md:text-6xl font-tech leading-tight text-foreground">
               Industry-Specific <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-200 to-white">
+              <span className=" text-primary">
                 Technology Solutions
               </span>
             </h1>
 
-            <p className="text-base sm:text-lg font-light leading-relaxed text-zinc-300 max-w-2xl mx-auto">
+            <p className="text-base sm:text-lg font-light leading-relaxed text-muted-foreground max-w-2xl mx-auto">
               Every vertical faces distinct operational challenges. We engineer tailored networking, physical security, access control, and automation systems aligned with your industry requirements.
             </p>
 
             <div className="pt-3">
-              <Button asChild size="lg" className="bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl px-8 h-12 text-sm shadow-lg shadow-blue-500/20">
+              <Button asChild size="lg" className="bg-primary hover:bg-primary text-primary-foreground font-bold rounded-xl px-8 h-12 text-sm shadow-lg shadow-primary/20">
                 <Link href="/assessment">Request Industry Assessment</Link>
               </Button>
             </div>
@@ -148,33 +148,33 @@ export default function IndustriesIndexPage() {
               return (
                 <div
                   key={ind.key}
-                  className="rounded-3xl border border-zinc-850 bg-zinc-950/60 p-8 flex flex-col justify-between transition-all duration-300 hover:border-blue-500/30 hover:bg-zinc-900/20 group"
+                  className="rounded-3xl border border-border bg-background/60 p-8 flex flex-col justify-between transition-all duration-300 hover:border-primary/30 hover:bg-card/20 group"
                 >
                   <div className="space-y-6">
                     <div className="flex items-center justify-between">
-                      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-500/10 border border-blue-500/20 text-blue-400 group-hover:scale-105 transition-transform">
+                      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 border border-primary/20 text-primary group-hover:scale-105 transition-transform">
                         <Icon size={28} />
                       </div>
-                      <span className="text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full border border-zinc-800 bg-zinc-900/80 text-zinc-400 font-mono">
+                      <span className="text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full border border-border bg-card/80 text-muted-foreground font-mono">
                         {ind.badge}
                       </span>
                     </div>
 
                     <div>
-                      <h2 className="text-2xl font-bold text-white font-tech">
+                      <h2 className="text-2xl font-bold text-foreground font-tech">
                         {ind.title}
                       </h2>
-                      <p className="mt-2 text-xs sm:text-sm text-zinc-400 font-light leading-relaxed">
+                      <p className="mt-2 text-xs sm:text-sm text-muted-foreground font-light leading-relaxed">
                         {ind.desc}
                       </p>
                     </div>
 
-                    <div className="space-y-2 border-t border-zinc-900 pt-4">
-                      <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 font-mono">Key Capabilities:</span>
-                      <ul className="grid grid-cols-1 gap-1.5 text-xs text-zinc-300">
+                    <div className="space-y-2 border-t border-border pt-4">
+                      <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground font-mono">Key Capabilities:</span>
+                      <ul className="grid grid-cols-1 gap-1.5 text-xs text-muted-foreground">
                         {ind.highlights.map((h, i) => (
                           <li key={i} className="flex items-center gap-2">
-                            <span className="h-1.5 w-1.5 rounded-full bg-blue-500" />
+                            <span className="h-1.5 w-1.5 rounded-full bg-primary text-primary-foreground" />
                             <span>{h}</span>
                           </li>
                         ))}
@@ -182,10 +182,10 @@ export default function IndustriesIndexPage() {
                     </div>
                   </div>
 
-                  <div className="pt-6 mt-6 border-t border-zinc-900">
+                  <div className="pt-6 mt-6 border-t border-border">
                     <Link
                       href={ind.href}
-                      className="w-full flex items-center justify-between py-2.5 text-xs font-bold uppercase tracking-wider text-blue-400 group-hover:text-white transition-colors"
+                      className="w-full flex items-center justify-between py-2.5 text-xs font-bold uppercase tracking-wider text-primary group-hover:text-foreground transition-colors"
                     >
                       <span>Explore {ind.title} Solutions</span>
                       <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />

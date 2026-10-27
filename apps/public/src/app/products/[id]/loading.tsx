@@ -2,7 +2,7 @@ import { uiText } from "@tecbunny/core/strings";
 
 export default function Loading() {
   return (
-    <section className="min-h-[70vh] bg-background text-foreground flex items-center justify-center px-4">
+    <section role="status" aria-live="polite" aria-label="Loading product details" className="min-h-[70vh] bg-background text-foreground flex items-center justify-center px-4">
       <div className="w-full max-w-5xl space-y-8">
         <div className="h-8 w-48 rounded-md bg-muted animate-pulse" aria-label={uiText.productDetail.loadingTitle} />
         <div className="grid gap-6 lg:grid-cols-2">

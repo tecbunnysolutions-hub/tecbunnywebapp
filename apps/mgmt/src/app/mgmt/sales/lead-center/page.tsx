@@ -41,10 +41,10 @@ function LeadCard({ lead }: { lead: Lead }) {
   const score = lead.lead_score ?? 0;
   const heat = lead.heat_level ?? classifyHeat(score);
   const heatColors: Record<HeatLevel, string> = {
-    HOT: 'bg-orange-100 text-orange-700',
-    WARM: 'bg-amber-100 text-amber-700',
-    COLD: 'bg-slate-200 text-slate-700',
-    DEAD: 'bg-zinc-200 text-zinc-500',
+    HOT: 'bg-accent/10 text-accent',
+    WARM: 'bg-warning/10 text-warning',
+    COLD: 'bg-muted text-foreground',
+    DEAD: 'bg-muted text-muted-foreground',
   };
   return (
     <Card className="p-3 shadow-sm cursor-pointer hover:shadow-md transition-shadow">
@@ -54,8 +54,8 @@ function LeadCard({ lead }: { lead: Lead }) {
       </div>
       <p className="text-xs text-muted-foreground truncate">{lead.requirement || lead.sub_category || 'No details'}</p>
       <div className="mt-3 flex justify-between items-center">
-        <span className="text-[9px] uppercase font-semibold text-slate-500">{lead.status ?? 'NEW'}</span>
-        <Button size="sm" variant="ghost" className="h-6 text-xs text-indigo-600">View</Button>
+        <span className="text-[9px] uppercase font-semibold text-muted-foreground">{lead.status ?? 'NEW'}</span>
+        <Button size="sm" variant="ghost" className="h-6 text-xs text-primary">View</Button>
       </div>
     </Card>
   );
@@ -122,14 +122,14 @@ export default function LeadCenter() {
         </div>
       </div>
 
-      {error && <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">{error}</div>}
+      {error && <div className="rounded-lg border border-destructive/20 bg-destructive/10 p-4 text-sm text-destructive">{error}</div>}
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { label: 'Hot Leads', value: stats.hot, icon: Flame, color: 'text-orange-700', bg: 'from-orange-50 to-red-50 border-orange-200' },
-          { label: 'Warm Leads', value: stats.warm, icon: ThermometerSun, color: 'text-amber-700', bg: 'from-amber-50 to-yellow-50 border-amber-200' },
-          { label: 'Total Pipeline', value: stats.total, icon: Target, color: 'text-slate-700', bg: 'bg-slate-50 border-slate-200' },
-          { label: 'Conversion', value: `${stats.conversion}%`, icon: TrendingUp, color: 'text-blue-700', bg: 'from-blue-50 border-blue-200' },
+          { label: 'Hot Leads', value: stats.hot, icon: Flame, color: 'text-accent', bg: 'from-accent/10 to-destructive/10 border-accent/20' },
+          { label: 'Warm Leads', value: stats.warm, icon: ThermometerSun, color: 'text-warning', bg: 'from-warning/10 to-warning/10 border-warning/20' },
+          { label: 'Total Pipeline', value: stats.total, icon: Target, color: 'text-foreground', bg: 'bg-muted border-border' },
+          { label: 'Conversion', value: `${stats.conversion}%`, icon: TrendingUp, color: 'text-primary', bg: 'from-primary/10 border-primary/20' },
         ].map(({ label, value, icon: Icon, color, bg }) => (
           <Card key={label} className={`p-4 bg-gradient-to-br ${bg}`}>
             <div className="flex justify-between items-start">
@@ -147,10 +147,10 @@ export default function LeadCenter() {
         <h2 className="text-lg font-semibold mb-4">Lead Heat Map</h2>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 min-h-[400px]">
           {([
-            { heat: 'HOT' as HeatLevel, icon: Flame, label: 'Hot', color: 'text-orange-700', bg: 'bg-orange-50/50 border-orange-100' },
-            { heat: 'WARM' as HeatLevel, icon: ThermometerSun, label: 'Warm', color: 'text-amber-700', bg: 'bg-amber-50/50 border-amber-100' },
-            { heat: 'COLD' as HeatLevel, icon: Snowflake, label: 'Cold', color: 'text-slate-700', bg: 'bg-slate-50/50 border-slate-100' },
-            { heat: 'DEAD' as HeatLevel, icon: Skull, label: 'Dead', color: 'text-zinc-500', bg: 'bg-zinc-50/50 border-zinc-100 opacity-70' },
+            { heat: 'HOT' as HeatLevel, icon: Flame, label: 'Hot', color: 'text-accent', bg: 'bg-accent/10/50 border-accent/10' },
+            { heat: 'WARM' as HeatLevel, icon: ThermometerSun, label: 'Warm', color: 'text-warning', bg: 'bg-warning/10/50 border-warning/10' },
+            { heat: 'COLD' as HeatLevel, icon: Snowflake, label: 'Cold', color: 'text-foreground', bg: 'bg-muted/50 border-border' },
+            { heat: 'DEAD' as HeatLevel, icon: Skull, label: 'Dead', color: 'text-muted-foreground', bg: 'bg-muted/50 border-border opacity-70' },
           ]).map(({ heat, icon: Icon, label, color, bg }) => (
             <div key={heat} className={`rounded-lg p-3 border flex flex-col gap-3 ${bg}`}>
               <h3 className={`text-xs font-bold flex items-center gap-2 uppercase tracking-wider mb-2 ${color}`}>

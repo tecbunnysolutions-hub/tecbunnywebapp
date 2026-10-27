@@ -22,7 +22,7 @@ export default function SalesLeaderboard() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Badge variant="secondary" className="px-3 py-1 bg-amber-100 text-amber-800 border-amber-200">
+          <Badge variant="secondary" className="px-3 py-1 bg-warning/10 text-warning border-warning/20">
             <Trophy className="w-3 h-3 mr-2" /> July 2026 Sprint
           </Badge>
         </div>
@@ -32,45 +32,45 @@ export default function SalesLeaderboard() {
         {/* Top 3 podium */}
         {LEADERBOARD_DATA.slice(0, 3).map((exec, idx) => (
           <Card key={exec.id} className={`p-6 relative overflow-hidden ${
-            idx === 0 ? 'bg-gradient-to-b from-amber-50 to-amber-100 border-amber-300 transform md:-translate-y-4' : 
-            idx === 1 ? 'bg-gradient-to-b from-slate-50 to-slate-100 border-slate-300' : 
-            'bg-gradient-to-b from-orange-50 to-orange-100 border-orange-300 transform md:translate-y-4'
+            idx === 0 ? 'bg-gradient-to-b from-warning/10 to-warning/10 border-warning transform md:-translate-y-4' :
+            idx === 1 ? 'bg-gradient-to-b from-muted to-muted border-border' :
+            'bg-gradient-to-b from-accent/10 to-accent/10 border-accent transform md:translate-y-4'
           }`}>
             <div className="absolute top-0 right-0 p-4 opacity-10">
               <Trophy className="w-24 h-24" />
             </div>
-            
+
             <div className="relative z-10 flex flex-col items-center text-center">
-              <div className={`w-16 h-16 rounded-full flex items-center justify-center text-xl font-bold text-white shadow-lg mb-4 ${
-                idx === 0 ? 'bg-amber-500' : idx === 1 ? 'bg-slate-400' : 'bg-orange-500'
+              <div className={`w-16 h-16 rounded-full flex items-center justify-center text-xl font-bold text-foreground shadow-lg mb-4 ${
+                idx === 0 ? 'bg-warning text-warning-foreground' : idx === 1 ? 'bg-secondary' : 'bg-accent text-accent-foreground'
               }`}>
                 {exec.avatar}
               </div>
-              
+
               <div className="flex items-center gap-2 mb-1">
-                {idx === 0 ? <Medal className="w-5 h-5 text-amber-600" /> : 
-                 idx === 1 ? <Medal className="w-5 h-5 text-slate-500" /> : 
-                 <Medal className="w-5 h-5 text-orange-600" />}
-                <h2 className="text-lg font-bold text-slate-800">{exec.name}</h2>
+                {idx === 0 ? <Medal className="w-5 h-5 text-warning" /> :
+                 idx === 1 ? <Medal className="w-5 h-5 text-muted-foreground" /> :
+                 <Medal className="w-5 h-5 text-accent" />}
+                <h2 className="text-lg font-bold text-foreground">{exec.name}</h2>
               </div>
-              
-              <div className="text-2xl font-black text-slate-900 my-2 font-mono">
+
+              <div className="text-2xl font-black text-foreground my-2 font-mono">
                 ₹{(exec.revenue / 100000).toFixed(1)}L
               </div>
-              
+
               <div className="w-full mt-4 space-y-1">
                 <div className={`flex justify-between text-[10px] uppercase font-semibold ${
-                  idx === 0 ? 'text-amber-700/70' : idx === 1 ? 'text-slate-600/70' : 'text-orange-700/70'
+                  idx === 0 ? 'text-warning/70' : idx === 1 ? 'text-muted-foreground/70' : 'text-accent/70'
                 }`}>
                   <span>Target</span>
                   <span>{Math.round((exec.revenue / exec.target) * 100)}%</span>
                 </div>
                 <div className={`w-full h-2 rounded-full overflow-hidden ${
-                  idx === 0 ? 'bg-amber-200' : idx === 1 ? 'bg-slate-200' : 'bg-orange-200'
+                  idx === 0 ? 'bg-warning/20' : idx === 1 ? 'bg-muted' : 'bg-accent/20'
                 }`}>
-                  <div 
+                  <div
                     className={`h-full rounded-full ${
-                      idx === 0 ? 'bg-amber-500' : idx === 1 ? 'bg-slate-500' : 'bg-orange-500'
+                      idx === 0 ? 'bg-warning text-warning-foreground' : idx === 1 ? 'bg-secondary' : 'bg-accent text-accent-foreground'
                     }`}
                     style={{ width: `${Math.min(100, (exec.revenue / exec.target) * 100)}%` }}
                   />
@@ -81,17 +81,17 @@ export default function SalesLeaderboard() {
         ))}
       </div>
 
-      <div className="bg-white rounded-xl border shadow-sm mt-12">
+      <div className="bg-card rounded-xl border shadow-sm mt-12">
         <div className="px-6 py-4 border-b">
           <h3 className="font-semibold flex items-center gap-2">
-            <Star className="w-4 h-4 text-indigo-500" /> Full Rankings
+            <Star className="w-4 h-4 text-primary" /> Full Rankings
           </h3>
         </div>
         <div className="divide-y">
           {LEADERBOARD_DATA.map(exec => (
-            <div key={exec.id} className="p-4 flex items-center justify-between hover:bg-slate-50 transition-colors">
+            <div key={exec.id} className="p-4 flex items-center justify-between hover:bg-muted transition-colors">
               <div className="flex items-center gap-4">
-                <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center font-bold text-slate-600 text-xs">
+                <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center font-bold text-muted-foreground text-xs">
                   #{exec.rank}
                 </div>
                 <div>
@@ -99,9 +99,9 @@ export default function SalesLeaderboard() {
                   <p className="text-xs text-muted-foreground">{exec.leads_closed} deals closed</p>
                 </div>
               </div>
-              
+
               <div className="text-right">
-                <div className="font-mono font-bold text-indigo-600">
+                <div className="font-mono font-bold text-primary">
                   ₹{(exec.revenue).toLocaleString('en-IN')}
                 </div>
                 <div className="text-[10px] text-muted-foreground">

@@ -49,15 +49,15 @@ export class MicroErrorBoundary extends Component<Props, State> {
       }
 
       return (
-        <div className="flex flex-col items-center justify-center p-6 bg-red-50/50 rounded-xl border border-red-100 dark:bg-red-950/20 dark:border-red-900/50">
-          <AlertCircle className="w-8 h-8 text-red-500 mb-3" />
-          <h3 className="text-sm font-semibold text-red-900 dark:text-red-400">Module Load Failed</h3>
-          <p className="text-xs text-red-700 dark:text-red-300 text-center mb-4">
+        <div className="flex flex-col items-center justify-center p-6 bg-destructive/10/50 rounded-xl border border-destructive/10 dark:bg-destructive/20 dark:border-destructive/50">
+          <AlertCircle className="w-8 h-8 text-destructive mb-3" />
+          <h3 className="text-sm font-semibold text-destructive dark:text-destructive">Module Load Failed</h3>
+          <p className="text-xs text-destructive dark:text-destructive text-center mb-4">
             We couldn't load this specific section. The rest of the page is fine.
           </p>
           <button
             onClick={this.handleReset}
-            className="flex items-center gap-2 px-4 py-2 text-xs font-medium text-red-700 bg-white border border-red-200 rounded-lg hover:bg-red-50 transition-colors dark:bg-red-950 dark:border-red-800 dark:text-red-300 dark:hover:bg-red-900"
+            className="flex items-center gap-2 px-4 py-2 text-xs font-medium text-destructive bg-card border border-destructive/20 rounded-lg hover:bg-destructive/10 transition-colors dark:bg-destructive dark:border-destructive dark:text-destructive dark:hover:bg-destructive text-foreground"
           >
             <RefreshCcw className="w-3 h-3" />
             Retry Module

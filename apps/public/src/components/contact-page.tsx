@@ -6,10 +6,10 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { 
-  MapPin, 
-  Phone, 
-  Mail, 
+import {
+  MapPin,
+  Phone,
+  Mail,
   Send,
 } from 'lucide-react';
 
@@ -68,12 +68,12 @@ const HELP_INTENTS = [
 ];
 
 const contactSchema = z.object({
-  name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
+  name: z.string().min(2, { message: 'Please enter at least 2 characters for your name.' }),
   email: z.string().email({ message: 'Please enter a valid email address.' }),
   phone: z.string().min(10, { message: 'Please enter a valid phone number.' }),
   subject: z.enum(SUBJECT_OPTIONS, { message: 'Please select a subject.' }),
-  message: z.string().min(10, { message: 'Message must be at least 10 characters.' }),
-  privacyConsent: z.boolean().refine((val) => val === true, { message: 'Please accept the Privacy Policy to proceed.' }),
+  message: z.string().min(10, { message: 'Tell us a little more — at least 10 characters helps us understand your request.' }),
+  privacyConsent: z.boolean().refine((val) => val === true, { message: 'Please confirm that you have read the Privacy Policy before sending your enquiry.' }),
   // Honeypot: hidden from humans, must stay empty
   website: z.string().max(200).optional(),
 });
@@ -87,8 +87,8 @@ export default function ContactPage() {
   const intentParam = searchParams.get('intent');
   const sourceParam = searchParams.get('source');
   const messageParam = searchParams.get('message');
-  const defaultSubject = (subjectParam && SUBJECT_OPTIONS.includes(subjectParam as any)) 
-    ? (subjectParam as typeof SUBJECT_OPTIONS[number]) 
+  const defaultSubject = (subjectParam && SUBJECT_OPTIONS.includes(subjectParam as any))
+    ? (subjectParam as typeof SUBJECT_OPTIONS[number])
     : SUBJECT_OPTIONS[0];
 
   const { toast } = useToast();
@@ -239,7 +239,7 @@ export default function ContactPage() {
     {
       question: 'How fast is installation?',
       answer:
-        'For standard home setups (up to 8 cameras), installation is typically completed within 24-48 hours of confirmation.',
+        'Installation timing depends on the site, equipment and scope. Ask us to confirm availability and the expected schedule with your quote.',
     },
     {
       question: 'What does AMC cover?',
@@ -256,14 +256,14 @@ export default function ContactPage() {
       <div className="mx-auto max-w-7xl px-4 pb-14 pt-16 sm:px-6 lg:px-8 sm:pt-20">
         <div className="text-center">
           <h1 className="text-3xl font-semibold sm:text-4xl lg:text-5xl tech-heading">
-            {content?.content?.hero?.title || 'Let’s Talk About'}{' '}
+            {content?.content?.hero?.title || 'Let’s talk about'}{' '}
             <span className="text-primary">
-              Your Project.
+              your project.
             </span>
           </h1>
           <p className="mx-auto mt-4 max-w-2xl text-base text-muted-foreground sm:text-lg">
             {content?.content?.hero?.description ||
-              'Have a question? Want a custom quote? Speak directly with our local experts who will build and support your perfect system.'}
+              'Tell us what you want to improve, where you are, and any details you already have. We’ll help you work out the next step.'}
           </p>
         </div>
 
@@ -292,7 +292,7 @@ export default function ContactPage() {
                 {((content?.content?.contactInfo as any[]) || [
                   {
                     icon: 'MapPin',
-                    title: 'HQ Location',
+                    title: 'Visit or find us',
                     badge: 'Goa Experience Hub',
                     details: [
                       companyInfo.registeredAddress || 'Parcem, Pernem, Goa - 403512',
@@ -301,7 +301,7 @@ export default function ContactPage() {
                   },
                   {
                     icon: 'Phone',
-                    title: 'Sales & Enterprise',
+                    title: 'Speak with our team',
                     badge: 'Mon–Sat · 9am–7pm IST',
                     details: [
                       { text: '+91 96041 36010', href: 'https://wa.me/919604136010' },
@@ -387,7 +387,7 @@ export default function ContactPage() {
               {/* Service Hours & Response Targets Block */}
               <div className="bento-card p-6 border border-border/80 bg-muted/10 space-y-3">
                 <div className="flex items-center gap-2">
-                  <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                  <span className="h-2 w-2 rounded-full bg-success animate-pulse text-success-foreground" />
                   <h4 className="text-sm font-semibold tech-heading text-foreground">Operational Hours &amp; Response Targets</h4>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs pt-1">
@@ -399,14 +399,14 @@ export default function ContactPage() {
                   <div className="rounded-xl border border-border/50 bg-background/50 p-3">
                     <p className="font-semibold text-foreground">Critical AMC Incident Desk</p>
                     <p className="text-muted-foreground mt-0.5">24×7 Coverage (Active SLA)</p>
-                    <p className="text-emerald-400 font-mono text-[10px] mt-1">SLA {RT.criticalAmcShort}</p>
+                    <p className="text-success font-mono text-[10px] mt-1">SLA {RT.criticalAmcShort}</p>
                   </div>
                 </div>
               </div>
 
               <div>
                 <h3 className="mb-4 flex items-center gap-2 text-xl font-semibold tech-heading">
-                  <span className="h-6 w-1 rounded-full bg-primary" /> Common Queries
+                  <span className="h-6 w-1 rounded-full bg-primary text-primary-foreground" /> Common Queries
                 </h3>
                 <div className="space-y-4">
                   {faqItems.map((item, index) => (
@@ -586,7 +586,7 @@ export default function ContactPage() {
                       )}
                     />
 
-                    <Button type="submit" className="w-full bg-primary hover:bg-primary/95 text-white transition-colors font-medium" disabled={isSubmitting}>
+                    <Button type="submit" className="w-full bg-primary hover:bg-primary/95 text-primary-foreground transition-colors font-medium" disabled={isSubmitting}>
                       {isSubmitting ? 'Sending...' : <span className="flex items-center gap-2">Send Message <Send className="h-4 w-4" /></span>}
                     </Button>
                   </form>
@@ -608,8 +608,8 @@ export default function ContactPage() {
           referrerPolicy="no-referrer-when-downgrade"
         />
         <div className="absolute left-1/2 top-1/2 z-10 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center">
-          <div className="absolute h-4 w-4 animate-ping rounded-full bg-primary" />
-          <div className="relative h-4 w-4 rounded-full border-2 border-background bg-primary" />
+          <div className="absolute h-4 w-4 animate-ping rounded-full bg-primary text-primary-foreground" />
+          <div className="relative h-4 w-4 rounded-full border-2 border-background bg-primary text-primary-foreground" />
           <div className="mt-2 rounded bg-background/90 px-3 py-1 text-xs font-semibold text-primary border border-border font-tech">Operational Base</div>
         </div>
       </section>

@@ -183,10 +183,10 @@ export async function sendAssessmentConfirmationEmail(payload: ConfirmationEmail
       from_name: 'TecBunny Engineering',
     });
 
-    console.log(`✓ Confirmation email sent to ${email}`);
+    logger.info('assessment.confirmation_email_sent', { email });
     return true;
   } catch (error) {
-    console.error(`✗ Failed to send confirmation email to ${email}:`, error);
+    logger.error('assessment.confirmation_email_failed', { email, error });
     return false;
   }
 }

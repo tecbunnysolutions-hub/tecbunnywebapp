@@ -57,11 +57,11 @@ export function ViralWarrantyModal({ phone, serialNumber }: { phone: string; ser
           Your hardware is secured. Share your verified setup status with your network to instantly unlock ₹500
           towards your next security grid addition.
         </p>
-        {error && <p className="mb-4 text-sm text-rose-500">{error}</p>}
+        {error && <p className="mb-4 text-sm text-destructive">{error}</p>}
         <button
           onClick={handleViralShare}
           disabled={submitting}
-          className="w-full bg-[#25D366] hover:bg-[#1ebd5a] disabled:opacity-60 text-white font-bold py-4 rounded-lg flex items-center justify-center gap-3 transition-transform hover:scale-[1.02] min-h-[48px]"
+          className="w-full bg-card hover:bg-card disabled:opacity-60 text-foreground font-bold py-4 rounded-lg flex items-center justify-center gap-3 transition-transform hover:scale-[1.02] min-h-[48px]"
         >
           {submitting ? "UNLOCKING..." : "SHARE TO UNLOCK VIA WHATSAPP"}
         </button>

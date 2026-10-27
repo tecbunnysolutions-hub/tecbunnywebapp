@@ -230,15 +230,15 @@ export function Turnstile({
 
       {/* Error Fallback with Retry */}
       {status === 'error' && (
-        <div className="p-3 bg-rose-500/10 border border-rose-500/30 rounded-lg flex items-center justify-between gap-2 text-xs">
-          <div className="flex items-center gap-2 text-rose-400">
-            <AlertCircle className="h-4 w-4 shrink-0 text-rose-500" />
+        <div className="p-3 bg-destructive/10 border border-destructive/30 rounded-lg flex items-center justify-between gap-2 text-xs">
+          <div className="flex items-center gap-2 text-destructive">
+            <AlertCircle className="h-4 w-4 shrink-0 text-destructive" />
             <span>{errorMessage || 'Security check failed'}</span>
           </div>
           <button
             type="button"
             onClick={handleRetry}
-            className="shrink-0 inline-flex items-center gap-1 px-2.5 py-1 bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 font-medium rounded transition-colors text-xs"
+            className="shrink-0 inline-flex items-center gap-1 px-2.5 py-1 bg-destructive/20 hover:bg-destructive/30 text-destructive font-medium rounded transition-colors text-xs"
           >
             <RefreshCw className="h-3 w-3" />
             Retry

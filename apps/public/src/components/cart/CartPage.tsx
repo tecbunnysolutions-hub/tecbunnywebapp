@@ -185,7 +185,7 @@ export default function CartPage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      
+
 
       <section className="pt-28 pb-16 relative">
         <div className="fixed inset-0 bg-noise opacity-5 pointer-events-none"></div>
@@ -194,7 +194,7 @@ export default function CartPage() {
           <div className="flex flex-col gap-6">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
               <div>
-                <h1 className="text-3xl md:text-4xl font-bold font-tech tech-heading">Your Cart</h1>
+                <h1 className="text-3xl md:text-4xl font-bold font-tech tech-heading">Your cart</h1>
                 <p className="text-sm text-muted-foreground">
                   Review your order and proceed to checkout — or request a formal quote for bulk / enterprise orders.
                 </p>
@@ -210,11 +210,11 @@ export default function CartPage() {
             </div>
 
             {isSessionExpired && (
-              <Alert variant="destructive" className="border-red-500/40 bg-red-500/10 text-red-200">
+              <Alert variant="destructive" className="border-destructive/40 bg-destructive/10 text-destructive">
                 <AlertTitle>Session expired</AlertTitle>
                 <AlertDescription className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   Guest carts reset after 1 hour of inactivity. Reset the cart to start again.
-                  <Button size="sm" onClick={resetGuestSession} variant="outline" className="border-red-400/40 text-red-100">
+                  <Button size="sm" onClick={resetGuestSession} variant="outline" className="border-destructive/40 text-destructive">
                     Reset Cart
                   </Button>
                 </AlertDescription>
@@ -238,14 +238,14 @@ export default function CartPage() {
                     <h3 className="text-xl font-bold text-foreground font-tech mb-6 border-b border-border pb-4 tech-heading">Order Summary</h3>
 
                     {absoluteMrpDiscount > 0 && (
-                      <div className="rounded-lg border border-orange-400/30 bg-orange-500/15 p-4 text-xs text-orange-800 dark:text-orange-200 mb-6">
+                      <div className="rounded-lg border border-accent/30 bg-accent/15 p-4 text-xs text-accent dark:text-accent mb-6">
                         <div className="flex items-center justify-between text-sm font-semibold">
                           <span>Total product discount</span>
                           <span>
                             ₹{formatCurrency(absoluteMrpDiscount)} ({percentMrpDiscount.toFixed(1)}% OFF)
                           </span>
                         </div>
-                        <p className="mt-2 text-[11px] text-orange-850/80 dark:text-orange-200/80">
+                        <p className="mt-2 text-[11px] text-orange-850/80 dark:text-accent/80">
                           You are saving against an MRP of ₹{formatCurrency(totalMrp)}.
                         </p>
                       </div>
@@ -267,7 +267,7 @@ export default function CartPage() {
                         <span className="text-foreground font-medium">₹{formatCurrency(gstAmount)}</span>
                       </div>
                       {autoOffer && autoOfferDiscount > 0 && (
-                        <div className="flex items-center justify-between text-emerald-600 dark:text-emerald-300 font-semibold">
+                        <div className="flex items-center justify-between text-success dark:text-success font-semibold">
                           <span>{autoOffer.title}</span>
                           <span>-₹{formatCurrency(autoOfferDiscount)}</span>
                         </div>
@@ -325,14 +325,14 @@ export default function CartPage() {
                     </div>
 
                     {autoOffer && autoOfferDiscount > 0 && autoOffer.description && (
-                      <div className="rounded-md border border-emerald-500/20 bg-emerald-500/10 p-3 text-xs text-emerald-600 dark:text-emerald-200 mb-5">
+                      <div className="rounded-md border border-success/20 bg-success/10 p-3 text-xs text-success dark:text-success mb-5">
                         <div className="flex items-center justify-between">
                           <span>{autoOffer.title}</span>
-                          <Badge variant="secondary" className="bg-emerald-500/20 text-emerald-600 dark:text-emerald-200 border-none">
+                          <Badge variant="secondary" className="bg-success/20 text-success dark:text-success border-none">
                             -₹{formatCurrency(autoOfferDiscount)}
                           </Badge>
                         </div>
-                        <p className="mt-2 leading-relaxed text-emerald-800/80 dark:text-emerald-250/80">{autoOffer.description}</p>
+                        <p className="mt-2 leading-relaxed text-success/80 dark:text-success/80">{autoOffer.description}</p>
                       </div>
                     )}
 
@@ -345,7 +345,7 @@ export default function CartPage() {
                       </div>
                     )}
 
-                    <Button className="w-full py-3 bg-primary hover:bg-primary/95 text-white font-bold font-tech rounded-lg transition-colors shadow-sm font-medium" asChild>
+                    <Button className="w-full py-3 bg-primary hover:bg-primary/95 text-primary-foreground font-bold font-tech rounded-lg transition-colors shadow-sm font-medium" asChild>
                       <Link href="/checkout">PROCEED TO CHECKOUT</Link>
                     </Button>
                     <p className="text-xs text-center text-muted-foreground mt-3">
@@ -368,10 +368,10 @@ export default function CartPage() {
                 </div>
                 <h2 className="text-2xl font-semibold text-foreground tech-heading">Your cart is empty</h2>
                 <p className="text-sm text-muted-foreground mt-2">
-                  Browse our catalogue and add products to start the quote process.
+                  Find the equipment you need and add it here when you’re ready. Need help choosing? Our team can talk through the options.
                 </p>
                 <Button className="mt-6 font-bold" asChild>
-                  <Link href="/products">Explore Products</Link>
+                  <Link href="/products">Browse products</Link>
                 </Button>
               </div>
             )}

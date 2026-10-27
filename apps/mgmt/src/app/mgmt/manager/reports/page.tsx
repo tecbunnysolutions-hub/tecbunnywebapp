@@ -119,7 +119,7 @@ export default function ManagerReportsPage() {
         <Card className="bg-card border-border text-foreground">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Team Orders</CardTitle>
-            <TrendingUp className="h-4 w-4 text-emerald-500" />
+            <TrendingUp className="h-4 w-4 text-success" />
           </CardHeader>
           <CardContent>
             {loading ? (
@@ -136,7 +136,7 @@ export default function ManagerReportsPage() {
         <Card className="bg-card border-border text-foreground">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">My Own Volume</CardTitle>
-            <Award className="h-4 w-4 text-amber-500" />
+            <Award className="h-4 w-4 text-warning" />
           </CardHeader>
           <CardContent>
             {loading ? (
@@ -205,7 +205,7 @@ export default function ManagerReportsPage() {
                       <TableCell className="font-semibold text-foreground">{sp.name}</TableCell>
                       <TableCell className="text-muted-foreground">{sp.email}</TableCell>
                       <TableCell className="text-right text-foreground font-mono">{sp.salesCount}</TableCell>
-                      <TableCell className="text-right text-emerald-500 font-tech font-semibold">
+                      <TableCell className="text-right text-success font-tech font-semibold">
                         ₹{sp.totalVolume.toLocaleString('en-IN', { maximumFractionDigits: 2 })}
                       </TableCell>
                     </TableRow>

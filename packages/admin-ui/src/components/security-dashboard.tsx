@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from 'react';
 
-import { 
-  Shield, 
-  Key, 
+import {
+  Shield,
+  Key,
   AlertTriangle,
   CheckCircle,
   XCircle,
@@ -65,7 +65,7 @@ export default function SecurityDashboard() {
     try {
       const response = await fetch('/api/security/settings');
       const data = await response.json();
-      
+
       if (data.success) {
         setSettings(data.settings);
         if (data.fallback) {
@@ -85,7 +85,7 @@ export default function SecurityDashboard() {
     try {
       const response = await fetch('/api/security/audit-logs?limit=20');
       const data = await response.json();
-      
+
       if (data.success) {
         setAuditLogs(data.auditLogs);
       }
@@ -112,7 +112,7 @@ export default function SecurityDashboard() {
       });
 
       const data = await response.json();
-      
+
       if (data.success) {
         setMessage('Setting updated successfully');
         fetchSecuritySettings();
@@ -142,7 +142,7 @@ export default function SecurityDashboard() {
       });
 
       const data = await response.json();
-      
+
       if (data.success) {
         setPasswordValidation(data.validation);
       }
@@ -153,19 +153,19 @@ export default function SecurityDashboard() {
 
   const getSeverityColor = (severity: string) => {
     switch (severity) {
-      case 'critical': return 'bg-red-100 text-red-800 border-red-200';
-      case 'high': return 'bg-orange-100 text-orange-800 border-orange-200';
-      case 'medium': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'low': return 'bg-green-100 text-green-800 border-green-200';
-      default: return 'bg-gray-100 text-gray-800 border-gray-200';
+      case 'critical': return 'bg-destructive/10 text-destructive border-destructive/20';
+      case 'high': return 'bg-accent/10 text-accent border-accent/20';
+      case 'medium': return 'bg-warning/10 text-warning border-warning/20';
+      case 'low': return 'bg-success/10 text-success border-success/20';
+      default: return 'bg-muted text-foreground border-border';
     }
   };
 
   const getValidationIcon = (isValid: boolean) => {
     return isValid ? (
-      <CheckCircle className="h-4 w-4 text-green-500" />
+      <CheckCircle className="h-4 w-4 text-success" />
     ) : (
-      <XCircle className="h-4 w-4 text-red-500" />
+      <XCircle className="h-4 w-4 text-destructive" />
     );
   };
 
@@ -173,10 +173,10 @@ export default function SecurityDashboard() {
     return (
       <div className="p-6">
         <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-gray-200 rounded w-1/4"></div>
+          <div className="h-8 bg-muted rounded w-1/4"></div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="h-32 bg-gray-200 rounded"></div>
+              <div key={i} className="h-32 bg-muted rounded"></div>
             ))}
           </div>
         </div>
@@ -187,7 +187,7 @@ export default function SecurityDashboard() {
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center space-x-2">
-        <Shield className="h-8 w-8 text-blue-600" />
+        <Shield className="h-8 w-8 text-primary" />
         <h1 className="text-3xl font-bold">Security Dashboard</h1>
       </div>
 
@@ -211,10 +211,10 @@ export default function SecurityDashboard() {
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Security Status</CardTitle>
-                <Shield className="h-4 w-4 text-green-600" />
+                <Shield className="h-4 w-4 text-success" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-green-600">Protected</div>
+                <div className="text-2xl font-bold text-success">Protected</div>
                 <p className="text-xs text-muted-foreground">
                   All security features configured
                 </p>
@@ -224,7 +224,7 @@ export default function SecurityDashboard() {
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">MFA Options</CardTitle>
-                <Key className="h-4 w-4 text-blue-600" />
+                <Key className="h-4 w-4 text-primary" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">3</div>
@@ -237,7 +237,7 @@ export default function SecurityDashboard() {
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Audit Events</CardTitle>
-                <Activity className="h-4 w-4 text-orange-600" />
+                <Activity className="h-4 w-4 text-accent" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{auditLogs.length}</div>
@@ -256,25 +256,25 @@ export default function SecurityDashboard() {
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <span>Leaked Password Protection</span>
-                  <Badge className="bg-green-100 text-green-800">
+                  <Badge className="bg-success/10 text-success">
                     {settings.password_hibp_check?.value === 'true' ? 'Enabled' : 'Disabled'}
                   </Badge>
                 </div>
                 <div className="flex items-center justify-between">
                   <span>Multi-Factor Authentication</span>
-                  <Badge className="bg-green-100 text-green-800">
+                  <Badge className="bg-success/10 text-success">
                     {settings.mfa_totp_enabled?.value === 'true' ? 'Multiple Options' : 'Limited'}
                   </Badge>
                 </div>
                 <div className="flex items-center justify-between">
                   <span>Strong Password Requirements</span>
-                  <Badge className="bg-green-100 text-green-800">
+                  <Badge className="bg-success/10 text-success">
                     {settings.password_min_length?.value ? 'Enforced' : 'Basic'}
                   </Badge>
                 </div>
                 <div className="flex items-center justify-between">
                   <span>Session Security</span>
-                  <Badge className="bg-green-100 text-green-800">
+                  <Badge className="bg-success/10 text-success">
                     {settings.session_timeout_minutes?.value ? `${settings.session_timeout_minutes.value} min` : 'Default'}
                   </Badge>
                 </div>
@@ -301,7 +301,7 @@ export default function SecurityDashboard() {
                     disabled={updating}
                   />
                 </div>
-                
+
                 <div className="flex items-center justify-between">
                   <Label htmlFor="password_hibp_check">HaveIBeenPwned Check</Label>
                   <Switch
@@ -494,17 +494,17 @@ export default function SecurityDashboard() {
                         </Badge>
                         <span className="font-medium">{log.event_type}</span>
                       </div>
-                      <span className="text-sm text-gray-500">
+                      <span className="text-sm text-muted-foreground">
                         {new Date(log.created_at).toLocaleString()}
                       </span>
                     </div>
                     {log.profiles && (
-                      <div className="text-sm text-gray-600 mt-2">
+                      <div className="text-sm text-muted-foreground mt-2">
                         User: {log.profiles.name} ({log.profiles.email})
                       </div>
                     )}
                     {log.event_data && (
-                      <div className="text-xs text-gray-500 mt-2">
+                      <div className="text-xs text-muted-foreground mt-2">
                         <pre>{JSON.stringify(log.event_data, null, 2)}</pre>
                       </div>
                     )}

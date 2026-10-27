@@ -1,0 +1,42 @@
+[
+  {
+    "path": "/",
+    "url": "http://localhost:9003/",
+    "status": 200,
+    "light": {
+      "title": "CCTV & IT Support for Goa Homes | TecBunny",
+      "headings": [
+        "Make your technology work for you."
+      ],
+      "overflow": false,
+      "background": "rgb(248, 250, 252)"
+    },
+    "mobile": {
+      "overflow": false,
+      "background": "rgb(248, 250, 252)"
+    },
+    "errors": []
+  },
+  {
+    "path": "/about",
+    "url": "http://localhost:9003/about",
+    "status": 200,
+    "light": {
+      "title": "About TecBunny Solutions in Goa",
+      "headings": [
+        "Local people.Practical technology."
+      ],
+      "overflow": false,
+      "background": "rgb(248, 250, 252)"
+    },
+    "mobile": {
+      "overflow": false,
+      "background": "rgb(248, 250, 252)"
+    },
+    "errors": []
+  },
+  {
+    "path": "/services",
+    "error": "page.goto: Timeout 120000ms exceeded.\nCall log:\n\u001b[2m  - navigating to \"http://localhost:9003/services\", waiting until \"domcontentloaded\"\u001b[22m\n"
+  }
+]

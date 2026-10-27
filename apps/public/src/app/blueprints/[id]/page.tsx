@@ -66,7 +66,7 @@ export default async function BlueprintPage({ params }: BlueprintPageProps) {
   const blueprintName = `${config.cameraCount}x Node ${config.systemType} Security Blueprint`;
 
   return (
-    <main className="min-h-screen bg-background pt-20">
+    <div className="min-h-screen bg-background pt-20">
       <BreadcrumbJsonLd
         items={[
           { name: 'Home', url: 'https://www.tecbunny.com' },
@@ -75,6 +75,6 @@ export default async function BlueprintPage({ params }: BlueprintPageProps) {
         ]}
       />
       <BlueprintShowcase blueprint={blueprint} />
-    </main>
+    </div>
   );
 }

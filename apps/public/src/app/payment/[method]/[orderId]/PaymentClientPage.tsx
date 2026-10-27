@@ -310,8 +310,8 @@ export default function PaymentMethodPage() {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-gray-200 rounded w-1/4"></div>
-          <div className="h-64 bg-gray-200 rounded"></div>
+          <div className="h-8 bg-muted rounded w-1/4"></div>
+          <div className="h-64 bg-muted rounded"></div>
         </div>
       </div>
     );
@@ -349,7 +349,7 @@ export default function PaymentMethodPage() {
           Back
         </Button>
         <h1 className="text-3xl font-bold">{paymentInfo.title}</h1>
-        <p className="text-gray-600">Order #{formatOrderNumber(order.id)}</p>
+        <p className="text-muted-foreground">Order #{formatOrderNumber(order.id)}</p>
       </div>
 
     <div className="space-y-6">
@@ -383,21 +383,21 @@ export default function PaymentMethodPage() {
                 <Badge variant="outline">{order.status}</Badge>
               </div>
               {customerEmail && (
-                <div className="flex justify-between text-sm text-gray-600">
+                <div className="flex justify-between text-sm text-muted-foreground">
                   <span>Email:</span>
-                  <span className="font-medium text-gray-900">{customerEmail}</span>
+                  <span className="font-medium text-foreground">{customerEmail}</span>
                 </div>
               )}
               {customerPhone && (
-                <div className="flex justify-between text-sm text-gray-600">
+                <div className="flex justify-between text-sm text-muted-foreground">
                   <span>Phone:</span>
-                  <span className="font-medium text-gray-900">{customerPhone}</span>
+                  <span className="font-medium text-foreground">{customerPhone}</span>
                 </div>
               )}
               <Separator />
               <div className="flex justify-between text-lg font-bold">
                 <span>Amount to Pay:</span>
-                <span className="text-green-600">₹{formattedAmount}</span>
+                <span className="text-success">₹{formattedAmount}</span>
               </div>
             </div>
           </CardContent>
@@ -425,7 +425,7 @@ export default function PaymentMethodPage() {
           <CardContent className="pt-6">
             {paymentMethod.toLowerCase() === 'upi' ? (
               <div className="space-y-4">
-                <Button 
+                <Button
                   onClick={() => router.push(`/payment/upi/${orderId}`)}
                   className="w-full"
                   size="lg"
@@ -437,33 +437,33 @@ export default function PaymentMethodPage() {
             ) : (
               <div className="space-y-4">
                 {paymentMethod.toLowerCase() === 'card' && (
-                  <div className="bg-white/5 border border-white/10 p-4 rounded-lg text-center">
-                    <CreditCard className="h-12 w-12 mx-auto text-slate-400 mb-2" />
-                    <p className="text-sm text-slate-300">
+                  <div className="bg-card/5 border border-border/10 p-4 rounded-lg text-center">
+                    <CreditCard className="h-12 w-12 mx-auto text-muted-foreground mb-2" />
+                    <p className="text-sm text-muted-foreground">
                       Card payment gateway integration coming soon
                     </p>
                   </div>
                 )}
-                
+
                 {paymentMethod.toLowerCase() === 'netbanking' && (
-                  <div className="bg-white/5 border border-white/10 p-4 rounded-lg text-center">
-                    <Banknote className="h-12 w-12 mx-auto text-slate-400 mb-2" />
-                    <p className="text-sm text-slate-300">
+                  <div className="bg-card/5 border border-border/10 p-4 rounded-lg text-center">
+                    <Banknote className="h-12 w-12 mx-auto text-muted-foreground mb-2" />
+                    <p className="text-sm text-muted-foreground">
                       Net banking integration coming soon
                     </p>
                   </div>
                 )}
-                
+
                 {paymentMethod.toLowerCase() === 'wallet' && (
-                  <div className="bg-white/5 border border-white/10 p-4 rounded-lg text-center">
-                    <Smartphone className="h-12 w-12 mx-auto text-slate-400 mb-2" />
-                    <p className="text-sm text-slate-300">
+                  <div className="bg-card/5 border border-border/10 p-4 rounded-lg text-center">
+                    <Smartphone className="h-12 w-12 mx-auto text-muted-foreground mb-2" />
+                    <p className="text-sm text-muted-foreground">
                       Digital wallet integration coming soon
                     </p>
                   </div>
                 )}
-                
-                <Button 
+
+                <Button
                   onClick={handlePaymentProcess}
                   className="w-full"
                   size="lg"
@@ -479,9 +479,9 @@ export default function PaymentMethodPage() {
                     `Pay ₹${formattedAmount}`
                   )}
                 </Button>
-                
+
                 {paymentMethod.toLowerCase() === 'cod' && (
-                  <p className="text-xs text-gray-500 text-center">
+                  <p className="text-xs text-muted-foreground text-center">
                     COD charges: ₹50 (will be collected at delivery)
                   </p>
                 )}
@@ -494,10 +494,10 @@ export default function PaymentMethodPage() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-start gap-3">
-              <CheckCircle className="h-5 w-5 text-green-500 mt-0.5" />
+              <CheckCircle className="h-5 w-5 text-success mt-0.5" />
               <div>
                 <p className="text-sm font-medium">Secure Payment</p>
-                <p className="text-xs text-gray-600">
+                <p className="text-xs text-muted-foreground">
                   Your payment information is encrypted and secure. We never store your card details.
                 </p>
               </div>

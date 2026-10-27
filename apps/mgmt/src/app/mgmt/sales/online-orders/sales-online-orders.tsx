@@ -73,32 +73,32 @@ export default function OnlineOrdersPage({ orderType = 'Delivery' }: { orderType
             <h1 className="text-3xl font-bold">Online Orders</h1>
             <p className="text-muted-foreground">View and process online orders for delivery.</p>
         </div>
-        
+
         {/* Role-based permission notice */}
-        <Card className={`border-l-4 ${canManageOrders ? 'border-l-green-500 bg-green-50' : 'border-l-orange-500 bg-orange-50'}`}>
+        <Card className={`border-l-4 ${canManageOrders ? 'border-l-green-500 bg-success/10' : 'border-l-orange-500 bg-accent/10'}`}>
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
               {canManageOrders ? (
                 <>
-                  <div className="h-3 w-3 rounded-full bg-green-500"></div>
+                  <div className="h-3 w-3 rounded-full bg-success text-success-foreground"></div>
                   <div>
-                    <p className="font-medium text-green-800">Manager Access</p>
-                    <p className="text-sm text-green-700">You can view and manage all online order statuses.</p>
+                    <p className="font-medium text-success">Manager Access</p>
+                    <p className="text-sm text-success">You can view and manage all online order statuses.</p>
                   </div>
                 </>
               ) : (
                 <>
-                  <div className="h-3 w-3 rounded-full bg-orange-500"></div>
+                  <div className="h-3 w-3 rounded-full bg-accent text-accent-foreground"></div>
                   <div>
-                    <p className="font-medium text-orange-800">Sales View</p>
-                    <p className="text-sm text-orange-700">You can view online orders. Manager permission required for status changes.</p>
+                    <p className="font-medium text-accent">Sales View</p>
+                    <p className="text-sm text-accent">You can view online orders. Manager permission required for status changes.</p>
                   </div>
                 </>
               )}
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
             <CardHeader>
                 <CardTitle>Delivery Orders</CardTitle>
@@ -164,8 +164,8 @@ export default function OnlineOrdersPage({ orderType = 'Delivery' }: { orderType
                                       </div>
                                     </TableCell>
                                     <TableCell className="text-right">
-                                      <OrderActions 
-                                        order={order} 
+                                      <OrderActions
+                                        order={order}
                                         onStatusUpdate={fetchOrders}
                                         variant="dropdown"
                                       />

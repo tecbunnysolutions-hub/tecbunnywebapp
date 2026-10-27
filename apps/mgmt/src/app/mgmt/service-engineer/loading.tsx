@@ -1,9 +1,5 @@
-﻿import { PageLoader } from '@tecbunny/admin-ui';
+import { RouteLoading } from '../../../../../../packages/ui/src/components/RouteState';
 
 export default function Loading() {
-  return (
-    <div className="min-h-[60vh] flex items-center justify-center">
-      <PageLoader />
-    </div>
-  );
+  return <RouteLoading label="Loading service jobs…" />;
 }

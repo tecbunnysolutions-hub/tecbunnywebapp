@@ -120,12 +120,12 @@ export function EnhancedCartSheet({ children }: EnhancedCartSheetProps) {
           <SheetTitle>Shopping Cart ({cartCount})</SheetTitle>
         </SheetHeader>
         <Separator className="my-4" />
-        
+
         {!isHydrated ? (
           <div className="flex-1 flex items-center justify-center">
             <div className="animate-pulse space-y-4 text-center">
-              <div className="h-12 w-12 rounded-full bg-slate-200/20 mx-auto" />
-              <div className="h-4 w-24 bg-slate-200/20 rounded mx-auto" />
+              <div className="h-12 w-12 rounded-full bg-muted/20 mx-auto" />
+              <div className="h-4 w-24 bg-muted/20 rounded mx-auto" />
             </div>
           </div>
         ) : cartCount > 0 ? (
@@ -139,32 +139,32 @@ export function EnhancedCartSheet({ children }: EnhancedCartSheetProps) {
                   ))}
                 </div>
                 <Separator className="my-6" />
-              
+
               {/* Offers and Discounts Section */}
               <div className="space-y-4 pb-4">
                 {/* Auto-Applied Offer */}
                 {autoOffer && autoOfferDiscount > 0 && (
-                  <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                  <div className="bg-success/10 border border-success/20 rounded-lg p-3">
                     <div className="flex items-center gap-2 mb-2">
-                      <Sparkles className="h-4 w-4 text-green-600" />
-                      <span className="font-medium text-green-800">Auto-Applied Offer</span>
-                      <Badge variant="secondary" className="bg-green-100 text-green-700">
+                      <Sparkles className="h-4 w-4 text-success" />
+                      <span className="font-medium text-success">Auto-Applied Offer</span>
+                      <Badge variant="secondary" className="bg-success/10 text-success">
                         {formatCurrency(autoOfferDiscount)} OFF
                       </Badge>
                     </div>
-                    <p className="text-sm text-green-700">{autoOffer.title}</p>
-                    <p className="text-xs text-green-600 mt-1">{autoOffer.description}</p>
+                    <p className="text-sm text-success">{autoOffer.title}</p>
+                    <p className="text-xs text-success mt-1">{autoOffer.description}</p>
                   </div>
                 )}
-                
+
                 {/* Applied Coupon */}
                 {appliedCoupon && couponDiscount > 0 && (
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                  <div className="bg-primary/10 border border-primary/20 rounded-lg p-3">
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-2">
-                        <Tag className="h-4 w-4 text-blue-600" />
-                        <span className="font-medium text-blue-800">Applied Discount</span>
-                        <Badge variant="secondary" className="bg-blue-100 text-blue-700">
+                        <Tag className="h-4 w-4 text-primary" />
+                        <span className="font-medium text-primary">Applied Discount</span>
+                        <Badge variant="secondary" className="bg-primary/10 text-primary">
                           {appliedCoupon.code}
                         </Badge>
                       </div>
@@ -172,41 +172,41 @@ export function EnhancedCartSheet({ children }: EnhancedCartSheetProps) {
                         variant="ghost"
                         size="sm"
                         onClick={handleRemoveCoupon}
-                        className="h-6 w-6 p-0 text-blue-600 hover:text-blue-800"
+                        className="h-6 w-6 p-0 text-primary hover:text-primary"
                       >
                         <X className="h-3 w-3" />
                       </Button>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-blue-700">
-                        {appliedCoupon.type === 'fixed' 
+                      <span className="text-sm text-primary">
+                        {appliedCoupon.type === 'fixed'
                           ? `₹${appliedCoupon.value} off`
                           : `${appliedCoupon.value}% off`
                         }
                       </span>
-                      <span className="font-medium text-blue-800">
+                      <span className="font-medium text-primary">
                         -{formatCurrency(couponDiscount)}
                       </span>
                     </div>
                   </div>
                 )}
-                
+
                 {/* Combination Notice */}
                 {autoOffer && appliedCoupon && canCombineDiscounts && (
-                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-2">
-                    <p className="text-xs text-yellow-700 text-center">
+                  <div className="bg-warning/10 border border-warning/20 rounded-lg p-2">
+                    <p className="text-xs text-warning text-center">
                       🎉 Great! Your offer and discount are combined for maximum savings
                     </p>
                   </div>
                 )}
-                
+
                 {/* Coupon Input */}
                 {!appliedCoupon && (
                   <div>
                     <h4 className="font-medium mb-2">Apply Discount Code</h4>
                     <div className="flex items-center gap-2">
-                      <Input 
-                        placeholder="Enter coupon code" 
+                      <Input
+                        placeholder="Enter coupon code"
                         value={couponCode}
                         onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
                         onKeyDown={(e) => {
@@ -216,8 +216,8 @@ export function EnhancedCartSheet({ children }: EnhancedCartSheetProps) {
                           }
                         }}
                       />
-                      <Button 
-                        onClick={() => void handleApplyCoupon()} 
+                      <Button
+                        onClick={() => void handleApplyCoupon()}
                         disabled={!couponCode.trim() || isApplyingCoupon}
                         size="sm"
                       >
@@ -226,7 +226,7 @@ export function EnhancedCartSheet({ children }: EnhancedCartSheetProps) {
                     </div>
                   </div>
                 )}
-                
+
                 {!appliedCoupon && (
                   <p className="text-xs text-muted-foreground">
                     Have a coupon? Enter the code above to redeem it. Eligible codes still work even if they are not listed here.
@@ -235,7 +235,7 @@ export function EnhancedCartSheet({ children }: EnhancedCartSheetProps) {
               </div>
               </ScrollArea>
             </div>
-            
+
             {/* Cart Summary */}
             <SheetFooter className="px-6 bg-secondary/50 pt-4 pb-6 mt-auto">
               <div className="w-full space-y-2">
@@ -243,45 +243,45 @@ export function EnhancedCartSheet({ children }: EnhancedCartSheetProps) {
                   <span>Subtotal</span>
                   <span>{formatCurrency(subtotalDisplay)}</span>
                 </div>
-                
+
                 {/* Auto Offer Discount */}
                 {autoOfferDiscount > 0 && (
-                  <div className="flex justify-between text-base text-green-600">
+                  <div className="flex justify-between text-base text-success">
                     <span>Auto Offer ({autoOffer?.title})</span>
                     <span>-{formatCurrency(autoOfferDiscount)}</span>
                   </div>
                 )}
-                
+
                 {/* Manual Coupon Discount */}
                 {couponDiscount > 0 && (
-                  <div className="flex justify-between text-base text-blue-600">
+                  <div className="flex justify-between text-base text-primary">
                     <span>Discount ({appliedCoupon?.code})</span>
                     <span>-{formatCurrency(couponDiscount)}</span>
                   </div>
                 )}
-                
+
                 {/* Total Savings */}
                 {totalDiscount > 0 && (
-                  <div className="flex justify-between text-base font-medium text-green-700 bg-green-50 px-2 py-1 rounded">
+                  <div className="flex justify-between text-base font-medium text-success bg-success/10 px-2 py-1 rounded">
                     <span>Total Savings</span>
                     <span>{formatCurrency(totalDiscount)}</span>
                   </div>
                 )}
-                
+
                 <div className="flex justify-between text-base">
                   <span>GST</span>
                   <span>{formatCurrency(gstDisplay)}</span>
                 </div>
-                
+
                 <Separator />
-                
+
                 <div className="flex justify-between text-lg font-semibold">
                   <span>Grand Total</span>
                   <span>{formatCurrency(finalTotal)}</span>
                 </div>
-                
+
                 <p className="text-xs text-muted-foreground">Shipping calculated at checkout.</p>
-                
+
                 <Button className="w-full" size="lg" asChild>
                   <Link
                     href="/checkout"
@@ -297,9 +297,9 @@ export function EnhancedCartSheet({ children }: EnhancedCartSheetProps) {
           <div className="flex-1 flex flex-col items-center justify-center px-6 text-center">
             <Gift className="h-16 w-16 text-muted-foreground mb-4" />
             <h3 className="text-lg font-medium mb-2">Your cart is empty</h3>
-            <p className="text-muted-foreground mb-6">Add some products to get started!</p>
+            <p className="text-muted-foreground mb-6">Find cameras, computers and networking equipment for your setup.</p>
             <Button asChild>
-              <Link href="/products">Continue Shopping</Link>
+              <Link href="/products">Browse products</Link>
             </Button>
           </div>
         )}

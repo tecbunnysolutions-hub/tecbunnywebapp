@@ -93,18 +93,18 @@ export function LeadCaptureForm() {
 
   if (isSuccess) {
     return (
-      <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-8 text-center space-y-4 max-w-xl mx-auto animate-fade-in">
-        <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-400">
+      <div className="rounded-2xl border border-success/20 bg-success/5 p-8 text-center space-y-4 max-w-xl mx-auto animate-fade-in">
+        <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-success/10 text-success">
           <CheckCircle2 size={28} />
         </div>
-        <h3 className="text-xl font-bold text-white font-tech">You&apos;re all set</h3>
-        <p className="text-zinc-400 text-sm leading-relaxed">
+        <h3 className="text-xl font-bold text-foreground font-tech">You&apos;re all set</h3>
+        <p className="text-muted-foreground text-sm leading-relaxed">
           Check your email for the requested guide. Our team will reach out within 24 hours.
         </p>
         <Button
           variant="outline"
           onClick={() => setIsSuccess(false)}
-          className="border-zinc-800 bg-zinc-900/30 text-white hover:bg-white/10"
+          className="border-border bg-card/30 text-foreground hover:bg-card/10"
         >
           Submit Another Request
         </Button>
@@ -115,11 +115,11 @@ export function LeadCaptureForm() {
   return (
     <form
       onSubmit={handleSubmit}
-      className="space-y-6 max-w-2xl mx-auto bg-zinc-950/40 p-8 rounded-2xl border border-zinc-900 backdrop-blur-sm"
+      className="space-y-6 max-w-2xl mx-auto bg-background/40 p-8 rounded-2xl border border-border backdrop-blur-sm"
     >
       <div className="grid gap-6 md:grid-cols-2">
         <div className="space-y-2">
-          <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider" htmlFor="lc-name">
+          <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider" htmlFor="lc-name">
             Name *
           </label>
           <Input
@@ -130,12 +130,12 @@ export function LeadCaptureForm() {
             placeholder="John Doe"
             required
             disabled={isSubmitting}
-            className="bg-[#09090B] border-zinc-850 focus-visible:ring-blue-500/40 text-white"
+            className="bg-card border-border focus-visible:ring-primary/40 text-foreground"
           />
         </div>
 
         <div className="space-y-2">
-          <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider" htmlFor="lc-company">
+          <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider" htmlFor="lc-company">
             Hotel / Company Name *
           </label>
           <Input
@@ -146,12 +146,12 @@ export function LeadCaptureForm() {
             placeholder="e.g. Grand Resort Goa"
             required
             disabled={isSubmitting}
-            className="bg-[#09090B] border-zinc-850 focus-visible:ring-blue-500/40 text-white"
+            className="bg-card border-border focus-visible:ring-primary/40 text-foreground"
           />
         </div>
 
         <div className="space-y-2">
-          <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider" htmlFor="lc-email">
+          <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider" htmlFor="lc-email">
             Email *
           </label>
           <Input
@@ -163,12 +163,12 @@ export function LeadCaptureForm() {
             placeholder="john@resort.com"
             required
             disabled={isSubmitting}
-            className="bg-[#09090B] border-zinc-850 focus-visible:ring-blue-500/40 text-white"
+            className="bg-card border-border focus-visible:ring-primary/40 text-foreground"
           />
         </div>
 
         <div className="space-y-2">
-          <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider" htmlFor="lc-phone">
+          <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider" htmlFor="lc-phone">
             Phone *
           </label>
           <Input
@@ -180,13 +180,13 @@ export function LeadCaptureForm() {
             placeholder="e.g. +91 98765 43210"
             required
             disabled={isSubmitting}
-            className="bg-[#09090B] border-zinc-850 focus-visible:ring-blue-500/40 text-white"
+            className="bg-card border-border focus-visible:ring-primary/40 text-foreground"
           />
         </div>
       </div>
 
       <div className="space-y-2">
-        <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider" htmlFor="lc-service">
+        <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider" htmlFor="lc-service">
           Service Needed *
         </label>
         <select
@@ -195,7 +195,7 @@ export function LeadCaptureForm() {
           value={form.service}
           onChange={handleChange}
           disabled={isSubmitting}
-          className="w-full bg-[#09090B] border border-zinc-850 rounded-md px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition-colors"
+          className="w-full bg-card border border-border rounded-md px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 transition-colors"
         >
           {SERVICE_OPTIONS.map(option => (
             <option key={option} value={option}>
@@ -219,18 +219,18 @@ export function LeadCaptureForm() {
         />
       </div>
 
-      <div className="rounded-xl border border-zinc-850 bg-zinc-900/30 p-4">
+      <div className="rounded-xl border border-border bg-card/30 p-4">
         <label className="flex items-start gap-3 cursor-pointer select-none">
           <input
             type="checkbox"
             checked={form.consent}
             onChange={(e) => setForm(prev => ({ ...prev, consent: e.target.checked }))}
             disabled={isSubmitting}
-            className="mt-1 h-4 w-4 rounded border-zinc-700 bg-zinc-900 text-blue-600 focus:ring-blue-500/40 accent-blue-600"
+            className="mt-1 h-4 w-4 rounded border-border bg-card text-primary focus:ring-primary/40 accent-blue-600"
           />
-          <span className="text-xs text-zinc-400 leading-relaxed">
+          <span className="text-xs text-muted-foreground leading-relaxed">
             I agree that TecBunny Solutions may contact me via Phone, WhatsApp, or Email regarding this enquiry, as described in the{' '}
-            <Link href="/info/policies/privacy" target="_blank" className="text-blue-400 hover:underline">
+            <Link href="/info/policies/privacy" target="_blank" className="text-primary hover:underline">
               Privacy Policy
             </Link>
             .
@@ -241,7 +241,7 @@ export function LeadCaptureForm() {
       <Button
         type="submit"
         disabled={isSubmitting}
-        className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl transition duration-200 flex items-center justify-center gap-2 shadow-lg shadow-blue-500/10"
+        className="w-full bg-primary hover:bg-primary text-primary-foreground font-bold py-3 rounded-xl transition duration-200 flex items-center justify-center gap-2 shadow-lg shadow-primary/10"
       >
         {isSubmitting ? (
           'Submitting...'

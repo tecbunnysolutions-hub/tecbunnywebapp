@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { 
-  ArrowLeft, Save, RefreshCw, CreditCard, ToggleLeft, ToggleRight, 
-  HelpCircle, Eye, EyeOff, Globe 
+import {
+  ArrowLeft, Save, RefreshCw, CreditCard, ToggleLeft, ToggleRight,
+  HelpCircle, Eye, EyeOff, Globe
 } from 'lucide-react';
 import { useToast } from "@tecbunny/ui";
 import { logger } from '@tecbunny/core';
@@ -96,7 +96,7 @@ export default function PaymentSettingsConsole() {
       <div className="flex items-center justify-between">
         <Link
           href="/superadmin/mgmt/dashboard"
-          className="flex items-center gap-1.5 text-xs text-zinc-400 hover:text-white transition-colors"
+          className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
           Control Center
@@ -104,44 +104,44 @@ export default function PaymentSettingsConsole() {
       </div>
 
       <div>
-        <h2 className="text-2xl font-bold text-white tracking-tight flex items-center gap-2">
+        <h2 className="text-2xl font-bold text-foreground tracking-tight flex items-center gap-2">
           <CreditCard className="h-6 w-6 text-primary" />
           Payment Gateway Override Settings
         </h2>
-        <p className="text-zinc-400 text-xs mt-1">
+        <p className="text-muted-foreground text-xs mt-1">
           Mutate merchant keys, encryption salts, environment preference, and view callback endpoints.
         </p>
       </div>
 
       {isLoading ? (
-        <div className="h-96 bg-zinc-900/50 border border-zinc-800 rounded-xl flex items-center justify-center">
+        <div className="h-96 bg-card/50 border border-border rounded-xl flex items-center justify-center">
           <RefreshCw className="h-8 w-8 text-primary animate-spin" />
         </div>
       ) : (
         <form onSubmit={handleSave} className="space-y-6">
           {/* Activation status */}
-          <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-5 shadow-lg flex items-center justify-between">
+          <div className="bg-card/50 border border-border rounded-xl p-5 shadow-lg flex items-center justify-between">
             <div>
-              <h3 className="text-sm font-bold text-white tracking-wide">PayU Paisa Gateway Status</h3>
-              <p className="text-zinc-400 text-xs mt-1">Activate or suspend the online payment processing routing.</p>
+              <h3 className="text-sm font-bold text-foreground tracking-wide">PayU Paisa Gateway Status</h3>
+              <p className="text-muted-foreground text-xs mt-1">Activate or suspend the online payment processing routing.</p>
             </div>
             <button
               type="button"
               onClick={() => setIsEnabled(!isEnabled)}
-              className="text-zinc-400 hover:text-white transition-colors outline-none"
+              className="text-muted-foreground hover:text-foreground transition-colors outline-none"
             >
               {isEnabled ? (
                 <ToggleRight className="h-10 w-10 text-primary" />
               ) : (
-                <ToggleLeft className="h-10 w-10 text-zinc-600" />
+                <ToggleLeft className="h-10 w-10 text-muted-foreground" />
               )}
             </button>
           </div>
 
           {/* Merchant keys override */}
-          <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-6 shadow-lg space-y-5">
-            <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
-              <h3 className="text-sm font-bold text-white tracking-wide">PayU merchant credentials</h3>
+          <div className="bg-card/50 border border-border rounded-xl p-6 shadow-lg space-y-5">
+            <div className="flex items-center justify-between border-b border-border pb-3">
+              <h3 className="text-sm font-bold text-foreground tracking-wide">PayU merchant credentials</h3>
               <button
                 type="button"
                 onClick={() => setShowCredentials(!showCredentials)}
@@ -161,33 +161,33 @@ export default function PaymentSettingsConsole() {
 
             {/* Merchant Key */}
             <div className="space-y-1.5">
-              <label className="text-xs text-zinc-400 block">Merchant Key</label>
+              <label className="text-xs text-muted-foreground block">Merchant Key</label>
               <input
                 type={showCredentials ? 'text' : 'password'}
                 value={merchantKey}
                 onChange={(e) => setMerchantKey(e.target.value)}
                 placeholder="e.g. 8qqffns1xt2"
-                className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-2.5 font-mono text-xs text-white outline-none focus:border-primary transition-colors"
+                className="w-full bg-background border border-border rounded-lg px-4 py-2.5 font-mono text-xs text-foreground outline-none focus:border-primary transition-colors"
                 required={isEnabled}
               />
             </div>
 
             {/* Merchant Salt */}
             <div className="space-y-1.5">
-              <label className="text-xs text-zinc-400 block">Merchant Salt</label>
+              <label className="text-xs text-muted-foreground block">Merchant Salt</label>
               <input
                 type={showCredentials ? 'text' : 'password'}
                 value={merchantSalt}
                 onChange={(e) => setMerchantSalt(e.target.value)}
                 placeholder="e.g. 3a7f8b9c..."
-                className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-2.5 font-mono text-xs text-white outline-none focus:border-primary transition-colors"
+                className="w-full bg-background border border-border rounded-lg px-4 py-2.5 font-mono text-xs text-foreground outline-none focus:border-primary transition-colors"
                 required={isEnabled}
               />
             </div>
 
             {/* Gateway environment */}
             <div className="space-y-1.5">
-              <label className="text-xs text-zinc-400 block">Gateway Environment Mode</label>
+              <label className="text-xs text-muted-foreground block">Gateway Environment Mode</label>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <button
                   type="button"
@@ -195,7 +195,7 @@ export default function PaymentSettingsConsole() {
                   className={`py-2 px-4 rounded-lg border text-xs font-semibold uppercase tracking-wider transition-colors ${
                     environment === 'test'
                       ? 'bg-primary/10 border-primary text-primary'
-                      : 'bg-zinc-950 border-zinc-800 text-zinc-400 hover:border-zinc-700'
+                      : 'bg-background border-border text-muted-foreground hover:border-border'
                   }`}
                 >
                   Test Sandbox
@@ -206,7 +206,7 @@ export default function PaymentSettingsConsole() {
                   className={`py-2 px-4 rounded-lg border text-xs font-semibold uppercase tracking-wider transition-colors ${
                     environment === 'production'
                       ? 'bg-primary/10 border-primary text-primary'
-                      : 'bg-zinc-950 border-zinc-800 text-zinc-400 hover:border-zinc-700'
+                      : 'bg-background border-border text-muted-foreground hover:border-border'
                   }`}
                 >
                   Production Live
@@ -216,15 +216,15 @@ export default function PaymentSettingsConsole() {
           </div>
 
           {/* Webhook and return URLs display */}
-          <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-6 shadow-lg space-y-4">
-            <h3 className="text-sm font-bold text-white tracking-wide flex items-center gap-1.5">
+          <div className="bg-card/50 border border-border rounded-xl p-6 shadow-lg space-y-4">
+            <h3 className="text-sm font-bold text-foreground tracking-wide flex items-center gap-1.5">
               <Globe className="h-4 w-4 text-primary" />
               Callback URL Integration
             </h3>
-            <p className="text-zinc-400 text-xs leading-relaxed">
+            <p className="text-muted-foreground text-xs leading-relaxed">
               Add this exact endpoint URL to your PayU Merchant Dashboard under webhook parameters so status changes can be synchronised back to the local database ledger:
             </p>
-            <div className="bg-zinc-950 border border-zinc-800 rounded-lg p-3 flex items-center justify-between font-mono text-[10px] text-primary">
+            <div className="bg-background border border-border rounded-lg p-3 flex items-center justify-between font-mono text-[10px] text-primary">
               <span className="truncate">{webhookUrl}</span>
               <button
                 type="button"
@@ -237,7 +237,7 @@ export default function PaymentSettingsConsole() {
                 Copy
               </button>
             </div>
-            <div className="flex items-center gap-1.5 text-[10px] text-zinc-500">
+            <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
               <HelpCircle className="h-3 w-3" />
               <span>The surl and furl params will automatically target this verification loop.</span>
             </div>
@@ -247,14 +247,14 @@ export default function PaymentSettingsConsole() {
           <div className="flex justify-end gap-3">
             <Link
               href="/superadmin/mgmt/dashboard"
-              className="px-5 py-2.5 rounded-lg text-zinc-400 hover:text-white text-xs font-semibold uppercase tracking-wider transition-colors"
+              className="px-5 py-2.5 rounded-lg text-muted-foreground hover:text-foreground text-xs font-semibold uppercase tracking-wider transition-colors"
             >
               Cancel
             </Link>
             <button
               type="submit"
               disabled={isSaving}
-              className="px-5 py-2.5 bg-primary hover:bg-primary/95 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg font-bold text-xs tracking-widest uppercase text-white flex items-center gap-1.5 shadow-[0_0_15px_rgba(37,99,235,0.15)] transition-colors"
+              className="px-5 py-2.5 bg-primary hover:bg-primary/95 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg font-bold text-xs tracking-widest uppercase text-primary-foreground flex items-center gap-1.5 shadow-md transition-colors"
             >
               {isSaving ? (
                 <>
