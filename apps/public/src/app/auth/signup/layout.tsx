@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Create Account',
+  title: 'Create your account | TecBunny',
   description: 'Create a TecBunny Solutions account to request quotes, track orders, and manage support securely.',
 };
 

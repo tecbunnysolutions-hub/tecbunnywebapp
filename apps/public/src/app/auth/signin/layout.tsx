@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Sign In',
+  title: 'Sign in | TecBunny',
   description: 'Access your TecBunny Solutions account to manage orders, quotes, and support requests.',
 };
 

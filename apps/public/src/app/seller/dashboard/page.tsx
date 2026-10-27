@@ -92,23 +92,23 @@ export default function SellerDashboardPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-muted-foreground p-6 space-y-6 max-w-7xl mx-auto">
+    <div className="min-h-screen min-w-0 bg-background text-muted-foreground p-4 sm:p-6 space-y-6 max-w-7xl mx-auto">
       {/* Top Banner */}
       <div className="bg-card border border-border rounded-2xl p-6 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-xl">
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-primary/20 border border-primary/30 flex items-center justify-center">
+        <div className="flex min-w-0 items-center gap-4">
+          <div className="w-12 h-12 shrink-0 rounded-xl bg-primary/20 border border-primary/30 flex items-center justify-center">
             <Building2 className="w-6 h-6 text-primary" />
           </div>
           <div>
-            <h1 className="text-xl font-bold text-foreground">Apex Security Solutions Pvt Ltd</h1>
-            <div className="text-xs text-muted-foreground flex items-center gap-2 mt-0.5">
-              <span>Seller ID: SLR-1092</span>
+            <h1 className="text-xl font-bold text-foreground">Your seller workspace</h1>
+            <div className="text-xs text-muted-foreground flex flex-wrap items-center gap-2 mt-0.5">
+              <span>Example seller account</span>
               <span>•</span>
               <span className="text-success font-semibold flex items-center gap-1">
-                <CheckCircle2 className="w-3.5 h-3.5" /> Approved Partner
+                <CheckCircle2 className="w-3.5 h-3.5" /> Sample account
               </span>
               <span>•</span>
-              <span className="text-primary font-medium">100% White-Label Isolation Active</span>
+              <span className="text-primary font-medium">Workspace preview</span>
             </div>
           </div>
         </div>
@@ -123,13 +123,15 @@ export default function SellerDashboardPage() {
         </div>
       </div>
 
+      <p role="note" className="rounded-xl border border-border bg-card p-4 text-sm text-muted-foreground">This workspace shows sample data. Changes here are not saved.</p>
+
       {/* Tabs */}
-      <div className="flex items-center gap-2 border-b border-border pb-2">
+      <div className="flex max-w-full items-center gap-2 overflow-x-auto border-b border-border pb-2">
         {(['OVERVIEW', 'PRODUCTS', 'ORDERS', 'SETTLEMENTS'] as const).map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`px-4 py-2 rounded-lg text-xs font-semibold transition ${
+            className={`shrink-0 px-4 py-2 rounded-lg text-xs font-semibold transition ${
               activeTab === tab
                 ? 'bg-primary/20 text-primary border border-primary/30'
                 : 'text-muted-foreground hover:text-muted-foreground hover:bg-card'
@@ -300,7 +302,7 @@ export default function SellerDashboardPage() {
               type="submit"
               className="w-full py-3 bg-primary hover:bg-primary text-primary-foreground font-semibold rounded-lg shadow-lg shadow-primary/30 transition text-sm"
             >
-              Submit Product for Superadmin Pricing & Catalog Review
+              Preview product draft
             </button>
           </form>
         </div>
@@ -312,7 +314,7 @@ export default function SellerDashboardPage() {
           <h2 className="text-lg font-bold text-foreground mb-4">Assigned Marketplace Orders</h2>
           <div className="divide-y divide-border">
             {orders.map((ord) => (
-              <div key={ord.id} className="py-4 flex items-center justify-between">
+              <div key={ord.id} className="py-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <div className="font-semibold text-muted-foreground">{ord.productName}</div>
                   <div className="text-xs text-muted-foreground">Ref: {ord.orderNumber} • Qty: {ord.qty} • Created: {ord.createdAt}</div>

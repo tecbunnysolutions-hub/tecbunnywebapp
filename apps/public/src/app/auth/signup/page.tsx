@@ -244,7 +244,7 @@ export default function SignUpPage() {
 
   if (success) {
     return (
-      <div className="min-h-screen bg-background text-foreground flex items-center justify-center px-4 py-16">
+      <div className="relative isolate min-h-screen overflow-hidden bg-background text-foreground flex items-center justify-center px-4 py-16">
         <div className="absolute inset-0 bg-noise opacity-10" />
         <div className="absolute top-1/2 right-1/2 translate-x-1/2 -translate-y-1/2 w-[520px] h-[520px] bg-primary/10 rounded-full blur-[100px] animate-pulse pointer-events-none" />
 
@@ -252,7 +252,7 @@ export default function SignUpPage() {
           <div className="mx-auto w-12 h-12 bg-success/10 rounded-full flex items-center justify-center mb-4">
             <CheckCircle className="h-6 w-6 text-success" />
           </div>
-          <h2 className="text-2xl font-bold tech-heading">Identity Verified.</h2>
+          <h2 className="text-2xl font-bold tech-heading">Check your verification code</h2>
           <p className="mt-2 text-sm tech-body">
             {dispatchedChannel
               ? `Verification code sent via ${getChannelLabel(dispatchedChannel)}.`
@@ -267,7 +267,7 @@ export default function SignUpPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex items-center justify-center px-4 py-16">
+    <div className="relative isolate min-h-screen overflow-hidden bg-background text-foreground flex items-center justify-center px-4 py-16">
       <div className="absolute inset-0 bg-noise opacity-10" />
       <div className="absolute top-1/2 right-1/2 translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[100px] animate-pulse pointer-events-none" />
 
@@ -276,8 +276,8 @@ export default function SignUpPage() {
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-muted border border-border mb-6 shadow-lg shadow-primary/10">
             <User className="h-8 w-8 text-primary" />
           </div>
-          <h1 className="text-3xl font-bold tech-heading tracking-wide">CREATE YOUR SECURE IDENTITY</h1>
-          <p className="tech-body text-sm mt-2">Join the network. Get access to enterprise-grade infrastructure.</p>
+          <h1 className="text-3xl font-bold tech-heading tracking-wide">Create your TecBunny account</h1>
+          <p className="tech-body text-sm mt-2">Track orders, keep your details together and get help with your technology.</p>
         </div>
 
         <div className="signup-card rounded-2xl p-8 border border-border bg-card">
@@ -397,7 +397,7 @@ export default function SignUpPage() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-3.5 text-muted-foreground hover:text-primary transition-colors cursor-pointer"
+                  className="absolute right-2 top-1 flex h-11 w-11 items-center justify-center rounded-md text-muted-foreground hover:text-primary transition-colors cursor-pointer"
                   aria-label={showPassword ? 'Hide password' : 'Show password'}
                 >
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -419,7 +419,7 @@ export default function SignUpPage() {
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-4 top-3.5 text-muted-foreground hover:text-primary transition-colors cursor-pointer"
+                  className="absolute right-2 top-1 flex h-11 w-11 items-center justify-center rounded-md text-muted-foreground hover:text-primary transition-colors cursor-pointer"
                   aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
                 >
                   {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -440,7 +440,7 @@ export default function SignUpPage() {
                     <Turnstile
                       sitekey={turnstileSiteKey}
                       action="signup"
-                      theme="dark"
+                      theme="auto"
                       size="normal"
                       retry="auto"
                       refreshExpired="auto"
@@ -480,14 +480,14 @@ export default function SignUpPage() {
                   disabled={isLoading}
                 >
                   <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-card/30 to-transparent group-hover:translate-x-full transition-transform duration-700" />
-                  {isLoading ? 'Creating Account...' : 'Activate Profile'}
+                  {isLoading ? 'Creating Account...' : 'Create your account'}
                 </button>
 
                 <div className="text-center">
                   <p className="text-sm text-muted-foreground">
                     Already have an account?{' '}
                     <Link href="/auth/signin" className="font-medium text-primary hover:underline">
-                      Sign In Now
+                      Sign in
                     </Link>
                   </p>
                 </div>

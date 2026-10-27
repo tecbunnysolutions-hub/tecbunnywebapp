@@ -269,7 +269,7 @@ function SignInForm() {
 
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex items-center justify-center px-4 py-16">
+    <div className="relative isolate min-h-screen overflow-hidden bg-background text-foreground flex items-center justify-center px-4 py-16">
 
 
       <div className="absolute inset-0 bg-noise opacity-10" />
@@ -280,8 +280,8 @@ function SignInForm() {
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-muted border border-border mb-6 shadow-lg shadow-primary/10">
             <Lock className="h-8 w-8 text-primary" />
           </div>
-          <h1 className="text-3xl font-bold tech-heading tracking-wide">SYSTEM ACCESS</h1>
-          <p className="tech-body text-sm mt-2">Sign in to manage your deployments and infrastructure.</p>
+          <h1 className="text-3xl font-bold tech-heading tracking-wide">Welcome back.</h1>
+          <p className="tech-body text-sm mt-2">Sign in to check your orders, manage your details and continue with TecBunny.</p>
         </div>
 
         <div className="login-card rounded-2xl p-8 border border-border bg-card">
@@ -332,7 +332,7 @@ function SignInForm() {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-3.5 text-muted-foreground hover:text-primary transition-colors cursor-pointer"
+                    className="absolute right-2 top-1 flex h-11 w-11 items-center justify-center rounded-md text-muted-foreground hover:text-primary transition-colors cursor-pointer"
                     aria-label={showPassword ? 'Hide password' : 'Show password'}
                   >
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -349,7 +349,7 @@ function SignInForm() {
                     onClick={(e) => { e.preventDefault(); window.location.href = '/auth/forgot-password'; }}
                     className="text-primary hover:underline transition-colors"
                   >
-                    Recover Access
+                    Forgot your password?
                   </a>
                 </div>
 
@@ -366,7 +366,7 @@ function SignInForm() {
                     <Turnstile
                       sitekey={turnstileSiteKey}
                       action="signin"
-                      theme="dark"
+                      theme="auto"
                       size="normal"
                       retry="auto"
                       refreshExpired="auto"
@@ -401,7 +401,7 @@ function SignInForm() {
                   ) : isLockedOut ? (
                     `Locked (${lockoutTimeRemaining}s)`
                   ) : (
-                    'Secure Login'
+                    'Sign in'
                   )}
                 </button>
               </form>
@@ -413,13 +413,13 @@ function SignInForm() {
               )}
 
               <p className="text-center mt-8 text-sm text-muted-foreground">
-                New to the network?{' '}
+                New to TecBunny?{' '}
                 <button
                   type="button"
                   onClick={() => window.location.href = '/auth/signup'}
                   className="text-primary font-semibold hover:underline cursor-pointer"
                 >
-                  Create Account
+                  Create an account
                 </button>
               </p>
             </>
