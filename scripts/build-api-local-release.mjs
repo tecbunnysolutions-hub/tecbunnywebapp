@@ -29,7 +29,7 @@ publicEnv.NEXT_PUBLIC_BASE_DOMAIN = new URL(publicEnv.NEXT_PUBLIC_SITE_URL).host
 // prevents .env files from adding private values during compilation.
 const osNames = /^(path|systemroot|windir|comspec|pathext|temp|tmp|userprofile|appdata|localappdata|programfiles(?:\(x86\))?|programdata|homedrive|homepath|number_of_processors|processor_architecture)$/i;
 const operatingSystem = Object.fromEntries(Object.entries(process.env).filter(([name]) => osNames.test(name)));
-const canary = 'local-release-private-compile-placeholder-000000000000';
+const canary = 'local-release-build-only-not-a-secret-000000000000';
 const env = { ...operatingSystem, ...publicEnv, NODE_ENV: 'production',
   __NEXT_PROCESSED_ENV: 'true', DOCKER_BUILD: 'false', NEXT_TELEMETRY_DISABLED: '1',
   TECBUNNY_VALIDATE_ENV: 'strict', NODE_OPTIONS: '--max-old-space-size=1536',
