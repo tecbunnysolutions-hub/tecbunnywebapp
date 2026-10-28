@@ -38,6 +38,17 @@ This Windows computer has no installed Docker or WSL environment and reported ab
 free disk. A release build/load test on that single production host would contend
 with the running service. No such build or 100-user production test was attempted.
 
+Fresh metadata inspection also returned no repository Actions secrets and no
+Production-environment secrets. Before deployment, configure VPS_HOST, VPS_USER,
+VPS_SSH_KEY (and optional VPS_SSH_PORT) in the protected Production environment.
+Configure the NEXT_PUBLIC_* build values used by the build job at repository scope;
+use only the project's public anon/publishable key in public build arguments. Keep
+service keys and other runtime credentials in the private VPS environment. Never
+paste private keys into chat. Review branch/environment restrictions before installing
+a deployment key. The workflow now uses a short-lived job token with read-only
+packages permission for registry pulls, so a separate GHCR personal token is not needed;
+its temporary Docker credential file is removed after the SSH deployment command.
+
 ## Release conditions
 
 1. Restore GitHub Actions access and run CI on the candidate revision.
