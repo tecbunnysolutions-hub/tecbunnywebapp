@@ -8,6 +8,7 @@ verdict remains **NO-GO**, as detailed in the remediation report.
 
 Branch: `codex/production-release-20261028`, based on main
 `30bb9024dc096db34b739e99011b04355aad0e60`.
+Release review: https://github.com/tecbunnysolutions-hub/tecbunnywebapp/pull/2
 
 The release includes separately committed promotion payload handling, accurate API
 method inventory, guest-route policy regressions, atomic product archival and audit
@@ -38,11 +39,14 @@ This Windows computer has no installed Docker or WSL environment and reported ab
 free disk. A release build/load test on that single production host would contend
 with the running service. No such build or 100-user production test was attempted.
 
-Fresh metadata inspection also returned no repository Actions secrets and no
-Production-environment secrets. Before deployment, configure VPS_HOST, VPS_USER,
-VPS_SSH_KEY (and optional VPS_SSH_PORT) in the protected Production environment.
-Configure the NEXT_PUBLIC_* build values used by the build job at repository scope;
-use only the project's public anon/publishable key in public build arguments. Keep
+Initial metadata inspection returned no repository Actions secrets and no
+Production-environment secrets. The eight NEXT_PUBLIC_* build settings are now
+configured at repository scope using existing production URL hosts and public keys;
+both public Supabase keys were verified against the matched project's read-only auth
+settings endpoint. Values were supplied through stdin, not command arguments or logs.
+No service-role credential was uploaded. Production SSH settings remain unconfigured:
+VPS_HOST, VPS_USER, VPS_SSH_KEY and optional VPS_SSH_PORT. Install them in the protected
+Production environment after reviewing deployment access. Keep
 service keys and other runtime credentials in the private VPS environment. Never
 paste private keys into chat. Review branch/environment restrictions before installing
 a deployment key. The workflow now uses a short-lived job token with read-only
