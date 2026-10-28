@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
 const nextConfig = {
   output: process.env.DOCKER_BUILD === 'true' ? 'standalone' : undefined,
   outputFileTracingRoot: fileURLToPath(new URL('../..', import.meta.url)),
-  serverExternalPackages: ['pdf-lib', 'pdfkit', 'fontkit', 'sharp', '@img/sharp-win32-x64', '@aws-sdk/client-s3', 'nodemailer', 'bullmq'],
+  serverExternalPackages: ['pdf-lib', 'pdfkit', 'fontkit', 'sharp', '@img/sharp-win32-x64', '@aws-sdk/client-s3', '@aws-sdk/s3-request-presigner', 'nodemailer', 'bullmq'],
   transpilePackages: ['@tecbunny/core', '@tecbunny/domain', '@tecbunny/infra', '@tecbunny/rpc', '@tecbunny/types', '@tecbunny/db', '@tecbunny/contracts', '@tecbunny/database'],
   webpack(config, { isServer }) {
     if (isServer) {

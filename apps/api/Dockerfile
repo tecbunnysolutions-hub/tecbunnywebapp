@@ -5,6 +5,8 @@ WORKDIR /app
 
 COPY package.json package-lock.json turbo.json .npmrc ./
 COPY packages/ packages/
+COPY scripts/apply-zod-security-backport.mjs ./scripts/apply-zod-security-backport.mjs
+COPY patches/zod/ ./patches/zod/
 COPY apps/api/package.json ./apps/api/package.json
 COPY apps/mgmt/package.json ./apps/mgmt/package.json
 COPY apps/public/package.json ./apps/public/package.json

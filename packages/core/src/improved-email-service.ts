@@ -1,4 +1,4 @@
-import nodemailer from 'nodemailer';
+import nodemailer, { type Transporter, type SendMailOptions } from 'nodemailer';
 
 import { logger } from '.';
 import { rateLimit } from './rate-limit';
@@ -22,8 +22,8 @@ export interface EmailResult {
 }
 
 class ImprovedEmailService {
-  private transporter!: nodemailer.Transporter;
-  private backupTransporter?: nodemailer.Transporter;
+  private transporter!: Transporter;
+  private backupTransporter?: Transporter;
   private config: {
     from: string;
     fromName: string;
@@ -168,7 +168,7 @@ class ImprovedEmailService {
   }
 
   private async sendWithTransporter(
-    transporter: nodemailer.Transporter, 
+    transporter: Transporter,
     options: EmailOptions,
     transporterName: string
   ): Promise<EmailResult> {
@@ -185,7 +185,7 @@ class ImprovedEmailService {
         throw new Error('Invalid email header value');
       }
 
-      const mailOptions: nodemailer.SendMailOptions = {
+      const mailOptions: SendMailOptions = {
         from: `${this.config.fromName} <${this.config.from}>`,
         to: options.to,
         cc: options.cc,

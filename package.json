@@ -40,13 +40,14 @@
     "validate:launch": "node scripts/validate/run.mjs launch",
     "clean": "node scripts/clean.mjs",
     "prepare": "husky",
-    "postinstall": "npm run db:generate",
+    "postinstall": "node scripts/apply-zod-security-backport.mjs && npm run db:generate",
     "db:generate": "npx prisma generate --schema=./packages/db/prisma/schema.prisma",
     "seed:admins": "node scripts/seed-admins.mjs",
     "reset-db": "npm run reset-db --workspace=@tecbunny/infra",
     "smoke:production": "node scripts/smoke-test-production.mjs",
     "test": "turbo run test",
-    "test:security-migrations": "node scripts/test-security-migrations.mjs",
+    "test:security-migrations": "node scripts/test-security-migrations.mjs && node scripts/test-product-archival-migration.mjs && node scripts/test-communication-preferences-grant.mjs && node scripts/test-atomic-product-archival.mjs",
+    "test:security-backport": "node scripts/apply-zod-security-backport.mjs --check && node scripts/test-zod-security-backport.mjs",
     "check": "npm run validate:architecture && npm run validate:api-boundary && npm run typecheck && npm run lint && npm run test"
   },
   "devDependencies": {
@@ -67,11 +68,11 @@
       "valibot": "1.5.0"
     },
     "postcss": "8.5.28",
-    "fast-uri": "4.2.1",
+    "fast-uri": "4.2.3",
     "valibot": "1.5.0",
-    "sharp": "0.35.4",
+    "sharp": "0.35.5",
     "ajv": {
-      "fast-uri": "4.2.1"
+      "fast-uri": "4.2.3"
     },
     "@storybook/mcp": {
       "valibot": "1.5.0"
@@ -79,12 +80,15 @@
     "tmcp": {
       "valibot": "1.5.0"
     },
-    "next@16.3.4": {
-      "postcss": "8.5.28",
-      "sharp": "0.35.4"
-    },
     "deepmerge-ts": "8.0.2",
-    "mysql2": "3.24.4"
+    "mysql2": "3.24.4",
+    "next@16.4.3": {
+      "postcss": "8.5.28",
+      "sharp": "0.35.5"
+    },
+    "source-map-js": "1.2.2",
+    "postcss-selector-parser": "6.1.5",
+    "vite": "8.3.4"
   },
   "lint-staged": {
     "*.{js,ts,jsx,tsx}": [

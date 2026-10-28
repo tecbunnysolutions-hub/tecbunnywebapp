@@ -1,0 +1,23 @@
+{
+  "version": "4.6.5",
+  "commit": "a0ebf970f2d752e5f58527cd2942ff48be4f46bd",
+  "patchSha256": "ff9d50e239b53358f97855b86a9efb4f58e2bd4263cad0603fcf70b89945fe2f",
+  "sources": {
+    "src/v4/core/compile.ts": "c86bf307a5a5ddd2ccd96118e8f6914a4802758c2868e2c601b3e7aacf72aad0",
+    "src/v4/core/schemas.ts": "12372f51ba3e437cca064a5c743bea11bb49fc1616e3dc084dac83cc67a91f72",
+    "src/v4/core/util.ts": "ee6d6992291b45ca83995c7471c4d0c2182fd9e4113da86c455f1b2074bb4ac6"
+  },
+  "patchedSources": {
+    "src/v4/core/compile.ts": "6c2a8810813117e864a95dd1e8512af7ce53e6b4b02d1f0dbc1dfa78850afff0",
+    "src/v4/core/schemas.ts": "202b2c9369711cdb07016b1c1e7bad2ac389b34381d54445485839f2e4eed4af",
+    "src/v4/core/util.ts": "e0ce7d4abc5e43373c59db83cad29f918edf6965df1bb8e54157a4f04d224863"
+  },
+  "runtime": {
+    "v4/core/compile.js": "915fcb40d041096c1309d21009cd5cfc52c05ca8e0a3a5a89bb16d309c2e093a",
+    "v4/core/compile.cjs": "818c752ecfe07c5312742c6c60186db15a05ca241f150d9317cac89f1eec841b",
+    "v4/core/schemas.js": "3e0c9059e9ede1f7272935a1a04b18a5de1c3cbe873e2adf74de5dc1b23a3f28",
+    "v4/core/schemas.cjs": "0af18aa459d52c9e71e787b061883b67586ac2a6eb9eb13276d5b6285f78e40a",
+    "v4/core/util.js": "6f1435ca1f74f665ea171bb7cfd09a767ea8321f7acb3aa0acc99121ccbfcaa6",
+    "v4/core/util.cjs": "d6e853ce514682d9253c53ddb49f16fa569b2c07e9bbc21a721705ddcf2f01c8"
+  }
+}
