@@ -5,6 +5,7 @@ import { getSessionWithRole } from '@tecbunny/core/auth/server-role';
 import { isAtLeast } from '@tecbunny/core/roles';
 import { logger } from '@tecbunny/core';
 import { z } from 'zod';
+import { blogStorageFields, normalizePost } from '../../../services/blog.service';
 
 export const dynamic = 'force-dynamic';
 
@@ -35,11 +36,12 @@ export async function GET(request: NextRequest) {
 
     let query = supabase
       .from('blog_posts')
-      .select('id, title, slug, excerpt, cover_image, tags, status, author_id, published_at, created_at, profiles(first_name, last_name)', { count: 'estimated' })
+      .select('id, title, slug, excerpt, cover_image:cover_image_url, tags, status, author_id, published_at, created_at, metadata, profiles(name, avatar_url)', { count: 'estimated' })
+      .is('deleted_at', null)
       .order('published_at', { ascending: false, nullsFirst: false })
       .range((page - 1) * pageSize, page * pageSize - 1);
 
-    if (!isStaff) query = query.eq('status', 'published');
+    if (!isStaff) query = query.eq('status', 'active').not('published_at', 'is', null).lte('published_at', new Date().toISOString());
     if (tag) query = query.contains('tags', [tag]);
 
     const { data, count, error } = await query;
@@ -49,7 +51,9 @@ export async function GET(request: NextRequest) {
     }
 
     logger.info('blog_list.audit.success', { count: data?.length ?? 0, page, pageSize, isStaff });
-    return NextResponse.json({ posts: data ?? [], total: count ?? 0, page, pageSize });
+    return NextResponse.json({ posts: (data ?? []).map(normalizePost), total: count ?? 0, page, pageSize }, {
+      headers: { 'Cache-Control': 'private, no-store' },
+    });
   } catch (err: any) {
     logger.error('blog_list.audit.failed', { error: err.message });
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
@@ -75,7 +79,7 @@ async function POSTHandler(request: NextRequest) {
     const { data, error } = await supabase
       .from('blog_posts')
       .insert({
-        ...parsed.data,
+        ...blogStorageFields(parsed.data),
         author_id: session.user.id,
         published_at: parsed.data.status === 'published' ? new Date().toISOString() : null,
       })
@@ -89,7 +93,7 @@ async function POSTHandler(request: NextRequest) {
     }
 
     logger.info('blog.post_created', { postId: data.id, slug: data.slug, userId: session.user.id });
-    return NextResponse.json({ post: data }, { status: 201 });
+    return NextResponse.json({ post: normalizePost(data) }, { status: 201 });
   } catch (err: any) {
     logger.error('blog.post_uncaught', { error: err.message });
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
