@@ -15,12 +15,16 @@ function execute(command, args, cwd = root, env = process.env) {
 const revisionResult = spawnSync('git',['rev-parse','HEAD'],{cwd:root,encoding:'utf8'});
 assert.equal(revisionResult.status,0);
 const revision = revisionResult.stdout.trim();
-const context = path.join(root,'scratch/local-release',`context-${revision.slice(0,12)}-${Date.now()}`);
+const resume = process.argv.find(value=>value.startsWith('--resume='));
+const context = resume ? path.resolve(root,resume.slice('--resume='.length))
+  : path.join(root,'scratch/local-release',`context-${revision.slice(0,12)}-${Date.now()}`);
 const runtime = path.join(context,'runtime');
 assert.ok(path.resolve(context).startsWith(path.resolve(root,'scratch/local-release')+path.sep));
-assert.ok(!fs.existsSync(context),'Use a fresh artifact directory; never replace the workspace dependency tree');
+assert.ok(path.basename(context).startsWith(`context-${revision.slice(0,12)}-`),'Runtime must match the application revision');
+if(!resume)assert.ok(!fs.existsSync(context),'Use a fresh artifact directory; never replace the workspace dependency tree');
 fs.mkdirSync(runtime,{recursive:true});
 const sourceTar = path.join(context,'source.tar');
+if(!resume) {
 execute('git',['archive','--format=tar','--output',sourceTar,'HEAD','package.json','package-lock.json','.npmrc',
   'apps/api/package.json','apps/api/next.config.mjs','apps/api/public','apps/mgmt/package.json',
   'apps/public/package.json','apps/superadmin/package.json','apps/waba/package.json','apps/webmail/package.json','packages']);
@@ -28,19 +32,27 @@ execute('tar',['-xf',sourceTar,'-C',runtime]);
 const npmCli = process.env.npm_execpath || path.join(path.dirname(process.execPath),'node_modules/npm/bin/npm-cli.js');
 assert.ok(fs.existsSync(npmCli),'Locate the installed npm CLI before packaging');
 execute(process.execPath,[npmCli,'ci','--omit=dev','--ignore-scripts','--os=linux','--cpu=x64','--libc=musl','--no-audit','--no-fund'],runtime);
+} else {
+  assert.ok(JSON.stringify(JSON.parse(fs.readFileSync(path.join(runtime,'package-lock.json'),'utf8')))===JSON.stringify(JSON.parse(fs.readFileSync(path.join(root,'package-lock.json'),'utf8'))),'Resume dependency lock must match the application lock');
+}
 const zodRoot=path.join(runtime,'node_modules/zod');
 execute(process.execPath,['scripts/apply-zod-security-backport.mjs',`--package-root=${zodRoot}`]);
 execute(process.execPath,['scripts/apply-zod-security-backport.mjs','--check',`--package-root=${zodRoot}`]);
 for(const name of ['@img/sharp-linuxmusl-x64','@img/sharp-libvips-linuxmusl-x64','@next/swc-linux-x64-musl']) {
   assert.ok(fs.existsSync(path.join(runtime,'node_modules',name,'package.json')),`Linux runtime package missing: ${name}`);
 }
-const schemaPath = path.join(runtime,'packages/db/prisma/schema.prisma');
-let schema = fs.readFileSync(schemaPath,'utf8');
-schema = schema.replace(/binaryTargets\s*=\s*\[[^\]]*\]/,'binaryTargets = ["linux-musl-openssl-3.0.x"]');
-schema = schema.replace(/provider\s*=\s*"prisma-client-js"/,'provider = "prisma-client-js"\n  output = "../../../node_modules/.prisma/client"');
-fs.writeFileSync(schemaPath,schema);
-execute(process.execPath,[require.resolve('prisma'),'generate','--schema',schemaPath],runtime,
-  {...process.env,DATABASE_URL:'postgresql://build:build@127.0.0.1:9/build',DIRECT_URL:'postgresql://build:build@127.0.0.1:9/build',PRISMA_HIDE_UPDATE_MESSAGE:'true'});
+// Prisma 7's generated query compiler is WebAssembly. Reuse the exact client used
+// by this build, only after verifying its schema and version; no Windows engine is
+// shipped. The real Linux adapter/query is separately checked on the VPS.
+const generated=path.join(root,'node_modules/.prisma/client');
+assert.ok(fs.readFileSync(path.join(generated,'index.js'),'utf8').includes('config.compilerWasm ='),'A portable Prisma WASM client is required');
+const normalize=value=>JSON.stringify((value.match(/"(?:\\.|[^"\\])*"|\/\/[^\r\n]*|\/\*[\s\S]*?\*\/|\s+|./g)||[])
+  .filter(token=>!/^\s+$/.test(token)&&!token.startsWith('//')&&!token.startsWith('/*')));
+assert.ok(normalize(fs.readFileSync(path.join(generated,'schema.prisma'),'utf8'))===normalize(fs.readFileSync(path.join(root,'packages/db/prisma/schema.prisma'),'utf8')),'Generated client schema must match the release source');
+assert.equal(JSON.parse(fs.readFileSync(path.join(runtime,'node_modules/@prisma/client/package.json'),'utf8')).version,require('@prisma/client/package.json').version);
+fs.copyFileSync(path.join(root,'packages/db/prisma/schema.prisma'),path.join(runtime,'packages/db/prisma/schema.prisma'));
+fs.mkdirSync(path.join(runtime,'node_modules/.prisma'),{recursive:true});
+fs.cpSync(generated,path.join(runtime,'node_modules/.prisma/client'),{recursive:true,filter:source=>!source.endsWith('.node')&&!source.endsWith('.dll')});
 assert.ok(fs.existsSync(path.join(runtime,'node_modules/.prisma/client/default.js')),'Generated Prisma runtime missing');
 
 // Windows workspace junctions are absolute. Materialize only links whose targets
