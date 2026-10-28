@@ -1,4 +1,4 @@
-import { createSupabaseClient as createClient } from '@tecbunny/database/server';
+import { createServiceClient } from '@tecbunny/database/admin';
 import { NextRequest, NextResponse } from 'next/server';
 
 
@@ -58,10 +58,10 @@ export async function GET(request: NextRequest) {
     // 2. Database Connection Check
     const dbStart = Date.now();
     try {
-      const supabase = await createClient();
-      const { data, error } = await supabase
+      const supabase = createServiceClient();
+      const { error } = await supabase
         .from('products')
-        .select('id')
+        .select('id', { head: true })
         .limit(1);
       
       checks.push({
@@ -70,7 +70,6 @@ export async function GET(request: NextRequest) {
         message: error ? `Database error: ${error.message}` : 'Database connection successful',
         responseTime: Date.now() - dbStart,
         details: { 
-          hasData: data && data.length > 0,
           error: error?.message 
         }
       });
@@ -86,10 +85,10 @@ export async function GET(request: NextRequest) {
     // 3. OTP Tables Check
     const otpStart = Date.now();
     try {
-      const supabase = await createClient();
+      const supabase = createServiceClient();
       const { error } = await supabase
         .from('otp_codes')
-        .select('id')
+        .select('id', { head: true })
         .limit(1);
       
       checks.push({
@@ -111,10 +110,10 @@ export async function GET(request: NextRequest) {
     // 4. Communication Preferences Table Check
     const prefStart = Date.now();
     try {
-      const supabase = await createClient();
+      const supabase = createServiceClient();
       const { error } = await supabase
         .from('user_communication_preferences')
-        .select('id')
+        .select('id', { head: true })
         .limit(1);
       
       checks.push({
@@ -197,7 +196,7 @@ export async function GET(request: NextRequest) {
     // Return appropriate HTTP status based on health
     const httpStatus = overallStatus === 'healthy' ? 200 : overallStatus === 'degraded' ? 200 : 503;
 
-    return NextResponse.json(healthResponse, { status: httpStatus });
+    return NextResponse.json(healthResponse, { status: httpStatus, headers: { 'Cache-Control': 'no-store' } });
 
   } catch (error) {
     logger.error('Health check failed', { 
@@ -210,6 +209,6 @@ export async function GET(request: NextRequest) {
       totalResponseTime: Date.now() - startTime,
       error: 'Health check system failure',
       ...(detailed ? { message: error instanceof Error ? error.message : 'Unknown error' } : {})
-    }, { status: 503 });
+    }, { status: 503, headers: { 'Cache-Control': 'no-store' } });
   }
 }
