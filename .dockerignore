@@ -17,3 +17,5 @@
 docs
 extension
 database.reset.sql
+/releases
+/certs

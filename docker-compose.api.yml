@@ -62,6 +62,10 @@ services:
     restart: unless-stopped
     env_file:
       - .env.local
+    volumes:
+      # Public provider CA; DATABASE_URL can use sslrootcert=/run/certs/supabase-ca.crt.
+      # Preserve this mount when replacing the API after a connection repair.
+      - ./certs:/run/certs:ro
     environment:
       - NODE_ENV=production
       - PORT=3001

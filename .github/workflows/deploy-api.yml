@@ -35,9 +35,30 @@ env:
   IMAGE: ghcr.io/${{ github.repository }}/api
 
 jobs:
+  checks:
+    uses: ./.github/workflows/ci.yml
+    secrets: inherit
+
+  readiness:
+    name: Strict pre-deployment readiness
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm run validate:db-readiness
+      - run: npm run validate:infra-observability
+      - run: npm run validate:launch-readiness
+      - run: npm run validate:runtime-evidence-artifacts
+      - run: npm run validate:runtime-readiness
+
   build:
     name: Build & Push API Image
     runs-on: ubuntu-latest
+    needs: [checks, readiness]
     permissions:
       contents: read
       packages: write
@@ -94,16 +115,14 @@ jobs:
           script: |
             set -e
             cd /opt/tecbunny
-            git fetch origin main
-            git checkout main
-            git pull --ff-only
+            git fetch origin "${{ github.sha }}"
+            git checkout --detach "${{ github.sha }}"
 
             echo "${GHCR_PAT}" | docker login ghcr.io -u "${GHCR_USERNAME}" --password-stdin
 
             export API_IMAGE="${IMAGE}:${{ github.sha }}"
-            docker compose -f docker-compose.api.yml pull api
-            docker compose -f docker-compose.api.yml up -d --remove-orphans
-            docker image prune -f
+            docker compose --env-file .env.local -f docker-compose.api.yml pull api
+            docker compose --env-file .env.local -f docker-compose.api.yml up -d --no-deps api
         env:
           IMAGE: ${{ env.IMAGE }}
           GHCR_USERNAME: ${{ secrets.GHCR_USERNAME }}
