@@ -68,12 +68,13 @@ for(const name of ['@img/sharp-linuxmusl-x64','@next/swc-linux-x64-musl']){
 assert.ok(!fs.existsSync(path.join(runtime,'.env.local'))&&!fs.existsSync(path.join(runtime,'apps/api/.env.local')));
 const manifest={applicationRevision:build.revision,dependencyPreparedRevision:prepared.revision,packagingRevision,buildId:build.buildId,nextVersion:build.nextVersion,
  target:prepared.target,clientEngine:'prisma-7-wasm',dependencyLockSha256:prepared.dependencyLockSha256,
- assembledAt:new Date().toISOString(),runtimeBytes:bytes,runtimeFiles:files,publicHosts:build.publicHosts,
+ assembledAt:new Date().toISOString(),runtimeBytes:bytes,runtimeFiles:files,runtimeInventoryScope:'payload excluding release-manifest.json',publicHosts:build.publicHosts,
  privateCompileCanaryAbsent:true,localServerSecretsAbsent:true,windowsLinksAbsent:true,linuxNativeHeadersVerified:true};
-fs.writeFileSync(path.join(runtime,'release-manifest.json'),JSON.stringify(manifest,null,2)+'\n');
+const manifestText=JSON.stringify(manifest,null,2)+'\n';
+fs.writeFileSync(path.join(runtime,'release-manifest.json'),manifestText);
 const archive=path.join(base,`api-local-${build.revision.slice(0,12)}.tar.gz`);
 execute('tar',['-czf',archive,'-C',context,'Dockerfile','runtime']);
 const hash=createHash('sha256');for await(const chunk of fs.createReadStream(archive))hash.update(chunk);
-const receipt={...manifest,archive,archiveBytes:fs.statSync(archive).size,archiveSha256:hash.digest('hex')};
+const receipt={...manifest,packagedRuntimeFiles:files+1,packagedRuntimeBytes:bytes+Buffer.byteLength(manifestText),archive,archiveBytes:fs.statSync(archive).size,archiveSha256:hash.digest('hex')};
 fs.writeFileSync(path.join(base,'upload-manifest.json'),JSON.stringify(receipt,null,2)+'\n');
 console.log(JSON.stringify(receipt,null,2));
