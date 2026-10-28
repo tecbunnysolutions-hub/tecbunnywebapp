@@ -23,10 +23,13 @@ describe('Registered gateway and storefront proxies', () => {
     // /api/orders is explicitly public, so use PATCH to exercise private mutations.
     expect((await proxy(new NextRequest(`https://test${path}`, { method: 'PATCH' }), { waitUntil: vi.fn() })).status).toBe(401);
   });
-  it.each(['/payment/cashfree/one', '/checkout', '/orders', '/profile'])('redirects anonymous storefront access to %s', async path => {
+  it.each(['/orders', '/profile', '/dashboard', '/admin/settings', '/orders/one/invoice'])('redirects anonymous storefront access to %s', async path => {
     const response = await storefront(new NextRequest(`https://test${path}`));
     expect(response.status).toBe(307);
     expect(response.headers.get('location')).toBe('https://test/auth/login');
+  });
+  it.each(['/checkout', '/payment/cashfree/one', '/payment/upi/one', '/orders/one'])('admits the guest storefront route %s while downstream APIs enforce order access', async path => {
+    expect((await storefront(new NextRequest(`https://test${path}`))).status).toBe(200);
   });
   it('keeps the public catalogue accessible', async () => {
     expect((await storefront(new NextRequest('https://test/products'))).status).toBe(200);
