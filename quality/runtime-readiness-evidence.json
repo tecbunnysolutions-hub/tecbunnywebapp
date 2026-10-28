@@ -137,11 +137,13 @@
         {
           "id": "test-suite-pass",
           "status": "pass",
-          "lastVerifiedAt": "2026-09-20T17:15:00.000Z",
+          "lastVerifiedAt": "2026-10-28T02:45:49.440Z",
           "evidence": [
-            "package.json"
+            "docs/production-remediation-2026-10-27.md",
+            "apps/api/src/app/api/health/route.test.ts",
+            "apps/api/src/app/api/admin/quotes/route.test.ts"
           ],
-          "notes": "Re-verified 2026-09-20: npm test 3/3 tasks (waba 3 tests, core 47 tests) all passing."
+          "notes": "Local Windows candidate verification on 2026-10-28: all seven workspace test tasks passed without cache after blog, archival and pinned Zod backport changes (API 241 tests/36 files; core 121). Subsequent final archival-focused run passed 20 tests, including uppercase UUID normalization. This does not establish remote CI or production behavior."
         },
         {
           "id": "critical-workflow-coverage",
@@ -156,11 +158,12 @@
         {
           "id": "coverage-targets",
           "status": "pass",
-          "lastVerifiedAt": "2026-09-20T14:06:00.000Z",
+          "lastVerifiedAt": "2026-10-27T17:51:12.945Z",
           "evidence": [
-            "package.json"
+            "docs/production-remediation-2026-10-27.md",
+            "packages/core/vitest.config.ts"
           ],
-          "notes": "Measured + enforced 2026-09-20 (packages/core, 85 tests passing): statements 23.4%, branches 19.79%, functions 46.65%, lines 23.76%. Thresholds ratcheted in packages/core/vitest.config.ts (20/18/40/20) and coverage now runs in CI quality job. Remaining: extend to waba/ui and ratchet upward."
+          "notes": "Local Windows coverage run 2026-10-27: 121 core tests passed; statements 31.48%, branches 26.96%, functions 49.54%, lines 31.47%. Existing 20/18/40/20 thresholds passed. This does not establish browser, production or other-workspace coverage."
         }
       ]
     },
@@ -269,13 +272,15 @@
         },
         {
           "id": "health-check-runtime",
-          "status": "pass",
-          "lastVerifiedAt": "2026-09-20T17:15:00.000Z",
+          "status": "fail",
+          "lastVerifiedAt": "2026-10-28T02:25:19.204Z",
           "evidence": [
             "scripts/validate-infra-observability.mjs",
-            "apps/superadmin/src/app/api/health/route.ts"
+            "apps/superadmin/src/app/api/health/route.ts",
+            "docs/production-connection-repair-2026-10-28.md",
+            "docs/production-remediation-runtime-observations-2026-10-27.json"
           ],
-          "notes": "Re-verified 2026-09-20: production smoke matrix 6/6 PASS plus /api/auth/session 200 liveness probe."
+          "notes": "Actual production GET after the explicitly approved connection repair: health HTTP 503, services 200, blog 502. The unchanged API image now passes a normal pg SELECT 1 with authorized TLS; the existing unhealthy endpoint and undeployed code/grant repairs remain unresolved. A successful database connection does not make application health pass."
         },
         {
           "id": "monitoring-alerting-runtime",

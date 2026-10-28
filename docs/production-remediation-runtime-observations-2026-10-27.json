@@ -1,0 +1,67 @@
+{
+  "date": "2026-10-27",
+  "initialWorkspaceObservationsRecordedOn": "2026-10-27",
+  "publicProductionRecheckedOn": "2026-10-28",
+  "method": "Initial read-only HTTP/zero-row probes; subsequent approved connection repair and read-only production metadata checks on 28 October",
+  "productionConnectionRepair": {
+    "approvedByUser": true,
+    "status": "verified",
+    "databaseProjectIndependentlyMatched": true,
+    "originalDirectConnectionErrorOnVps": "ENETUNREACH",
+    "apiRestartedAt": "2026-10-28T02:23:55.258Z",
+    "imageUnchanged": "tecbunny-api:189aab37",
+    "normalPgSelect1Passed": true,
+    "tlsEncrypted": true,
+    "tlsCertificateAuthorized": true,
+    "otherServicesRestarted": false,
+    "privateEnvironmentBackupOutsideBuildContext": true,
+    "containerHealthAfterRepair": "unhealthy",
+    "details": "docs/production-connection-repair-2026-10-28.md"
+  },
+  "productionMetadataRecheckedOn20261028": {
+    "archivalColumnsPresent": { "archived_at": "timestamp with time zone", "archived_by": "uuid", "archive_reason": "text" },
+    "serviceSelectPrivileges": { "user_communication_preferences": true, "user_preferences": true, "otp_codes": true },
+    "atomicArchiveAndRestoreFunctionsPresent": true,
+    "atomicFunctionsBrowserExecutionDenied": true,
+    "schemaChangeActorNotEstablished": true,
+    "auditPermissionsInitiallyAllowedServiceUpdateDelete": true,
+    "approvedAuditGrantRepair": {
+      "status": "committed_and_verified",
+      "verifiedAt": "2026-10-28T02:59:04.454Z",
+      "effectivePrivilegeAssertionsPassed": 18,
+      "applicationDataWrites": false,
+      "restart": false,
+      "normalizedLiveFunctionSourcesMatchCandidate": true
+    },
+    "auditPermissionRepairPlan": "docs/production-audit-grant-repair-2026-10-28.md"
+  },
+  "publicProduction": [
+    { "path": "/api/health", "status": 503 },
+    { "path": "/api/v1/services", "status": 200 },
+    { "path": "/api/v1/blog", "status": 502 }
+  ],
+  "workspaceConfiguredDatabase": [
+    { "table": "products", "column": "archived_at", "status": 400, "errorCode": "42703" },
+    { "table": "products", "column": "archived_by", "status": 400, "errorCode": "42703" },
+    { "table": "products", "column": "archive_reason", "status": 400, "errorCode": "42703" },
+    { "table": "user_communication_preferences", "column": "id", "status": 403, "errorCode": "42501" },
+    { "table": "otp_codes", "method": "HEAD", "status": 200 },
+    { "method": "PostgreSQL SELECT 1 connection attempt", "passed": false, "errorCode": "ENOTFOUND" }
+  ],
+  "blogSchemaDiagnosis": {
+    "scope": "workspace-configured database; anonymous zero-row queries and schema metadata only",
+    "originalErrors": ["profiles.first_name missing", "blog_posts.cover_image missing", "published is not a valid record_status"],
+    "canonicalFields": { "author": "profiles.name", "cover_image": "cover_image_url", "content": "body", "seo": "metadata" },
+    "allowedStatuses": ["draft", "active", "inactive", "archived", "deleted"],
+    "correctedQueryStatus": 200,
+    "publicationFilters": ["status=active", "published_at is not null", "published_at <= current time", "deleted_at is null"],
+    "blueprintsAnonymousQueryStatus": 401,
+    "blueprintsErrorCode": "42501"
+  },
+  "limitations": [
+    "Initial workspace-only observations are historical; the project was independently matched to the running API on 28 October.",
+    "No rows, credentials, connection strings, response payloads or private hostnames are retained.",
+    "Public endpoint status codes do not prove successful business workflows.",
+    "No application-data writes, payments, provider messages or load tests were performed; approved operational actions are recorded separately."
+  ]
+}
