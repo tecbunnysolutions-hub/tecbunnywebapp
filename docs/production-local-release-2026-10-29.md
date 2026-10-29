@@ -13,6 +13,10 @@ quotes and archive requests return 401. Frontend production promotion subsequent
 completed; see `docs/production-frontend-release-2026-10-29.md` for all four Ready
 deployments, fresh domain checks and the separately discovered blueprint API defect.
 
+**Latest API update:** the blueprint defect was subsequently repaired and deployed
+at 10:11:56 IST. The current image and override paths supersede this initial release;
+see `docs/production-blueprint-repair-2026-10-29.md` and the current JSON receipt.
+
 ## Immutable candidate
 
 | Item | Verified value |
@@ -197,7 +201,10 @@ The fresh private cutover backup is
 `/var/backups/tecbunny/local-20261029-91e5a863/cutover-20261029T033212Z`.
 The production Git checkout was not overwritten. Future manual Compose operations
 must include the recorded override; the older checkout alone does not describe this release.
-The stopped compiler container is retained pending cleanup; no global Docker prune ran.
+After the subsequent blueprint repair, only the owned stopped compiler container
+was removed, after verifying the retained native archive digest and saved upstream
+test log. Rollback images and private backups remain available. Disk headroom was
+2,116 MiB after cleanup; no global Docker prune ran.
 
 ## Remaining launch conditions
 

@@ -40,8 +40,10 @@ eleventh HTTP check confirmed `/api/v1/blueprints` still returns 502. A read-onl
 Supabase probe showed that the requested columns exist and the server client can
 select them, but the browser role receives PostgreSQL `42501` permission denied.
 The list handler incorrectly used that browser client. This is recorded as a failed
-check, not hidden by the Ready deployment status. Its API repair is being verified
-separately; no database grants were widened.
+check, not hidden by the Ready deployment status. The separately tested API repair
+was subsequently deployed: blueprints now return 200 with only IDs/timestamps, and
+all 11 external checks passed at 10:14:23 IST. See
+`docs/production-blueprint-repair-2026-10-29.md`; no database grants were widened.
 
 The API repair remains recorded in
 `docs/production-local-release-2026-10-29.md` and
