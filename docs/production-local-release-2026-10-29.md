@@ -9,7 +9,9 @@ after GitHub rejected job startup because of an account billing lock.
 2026 (03:32:59 UTC). Its immutable image is
 `sha256:0bd0920735ac14804ea6f24dbc5a249a030b691c2e31a6e775ad2bc44c2902aa`.
 Docker reports healthy. Public health, blog and services return 200; anonymous admin
-quotes and archive requests return 401. Frontend production promotion remains pending.
+quotes and archive requests return 401. Frontend production promotion subsequently
+completed; see `docs/production-frontend-release-2026-10-29.md` for all four Ready
+deployments, fresh domain checks and the separately discovered blueprint API defect.
 
 ## Immutable candidate
 
@@ -125,6 +127,11 @@ necessitated by the observed CPU incompatibility. No whole-application build run
 on the VPS. No 100-user load test, customer write or provider send was performed.
 
 ## Frontend promotion status
+
+**Subsequent outcome:** all four tested frontend releases were promoted and reached
+Ready after the authorized Gmail verification. The following paragraphs retain the
+earlier access-blocker history; the current outcome and deployment IDs are in the
+frontend release record linked above.
 
 The signed-in Vercel dashboard confirmed the superadmin production rollback target
 `HCuT69yP14fLxENe33LeBA3jE9fN`, source

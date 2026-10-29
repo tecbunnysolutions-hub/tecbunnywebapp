@@ -26,7 +26,8 @@
   "otherServiceContainerIdsUnchanged": true,
   "customerWrites": false,
   "databaseMigrations": false,
-  "productionFrontendCodePromoted": false,
+  "productionFrontendCodePromoted": true,
+  "frontendReleaseRecord": "docs/production-frontend-release-2026-10-29.md",
   "captchaConfiguration": "Existing configured value preserved; exposed credential rotation remains unverified.",
   "unverified": ["Authenticated role and tenant isolation", "Disaster recovery rehearsal", "Provider delivery and alert drills", "100-user capacity", "Fresh complete Dockerfile build"]
 }
