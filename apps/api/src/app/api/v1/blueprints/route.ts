@@ -1,6 +1,6 @@
 import type { NextRequest } from 'next/server';
 
-import { createPublicClient } from '@tecbunny/database/server';
+import { createServiceClient } from '@tecbunny/database/admin';
 
 import { apiSuccess } from '../../../../lib/api-contract';
 import { finishV1, getRequestId, v1ErrorResponse } from '../../../../lib/v1';
@@ -10,7 +10,9 @@ import { listPublishedBlueprints } from '../../../../services/blueprints.service
 export async function GET(request: NextRequest) {
   const requestId = getRequestId(request);
   try {
-    const data = await listPublishedBlueprints(createPublicClient());
+    // Browser roles cannot read this table. The service projects only published
+    // blueprint IDs and timestamps for the public sitemap, never payloads.
+    const data = await listPublishedBlueprints(createServiceClient());
     return finishV1(apiSuccess(data, { meta: { requestId } }), {
       requestId,
       cacheControl: 'public, s-maxage=600, stale-while-revalidate=3600',
