@@ -1,8 +1,12 @@
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
+import path from 'node:path';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const require = createRequire(import.meta.url);
-for (const [format, z] of [['CommonJS', require('zod')], ['ESM', await import('zod')]]) {
+const target = process.argv.find(value => value.startsWith('--package-root='));
+const packageRoot = target ? path.resolve(target.slice('--package-root='.length)) : fileURLToPath(new URL('../node_modules/zod', import.meta.url));
+for (const [format, z] of [['CommonJS', require(path.join(packageRoot, 'index.cjs'))], ['ESM', await import(pathToFileURL(path.join(packageRoot, 'index.js')).href)]]) {
   let visited = 0;
   const element = z.string().transform(value => { visited++; return value; });
   const schema = z.array(element).max(2);
