@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 
 import { logger } from '@tecbunny/core';
+import { resolvePublicProductPrice } from '@tecbunny/core/product-visibility';
 import { getProductDisplayImage } from "@tecbunny/core/image-utils";
 import { cn, revealDelayClass } from "@tecbunny/core/utils";
 
@@ -275,9 +276,7 @@ function normalizeRawProduct(p: Record<string, unknown>): Product {
   const toNonEmptyString = (value: unknown): string | undefined =>
     typeof value === 'string' && value.trim().length > 0 ? value.trim() : undefined;
 
-  const rawPrice = [p.offer_price, p.selling_price, p.mrp, p.dealer_price]
-    .map(toNumber)
-    .find((value) => Number.isFinite(value) && value > 0) || 0;
+  const rawPrice = resolvePublicProductPrice(p);
   // fall back to rawPrice (not rawPrice*1.2) — avoid showing a fake discount when MRP isn't stored
   const rawMrp = typeof p.mrp === 'number' ? p.mrp : Number(p.mrp) || rawPrice;
 

@@ -102,6 +102,7 @@ export const unifiedPanelNavSections: UnifiedPanelNavSection[] = [
       { href: '/mgmt/admin/staff', label: 'Staff Operations', icon: Users, roles: ['admin'] },
       { href: '/mgmt/manager/salesperson', label: 'Regional Sales Team', icon: Users, roles: SALES_MANAGER_ROLES },
       { href: '/superadmin/mgmt/products', label: 'Product Catalogue', icon: Package, roles: ['superadmin'] },
+      { href: '/mgmt/admin/products', label: 'Product Management', icon: Package, roles: ['admin'] },
       { href: '/mgmt/admin/inventory', label: 'Inventory Tuning', icon: Package, roles: ['admin'] },
       { href: '/mgmt/manager/inventory', label: 'Regional Inventory', icon: Package, roles: SALES_MANAGER_ROLES },
       { href: '/superadmin/mgmt/custom-setups', label: 'Custom Setups', icon: Settings, roles: ['superadmin'] },

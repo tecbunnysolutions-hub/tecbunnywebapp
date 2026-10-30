@@ -14,7 +14,7 @@ import { Button, Card, CardContent, Dialog, DialogContent, DialogHeader, DialogT
 import { WishlistButton } from '@/components/wishlist/WishlistButton';
 import { logger } from '@tecbunny/core';
 
-import { isPubliclyVisibleProduct } from "@tecbunny/core/product-visibility";
+import { isPubliclyVisibleProduct, resolvePublicProductPrice } from "@tecbunny/core/product-visibility";
 import { getAllProductImages } from "@tecbunny/core/image-utils";
 import type { Product } from '@tecbunny/core';
 import { useAnalytics } from '@tecbunny/core';
@@ -182,9 +182,7 @@ export function ProductDetailPage({ productId, initialProduct, sourceContext }: 
         ? rawHsn.trim()
         : undefined;
 
-      const rawPrice = [p.offer_price, p.selling_price, p.mrp, p.dealer_price]
-        .map((value) => typeof value === 'number' ? value : Number(value))
-        .find((value) => Number.isFinite(value) && value > 0) || 0;
+      const rawPrice = resolvePublicProductPrice(p);
       // fall back to rawPrice — avoid showing a fake discount when MRP isn't stored
       const rawMrp = typeof p.mrp === 'number' ? p.mrp : Number(p.mrp) || rawPrice;
 
@@ -407,9 +405,7 @@ export function ProductDetailPage({ productId, initialProduct, sourceContext }: 
           ? rawHsn.trim()
           : undefined;
 
-        const rawPrice = [data.offer_price, data.selling_price, data.mrp, data.dealer_price]
-          .map((value) => typeof value === 'number' ? value : Number(value))
-          .find((value) => Number.isFinite(value) && value > 0) || 0;
+        const rawPrice = resolvePublicProductPrice(data);
         // fall back to rawPrice — avoid showing a fake discount when MRP isn't stored
         const rawMrp = typeof data.mrp === 'number' ? data.mrp : Number(data.mrp) || rawPrice;
 

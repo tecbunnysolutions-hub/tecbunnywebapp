@@ -1,3 +1,5 @@
+import { resolvePublicProductPrice } from '@tecbunny/core/product-visibility';
+
 type CatalogProduct = { id: string | number };
 
 const text = (value: unknown) => typeof value === 'string' ? value.trim() : '';
@@ -13,11 +15,7 @@ export function getCatalogProductDisplayName<T extends CatalogProduct>(product: 
 }
 
 function productPrice(product: CatalogProduct): number {
-  for (const key of ['offer_price', 'selling_price', 'price', 'mrp', 'dealer_price']) {
-    const value = Number(readField(product, key));
-    if (Number.isFinite(value) && value > 0) return value;
-  }
-  return Number.POSITIVE_INFINITY;
+  return resolvePublicProductPrice(product as CatalogProduct & Record<string, unknown>) || Number.POSITIVE_INFINITY;
 }
 
 function productIdentity(product: CatalogProduct): string {

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   PUBLIC_PRODUCT_PRICE_COLUMNS,
+  resolvePublicProductPrice,
   applyPublicProductVisibilityFilters,
   isPubliclyVisibleProduct,
 } from './product-visibility';
@@ -28,6 +29,24 @@ function createQueryRecorder() {
 }
 
 describe('product visibility', () => {
+  it('uses the editor sale price before MRP when selling_price is empty', () => {
+    const product = { status: 'active', offer_price: null, selling_price: null, price: 1274.9, mrp: 1699 };
+    expect(resolvePublicProductPrice(product)).toBe(1274.9);
+    expect(isPubliclyVisibleProduct(product)).toBe(true);
+  });
+
+  it.each([
+    [{ offer_price: 900, selling_price: 1000, price: 1100, mrp: 1500 }, 900],
+    [{ offer_price: 0, selling_price: '1000', price: 1100, mrp: 1500 }, 1000],
+    [{ offer_price: null, selling_price: null, price: '1274.90', mrp: 1699 }, 1274.9],
+    [{ price: 0, mrp: 1699 }, 1699],
+    [{ price: -20, mrp: 1699 }, 1699],
+    [{ price: 'invalid', mrp: 1699 }, 1699],
+    [{ price: 900 }, 900],
+  ])('resolves public pricing consistently for %j', (product, expected) => {
+    expect(resolvePublicProductPrice(product)).toBe(expected);
+  });
+
   it('accepts a product with offer_price = 0, selling_price > 0', () => {
     expect(isPubliclyVisibleProduct({
       status: 'active',
