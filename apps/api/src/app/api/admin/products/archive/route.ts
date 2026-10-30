@@ -30,7 +30,7 @@ type AdminContext = { error: NextResponse } | { supabase: ReturnType<typeof crea
 async function getAdminClient(request: NextRequest, correlationId: string): Promise<AdminContext> {
   const { session, role } = await getSessionWithRole(request);
   if (!session) return { error: respond({ error: 'Authentication required' }, 401, correlationId) };
-  if (role !== 'superadmin') return { error: respond({ error: 'Superadmin role required' }, 403, correlationId) };
+  if (role !== 'admin' && role !== 'superadmin') return { error: respond({ error: 'Administrator role required' }, 403, correlationId) };
   if (!isSupabaseServiceConfigured) return { error: respond({ error: 'Archive operation unavailable' }, 503, correlationId) };
   return { supabase: createServiceClient(), actorId: session.user.id };
 }

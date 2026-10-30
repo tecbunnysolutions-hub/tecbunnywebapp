@@ -198,7 +198,7 @@ export function buildLeadNotificationEmail(
     </div>
 
     <div style="text-align: center; margin-top: 24px;">
-      <a href="${process.env.CRM_DASHBOARD_URL || 'https://admin.tecbunny.com/leads'}" class="cta-button">
+      <a href="${process.env.CRM_DASHBOARD_URL || 'https://superadmin.tecbunny.com/superadmin/mgmt/leads'}" class="cta-button">
         View in Dashboard
       </a>
     </div>
@@ -243,7 +243,7 @@ ${payload.documentUrl ? `DOCUMENT: ${payload.documentFilename}\n${payload.docume
 
 ACTION: ${score.priority === 'HOT' ? 'CALL IMMEDIATELY' : score.priority === 'WARM' ? 'Contact within 24 hours' : 'Add to nurture sequence'}
 
-Dashboard: ${process.env.CRM_DASHBOARD_URL || 'https://admin.tecbunny.com/leads'}
+Dashboard: ${process.env.CRM_DASHBOARD_URL || 'https://superadmin.tecbunny.com/superadmin/mgmt/leads'}
   `;
 
   const subject =

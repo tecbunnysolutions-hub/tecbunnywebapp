@@ -181,7 +181,7 @@ export const roleMatches = (role: UserRole, options: RoleCheckOptions): boolean 
   const { allowedRoles, minimumRole } = options;
 
   const allowedMatch = Array.isArray(allowedRoles) && allowedRoles.length > 0
-    ? allowedRoles.includes(role)
+    ? allowedRoles.some(allowed => normalizeRole(allowed) === normalizeRole(role))
     : false;
 
   const hierarchyMatch = minimumRole ? isAtLeast(role, minimumRole) : false;

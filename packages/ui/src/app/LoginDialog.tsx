@@ -1,5 +1,5 @@
 'use client';
-import { normalizeRole } from "@tecbunny/core";
+import { getPanelHome, normalizeRole } from "@tecbunny/core";
 import { createClient } from '@tecbunny/database';
 
 import * as React from 'react';
@@ -141,27 +141,7 @@ export function LoginDialog({ children }: { children: React.ReactNode }) {
 
           const userRole = normalizeRole(profile?.role) ?? 'customer';
 
-          let redirectUrl: string;
-
-          switch (userRole) {
-            case 'admin':
-              redirectUrl = '/mgmt/admin';
-              break;
-            case 'manager':
-              redirectUrl = '/mgmt/manager';
-              break;
-            case 'sales':
-            case 'service_engineer':
-              redirectUrl = '/mgmt/sales';
-              break;
-            case 'accounts':
-              redirectUrl = '/mgmt/accounts';
-              break;
-            case 'customer':
-            default:
-              redirectUrl = '/'; // Homepage for customers
-              break;
-          }
+          const redirectUrl = getPanelHome(userRole);
 
           // For customers on homepage, force refresh to update UI state
           if (userRole === 'customer' && window.location.pathname === redirectUrl) {

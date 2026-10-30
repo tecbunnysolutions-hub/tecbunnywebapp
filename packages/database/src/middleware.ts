@@ -11,7 +11,7 @@ export interface RoleCheckOptions {
 }
 
 const roleMatches = (role: UserRole, options: RoleCheckOptions): boolean => {
-  if (options.allowedRoles?.includes(role)) return true;
+  if (options.allowedRoles?.some(allowed => normalizeRole(allowed) === normalizeRole(role))) return true;
   if (options.minimumRole && isAtLeast(role, options.minimumRole)) return true;
   return !options.allowedRoles && !options.minimumRole;
 };

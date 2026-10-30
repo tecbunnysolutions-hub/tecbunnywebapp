@@ -6,7 +6,7 @@ import { logger } from "@tecbunny/core";
 import { requireApiRole, type RoleCheckOptions } from "@tecbunny/core/server-role-guard";
 
 const WALK_IN_ACCESS: RoleCheckOptions = {
-  allowedRoles: ['sales', 'manager'],
+  allowedRoles: ['sales_executive', 'sales_manager'],
   minimumRole: 'admin'
 };
 

@@ -29,10 +29,20 @@ describe('audited product archival', () => {
     expect((await invoke(handler, request('GET'))).status).toBe(401);
     expect(mocks.service).not.toHaveBeenCalled();
   });
-  it.each(['admin', 'manager', 'customer'])('rejects %s callers before accessing the database', async role => {
+  it.each(['sales_manager', 'manager', 'sales_executive', 'customer'])('rejects %s callers before accessing the database', async role => {
     mocks.session.mockResolvedValue({ session: { user: { id } }, role });
     expect((await invoke(POST, request('POST', { id }))).status).toBe(403);
     expect(mocks.service).not.toHaveBeenCalled();
+  });
+  it.each([
+    ['POST', POST, { id }, 'archive_product_atomic', ''],
+    ['DELETE', DELETE, undefined, 'archive_product_atomic', `?id=${id}`],
+    ['PUT', PUT, { id }, 'restore_product_atomic', ''],
+  ] as const)('allows regular admins to %s with their verified audit identity', async (method, handler, body, operation, query) => {
+    mocks.session.mockResolvedValue({ session: { user: { id } }, role: 'admin' });
+    mocks.rpc.mockResolvedValue({ data: { id, changed: true, is_deleted: method !== 'PUT' }, error: null });
+    expect((await invoke(handler, request(method, body, query))).status).toBe(200);
+    expect(mocks.rpc).toHaveBeenCalledWith(operation, expect.objectContaining({ p_actor_id: id, p_product_id: id }));
   });
   it('passes the verified actor to the atomic archive operation', async () => {
     mocks.rpc.mockResolvedValue({ data: { id, changed: true, is_deleted: true }, error: null });

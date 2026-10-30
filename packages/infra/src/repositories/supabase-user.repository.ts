@@ -1,9 +1,9 @@
 import { IUserRepository, GetUsersParams, GetUsersResult, CreateUserParams, UpdateUserParams, UserTotals } from '@tecbunny/types';
-import { logger, normalizeRole, USER_ASSIGNABLE_ROLES } from '@tecbunny/core';
+import { logger, normalizeRole, USER_ASSIGNABLE_ROLES, STAFF_ASSIGNABLE_ROLES } from '@tecbunny/core';
 import crypto from 'crypto';
 import { BaseSupabaseClient } from '../supabase/base-client';
 
-const STAFF_ROLES = ['sales_executive', 'store_executive', 'sales_agent', 'service_engineer', 'sales_manager', 'service_manager', 'accounts', 'admin'];
+const STAFF_ROLES: string[] = [...STAFF_ASSIGNABLE_ROLES];
 const SALES_ROLES = ['sales_executive', 'store_executive', 'sales_agent', 'sales_manager'];
 const ROLE_SENTINEL_NONE = '__none__';
 
@@ -15,16 +15,7 @@ export class SupabaseUserRepository implements IUserRepository {
   }
 
   private parseAssignableRole(value: unknown): string | null {
-    const normalized = normalizeRole(value);
-    const migratedRole = normalized === 'sales'
-      ? 'sales_executive'
-      : normalized === 'sales-staff'
-        ? 'store_executive'
-        : normalized === 'sales-external'
-          ? 'sales_agent'
-          : normalized === 'manager'
-            ? 'sales_manager'
-            : normalized;
+    const migratedRole = normalizeRole(value);
     return migratedRole && (USER_ASSIGNABLE_ROLES as readonly string[]).includes(migratedRole)
       ? migratedRole
       : null;

@@ -26,7 +26,7 @@ import { getSessionWithRole } from "@tecbunny/core/auth/server-role";
 // Constants
 // ─────────────────────────────────────────────────────────────────────────────
 
-const ADMIN_ROLES = new Set(['superadmin']);
+const ADMIN_ROLES = new Set(['admin', 'superadmin']);
 
 /** Combined multiplier: 20% dealer margin × 18% GST = ×1.416 */
 const PRICE_MULTIPLIER = 1.416;

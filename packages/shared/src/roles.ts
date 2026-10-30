@@ -94,12 +94,14 @@ function authorizationRole(role: UserRole): AuthorizationRole {
     : role as CanonicalRole;
 }
 
-export function normalizeRole(value: unknown): UserRole | null {
+export function normalizeRole(value: unknown): CanonicalRole | null {
   if (typeof value !== 'string') return null;
   const normalized = value.trim().toLowerCase();
   if (!normalized) return null;
-  if ((ALL_ROLES as string[]).includes(normalized)) return normalized as UserRole;
-  return ROLE_ALIASES[normalized] ?? null;
+  const role = (ALL_ROLES as string[]).includes(normalized)
+    ? normalized as UserRole
+    : ROLE_ALIASES[normalized];
+  return role ? authorizationRole(role) : null;
 }
 
 /**
@@ -381,10 +383,10 @@ export const ROLE_DISPLAY_NAME: Record<UserRole, string> = {
   service_manager: 'Service Manager',
   admin: 'Administrator',
   superadmin: 'System Super Administrator',
-  sales: 'Sales Executive (Legacy)',
-  'sales-staff': 'Store Executive (Legacy)',
-  'sales-external': 'Sales Agent (Legacy)',
-  manager: 'Sales Manager (Legacy)',
+  sales: 'Sales Executive',
+  'sales-staff': 'Store Executive',
+  'sales-external': 'Sales Agent',
+  manager: 'Sales Manager',
 };
 
 export const ROLE_DESCRIPTION: Record<CanonicalRole, string> = {
