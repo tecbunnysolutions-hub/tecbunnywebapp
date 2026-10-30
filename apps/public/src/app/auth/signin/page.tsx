@@ -1,5 +1,5 @@
 'use client';
-import { normalizeRole } from "@tecbunny/core";
+import { getPanelHome, normalizeRole } from "@tecbunny/core";
 import { createClient } from '@tecbunny/database';
 
 
@@ -105,27 +105,7 @@ function SignInForm() {
 
       // Redirect based on user role
       const userRole = normalizeRole(profile?.role) ?? 'customer';
-      let redirectUrl: string;
-
-      switch (userRole) {
-        case 'admin':
-          redirectUrl = '/mgmt/admin';
-          break;
-        case 'manager':
-          redirectUrl = '/mgmt/manager';
-          break;
-        case 'sales':
-        case 'service_engineer':
-          redirectUrl = '/mgmt/sales';
-          break;
-        case 'accounts':
-          redirectUrl = '/mgmt/accounts';
-          break;
-        case 'customer':
-        default:
-          redirectUrl = '/';
-          break;
-      }
+      let redirectUrl = getPanelHome(userRole);
       if (userRole === 'customer') {
         redirectUrl = customerReturnPath() ?? redirectUrl;
       }
@@ -178,27 +158,7 @@ function SignInForm() {
     const profile = await loadOwnProfile();
 
     const userRole = normalizeRole(profile?.role) ?? 'customer';
-    let redirectUrl: string;
-
-    switch (userRole) {
-      case 'admin':
-        redirectUrl = '/mgmt/admin';
-        break;
-      case 'manager':
-        redirectUrl = '/mgmt/manager';
-        break;
-      case 'sales':
-      case 'service_engineer':
-        redirectUrl = '/mgmt/sales';
-        break;
-      case 'accounts':
-        redirectUrl = '/mgmt/accounts';
-        break;
-      case 'customer':
-      default:
-        redirectUrl = '/';
-        break;
-    }
+    let redirectUrl = getPanelHome(userRole);
     if (userRole === 'customer') {
       redirectUrl = customerReturnPath() ?? redirectUrl;
     }
