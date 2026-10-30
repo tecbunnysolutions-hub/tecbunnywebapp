@@ -1,0 +1,11 @@
+{
+  "approvedOn": "2026-10-30",
+  "owner": "TecBunny release owner (user)",
+  "approvalEvidence": "User replied 'Use these targets' to the recovery and 100-user drill target question.",
+  "recoveryPointHoursAtMost": 24,
+  "recoveryTimeMinutesAtMost": 60,
+  "peakUsers": 100,
+  "unexpectedErrorRateBelow": 0.01,
+  "apiP95MillisecondsBelow": 2000,
+  "evidenceRequirement": "Record actual environment, scope, source identity and results. A local fixture test is not VPS capacity or managed recovery evidence."
+}
