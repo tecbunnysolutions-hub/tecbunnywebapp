@@ -130,6 +130,9 @@ temp/
 
 .env*.local
 /scratch/
+# Production release records may contain private environment backups.
+/releases/
+/certs/
 dist/
 packages/*/dist
 packages/*/dist/

@@ -1,3 +1,9 @@
+# The production VPS exposes only the x86-64 v1 CPU baseline. Build the exact
+# maintained image binding against baseline libvips instead of its v2 prebuild.
+FROM node:22-alpine AS sharp-native
+COPY apps/api/native/build-cpu-v1.sh /build-cpu-v1.sh
+RUN sh /build-cpu-v1.sh
+
 # ─── Stage 1: deps ─────────────────────────────────────────────────────────────
 FROM node:22-alpine AS deps
 RUN apk add --no-cache libc6-compat python3 make g++
@@ -5,6 +11,8 @@ WORKDIR /app
 
 COPY package.json package-lock.json turbo.json .npmrc ./
 COPY packages/ packages/
+COPY scripts/apply-zod-security-backport.mjs ./scripts/apply-zod-security-backport.mjs
+COPY patches/zod/ ./patches/zod/
 COPY apps/api/package.json ./apps/api/package.json
 COPY apps/mgmt/package.json ./apps/mgmt/package.json
 COPY apps/public/package.json ./apps/public/package.json
@@ -90,12 +98,15 @@ ENV HOSTNAME=0.0.0.0
 ENV NEXT_TELEMETRY_DISABLED=1
 ARG PORT=3001
 ENV PORT=$PORT
+ENV LD_LIBRARY_PATH=/opt/tecbunny-vips-v1/lib
 
 RUN addgroup --system --gid 1001 nodejs && adduser --system --uid 1001 nextjs
 
 COPY --from=builder /app/apps/api/public ./apps/api/public
 COPY --from=builder --chown=nextjs:nodejs /app/apps/api/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/apps/api/.next/static ./apps/api/.next/static
+COPY --from=sharp-native /native-runtime/ /
+RUN node -e "if (require('./node_modules/sharp/package.json').version !== '0.35.5') throw new Error('Update the pinned CPU compatibility recipe for this Sharp version')"
 
 USER nextjs
 EXPOSE $PORT

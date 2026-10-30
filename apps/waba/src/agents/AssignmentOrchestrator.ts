@@ -1,7 +1,7 @@
 import { BaseAgent } from './BaseAgent';
 import { TriagedPayload } from './InboundTriageAgent';
 import { supabase } from '@/lib/supabase';
-import nodemailer from 'nodemailer';
+import nodemailer, { type Transporter } from 'nodemailer';
 import { sendWhatsAppMessage } from '../services/infobipService';
 import { LeadService } from '../services/leadService';
 import { logger } from '@tecbunny/core/logger';
@@ -10,9 +10,9 @@ import { logger } from '@tecbunny/core/logger';
 // than at module load time. In serverless environments, module-level transporter
 // creation opens an SMTP connection pool that is never closed, leaking connections
 // on every cold start. Lazy creation avoids this entirely.
-let _transporter: nodemailer.Transporter | null = null;
+let _transporter: Transporter | null = null;
 
-function getTransporter(): nodemailer.Transporter {
+function getTransporter(): Transporter {
   if (!_transporter) {
     _transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST || 'smtp.gmail.com',

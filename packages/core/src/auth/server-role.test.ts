@@ -16,6 +16,18 @@ describe('role sessions for dashboard API checks', () => {
     mocks.getUser.mockResolvedValue({ data: { user }, error: null });
     mocks.getSession.mockResolvedValue({ data: { session: null } });
   });
+  it.each([
+    ['sales', 'sales_executive'],
+    ['sales-staff', 'store_executive'],
+    ['sales-external', 'sales_agent'],
+    ['manager', 'sales_manager'],
+  ])('resolves verified legacy %s identities to %s', async (storedRole, canonicalRole) => {
+    mocks.getUser.mockResolvedValue({ data: { user: { ...user, app_metadata: { role: storedRole } } }, error: null });
+    const result = await getSessionWithRole(new NextRequest('https://test/api/admin/profile', {
+      headers: { Authorization: 'Bearer existing-account-token' },
+    }));
+    expect(result.role).toBe(canonicalRole);
+  });
   it('uses a verified bearer identity without requiring or reading a cookie session', async () => {
     const result = await getSessionWithRole(new NextRequest('https://test/api/admin/profile', { headers: { Authorization: 'Bearer demo-token' } }));
     expect(mocks.getUser).toHaveBeenCalledWith('demo-token');

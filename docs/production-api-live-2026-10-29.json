@@ -1,0 +1,81 @@
+{
+  "verdict": "NO-GO",
+  "verdictScope": "Full production readiness remains unverified; this receipt records the authorized API operational repair only.",
+  "applicationRevision": "6d2358c5db9863f5833480530dfca0e22972fd3d",
+  "archiveSha256": "575977b70338adf960366d70d744787a4d8ae0596fd9e727ce3730476ef918b7",
+  "imageId": "sha256:93b9398ef2affa1a8aafa24876d6216601e2cef005f7ff2c4b6be39302b0b5ed",
+  "nativeOverlaySha256": "27e4b7a96386fa2f369a6684b601524154080581bfd404a7b207cc7c70dc2491",
+  "nativeOverlayBytes": 50279424,
+  "nativeRuntime": {
+    "sharp": "0.35.5",
+    "libvips": "8.18.7",
+    "cpuBaseline": "x86-64-v1",
+    "upstreamTestsPassed": 12,
+    "upstreamTestsFailed": 0
+  },
+  "preDeploymentChecks": [
+    "Sharp PNG/JPEG/WebP conversion on the target CPU",
+    "Zod bounded-parser backport",
+    "PostgreSQL SELECT 1 with encrypted and authorized TLS",
+    "Prisma WASM SELECT 1 and mapped Permission count",
+    "Localhost endpoint statuses, health redaction and no-store"
+  ],
+  "deployedAt": "2026-10-29T04:41:56.472700+00:00",
+  "dockerHealth": "healthy",
+  "publicObservations": [
+    {
+      "path": "/api/health",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/blog",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/services",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/blueprints",
+      "status": 200
+    },
+    {
+      "path": "/api/admin/quotes",
+      "status": 401
+    },
+    {
+      "path": "/api/admin/products/archive",
+      "status": 401
+    }
+  ],
+  "otherServiceContainerIdsUnchanged": true,
+  "customerWrites": false,
+  "databaseMigrations": false,
+  "productionFrontendCodePromoted": true,
+  "frontendReleaseRecord": "docs/production-frontend-release-2026-10-29.md",
+  "captchaConfiguration": "Existing configured value preserved; exposed credential rotation remains unverified.",
+  "unverified": [
+    "Authenticated role and tenant isolation",
+    "Disaster recovery rehearsal",
+    "Provider delivery and alert drills",
+    "100-user capacity",
+    "Fresh complete Dockerfile build"
+  ],
+  "initialApiRepair": {
+    "applicationRevision": "91e5a86367313d4941658d98c6bace2f1ca6f075",
+    "imageId": "sha256:0bd0920735ac14804ea6f24dbc5a249a030b691c2e31a6e775ad2bc44c2902aa",
+    "archiveSha256": "884222af77347639adc3e3c69b44e5bf28e7ffa2efe2131aaa33dcf801d8cec2",
+    "deployedAt": "2026-10-29T03:32:59.859854+00:00"
+  },
+  "previousImageId": "sha256:0bd0920735ac14804ea6f24dbc5a249a030b691c2e31a6e775ad2bc44c2902aa",
+  "applicationArchiveBytes": 6696433,
+  "buildId": "IWeRz4F99LLY5m1sv-ac2",
+  "latestApiRepairRecord": "docs/production-blueprint-repair-2026-10-29.md",
+  "externalSmoke": {
+    "checkedAt": "2026-10-29T04:44:23.683Z",
+    "passed": 11,
+    "total": 11,
+    "evidence": "docs/production-postdeploy-smoke-2026-10-29.json"
+  },
+  "blueprintPublicProjectionVerified": true
+}

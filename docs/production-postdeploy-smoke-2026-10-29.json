@@ -1,0 +1,98 @@
+{
+  "checkedAt": "2026-10-29T04:44:23.683Z",
+  "scope": "Unauthenticated public HTTP smoke; does not establish authenticated flows or capacity.",
+  "results": [
+    {
+      "name": "storefront",
+      "url": "https://www.tecbunny.com/",
+      "finalUrl": "https://www.tecbunny.com/",
+      "status": 200,
+      "expectedStatus": 200,
+      "passed": true
+    },
+    {
+      "name": "storefront-apex",
+      "url": "https://tecbunny.com/",
+      "finalUrl": "https://www.tecbunny.com/",
+      "status": 200,
+      "expectedStatus": 200,
+      "passed": true
+    },
+    {
+      "name": "sitemap",
+      "url": "https://www.tecbunny.com/sitemap.xml",
+      "finalUrl": "https://www.tecbunny.com/sitemap.xml",
+      "status": 200,
+      "expectedStatus": 200,
+      "passed": true
+    },
+    {
+      "name": "admin",
+      "url": "https://admin.tecbunny.com/",
+      "finalUrl": "https://admin.tecbunny.com/superadmin/login",
+      "status": 200,
+      "expectedStatus": 200,
+      "passed": true
+    },
+    {
+      "name": "legacy-admin",
+      "url": "https://superadmin.tecbunny.com/",
+      "finalUrl": "https://superadmin.tecbunny.com/superadmin/login",
+      "status": 200,
+      "expectedStatus": 200,
+      "passed": true
+    },
+    {
+      "name": "staff",
+      "url": "https://staff.tecbunny.com/",
+      "finalUrl": "https://staff.tecbunny.com/auth/login",
+      "status": 200,
+      "expectedStatus": 200,
+      "passed": true
+    },
+    {
+      "name": "waba",
+      "url": "https://waba.tecbunny.com/",
+      "finalUrl": "https://waba.tecbunny.com/",
+      "status": 200,
+      "expectedStatus": 200,
+      "passed": true
+    },
+    {
+      "name": "api-health",
+      "url": "https://api.tecbunny.com/api/health",
+      "finalUrl": "https://api.tecbunny.com/api/health",
+      "status": 200,
+      "expectedStatus": 200,
+      "passed": true,
+      "redacted": true,
+      "noStore": true
+    },
+    {
+      "name": "api-blog",
+      "url": "https://api.tecbunny.com/api/v1/blog",
+      "finalUrl": "https://api.tecbunny.com/api/v1/blog",
+      "status": 200,
+      "expectedStatus": 200,
+      "passed": true
+    },
+    {
+      "name": "anonymous-admin",
+      "url": "https://api.tecbunny.com/api/admin/quotes",
+      "finalUrl": "https://api.tecbunny.com/api/admin/quotes",
+      "status": 401,
+      "expectedStatus": 401,
+      "passed": true
+    },
+    {
+      "name": "blueprint-list",
+      "url": "https://api.tecbunny.com/api/v1/blueprints",
+      "finalUrl": "https://api.tecbunny.com/api/v1/blueprints",
+      "status": 200,
+      "expectedStatus": 200,
+      "passed": true,
+      "count": 0,
+      "allowedFieldsOnly": true
+    }
+  ]
+}

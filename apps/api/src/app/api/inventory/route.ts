@@ -5,7 +5,7 @@ import { BaseSupabaseClient, SupabaseInventoryRepository } from "@tecbunny/infra
 import { envConfig } from "@tecbunny/core/environment-validator";
 
 const INVENTORY_ACCESS: RoleCheckOptions = {
-  allowedRoles: ['sales', 'manager'],
+  allowedRoles: ['sales_executive', 'sales_manager'],
   minimumRole: 'admin'
 };
 
@@ -92,7 +92,7 @@ export async function PUT(request: NextRequest) {
     if ('error' in access) {
       return access.error;
     }
-    if (!access.role || !['manager', 'admin', 'superadmin'].includes(access.role)) {
+    if (!access.role || !['sales_manager', 'admin', 'superadmin'].includes(access.role)) {
       return NextResponse.json({ error: 'Only managers and administrators can perform absolute stock adjustments' }, { status: 403 });
     }
     

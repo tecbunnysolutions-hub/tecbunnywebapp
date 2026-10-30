@@ -1,4 +1,4 @@
-import nodemailer from 'nodemailer';
+import nodemailer, { type Transporter } from 'nodemailer';
 
 import { resolveSiteUrl } from '../site-url';
 import { logger } from '../logger';
@@ -63,7 +63,7 @@ export interface EmailServiceConfig {
 }
 
 export class EmailService {
-  private transporter: nodemailer.Transporter;
+  private transporter: Transporter;
   private config: EmailServiceConfig;
 
   constructor(config: EmailServiceConfig) {

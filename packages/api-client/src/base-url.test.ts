@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { DOCKER_API_URL, LOCAL_API_URL, PRODUCTION_API_URL, STAGING_API_URL, resolveApiBaseUrl } from './base-url.mjs';
 
 describe('resolveApiBaseUrl', () => {
-  it.each(['tecbunny.com', 'www.tecbunny.com', 'staff.tecbunny.com', 'admin.tecbunny.com'])('maps %s to production', (hostname) => {
+  it.each(['tecbunny.com', 'www.tecbunny.com', 'staff.tecbunny.com', 'superadmin.tecbunny.com'])('maps %s to production', (hostname) => {
     expect(resolveApiBaseUrl({ hostname })).toBe(PRODUCTION_API_URL);
   });
 

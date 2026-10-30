@@ -1,6 +1,7 @@
 name: CI Pipeline
 
 on:
+  workflow_call:
   push:
     branches: [main, develop]
   pull_request:
@@ -23,6 +24,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
       - run: npm ci
+      - run: npm run test:security-backport
       - run: npm audit --audit-level=high
 
   # ─── TypeScript + Lint ──────────────────────────────────────────────────────
@@ -75,6 +77,8 @@ jobs:
           NEXT_PUBLIC_SUPABASE_ANON_KEY: placeholder
       - name: Validate database readiness
         run: npm run validate:db-readiness
+      - name: Test security migrations in isolated PostgreSQL
+        run: npm run test:security-migrations
 
   # ─── Build ──────────────────────────────────────────────────────────────────
   build:
@@ -100,11 +104,7 @@ jobs:
             turbo-${{ runner.os }}-
 
       - name: Build (turbo)
-        run: npx turbo run build
-        env:
-          NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: placeholder
-          NEXT_TELEMETRY_DISABLED: 1
+        run: node scripts/build-ci.mjs
 
   # ─── Database migration check ───────────────────────────────────────────────
   migrations:

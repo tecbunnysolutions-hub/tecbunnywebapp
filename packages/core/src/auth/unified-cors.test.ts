@@ -5,13 +5,14 @@ import { isAllowedApiOrigin } from './unified-middleware';
 const allowed = (origin: string, env = 'production') => isAllowedApiOrigin(new URL(origin), env);
 
 describe('isAllowedApiOrigin', () => {
-  it.each(['https://tecbunny.com', 'https://www.tecbunny.com', 'https://staff.tecbunny.com', 'https://admin.tecbunny.com'])(
+  it.each(['https://tecbunny.com', 'https://www.tecbunny.com', 'https://staff.tecbunny.com', 'https://superadmin.tecbunny.com'])(
     'allows %s',
     (origin) => expect(allowed(origin)).toBe(true),
   );
 
   it('rejects other subdomains, plain http and lookalikes', () => {
     expect(allowed('https://evil.tecbunny.com')).toBe(false);
+    expect(allowed('https://admin.tecbunny.com')).toBe(false);
     expect(allowed('http://www.tecbunny.com')).toBe(false);
     expect(allowed('https://tecbunny.com.evil.io')).toBe(false);
     expect(allowed('https://api.tecbunny.com')).toBe(false);

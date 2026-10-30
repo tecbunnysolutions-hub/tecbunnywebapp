@@ -11,7 +11,7 @@ import { isPubliclyVisibleProduct } from "@tecbunny/core/product-visibility";
 import { classifyProductTax, TaxClassificationError } from "@tecbunny/core/ai/tax-classification";
 import { processAndUploadExternalImage } from "@tecbunny/core/image-processor";
 
-const ADMIN_ROLES = new Set(['superadmin']);
+const ADMIN_ROLES = new Set(['admin', 'superadmin']);
 
 function pickFirst(...values: unknown[]) {
   return values.find((value) => {

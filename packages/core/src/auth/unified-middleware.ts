@@ -27,7 +27,7 @@ function generateNonce(): string {
   return randomBase64(16);
 }
 
-const ALLOWED_API_HOSTS = new Set(['tecbunny.com', 'www.tecbunny.com', 'staff.tecbunny.com', 'admin.tecbunny.com']);
+const ALLOWED_API_HOSTS = new Set(['tecbunny.com', 'www.tecbunny.com', 'staff.tecbunny.com', 'superadmin.tecbunny.com']);
 
 /** CORS allowlist for apps/api: the four production frontends over HTTPS, localhost for development, and Chrome extensions. */
 export function isAllowedApiOrigin(url: URL, nodeEnv: string | undefined = process.env.NODE_ENV): boolean {

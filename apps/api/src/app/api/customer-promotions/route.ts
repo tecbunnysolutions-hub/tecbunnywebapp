@@ -11,7 +11,8 @@ export async function POST(request: NextRequest) {
       process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY!
     );
     
-    const { action, customerId } = await request.json();
+    const payload = await request.json();
+    const { action, customerId } = payload;
 
     if (action === 'check-all') {
       // Run promotion check for all eligible customers
@@ -156,7 +157,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (action === 'apply-promotion' && customerId) {
-      const { toCategory, fromCategory, reason } = await request.json();
+      const { toCategory, fromCategory, reason } = payload;
 
       // Apply the promotion
       const { error: updateError } = await supabase
@@ -221,7 +222,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (action === 'update-settings') {
-      const { settings } = await request.json();
+      const { settings } = payload;
 
       const { error } = await supabase
         .from('system_settings')

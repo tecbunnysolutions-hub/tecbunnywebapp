@@ -1,4 +1,6 @@
 import { createSupabaseClient as createClient } from '@tecbunny/database/server';
+import { createServiceClient } from '@tecbunny/database/admin';
+import { isSuperadminSession } from '@tecbunny/core/permissions';
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from "@tecbunny/core/admin-auth";
 import { createQuoteActionToken } from "@tecbunny/core/quotes/action-token";
@@ -18,14 +20,16 @@ export async function GET(_request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { data: quotes, error } = await supabase
+    // The verified root session is not a Supabase JWT. Other admins retain RLS.
+    const queryClient = await isSuperadminSession() ? createServiceClient() : supabase;
+    const { data: quotes, error } = await queryClient
       .from('quotes')
       .select('*')
       .order('created_at', { ascending: false });
 
     if (error) {
       logger.error('mgmt_quotes.audit.query_failed', { error: error.message });
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return NextResponse.json({ error: 'Failed to fetch quotes' }, { status: 500 });
     }
 
     const quotesWithSecureLinks = (quotes || []).map((quote: any) => ({
@@ -35,7 +39,7 @@ export async function GET(_request: NextRequest) {
     }));
 
     logger.info('mgmt_quotes.audit.list_success', { count: quotesWithSecureLinks.length });
-    return NextResponse.json(quotesWithSecureLinks);
+    return NextResponse.json(quotesWithSecureLinks, { headers: { 'Cache-Control': 'private, no-store' } });
   } catch (error) {
     logger.error('mgmt_quotes.audit.list_failed', { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json({ error: 'Failed to fetch quotes' }, { status: 500 });

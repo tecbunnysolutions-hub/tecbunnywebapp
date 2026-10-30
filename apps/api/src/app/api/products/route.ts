@@ -358,7 +358,7 @@ async function ensureProductColumns(supabase: any): Promise<Set<string> | null> 
   }
 }
 
-const ADMIN_ROLES = new Set(['superadmin']);
+const ADMIN_ROLES = new Set(['admin', 'superadmin']);
 
 // Get products with variants and options
 export async function GET(request: NextRequest) {

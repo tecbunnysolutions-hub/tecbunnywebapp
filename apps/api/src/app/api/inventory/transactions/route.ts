@@ -163,7 +163,7 @@ export async function POST(request: NextRequest) {
   const correlationId = request.headers.get('x-correlation-id') || crypto.randomUUID();
 
   try {
-    const access = await requireApiRole({ allowedRoles: ['sales', 'manager'], minimumRole: 'admin' });
+    const access = await requireApiRole({ allowedRoles: ['sales_executive', 'sales_manager'], minimumRole: 'admin' });
     if ('error' in access) return access.error;
     const supabase = isSupabaseServiceConfigured ? createSupabaseServiceClient() : access.supabase;
 
@@ -353,7 +353,7 @@ export async function GET(request: NextRequest) {
   const correlationId = request.headers.get('x-correlation-id') || crypto.randomUUID();
 
   try {
-    const access = await requireApiRole({ allowedRoles: ['sales', 'manager'], minimumRole: 'admin' });
+    const access = await requireApiRole({ allowedRoles: ['sales_executive', 'sales_manager'], minimumRole: 'admin' });
     if ('error' in access) return access.error;
     const { supabase } = access;
 

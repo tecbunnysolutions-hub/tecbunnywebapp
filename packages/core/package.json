@@ -162,10 +162,20 @@
     "fontkit": "^2.0.4",
     "ioredis": "^5.11.1",
     "pdfkit": "^0.19.1",
-    "sanitize-html": "^2.17.7",
-    "sharp": "^0.35.4",
+    "sanitize-html": "^2.18.1",
+    "sharp": "^0.35.5",
     "zod": "^4.4.3",
-    "zustand": "^5.0.14"
+    "zustand": "^5.0.14",
+    "speakeasy": "2.0.0",
+    "qrcode": "1.5.4",
+    "nodemailer": "^10.2.1",
+    "@opentelemetry/api-logs": ">=0.200.0 <0.300.0",
+    "@opentelemetry/instrumentation": ">=0.200.0 <0.300.0",
+    "@opentelemetry/resources": ">=2.0.0 <3.0.0",
+    "@opentelemetry/sdk-logs": ">=0.200.0 <0.300.0",
+    "@opentelemetry/sdk-metrics": ">=2.0.0 <3.0.0",
+    "@opentelemetry/sdk-trace-base": ">=2.0.0 <3.0.0",
+    "@aws-sdk/s3-request-presigner": "3.1090.0"
   },
   "scripts": {
     "test": "vitest run",
@@ -173,9 +183,13 @@
   },
   "devDependencies": {
     "@types/node": "^26.1.1",
-    "@vitest/coverage-v8": "^4.1.10",
+    "@vitest/coverage-v8": "^4.1.12",
     "typescript": "5.9.3",
-    "vitest": "^4.1.10",
-    "@types/sanitize-html": "^2.16.1"
+    "vitest": "^4.1.12",
+    "@types/sanitize-html": "^2.16.1",
+    "@types/speakeasy": "^2.0.10",
+    "@types/qrcode": "1.5.6",
+    "@types/nodemailer": "^8.0.2",
+    "@types/pdfkit": "^0.17.6"
   }
 }

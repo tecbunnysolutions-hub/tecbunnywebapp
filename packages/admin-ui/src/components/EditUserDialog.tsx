@@ -29,6 +29,7 @@ import { logger } from "@tecbunny/core/logger";
 import type { User, CustomerCategory } from "@tecbunny/core/types";
 import type { UserRole } from "@tecbunny/core";
 import {
+  normalizeRole,
   EFFECTIVE_PERMISSIONS,
   ROLE_DESCRIPTION,
   ROLE_DISPLAY_NAME,
@@ -66,15 +67,7 @@ export function EditUserDialog({ isOpen, onClose, user, onUserUpdated, canManage
 
   React.useEffect(() => {
     if (user) {
-      const migratedRole = user.role === 'sales'
-        ? 'sales_executive'
-        : user.role === 'sales-staff'
-          ? 'store_executive'
-          : user.role === 'sales-external'
-            ? 'sales_agent'
-            : user.role === 'manager'
-              ? 'sales_manager'
-              : user.role;
+      const migratedRole = normalizeRole(user.role);
       setFormData({
         name: user.name || '',
         email: user.email || '',

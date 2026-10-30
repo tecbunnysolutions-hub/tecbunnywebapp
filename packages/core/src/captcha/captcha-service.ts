@@ -149,10 +149,9 @@ const rawSiteKey = (process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || '').trim();
 const rawSecretKey = (process.env.TURNSTILE_SECRET_KEY || '').trim();
 
 const siteKey = rawSiteKey;
-// Auto-correct if the secret key was set to the default site key (common typo)
-const dummySite = ['0x4AAAAAA', 'CXR-JIPYf0PSOt3'].join('');
-const dummySecret = ['0x4AAAAAA', 'CXR-AC4lpjtmrjXOPRSlPEE3y4'].join('');
-const secretKey = rawSecretKey === dummySite ? dummySecret : rawSecretKey;
+// A site key is public and cannot serve as the verification secret.
+// Missing or mistyped secrets fail closed; no credential is embedded in source.
+const secretKey = rawSecretKey && rawSecretKey !== rawSiteKey ? rawSecretKey : "";
 
 const captchaConfig = {
   provider: 'turnstile' as const,
@@ -177,19 +176,6 @@ logger.info('CAPTCHA Configuration loaded', {
   nodeEnv: process.env.NODE_ENV,
   context: 'captcha-service.configuration'
 });
-
-// Check for key mismatch
-const isSiteKeyDefault = siteKey === dummySite;
-const isSecretKeyDefault = secretKey === dummySecret;
-
-if (siteKey && secretKey) {
-  if (isSiteKeyDefault !== isSecretKeyDefault) {
-    logger.error('CAPTCHA configuration mismatch detected! One key is the default development key, but the other is custom. This will cause verification failures.', {
-      site_is_dev_default: isSiteKeyDefault,
-      secret_is_dev_default: isSecretKeyDefault
-    });
-  }
-}
 
 export const captchaService = new CaptchaService(captchaConfig);
 

@@ -1,6 +1,6 @@
 {
   "routeCount": 287,
-  "endpointCount": 396,
+  "endpointCount": 395,
   "routes": [
     {
       "path": "/api/abandoned-assessments",
@@ -3168,10 +3168,6 @@
       "methods": [
         {
           "method": "GET",
-          "access": "protected"
-        },
-        {
-          "method": "POST",
           "access": "protected"
         }
       ]

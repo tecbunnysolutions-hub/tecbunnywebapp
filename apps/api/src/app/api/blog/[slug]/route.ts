@@ -5,6 +5,7 @@ import { getSessionWithRole } from '@tecbunny/core/auth/server-role';
 import { isAtLeast } from '@tecbunny/core/roles';
 import { logger } from '@tecbunny/core';
 import { z } from 'zod';
+import { blogStorageFields, normalizePost } from '../../../../services/blog.service';
 
 export const dynamic = 'force-dynamic';
 
@@ -22,21 +23,25 @@ const UpdatePostSchema = z.object({
 });
 
 /** GET /api/blog/[slug] — get single post by slug */
-export async function GET(_request: NextRequest, { params }: BlogRouteContext) {
+export async function GET(request: NextRequest, { params }: BlogRouteContext) {
   try {
     const { slug } = await params;
     logger.info('blog_slug.audit.requested', { slug });
     const supabase = await createClient();
-    const { data, error } = await supabase
+    const { session, role } = await getSessionWithRole(request).catch(() => ({ session: null, role: null }));
+    const isStaff = !!session && !!role && isAtLeast(role, 'marketing_executive');
+    let query = supabase
       .from('blog_posts')
-      .select('*, profiles(first_name, last_name, avatar_url)')
+      .select('id,title,slug,excerpt,content:body,cover_image:cover_image_url,tags,status,author_id,published_at,created_at,updated_at,metadata,profiles(name,avatar_url)')
       .eq('slug', slug)
-      .maybeSingle();
+      .is('deleted_at', null);
+    if (!isStaff) query = query.eq('status', 'active').not('published_at', 'is', null).lte('published_at', new Date().toISOString());
+    const { data, error } = await query.maybeSingle();
 
     if (error || !data) return NextResponse.json({ error: 'Post not found' }, { status: 404 });
     logger.info('blog_slug.audit.success', { slug });
-    return NextResponse.json({ post: data }, {
-      headers: { 'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=900' },
+    return NextResponse.json({ post: normalizePost(data) }, {
+      headers: { 'Cache-Control': 'private, no-store' },
     });
   } catch (err: any) {
     logger.error('blog_slug.audit.failed', { error: err.message });
@@ -61,25 +66,32 @@ async function PATCHHandler(request: NextRequest, { params }: BlogRouteContext) 
     }
 
     const supabase = await createClient();
-    const updates: Record<string, any> = { ...parsed.data, updated_at: new Date().toISOString() };
+    const { data: current, error: readError } = await supabase.from('blog_posts')
+      .select('metadata,updated_at,published_at').eq('slug', slug).maybeSingle();
+    if (readError) return NextResponse.json({ error: 'Failed to load post for update' }, { status: 500 });
+    if (!current) return NextResponse.json({ error: 'Post not found' }, { status: 404 });
+    const updates: Record<string, unknown> = { ...blogStorageFields(parsed.data, current.metadata), updated_at: new Date().toISOString() };
     if (parsed.data.status === 'published') {
-      updates.published_at = updates.published_at ?? new Date().toISOString();
+      updates.published_at = current.published_at ?? new Date().toISOString();
+    } else if (parsed.data.status === 'draft') {
+      updates.published_at = null;
     }
 
-    const { data, error } = await supabase
+    let update = supabase
       .from('blog_posts')
       .update(updates)
-      .eq('slug', slug)
-      .select()
-      .maybeSingle();
+      .eq('slug', slug);
+    // Avoid overwriting metadata if another editor changed this post after the read.
+    update = current.updated_at ? update.eq('updated_at', current.updated_at) : update.is('updated_at', null);
+    const { data, error } = await update.select().maybeSingle();
 
     if (error) {
       logger.error('blog.update_failed', { error: error.message });
       return NextResponse.json({ error: 'Failed to update post' }, { status: 500 });
     }
-    if (!data) return NextResponse.json({ error: 'Post not found' }, { status: 404 });
+    if (!data) return NextResponse.json({ error: 'Post changed; reload before saving again' }, { status: 409 });
 
-    return NextResponse.json({ post: data });
+    return NextResponse.json({ post: normalizePost(data) });
   } catch (err: any) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }

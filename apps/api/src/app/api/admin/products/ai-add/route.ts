@@ -27,7 +27,7 @@ import { slugify } from "@tecbunny/core/utils";
 // Constants
 // ─────────────────────────────────────────────────────────────────────────────
 
-const ADMIN_ROLES = new Set(['superadmin']);
+const ADMIN_ROLES = new Set(['admin', 'superadmin']);
 const HANDLE_MAX = 60;
 
 function getUuidAuditUserId(userId: string | undefined): string | null {

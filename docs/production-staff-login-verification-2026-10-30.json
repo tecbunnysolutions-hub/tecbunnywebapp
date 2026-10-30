@@ -1,0 +1,28 @@
+{
+  "checkedAt": "2026-10-30T10:17:59.956Z",
+  "sourceRevision": "b1c0d5cdd16d9c872e5a9db6e3e92038853baf02",
+  "productionDeployment": "BWb8VFwnCvCwF7WUZZRXnpg3f7xL",
+  "loginUrl": "https://staff.tecbunny.com/auth/login",
+  "httpStatus": 200,
+  "contentSecurityPolicy": "default-src 'self'; script-src 'self' 'unsafe-inline' https://checkout.razorpay.com https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline' https:; img-src 'self' https: data: blob:; font-src 'self' https: data:; connect-src 'self' https: wss:; frame-src 'self' https://api.razorpay.com https://checkout.razorpay.com https://challenges.cloudflare.com; object-src 'none'; base-uri 'self'; form-action 'self' https:; frame-ancestors 'none'",
+  "securityWidgetLoadFailureResolved": true,
+  "customerRoleDenialObserved": true,
+  "ownerApprovedRoleGrant": {
+    "changeId": "d75897cf-054e-4d56-a213-6b2db29ded05",
+    "approved": true,
+    "profileRole": "admin",
+    "authRole": "admin",
+    "auditRecorded": true,
+    "passwordChanged": false,
+    "superadminGranted": false,
+    "verifiedAt": "2026-10-30T10:07:39.437Z",
+    "auditReadbackVerified": true,
+    "auditEventCount": 2
+  },
+  "normalAdminLogin": {
+    "observed": true,
+    "url": "https://staff.tecbunny.com/mgmt/admin",
+    "heading": "Admin Dashboard"
+  },
+  "limitations": "One customer-denial/Admin-allow flow; full role, ownership and tenant isolation matrix remains unverified. Account identity and credentials are excluded."
+}

@@ -1,5 +1,5 @@
 import { randomBytes, randomUUID, randomInt, createHash } from 'crypto';
-import nodemailer from 'nodemailer';
+import nodemailer, { type Transporter } from 'nodemailer';
 import { logger } from '@tecbunny/core';
 import {  getAdminClient, isSupabaseServiceConfigured  } from '@tecbunny/database/admin';
 import { getRedis } from './redis';
@@ -159,7 +159,7 @@ export async function assertOtpVelocity(phoneNumber: string, ipAddress: string =
 }
 
 export class OTPManager {
-  private emailTransporter: nodemailer.Transporter;
+  private emailTransporter: Transporter;
 
   constructor() {
     this.emailTransporter = nodemailer.createTransport({

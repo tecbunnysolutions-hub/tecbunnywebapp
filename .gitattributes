@@ -1,0 +1,4 @@
+# Preserve the reviewed upstream patch bytes for checksum verification on Windows.
+# Diff context lines intentionally contain a single space; retain upstream bytes.
+patches/zod/upstream-a0ebf97.patch text eol=lf whitespace=-blank-at-eol
+apps/api/native/*.sh text eol=lf

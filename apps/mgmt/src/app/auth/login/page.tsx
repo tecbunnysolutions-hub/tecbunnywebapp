@@ -1,5 +1,5 @@
 'use client';
-import { STAFF_PANEL_ROLES, getPanelHome, normalizeRole } from "@tecbunny/core";
+import { STAFF_PANEL_ROLES, ROLE_DISPLAY_NAME, getPanelHome, normalizeRole } from "@tecbunny/core";
 import { createClient } from '@tecbunny/database';
 
 
@@ -16,21 +16,6 @@ import { TwoFactorVerification } from '@/components/auth/TwoFactorVerification';
 
 // Staff roles permitted to access the CRM/Management Panel
 const STAFF_ROLES = STAFF_PANEL_ROLES;
-
-const ROLE_LABELS: Record<string, string> = {
-  admin: 'Administrator',
-  manager: 'Sales Manager',
-  sales_manager: 'Sales Manager',
-  service_manager: 'Service Manager',
-  'sales-staff': 'Store Executive',
-  store_executive: 'Store Executive',
-  sales: 'Sales Executive',
-  sales_executive: 'Sales Executive',
-  'sales-external': 'Sales Agent',
-  sales_agent: 'Sales Agent',
-  service_engineer: 'Service Engineer',
-  accounts: 'Accounts',
-};
 
 interface AuthUser {
   id: string;
@@ -265,7 +250,7 @@ function StaffSignInForm() {
       }
 
       toast({
-        title: `Welcome, ${ROLE_LABELS[userRole] ?? userRole}`,
+        title: `Welcome, ${ROLE_DISPLAY_NAME[userRole] ?? userRole}`,
         description: 'CRM access granted.',
       });
 
@@ -292,11 +277,11 @@ function StaffSignInForm() {
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-card/60 border border-primary/20 mb-5 shadow-lg shadow-primary/10">
             <ShieldCheck className="h-8 w-8 text-primary" />
           </div>
-          <h1 className="text-3xl font-bold text-foreground tracking-wide">CRM Staff Portal</h1>
-          <p className="text-muted-foreground text-sm mt-2">TecBunny Solutions — Authorised Staff Only</p>
+          <h1 className="text-3xl font-bold text-foreground tracking-wide">Staff & Administrator Portal</h1>
+          <p className="text-muted-foreground text-sm mt-2">TecBunny Solutions — Authorised Staff and Administrators</p>
           <div className="mt-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-xs text-primary">
             <Users className="h-3 w-3" />
-            Staff Control Panel
+            Management Control Panel
           </div>
         </div>
 
