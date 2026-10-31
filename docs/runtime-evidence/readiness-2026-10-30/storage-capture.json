@@ -1,0 +1,15 @@
+{
+  "startedAt": "2026-10-31T02:13:41.612Z",
+  "status": "pass",
+  "source": "object identities and ETags from restored 30 October snapshot",
+  "objects": 230,
+  "bytes": 8812253,
+  "snapshotETagsMatched": true,
+  "encryptedSha256": "c20042c217e68492994b715ba20af1acba5c035137d69c60405c4dc8c9bccc50",
+  "encryptedBytes": 9068409,
+  "limitations": [
+    "Files have not been restored to a separate Supabase Storage service",
+    "No recurring schedule or retention policy established"
+  ],
+  "finishedAt": "2026-10-31T02:14:55.008Z"
+}

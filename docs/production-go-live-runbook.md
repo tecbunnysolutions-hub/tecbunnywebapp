@@ -1,5 +1,13 @@
 # TecBunny production go-live runbook
 
+**Current procedure — 30 October:** use [Local API releases](local-api-release.md).
+The owner selected local/manual API publishing and the GitHub API publisher is
+disabled. Older workflow/GHCR and live-state statements below are historical review
+context and must not be used to select a current image or publish the API. The site
+is operational; formal readiness remains NO-GO. Read the newest immutable live
+receipt before selecting an override. Main protection is now enabled; see the
+current remediation record for its verified settings.
+
 Prepared 27 October 2026 for the API VPS at `/opt/tecbunny`, using
 `docker-compose.api.yml`, Caddy, Redis and an external Supabase database.
 This document does not authorize or record a deployment. Current gate: **NO-GO**.

@@ -1,0 +1,31 @@
+{
+  "recordedAt": "2026-10-30T12:29:57.503292+00:00",
+  "status": "captured-not-restored",
+  "startedAt": "20261030T122433Z",
+  "durationSeconds": 324.48,
+  "sourceProjectRef": "yzrznydkqcacjiwalmlw",
+  "sourceApiImage": "sha256:7cfacbaf1447d152fef488c18a26effd6e6e06424f589b2ad4318d65118c000f",
+  "postgresClientImage": "sha256:266d3c257594e195b309ae9d1805e54c788f1d7b375f56bf6c367aac6c917e7b",
+  "postgresClientRegistryDigests": [
+    "postgres@sha256:266d3c257594e195b309ae9d1805e54c788f1d7b375f56bf6c367aac6c917e7b"
+  ],
+  "schemas": [
+    "public",
+    "private (if present)",
+    "auth",
+    "storage metadata"
+  ],
+  "encryptedFile": "database-20261030T122433Z-11bd227c.cms",
+  "encryptedBytes": 8028059,
+  "encryptedSha256": "faed0515c83904b13fd150caf51ab1fa18e4ae862dd9900b31314d4ef2b8bfec",
+  "recipientCertificateSha256": "f51a1fb72a9ac9090ecce2ac172d61c78e828829924906581c30f5764cd65494",
+  "encryption": "OpenSSL CMS AES-256-GCM; RSA-OAEP/SHA-256 recipient transport; streaming",
+  "readOnlySource": true,
+  "tlsVerification": "verify-full with provider CA",
+  "plaintextWrittenToDisk": false,
+  "limitations": [
+    "Restore has not been executed",
+    "Storage object bytes and provider/project configuration are not in this logical export",
+    "No daily schedule/retention or sustained RPO guarantee established by one capture"
+  ]
+}

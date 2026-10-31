@@ -1,0 +1,145 @@
+{
+  "recordedAt": "2026-10-31T02:20:35.126Z",
+  "scope": "nine sequential anonymous GETs; no provider sends, customer writes or load test",
+  "results": [
+    {
+      "name": "api-health",
+      "url": "https://api.tecbunny.com/api/health",
+      "expectedStatus": 200,
+      "status": 200,
+      "durationMs": 1920,
+      "pass": true,
+      "headers": {
+        "cache-control": "no-store",
+        "strict-transport-security": "max-age=31536000; includeSubDomains; preload",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "content-security-policy": "default-src 'self'; script-src 'self' 'nonce-present-value-omitted' https://challenges.cloudflare.com https://cs.iubenda.com https://cdn.iubenda.com https://static.cloudflareinsights.com https://www.googletagmanager.com https://www.google-analytics.com https://va.vercel-scripts.com https://connect.facebook.net https://sdk.cashfree.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; style-src-attr 'unsafe-inline'; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://www.google-analytics.com https://region1.analytics.google.com https://analytics.google.com https://www.google.com https://pagead2.googlesyndication.com https://api.postalpincode.in https://cloudflareinsights.com https://static.cloudflareinsights.com https://challenges.cloudflare.com https://vitals.vercel-insights.com https://api.tecbunny.com https://api.cashfree.com https://sandbox.cashfree.com; frame-src 'self' https://challenges.cloudflare.com https://www.google.com https://sdk.cashfree.com https://api.cashfree.com https://sandbox.cashfree.com https://payments.cashfree.com https://payments-test.cashfree.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self' https://secure.payu.in https://test.payu.in; frame-ancestors 'none'"
+      },
+      "reportedHealth": "healthy",
+      "privateDetailsAbsent": true
+    },
+    {
+      "name": "blog",
+      "url": "https://api.tecbunny.com/api/v1/blog",
+      "expectedStatus": 200,
+      "status": 200,
+      "durationMs": 1040,
+      "pass": true,
+      "headers": {
+        "cache-control": "public, s-maxage=300, stale-while-revalidate=900",
+        "strict-transport-security": "max-age=31536000; includeSubDomains; preload",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "content-security-policy": "default-src 'self'; script-src 'self' 'nonce-present-value-omitted' https://challenges.cloudflare.com https://cs.iubenda.com https://cdn.iubenda.com https://static.cloudflareinsights.com https://www.googletagmanager.com https://www.google-analytics.com https://va.vercel-scripts.com https://connect.facebook.net https://sdk.cashfree.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; style-src-attr 'unsafe-inline'; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://www.google-analytics.com https://region1.analytics.google.com https://analytics.google.com https://www.google.com https://pagead2.googlesyndication.com https://api.postalpincode.in https://cloudflareinsights.com https://static.cloudflareinsights.com https://challenges.cloudflare.com https://vitals.vercel-insights.com https://api.tecbunny.com https://api.cashfree.com https://sandbox.cashfree.com; frame-src 'self' https://challenges.cloudflare.com https://www.google.com https://sdk.cashfree.com https://api.cashfree.com https://sandbox.cashfree.com https://payments.cashfree.com https://payments-test.cashfree.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self' https://secure.payu.in https://test.payu.in; frame-ancestors 'none'"
+      }
+    },
+    {
+      "name": "services",
+      "url": "https://api.tecbunny.com/api/v1/services",
+      "expectedStatus": 200,
+      "status": 200,
+      "durationMs": 536,
+      "pass": true,
+      "headers": {
+        "cache-control": "public, s-maxage=300, stale-while-revalidate=900",
+        "strict-transport-security": "max-age=31536000; includeSubDomains; preload",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "content-security-policy": "default-src 'self'; script-src 'self' 'nonce-present-value-omitted' https://challenges.cloudflare.com https://cs.iubenda.com https://cdn.iubenda.com https://static.cloudflareinsights.com https://www.googletagmanager.com https://www.google-analytics.com https://va.vercel-scripts.com https://connect.facebook.net https://sdk.cashfree.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; style-src-attr 'unsafe-inline'; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://www.google-analytics.com https://region1.analytics.google.com https://analytics.google.com https://www.google.com https://pagead2.googlesyndication.com https://api.postalpincode.in https://cloudflareinsights.com https://static.cloudflareinsights.com https://challenges.cloudflare.com https://vitals.vercel-insights.com https://api.tecbunny.com https://api.cashfree.com https://sandbox.cashfree.com; frame-src 'self' https://challenges.cloudflare.com https://www.google.com https://sdk.cashfree.com https://api.cashfree.com https://sandbox.cashfree.com https://payments.cashfree.com https://payments-test.cashfree.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self' https://secure.payu.in https://test.payu.in; frame-ancestors 'none'"
+      }
+    },
+    {
+      "name": "blueprints",
+      "url": "https://api.tecbunny.com/api/v1/blueprints",
+      "expectedStatus": 200,
+      "status": 200,
+      "durationMs": 376,
+      "pass": true,
+      "headers": {
+        "cache-control": "public, s-maxage=600, stale-while-revalidate=3600",
+        "strict-transport-security": "max-age=31536000; includeSubDomains; preload",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "content-security-policy": "default-src 'self'; script-src 'self' 'nonce-present-value-omitted' https://challenges.cloudflare.com https://cs.iubenda.com https://cdn.iubenda.com https://static.cloudflareinsights.com https://www.googletagmanager.com https://www.google-analytics.com https://va.vercel-scripts.com https://connect.facebook.net https://sdk.cashfree.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; style-src-attr 'unsafe-inline'; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://www.google-analytics.com https://region1.analytics.google.com https://analytics.google.com https://www.google.com https://pagead2.googlesyndication.com https://api.postalpincode.in https://cloudflareinsights.com https://static.cloudflareinsights.com https://challenges.cloudflare.com https://vitals.vercel-insights.com https://api.tecbunny.com https://api.cashfree.com https://sandbox.cashfree.com; frame-src 'self' https://challenges.cloudflare.com https://www.google.com https://sdk.cashfree.com https://api.cashfree.com https://sandbox.cashfree.com https://payments.cashfree.com https://payments-test.cashfree.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self' https://secure.payu.in https://test.payu.in; frame-ancestors 'none'"
+      },
+      "publicProjectionRestricted": true
+    },
+    {
+      "name": "anonymous-admin-quotes",
+      "url": "https://api.tecbunny.com/api/admin/quotes",
+      "expectedStatus": 401,
+      "status": 401,
+      "durationMs": 97,
+      "pass": true,
+      "headers": {
+        "cache-control": null,
+        "strict-transport-security": "max-age=31536000; includeSubDomains; preload",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "content-security-policy": "default-src 'self'; script-src 'self' 'nonce-present-value-omitted' https://challenges.cloudflare.com https://cs.iubenda.com https://cdn.iubenda.com https://static.cloudflareinsights.com https://www.googletagmanager.com https://www.google-analytics.com https://va.vercel-scripts.com https://connect.facebook.net https://sdk.cashfree.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; style-src-attr 'unsafe-inline'; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://www.google-analytics.com https://region1.analytics.google.com https://analytics.google.com https://www.google.com https://pagead2.googlesyndication.com https://api.postalpincode.in https://cloudflareinsights.com https://static.cloudflareinsights.com https://challenges.cloudflare.com https://vitals.vercel-insights.com https://api.tecbunny.com https://api.cashfree.com https://sandbox.cashfree.com; frame-src 'self' https://challenges.cloudflare.com https://www.google.com https://sdk.cashfree.com https://api.cashfree.com https://sandbox.cashfree.com https://payments.cashfree.com https://payments-test.cashfree.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self' https://secure.payu.in https://test.payu.in; frame-ancestors 'none'"
+      }
+    },
+    {
+      "name": "anonymous-admin-archive",
+      "url": "https://api.tecbunny.com/api/admin/products/archive",
+      "expectedStatus": 401,
+      "status": 401,
+      "durationMs": 96,
+      "pass": true,
+      "headers": {
+        "cache-control": null,
+        "strict-transport-security": "max-age=31536000; includeSubDomains; preload",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "content-security-policy": "default-src 'self'; script-src 'self' 'nonce-present-value-omitted' https://challenges.cloudflare.com https://cs.iubenda.com https://cdn.iubenda.com https://static.cloudflareinsights.com https://www.googletagmanager.com https://www.google-analytics.com https://va.vercel-scripts.com https://connect.facebook.net https://sdk.cashfree.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; style-src-attr 'unsafe-inline'; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://www.google-analytics.com https://region1.analytics.google.com https://analytics.google.com https://www.google.com https://pagead2.googlesyndication.com https://api.postalpincode.in https://cloudflareinsights.com https://static.cloudflareinsights.com https://challenges.cloudflare.com https://vitals.vercel-insights.com https://api.tecbunny.com https://api.cashfree.com https://sandbox.cashfree.com; frame-src 'self' https://challenges.cloudflare.com https://www.google.com https://sdk.cashfree.com https://api.cashfree.com https://sandbox.cashfree.com https://payments.cashfree.com https://payments-test.cashfree.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self' https://secure.payu.in https://test.payu.in; frame-ancestors 'none'"
+      }
+    },
+    {
+      "name": "anonymous-audit-logs",
+      "url": "https://api.tecbunny.com/api/security/audit-logs",
+      "expectedStatus": 401,
+      "status": 401,
+      "durationMs": 122,
+      "pass": true,
+      "headers": {
+        "cache-control": null,
+        "strict-transport-security": "max-age=31536000; includeSubDomains; preload",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "content-security-policy": "default-src 'self'; script-src 'self' 'nonce-present-value-omitted' https://challenges.cloudflare.com https://cs.iubenda.com https://cdn.iubenda.com https://static.cloudflareinsights.com https://www.googletagmanager.com https://www.google-analytics.com https://va.vercel-scripts.com https://connect.facebook.net https://sdk.cashfree.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; style-src-attr 'unsafe-inline'; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://www.google-analytics.com https://region1.analytics.google.com https://analytics.google.com https://www.google.com https://pagead2.googlesyndication.com https://api.postalpincode.in https://cloudflareinsights.com https://static.cloudflareinsights.com https://challenges.cloudflare.com https://vitals.vercel-insights.com https://api.tecbunny.com https://api.cashfree.com https://sandbox.cashfree.com; frame-src 'self' https://challenges.cloudflare.com https://www.google.com https://sdk.cashfree.com https://api.cashfree.com https://sandbox.cashfree.com https://payments.cashfree.com https://payments-test.cashfree.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self' https://secure.payu.in https://test.payu.in; frame-ancestors 'none'"
+      }
+    },
+    {
+      "name": "storefront",
+      "url": "https://www.tecbunny.com/",
+      "expectedStatus": 200,
+      "status": 200,
+      "durationMs": 384,
+      "pass": true,
+      "headers": {
+        "cache-control": "public, max-age=0, must-revalidate",
+        "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "content-security-policy": "default-src 'self'; script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com https://checkout.razorpay.com https://www.googletagmanager.com https://www.google-analytics.com https://maps.googleapis.com; style-src 'self' 'unsafe-inline' https:; img-src 'self' https: data: blob:; font-src 'self' https: data:; connect-src 'self' https: wss:; frame-src 'self' https://challenges.cloudflare.com https://api.razorpay.com https://checkout.razorpay.com https://www.google.com https://maps.google.com; object-src 'none'; base-uri 'self'; form-action 'self' https:; frame-ancestors 'none'"
+      }
+    },
+    {
+      "name": "staff-login",
+      "url": "https://staff.tecbunny.com/auth/login",
+      "expectedStatus": 200,
+      "status": 200,
+      "durationMs": 398,
+      "pass": true,
+      "headers": {
+        "cache-control": "public, max-age=0, must-revalidate",
+        "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "content-security-policy": "default-src 'self'; script-src 'self' 'unsafe-inline' https://checkout.razorpay.com https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline' https:; img-src 'self' https: data: blob:; font-src 'self' https: data:; connect-src 'self' https: wss:; frame-src 'self' https://api.razorpay.com https://checkout.razorpay.com https://challenges.cloudflare.com; object-src 'none'; base-uri 'self'; form-action 'self' https:; frame-ancestors 'none'"
+      }
+    }
+  ],
+  "status": "pass"
+}

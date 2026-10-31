@@ -1,0 +1,23 @@
+{
+  "recordedAt": "2026-10-30T12:10:40.628Z",
+  "main": {
+    "contexts": [
+      "Local release gate"
+    ],
+    "upToDateRequired": true,
+    "adminsEnforced": true,
+    "approvals": 1,
+    "lastPushApproval": true,
+    "dismissStaleReviews": true,
+    "forcePushAllowed": false,
+    "deletionAllowed": false,
+    "conversationResolution": true
+  },
+  "apiPublisher": {
+    "id": 391773798,
+    "name": "Deploy API to VPS",
+    "state": "disabled_manually"
+  },
+  "localGateExecution": "not-yet-complete",
+  "deployment": "no API publication performed by this control change"
+}

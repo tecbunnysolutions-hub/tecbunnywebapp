@@ -50,8 +50,9 @@ services:
       MH_MAILDIR_PATH: /home/mailhog/mail
 
   # ─── API App ───────────────────────────────────────────────────────────────
-  # By default builds locally. In CI deployments, API_IMAGE is set to a
-  # pre-built GHCR image and `docker compose pull api` is used instead.
+  # API releases use the local/manual path. Set API_IMAGE to the verified local
+  # immutable image and include the current release's Compose override.
+  # See docs/local-api-release.md. Do not run a bare Compose up on production.
   api:
     image: ${API_IMAGE:-tecbunny-api:local}
     build:
