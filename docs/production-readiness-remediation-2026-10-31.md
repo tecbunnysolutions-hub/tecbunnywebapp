@@ -16,7 +16,7 @@ record is `quality/readiness-targets.json`.
 | Database recovery | A read-only export over verified TLS completed in 324.48 seconds. It was encrypted before disk writes and transferred with checksum verification. Authenticated decryption and a real PostgreSQL 17.11 restore succeeded: **459 tables, 49,648 rows**, all archived table row counts matched. | Actual logical data recovery verified; sustained RPO and full managed-service recovery remain unverified. |
 | Storage recovery | All **230 objects / 8,812,253 bytes** were fetched with ETags and sizes matching the restored database snapshot. The encrypted archive was decrypted into a separate private directory; every recovered file matched its SHA-256. | Local file recovery verified; restoration to a separate Supabase Storage service is outstanding. |
 | 100-user capacity | A bounded load runner and seven regression tests verify 100 virtual users, distinct sessions, identity checks, production refusal, redirect refusal and error-stop behavior. | Prepared and tested tooling only. The real application soak on an isolated representative target has not run. |
-| Provider delivery and alerts | Six local monitor tests cover threshold, cooldown, recovery, SMTP sink acceptance, failed-send retry, protocol restrictions and atomic state. The live WhatsApp credential probe returned 200. **Gmail SMTP authentication failed with 535 EAUTH**, with no backup SMTP configured. | Actual SMTP defect needs a replacement owner-managed credential; external delivery/alert acknowledgement remain unverified. |
+| Provider delivery and alerts | The owner created a replacement SMTP credential. Local and live API authentication now pass; the two approved delivery/simulated-alert emails were observed in the inbox. The API-only refresh retained its exact image and surrounding services. Six local monitor tests passed. The WhatsApp read-only credential probe returned 200. | SMTP authentication defect and the two inbox-delivery checks are fixed. Ongoing monitoring, owner acknowledgement/escalation and other provider business flows remain unverified. |
 | API publishing and release governance | GitHub API publisher ID 391773798 is disabled. Main requires an up-to-date Local release gate, one peer/last-push approval, stale-review dismissal and resolved conversations; admins are included; force pushes/deletion are blocked. Settings were read back. Local admission tooling is prepared and does not deploy. | Repository protections fixed. Full local admission is not yet passing; billing-locked GitHub Actions are not used to publish the API. |
 | Dependency policy | One raw high Zod advisory remains. Exact upstream source/runtime backport checks pass. Five tests verify the proposed policy fails closed for changed findings, versions, hashes, malformed reports and expiry. Registry latest remains 4.6.5 on 31 October. | Proposed temporary policy remains **unapproved**, expiring 13 November. It still blocks admission. |
 
@@ -63,17 +63,34 @@ allowed the successful import. Failed attempts are not represented as passes.
 The decryption key stayed on the owner's PC. Private archives, object mappings,
 plaintext restore files and logs are outside Git under an owner/SYSTEM-only ACL.
 The restore database has been stopped and its loopback port closed. No Windows
-service was registered. No production restore, migration, provider message, charge
-or 100-user production load was performed.
+service was registered. No production restore, migration, charge or 100-user
+production load was performed. The later SMTP repair sent exactly the two approved
+test messages; those contained only a test ID/status and no customer data.
+
+## SMTP repair completed
+
+After the owner created the Google app password and requested its update, the
+private local setting was backed up and updated without logging its value. Local
+authentication passed. One delivery test and one simulated failure alert were
+accepted and observed in the Gmail inbox. No additional test messages were sent.
+
+The production preflight confirmed the same account and healthy immutable image.
+The server's private environment was backed up; only `SMTP_PASS` changed. Only the
+API was recreated, retaining image
+`sha256:7cfacbaf1447d152fef488c18a26effd6e6e06424f589b2ad4318d65118c000f`.
+Runtime environment/mount comparisons passed; surrounding container identities
+were unchanged. SMTP authentication from inside the live API passed at
+03:20:55 UTC on 31 October (08:50:55 IST). All nine subsequent public smoke checks
+passed. This does not establish that an ongoing alert schedule is installed.
+
+The private live and rollback overrides are recorded in
+`production-smtp-verification-2026-10-31.json`. Preserve the current private SMTP
+override when preparing a future API replacement; it is part of the current
+Compose configuration. These private configuration files must not be copied into
+public release artifacts or Git. No API image was built or published for this fix.
 
 ## Needs human action
 
-- **SMTP credential:** create a Gmail app password in the account configured by
-  `SMTP_USER`, then securely update `SMTP_PASS` in the primary checkout's private
-  `.env.local`. Keep it out of chat. The existing local setting has not changed
-  since the failed verification. Credential rotation is human-owned under the
-  production-remediation skill. After verification, prepare the narrowly scoped
-  server update and API restart before executing it.
 - **Staging:** the free `tecbunny-readiness-staging` Supabase form was prepared in
   Seoul. The owner must complete password creation/submission and retain the
   credential securely. A representative isolated application host is also needed
@@ -90,10 +107,10 @@ or 100-user production load was performed.
   tests. It is not installed or enabled. Automatic approval review blocked the
   remote Linux validation command because approval was required and this session
   cannot request it. Retention and storage-object recurrence remain separate.
-- **Operations:** two test emails to the owner were explicitly approved: one
-  delivery test and one simulated alert. None have been sent because SMTP rejects
-  authentication. Inbox receipt/acknowledgement, an ongoing on-call channel and
-  provider sandbox business flows still need verification.
+- **Operations:** the two approved email tests have arrived. Owner acknowledgement,
+  a persistent on-call channel, escalation and other provider sandbox business
+  flows still need verification. The simulated alert did not inject a production
+  outage and does not prove a deployed monitor is running.
 
 The owner previously deferred Turnstile rotation; its configured value was not
 changed by this work. That deferral is not recorded as successful rotation.

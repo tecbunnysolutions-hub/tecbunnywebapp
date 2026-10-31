@@ -1,0 +1,79 @@
+{
+  "recordedAt": "2026-10-31T03:09:21.052Z",
+  "scope": "Local and live API SMTP authentication; two explicitly approved inbox deliveries",
+  "credentialsLogged": false,
+  "localAuthentication": "pass",
+  "deliveryTest": {
+    "smtpAccepted": true,
+    "inboxVerified": true
+  },
+  "simulatedAlertTest": {
+    "smtpAccepted": true,
+    "inboxVerified": true,
+    "productionOutageInjected": false
+  },
+  "messagesSent": 2,
+  "productionStatus": "smtp-authentication-verified",
+  "production": {
+    "verifiedAt": "2026-10-31T03:20:55.984938+00:00",
+    "image": "sha256:7cfacbaf1447d152fef488c18a26effd6e6e06424f589b2ad4318d65118c000f",
+    "apiRestarted": true,
+    "health": "healthy",
+    "otherServicesUnchanged": true,
+    "onlyEnvironmentChange": "SMTP_PASS",
+    "liveComposeOverride": "/var/backups/tecbunny/readiness-20261030/smtp-repair-20261031T032002Z/compose.smtp.json",
+    "rollbackComposeOverride": "/var/backups/tecbunny/readiness-20261030/smtp-repair-20261031T032002Z/compose.rollback.json",
+    "messagesSentByRepair": 0
+  },
+  "publicSmoke": {
+    "recordedAt": "2026-10-31T03:23:21.885Z",
+    "status": "pass",
+    "results": [
+      {
+        "name": "api-health",
+        "status": 200,
+        "pass": true
+      },
+      {
+        "name": "blog",
+        "status": 200,
+        "pass": true
+      },
+      {
+        "name": "services",
+        "status": 200,
+        "pass": true
+      },
+      {
+        "name": "blueprints",
+        "status": 200,
+        "pass": true
+      },
+      {
+        "name": "anonymous-admin-quotes",
+        "status": 401,
+        "pass": true
+      },
+      {
+        "name": "anonymous-admin-archive",
+        "status": 401,
+        "pass": true
+      },
+      {
+        "name": "anonymous-audit-logs",
+        "status": 401,
+        "pass": true
+      },
+      {
+        "name": "storefront",
+        "status": 200,
+        "pass": true
+      },
+      {
+        "name": "staff-login",
+        "status": 200,
+        "pass": true
+      }
+    ]
+  }
+}

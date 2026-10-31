@@ -294,9 +294,10 @@
           "lastVerifiedAt": "2026-09-20T13:59:00.000Z",
           "evidence": [
             "package.json",
-            "apps/public/src/instrumentation.ts"
+            "apps/public/src/instrumentation.ts",
+            "docs/production-smtp-verification-2026-10-31.json"
           ],
-          "notes": "Telemetry pipeline verified 2026-09-20: proxy emits api_request/staff_activity/audit events (failure=high, sensitive-mutation=critical priority) to analytics ingest; health probes live-verified today. Remaining: live alert-fire + superadmin ack drill requires alert-channel access."
+          "notes": "31 October: replacement owner-created credential applied privately locally and to the live API. SMTP authentication verified inside the live API; two approved delivery/simulated-alert messages observed in the owner inbox. Persistent production monitoring, acknowledgement/escalation and other provider flows remain unverified; status remains pending."
         }
       ]
     }
