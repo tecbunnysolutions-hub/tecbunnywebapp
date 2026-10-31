@@ -1,0 +1,12 @@
+[Unit]
+Description=Proposed twice-daily TecBunny encrypted database capture
+
+[Timer]
+OnCalendar=*-*-* 00,12:00:00 UTC
+RandomizedDelaySec=300
+AccuracySec=60s
+Persistent=true
+Unit=tecbunny-db-backup.service
+
+[Install]
+WantedBy=timers.target
