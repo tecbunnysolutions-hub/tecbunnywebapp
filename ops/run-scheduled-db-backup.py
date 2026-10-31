@@ -1,5 +1,6 @@
 """Proposed persistent job entry point; installing a timer is a separate step."""
 import json
+import signal
 import subprocess
 import sys
 from pathlib import Path
@@ -14,7 +15,16 @@ def main():
     command = [sys.executable, str(BASE / 'capture-encrypted-db-backup.py'),
                '--recipient', str(BASE / 'recipient.pem'), '--output-directory', str(BASE),
                '--postgres-image', CLIENT, '--expected-api-image', current['Image']]
-    return subprocess.run(command, timeout=650, check=False).returncode
+    process = subprocess.Popen(command)
+    try:
+        return process.wait(timeout=650)
+    except subprocess.TimeoutExpired:
+        process.send_signal(signal.SIGTERM)
+        try:
+            return process.wait(timeout=60)
+        except subprocess.TimeoutExpired:
+            process.kill()
+            return process.wait(timeout=15)
 
 
 if __name__ == '__main__':

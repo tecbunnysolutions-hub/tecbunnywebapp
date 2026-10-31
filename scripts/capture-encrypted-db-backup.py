@@ -9,6 +9,7 @@ import hashlib
 import json
 import os
 import re
+import signal
 import shutil
 import subprocess
 import tempfile
@@ -63,8 +64,6 @@ def run(args):
     destination = partial.with_suffix("")
     log = base / f"private-{identifier}.log"
     descriptor, credentials = tempfile.mkstemp(prefix=".pg-client-", dir=base)
-    with os.fdopen(descriptor, "w") as stream:
-        stream.write("".join(f"{key}={value}\n" for key, value in settings.items()))
     command = ["docker", "run", "--rm", "--name", name, "--label", "com.tecbunny.purpose=readonly-encrypted-backup",
                "--network", "bridge", "--memory", "128m", "--memory-swap", "192m", "--cpus", "0.25",
                "--env-file", credentials, "--mount", f"type=bind,src={certificate},dst=/run/certs/supabase-ca.crt,readonly",
@@ -73,6 +72,8 @@ def run(args):
     dump = encryption = None
     start = time.monotonic()
     try:
+        with os.fdopen(descriptor, "w") as stream:
+            stream.write("".join(f"{key}={value}\n" for key, value in settings.items()))
         with log.open("xb") as errors, partial.open("xb") as encrypted:
             dump = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=errors, stdin=subprocess.DEVNULL)
             encryption = subprocess.Popen(["openssl", "cms", "-encrypt", "-stream", "-aes-256-gcm", "-binary", "-outform", "DER",
@@ -133,6 +134,10 @@ def run(args):
 
 
 if __name__ == "__main__":
+    def requested_stop(signum, frame):
+        raise RuntimeError("Backup stop requested; cleaning up owned resources")
+
+    signal.signal(signal.SIGTERM, requested_stop)
     parser = argparse.ArgumentParser()
     parser.add_argument("--recipient", required=True)
     parser.add_argument("--output-directory", required=True)

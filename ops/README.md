@@ -6,6 +6,11 @@ runs the verified, read-only encrypted exporter twice daily, at 00:00 and 12:00 
 (05:30 and 17:30 IST), with up to five minutes of jitter. It does not restart the
 API, migrate data, publish an image, delete backups or send messages.
 
+Local wrapper tests cover normal completion and graceful timeout escalation.
+Linux systemd validation has not run: automatic approval review blocked the remote
+validation/preparation command because approval was required but this session
+cannot request it. Do not treat these source files as an executed production job.
+
 The Docker client image is the immutable PostgreSQL 17.11 image used successfully
 in the rehearsal. The live API image is observed afresh and rechecked by the
 exporter; it is not replaced. Source-project, verified-TLS, read-only, memory, CPU,
