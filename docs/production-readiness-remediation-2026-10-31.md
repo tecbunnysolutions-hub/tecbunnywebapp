@@ -77,6 +77,11 @@ or 100-user production load was performed.
   retention, key escrow and backup-failure channel. One successful capture is not a
   sustained 24-hour RPO guarantee. Managed Supabase/Storage failover remains a
   separate rehearsal.
+  A concrete twice-daily database service/timer is prepared in
+  [`ops/README.md`](../ops/README.md), with three passing cancellation/timeout
+  tests. It is not installed or enabled. Automatic approval review blocked the
+  remote Linux validation command because approval was required and this session
+  cannot request it. Retention and storage-object recurrence remain separate.
 - **Operations:** two test emails to the owner were explicitly approved: one
   delivery test and one simulated alert. None have been sent because SMTP rejects
   authentication. Inbox receipt/acknowledgement, an ongoing on-call channel and
@@ -99,3 +104,8 @@ conditions are supported by current evidence. During the first 24–72 hours, wa
 health, errors/latency, memory/disk, database connections, queues, authorization
 denials and provider delivery. The prepared host-side monitor has not been installed
 as a production schedule or presented as an external host-outage monitor.
+
+The clean local admission run at `3c7f0534fddafab8b19c6f7a4d4f6ee532da5584`
+passed `npm ci` and source/runtime backport verification, then stopped at the
+unapproved dependency policy. Its remaining checks were explicitly recorded as not
+run. Later proposal-only changes do not convert that result into a passing gate.

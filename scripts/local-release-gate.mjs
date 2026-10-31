@@ -57,6 +57,7 @@ const checks = [
   ['audit-policy-regressions', ['--test', 'scripts/test-dependency-audit-policy.mjs']],
   ['capacity-runner-regressions', ['--test', 'scripts/test-readiness-capacity.mjs']],
   ['monitor-regressions', ['scripts/test-ops-health-monitor.py'], process.platform === 'win32' ? 'python' : 'python3'],
+  ['scheduled-backup-regressions', ['ops/test-scheduled-db-backup.py'], process.platform === 'win32' ? 'python' : 'python3'],
   ['architecture', [npmCli, 'run', 'validate:architecture']],
   ['api-boundary', [npmCli, 'run', 'validate:api-boundary']],
   ['typecheck', [npmCli, 'run', 'typecheck', '--', '--concurrency=1']],
