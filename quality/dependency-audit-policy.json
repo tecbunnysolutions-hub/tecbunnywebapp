@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "approval": null,
+  "expiresAt": "2026-11-13T00:00:00.000Z",
+  "mitigation": {
+    "package": "zod",
+    "version": "4.6.5",
+    "advisory": "https://github.com/advisories/GHSA-mrhx-c7xc-m3w5",
+    "upstreamCommit": "a0ebf970f2d752e5f58527cd2942ff48be4f46bd",
+    "patchSha256": "ff9d50e239b53358f97855b86a9efb4f58e2bd4263cad0603fcf70b89945fe2f",
+    "manifestSha256": "b95aec8f3f086827be1dc035708a33d94df54212214a39b5cf30d0a3ca59559e",
+    "manifest": "patches/zod/manifest.json"
+  },
+  "requirements": [
+    "Keep the raw npm audit finding and package version visible",
+    "Fail on any other high or critical finding, changed advisory, affected copy, version, patch or runtime bytes",
+    "Run interpreted, compiled and async regressions in both module formats for every affected installed copy",
+    "Require explicit owner approval of this temporary verified-backport policy",
+    "Revisit by expiry and adopt the official fixed package when available"
+  ]
+}

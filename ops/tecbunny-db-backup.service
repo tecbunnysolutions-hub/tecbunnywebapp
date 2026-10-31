@@ -1,0 +1,25 @@
+[Unit]
+Description=TecBunny read-only encrypted database capture
+Requires=docker.service
+After=docker.service network-online.target
+Wants=network-online.target
+ConditionPathExists=/var/backups/tecbunny/readiness-20261030/recipient.pem
+
+[Service]
+Type=oneshot
+User=root
+Group=root
+UMask=0077
+ExecStart=/usr/bin/python3 /var/backups/tecbunny/readiness-20261030/run-scheduled-db-backup.py
+TimeoutStartSec=750
+TimeoutStopSec=75
+Nice=15
+IOSchedulingClass=best-effort
+IOSchedulingPriority=7
+MemoryMax=64M
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+ReadWritePaths=/var/backups/tecbunny/readiness-20261030
+Environment=DOCKER_HOST=unix:///var/run/docker.sock

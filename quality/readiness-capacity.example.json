@@ -1,0 +1,12 @@
+{
+  "baseUrl": "http://127.0.0.1:13301",
+  "users": 100,
+  "rampSeconds": 60,
+  "durationSeconds": 300,
+  "thinkMs": 1500,
+  "scenarios": [
+    { "name": "catalogue", "path": "/api/v1/products?limit=5&page=1", "weight": 60, "expectedStatuses": [200] },
+    { "name": "services", "path": "/api/v1/services", "weight": 20, "expectedStatuses": [200] },
+    { "name": "blog", "path": "/api/v1/blog", "weight": 20, "expectedStatuses": [200] }
+  ]
+}

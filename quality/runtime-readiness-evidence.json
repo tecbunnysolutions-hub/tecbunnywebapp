@@ -32,9 +32,10 @@
           "status": "pending",
           "lastVerifiedAt": "2026-09-20T13:36:00.000Z",
           "evidence": [
-            "packages/core/src/security-transaction-audit.test.ts"
+            "packages/core/src/security-transaction-audit.test.ts",
+            "docs/runtime-evidence/readiness-2026-10-30/local-recovery.json"
           ],
-          "notes": "Boundary denial proven 2026-09-20: anonymous probes on tenant-scoped endpoints (POST /api/admin/agents/approve, GET /api/security/settings) => 401 at gateway; RLS isolation via private.get_current_org_id() documented. Remaining: authenticated tenant-A-vs-tenant-B replay requires two interactive tenant sessions."
+          "notes": "Local selected-schema WABA role/tenant/branch matrix and saved-snapshot recovery passed 289 assertions; runtime RLS metadata is present. Actual authenticated HTTP tenant replay remains pending."
         },
         {
           "id": "ownership-checks",
@@ -92,12 +93,13 @@
         {
           "id": "security-headers-runtime",
           "status": "pass",
-          "lastVerifiedAt": "2026-09-20T17:15:00.000Z",
+          "lastVerifiedAt": "2026-10-31T02:20:35.126Z",
           "evidence": [
             "packages/core/src/security-transaction-audit.test.ts",
-            "apps/api/src/proxy.test.ts"
+            "apps/api/src/proxy.test.ts",
+            "docs/runtime-evidence/readiness-2026-10-30/public-smoke.json"
           ],
-          "notes": "Re-verified 2026-09-20 on production /, /api/products, /api/auth/session: HSTS preload, nosniff, DENY, referrer-policy, permissions-policy present; nonce-based CSP on auth/API routes."
+          "notes": "Observed 30 October on seven API reads plus storefront/staff login: HSTS, nosniff, DENY and CSP present. Health no-store and private-detail restriction passed. This records the sampled public responses, not every authenticated response."
         },
         {
           "id": "secret-handling-runtime",
@@ -266,21 +268,25 @@
           "status": "pending",
           "lastVerifiedAt": "2026-07-26T00:00:00.000Z",
           "evidence": [
-            "package.json"
+            "package.json",
+            "docs/runtime-evidence/readiness-2026-10-30/local-recovery.json",
+            "docs/runtime-evidence/readiness-2026-10-30/native-database-recovery.json",
+            "docs/runtime-evidence/readiness-2026-10-30/storage-recovery.json"
           ],
-          "notes": "Need restore rehearsal proof with RTO/RPO outcomes."
+          "notes": "Real encrypted logical snapshot restored into private native PostgreSQL 17.11: 459 table row counts and 49,648 rows verified; all 230 storage files recovered locally with matching hashes. Full managed-service recovery/RTO and recurring capture/retention/RPO are not established; status remains pending."
         },
         {
           "id": "health-check-runtime",
-          "status": "fail",
-          "lastVerifiedAt": "2026-10-28T02:25:19.204Z",
+          "status": "pass",
+          "lastVerifiedAt": "2026-10-31T02:20:35.126Z",
           "evidence": [
             "scripts/validate-infra-observability.mjs",
             "apps/superadmin/src/app/api/health/route.ts",
             "docs/production-connection-repair-2026-10-28.md",
-            "docs/production-remediation-runtime-observations-2026-10-27.json"
+            "docs/production-remediation-runtime-observations-2026-10-27.json",
+            "docs/runtime-evidence/readiness-2026-10-30/public-smoke.json"
           ],
-          "notes": "Actual production GET after the explicitly approved connection repair: health HTTP 503, services 200, blog 502. The unchanged API image now passes a normal pg SELECT 1 with authorized TLS; the existing unhealthy endpoint and undeployed code/grant repairs remain unresolved. A successful database connection does not make application health pass."
+          "notes": "Fresh sequential production GETs on 30 October: healthy/redacted/no-store health 200; blog/services/blueprints 200; three anonymous privileged reads 401. The previous 28 October failed health observation is historical. SMTP authentication separately fails 535; configured provider flags in health are not delivery proof."
         },
         {
           "id": "monitoring-alerting-runtime",
@@ -288,9 +294,10 @@
           "lastVerifiedAt": "2026-09-20T13:59:00.000Z",
           "evidence": [
             "package.json",
-            "apps/public/src/instrumentation.ts"
+            "apps/public/src/instrumentation.ts",
+            "docs/production-smtp-verification-2026-10-31.json"
           ],
-          "notes": "Telemetry pipeline verified 2026-09-20: proxy emits api_request/staff_activity/audit events (failure=high, sensitive-mutation=critical priority) to analytics ingest; health probes live-verified today. Remaining: live alert-fire + superadmin ack drill requires alert-channel access."
+          "notes": "31 October: replacement owner-created credential applied privately locally and to the live API. SMTP authentication verified inside the live API; two approved delivery/simulated-alert messages observed in the owner inbox. Persistent production monitoring, acknowledgement/escalation and other provider flows remain unverified; status remains pending."
         }
       ]
     }

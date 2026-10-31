@@ -1,0 +1,32 @@
+{
+  "checkedAt": "2026-10-30T11:44:15.680Z",
+  "sourceApiImage": "sha256:7cfacbaf1447d152fef488c18a26effd6e6e06424f589b2ad4318d65118c000f",
+  "smtp": {
+    "destinationClass": "external-provider",
+    "providerFamily": "gmail",
+    "authenticatedConfigured": true,
+    "connectionAndAuthVerified": false,
+    "failureCode": "EAUTH",
+    "responseCode": 535,
+    "backupConfigured": false,
+    "deliveryTest": "not-sent-credentials-rejected"
+  },
+  "whatsapp": {
+    "readOnlyCredentialProbeStatus": 200,
+    "deliveryTest": "unverified-no-message-sent"
+  },
+  "payments": {
+    "payuSandbox": "not-confirmed",
+    "cashfreeSandboxConfigured": false
+  },
+  "installedBackport": {
+    "version": "4.6.5",
+    "allPinnedSourceAndRuntimeHashes": true,
+    "bothModuleBoundedParserRegression": "pass"
+  },
+  "limitations": [
+    "SMTP verify is a connection/authentication check, not inbox delivery",
+    "WhatsApp read-only credential acceptance is not message delivery",
+    "No real charge or production business write performed"
+  ]
+}

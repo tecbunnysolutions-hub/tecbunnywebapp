@@ -1,0 +1,21 @@
+{
+  "startedAt": "2026-10-31T02:11:46.435Z",
+  "environment": "private native Windows PostgreSQL 17.11, loopback-only, synthetic operator credential",
+  "sourceCapture": "20261030T122433Z-11bd227c",
+  "status": "pass",
+  "limitations": [
+    "Logical application/Auth/storage-metadata restore; not managed Supabase failover",
+    "Storage object bytes are separate: source has 230 objects, 8812253 bytes",
+    "Provider configuration, database login passwords, schedules and sustained RPO are not restored",
+    "Source object owners remapped to the isolated restore operator; provider authentication and HTTP RBAC are not tested",
+    "Timing covers import and row-count verification on a prepared target; not total service RTO"
+  ],
+  "restoreExitCode": 0,
+  "restoreErrorCode": null,
+  "tablesVerified": 459,
+  "rowsVerified": 49648,
+  "policiesRestored": 495,
+  "recoveryVerificationMs": 11116,
+  "withinApproved60MinuteDataRestoreTarget": true,
+  "finishedAt": "2026-10-31T02:11:57.551Z"
+}

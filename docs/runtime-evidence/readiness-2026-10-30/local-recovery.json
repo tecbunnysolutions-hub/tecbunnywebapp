@@ -1,0 +1,61 @@
+{
+  "recordedAt": "2026-10-30T12:13:21.615Z",
+  "revision": "1fd2908f98191340670f1da906db9c3fe71d7518",
+  "runnerSha256": "98433927821f8e59cda557937cb46a44fcff5f7c5b95f84b226ae719cc8e8373",
+  "environment": "local Windows / PGlite 0.4.3 / synthetic data / no network or production credentials",
+  "status": "pass",
+  "assertions": 289,
+  "rolesTested": [
+    "manager",
+    "sales_manager",
+    "sales",
+    "sales-staff",
+    "sales-external",
+    "sales_executive",
+    "store_executive",
+    "sales_agent",
+    "marketing_executive",
+    "support",
+    "delivery",
+    "warehouse",
+    "hr",
+    "marketing_manager",
+    "service_manager",
+    "service_engineer",
+    "accounts",
+    "admin",
+    "superadmin",
+    "customer",
+    "seller",
+    "unknown"
+  ],
+  "migrations": {
+    "20260925000000_atomic_gateway_settlement.sql": "efc88172dabbd5aaab39caf0b5866982db955b16cdeb34f40719716eba5a971f",
+    "20260925000001_waba_conversation_ownership.sql": "e936762e7cd9f5c522552e910e6bacf6df6e621fa0bf83799f1d9a580e764845",
+    "20261027000000_product_archival_columns.sql": "f630612f53f559a505c1250997472be88da117822e6ea386a4775486b380d8f4",
+    "20261028000000_atomic_product_archival.sql": "bbe9e0132d8e93aee94a60c379e6ea465bd44a32f39c7728b84979e425a362e0",
+    "20261028000001_product_archival_audit_grants.sql": "994d9b01626c3609f811187ed2d9b99e50ba0d545a06833444766914fd4797fc"
+  },
+  "checkpointAt": "2026-10-30T12:13:19.140Z",
+  "backup": {
+    "bytes": 4291739,
+    "sha256": "064a352bda98c04b8a9cb680d339a5090a822b91133c939ea21f99adb1cd58b3",
+    "durationMs": 971
+  },
+  "recoveryVerificationMs": 1539,
+  "verified": [
+    "WABA role, organization and branch RLS before and after restore",
+    "ownership immutability",
+    "browser denial of privileged settlement and archival RPCs",
+    "archival audit append-only grants",
+    "saved database rows/policies/grants",
+    "settlement replay idempotency",
+    "archival sequence and status restoration"
+  ],
+  "limitations": [
+    "Selected application schema fixture only; not a full production backup",
+    "PGlite snapshot format; not pg_dump/pg_restore or managed Supabase recovery",
+    "Does not test HTTP authorization, Supabase Auth refresh, Storage objects or external providers",
+    "Timings are local fixture measurements, not production RPO/RTO or VPS capacity evidence"
+  ]
+}

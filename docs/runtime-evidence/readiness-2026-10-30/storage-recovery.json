@@ -1,0 +1,8 @@
+{
+  "recordedAt": "2026-10-31T02:18:23.057325+00:00",
+  "status": "pass",
+  "objectsVerified": 230,
+  "bytesVerified": 8812253,
+  "allObjectHashesMatched": true,
+  "scope": "Local encrypted archive recovery; cloud Storage service restore remains unverified"
+}

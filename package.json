@@ -48,6 +48,10 @@
     "test": "turbo run test",
     "test:security-migrations": "node scripts/test-security-migrations.mjs && node scripts/test-product-archival-migration.mjs && node scripts/test-communication-preferences-grant.mjs && node scripts/test-atomic-product-archival.mjs",
     "test:security-backport": "node scripts/apply-zod-security-backport.mjs --check && node scripts/test-zod-security-backport.mjs",
+    "audit:dependencies": "node scripts/audit-dependencies.mjs",
+    "test:audit-policy": "node --test scripts/test-dependency-audit-policy.mjs",
+    "drill:recovery:local": "node scripts/drill-local-recovery.mjs",
+    "release:check:local": "node scripts/local-release-gate.mjs",
     "check": "npm run validate:architecture && npm run validate:api-boundary && npm run typecheck && npm run lint && npm run test"
   },
   "devDependencies": {
