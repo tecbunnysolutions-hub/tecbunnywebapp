@@ -32,3 +32,12 @@ Verification performed:
 
 These checks evaluate the proposal. They do not claim the raw audit passes or that
 the installed code was independently audited beyond the pinned upstream mitigation.
+
+31 October follow-up: a fresh scan reports one high plus 18 moderate transitive
+development-dependency findings. The latter trace to `glob`
+(GHSA-3g3m-2fjr-6pw4) and `minimatch` (GHSA-g3hv-75wg-m249). Every reported affected
+copy is marked development-only in the lockfile. Registry queries for the stated
+fixed versions, glob 14.0.2 and minimatch 11.0.1, returned E404; current latest tags
+are 13.0.6 and 10.2.6. These MEDIUM follow-ups remain visible and unremediated.
+The proposed high/critical admission threshold is unchanged. Approval of the exact
+Zod mitigation would not mark these separate findings fixed or accept their risk.

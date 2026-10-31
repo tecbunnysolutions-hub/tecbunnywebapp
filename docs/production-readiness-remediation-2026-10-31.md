@@ -22,6 +22,14 @@ record is `quality/readiness-targets.json`.
 
 ## Evidence and scope
 
+**New MEDIUM development-tool follow-up:** the 31 October audit also reports 18
+moderate transitive findings tracing to two advisories in glob/minimatch. All
+reported affected copies are development dependencies in the lockfile. The named
+fixed package versions are unavailable from the configured registry. No forced
+legacy-tool downgrade or incompatible override was applied. See the updated
+dependency-policy proposal and `dependency-audit-summary.json`; these findings are
+not hidden by the temporary high/critical admission policy.
+
 Sanitized observations are in `docs/runtime-evidence/readiness-2026-10-30/`:
 
 - `public-smoke.json`: all nine sequential production GET checks passed on

@@ -1,0 +1,74 @@
+{
+  "recordedAt": "2026-10-31T02:44:39.926Z",
+  "status": "fail",
+  "rawSeverities": {
+    "info": 0,
+    "low": 0,
+    "moderate": 18,
+    "high": 1,
+    "critical": 0,
+    "total": 19
+  },
+  "blocked": [
+    {
+      "reason": "Temporary mitigation policy has no explicit owner approval"
+    }
+  ],
+  "verifiedCopies": [
+    {
+      "packagePath": "node_modules/zod",
+      "sourceAndRuntimeHashes": "pass",
+      "esmAndCommonJsRegression": "pass"
+    }
+  ],
+  "developmentFindings": [
+    {
+      "name": "glob",
+      "advisories": [
+        {
+          "title": "Glob: AbortSignal cancellation bypass allows post-timeout filesystem traversal",
+          "url": "https://github.com/advisories/GHSA-3g3m-2fjr-6pw4",
+          "range": ">=9.0.0 <=14.0.1"
+        }
+      ],
+      "copies": [
+        {
+          "path": "node_modules/glob",
+          "version": "13.0.6",
+          "developmentDependency": true
+        }
+      ]
+    },
+    {
+      "name": "minimatch",
+      "advisories": [
+        {
+          "title": "minimatch has potential denial of service via globparts amplification",
+          "url": "https://github.com/advisories/GHSA-g3hv-75wg-m249",
+          "range": "<11.0.1"
+        }
+      ],
+      "copies": [
+        {
+          "path": "node_modules/@typescript-eslint/typescript-estree/node_modules/minimatch",
+          "version": "10.2.6",
+          "developmentDependency": true
+        },
+        {
+          "path": "node_modules/glob/node_modules/minimatch",
+          "version": "10.2.6",
+          "developmentDependency": true
+        },
+        {
+          "path": "node_modules/minimatch",
+          "version": "3.1.5",
+          "developmentDependency": true
+        }
+      ]
+    }
+  ],
+  "fixedVersionAvailability": {
+    "glob@14.0.2": "registry E404",
+    "minimatch@11.0.1": "registry E404"
+  }
+}
