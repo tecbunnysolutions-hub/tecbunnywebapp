@@ -24,7 +24,7 @@ capture when capacity becomes insufficient; it is not a substitute for retention
 or alerting. Storage-object recurrence and managed-service restore remain separate
 work. Two authorized test emails do not authorize ongoing alerts.
 
-After approval, copy the reviewed wrapper alongside the existing exporter in
+After approval, copy both the reviewed exporter and wrapper into
 `/var/backups/tecbunny/readiness-20261030/` with root-only permissions. Install the
 reviewed service/timer under `/etc/systemd/system/`, validate them with
 `systemd-analyze verify`, reload systemd, run and verify one service invocation,
